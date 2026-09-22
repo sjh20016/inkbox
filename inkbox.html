@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-app="inkbox">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>水墨沙盒 · 坐天观井 v0.1</title>
+<style>
+  :root {
+    --paper: #e9e0cd;
+    --paper-2: #ded3bc;
+    --paper-3: #cfc2a8;
+    --ink: #22201c;
+    --ink-mid: #4a463e;
+    --ink-soft: #7d776b;
+    --line: rgba(34, 32, 28, .18);
+    --line-strong: rgba(34, 32, 28, .34);
+    --cinnabar: #a8493c;
+    --azurite: #3f5f7d;
+    --gold: #b08f3e;
+    --malachite: #4d6b52;
+    --shadow: 0 2px 14px rgba(60, 50, 34, .16);
+    --serif: "Noto Serif SC", "Songti SC", "SimSun", KaiTi, serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(circle at 18% 12%, rgba(255,255,255,.5), transparent 55%),
+      radial-gradient(circle at 82% 88%, rgba(176,143,62,.12), transparent 60%),
+      var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 13px;
+    overflow: hidden;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .35; z-index: 99;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(120,105,80,.055) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(120,105,80,.04) 0 1px, transparent 1px 4px);
+  }
+
+  .app { height: 100vh; display: grid; grid-template-rows: auto 1fr auto; gap: 0; }
+
+  /* ── 顶栏 ── */
+  .top {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid var(--line-strong);
+    background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(233,224,205,.1));
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand h1 { font-size: 19px; letter-spacing: 5px; font-weight: 700; }
+  .brand small { color: var(--ink-soft); letter-spacing: 2px; font-size: 11px; }
+  .seal {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border: 1.5px solid var(--cinnabar); color: var(--cinnabar);
+    font-size: 13px; border-radius: 3px; letter-spacing: 0; font-weight: 700;
+  }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+  .pill {
+    border: 1px solid var(--line-strong); border-radius: 999px; padding: 4px 12px;
+    background: rgba(255,255,255,.42); color: var(--ink-mid); letter-spacing: .5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .pill b { color: var(--ink); font-weight: 700; }
+
+  /* ── 主体 ── */
+  .main { display: grid; grid-template-columns: 178px minmax(0, 1fr) 236px; min-height: 0; }
+  .rail { border-right: 1px solid var(--line-strong); overflow-y: auto; padding: 10px; background: rgba(255,255,255,.24); }
+  .rail.right { border-right: 0; border-left: 1px solid var(--line-strong); }
+  .rail::-webkit-scrollbar { width: 6px; }
+  .rail::-webkit-scrollbar-thumb { background: var(--paper-3); border-radius: 3px; }
+
+  .sec-title {
+    font-size: 11px; letter-spacing: 3px; color: var(--ink-soft);
+    margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--line);
+  }
+  .sec-title:first-child { margin-top: 0; }
+
+  .groups { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+  .group {
+    flex: 1 1 auto; border: 1px solid var(--line); background: rgba(255,255,255,.3);
+    border-bottom: 2px solid var(--group-color, var(--line));
+    color: var(--ink-mid); border-radius: 4px; padding: 5px 4px; cursor: pointer;
+    font-family: var(--serif); font-size: 12px; letter-spacing: 1px;
+  }
+  .group:hover { border-color: var(--line-strong); }
+  /* ⚠️ `--group-color` 由 `main.js` 按神格写入（tools.js:TOOL_GROUPS）。
+     2026-09-22 之前这里写死 `--line-strong` ⇒ 变量**有生产者、无消费者**，
+     七个分组标签全是灰的，玩家看不出「仙道」与「天灾」分属不同神格。 */
+  .group.on { background: var(--paper-3); border-color: var(--group-color, var(--line-strong)); color: var(--ink); font-weight: 700; }
+
+  .tools { display: grid; gap: 3px; }
+  .ink-tool {
+    display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+    border: 1px solid transparent; background: transparent; color: var(--ink-mid);
+    border-radius: 5px; padding: 6px 8px; cursor: pointer; font-family: var(--serif); font-size: 12.5px;
+    letter-spacing: 1px; transition: background .12s, border-color .12s;
+  }
+  .ink-tool:hover { background: rgba(255,255,255,.5); border-color: var(--line); }
+  .ink-tool.on { background: var(--paper-3); border-color: var(--line-strong); color: var(--ink); font-weight: 700; }
+  .ink-tool-icon { width: 18px; text-align: center; font-size: 14px; }
+  .ink-tool-hint {
+    margin-top: 10px; padding: 8px 9px; border: 1px dashed var(--line-strong);
+    border-radius: 5px; color: var(--ink-soft); line-height: 1.65; font-size: 11.5px; min-height: 62px;
+  }
+
+  /* ── 画布 ── */
+  .stage { position: relative; min-width: 0; min-height: 0; background: var(--paper-2); }
+  #inkCanvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .stage-hint {
+    position: absolute; left: 12px; bottom: 12px; z-index: 4; max-width: 60%;
+    background: rgba(233,224,205,.9); border: 1px solid var(--line-strong);
+    border-radius: 4px; padding: 5px 10px; color: var(--ink-mid); font-size: 11.5px;
+    letter-spacing: .4px; backdrop-filter: blur(3px);
+  }
+  .inspect {
+    position: absolute; right: 12px; top: 12px; z-index: 5; width: 214px; display: none;
+    background: rgba(240,234,220,.96); border: 1px solid var(--line-strong);
+    border-radius: 6px; box-shadow: var(--shadow); overflow: hidden;
+  }
+
+  /* ── 卜算子（天道引路人）────────────────────────────
+     做成浮在画面左下的对话条，而不是塞进右侧栏。
+     理由：他是「对你说话的人」，不是一项数据；右侧栏已经够挤，
+     而且编年史那种滚动列表会把他的台词冲走——他需要一块不会被冲走的地方。
+     用 pointer-events: none，免得挡住底下的落笔。 */
+  .busanzi {
+    position: absolute; left: 12px; bottom: 44px; z-index: 5; width: 274px;
+    padding: 9px 11px 10px;
+    background: rgba(240,234,220,.95); border: 1px solid var(--line-strong);
+    border-radius: 6px; box-shadow: var(--shadow);
+    opacity: 0; transform: translateY(6px);
+    transition: opacity .45s ease, transform .45s ease;
+    pointer-events: none;
+  }
+  .busanzi.on { opacity: 1; transform: none; }
+  .busanzi-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .busanzi-mark { font-size: 14px; color: var(--ink-mid); }
+  .busanzi-name { font-weight: 700; letter-spacing: 2px; font-size: 12.5px; }
+  .busanzi-tier {
+    margin-left: auto; font-size: 10px; color: var(--ink-soft); letter-spacing: 1px;
+    border: 1px solid var(--line-strong); border-radius: 999px; padding: 1px 7px; white-space: nowrap;
+  }
+  .busanzi-meter { height: 3px; background: rgba(34,32,28,.1); border-radius: 2px; overflow: hidden; margin-bottom: 7px; }
+  .busanzi-meter i { display: block; height: 100%; background: var(--ink-mid); transition: width .5s ease; }
+  .busanzi-line { font-size: 12px; line-height: 1.62; color: var(--ink-mid); }
+  .busanzi-line + .busanzi-line { margin-top: 3px; opacity: .58; }
+  .busanzi-line:first-child { color: var(--ink); }
+  .inspect.on { display: block; }
+  .inspect-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 10px; border-bottom: 1px solid var(--line); font-weight: 700; letter-spacing: 1px;
+    background: rgba(255,255,255,.5);
+  }
+  .ink-x { border: 0; background: transparent; cursor: pointer; font-size: 15px; color: var(--ink-soft); font-family: var(--serif); }
+  .inspect-row { display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid rgba(34,32,28,.07); }
+  .inspect-row span { color: var(--ink-soft); }
+  .inspect-row b { font-weight: 600; font-variant-numeric: tabular-nums; }
+  /* ── 检视面板的说明行（见 main.js 里 `rows` 的 `@note` 伪标签）────────
+     给上一行读数做注解的整行小字。两列布局（span + b）装不下一句解释：
+     长句会被 `.inspect` 的 `overflow: hidden` 裁掉，而且会跟标签挤成一团。
+     目前只有「污染」用它——那个量玩家最需要一个「这是什么」。 */
+  .inspect-note {
+    display: block; padding: 3px 10px 5px; border-bottom: 1px solid rgba(34,32,28,.07);
+    color: var(--ink-soft); font-size: 11px; line-height: 1.55;
+  }
+
+  /* ── 底栏 ── */
+  .bottom {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 9px 16px; border-top: 1px solid var(--line-strong);
+    background: linear-gradient(0deg, rgba(255,255,255,.44), rgba(233,224,205,.06));
+  }
+  .cluster { display: flex; align-items: center; gap: 6px; }
+  .cluster > label { color: var(--ink-soft); letter-spacing: 1px; font-size: 11.5px; }
+  button.btn {
+    border: 1px solid var(--line-strong); background: rgba(255,255,255,.5); color: var(--ink-mid);
+    border-radius: 4px; padding: 5px 11px; cursor: pointer; font-family: var(--serif);
+    font-size: 12px; letter-spacing: 1px; transition: all .12s;
+  }
+  button.btn:hover { background: #fff; color: var(--ink); }
+  button.btn.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  button.btn.danger:hover { border-color: var(--cinnabar); color: var(--cinnabar); }
+  input[type=range] { width: 108px; accent-color: var(--ink-mid); }
+  input[type=number], select {
+    border: 1px solid var(--line-strong); background: rgba(255,255,255,.6); color: var(--ink);
+    border-radius: 4px; padding: 4px 6px; font-family: var(--serif); font-size: 12px;
+  }
+  input[type=number] { width: 104px; }
+
+  /* ── 右栏 ── */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .stat {
+    border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; background: rgba(255,255,255,.34);
+  }
+  .stat span { display: block; color: var(--ink-soft); font-size: 10.5px; letter-spacing: 1px; }
+  .stat b { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .factions { display: grid; gap: 4px; }
+  .faction {
+    display: grid; grid-template-columns: 10px 1fr auto auto auto; align-items: center; gap: 6px;
+    border: 1px solid var(--line); border-radius: 4px; padding: 4px 7px;
+    background: rgba(255,255,255,.32); cursor: pointer;
+  }
+  .faction:hover { border-color: var(--line-strong); background: rgba(255,255,255,.6); }
+  .faction i { width: 10px; height: 10px; border-radius: 2px; display: block; }
+  .faction b { font-variant-numeric: tabular-nums; }
+  .faction em { color: var(--ink-soft); font-style: normal; font-size: 11px; }
+  .faction u { color: var(--cinnabar); text-decoration: none; font-size: 11px; border: 1px solid var(--cinnabar); border-radius: 3px; padding: 0 3px; }
+  .chronicle { display: grid; gap: 3px; }
+  .ink-log {
+    border-left: 2px solid var(--line-strong); padding: 2px 0 2px 7px;
+    color: var(--ink-mid); line-height: 1.5; font-size: 11.5px;
+  }
+  .ink-log b { color: var(--cinnabar); font-weight: 600; margin-right: 5px; font-size: 11px; }
+  /* 卜算子那几句在编年史里也标出来——不然读者分不清哪句是旁白、哪句是史实。
+     用「离」卦的淡朱色做左边线，与编年史的墨线区分开。 */
+  .ink-log.is-busanzi { border-left-color: var(--cinnabar); font-style: italic; }
+  .ink-log.is-busanzi b { color: var(--ink-soft); }
+  .ink-empty { color: var(--ink-soft); line-height: 1.7; font-size: 11.5px; padding: 4px 0; }
+  /* ── 史册（逝者名录，见 sim/necrology.js）──────────────
+     与编年史同一套「墨线 + 小字」的排版；一条一行，可点开。
+     用 cursor:pointer 明示「这条能点」——它是面板上唯一的交互列表。 */
+  .necro-tools { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+  .necro-tools .btn { padding: 3px 8px; font-size: 11px; }
+  .necro-count { margin-left: auto; color: var(--ink-soft); font-size: 10.5px; letter-spacing: .5px; }
+  .necro-row { cursor: pointer; }
+  .necro-row:hover { background: rgba(255,255,255,.55); }
+  .necro-row em { font-style: normal; color: var(--ink-soft); font-size: 11px; }
+  .necro-epitaph { color: var(--ink-soft); font-size: 11px; line-height: 1.5; padding-left: 7px; }
+  /* 传记正文面板：挪到右下，免得和右上角的检视面板叠在一起
+     （两块可以同时开着——一边看活人、一边看逝者）。 */
+  .necro-detail { width: 300px; top: auto; bottom: 44px; right: 12px; }
+  .necro-body {
+    max-height: 62vh; overflow: auto; padding: 6px 10px 10px;
+    white-space: pre-wrap; word-break: break-word;
+    font-size: 11.5px; line-height: 1.62; color: var(--ink-mid);
+  }
+  /* 活人「一生」面板：往左挪一格，好让它可以和史册正文**同时**开着
+     （一边看活人、一边看逝者）。尺寸与 `.necro-detail` 逐字相同，只改 right。
+     ⚠️ 元素上**不能**同时挂 `necro-detail`——`.inspect.necro-detail` 是两个类、
+     特异性比 `.person-detail` 高，`right` 会被它压回 12px 而与史册面板叠在一起。 */
+  .person-detail { width: 300px; top: auto; bottom: 44px; right: 324px; }
+  /* ── 值得关注（活人榜，见 main.js refreshNotables）──────────
+     与史册同一套「可点的一行」外观，唯一的区别是那行小字是
+     「**为什么**他值得你看一眼」（当世之巅 / 最年长 / 名动一方…），
+     用朱色标出来，免得和史册的墓志铭混淆。 */
+  .notable-row { cursor: pointer; }
+  .notable-row:hover { background: rgba(255,255,255,.55); }
+  .notable-reason {
+    font-style: normal; color: var(--cinnabar); font-size: 10.5px;
+    border: 1px solid var(--cinnabar); border-radius: 3px; padding: 0 3px; margin-right: 5px;
+  }
+  /* ── 传记正文的极简排版（见 main.js renderBiographyHtml）────────
+     传记是 Markdown（`compileBiography` 的产物，导出按钮落盘用的就是原文）。
+     面板里直接摊原文会满屏 `#` 和 `-`，所以这里把三种最常用的记号
+     转成排版；**原文一字不改**，只是换一种显示方式。 */
+  .bio-h1 { font-size: 13px; font-weight: 700; letter-spacing: 2px; color: var(--ink); margin: 2px 0 6px; }
+  .bio-h2 {
+    font-size: 11px; letter-spacing: 2px; color: var(--ink-soft);
+    margin: 9px 0 3px; padding-bottom: 2px; border-bottom: 1px solid var(--line);
+  }
+  .bio-li { padding-left: 9px; text-indent: -9px; }
+  .bio-li::before { content: "· "; color: var(--ink-soft); }
+  .legend { display: grid; gap: 3px; }
+  .legend div { display: flex; align-items: center; gap: 6px; color: var(--ink-mid); font-size: 11.5px; }
+  .legend i { width: 11px; height: 11px; border-radius: 2px; border: 1px solid rgba(34,32,28,.25); }
+  .keys { color: var(--ink-soft); font-size: 11px; line-height: 1.9; letter-spacing: .4px; }
+
+  /* ── 仙道 ── */
+  .dao-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .dao-peak {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
+    border: 1px solid var(--line); border-radius: 5px; padding: 5px 8px; margin-top: 5px;
+    background: rgba(255,255,255,.34);
+  }
+  .dao-peak span { color: var(--ink-soft); font-size: 10.5px; letter-spacing: 1px; }
+  .dao-peak b { font-size: 12.5px; font-weight: 700; }
+  .dao-realms { display: grid; gap: 3px; margin-top: 6px; }
+  .dao-realm {
+    display: grid; grid-template-columns: 30px 1fr 24px; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--ink-mid);
+  }
+  .dao-realm i { height: 7px; border-radius: 2px; display: block; min-width: 2px; transition: width .35s ease; }
+  .dao-realm b { font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; }
+  .dao-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+  .dao-meta div {
+    border: 1px solid var(--line); border-radius: 4px; padding: 3px 7px;
+    background: rgba(255,255,255,.3); font-size: 11px; color: var(--ink-soft);
+  }
+  .dao-meta b { color: var(--ink); font-variant-numeric: tabular-nums; margin-left: 3px; }
+
+  /* ── 三界（上界 / 幽冥，见 main.js refreshThreeRealms）──────────────
+     这两块只把**已经在跑的**读数摆出来，不新增后台系统。
+     所以样式也只用现成的那几种（`.chronicle` / `.ink-log` / `.necro-epitaph`），
+     只有魂路那五根横条是新画的——它要的是「一眼看出五路各占多少」。 */
+  .realm { display: grid; gap: 4px; margin-bottom: 9px; }
+  .realm-head { display: flex; align-items: baseline; gap: 6px; }
+  .realm-head span { font-size: 12px; font-weight: 700; letter-spacing: 3px; color: var(--ink); }
+  .realm-head b {
+    margin-left: auto; color: var(--ink-soft); font-size: 10.5px;
+    font-weight: 600; font-variant-numeric: tabular-nums;
+  }
+  .realm-souls { display: grid; gap: 3px; }
+  .realm-soul {
+    display: grid; grid-template-columns: 52px 1fr 26px; gap: 5px; align-items: center;
+    font-size: 11px; color: var(--ink-mid);
+  }
+  .realm-soul i { height: 7px; border-radius: 2px; display: block; min-width: 2px; transition: width .35s ease; }
+  .realm-soul b { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  /* 零的那几路压淡——五路里常年有三路是 0（`ghost` 至今零产出），
+     全一个亮度的话，玩家会以为那三根也是「有数的」。
+     用属性选择器而不是多拼一个类名：理由见 main.js 里 `data-zero` 那段注释。 */
+  .realm-soul[data-zero="1"] { opacity: .42; }
+
+  @media (max-width: 1080px) {
+    .main { grid-template-columns: 156px minmax(0, 1fr); }
+    .rail.right { display: none; }
+  }
+  @media (max-width: 720px) {
+    .main { grid-template-columns: minmax(0, 1fr); }
+    .rail { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <span class="seal">井</span>
+      <h1>水墨沙盒</h1>
+      <small>坐天观井 · 世界盒子</small>
+    </div>
+    <div class="pills">
+      <div class="pill" id="inkTimePill">仙历 1 年 · 第 1 日</div>
+      <div class="pill" id="inkSpeedPill">常速 ×2</div>
+      <div class="pill" id="inkFpsPill">-- FPS</div>
+    </div>
+  </header>
+
+  <div class="main">
+    <aside class="rail left">
+      <div class="sec-title">神格</div>
+      <div class="groups" id="inkGroups"></div>
+      <div class="tools" id="inkTools"></div>
+      <div class="ink-tool-hint" id="inkToolHint">选一个神力，然后在山河上落笔。</div>
+    </aside>
+
+    <section class="stage">
+      <canvas id="inkCanvas" aria-label="水墨世界"></canvas>
+      <div class="stage-hint" id="inkHint">左键落笔 · 右键平移 · 滚轮缩放 · 空格暂停</div>
+      <div class="inspect" id="inkInspect"></div>
+      <!-- 史册条目点开后摊出的完整传记正文。与检视面板同一套外观，
+           但内容是一整篇 Markdown，所以要能滚、要保留换行。 -->
+      <div class="inspect necro-detail" id="inkNecroDetail"></div>
+      <!-- 活人的「一生」面板。与史册正文同一套外观与位置，
+           但**必须是另一块面板**：史册那块每 2.5 秒会被
+           `refreshNecrology` 按「这个人还在不在逝者名录里」判一次并自动收起，
+           活人不在名录里，一进去就会被关掉（而且不报错，只是点了没反应）。 -->
+      <div class="inspect person-detail" id="inkPersonDetail"></div>
+      <div class="busanzi" id="inkBusanzi">
+        <div class="busanzi-head">
+          <span class="busanzi-mark">☲</span>
+          <span class="busanzi-name">卜算子</span>
+          <span class="busanzi-tier" id="inkBusanziTier">井外生客</span>
+        </div>
+        <div class="busanzi-meter"><i id="inkBusanziMeter" style="width:0%"></i></div>
+        <div id="inkBusanziLines"></div>
+      </div>
+    </section>
+
+    <aside class="rail right">
+      <div class="sec-title">世界</div>
+      <div class="stat-grid">
+        <div class="stat"><span>生灵</span><b id="inkStatPeople">0</b></div>
+        <div class="stat"><span>聚落</span><b id="inkStatVillages">0</b></div>
+        <div class="stat"><span>势力</span><b id="inkStatFactions">0</b></div>
+        <div class="stat"><span>陆地</span><b id="inkStatLand">0%</b></div>
+      </div>
+      <div class="stat" style="margin-top:5px"><span>最高峰（高程）</span><b id="inkStatPeak">0.00</b></div>
+
+      <div class="sec-title">势力</div>
+      <div class="factions" id="inkFactionList"></div>
+
+      <!-- ── 大事记（World.milestones，见 main.js refreshMilestones）────────
+           与下面「编年」的分工：
+             编年   = 什么都在记，400 条滚动窗口，几年就被冲掉；
+             大事记 = 只记玩家真会回头看的那几件，窗口长得多。
+           玩家快进几十年之后，先看这一块就知道「刚才这个世界发生了什么」。 -->
+      <div class="sec-title">大事记</div>
+      <div class="chronicle" id="inkMilestones"></div>
+
+      <div class="sec-title">仙道</div>
+      <div class="dao-grid">
+        <div class="stat"><span>修士</span><b id="inkStatCultivators">0</b></div>
+        <div class="stat"><span>凡人</span><b id="inkStatMortals">0</b></div>
+      </div>
+      <div class="dao-peak"><span>当世之巅</span><b id="inkStatPeakCultivator">—</b></div>
+      <div class="dao-realms" id="inkRealmBars"></div>
+      <div class="dao-meta">
+        <div>灵脉<b id="inkStatLeylines">0</b></div>
+        <div>地点<b id="inkStatSites">0</b></div>
+        <div>法宝<b id="inkStatArtifacts">0</b></div>
+        <div>世家<b id="inkStatClans">0</b></div>
+        <div>大战<b id="inkStatWars">0</b></div>
+        <div>飞升<b id="inkStatAscended">0</b></div>
+      </div>
+
+      <!-- ── 三界（上界 / 幽冥，见 main.js refreshThreeRealms）──────────────
+           这两界**早就在跑**，缺的从来不是系统，而是**出口**：
+             · 上界有自己的 entities / factions / villages / milestones / arrivedLog，
+               连突破都会写它自己的大事账本（B1 的里程碑门槛顺带覆盖了上界），
+               但界面上只在「上界视界」的画中画里贴地形，**一个人都不画**；
+             · 幽冥的魂路账本（soulLog）与魂池（souls）一直在记账，
+               Batch 3 之前**一个读者都没有**。
+           这一块不新增任何后台状态，纯读现成读数。
+           两个面板各自回答一句玩家真会问的话：
+             · 上界 ——「我刚送上去的那个人后来怎么样了」；
+             · 幽冥 ——「这个人死了之后去哪了」（**按人查**在史册那一行）。 -->
+      <div class="sec-title">三界</div>
+      <div class="realm">
+        <div class="realm-head"><span>上界</span><b id="inkUpperMeta">—</b></div>
+        <div class="chronicle" id="inkUpperLog"></div>
+      </div>
+      <div class="realm">
+        <div class="realm-head"><span>幽冥</span><b id="inkNetherMeta">—</b></div>
+        <div class="realm-souls" id="inkSoulRoutes"></div>
+        <div class="chronicle" id="inkSoulPool"></div>
+      </div>
+
+      <div class="sec-title">值得关注</div>
+      <div class="chronicle" id="inkNotables"></div>
+
+      <div class="sec-title">编年</div>
+      <div class="chronicle" id="inkChronicle"></div>
+      <button class="btn" id="inkBtnChronicle" style="width:100%;margin-top:6px">导出编年史（Markdown）</button>
+
+      <!-- ── 史册（逝者名录，见 sim/necrology.js）──────────────
+           编年说「世界发生了什么」，史册说「**谁**离世了、他这一生是什么」。
+           之前一个人死了就再也翻不出来（world.entities 只装活人），
+           这一块是那块空白的出口。 -->
+      <div class="sec-title">史册</div>
+      <div class="necro-tools">
+        <button class="btn on" id="inkBtnNecroRecent">按卒年</button>
+        <button class="btn" id="inkBtnNecroImportance">按重要</button>
+        <span class="necro-count" id="inkNecroCount">—</span>
+      </div>
+      <div class="chronicle" id="inkNecrology"></div>
+      <button class="btn" id="inkBtnNecrology" style="width:100%;margin-top:6px">导出逝者名录（Markdown）</button>
+
+      <div class="sec-title">图例</div>
+      <div class="legend">
+        <div><i style="background:#7d99a3"></i>浅滩 · 泽 · 海 · 渊</div>
+        <div><i style="background:#a3ae83"></i>草原 · 芳甸</div>
+        <div><i style="background:#6b8460"></i>林 · 密林</div>
+        <div><i style="background:#dccb9c"></i>荒漠 · 汀</div>
+        <div><i style="background:#978d79"></i>石 · 山 · 峻岭</div>
+        <div><i style="background:#f0ece0"></i>雪峰</div>
+        <div><i style="background:#c1573b"></i>熔岩 · 焦土</div>
+        <div><i style="background:radial-gradient(circle,#78c4c4,#3f5f7d)"></i>灵脉（地气上涌）</div>
+        <div><i style="background:#9c8f6a"></i>宗门地盘（淡色晕）</div>
+        <div><i style="background:#8a6a44"></i>聚落 · 田垄</div>
+      </div>
+
+      <div class="sec-title">操作</div>
+      <div class="keys">
+        空格 暂停 / 继续<br />
+        1-6 时间倍速<br />
+        [ ] 笔刷大小<br />
+        G 网格 · V 立体<br />
+        H 回到全图<br />
+        Ctrl+Z 撤销<br />
+        右键拖拽 平移
+      </div>
+    </aside>
+  </div>
+
+  <footer class="bottom">
+    <div class="cluster">
+      <button class="btn" id="inkBtnPause">⏸ 暂停</button>
+      <div class="cluster" id="inkSpeedBar">
+        <button class="btn" data-speed="0">停</button>
+        <button class="btn" data-speed="1">缓</button>
+        <button class="btn on" data-speed="2">常</button>
+        <button class="btn" data-speed="3">疾</button>
+        <button class="btn" data-speed="4">迅</button>
+        <button class="btn" data-speed="5">飞</button>
+      </div>
+    </div>
+
+    <div class="cluster">
+      <label for="inkBrushRange">笔刷</label>
+      <input type="range" id="inkBrushRange" min="0" max="6" step="1" value="3" />
+      <span class="pill" id="inkBrushLabel" style="padding:3px 9px">半径 4</span>
+    </div>
+
+    <div class="cluster">
+      <button class="btn" id="inkBtnUndo">↶ 撤销</button>
+      <button class="btn on" id="inkBtnRelief">立体</button>
+      <button class="btn" id="inkBtnGrid">网格</button>
+      <button class="btn" id="inkBtnFit">全图</button>
+    </div>
+
+    <div class="cluster">
+      <label for="inkPresetSelect">幅面</label>
+      <select id="inkPresetSelect">
+        <option value="small">小景 200×128</option>
+        <option value="medium" selected>中堂 288×180</option>
+        <option value="large">长卷 384×240</option>
+      </select>
+      <input type="number" id="inkSeedInput" min="0" step="1" placeholder="种子" />
+      <button class="btn" id="inkBtnRegen">重新开天</button>
+      <button class="btn danger" id="inkBtnClear">随机种子</button>
+    </div>
+
+    <div class="cluster">
+      <select id="inkSlotSelect"></select>
+      <button class="btn" id="inkBtnSave">存档</button>
+      <button class="btn" id="inkBtnLoad">读档</button>
+      <button class="btn" id="inkBtnExport">导出</button>
+      <button class="btn" id="inkBtnImport">导入</button>
+      <input type="file" id="inkImportFile" accept=".json" style="display:none" />
+    </div>
+  </footer>
+</div>
+<script type="module" src="./src/inkbox/main.js"></script>
+</body>
+</html>
