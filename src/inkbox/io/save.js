@@ -27,7 +27,7 @@ import { APP, WORLD_PRESETS } from '../core/config.js';
 import { World } from '../world/World.js';
 import { recomputeAll, recomputeQi } from '../world/terrain.js';
 import { DAO_PATHS, TRIBULATION_OMENS } from '../core/cultivation.js';
-import { MANUALS } from '../core/lore.js';
+import { MANUALS, NETHER_TECHNIQUES } from '../core/lore.js';
 // 上界（第二个世界，v8）。两个 import 各自只为一件事：
 //   · `generateUpperWorld`  —— 读档时重建上界（v7 老档降级、以及重算 temp/moist）；
 //   · `recomputeUpperQi`    —— 上界专用灵气补算。
@@ -54,6 +54,13 @@ import { MANUALS } from '../core/lore.js';
 //    · 更别把 `data.nether.seed`（已派生的幽冥种子）喂回去——异或自逆 → 退回凡间种子。
 import { generateUpperWorld, recomputeUpperQi } from '../world/worldgenUpper.js';
 import { generateNetherWorld } from '../world/worldgenNether.js';
+// 凡间鬼影（D6-3 工程包 B）。只 import 一个**读侧还原**函数：
+//   · 写侧在 `serializeWorld` 里**逐字段显式写**（22 键，键集 = `WRAITH_TEMPLATE`）；
+//   · 读侧交给 `restoreWraiths`——它按模板逐键兜底、丢弃野键，于是「形状」只有
+//     `sim/wraiths.js` 一处定义。若在这里手抄一份兜底表，往模板加字段时**必然**
+//     漏一处，而且漏处**不报错**（那个字段读档后恒为默认值）。
+// ⚠️ 依赖方向 `io/save.js → sim/wraiths.js → core/*`，不成环（wraiths.js 不 import io）。
+import { restoreWraiths } from '../sim/wraiths.js';
 // 压缩层。只在这一处 import：`serializeWorld` / `deserializeWorld` **保持同步不变**，
 // 所以 inkbox-smoke / inkbox-save-equiv / 几个探针都不受影响——异步只到存储边界为止。
 // 见 io/codec.js 头注释：压缩不是优化，是「三界并存能不能存下」的前置条件。
@@ -181,12 +188,31 @@ import {
 //          记一笔明确的版本边界，便于后来人定位「哪一档开始有 nether」。
 //          已复核：全 `src/inkbox` 里读 `v` 的地方**仍然只有一处**——
 //          `restoreWorldState` 的 `(data.v || 1) < 2`，不按 v2..v10 分叉。
-const SAVE_VERSION = 10;
+// v11 内追加（D6-3 工程包 B · 凡间鬼影，见 sim/wraiths.js）：凡间 payload 加两个
+//          **世界级**字段 `wraiths`（数组）与 `wraithLog`（只有 `dissolved` 一键）。
+//          **不动实体行**——鬼影**不在 `world.entities` 里**（理由见 wraiths.js
+//          头注释：鬼若进 `world.entities` 会被 `stepCultivation` 的觉醒骰 / 修炼 /
+//          飞升整条链吃掉，不报错且污染上界人口账），所以它们有自己的容器与自己的
+//          22 字段形状，没有「新列追加在行尾」的下标风险。
+//          上界与幽冥 payload **刻意不含**这两个键（缝开在凡间、鬼爬进凡间，
+//          见两处 `serialize*World` 的 delete 段）。
+//          为什么**不升版本号**：与 v8 内追加 `rifts` 那段**逐字同理由**——「新增
+//          世界级键 + 读侧兜底」对老档天然向后兼容（缺键 → 空数组 / 全零账本），
+//          升号只会误导后来人以为存在 v12 迁移代码。已复核：读 `v` 处仍只有一处。
+const SAVE_VERSION = 11;
 
 // 读档时的查表：道途只存 key、功法只存名字，靠这两张表还原成完整对象。
 // 用 Map 而不是每次 find()，是因为读档可能要还原上千个生灵。
 const DAO_BY_KEY = new Map(DAO_PATHS.map((p) => [p.key, p]));
-const MANUAL_BY_NAME = new Map(MANUALS.map((m) => [m.name, m]));
+// ⚠️ **两张功法表都要进这张查表**：凡间的 `MANUALS` 与幽冥的 `NETHER_TECHNIQUES`
+// （D6-3 工程包 C）。功法在存档里**只存名字**（见 `:320` 与 `restoreEntity` 的
+// `row[31]` 还原段），所以任何**能进 `entity.techniques` 的名字**都必须在这张表里
+// ——漏一张的后果是「那门功法读档后静默消失」，而且**不报错**（`if (manual)` 静默跳过）。
+// 幽冥功法经由「凡人捡到幽冥法宝即习得」（`artifacts.js` 的 `giveTo`）进 `techniques`，
+// 所以这张表必须认得它们。
+const MANUAL_BY_NAME = new Map(
+  [...MANUALS, ...NETHER_TECHNIQUES].map((m) => [m.name, m]),
+);
 const OMEN_BY_KEY = new Map(TRIBULATION_OMENS.map((o) => [o.key, o]));
 
 /**
@@ -373,6 +399,40 @@ export function serializeWorld(world, meta = {}) {
       //    `row[46..48]`（转世）的下标全顶歪，而**那种错不报错**。
       // ⚠️ 老档（62 列）这一格是 `undefined`，读侧必须逐键兜底。
       e.restUntil ?? -1e9,
+      // ── 幽冥鬼魂（v11 内追加，row[63..67]）──────────────────
+      // 契约 reports/d5/BATCH2-DESIGN.md §三。非幽冥实体（凡间 / 上界）这五格
+      // 一律落到**稳定默认值**，所以凡间与上界的存档形状**一格没变**。
+      //   · `soulKind`     —— `'ghost'`（普通鬼魂）| `'ghostCultivator'`（鬼修）| null。
+      //     这是「这个实体是不是幽冥鬼魂」的唯一开关，渲染与 stepNether 都读它；
+      //   · `ghostOf`      —— **身份快照对象**（不是 id）。`ref` 用 `mortal:<id>` 字符串，
+      //     理由同 v8 的 `fromMortal` / v6 的 `possessedBy`：凡间 id 与幽冥 / 上界 id
+      //     **同段会撞号**，存裸 id 就是指向别人的悬垂指针，且**不报错**；
+      //   · `ghostRancor`  —— 积怨（鬼修升阶燃料；普通鬼魂恒 0）；
+      //   · `ghostDecayDay`—— 消散日（`world.day` 坐标）。`-1e9` = 永不消散；
+      //   · `soulBind`     —— 魂池链接（**仅 linger 普通鬼魂有**，指向魂池里那条
+      //     「这只鬼在等的魂」，**不是**凡间实体 id）。
+      //     ⚠️ 它与 row[47] 的 `soulId`（「这一世由哪个神魂**转来**」= 来源）**不是一回事**：
+      //        那是**来源**，这是**绑定**。2026-09-23 曾共用 `soulId` 一名，被判定为
+      //        「同名不同义 = 口径混淆」而拆开——**别再合并回去**。两者都是值不是 id 引用，
+      //        也都不指向凡间实体。
+      // ⚠️ 只能追加在**行尾**：中间插一列会把 `row[45]`（关系网）等下标全顶歪，
+      //    而**那种错不报错**（同上面 row[62] 的警告）。
+      // ⚠️ 老档（63 列）这五格是 `undefined`，读侧必须逐键兜底。
+      e.soulKind ?? null,
+      e.ghostOf ?? null,
+      num(e.ghostRancor, 0),
+      num(e.ghostDecayDay, -1e9),
+      e.soulBind ?? null,
+      // ── 不良状态印记（D6-3 工程包 D，row[68]）──────────────────
+      // 存的是**快照对象** `{ ghostName, ghostLevel, day, until, mode }`，不是 id：
+      // 跨位面身份带世界限定符（鬼修的 id 在幽冥段 `NETHER_ID_BASE`），
+      // 存裸 id 就是悬垂指针（同 v6 `possessedBy` / v8 `fromMortal` 的理由）。
+      //   · `mode: 'possess'` + `until: -1` = 被鬼修真夺舍（永久）；
+      //   · `mode: 'haunt'`   + `until > day` = 被高阶鬼修暂时附身（行为锁读到它）。
+      // ⚠️ 只能追加在**行尾**：中间插一列会把 `row[45]`（关系网）等下标全顶歪，
+      //    而**那种错不报错**（同 row[62] / row[63..67] 的警告）。
+      // ⚠️ 老档（68 列）这一格是 `undefined`，读侧必须逐键兜底。
+      e.possessionScar || null,
     ]),
     villages: world.villages.map((v) => ({
       id: v.id, x: v.x, y: v.y, faction: v.faction, name: v.name,
@@ -424,7 +484,7 @@ export function serializeWorld(world, meta = {}) {
     artifacts: world.artifacts || [],
     nextArtifactId: world.nextArtifactId || 1,
     artifactLog: world.artifactLog
-      || { forged: 0, found: 0, inherited: 0, broken: 0, spirit: 0, spiritLost: 0, decayed: 0, left: 0 },
+      || { forged: 0, found: 0, inherited: 0, broken: 0, spirit: 0, spiritLost: 0, decayed: 0, left: 0, netherIn: 0, netherOut: 0 },
     ascended: (world.ascended || []).slice(-120),
     plane: world.plane || 'mortal',
     // ── 转世 ──
@@ -456,13 +516,20 @@ export function serializeWorld(world, meta = {}) {
     //
     // 逐字段显式写，**不展开整个对象**：本项目的规矩是「写什么由代码决定，
     // 不由对象当前恰好有哪些键决定」。裂缝记录是**纯数据、无任何 id 引用**
-    // （铁律三），字段恰好是契约那 9 个：id / x / y / strength / openedDay /
-    // age / closedDay / leaked / crossed。
+    // （铁律三），字段恰好是契约那 10 个：id / x / y / strength / openedDay /
+    // age / closedDay / leaked / crossed / targetPlane。
     //
     // ⚠️ **`age` 必须存**（契约 C1.1）：它是「这条缝在**视界开启期间**累积的
     // 天数」，是玩家历次开关视界的函数——`world.day` 与 `openedDay` 都推不出它，
     // 所以它**不是派生量**，进档不违反铁律二。不存的话读档后每条缝都「返老还童」
     // 回到 age 0，寿命从头再算，玩家读一次档就能把一条快闭合的缝续命。
+    //
+    // ⚠️ **`targetPlane` 必须存**（D6-2 工程包 B2）：它是「这条缝连的是上界
+    // 还是幽冥」，**推不出来**——一条缝能活 30–40 年，玩家关掉视界以后它仍然
+    // 必须知道自己原本连接哪里（裂缝的行为按它分流，见 `sim/rifts.js`）。
+    // 不存的话读档后所有幽冥缝都会退回 `undefined`，而 `stepRifts` 把
+    // `undefined` 当**上界缝**处理（那是老档的兼容判据）——于是读一次档，
+    // 一世界的幽冥缝就集体改成往上界漏物，**静默且不可逆**。
     //
     // ⚠️ 刻意**不存** `radius` 与 `peakDay`：两者都是 `age` 加公式的推导量
     //    （铁律二：能现算的一律现算），半径由 `rifts.js` 的
@@ -481,6 +548,10 @@ export function serializeWorld(world, meta = {}) {
       closedDay: num(r.closedDay, -1),
       leaked: num(r.leaked, 0),
       crossed: num(r.crossed, 0),
+      // 归一成 `'upper'` / `'nether'` 两个字面量之一：写侧就把形状钉死，
+      // 免得读侧兜底与写侧形状不一致（save-equiv 的键集判据会红）。
+      // 缺键（手工构造的测试记录）→ `'upper'`，与 `openRifts` 的归一同一口径。
+      targetPlane: r.targetPlane === 'nether' ? 'nether' : 'upper',
     })),
     nextRiftId: world.nextRiftId || 1,
     // 显式补齐五个键，不写 `world.riftLog || {...}`：老形状（只有 4 个键）
@@ -492,6 +563,59 @@ export function serializeWorld(world, meta = {}) {
       leaked: num(world.riftLog && world.riftLog.leaked, 0),
       crossed: num(world.riftLog && world.riftLog.crossed, 0),
       lost: num(world.riftLog && world.riftLog.lost, 0),
+    },
+    // ── 凡间鬼影（D6-3 工程包 B）──────────────────────────────
+    // 自幽冥缝爬入凡间的鬼。**存在凡间**（同 `rifts` 的理由：缝开在凡间边缘），
+    // 所以这两个键也**刻意不进上界 / 幽冥 payload**（见两处 `serialize*World`）。
+    //
+    // ⚠️ 这批实体**不在 `world.entities` 里**（理由见 `sim/wraiths.js` 头注释：
+    //    鬼若进 `world.entities` 会被 `stepCultivation` 的觉醒骰 / 修炼 / 飞升
+    //    整条链吃掉，不报错且污染上界人口账）。所以它**不能**复用上面那套
+    //    `entities` 的 68 列行数组——这里逐字段显式写。
+    //
+    // ⚠️ **键集契约 = `sim/wraiths.js` 的 `WRAITH_TEMPLATE`**（22 个键）。
+    //    读侧不手抄兜底表，而是调 `restoreWraiths` 让模板单源定义形状——
+    //    往模板加字段时只有一处要改，不会出现「写了但没读回来」的静默漏键。
+    //    ⚠️ 往模板加字段后**必须回来这里补一行**（写侧是显式的，故意如此：
+    //       「写什么由代码决定，不由对象当前恰好有哪些键决定」）。
+    //
+    // ⚠️ `id` 必须存，且**保留幽冥段的值**（`NETHER_ID_BASE` 段）：它是
+    //    「这只鬼从幽冥来的」这件事在数据上的唯一痕迹，也是「凡间鬼影容器
+    //    与 `world.entities` 结构上不相交」的依据（铁律三）。
+    // ⚠️ `ghostOf` 是**身份快照对象**（全是值、零 id 引用，同幽冥实体的
+    //    `row[64]`）：整存，不存引用。存引用会在读档后指向一个已经不存在的对象。
+    // ⚠️ `dissolveDay` 是 `world.day` 坐标下的**绝对日**（锚在 `climbedDay`）。
+    //    必须存：它是「这只鬼在凡间还能飘多久」，读档后 `world.day` 会继续走，
+    //    存绝对日才能让两条轴对得上，不会「读一次档续命」。
+    wraiths: (world.wraiths || []).map((e) => ({
+      id: num(e.id, 0),
+      sp: e.sp,
+      x: e.x,
+      y: e.y,
+      tx: e.tx,
+      ty: e.ty,
+      vx: num(e.vx, 0),
+      vy: num(e.vy, 0),
+      hp: num(e.hp, 0),
+      maxHp: num(e.maxHp, 0),
+      level: num(e.level, 0),
+      soulKind: e.soulKind || 'ghost',
+      ghostOf: e.ghostOf || null,
+      name: e.name || null,
+      rancor: num(e.rancor, 0),
+      fromRiftId: num(e.fromRiftId, 0),
+      climbedDay: num(e.climbedDay, 0),
+      dissolveDay: num(e.dissolveDay, 0),
+      state: e.state || 'wander',
+      timer: num(e.timer, 0),
+      anim: num(e.anim, 0),
+      face: num(e.face, 1),
+    })),
+    // 账本**只有一个键**（`dissolved`，累计消散数）。刻意不存「累计来过」——
+    // 它 = `wraiths.length + dissolved`，**现算**（铁律二）。逐键显式写，
+    // 不写 `world.wraithLog || {...}`（对象存在却少键时会漏，同上面 riftLog）。
+    wraithLog: {
+      dissolved: num(world.wraithLog && world.wraithLog.dissolved, 0),
     },
     // ── 魂路累计账本（v9，见 sim/reincarnation.js 的 ensureSoulLog）──
     // 五条魂路里 `ghost`（成鬼修）/ `wraith`（怨魂化）/ `gone`（魂火散尽）
@@ -517,7 +641,19 @@ export function serializeWorld(world, meta = {}) {
     // （2026-09-17 修：这一行最初漏了，是 save-equiv 的「世界级五样」判据抓出来的。
     //   同一次编辑里 deserialize 侧落地了、serialize 侧没有——两个编辑报 success，
     //   实际只写进去一个。**改动存档格式后必须 grep 复核两侧都在。**）
-    possessionLog: world.possessionLog || { succeeded: 0, failed: 0, suspected: 0 },
+    //
+    // ⚠️ **逐键显式写，不写 `world.possessionLog || {...}`**（同上面 `soulLog` 的理由）：
+    //    D6-3 工程包 D 追加了 `crossPlane` / `haunted` 两键，而老世界的
+    //    `possessionLog` 只有三键。用 `|| {...}` 兜底的话，对象**存在却少键**时
+    //    会原样写出老形状 ⇒ 写侧与读侧键集不一致，save-equiv 判据红。
+    //    写侧就把它钉成 5 键。
+    possessionLog: {
+      succeeded: num(world.possessionLog && world.possessionLog.succeeded, 0),
+      failed: num(world.possessionLog && world.possessionLog.failed, 0),
+      suspected: num(world.possessionLog && world.possessionLog.suspected, 0),
+      crossPlane: num(world.possessionLog && world.possessionLog.crossPlane, 0),
+      haunted: num(world.possessionLog && world.possessionLog.haunted, 0),
+    },
     // ── 逝者名录 ──
     // 每个离世者一份不可失效的快照 + 累计账本，反推不出来（见 sim/necrology.js）。
     // 不存的话读档后「一个人死了，他的一生就再也翻不出来了」——
@@ -544,6 +680,10 @@ export function serializeWorld(world, meta = {}) {
     // 也不进 `WORLD_NOT_SAVED`（它不是推导量）。
     // 封顶在 `World.milestone()` 里（MILESTONE_CAP），这里同样不再截。
     milestones: world.milestones || [],
+    // ── 世界事件生命周期（v11）─────────────────────────────
+    // WorldEvents 的倒计时、活动灾祸和结局历史属于可变的世界状态；旧档没有时
+    // 由 Life 创建一套新计时器。这里存快照而不存运行时控制器，避免保存 world 引用。
+    worldEvents: world.worldEventState || null,
     // ── 上界（v8）──────────────────────────────────────────
     // 凡间 world 上挂着 `world.upper` 这个引用时才写这一块（main.js 的 newWorld 里设）。
     //
@@ -711,11 +851,27 @@ function serializeUpperWorld(upper) {
   delete payload.rifts;
   delete payload.nextRiftId;
   delete payload.riftLog;
+  // 凡间鬼影同理（D6-3 工程包 B）：缝开在凡间，鬼从缝爬进**凡间**——
+  // 上界既没有缝也没有爬进来的鬼，这两个键在上界恒空。留着就是「上界也跑
+  // 幽冥缝」这个不存在的语义（同上面三条裂缝字段）。读侧靠 `restoreWorldState`
+  // 兜底成空数组 / `{dissolved:0}`，两侧形状各自自洽。
+  delete payload.wraiths;
+  delete payload.wraithLog;
   // 魂路累计账本也是**凡间专属**：上界从不调 `enterNether`，一条魂路都不跑，
   // 这本账在上界恒为零。留着会写进一个「上界也转世」的**不存在**的语义
   // （同上面三条裂缝字段的理由），所以显式删掉；读侧靠 `restoreWorldState`
   // 兜底成五键全零，两侧形状各自自洽。
   delete payload.soulLog;
+  // 夺舍累计账本同理（D6-3 工程包 D 复核）：上界不跑 `stepPossession`
+  // （`resetUpperSystems` 第 2 条已把它钉成全零），而凡间那侧新加的
+  // `crossPlane` / `haunted` 更是「鬼修自幽冥缝夺舍**凡人**」的子账——上界既无
+  // 鬼修、也无缝，这两键在上界恒零。留着就是「上界也跑跨位面夺舍」这个
+  // **不存在**的语义（同上面 `soulLog` 的理由），所以显式删掉。
+  //
+  // ⚠️ 这一条**此前漏删**：`soulLog` 与 `possessionLog` 是同一类东西（某界不跑
+  //    的累计账本、在 `reset*Systems` 里被显式归零），却只删了前者。读侧靠
+  //    `restoreWorldState` 兜底成五键全零，两侧形状各自自洽。
+  delete payload.possessionLog;
   return payload;
 }
 
@@ -787,23 +943,28 @@ function deserializeUpperWorld(data, mortalSeed) {
 //      这是 §8.9 裁决 8.1① 的直接后果；
 //   2. **没有**专用的灵气补算函数——幽冥的 `qi` 走凡间那套 `qiAt`
 //      （阴气在 `veg` 层，不在 `qi` 层），所以 `restoreWorldState` 用默认参数就是对的；
-//   3. 专属字段清单 `NETHER_ONLY_KEYS` **现在是空的**（理由见那个常量）。
+//   3. 专属字段清单 `NETHER_ONLY_KEYS` 现含 `popLog`（幽冥世界级账本，见那个常量）。
 
 /**
  * 幽冥**独有**、凡间与上界都没有的世界级字段。
  *
- * ⚠️ **现在是空数组，这是刻意的，不是漏写。** 8-B 只做地形：幽冥还没有自己的
- * 账本——§8.5 判据 1 要的 `nether.popLog.ghostBorn` 是 8-C 的事，
- * §8.7 的压力三来源是 8-E 的事。本项目对「造一个没人写、没人读的字段」的立场
- * 是明确的：那是「算出来了但没人读」的死分支，只会让读档形状与真实状态对不上
- * （同 `UPPER_ONLY_KEYS` 里 `realmCap` / `bottlenecks` 被删掉的理由）。
+ * ⚠️ 8-B 时这里是空数组（只做地形）；8-C 落账本时按原计划**只加键名**即可——
+ * 写侧（`serializeNetherWorld`）与读侧（`deserializeNetherWorld`）都遍历这个清单，
+ * 所以加一处就两侧同源，不必再改本文件结构。
  *
- * 所以这里**保留机制、留空清单**：8-C 落账本时，只要把键名加进这个数组，
- * 写侧与读侧**同时**就覆盖到了（两侧都遍历它），不必再改本文件的结构。
+ * 现含 `popLog`（幽冥世界级账本，契约 reports/d5/BATCH2-DESIGN.md §四）：
+ *   `{ ghostBorn, cultivatorBorn, ghostDied, cultivatorAdvanced, evicted }`。
+ * 初值建在 `world/worldgenNether.js` 的 `resetNetherSystems`（与 `ensureUpperPopLog`
+ * 同款纪律：形状只有一处定义）。⚠️ 与上界的 `popLog` **不撞车**——两者是不同
+ * `World` 实例上的不同对象。
+ *
+ * 本项目对「造一个没人写、没人读的字段」的立场是明确的：那是「算出来了但没人读」的
+ * 死分支，只会让读档形状与真实状态对不上（同 `UPPER_ONLY_KEYS` 里 `realmCap` /
+ * `bottlenecks` 被删掉的理由）。`popLog` 已由生成侧写入、面板 / 探针读取，故登记。
  * ⚠️ 加键时**两侧必须同源**——这个清单就是那个「同源」的唯一处，
  *    别在写侧或读侧各写一份字面量（那正是 `ensureUpperPopLog` 收敛掉的那类坑）。
  */
-const NETHER_ONLY_KEYS = [];
+const NETHER_ONLY_KEYS = ['popLog'];
 
 /**
  * 幽冥块的序列化。
@@ -834,23 +995,32 @@ function serializeNetherWorld(nether) {
 
   // 幽冥专有字段：**存在才写**，不写默认值（理由同 `serializeUpperWorld`：
   // 一律写默认值会让 payload 里出现一个 world 上根本没有的键，读档后凭空长出来，
-  // 那比缺键更难查）。清单现在是空的，所以这一段是**实践中的空操作**——
-  // 留着是为了让 8-C 加键时只改 `NETHER_ONLY_KEYS` 一处，不必再动写侧。
+  // 那比缺键更难查）。清单现含 `popLog`（幽冥世界级账本）——它是 `resetNetherSystems`
+  // 建出来的真实状态，一定存在，所以这一段会把它写进 payload；读侧对称地还原。
   for (const key of NETHER_ONLY_KEYS) {
     if (nether[key] !== undefined) payload[key] = nether[key];
   }
 
-  // 凡间专属的四个键：幽冥一样不跑，显式删掉。留着会让 payload 平白多出几个
+  // 凡间专属的那几类键：幽冥一样不跑，显式删掉。留着会让 payload 平白多出几个
   // **恒空**的键，读档后 `restoreWorldState` 又把它们还原成空——两份空状态互相印证，
-  // 看着无害，实则是「幽冥也跑裂缝 / 也转世」这个**不存在**的语义被写进了存档格式，
+  // 看着无害，实则是「幽冥也跑裂缝 / 也转世 / 也夺舍」这个**不存在**的语义被写进了存档格式，
   // 后来人会照着它去接线（与「上界只存 6 层」是同一类裁剪）。
   //   · `rifts` / `nextRiftId` / `riftLog` —— 裂缝开在**凡间**（§4.2）；
+  //   · `wraiths` / `wraithLog`            —— 凡间鬼影（D6-3 工程包 B）：
+  //     鬼自凡间的缝爬入**凡间**，幽冥那一侧只负责「送出去」，不持有它们；
   //   · `soulLog`                          —— 魂路账本记在**凡间**那侧
-  //     （§8.2「魂池不搬家」：`enterNether` 由凡间的 `Life` 调，幽冥实例上恒为零）。
+  //     （§8.2「魂池不搬家」：`enterNether` 由凡间的 `Life` 调，幽冥实例上恒为零）；
+  //   · `possessionLog`                    —— 夺舍账本记在**凡间**那侧
+  //     （`resetNetherSystems` 第 2 条已把它钉成全零；D6-3 工程包 D 新加的
+  //     `crossPlane` / `haunted` 是「鬼修自幽冥缝夺舍凡人」的子账，由凡间的
+  //     `stepNetherRift` 记账——幽冥那一侧只负责「送出鬼修」，不记这笔账）。
   delete payload.rifts;
   delete payload.nextRiftId;
   delete payload.riftLog;
+  delete payload.wraiths;
+  delete payload.wraithLog;
   delete payload.soulLog;
+  delete payload.possessionLog;
   return payload;
 }
 
@@ -894,7 +1064,7 @@ function deserializeNetherWorld(data, mortalSeed) {
   // 第三个参数**不传**：幽冥没有专用灵气公式，默认的 `recomputeQi`（凡间那套）就是对的。
   restoreWorldState(nether, data);
 
-  // 幽冥专有那几样（清单现在是空的）。写侧「存在才写」，读侧对称地「存在才还原」——
+  // 幽冥专有那几样（清单现含 `popLog`）。写侧「存在才写」，读侧对称地「存在才还原」——
   // 否则会造出「序列化结果里没有、world 上却有」的键，读档后凭空长出来。
   for (const key of NETHER_ONLY_KEYS) {
     if (data[key] !== undefined) nether[key] = data[key];
@@ -944,7 +1114,7 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
   world.artifacts = Array.isArray(data.artifacts) ? data.artifacts : [];
   world.nextArtifactId = data.nextArtifactId || 1;
   world.artifactLog = data.artifactLog
-    || { forged: 0, found: 0, inherited: 0, broken: 0, spirit: 0, spiritLost: 0, decayed: 0, left: 0 };
+    || { forged: 0, found: 0, inherited: 0, broken: 0, spirit: 0, spiritLost: 0, decayed: 0, left: 0, netherIn: 0, netherOut: 0 };
   world.ascended = Array.isArray(data.ascended) ? data.ascended : [];
   world.souls = Array.isArray(data.souls) ? data.souls : [];
   world.nextSoulId = data.nextSoulId || 1;
@@ -976,6 +1146,13 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
   //     `lost` 永久是 `undefined`（`undefined + 1 = NaN` 那一类坑），
   //     长测的「裂缝吞了多少人」读数永远缺一项，而且**不报错**。
   //   · 单条裂缝**没有 `age` 键**（本契约之前的档）→ 按绝对时间估算，见下。
+  //   · 单条裂缝**没有 `targetPlane` 键**（D6-2 工程包 B 之前的档）→ 兜 `'upper'`。
+  //     这是**诚实缺省**，不是猜：那个契约之前只有上界裂缝这一种可能
+  //     （`openRifts` 内部只有上界逻辑），所以「缺键 = 上界缝」是历史事实。
+  //     ⚠️ 兜 `'upper'` 与 `'undefined'` 的差别是**承重的**：`stepRifts` 的
+  //     冻结判据是 `rift.targetPlane === 'nether'`，两者在这里行为相同，
+  //     但存档里的**形状**不同（写侧恒写 10 键）。兜底让老档读进来就是完整
+  //     10 键形状，与写侧一致——否则 save-equiv 的键集判据会红在 `rifts` 上。
   //
   // ⚠️ **`age` 的老档兜底必须是「按绝对时间估算」，不能兜成 0**（契约 C1.1）：
   // `age` 是「视界开启期间累积的天数」，老档里没有这个键，但它有
@@ -998,6 +1175,9 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
       closedDay: num(r.closedDay, -1),
       leaked: num(r.leaked, 0),
       crossed: num(r.crossed, 0),
+      // 老档缺键 → `'upper'`（诚实缺省，理由见上面那段）。认不出别的值也归 `'upper'`：
+      // 与 `openRifts` 的归一同一口径，两边都只有两个字面量。
+      targetPlane: r.targetPlane === 'nether' ? 'nether' : 'upper',
     }))
     : [];
   world.nextRiftId = data.nextRiftId || 1;
@@ -1026,11 +1206,28 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
     const id = world.rifts[i].id || 0;
     if (id >= world.nextRiftId) world.nextRiftId = id + 1;
   }
+  // ── 凡间鬼影（D6-3 工程包 B）────────────────────────────
+  // 老档（本包之前）没有这两项：确实一只鬼都没爬出来、账本确实为零——零是
+  // 诚实的缺省值，不是「猜」（同上面 `rifts` / `dead` 的降级形状）。
+  // ⚠️ 形状**不在本文件手抄**：交给 `restoreWraiths`（`sim/wraiths.js`），
+  //    它按 `WRAITH_TEMPLATE` 逐键兜底、丢弃野键。写侧是显式的 22 字段，
+  //    读侧是模板单源——两边都由「模板」这一份真相约束，不会各写一份形状。
+  // ⚠️ 同理**不写** `data.wraithLog || {dissolved:0}`：逐键兜底，缺哪个补哪个。
+  restoreWraiths(world, data.wraiths);
+  world.wraithLog = { dissolved: num(data.wraithLog && data.wraithLog.dissolved, 0) };
   // 夺舍累计账本。老档（v6 之前）没有这一项，兜底成全零——不是「猜」，
   // 是「确实不知道」：那些世界里的夺舍次数在存档的那一刻就没被记下来，
   // 补不出来。零是诚实的缺省值。
-  world.possessionLog = data.possessionLog
-    || { succeeded: 0, failed: 0, suspected: 0 };
+  // ⚠️ **逐键兜底**（同写侧的理由）：D6-3 工程包 D 追加的 `crossPlane` / `haunted`
+  //    在本次改动之前写下的档里不存在，缺哪个补哪个——不能整体 `|| {...}`，
+  //    那样「对象存在却少键」会漏补。
+  world.possessionLog = {
+    succeeded: num(data.possessionLog && data.possessionLog.succeeded, 0),
+    failed: num(data.possessionLog && data.possessionLog.failed, 0),
+    suspected: num(data.possessionLog && data.possessionLog.suspected, 0),
+    crossPlane: num(data.possessionLog && data.possessionLog.crossPlane, 0),
+    haunted: num(data.possessionLog && data.possessionLog.haunted, 0),
+  };
   // 逝者名录（v7）。老档（v7 之前）没有这两项：名录确实没有内容，账本确实为零——
   // 零是诚实的缺省值，不是「猜」。注意 `data.X || 默认值` 会把「存了默认值」
   // 与「根本没这个键」伪装成同一个结果，所以老档判据必须同时查**读回来的值**
@@ -1138,6 +1335,8 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
   // 编年史那 400 条还在，所以老档读回来只是「大事记面板一开始是空的，
   // 往后跑才会长出来」，而不是「历史被抹掉了」。
   world.milestones = Array.isArray(data.milestones) ? data.milestones : [];
+  world.worldEventState = data.worldEvents && data.worldEvents.version === 1
+    ? data.worldEvents : null;
   world.busanzi = data.busanzi
     ? {
       met: !!data.busanzi.met,
@@ -1234,6 +1433,24 @@ function restoreEntity(row, id) {
     // 兜成 `-1e9`（= 从没养过伤）。**要真的写进对象**——只读不写就成了
     // 「活对象有键、读档后缺键」，save-equiv 的键集并集判据当场红。
     restUntil: row[62] ?? -1e9,
+    // ── 幽冥鬼魂（v11 内追加，row[63..67]）──────────────────────
+    // 老档（63 列及以前）这几格是 `undefined`，逐键兜成新实体的初值——
+    // 凡间 / 上界实体读回来就是「不是鬼魂」（`soulKind === null`），与写侧默认值对称。
+    // ⚠️ **要真的写进对象**（理由同上面 restUntil）：只读不写就成了
+    //    「活对象有键、读档后缺键」，save-equiv 的键集并集判据当场红。
+    soulKind: row[63] ?? null,
+    ghostOf: row[64] || null,
+    ghostRancor: row[65] ?? 0,
+    ghostDecayDay: row[66] ?? -1e9,
+    // 列 67 的 `soulBind`（魂池链接）。**这个键必须写**：与 row[47] 的 `soulId`
+    // 曾经同名，那时若在这里补键会**后者覆盖前者**（老档 row[67]=undefined→null，
+    // 把 row[47] 的「转世来源」静默冲成 null）。2026-09-23 已把列 67 改名为
+    // `soulBind`，名字不再撞车，所以可以、也必须在这里逐键兜底。
+    soulBind: row[67] ?? null,
+    // 不良状态印记（row[68]，D6-3 工程包 D）。老档（68 列及以前）这一格是
+    // `undefined`，兜成 `null`（= 没有印记）。**要真的写进对象**——只读不写就成了
+    // 「活对象有键、读档后缺键」，save-equiv 的键集并集判据当场红（同 `restUntil`）。
+    possessionScar: row[68] || null,
     relations: new Map(),
   };
   // 道途只存了 key，靠 DAO_PATHS 还原成完整对象（含 name/evil/stages/thresholds）。
@@ -1276,13 +1493,17 @@ function restoreLegacyEntity(row, id) {
     incarnation: 1, soulId: null, pastLife: null,
     // v6 那三列。v1 档当然也没有——但**键必须存在**：
     // 缺键就是「只在一侧存在的字段」，save-equiv 那条判据会红。
-    log: [], possessedBy: null, nascentEscapeUsed: false,
+    log: [], possessedBy: null, possessionScar: null, nascentEscapeUsed: false,
     // 飞升者来历（v8 内追加）。v1 档当然没有，但**键必须存在**——
     // 缺键就是「只在一侧存在的字段」，save-equiv 那条判据会红（同上面 v6 那三列）。
     fromMortal: false, fromSect: null,
     // 养伤（row[62]，2026-09-22 追加）。v1 档当然没有，但**键必须存在**——
     // 缺键就是「只在一侧存在的字段」，save-equiv 那条判据会红。
     restUntil: -1e9,
+    // 幽冥鬼魂（v11 内追加，row[63..67]）。v1 档当然没有，但**键必须存在**——
+    // 缺键就是「只在一侧存在的字段」（同上面 v6 / v8 那两组）。
+    // `soulBind`（列 67 的魂池链接）与上面转世那三列的 `soulId`（来源）**不是一回事**。
+    soulKind: null, ghostOf: null, ghostRancor: 0, ghostDecayDay: -1e9, soulBind: null,
     // v1 档连修仙层都没有，家世当然也没有
     surname: null, parentA: 0, parentB: 0, clan: 0, gen: 0,
     heritageQ: -1, heritageB: null, heritageM: null,

@@ -104,10 +104,21 @@
 // 见上面「坏掉的第四处」。`possessedBy` 里没有任何 id，所以它**永远不可能悬垂**；
 // 下游要显示「此人受残魂影响」，读快照里的 `name` / `level` 就够了。
 
-import { clamp } from '../core/noise.js';
+import { clamp, hashString, mulberry32 } from '../core/noise.js';
 import { SPECIES } from '../core/config.js';
 import { fillTemplate } from '../core/lore.js';
 import { RELATION_TYPES } from './relations.js';
+// D6-3 工程包 D（跨位面夺舍）：凡人容器要先「点化」成修士（`sp` / 灵根 / 气血 /
+// 寿元一次到位），否则会出现「境界被抬起来、`sp` 还是 `human`」的静默失配
+// （`pickTarget` 的注释里记着这个坑，它正是凡间夺舍**排除凡人**的理由）。
+// ⚠️ `cultivation.js` **不 import 本模块**（只在两处注释里提过它）⇒ 不成环，
+//    `scripts/inkbox-import-check.mjs` 会验。
+import { awaken } from './cultivation.js';
+// 幽冥人口账本（`possessedOut` 是第四条离开路径）。只取这一个函数——
+// 它是**整对象**序列化的 `NETHER_ONLY_KEYS`，加键安全（同 A 包的 `fellIn`）。
+// ⚠️ `netherLife.js` 只 import core / planes / artifacts，**不 import 本模块**
+//    ⇒ 不成环（`scripts/inkbox-import-check.mjs` 会验）。
+import { ensureNetherPopLog } from './netherLife.js';
 
 // ── 常量（照抄主线，出处标在行号上；不要按沙盒数值域「重标」）──────
 //
@@ -245,12 +256,20 @@ function pickText(rng, pool, params, fallback) {
  */
 function ensurePossessionLog(world) {
   if (!world.possessionLog || typeof world.possessionLog !== 'object') {
-    world.possessionLog = { succeeded: 0, failed: 0, suspected: 0 };
+    world.possessionLog = { succeeded: 0, failed: 0, suspected: 0, crossPlane: 0, haunted: 0 };
   }
   const log = world.possessionLog;
   if (!Number.isFinite(log.succeeded)) log.succeeded = 0;
   if (!Number.isFinite(log.failed)) log.failed = 0;
   if (!Number.isFinite(log.suspected)) log.suspected = 0;
+  // ── D6-3 工程包 D 追加的两键（跨位面夺舍）────────────────────
+  //   · `crossPlane` —— 幽冥鬼修**真夺舍**凡间活人的次数（与 `succeeded` 分开记：
+  //     那是「凡间内部」的累计，这是「跨位面」的；混在一起就分不出扰动来源）；
+  //   · `haunted`    —— 高阶鬼修**暂时附身**凡间活人的次数（鬼修留在幽冥，不是夺舍）。
+  // ⚠️ 老档（本次改动之前写下的）这两个键**不存在**，所以必须逐键兜底——
+  //    与上面三键同款理由（缺键 ⇒ 读一个老档再夺舍一次就会读到 `undefined`）。
+  if (!Number.isFinite(log.crossPlane)) log.crossPlane = 0;
+  if (!Number.isFinite(log.haunted)) log.haunted = 0;
   return log;
 }
 
@@ -460,6 +479,9 @@ export function possessionStats(world) {
   out.succeeded = log.succeeded || 0;
   out.failed = log.failed || 0;
   out.suspectEvents = log.suspected || 0;
+  // D6-3 工程包 D：跨位面两个子账（与上面三个同属「只增不减」的累计账本）。
+  out.crossPlane = log.crossPlane || 0;
+  out.haunted = log.haunted || 0;
   return out;
 }
 
@@ -509,3 +531,293 @@ export const possessionInternals = Object.freeze({
     possessorLevel, possessorMind, targetLevel, targetMind,
   ),
 });
+
+// ═══════════════════════════════════════════════════════════════════════
+// D6-3 工程包 D · 跨位面夺舍（幽冥的鬼修 → 凡间的活人）
+// ═══════════════════════════════════════════════════════════════════════
+//
+// 与上面「凡间内部夺舍」的关系：同一个母题（元神抢肉身），但**跨位面**。
+// 触发点不同——凡间内部那条挂在 `life.js` 的 `onDeath`（人死了才有元神）；
+// 这条挂在**幽冥缝**（`rifts.js` 的 `stepNetherRift`，与 A/B/C 三个效果并列）。
+//
+// ── 用户裁决（2026-09-26）────────────────────────────────────────────
+//   · 只有**低阶鬼修**（怨灵及以下，`level ≤ 20`）会真夺舍——「继续修仙的执念」；
+//   · **高阶鬼修**（厉鬼及以上）已「自成一派」，不真夺舍，只**暂时附身**完成目标；
+//   · 目标 = 凡人，或**高天赋的低阶修士**；
+//   · 成功率用 `ghostRancor`（积怨）顶替 `mind`；
+//   · 附身期间**接管凡人行动**（行为锁，闸门在 `life.js`）；
+//   · 不良状态用**新字段** `possessionScar`（进档，实体 row[68]）；
+//   · 「极少数实体倾向于夺舍」= **两侧各一个稀有词条**（派生，不入档，见 `isObsessed` / `isHollowSoul`）。
+//
+// ── 三条与 A/B/C 一致的纪律 ──────────────────────────────────────────
+//   1. **零 `rng`**：本模块的跨位面部分**一次 `rng` 都不抽**（铁律一）。
+//      「这一拍有没有动静」的抽签在 `stepNetherRift` 里（**第八条流**）；
+//      「成不成 / 继承多少」走**确定性哈希**（`mulberry32(hashString(...))`）——
+//      与 `netherLife.js` 的 `hash32` / `hashStep` 同一条思路（幽冥没有流可挂）。
+//      ⚠️ 哈希当均匀数用**必须先过 finalizer**（`mulberry32` 就是）——直接拿
+//      FNV-1a 的 `hashString / 2^32` 判阈值会因**高位偏置**而恒真（D6-3 C 的教训）。
+//   2. **先落成、再移除**：真夺舍先写凡人身上的印记，**再**把鬼修从幽冥 `splice`
+//      （反过来会让鬼修凭空蒸发）。
+//   3. **身份带世界限定符**：鬼修**没有 id 引用**进凡间实体——印记是**快照**
+//      （同 `possessedBy` / `ghostOf` 的理由：三界 id 同段会撞号，存裸 id 即悬垂）。
+
+/** 真夺舍的鬼修阶上限：**怨灵及以下**（tier ≤ 1 ⇒ `level ≤ 20`）。 */
+export const POSSESS_TIER_MAX_LEVEL = 20;
+
+/** 真夺舍数量上限：**在世**的「被跨位面夺舍者」数，到顶即不再触发。 */
+export const CROSS_POSSESS_CAP = 8;
+
+/** 附身持续日数（`until = day + HAUNT_DAYS`）。 */
+export const HAUNT_DAYS = 360;
+
+/** `ghostRancor` 的满值（= `netherLife.js` 的 `TIER_THRESHOLDS[5]`，鬼帝 300 年）⇒ 归一化到 100。 */
+export const RANCOR_FULL = 300;
+
+/** 「执念深重」词条触发率（鬼修侧）。派生，不入档。 */
+export const OBSESSION_RATE = 0.06;
+/** 「魂虚易主」词条触发率（凡人侧）。派生，不入档。 */
+export const HOLLOW_SOUL_RATE = 0.06;
+/** 两个词条对成功率的加成倍率。 */
+export const OBSESSION_BOOST = 1.6;
+export const HOLLOW_SOUL_BOOST = 1.4;
+
+/** 跨位面夺舍的编年史 kind（`biography.js` 的 `KIND_TAG` 里登记）。 */
+export const CROSS_POSSESS_KIND = 'possess-cross';
+export const HAUNT_KIND = 'haunt';
+
+/** 凡间的人（凡人 / 修士）。灵兽与山精不算人——同 `rifts.js` 的 `isPerson`。 */
+function isPerson(e) {
+  return Boolean(e) && (e.sp === SPECIES.HUMAN || e.sp === SPECIES.CULTIVATOR);
+}
+
+/**
+ * 确定性哈希抽签：`[0, 1)`。**不消费任何随机流**（铁律一）。
+ * ⚠️ 必须过 `mulberry32` 这个 finalizer——直接拿 FNV-1a 的 `hashString / 2^32`
+ *    判阈值会因**高位偏置**而恒真（D6-3 C 在幽冥物品自生上踩过这个坑）。
+ */
+function hashRoll(key) {
+  return mulberry32(hashString(key))();
+}
+
+/** 把 `ghostRancor`（0 → 300+）归一化进成功率公式的 `mind` 槽（0-100）。 */
+export function normalizeRancor(rancor) {
+  return clamp(((Number(rancor) || 0) / RANCOR_FULL) * 100, 0, 100);
+}
+
+/** 跨位面夺舍成功率：鬼修用 `ghostRancor` 顶替 `mind`，其余逐字沿用 `possessionChance`。 */
+export function crossPlanePossessionChance(ghostLevel, ghostRancor, targetLevel, targetMind) {
+  return possessionChance(ghostLevel, normalizeRancor(ghostRancor), targetLevel, targetMind);
+}
+
+/** 词条（鬼修）「执念深重」：极少数鬼修对「继续修」执念极深 ⇒ 更爱夺舍。派生，不入档。 */
+export function isObsessed(ghost) {
+  if (!ghost || !Number.isFinite(ghost.id)) return false;
+  return hashRoll(`possess-obsess:${ghost.id}`) < OBSESSION_RATE;
+}
+
+/** 词条（凡人）「魂虚易主」：极少数人魂魄虚浮 ⇒ 更容易被夺。派生，不入档。 */
+export function isHollowSoul(entity) {
+  if (!entity || !Number.isFinite(entity.id)) return false;
+  return hashRoll(`possess-hollow:${entity.id}`) < HOLLOW_SOUL_RATE;
+}
+
+/** 这具身体此刻是否**被附身接管**（附身期未过）。`life.js` 的行为锁读它。 */
+export function isControlled(entity, day) {
+  const s = entity && entity.possessionScar;
+  return Boolean(s) && typeof s.until === 'number' && s.until > (day || 0);
+}
+
+/** 世上此刻有几个「被跨位面夺舍」的活人（真夺舍；附身不算——那是暂时的）。 */
+export function crossPossessedCount(world) {
+  const list = (world && world.entities) || [];
+  let n = 0;
+  for (let i = 0; i < list.length; i += 1) {
+    const s = list[i].possessionScar;
+    if (s && s.mode === 'possess') n += 1;
+  }
+  return n;
+}
+
+/**
+ * 挑**鬼修**容器（缝口半径内**离缝口最近**的一只鬼修）。
+ * ⚠️ 只有 `soulKind === 'ghostCultivator'` 的鬼修会夺舍——普通鬼魂（`level 0`、
+ *    没有元神修炼）不会。与 B/C 取「最近」同款（平手用 `<` 保留先遇到的 ⇒ 可复现）。
+ */
+function pickGhostAtRift(nether, rift, r) {
+  let best = null;
+  let bestD = Infinity;
+  const list = nether.entities;
+  for (let i = 0; i < list.length; i += 1) {
+    const e = list[i];
+    if (e.soulKind !== 'ghostCultivator') continue;
+    const d = Math.hypot((e.x || 0) - rift.x, (e.y || 0) - rift.y);
+    if (d > r) continue;
+    if (d < bestD) { bestD = d; best = e; }
+  }
+  return best;
+}
+
+/**
+ * 挑凡人容器（缝口半径内的**凡人 / 低阶修士**）。
+ *
+ * 排序（承重，决定「夺谁」）：**修士优先**（有灵根、能继续修，正是执念想要的身体）
+ * → 同档按**灵根品质降序**（「高天赋」）→ 再按**境界升序**（越低越好夺）。
+ * 平手保留**先遇到的** ⇒ 顺序稳定、可复现（同 `pickTarget` / `climbOutToMortal`）。
+ *
+ * ⚠️ 与凡间内部的 `pickTarget` **不同**：那条要求 `level > 0` 且 `sp === cultivator`
+ *    （凡人不是容器，因为「境界被抬起来、`sp` 还是 human」会静默失配）。
+ *    跨位面这条**允许凡人**（用户裁决），代价是 `possessMortal` 必须先 `awaken`
+ *    把这具身体点化成修士——那一步就在 `possessMortal` 里。
+ */
+function pickCrossTarget(world, rift, r) {
+  let best = null;
+  let bestKey = null;
+  const list = world.entities;
+  const day = world.day || 0;
+  for (let i = 0; i < list.length; i += 1) {
+    const e = list[i];
+    if (!isPerson(e)) continue;
+    if (e.hp <= 0) continue;
+    const lv = e.level || 0;
+    if (lv >= POSSESS_TIER_MAX_LEVEL) continue;       // 高修为不进候选（同 `pickTarget`）
+    if (e.possessedBy) continue;                      // 已经被夺过的不再夺
+    if (isControlled(e, day)) continue;               // 正被附身的也不夺
+    if (Math.hypot(e.x - rift.x, e.y - rift.y) > r) continue;
+    const key = [lv >= 1 ? 1 : 0, (e.root && Number.isFinite(e.root.quality)) ? e.root.quality : -1, -lv];
+    if (!best || keyGreater(key, bestKey)) { best = e; bestKey = key; }
+  }
+  return best;
+}
+
+/** 字典序比较（长度恒为 3）。`a > b` 返回 true。 */
+function keyGreater(a, b) {
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return a[i] > b[i];
+  }
+  return false;
+}
+
+/**
+ * 跨位面夺舍的一次判定。**由 `rifts.js` 的 `stepNetherRift` 调用**（第四支）。
+ *
+ * 流程：缝口最近的鬼修 → 缝口附近的凡人 / 低阶修士 → 按**鬼修阶**分模式：
+ * 怨灵及以下 ⇒ `possessMortal`（真夺舍）；厉鬼及以上 ⇒ `hauntMortal`（只附身）。
+ *
+ * @returns {boolean} 是否真的发生了一次夺舍 / 附身
+ */
+export function crossPlanePossession(world, rift, r) {
+  if (!world || !rift) return false;
+  const nether = world.nether;
+  if (!nether || !Array.isArray(nether.entities)) return false;   // 没幽冥可来
+  const ghost = pickGhostAtRift(nether, rift, r);
+  if (!ghost) return false;
+  const target = pickCrossTarget(world, rift, r);
+  if (!target) return false;
+  const level = ghost.level || 0;
+  if (level <= POSSESS_TIER_MAX_LEVEL) return possessMortal(world, nether, ghost, target);
+  return hauntMortal(world, ghost, target);
+}
+
+/**
+ * **真夺舍**：低阶鬼修的元神住进凡间活人的身体。鬼修**从幽冥消失**。
+ * 零 `rng`（成不成走确定性哈希）；先落成、再移除。
+ */
+function possessMortal(world, nether, ghost, target) {
+  // cap：在世被跨位面夺舍者到顶就收手（用户裁决「不能让夺舍者过多」）
+  if (crossPossessedCount(world) >= CROSS_POSSESS_CAP) return false;
+
+  const day = world.day || 0;
+  const rate = crossPlanePossessionChance(
+    ghost.level || 0, ghost.ghostRancor || 0, target.level || 0, target.mind || 0,
+  );
+  const boost = (isObsessed(ghost) ? OBSESSION_BOOST : 1)
+    * (isHollowSoul(target) ? HOLLOW_SOUL_BOOST : 1);
+  const finalRate = clamp(rate * boost, 0.05, 0.95);
+
+  // 成不成：**确定性哈希**（零 rng）。
+  if (hashRoll(`possess-try:${ghost.id}:${day}`) >= finalRate) {
+    if (typeof world.record === 'function') {
+      world.record(`${ghost.name || '一只鬼修'}试图夺舍${target.name || '一人'}，被对方的道心震了出来`, CROSS_POSSESS_KIND);
+    }
+    ensurePossessionLog(world).failed += 1;
+    return false;
+  }
+
+  // ── 成功 ──
+  const originalName = target.name || '';
+  // 凡人容器：先把这具身体点化成修士（`sp` / 灵根 / 气血 / 寿元一次到位）。
+  // ⚠️ 不这么做会让「境界被抬起来、`sp` 还是 human」——静默失配。
+  // 传**确定性 rng**（不抽主流）：这具身体的灵根由它的 id 决定，可复现。
+  if ((target.level || 0) <= 0) {
+    awaken(target, mulberry32(hashString(`possess-awaken:${target.id}`)));
+  }
+  // 名字后缀（同凡间夺舍：只加一次，防「张三·异·异」）
+  target.name = originalName.endsWith('·异') ? originalName : `${originalName}·异`;
+  // 印记：**快照**（无 id，永不悬垂）
+  target.possessedBy = {
+    name: ghost.name || '一只鬼修',
+    level: ghost.level || 0,
+    faction: 0,                 // 鬼修没有凡间宗门
+    day,
+    suspected: 0,
+  };
+  // 不良状态：**新字段**（永久 ⇒ `until = -1`）
+  target.possessionScar = {
+    ghostName: ghost.name || '一只鬼修',
+    ghostLevel: ghost.level || 0,
+    day,
+    until: -1,
+    mode: 'possess',
+  };
+  // 修为继承：floor(L_g × (0.2 + roll × 0.2))，取 max(原境界, 继承值)。
+  // ⚠️ 只写 `level`，**不写 `maxHp` / `lifespan`**（同凡间夺舍：夺舍借的是肉身，
+  //    气血与寿元随肉身，不随元神）。改的话会凭空造命。
+  const roll = hashRoll(`possess-inherit:${ghost.id}:${target.id}`);
+  const inherited = Math.floor((ghost.level || 0) * (INHERIT_MIN + roll * INHERIT_SPAN));
+  target.level = Math.max(target.level || 0, inherited);
+
+  // **先落成（上面全做完）→ 再从幽冥移除**
+  const at = nether.entities.indexOf(ghost);
+  if (at >= 0) nether.entities.splice(at, 1);
+
+  // 两端记账：幽冥侧（第四条离开路径）+ 凡间侧（跨位面子账）
+  ensureNetherPopLog(nether).possessedOut += 1;
+  ensurePossessionLog(world).crossPlane += 1;
+
+  if (typeof world.milestone === 'function') {
+    world.milestone(`${ghost.name || '一只鬼修'}夺舍了${originalName}，以${target.name}之名在凡间续修`, CROSS_POSSESS_KIND, target);
+  }
+  return true;
+}
+
+/**
+ * **暂时附身**：高阶鬼修的元神远程附在凡间活人身上一段日子，**接管他的行动**。
+ * 鬼修**留在幽冥**（它本就能在凡间行走，不必把身家搬过去）。
+ * 零 `rng`；到期由 `life.js` 的行为锁闸门自动解除（`until` 过了就不再拦）。
+ */
+function hauntMortal(world, ghost, target) {
+  const day = world.day || 0;
+  const rate = crossPlanePossessionChance(
+    ghost.level || 0, ghost.ghostRancor || 0, target.level || 0, target.mind || 0,
+  );
+  const finalRate = clamp(rate, 0.05, 0.95);
+  if (hashRoll(`haunt-try:${ghost.id}:${day}`) >= finalRate) return false;
+
+  // 已经带着一个更晚到期的印记 ⇒ 不覆盖（同养伤锁不覆盖更长的既有锁）。
+  const until = day + HAUNT_DAYS;
+  const prev = target.possessionScar;
+  if (prev && typeof prev.until === 'number' && prev.until > until) return false;
+
+  target.possessionScar = {
+    ghostName: ghost.name || '一只鬼修',
+    ghostLevel: ghost.level || 0,
+    day,
+    until,
+    mode: 'haunt',
+  };
+  ensurePossessionLog(world).haunted += 1;
+  if (typeof world.record === 'function') {
+    world.record(`${ghost.name || '一只鬼修'}附在${target.name || '一人'}身上，${target.name || '他'}一时失了神`, HAUNT_KIND);
+  }
+  return true;
+}

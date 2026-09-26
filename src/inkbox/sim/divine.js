@@ -43,17 +43,20 @@ const byLevelDesc = (a, b) => (b.level || 0) - (a.level || 0);
  */
 export function grantRoot(world, x, y, radius, rng) {
   const targets = near(world, x, y, radius)
-    .filter((e) => (e.level || 0) <= 0 && e.sp === SPECIES.HUMAN)
+    .filter((e) => (e.level || 0) <= 0 && e.sp === SPECIES.HUMAN && e.hp > 0)
     .slice(0, MAX_TARGETS);
+  if (!targets.length) return '范围内没有未觉醒的凡人可点化';
   let n = 0;
+  const awakened = [];
   for (const e of targets) {
     if (awaken(e, rng)) {
       world.record(`${e.name} 于${placeName(world, e)}觉醒${e.root.rootName}`, 'awaken', e);
+      awakened.push(`${e.name}（${e.root.rootName}）`);
       n += 1;
     }
   }
-  if (!n) return '此地无人可点化';
-  return `点化 ${n} 人，灵根已开`;
+  if (!n) return `范围内有 ${targets.length} 名凡人，但此次点化未能开启灵根`;
+  return `点化 ${n} 人：${awakened.join('、')}。灵根已开`;
 }
 
 /** 引灵脉：在山川上点出一道灵脉。灵气厚的地方修炼快，宗门也会来争。 */

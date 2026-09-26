@@ -205,9 +205,14 @@ export function busanziRecent(world, n = 4) {
  * 刻意不是每次都说话——他每次都开口就变成弹幕了。
  * 灾祸类神力有较大概率念叨，创造类小概率，这样「他盯着你」的感觉才在。
  *
- * 去重窗口给得比模拟事件那边小（4 而不是 12）：他面对玩家时的词池只有
- * 五句 watch + 一句 reproach，窗口开大就会「说完六句之后彻底闭嘴」——
- * 玩家连按两百次，他只在头几下吱过声。这里靠**概率**节流，靠小窗口只挡「立刻重复」。
+ * 去重窗口给得比模拟事件那边小（默认 4 而不是 12）：他面对玩家时的词池很小，
+ * 窗口开大就会「说完一轮之后彻底闭嘴」——玩家连按两百次，他只在头几下吱过声。
+ * 这里靠**概率**节流，靠小窗口只挡「立刻重复」。
+ *
+ * ⚠️ 窗口**由池长派生**（见下面 `reactToTool` 里的 `minGap`），不写死：它必须**小于**
+ *    词池长度，否则 `speak()`（:72）抽一次撞窗就放弃、**不重试**，一轮说满后必然永久闭嘴。
+ *    原先窗口写死 4、恰好对着当时的「五句 watch」；2026-09-23 把 watch 删到四句时两者相等，
+ *    他当场变哑（实测 harshSpoke 29 → 15，`scripts/inkbox-smoke.mjs:549` 变红）。
  */
 export function reactToTool(world, rng, toolId) {
   if (!world.busanzi) world.busanzi = newBusanziState();
@@ -222,7 +227,18 @@ export function reactToTool(world, rng, toolId) {
 
   // 灾祸类偶尔改用那句「天道不是不会看走眼」——他也不是一味叫好
   const pool = harsh && rng() < 0.3 ? 'reproach' : 'watch';
-  return speak(world, rng, pool, '', 4);
+  // ⚠️ 去重窗口必须**小于**词池长度，否则「挡立刻重复」会退化成「说过一轮之后彻底闭嘴」：
+  //    `speak()`（:72）只抽一次，抽中的句子若落在最近 minGap 句里就直接放弃、**不重试**。
+  //    窗口 ≥ 池长时，一轮说满之后每次抽中的必然撞窗 ⇒ 他再也不开口。
+  //    这条不变量原先只写在 `:208-210` 的注释里（「窗口 4 是对着五句 watch 定的」），
+  //    2026-09-23 把 watch 从 5 句删到 4 句时踩断了它（实测 harshSpoke 29 → 15，
+  //    `scripts/inkbox-smoke.mjs:549` 的「200 次里开口 ≥20 次」当场变红）。
+  //    ⇒ 现在改成**由池长派生**，删/加句子都不会再憋死他。
+  // ⚠️ `reproach` 只有一句，是**故意**要它「很久才说一次」（见 `speak()` 的注释 `:65-66`），
+  //    所以只对**多句**的池收紧窗口，单句池保持原样。
+  // ⚠️ 这里读的是 `BUSANZI.lines[pool].length`——**属性读取，不是抽签**，不新增任何 `rng()`。
+  const len = BUSANZI.lines[pool].length;
+  return speak(world, rng, pool, '', len > 1 ? Math.min(4, len - 1) : 4);
 }
 
 /**

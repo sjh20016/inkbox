@@ -10,6 +10,116 @@ import * as D from '../sim/divine.js';
 
 const T = (id, name, icon, group, hint, extra) => ({ id, name, icon, group, hint, ...extra });
 
+/** 划选区域的最小多边形面积（格）。手抖划出的针尖大的窗不该开——
+ *  它看不见任何东西，却会占满屏幕一层裁剪与一道裂缝边框。 */
+export const REGION_MIN_AREA = 6;
+
+/**
+ * 把一条自由划选路径（世界坐标的整数格点序列，**闭合但首尾不重复**）
+ * 归一成一个合法的视界区域。
+ *
+ * 返回 `{ path, x0, y0, x1, y1, area, capped }`；不构成「一片山河」时返回 null：
+ *   · 去重后不足 3 点（一次点击只有 1 点、一条直线只有 2 点）；
+ *   · 多边形面积 < `REGION_MIN_AREA`（一条线**没有面积**，针尖大的窗也看不见）。
+ * 这就是旧 `main.js` 里那条「单格点击不构成一片山河」判据的替代——
+ * 那条判的是**矩形跨度**，对自由形状已无意义。
+ *
+ * ⚠️ **为什么放在 UI 层、且做成不碰 DOM 的纯函数**：`main.js` 依赖 DOM，
+ *    node 里 `import` 不了（`document is not defined`），于是
+ *    `scripts/_riftprobe.mjs` 就断言不到它。主程序与探针**共用同一份实现**
+ *    （而不是在探针里抄一份公式——抄的那份迟早与产品漂移）。
+ *
+ * `x0/y0/x1/y1` 是**包围盒**（顶层保留）：既有读取者（试玩测试 / 裂缝探针）
+ * 都在读 `sel.x0..sel.y1`，而且矩形兜底路径也要用它。
+ *
+ * @param {Array<[number,number]>} points 原始路径（世界坐标，可含浮点/越界值）
+ * @param {object} world 凡间 world（需 `clampX`/`clampY`/`size`）
+ * @param {number} maxAreaFrac 面积上限占全图比例（`main.js` 的 `UPPER_VIEW_MAX_AREA`）
+ * @returns {{path:Array<[number,number]>,x0:number,y0:number,x1:number,y1:number,area:number,capped:boolean}|null}
+ */
+export function normalizeRegion(points, world, maxAreaFrac) {
+  if (!world || !Array.isArray(points) || points.length < 3) return null;
+
+  // ── 1. 逐点取整 + 钳界 + 连续去重 ─────────────────────────
+  // 连续去重是**采集端之外的第二道**：拖动时已经去过一次，但注入 / 外部调用
+  // 未必去过；而「两点重合」会让鞋带公式里多出一段零长边（无害但脏）。
+  const path = [];
+  for (let i = 0; i < points.length; i += 1) {
+    const p = points[i];
+    if (!p) continue;
+    const x = world.clampX(Math.round(p[0]));
+    const y = world.clampY(Math.round(p[1]));
+    const last = path[path.length - 1];
+    if (last && last[0] === x && last[1] === y) continue;
+    path.push([x, y]);
+  }
+  // 首尾重合 → 去掉尾点（契约是「闭合但首尾不重复」，闭合边由鞋带公式自动补）
+  if (path.length >= 2) {
+    const a = path[0];
+    const b = path[path.length - 1];
+    if (a[0] === b[0] && a[1] === b[1]) path.pop();
+  }
+  if (path.length < 3) return null;
+
+  let area = shoelaceArea(path);
+  if (area < REGION_MIN_AREA) return null;
+
+  // ── 2. 面积上限：绕质心**等比缩小**（不是裁剪包围盒——那会把形状切坏）──
+  // 划满全图会让视界退化成「全图渲染两遍」（规格 §3.4）。
+  // ⚠️ 不能静默截断：`capped` 要交回去让玩家知道，否则他会以为「我明明划了
+  //    全图，怎么只有中间一块」。
+  let capped = false;
+  const maxArea = Math.max(1, Math.floor(world.size * maxAreaFrac));
+  if (area > maxArea) {
+    const src = path.map((p) => [p[0], p[1]]);   // 原始形状，供每轮从零重算
+    let cx = 0;
+    let cy = 0;
+    for (let i = 0; i < src.length; i += 1) { cx += src[i][0]; cy += src[i][1]; }
+    cx /= src.length;
+    cy /= src.length;
+    let k = Math.sqrt(maxArea / area);
+    let guard = 0;
+    // 取整会让面积在理论上「缩到 maxArea」之后再冒出来一点，所以循环微调；
+    // **有界**（64 轮），k 每轮 ×0.98，最多缩到 0.27× —— 足够收敛。
+    do {
+      for (let i = 0; i < src.length; i += 1) {
+        path[i][0] = world.clampX(Math.round(cx + (src[i][0] - cx) * k));
+        path[i][1] = world.clampY(Math.round(cy + (src[i][1] - cy) * k));
+      }
+      area = shoelaceArea(path);
+      if (area <= maxArea) break;
+      k *= 0.98;
+      guard += 1;
+    } while (guard < 64);
+    capped = true;
+  }
+
+  // ── 3. 包围盒 ─────────────────────────────────────────────
+  let x0 = path[0][0];
+  let x1 = x0;
+  let y0 = path[0][1];
+  let y1 = y0;
+  for (let i = 1; i < path.length; i += 1) {
+    const p = path[i];
+    if (p[0] < x0) x0 = p[0];
+    if (p[0] > x1) x1 = p[0];
+    if (p[1] < y0) y0 = p[1];
+    if (p[1] > y1) y1 = p[1];
+  }
+  return { path, x0, y0, x1, y1, area, capped };
+}
+
+/** 鞋带公式：闭合多边形（首尾不重复）的面积，单位是格。 */
+function shoelaceArea(path) {
+  let twice = 0;
+  for (let i = 0; i < path.length; i += 1) {
+    const a = path[i];
+    const b = path[(i + 1) % path.length];
+    twice += a[0] * b[1] - b[0] * a[1];
+  }
+  return Math.abs(twice) / 2;
+}
+
 export const TOOL_GROUPS = Object.freeze([
   { key: 'terrain', label: '山形', color: '#8a6a44' },
   { key: 'water', label: '水土', color: '#3f5f7d' },
@@ -180,27 +290,45 @@ export const TOOLS = Object.freeze([
     mode: 'click', readonly: true,
     apply: () => 0,
   }),
-  // 上界视界：划选一块矩形，从那块地方往里看**另一界**（画中画）。
+  // 上界视界：**按住拖出一片自由形状**（套索），从那块地方往里看**另一界**（画中画）。
   //
   // 为什么是第三种 mode（'select'）而不是复用现成的两种：
   //   · 复用 'drag' 会在主循环的限速里被反复调用（每 0.075 秒一次），
   //     而「开一扇视界」是**一次成型的动作**——划完才算，反复调用会不断重开；
-  //   · 复用 'click' 只有「一个点 + 半径」，选出来的是圆，不是玩家要的矩形区域。
+  //   · 复用 'click' 只有「一个点 + 半径」，选出来的是圆，不是玩家要的自由区域。
   // 所以 'select' 的三段逻辑（按下 → 拖动 → 抬起）写在 main.js 的指针事件里。
   //
-  // ⚠️ readonly 必须是 false。它不改地形，但会留下副作用（下一阶段：划选的四边
-  //    会裂开细缝）。标成 true 会让光标变成 help、提示语也变成「不改动世界」，
+  // ⚠️ readonly 必须是 false。它不改地形，但会留下副作用（划选边缘会裂开细缝）。
+  //    标成 true 会让光标变成 help、提示语也变成「不改动世界」，
   //    玩家就会以为它只是看——而裂缝是实打实的。提示语里已经写明「会裂开细缝」。
   T('viewUpper', '上界视界', '☯', 'view',
-    '划选一片山河，自裂缝中窥见上界；视界边缘会裂开细缝', {
+    '按住拖出一片山河的形状（可圆可不规则），自裂缝中窥见上界；视界边缘会裂开细缝', {
       mode: 'select',
       readonly: false,
-      // 本轮 apply 只做一件事：把划选矩形交出去（commitSelection）。
-      // ⚠️ 矩形是 **UI 状态，不进世界存档**——存档是给「世界」的，不是给「屏幕」的
+      // 本轮 apply 只做一件事：把划选区域交出去（commitSelection）。
+      // ⚠️ 划选区域是 **UI 状态，不进世界存档**——存档是给「世界」的，不是给「屏幕」的
       //    （规格 §6.2）。所以它不挂 world，走 ctx 上的一次性接收器。
       // ⚠️ 开缝已接在 `main.js` 的 `commitSelection`（pointerup 唯一提交点），
       //    本文件**不需要**知道 `openRifts`——那是一次成型、只能由 pointerup 调一次
       //    的动作，接在提交点天然满足这个约束，也免得工具表反过来依赖主程序。
+      apply: (c) => { c.commitSelection(c.rect); return 0; },
+    }),
+  // 幽冥视界：与 `viewUpper` **逐字段对齐**，只有 id / name / icon / hint 不同。
+  // 用户原话要的是「可以选择看到同坐标上界（或者幽冥界）的情况」——
+  // 所以两界是**并列的两个工具**，而不是一个工具加参数：玩家点哪个就是看哪个，
+  // 一眼可辨、也不必再造一套「切换目标界」的状态。
+  //
+  // ⚠️ 上面 `viewUpper` 那段关于 `mode: 'select'` / `readonly: false` 的理由
+  //    **逐条同样适用**，不再复述；改动时两处必须一起动（同一条契约）。
+  // ⚠️ 两界共用同一个凡间 `world.rifts`，所以划幽冥视界同样会在边缘裂开细缝——
+  //    这正是 `sim/rifts.js:5` 引的用户原话「上界视界和**下界**的边缘……会因此
+  //    产生轻微的空间裂缝」。
+  // ⚠️ id 必须与 `main.js` 的 `VIEW_TOOL_IDS` 对得上：那边是裂缝冻结（C1.1）与
+  //    开缝门控的唯一判据总表，这里改了名而那边没改，视界会**静默地**不再开缝。
+  T('viewNether', '幽冥视界', '⚰', 'view',
+    '按住拖出一片山河的形状（可圆可不规则），自裂缝中窥见幽冥；视界边缘会裂开细缝', {
+      mode: 'select',
+      readonly: false,
       apply: (c) => { c.commitSelection(c.rect); return 0; },
     }),
 ]);
@@ -248,6 +376,9 @@ export const TOOL_CURSOR = Object.freeze({
   inspect: '#31505f',
   // 比同组的检视稍亮、稍青一点：它同属「看」，但会留下东西（裂缝）
   viewUpper: '#4a7a8a',
+  // 与 viewUpper 同属「看另一界」，但更冷、更暗——幽冥不是上界那抹青，
+  // 是一层压下来的墨。两个视界工具的光标色必须能一眼分开。
+  viewNether: '#3f4a5f',
 });
 
 export { TERRAIN, OVER, SPECIES };

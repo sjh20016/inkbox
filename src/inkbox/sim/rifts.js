@@ -4,11 +4,12 @@
 //
 // 用户原话：「上界视界和下界的边缘会因此产生轻微的空间裂缝」。
 // 所以裂缝**不是**自然发生的随机事件，而是**玩家开视界这个动作的副作用**——
-// 划选视界时，在划选矩形的**四条边**（两界的接缝）上裂开。
+// 划选视界时，在划选区域的**边缘**（两界的接缝）上裂开：
+// 矩形时代是「四条边」，现在是自由形状的闭合折线（逐格光栅化）。
 // 内部是「看到的上界」，边缘才是「两界的缝」，所以不开在内部。
 //
 // 本模块只做四件事，且只做这四件：
-//   1. `openRifts`  划选 → 在四边开缝（生成）
+//   1. `openRifts`  划选 → 在边缘开缝（生成）
 //   2. `riftRadiusAt`  扩张/闭合曲线（**纯函数**，不存 `radius` / `peakDay`）
 //   3. `stepRifts`  一次判定 pass：闭合 + 漏物（由调用方按周期调，**不每帧跑**）
 //   4. `riftStats`  读数（账本是唯一可靠来源）
@@ -28,6 +29,30 @@
 // ⚠️ **本模块不进存档的字段**：`riftRng`（见上）。进存档的是
 // `world.rifts` / `world.nextRiftId` / `world.riftLog` 三样，由 `io/save.js`
 // 负责序列化（不在本文件）。
+//
+// ───────────────────────────────────────────────────────────────────────
+// 目标位面纪律（2026-09-24 · D6-2 工程包 B）
+// ───────────────────────────────────────────────────────────────────────
+//
+// 裂缝**必须知道自己连接哪一界**。用户原话是「上界视界和**下界**的边缘会因此
+// 产生轻微的空间裂缝」——「下界」就是幽冥，所以开幽冥视界同样会裂缝。
+// 但裂缝开出来之后，**两条缝的行为完全不同**：
+//
+//   · `targetPlane === 'upper'`  —— 维持既有全部行为（上→下漏物、下→上吸人）；
+//   · `targetPlane === 'nether'` —— **本阶段只允许创建 / 成长 / 闭合 / 显示 / 保存**，
+//     不执行任何跨位面效果（用户裁决：幽冥跨界留给 D6-3）。
+//
+// ⚠️⚠️ **硬不变量：打开幽冥视界绝不会偷偷执行上界转移。**
+//     `stepRifts` 对 nether 裂缝**在抽签之前就 `continue`**，所以
+//     `arriveUpper` / `leakFromUpper` / `leakToUpper` 在结构上够不到它。
+//     这不是「靠判据拦住」——是**根本走不到那一行**。
+//     在它出现之前，`viewNether` 与 `viewUpper` 共用同一条 `openRifts`，
+//     而 `rifts.js` 内部**只有上界逻辑**：玩家打开幽冥视界、划出裂缝，
+//     那条缝会去执行凡间 ↔ **上界**的漏物 / 吸人——语义完全错位，且不报错。
+//
+// ⚠️ **`targetPlane` 是**世界状态，必须进存档**（`io/save.js` 写读两侧）：
+//     一条缝能活 30–40 年，玩家关掉视界以后它仍然必须知道自己原本连接哪里。
+//     老档没有这个键 → 兜底 `'upper'`（诚实缺省：本契约之前只有上界裂缝）。
 
 import { mulberry32 } from '../core/noise.js';
 import { SPECIES } from '../core/config.js';
@@ -38,7 +63,7 @@ import { SPECIES } from '../core/config.js';
 // 这个 import 不存在时本模块会报 `SyntaxError`——那是**预期的**，
 // 两个代理并行落地；飞升代理完成后即通（见交付报告）。
 import { RIFT_CROSS_MAX_LEVEL } from '../core/cultivation.js';
-import { arriveUpper, upperWalkable } from '../world/planes.js';
+import { arriveUpper, upperWalkable, netherWalkable } from '../world/planes.js';
 import { toGround, scatterArtifacts } from './artifacts.js';
 // 方向 A 的第二个物源（灵植 → 凡间 `site`）要落一个**凡间自己的** site。
 // ⚠️ 照 `divine.js:79` 的用法调 `plantSite`，**不自己手搓 site 对象**：
@@ -50,6 +75,28 @@ import { plantSite } from './sites.js';
 // `placeOf` 只用来给开缝那条大事记配一个地名（「某某地界的天地裂开一道缝隙」）。
 // ⚠️ sects.js 不反向引 rifts.js，所以这条边不成环（import-check 会验）。
 import { placeOf } from './sects.js';
+// ── 幽冥裂缝的跨界效果（D6-3 工程包 A）────────────────────────
+// `spawnNetherGhost`：把跌进幽冥的人**落成幽冥实体**。必须复用它，
+//   绝不自己 `structuredClone` + push——它负责 id 段（`NETHER_ID_BASE`）、
+//   落点求解（`landingFor` 的纯哈希）、`ghostBorn` 记账三件事。
+// `ensureNetherPopLog`：幽冥人口账本的**唯一形状定义**（加键只改那一处）。
+// `ghostSnapshot`：身份快照的**唯一形状真源**（在 `reincarnation.js`）。
+//   ⚠️ 依赖环已查：`reincarnation.js → {relations, cultivation, necrology,
+//   netherLife, config, noise}`，`netherLife.js → {config, planes}`，
+//   没有任何一条反向引 `rifts.js` ⇒ 不成环（import-check 会验）。
+//   `ghostSnapshot` 是**纯读、零 rng**（`enterNether` 在凡间主流上，
+//   任何抽签都会静默移动世界线，铁律一）——裂缝这边借用它同样安全。
+import { spawnNetherGhost, ensureNetherPopLog, trimNetherItems } from './netherLife.js';
+import { ghostSnapshot } from './reincarnation.js';
+// D6-3 工程包 D：跨位面夺舍（鬼修 → 凡间活人）的效果函数。它**零 rng**，
+// 只做「选谁 / 成不成（确定性哈希） / 落成 / 记账」；判定节奏的抽签在本模块
+// （`stepNetherRift` 的第四支，走 `netherPossessRngFor`）。
+import { crossPlanePossession } from './possession.js';
+// D6-3 工程包 B：凡间的幽冥来客。**只取落成函数**——「鬼在凡间怎么活着」
+// 那件事（游荡 / 消散 / 自己的流）全在 `wraiths.js` 里，本模块不参与。
+// 依赖方向 `rifts.js → wraiths.js → core/*`，`wraiths.js` 不回头引本模块，
+// 所以不成环（`scripts/inkbox-import-check.mjs` 会验）。
+import { spawnWraith, mortalHauntRngFor } from './wraiths.js';
 
 /** 漏物判定周期（游戏日）。与 `TERRITORY_PERIOD_DAYS` 同频（30 日）。 */
 export const RIFT_PERIOD_DAYS = 30;
@@ -167,6 +214,53 @@ export const RIFT_CLOSE_RADIUS = 0.3;
 export const LEAK_CHANCE_PER_PERIOD = 0.005;
 
 /**
+ * 每个判定周期、每条幽冥裂缝**爬出一只鬼**的概率（D6-3 工程包 B）。
+ *
+ * ⚠️ 与 `LEAK_CHANCE_PER_PERIOD` **无关、各抽各的流**（见 `stepNetherRift`
+ *    的段头注释）。刻意取得比它大一个数量级：
+ *   · 活人被吸进去是**罕见事故**（0.5% / 30 日 ⇒ 一条缝一生约 0.7 次）；
+ *   · 幽冥里飘着几百只鬼，缝口天天有鬼蹭过去 ⇒ 「爬出来」该比「人被吸进去」
+ *     常见得多，否则玩家开一次幽冥视界什么都看不到（B 包的全部意义就是
+ *     「让玩家看见门后的东西真的会过来」）。
+ *   0.05 ⇒ 期望每 600 日（≈1.7 年）一只；一条缝活 30–40 年 ⇒ 约 20–24 只。
+ *
+ * ⚠️ **刻意不随「幽冥里有多少鬼」浮动**：判定只抽一次签，与鬼数无关。
+ *    做成「鬼越多越容易出来」要额外抽签或读状态，前者让流位置依赖世界状态
+ *    （同种子不可复现），后者违反「一次判定一个签」的形态。简化成常数。
+ */
+export const WRAITH_CLIMB_CHANCE_PER_PERIOD = 0.05;
+
+/**
+ * 每个判定周期、每条幽冥裂缝**漏出一件幽冥物品**的概率（D6-3 工程包 C）。
+ *
+ * ⚠️ 与 `LEAK_CHANCE_PER_PERIOD` / `WRAITH_CLIMB_CHANCE_PER_PERIOD`
+ *    **无关、各抽各的流**（见 `stepNetherRift` 的段头注释）。
+ * 取 0.02 ⇒ 期望每 1500 日（≈4 年）一件；一条缝活 30–40 年 ⇒ 约 7–10 件。
+ * 比「鬼爬出来」（0.05）小一档：物品是**死物**，不像鬼那样自己会往缝口蹭。
+ * 与「人跌进去」（0.005）相比大四倍：幽冥物品池里常驻几十件躺着，
+ * 而缝口附近的活人是偶发的。
+ *
+ * ⚠️ **一次判定只抽一次签**（不随「幽冥里有多少件」浮动）——同
+ *    `WRAITH_CLIMB_CHANCE_PER_PERIOD` 的理由：让流位置不依赖世界状态。
+ */
+export const NETHER_ITEM_LEAK_CHANCE_PER_PERIOD = 0.02;
+
+/**
+ * 每个判定周期、每条幽冥裂缝发生一次**跨位面夺舍**（鬼修 → 凡间活人）的概率
+ * （D6-3 工程包 D）。
+ *
+ * ⚠️ 与前三支**无关、各抽各的流**（见 `stepNetherRift` 的段头注释）。
+ * 取 0.01 ⇒ 期望每 3000 日（≈8 年）一次；一条缝活 30–40 年 ⇒ 约 4–5 次尝试。
+ * 比「物品漏出」（0.02）再小一档：夺舍要求**同时**满足
+ * 「缝口附近有鬼修」+「缝口附近有凡人」+「成功率过线」，三重条件天然更稀。
+ * 另外 `possession.js` 的 `CROSS_POSSESS_CAP`（在世被夺舍者上限）会再兜一层。
+ *
+ * ⚠️ **一次判定只抽一次签**（不随「幽冥里有多少鬼修」浮动）——同
+ *    `WRAITH_CLIMB_CHANCE_PER_PERIOD` 的理由：让流位置不依赖世界状态。
+ */
+export const POSSESS_CHANCE_PER_PERIOD = 0.01;
+
+/**
  * 上界**灵植 / 仙草**的候选阈值：`upper.veg[i] >= HERB_VEG_MIN` 的格才算灵植。
  *
  * ── 为什么用 `upper.veg` 当灵植源（规格 §4.3 表格第 2 行）────────────
@@ -276,8 +370,38 @@ export const HERB_LANDING_TRIES = 8;
  */
 export const RIFT_MAX_ACTIVE = 64;
 
+/**
+ * 裂缝可以连接的目标位面（D6-2 工程包 B）。**只认这两个。**
+ *
+ * 本阶段不引入「第四界」：`openRifts` 收到任何别的值都归一到 `'upper'`
+ * （契约之前只有一个隐含目标——上界，那是历史行为）。
+ *
+ * ⚠️ 这个数组是**校验用的唯一清单**：`io/save.js` 的读侧兜底与探针判据
+ * 都照它写，不要在两处各列一份。
+ */
+export const RIFT_PLANES = Object.freeze(['upper', 'nether']);
+
 /** 裂缝随机流的派生键：ASCII 'rift'（0x72 0x69 0x66 0x74）。 */
 export const RIFT_SEED_KEY = 0x72696674;
+
+/**
+ * **幽冥**裂缝跨界随机流的派生键：ASCII 'NRFT'（0x4e 0x52 0x46 0x54）。
+ *
+ * ── 为什么是**第三条**流（D6-3 工程包 A）────────────────────────
+ * D6-2 时幽冥缝被整体冻结（在抽签之前 `continue`），所以只需要一条流。
+ * D6-3 让它产生跨界效果，就必须给它一条流——而**不能用** `riftRngFor`：
+ * 两条缝共用一条流时，「玩家多开了一条幽冥缝」会**移动上界缝的抽签序列**
+ * （同一拍里谁先抽、抽了几下都变了），于是既有标定与长测读数全部作废，
+ * 且**不报错**。这正是铁律一要防的事（`Life.rng` 的翻版，只是规模小一号）。
+ *
+ * ⚠️ 与 `RIFT_SEED_KEY` **必须不同**：相同就等于共用一条流，
+ * 上面那段理由就白写了。`scripts/inkbox-three-realms.mjs` 的 F7 钉着这一点
+ * （它同时数「裂隙流被抽了几次」与「幽冥流被抽了几次」，两者互不影响）。
+ *
+ * ⚠️ 也不与 `UPPER_SEED_KEY`(0x55505052) / `NETHER_SEED_KEY`(0x4e455452) /
+ * `UPPER_SPATIAL_SEED_KEY`(0x55505342) 相同——它们各自是别的子系统的流。
+ */
+export const NETHRIFT_SEED_KEY = 0x4e524654;
 
 /**
  * 裂缝独立随机流的缓存。**模块级 `WeakMap`，不挂 `world.riftRng` 属性。**
@@ -314,6 +438,103 @@ export function riftRngFor(world) {
   if (!rng) {
     rng = mulberry32(((world.seed || 0) ^ RIFT_SEED_KEY) >>> 0);
     RIFT_RNG.set(world, rng);
+  }
+  return rng;
+}
+
+/**
+ * **幽冥**裂缝跨界随机流的缓存。理由与 `RIFT_RNG` 逐条相同
+ * （模块级 `WeakMap` ⇒ 序列化器结构上看不见；弱引用 ⇒ 不泄漏旧 world）。
+ */
+const NETHRIFT_RNG = new WeakMap();
+
+/**
+ * 幽冥裂缝跨界随机流。**同一条 world 永远是同一条流**，且与 `riftRngFor`
+ * **互不干扰**（理由见 `NETHRIFT_SEED_KEY` 的注释）。
+ *
+ * ⚠️ 同样是**长活的同一条流**，不是每次调用重建——否则每次判定都拿到
+ * 同一串数的开头，「漏不漏、漏谁」就不再是随机的（同 `riftRngFor`）。
+ *
+ * @param {object} world 凡间 world（只用它的 `seed`）
+ * @returns {() => number} 该 world 专属、且持续演进的幽冥裂缝流
+ */
+export function netherRiftRngFor(world) {
+  let rng = NETHRIFT_RNG.get(world);
+  if (!rng) {
+    rng = mulberry32(((world.seed || 0) ^ NETHRIFT_SEED_KEY) >>> 0);
+    NETHRIFT_RNG.set(world, rng);
+  }
+  return rng;
+}
+
+/**
+ * **幽冥物品泄漏**随机流的派生键（D6-3 工程包 C）。
+ *
+ * 这是第 **七** 条独立流，与其余六条**两两不同**：
+ *   `RIFT_SEED_KEY`(0x72696674 'rift') · `NETHRIFT_SEED_KEY`(0x4e524654 'NRFT') ·
+ *   `MORTALHAUNT_SEED_KEY`(0x4841554e 'HAUN') · `UPPER_SEED_KEY`(0x55505052 'UPPR') ·
+ *   `NETHER_SEED_KEY`(0x4e455452 'NETH') · `MERCY_SEED_KEY`(0x4d455243 'MERC') ·
+ *   **本键 0x4e49544d（'NITM' = nether item）**。
+ * `scripts/inkbox-three-realms.mjs` 的 F10 逐对钉这件事。
+ *
+ * ⚠️ 为什么要**再开一条**而不是复用 `netherRiftRngFor`：`stepNetherRift` 里
+ *    三支效果（人跌入 / 鬼爬出 / 物品漏出）**各抽各的签**（见那里的判决）。
+ *    共用一条流会让「物品漏没漏」取决于前两支抽了几次 ⇒ 三条流重新耦合，
+ *    「互不干扰」当场失效（而且不报错）。
+ */
+export const NETHERITEM_SEED_KEY = 0x4e49544d;
+
+/** **幽冥物品泄漏**随机流的缓存。理由与 `RIFT_RNG` / `NETHRIFT_RNG` 逐条相同。 */
+const NETHERITEM_RNG = new WeakMap();
+
+/**
+ * 幽冥物品泄漏随机流。**同一条 world 永远是同一条流**，且与其余六条
+ * **互不干扰**（理由见 `NETHERITEM_SEED_KEY` 的注释）。
+ *
+ * @param {object} world 凡间 world（只用它的 `seed`）
+ * @returns {() => number} 该 world 专属、且持续演进的幽冥物品流
+ */
+export function netherItemRngFor(world) {
+  let rng = NETHERITEM_RNG.get(world);
+  if (!rng) {
+    rng = mulberry32(((world.seed || 0) ^ NETHERITEM_SEED_KEY) >>> 0);
+    NETHERITEM_RNG.set(world, rng);
+  }
+  return rng;
+}
+
+/**
+ * **跨位面夺舍**随机流的派生键（D6-3 工程包 D）。
+ *
+ * 这是第 **八** 条独立流，与其余七条**两两不同**：
+ *   `RIFT_SEED_KEY`(0x72696674 'rift') · `NETHRIFT_SEED_KEY`(0x4e524654 'NRFT') ·
+ *   `MORTALHAUNT_SEED_KEY`(0x4841554e 'HAUN') · `NETHERITEM_SEED_KEY`(0x4e49544d 'NITM') ·
+ *   `UPPER_SEED_KEY`(0x55505052 'UPPR') · `NETHER_SEED_KEY`(0x4e455452 'NETH') ·
+ *   `MERCY_SEED_KEY`(0x4d455243 'MERC') · **本键 0x4e505358（'NPSX' = nether possess）**。
+ * `scripts/inkbox-three-realms.mjs` 的 F11 逐对钉这件事。
+ *
+ * ⚠️ 为什么要**再开一条**而不是复用 `netherItemRngFor`：`stepNetherRift` 里
+ *    四支效果（人跌入 / 鬼爬出 / 物品漏出 / 鬼修夺舍）**各抽各的签**（见那里的判决）。
+ *    共用一条流会让「夺舍有没有发生」取决于前三支抽了几次 ⇒ 四条流重新耦合，
+ *    「互不干扰」当场失效（而且不报错）。
+ */
+export const NETHER_POSSESS_SEED_KEY = 0x4e505358;
+
+/** **跨位面夺舍**随机流的缓存。理由与其余六条逐条相同。 */
+const NETHER_POSSESS_RNG = new WeakMap();
+
+/**
+ * 跨位面夺舍随机流。**同一条 world 永远是同一条流**，且与其余七条
+ * **互不干扰**（理由见 `NETHER_POSSESS_SEED_KEY` 的注释）。
+ *
+ * @param {object} world 凡间 world（只用它的 `seed`）
+ * @returns {() => number} 该 world 专属、且持续演进的跨位面夺舍流
+ */
+export function netherPossessRngFor(world) {
+  let rng = NETHER_POSSESS_RNG.get(world);
+  if (!rng) {
+    rng = mulberry32(((world.seed || 0) ^ NETHER_POSSESS_SEED_KEY) >>> 0);
+    NETHER_POSSESS_RNG.set(world, rng);
   }
   return rng;
 }
@@ -411,49 +632,111 @@ function clamp(lo, hi, v) {
 }
 
 /**
- * 在划选矩形的**四条边**上开裂缝。
+ * 把一条**格点到格点**的直线逐格光栅化（Bresenham），每落一格调一次 `push`。
+ * 返回走过的格数（含两端）。
  *
- * 规则（规格 §4.1 + §4.3 判定规则）：
- *   · 矩形先归一化（`x0<=x1`、`y0<=y1`）并 clamp 到地图内；
- *   · 裂缝数 = `clamp(1, 4, round(周长 / 120))`，周长 = `2 * (cols + rows)`；
- *   · 候选格 = 四条边上的所有格（**不含内部**），角格去重；
- *   · 位置过滤：凡间 `world.isWalkable` 为真 **且** 上界对应格
- *     `upperWalkable` 为真——否则会开出「一条在雪山之巅、谁都够不着的裂缝」；
+ * 为什么不用「按参数 t 均匀采样」：采样步长与斜率的比值会漏格——一条 45° 的
+ * 长边会在某些段上跳过中间格，于是「边缘」出现洞，裂缝就会开在洞外。
+ * Bresenham 保证**首尾相接、每步只走一格**，边是连续的。
+ *
+ * 端点已由调用方 clamp 到地图内，Bresenham 全程留在两端点的包围盒里，
+ * 所以中间格**必然**也在图内（不会写出越界索引）。
+ */
+function walkLine(ax, ay, bx, by, push) {
+  let x = ax;
+  let y = ay;
+  const dx = Math.abs(bx - ax);
+  const dy = Math.abs(by - ay);
+  const sx = ax < bx ? 1 : -1;
+  const sy = ay < by ? 1 : -1;
+  let err = dx - dy;
+  let steps = 0;
+  for (;;) {
+    push(x, y);
+    steps += 1;
+    if (x === bx && y === by) break;
+    const e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x += sx; }
+    if (e2 < dx) { err += dx; y += sy; }
+    if (steps > dx + dy + 2) break;      // 安全阀：Bresenham 最多走 max(dx,dy)+1 步
+  }
+  return steps;
+}
+
+/**
+ * 在划选区域的**边缘**上开裂缝。
+ *
+ * 区域有两种形状，走两条候选格枚举：
+ *   · **矩形**（`{x0,y0,x1,y1}`，无 `path`）：候选格 = 四条边上的所有格
+ *     （**不含内部**），角格去重；周长 = `2 * (cols + rows)`。
+ *   · **自由形状**（带 `path`，世界坐标格点序列、首尾不重复）：候选格 =
+ *     相邻两点连线**逐格光栅化**后的格（含闭合边「最后一点 → 第一点」），
+ *     `seen` 去重；周长 = 各段格数之和。
+ *
+ * 之后的规则两条路**完全共用**（规格 §4.1 + §4.3 判定规则）：
+ *   · 裂缝数 = `clamp(1, 4, round(周长 / 120))`；
+ *   · 位置过滤：凡间 `world.isWalkable` 为真 **且** 目标位面对应格可站人
+ *     ——否则会开出「一条在雪山之巅、谁都够不着的裂缝」。目标位面的判据**单源**：
+ *     上界 `upperWalkable`、幽冥 `netherWalkable`（都在 `world/planes.js`）。
+ *     ⚠️ 不能继续统一调 `upperWalkable` 处理所有裂缝：拿上界那两条阈值
+ *     （`height` / `water`）去判幽冥地图会得到一张「哪儿都站不住」的图，
+ *     于是幽冥裂缝**一条都开不出来**，而且不报错（D6-2 工程包 B3 的根因）。
  *   · 去重：已有活跃裂缝的格不再开；
  *   · 选格走 `riftRngFor(world)`，Fisher-Yates 洗牌取前 N（**无偏、抽签数确定**）。
+ *
+ * ⚠️ **矩形分支必须与「自由形状」落地之前的旧行为逐格一致**——
+ *    `scripts/_riftprobe.mjs` 的 ①–④ 直接数候选格，钉死在矩形上。
  *
  * ⚠️ **`world.upper` 可能不存在**（测试造的单世界、或阶段一之前的档）。
  * 那时**跳过位置过滤里的上界那一半**，只判凡间。这不是「放行」：
  * 上界不存在时，`stepRifts` 的整个方向 B 也会被跳过（见那里的注释），
  * 于是不会出现「只有一半世界能站人」的矛盾。
+ * ⚠️ **幽冥那一侧刻意不对称**：`world.nether` 不存在时**直接拒**（`'no-plane'`），
+ *    不跳过判据。理由见 `@param targetPlane`——上界那条宽容是**历史行为**
+ *    （改它会动到既有夹具），幽冥这条是**新契约**，从第一天就按正确语义写。
  *
  * ⚠️ **为什么用洗牌而不是「反复重试直到命中」**：重试的抽签次数取决于
  * 候选格的随机命中率，是**不定量**的——同一个 world 上，一次 `openRifts`
  * 之后流的位置不可预测，于是「同一 seed 的两条世界线」在第二次开缝时
  * 就会分叉。洗牌的抽签数只取决于候选数组长度（确定的），流位置可预测。
  *
- * @param {object} world 凡间 world（需要 `w`/`h`/`size`/`isWalkable`；可选 `upper`）
- * @param {{x0:number,y0:number,x1:number,y1:number}} rect 划选矩形（格坐标）
+ * @param {object} world 凡间 world（需要 `w`/`h`/`size`/`isWalkable`；
+ *        目标 `'upper'` 时可选 `upper`，目标 `'nether'` 时**必须**有 `nether`）
+ * @param {{x0:number,y0:number,x1:number,y1:number,path?:Array<[number,number]>}} region
+ *        划选区域：带 `path` 走自由形状，否则按矩形
+ * @param {'upper'|'nether'} [targetPlane] 这条缝连接哪一界。缺省 `'upper'`
+ *        （契约之前只有一个隐含目标——上界，所以缺省即历史行为）。
+ *        非 `'upper'` / `'nether'` 的值**一律归一到 `'upper'`**（不抛错：
+ *        调用方是 UI 与测试，传错一个字符串不该让整个视界动作炸掉）。
+ *        ⚠️ `'nether'` 且 `world.nether` 不存在 → **如实报拒**（`reason: 'no-plane'`）：
+ *        一条「连接幽冥」的缝而幽冥不存在，它连的是一个空位面——那是**假的**
+ *        世界状态，还会进存档。宁可不开，也不要造一条永远连不通的缝。
+ *        （上界那一侧刻意**不**这样做：老行为是「`upper` 缺省就跳过位置过滤里的
+ *        上界那一半」，改它会动到既有测试的夹具，见下面位置过滤那一段。）
  * @returns {{opened:number, refused:boolean, reason:string|null}}
  */
-export function openRifts(world, rect) {
+export function openRifts(world, region, targetPlane = 'upper') {
   ensureRiftState(world);
   const { w, h } = world;
 
-  // ── 1. 归一化 + clamp ─────────────────────────────────────
-  const rx0 = Math.min(rect.x0, rect.x1) | 0;
-  const rx1 = Math.max(rect.x0, rect.x1) | 0;
-  const ry0 = Math.min(rect.y0, rect.y1) | 0;
-  const ry1 = Math.max(rect.y0, rect.y1) | 0;
-  const x0 = clamp(0, w - 1, rx0);
-  const x1 = clamp(0, w - 1, rx1);
-  const y0 = clamp(0, h - 1, ry0);
-  const y1 = clamp(0, h - 1, ry1);
+  // ── 0. 目标位面（D6-2 工程包 B1）──────────────────────────
+  // 归一 + 「目标世界在不在」的显式检查。理由见上面 `@param` 那一段。
+  const plane = targetPlane === 'nether' ? 'nether' : 'upper';
+  if (plane === 'nether' && !world.nether) {
+    return { opened: 0, refused: true, reason: 'no-plane' };
+  }
 
-  // ── 2. 上限：活跃裂缝够了就拒绝 ───────────────────────────
+  // 自由形状？`path` 至少要 3 点才构成一条闭合折线（与 normalizeRegion 同口径）。
+  const path = (region && Array.isArray(region.path) && region.path.length >= 3)
+    ? region.path
+    : null;
+
+  // ── 1. 上限：活跃裂缝够了就拒绝 ───────────────────────────
   // 数「活跃」（`closedDay < 0`）而不是 `world.rifts.length`：
   // `stepRifts` 会剔除闭合的，但**调用方不一定刚调过** `stepRifts`——
   // 若数组里还留着已闭合的记录，按 `.length` 数会提前触顶（少开缝，不报错）。
+  // ⚠️ 这一条**排在枚举候选格之前**：到顶时直接返回，不去光栅化路径（省一次
+  //    整圈走格）。顺序与旧版一致，`reason` 也仍是 'active-cap'。
   let activeCount = 0;
   for (let i = 0; i < world.rifts.length; i += 1) {
     if (world.rifts[i].closedDay < 0) activeCount += 1;
@@ -462,9 +745,7 @@ export function openRifts(world, rect) {
     return { opened: 0, refused: true, reason: 'active-cap' };
   }
 
-  // ── 3. 候选格：四条边（不含内部），角格去重 ───────────────
-  const cols = x1 - x0 + 1;
-  const rows = y1 - y0 + 1;
+  // ── 2. 候选格 + 周长 ──────────────────────────────────────
   const cells = [];
   const seen = new Set();
   const pushCell = (x, y) => {
@@ -473,11 +754,56 @@ export function openRifts(world, rect) {
     seen.add(i);
     cells.push({ x, y, i });
   };
-  for (let x = x0; x <= x1; x += 1) { pushCell(x, y0); pushCell(x, y1); }
-  for (let y = y0 + 1; y <= y1 - 1; y += 1) { pushCell(x0, y); pushCell(x1, y); }
+  let cols;
+  let rows;
+  let perimeter;
+  if (path) {
+    // 自由形状：相邻两点连线逐格光栅化（含闭合边）。
+    // 包围盒（cols/rows）只为 `strength` 的 `areaFrac` 服务，与矩形分支同口径。
+    let minX = w - 1;
+    let maxX = 0;
+    let minY = h - 1;
+    let maxY = 0;
+    perimeter = 0;
+    for (let k = 0; k < path.length; k += 1) {
+      const a = path[k];
+      const b = path[(k + 1) % path.length];
+      const ax = clamp(0, w - 1, Math.round(a[0]));
+      const ay = clamp(0, h - 1, Math.round(a[1]));
+      const bx = clamp(0, w - 1, Math.round(b[0]));
+      const by = clamp(0, h - 1, Math.round(b[1]));
+      perimeter += walkLine(ax, ay, bx, by, pushCell);
+      if (ax < minX) minX = ax;
+      if (ax > maxX) maxX = ax;
+      if (ay < minY) minY = ay;
+      if (ay > maxY) maxY = ay;
+      if (bx < minX) minX = bx;
+      if (bx > maxX) maxX = bx;
+      if (by < minY) minY = by;
+      if (by > maxY) maxY = by;
+    }
+    cols = maxX - minX + 1;
+    rows = maxY - minY + 1;
+  } else {
+    // 矩形（旧路径，逐格一致）。
+    const rx0 = Math.min(region.x0, region.x1) | 0;
+    const rx1 = Math.max(region.x0, region.x1) | 0;
+    const ry0 = Math.min(region.y0, region.y1) | 0;
+    const ry1 = Math.max(region.y0, region.y1) | 0;
+    const x0 = clamp(0, w - 1, rx0);
+    const x1 = clamp(0, w - 1, rx1);
+    const y0 = clamp(0, h - 1, ry0);
+    const y1 = clamp(0, h - 1, ry1);
+    cols = x1 - x0 + 1;
+    rows = y1 - y0 + 1;
+    for (let x = x0; x <= x1; x += 1) { pushCell(x, y0); pushCell(x, y1); }
+    for (let y = y0 + 1; y <= y1 - 1; y += 1) { pushCell(x0, y); pushCell(x1, y); }
+    perimeter = 2 * (cols + rows);
+  }
 
   // ── 4. 位置过滤 + 去重（已有活跃裂缝的格）─────────────────
   const upper = world.upper;
+  const nether = world.nether;
   const occupied = new Set();
   for (let i = 0; i < world.rifts.length; i += 1) {
     const rf = world.rifts[i];
@@ -488,13 +814,20 @@ export function openRifts(world, rect) {
     const c = cells[k];
     if (occupied.has(c.i)) continue;
     if (!world.isWalkable(c.i)) continue;
-    // `upper` 缺省 → 只判凡间（理由见函数头注释）
-    if (upper && !upperWalkable(upper, c.i)) continue;
+    // 目标位面对应格也必须可站人（判据**单源**，理由见函数头与 @param）：
+    //   · 'upper'  —— 既有行为逐字不变：`upper` 缺省则只判凡间；
+    //   · 'nether' —— `nether` 必然存在（第 0 步已拒掉缺省的情形），
+    //                 判据走 `netherWalkable`，与鬼魂落点同源。
+    if (plane === 'nether') {
+      if (!netherWalkable(nether, c.i)) continue;
+    } else if (upper && !upperWalkable(upper, c.i)) {
+      continue;
+    }
     sites.push(c);
   }
 
   // ── 5. 洗牌取前 N ────────────────────────────────────────
-  const perimeter = 2 * (cols + rows);
+  // `perimeter` 在 ② 里按形状算好了（矩形 = 2(cols+rows)，自由形状 = 各段格数之和）。
   const want = clamp(1, 4, Math.round(perimeter / 120));
   const rng = riftRngFor(world);
   for (let i = sites.length - 1; i > 0; i -= 1) {
@@ -528,6 +861,13 @@ export function openRifts(world, rect) {
       closedDay: -1,
       leaked: 0,
       crossed: 0,
+      // ── 目标位面（D6-2 工程包 B2）──────────────────────────
+      // 追加在**行尾**：实体行是定长数组、裂缝是对象，但两者的纪律同一条
+      // ——中间插字段会顶歪按位置读的代码（`io/save.js` 是逐字段具名读写的，
+      // 这里追加最省事也最安全）。
+      // ⚠️ **必须进存档**（`io/save.js` 写读两侧）：一条缝能活 30–40 年，
+      //    玩家关掉视界以后它仍然必须知道自己原本连接哪里。
+      targetPlane: plane,
     });
     world.nextRiftId += 1;
     world.riftLog.opened += 1;
@@ -535,8 +875,13 @@ export function openRifts(world, rect) {
     // 裂缝是**玩家亲手划出来的**、而且会持续漏物 / 吸人上界 / 自己闭合，
     // 所以它是「我刚才那一笔到底改了什么」最直接的回执。
     // ⚠️ 不调 `rng()`：这里用的是已经洗好的 `sites`，加一行不会移动随机流。
+    // ⚠️ 文案按目标位面分流：幽冥渗的是**阴气**，不是灵气——把「灵气」印在
+    //    一条连幽冥的缝上，是玩家可见层里那种「看着像、其实错」的话。
+    //    上界那半句**逐字未改**（既有探针 / 报告里引过它）。
     world.milestone(
-      `${placeOf(world, c.x, c.y)}的天地裂开一道缝隙，灵气自其中泄出。`,
+      plane === 'nether'
+        ? `${placeOf(world, c.x, c.y)}的天地裂开一道缝隙，阴气自其中渗出。`
+        : `${placeOf(world, c.x, c.y)}的天地裂开一道缝隙，灵气自其中泄出。`,
       'rift',
     );
   }
@@ -665,11 +1010,14 @@ function leakUpperArtifact(world, rift, r, rng) {
  *
  * ⚠️ **为什么不给 `riftLog` 加键**：灵植在语义上也是「漏物」，计进**现有的**
  * `riftLog.leaked`（规格 §4.3 第 2 行的判定条件与第 1 行同构）。这样
- * `io/save.js` 的 `riftLog` **5 键契约**与 `rifts[]` **9 字段契约**一个字都
- * 不用动，五支按旧契约写断言的脚本一条都不会红。两个来源的**分离读数**
+ * `io/save.js` 的 `riftLog` **5 键契约**与 `rifts[]` 记录契约一个字都
+ * 不用动，按旧契约写断言的脚本一条都不会红。两个来源的**分离读数**
  * 靠已有账本现算：
  * `灵植件数 = riftLog.leaked − artifactLog.riftIn − artifactLog.riftOut`
  * （`riftIn` 只在法宝「上→下」时自增、`riftOut` 只在凡间法宝「下→上」时自增）。
+ * ⚠️ 当时 `rifts[]` 是 **9 字段**契约；**现在是 10 字段**（2026-09-24 · D6-2
+ * 工程包 B2 加了 `targetPlane`）。本段纪律不变——**本条通道一个字段都没加**，
+ * 加的那一个是裂隙「连哪一界」的身份，与漏物通道无关。
  *
  * @param {() => number} rng 裂缝独立流（与法宝分支**同一条**）
  * @returns {boolean} 是否真的漏了一件东西（法宝或灵植）
@@ -1061,6 +1409,421 @@ function leakGroundArtifactToUpper(world, rift, r, rng) {
   return true;
 }
 
+// ══════════════════════════════════════════════════════════════════
+// 幽冥裂缝的跨界效果（D6-3 工程包 A）
+// ══════════════════════════════════════════════════════════════════
+//
+// D6-2 把幽冥缝整体冻结（在抽签之前 `continue`）。D6-3 解冻它，但**不是**
+// 把它接回上界那条链路——那正是 D6-2 要防的「语义错位」。做法是给它一条
+// **自己的通道**（`stepNetherRift`）与**自己的流**（`netherRiftRngFor`）：
+//
+//   · 上界缝：`rng()` → 方向抽签 → `leakFromUpper` / `leakToUpper` → `arriveUpper`
+//   · 幽冥缝：`nrng()` → 速率闸门 → `fallIntoNether`（B 包再加「鬼进入凡间」）
+//
+// 两条链路**在函数边界上分离**：`stepNetherRift` 及其下游够不到
+// `arriveUpper` / `leakFromUpper` / `leakToUpper`。这比 D6-2 的
+// 「靠一行 `continue` 拦住」更强——`continue` 是一行可以被顺手删掉的守卫，
+// 函数边界不是。`scripts/inkbox-three-realms.mjs` 的 F7 用**源码结构**钉它。
+//
+// ⚠️ 两界的账**分开记**：上界的进出在 `world.riftLog` / `artifactLog`，
+// 幽冥方向的在 `nether.popLog.fellIn`。**不扩 `riftLog` 契约**（它是
+// `io/save.js` 里逐键显式序列化的 5 键，加键会读档丢失——见 `leakFromUpper`
+// 那段注释与 `leakUpperHerb` 的先例）。`rift.crossed` / `riftLog.crossed`
+// 的语义仍是「进了**上界**的人」，本包**不动它**。
+//
+// ⚠️ **C 包（幽冥物品泄漏）在这条通道上加了两处**，都不改上界那条链路：
+//   · `fallIntoNether` 把跌入者的法宝**带进幽冥**（原先留在凡间地上）；
+//   · 新增 `leakNetherItem`：幽冥物品经缝**漏回凡间**（第三个独立 `if`）。
+//   物品的账走 `nether.popLog.items*` 与凡间 `artifactLog.netherIn/Out`，
+//   仍然**不扩 `riftLog` 契约**。
+
+/**
+ * 把一个人身上的法宝**搬进幽冥物品池**（D6-3 工程包 C）。**零 rng**。
+ *
+ * 这是「幽冥物品从哪来」的第一条来源（第二条是幽冥自生，见 `netherLife.js`
+ * 的 `stepNetherItems`）。东西跟着人落到幽冥的落点，之后可能经缝漏回凡间。
+ *
+ * ⚠️⚠️ **必须重赋 id**（铁律三）：法宝 id 是**世界内**编号，凡间与幽冥各自
+ *    从 1 起。不重赋就会出现「凡间第 5 件」与「幽冥第 5 件」同号——而这些
+ *    东西**迟早会漏回凡间**（`leakNetherItem`），那时 `claimGroundArtifact`
+ *    按 id 线性查找会命中**先出现的那一件**，而且**不报错**。
+ *    ⇒ 跨世界一律重赋（凡→幽、幽→凡两个方向都重赋），两边 id 空间各自自洽。
+ *
+ * ⚠️ 落点用**人的落点**（`ghost.x/ghost.y`），不是裂缝口——东西是跟人下去的。
+ *
+ * @returns {number} 搬过去的件数
+ */
+function moveArtifactsToNether(world, nether, entity, x, y) {
+  const list = entity && entity.artifacts;
+  if (!list || !list.length) return 0;
+  const items = Array.isArray(nether.artifacts) ? nether.artifacts : (nether.artifacts = []);
+  if (typeof nether.nextArtifactId !== 'number') nether.nextArtifactId = 1;
+  const day = typeof world.day === 'number' ? world.day : 0;
+  for (let i = 0; i < list.length; i += 1) {
+    const a = list[i];
+    a.id = nether.nextArtifactId;      // 重赋：幽冥自己的 id 空间
+    nether.nextArtifactId += 1;
+    a.ownerId = 0;                     // 无主——他已经是鬼，鬼不持法宝
+    a.ownerName = null;
+    a.heldSince = day;
+    a.lostDay = day;                   // 「躺在地上」的起点（朽坏判据读它）
+    a.x = x;
+    a.y = y;
+    items.push(a);
+  }
+  const n = list.length;
+  entity.artifacts = [];
+  return n;
+}
+
+/**
+ * 幽冥裂缝的跨界效果：**凡 → 幽**。裂缝附近的活人跌入幽冥。
+ *
+ * 与 `leakToUpper`（凡 → 上）是同一条规格的两个方向，骨架逐条对应：
+ * 候选 → 取境界最高 → 落成 → 转移 → 记账。
+ *
+ * ── 语义 ─────────────────────────────────────────────────
+ * 活人从裂缝跌进幽冥，**随即在幽冥成为鬼魂**。为什么不让他「以活人身份
+ * 在幽冥游荡」：
+ *   1. 幽冥生态（`stepNether`）只处理鬼魂实体——活人在那里永远不会被
+ *      任何一步碰到 ⇒ **永久定格**，与「让门后的世界活起来」正相反；
+ *   2. 复用 `spawnNetherGhost` 就自动拿到 id 段切断（`NETHER_ID_BASE`）、
+ *      落点求解（`landingFor` 的纯哈希）、`ghostBorn` 记账 ⇒
+ *      **守恒式 `鬼魂+鬼修 === 生 − 亡 − 逐` 一个字都不用改**。
+ *   3. 境界 ≥ 1 的落成**鬼修**、凡人是**鬼魂**——与 `enterNether` 的
+ *      `ghost` 路 / `wraith` 路同款（起步 = 游魂，`level` 由 `spawnNetherGhost` 定）。
+ *
+ * ⚠️ **高修为不进候选**（`level >= RIFT_CROSS_MAX_LEVEL` 只能走飞升）：
+ *    与 `leakToUpper` **同一个常量、同一个方向**（`>=` 而不是 `>`）。
+ *    ⚠️ 这条判据在 `leakToUpper` 那边被探针 ⑬G 钉着；这边是**新的一条**，
+ *    同样必须存在——否则化神修士会被幽冥缝吸走，与「高修为必须走飞升」矛盾。
+ *
+ * ⚠️ **`world.nether` 不存在时整条跳过**（同 `leakToUpper` 的 `world.upper`）：
+ *    没有幽冥可去，把人删掉等于凭空蒸发——宁可这次什么都不做。
+ *
+ * ⚠️ **先落成、再移除**（顺序承重）：`spawnNetherGhost` 会撞
+ *    `LIMITS.maxEntities` 硬顶并返回 `null`。若先把人 `splice` 出凡间、
+ *    再发现落不成，这个人就**凭空蒸发**了——函数返回得干干净净，
+ *    世界上少一个人，没有任何地方记得。
+ *
+ * ⚠️ **本函数零 `rng`**：候选是「半径内境界最高的人」，落点由
+ *    `spawnNetherGhost` 的纯哈希决定（与 `leakToUpper` 的第 2 支同款）。
+ *    判定节奏的抽签在 `stepNetherRift` 里（那是「这一拍有没有动静」，
+ *    不是「选谁」）。所以本函数**不消费**幽冥流——`scripts/inkbox-three-realms.mjs`
+ *    的 F8 数着这件事。
+ *
+ * @param {object} world 凡间 world（挂 `.nether` 的那个）
+ * @param {object} rift 一条 `targetPlane === 'nether'` 的裂缝
+ * @param {number} r 该裂缝当前的半径（格）
+ * @returns {boolean} 是否真的送走了一个人
+ */
+export function fallIntoNether(world, rift, r) {
+  const nether = world.nether;
+  if (!nether || !Array.isArray(nether.entities)) return false;   // 整条跳过
+
+  // ── 1. 候选：半径内的活人，排除高修为；取境界最高的一个 ──
+  //    ⚠️ 用 `>` 而不是 `>=`：同 level 时保留**先遇到的**那个
+  //    （顺序稳定、可复现——同 `leakToUpper`）。
+  let best = null;
+  for (let i = 0; i < world.entities.length; i += 1) {
+    const e = world.entities[i];
+    if (!isPerson(e)) continue;
+    if ((e.level || 0) >= RIFT_CROSS_MAX_LEVEL) continue;
+    if (Math.hypot(e.x - rift.x, e.y - rift.y) > r) continue;
+    if (!best || (e.level || 0) > (best.level || 0)) best = e;
+  }
+  if (!best) return false;
+
+  // ── 2. 落成幽冥实体（**先落成，再移除**，理由见函数头）──
+  const ghost = spawnNetherGhost(nether, {
+    kind: (best.level || 0) >= 1 ? 'ghostCultivator' : 'ghost',
+    // 身份快照：形状的唯一真源 = `reincarnation.js` 的 `ghostSnapshot`。
+    // ⚠️ `route` 传 `null`：五路是「**死后**去哪」的分类，而他是
+    //    **从裂缝跌进去的**（没走魂路）。硬塞一个五路之一会让名册说谎。
+    ghostOf: ghostSnapshot(world, best, null),
+    soulId: null,
+  });
+  if (!ghost) return false;      // 撞实体硬顶：凡间毫发无伤
+
+  // ── 3. 把他身上的法宝**带进幽冥**（D6-3 工程包 C）──
+  //    A 包时这里是 `scatterArtifacts`（法宝留在凡间地上）；C 包改成**随身带下去**
+  //    ——这正是「幽冥物品从哪来」的第一条来源（第二条是幽冥自生，
+  //    `netherLife.js` 的 `stepNetherItems`）。东西跟着人落到幽冥，
+  //    之后可能经幽冥缝漏回凡间（`leakNetherItem`）。
+  //
+  //    ⚠️ **重赋 id**：法宝 id 是**世界内**编号，凡间与幽冥各自从 1 起。
+  //    不重赋就会出现「凡间第 5 件」与「幽冥第 5 件」同号，漏回凡间时
+  //    `claimGroundArtifact` 按 id 线性查找会命中**先出现的那一件**（铁律三）。
+  //    ⇒ 跨世界一律重赋，两边 id 空间各自自洽、永不撞号。
+  //    ⚠️ **落点用 `ghost` 的位置**（不是裂缝口）：东西是跟人一起下去的。
+  //    ⚠️ 顺序：必须在 `splice` **之前**做完（`best.artifacts` 此刻还在身上）。
+  //    ⚠️ 对凡人这一步恒为 no-op（`canHold` 要求 `level >= 1`）——空调用换掉
+  //       「level 0 身上一定没法宝」这个必须由别处维持的假设（同 A 包）。
+  const carried = moveArtifactsToNether(world, nether, best, ghost.x, ghost.y);
+  const at = world.entities.indexOf(best);
+  if (at >= 0) world.entities.splice(at, 1);
+
+  // ── 4. 账：**幽冥侧** ──
+  //    `fellIn` 是 `ghostBorn` 的子计数（`spawnNetherGhost` 已经涨过那一笔），
+  //    所以这里只记「其中有多少是跌进来的」，守恒式不受影响。
+  const log = ensureNetherPopLog(nether);
+  log.fellIn += 1;
+  if (carried > 0) {
+    log.itemsFellIn += carried;
+    // 池子可能被这一批撑破——走**与自生同一处**的裁剪（否则两处各写一份会分叉）。
+    trimNetherItems(nether, log);
+    // 凡间侧的对账：这批法宝**离开了凡间**。不记的话凡间的守恒律
+    // `造出 + 流入 === 在世 + 碎 + 朽 + 流出` 会因「在世凭空少了几件」而静默失效
+    // （同 `leakUpperArtifact` 记 `riftIn` 的理由，只是方向相反）。
+    // ⚠️ 与 `riftOut`（凡→**上界**）分列两键：那是上界缝，这是幽冥缝。
+    if (world.artifactLog) {
+      world.artifactLog.netherOut = (world.artifactLog.netherOut || 0) + carried;
+    }
+  }
+
+  // ── 5. 编年史 ──
+  //    kind 用 `'rift-lost'`（`KIND_TAG` 已配，归 `person`）：它与 `death` /
+  //    `ascend` 是**同一组对照事件**——「这个人从世界上消失的第三种方式」。
+  //    走 `world.record`，**不自己 push**（自己 push 会绕过编年史滚动窗口）。
+  const name = best.name || '一名凡人';
+  if (typeof world.record === 'function') {
+    world.record(`${name}跌入裂缝（${rift.x},${rift.y}），落入幽冥`, 'rift-lost');
+  }
+  return true;
+}
+
+/**
+ * 幽冥裂缝的跨界效果：**幽 → 凡**。缝口的鬼魂爬进凡间。
+ *
+ * 与 `fallIntoNether`（凡 → 幽）是同一条规格的反方向，骨架逐条对应：
+ * 候选 → 取一个 → 落成 → 转移 → 记账 → 编年史。
+ *
+ * ── 语义 ─────────────────────────────────────────────────
+ * 鬼**保留自己的身份**从缝口爬出来，在凡间飘荡一段日子再消散。
+ * 它**不是**「活人」，也不进 `world.entities`——理由见 `sim/wraiths.js`
+ * 的头注释（那里记着完整的事实链：`stepCultivation` 的豁免名单不含 `ghost`，
+ * 所以鬼一旦进了凡间实体列表就会被掷觉醒骰、被修炼、被飞升）。
+ *
+ * ⚠️ **候选取「离缝口最近」的鬼**，而不是「境界最高」：
+ *    `fallIntoNether` 那边取境界最高（活人是**被吸**进去的，取强的合理）；
+ *    鬼是**自己爬**出来的，能爬到缝口的自然是最靠边的那只。取「境界最高」
+ *    会让鬼帝永远第一个冒头（幽冥里鬼帝很稀少，却次次是它），读起来像 bug。
+ *    ⚠️ 平手用 `<` 保留**先遇到的** ⇒ 顺序稳定、可复现（同 `leakToUpper`）。
+ *
+ * ⚠️ **先落成、再移除**（顺序承重，同 `fallIntoNether`）：`spawnWraith` 会撞
+ *    凡间鬼影上限并返回 `null`。若先把鬼从幽冥 `splice` 掉、再发现落不成，
+ *    这只鬼就**凭空蒸发**了——函数返回得干干净净，两个世界都少一只，
+ *    没有任何地方记得。
+ *
+ * ⚠️ **本函数零 `rng`**：判定节奏的抽签在 `stepNetherRift` 里，
+ *    「谁爬出来」由**空间距离**决定（纯算术）。所以本函数不消费任何流——
+ *    回归脚本 F9 数着这件事。
+ *
+ * @param {object} world 凡间 world（挂 `.nether` 的那个）
+ * @param {object} rift 一条 `targetPlane === 'nether'` 的裂缝
+ * @param {number} r 该裂缝当前的半径（格）
+ * @returns {boolean} 是否真的爬出来了一只
+ */
+export function climbOutToMortal(world, rift, r) {
+  const nether = world.nether;
+  if (!nether || !Array.isArray(nether.entities)) return false;   // 没幽冥可来
+
+  // ── 1. 候选：幽冥里离缝口**最近**的鬼魂（且要在半径内）──
+  let best = null;
+  let bestD = Infinity;
+  for (let i = 0; i < nether.entities.length; i += 1) {
+    const e = nether.entities[i];
+    if (e.sp !== SPECIES.GHOST) continue;
+    const d = Math.hypot(e.x - rift.x, e.y - rift.y);
+    if (d > r) continue;
+    if (d < bestD) { bestD = d; best = e; }
+  }
+  if (!best) return false;
+
+  // ── 2. 先落成凡间那一份 ──
+  //    落点 = 缝口。缝本身就开在**凡间可站格**上（`openRifts` 的位置判定
+  //    要求「凡间格可通行」），所以这里不需要另找落点——多一套落点判据
+  //    就是多一个会与 `openRifts` 分叉的真相。
+  const w = spawnWraith(world, {
+    // ⚠️ **把幽冥侧的 id 带过去**（铁律三）：它是「从幽冥来的那一只」，
+    //    重赋一个凡间段的号会抹掉这个来处，而且埋下「同一只鬼两个号」的隐患。
+    id: best.id,
+    x: rift.x + 0.5,
+    y: rift.y + 0.5,
+    level: best.level || 0,
+    soulKind: best.soulKind,
+    ghostOf: best.ghostOf || null,
+    // 名字跟着走：没有 `ghostOf` 的普通鬼魂靠这一项保住自己的名字，
+    // 否则 `spawnWraith` 会兜成「孤魂」，而编年史写的是它原来的名字——
+    // 同一只鬼在两个地方叫两个名字（不报错，只是读起来像 bug）。
+    name: best.name || null,
+    fromRiftId: rift.id,
+    climbedDay: world.day || 0,
+  });
+  if (!w) return false;      // 撞凡间鬼影上限：**幽冥那一份留着**（绝不凭空蒸发）
+
+  // ── 3. 再从幽冥移除 ──
+  const at = nether.entities.indexOf(best);
+  if (at >= 0) nether.entities.splice(at, 1);
+
+  // ── 4. 幽冥侧的账：**第三条离开路径** ──
+  //    `climbedOut` 独立于 `ghostDied`（消散）与 `evicted`（上限逐出）。
+  //    ⚠️ 不并进 `ghostDied`：那是「死了」，而它是「走了」——把「走了」记成
+  //    「死了」与 E 包拒绝把「被逐出」并进「亡」是同一条理由（`逐` 独立成键）。
+  //    ⇒ 幽冥守恒式随之扩成 `鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出`。
+  ensureNetherPopLog(nether).climbedOut += 1;
+
+  // ── 5. 编年史 ──
+  //    kind 用 `'rift-out'`（`KIND_TAG` 已配，归 `person`）：它与 `'rift-lost'`
+  //    是**同一组对照事件**的两半——「一个人从裂缝里消失」与「一只鬼从裂缝里
+  //    出来」。两者都落在**某一个具体的存在**身上，所以同归 `person`。
+  //    走 `world.record`，**不自己 push**（自己 push 会绕过编年史滚动窗口）。
+  const name = best.name || '一只孤魂';
+  if (typeof world.record === 'function') {
+    world.record(`${name}自裂缝（${rift.x},${rift.y}）爬入凡间`, 'rift-out');
+  }
+  return true;
+}
+
+/**
+ * 幽冥裂缝的跨界效果：**幽 → 凡**（物品）。幽冥物品经缝漏进凡间地上。
+ *
+ * 与 `climbOutToMortal`（幽 → 凡 的鬼）是同一条规格的**物品版**，骨架逐条对应；
+ * 与 `leakUpperArtifact`（上 → 下的法宝）是**镜像**：那个把上界的无主法宝漏到
+ * 凡间地上，这个把幽冥的物品漏到凡间地上。
+ *
+ * ── 与 `fallIntoNether` / `climbOutToMortal` **同一条纪律：本函数零 rng** ──
+ * 「漏哪一件」不抽签，取**离缝口最近**的一件（平手保留先遇到的）——与
+ * `climbOutToMortal` 取「最近的鬼」同款。判定节奏的抽签在 `stepNetherRift`
+ * 里（「这一拍有没有动静」，不是「漏哪件」）。所以本函数**不消费**任何流，
+ * `netherItemRngFor` 每拍恰好被抽一次（`scripts/inkbox-three-realms.mjs` 的
+ * F10 数着这件事）。
+ *
+ * ── 顺序（承重）────────────────────────────────────────────
+ * **先找落点、再动手**：找不到凡间可站格就整次放弃，物品**留在幽冥**
+ * （同 `leakUpperArtifact` / `leakUpperHerb` 的纪律——不许「先摘下来再丢进水里」）。
+ * 落点找到后**先落成凡间那一份、再从幽冥移除**（同 `climbOutToMortal`）。
+ *
+ * ── id 重赋（铁律三）──────────────────────────────────────
+ * 幽冥物品的 id 是**幽冥自己的编号**。落到凡间时必须**重赋凡间 id**
+ * （`world.nextArtifactId`），否则「幽冥第 5 件」与「凡间第 5 件」同号，
+ * 日后 `claimGroundArtifact` 按 id 线性查找会命中**先出现的那一件**（不报错）。
+ *
+ * @param {object} world 凡间 world（挂 `.nether` 的那个）
+ * @param {object} rift 一条 `targetPlane === 'nether'` 的裂缝
+ * @param {number} r 该裂缝当前的半径（格）
+ * @returns {boolean} 是否真的漏出了一件
+ */
+export function leakNetherItem(world, rift, r) {
+  const nether = world.nether;
+  if (!nether || !Array.isArray(nether.artifacts) || !nether.artifacts.length) return false;
+
+  // ── 1. 候选：半径内**离缝口最近**的幽冥物品（三界同尺寸、坐标对位）──
+  //    ⚠️ 用 `<` 而不是 `<=`：同距离时保留**先遇到的**（顺序稳定、可复现——
+  //    同 `climbOutToMortal` / `fallIntoNether`）。
+  let pick = null;
+  let bestD = Infinity;
+  for (let i = 0; i < nether.artifacts.length; i += 1) {
+    const a = nether.artifacts[i];
+    const d = Math.hypot((a.x || 0) - rift.x, (a.y || 0) - rift.y);
+    if (d > r) continue;
+    if (d < bestD) { bestD = d; pick = a; }
+  }
+  if (!pick) return false;
+
+  // ── 2. 落点：先找凡间可站格（找不到就整次放弃，物品留在幽冥）──
+  const spot = findMortalSpot(world, rift, r);
+  if (!spot) return false;
+
+  // ── 3. 先落成（重赋凡间 id）→ 再移除 ──
+  //    重赋必须在 `toGround` **之前**：`toGround` 会把它推进 `world.artifacts`，
+  //    那时 id 已经是凡间的了。
+  pick.id = world.nextArtifactId || 1;
+  world.nextArtifactId = pick.id + 1;
+  toGround(world, pick, spot.x, spot.y);
+  const at = nether.artifacts.indexOf(pick);
+  if (at >= 0) nether.artifacts.splice(at, 1);
+
+  // ── 4. 账：**两端** ──
+  //    · 幽冥侧：`itemsLeakedOut`（第四条物品流水，独立于自生 / 跌入 / 朽坏）；
+  //    · 凡间侧：`artifactLog.netherIn`（幽冥→凡间的流入）。
+  //      不记的话凡间的守恒律 `造出 + 流入 === 在世 + 碎 + 朽 + 流出` 会因
+  //      「在世凭空多了一件」而静默失效（同 `leakUpperArtifact` 记 `riftIn`）。
+  //      ⚠️ 与 `riftIn`（**上界**→凡间）分列两键。
+  ensureNetherPopLog(nether).itemsLeakedOut += 1;
+  if (world.artifactLog) {
+    world.artifactLog.netherIn = (world.artifactLog.netherIn || 0) + 1;
+  }
+
+  // ── 5. 编年史 ──
+  //    kind 用 `'rift-in'`（`KIND_TAG` 归 `cultivation`，与 `artifact` 同组）：
+  //    它是**一件东西**跨界，不是某个人——所以不与 `rift-lost` / `rift-out`
+  //    （那两个都落在具体的**存在**身上、归 `person`）混为一谈。
+  if (typeof world.record === 'function') {
+    world.record(`${pick.name}自裂缝（${rift.x},${rift.y}）落入凡间`, 'rift-in');
+  }
+  return true;
+}
+
+/**
+ * 幽冥裂缝的一次判定（D6-3 工程包 A；工程包 B 加第二支；工程包 C 加第三支）。
+ *
+ * ⚠️ 与上界那条链路**物理分离**（见本节的段头注释）：本函数只碰
+ *    「凡间 ↔ 幽冥」，**绝不**调用 `arriveUpper` / `leakFromUpper` / `leakToUpper`。
+ *
+ * ⚠️ 「有没有动静」抽的是 `netherRiftRngFor`（**第三条流**），不是 `riftRngFor`：
+ *    否则「玩家多开一条幽冥缝」会移动**上界缝**的抽签序列
+ *    （同一拍里谁先抽、抽了几下都变了）——既有标定与长测读数全部作废，
+ *    且不报错。这正是铁律一要防的事，只是规模小一号。
+ *
+ * ── 两个效果**各抽各的签**（D6-3 B 的判决）────────────────────
+ * A 包只有一支（人跌进去），B 包加了反方向那一支（鬼爬出来）。这里**刻意
+ * 不**做成「先判方向、再判对象」（上界 `leakFromUpper` / `leakToUpper` 是
+ * 那么写的），理由有两条：
+ *
+ *   1. **语义**：上界那两个方向是**同一次泄漏**的去向（互斥：要么上→下、
+ *      要么下→上）；而「人跌进去」与「鬼爬出来」是**两个独立现象**，
+ *      可以同一拍都发生（门两边同时有人进出）。做成互斥会凭空造出一条
+ *      「这一拍只准发生一件事」的规则。
+ *   2. **不扰动 A 包已标定的东西**：共用一条流去判方向，会让「人跌进去」的
+ *      概率**减半**（`LEAK_CHANCE_PER_PERIOD` 被两个方向分掉），而那个概率
+ *      是 A 包标定过、回归脚本 F8 端到端量过的。各抽各的签 ⇒ `nrng` 的
+ *      消费次数与序列**逐字不变**，A 包的一切原封不动。
+ *
+ * ⚠️ 第二支走**第四条独立流** `mortalHauntRngFor`（`0x4841554e` = `'HAUN'`），
+ *    与 `nrng` 无关 ⇒ 「鬼爬出来的时机」不受「人跌进去抽了几次」影响。
+ *
+ * ⚠️ 速率闸门与上界**同频**（`LEAK_CHANCE_PER_PERIOD`）但**各抽各的流**：
+ *    两界的判定次数从此互不影响，所以「幽冥缝开了几条」不会改变
+ *    「上界缝漏了几次」。
+ *
+ * ⚠️ **本函数共四支**（D6-3 A 加第一支 · B 加第二支 · C 加第三支 · D 加第四支）：
+ *    人跌入 / 鬼爬出 / 物品漏出 / 鬼修夺舍（或附身）。四支**各抽各的流**
+ *    （`nrng` / `hrng` / `irng` / `prng`），任一支的消费次数都不影响其余三支。
+ *    第四支的效果函数 `crossPlanePossession`（`possession.js`）**零 rng**：
+ *    「成不成」走确定性哈希（幽冥没有流可挂），所以本函数仍是唯一抽签处。
+ *
+ * @param {object} world 凡间 world
+ * @param {object} rift 一条 `targetPlane === 'nether'` 的裂缝
+ * @param {number} r 该裂缝当前的半径（格）
+ * @param {() => number} nrng 幽冥裂缝独立流（判「这一拍有没有动静」）
+ * @param {() => number} hrng 凡间鬼影独立流（判「这一拍有没有鬼爬出来」）
+ * @param {() => number} irng 幽冥物品独立流（判「这一拍有没有物品漏出」，D6-3 C）
+ * @param {() => number} prng 跨位面夺舍独立流（判「这一拍有没有鬼修夺舍 / 附身」，D6-3 D）
+ * @returns {void}
+ */
+function stepNetherRift(world, rift, r, nrng, hrng, irng, prng) {
+  // ⚠️ **四个 `if` 都要跑**，不能写成 `if (...) {...} else if (...) {...}`：
+  //    那样后面判定的抽签会被前面条件吃掉，`hrng` / `irng` / `prng` 的消费次数
+  //    取决于 `nrng` 的结果 ⇒ 四条流重新耦合，「互不干扰」当场失效（而且不报错）。
+  //    A 包加第一支、B 包加第二支、C 包加第三支、D 包加第四支——每一支各抽各的签。
+  if (nrng() < LEAK_CHANCE_PER_PERIOD) fallIntoNether(world, rift, r);
+  if (hrng() < WRAITH_CLIMB_CHANCE_PER_PERIOD) climbOutToMortal(world, rift, r);
+  if (irng() < NETHER_ITEM_LEAK_CHANCE_PER_PERIOD) leakNetherItem(world, rift, r);
+  // D6-3 工程包 D：鬼修夺舍 / 附身凡间活人（效果函数零 rng，见 `possession.js`）。
+  if (prng() < POSSESS_CHANCE_PER_PERIOD) crossPlanePossession(world, rift, r);
+}
+
 /**
  * 一次判定 pass：推进年龄 + 扩张 / 闭合 + 漏物。
  *
@@ -1088,6 +1851,11 @@ function leakGroundArtifactToUpper(world, rift, r, rng) {
  * 系统看起来「跑过了但什么都没发生」。这个坏法不报错、不抛异常，
  * 只是把「扩张期」整个吃掉。探针第 6 条就是钉这个的。
  *
+ * ⚠️ **幽冥裂缝走自己的通道**（D6-3 工程包 A 取代了 D6-2 工程包 B4 的冻结）：
+ * nether 裂缝照常走第 0/1 步（推进年龄 + 扩张 / 闭合），第 3 步则分流到
+ * `stepNetherRift`（消费**自己的**流 `nrng`），**不**走下面那条上界链路。
+ * 于是本函数的行为差异**只按 `rift.targetPlane` 分流**，不再有第三种情形。
+ *
  * @param {object} world 凡间 world
  * @returns {void}
  */
@@ -1098,6 +1866,23 @@ export function stepRifts(world) {
   const log = world.riftLog;
   const day = world.day || 0;
   const rng = riftRngFor(world);
+  // 幽冥缝的**独立**流（D6-3 工程包 A）。⚠️ 与 `rng` 是两条流，互不影响——
+  // 这正是「玩家多开一条幽冥缝，不会移动上界缝的抽签序列」的兑现方式。
+  // 惰性建立（`netherRiftRngFor` 内部按需 `mulberry32`）；没有幽冥缝时
+  // 一次都不抽，所以对纯上界世界零影响。
+  const nrng = netherRiftRngFor(world);
+  // D6-3 工程包 B：凡间鬼影的**第四条**独立流（`'HAUN'`）。与上面那条一样
+  // **惰性建立、取实例不抽签** ⇒ 纯上界世界建了它也不改变任何世界线。
+  // 只在「这一拍有幽冥缝」时才真的被抽（见第 3 步的分流点）。
+  const hrng = mortalHauntRngFor(world);
+  // D6-3 工程包 C：幽冥物品泄漏的**第七条**独立流（`'NITM'`）。同样
+  // **惰性建立、取实例不抽签** ⇒ 纯上界世界建了它也不改变任何世界线。
+  // 只在「这一拍有幽冥缝」时才真的被抽（见第 3 步的分流点）。
+  const irng = netherItemRngFor(world);
+  // D6-3 工程包 D：跨位面夺舍的**第八条**独立流（`'NPSX'`）。同样
+  // **惰性建立、取实例不抽签** ⇒ 纯上界世界建了它也不改变任何世界线。
+  // 只在「这一拍有幽冥缝」时才真的被抽（见第 3 步的分流点）。
+  const prng = netherPossessRngFor(world);
 
   // ── 0. 推进年龄（契约 C1.1）──────────────────────────────
   // 每次调用 = 视界开着过了 RIFT_PERIOD_DAYS 天。**必须在判闭合之前**：
@@ -1128,10 +1913,36 @@ export function stepRifts(world) {
   }
   world.rifts = kept;
 
-  // ── 3. 漏物：每条仍活跃的裂缝独立判 ──────────────────────
+  // ── 3. 跨界：每条仍活跃的裂缝独立判 ──────────────────────
   for (let i = 0; i < kept.length; i += 1) {
     const rift = kept[i];
     const r = riftRadiusAt(rift);
+    // ⚠️⚠️ **分流，不是冻结**（D6-3 工程包 A 取代了 D6-2 的 B4）：
+    //     幽冥缝走**自己的**通道 `stepNetherRift`，消费**自己的**流 `nrng`。
+    //
+    //     上界那条链路（`rng()` → 方向抽签 → `leakFromUpper` / `leakToUpper`
+    //     → `arriveUpper`）对 nether 裂缝**仍然在结构上不可达**——但保证方式
+    //     换了：D6-2 靠的是「在抽签之前 `continue`」（**一行可以被顺手删掉**的
+    //     守卫），现在靠的是**函数边界**（`stepNetherRift` 及其下游够不到那些
+    //     函数）。`scripts/inkbox-three-realms.mjs` 的 F7 用**源码结构**钉后者。
+    //
+    //     为什么不能让幽冥缝接回上界链路：`viewNether` 与 `viewUpper` 共用
+    //     同一个 `openRifts`，而那条链路整体是**上界语义**。接回去的话，
+    //     玩家打开幽冥视界、划出裂缝，那条缝会去执行凡间 ↔ **上界**的
+    //     漏物 / 吸人——语义完全错位，而且**不报错**
+    //     （`riftLog.leaked` 照涨，看起来像「幽冥也会漏东西」）。
+    //
+    //     ⚠️ 判据仍用 `=== 'nether'` 而不是 `!== 'upper'`：**老档 / 手工构造的
+    //     裂缝没有 `targetPlane` 这个键**（`undefined`），它们的历史语义就是
+    //     上界裂缝，必须继续走上界逻辑。`!== 'upper'` 会把它们全部静默改道到
+    //     幽冥通道——一次「读旧档后上界缝不再漏物」的静默行为变更。
+    //
+    //     ⚠️ 第 0/1 步的「推进年龄 + 扩张 / 闭合」对 nether 裂缝**照常执行**
+    //     （那两步在分流点之前）——一条缝该老还是会老、该闭还是会闭。
+    if (rift.targetPlane === 'nether') {
+      stepNetherRift(world, rift, r, nrng, hrng, irng, prng);
+      continue;
+    }
     if (!(rng() < LEAK_CHANCE_PER_PERIOD)) continue;
     // ⚠️ **先判方向，再判对象**（规格 §4.3 第 4 条）：一次判定要么上→下、
     // 要么下→上，**不是两次独立抽签**——否则一次会同时漏两样，量级翻倍。

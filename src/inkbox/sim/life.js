@@ -21,7 +21,7 @@ import {
 } from '../core/config.js';
 import { clamp, mulberry32 } from '../core/noise.js';
 import { OVER, recomputeRect, markDirty, flushDirty } from '../world/terrain.js';
-import { generateNameParts, generateName, generateVillageName, narrate } from '../core/lore.js';
+import { generateNameParts, generateName, generateVillageName, narrate, fillTemplate } from '../core/lore.js';
 import {
   initEntity, stepEntity as stepCultivation, combatPower, recordDeath, addKarma, MAX_SITES, placeName,
 } from './cultivation.js';
@@ -29,7 +29,7 @@ import { stepSects, foundSect } from './sects.js';
 import { stepRelations, onDeathRelations, RELATION_TYPES } from './relations.js';
 import { stepFamily, pickParents, registerBirth } from './family.js';
 import { stepWar } from './war.js';
-import { tryPossession } from './possession.js';
+import { tryPossession, isControlled } from './possession.js';
 import { rememberDead } from './necrology.js';
 import {
   enterNether, takeDueSoul, attachSoul, stepReincarnation, SOUL_ROUTE_POSSESS,
@@ -211,6 +211,108 @@ export function isSecluding(e) {
   return (e.age || 0) >= (e.lifespan || Infinity) * SECLUSION_AGE_FRACTION;
 }
 
+// ── 个人交手的两句人话（`attack()` 用）─────────────────────────
+//
+// 【补的是什么缺口】2026-09-22 的玩家可见层审计：
+//   「`attack()` 全段只有 `recordDeath(killer=null)` ⇒ **「两个修士打起来了」
+//     没有独立编年史事件**。⚠️ 不能直接加 `record()`：`attack()` 每 tick 被调，
+//     会淹掉编年史 400 条滚动窗口 ⇒ 必须**按「一场战斗」而非「一次挥剑」节流。」
+//
+// 【怎么节的流】不新增任何状态、也不做时间窗节流，而是**只在两个终局记账**：
+//   · **致死一击** → 记到**凶手**的个人日志（受害者那一条另有 `recordDeath`）；
+//   · **手下留情** → 记到**被打的那个**的个人日志。
+// 两者天然就是「一场战斗」的粒度：一个人只能被同一次攻击杀死一次；
+// 而被留情的那个立刻拿到 `GRIEVOUS_REST_DAYS`（三年）的养伤锁，
+// `findEnemy` / `findAnyNear` 在这期间**根本不会把他选成目标**（`restUntil > day`），
+// 所以不可能连着刷同一场架。
+//
+// 【为什么只进个人日志、不进编年史】编年史是 400 条的滚动窗口。实测 60 年
+//   突破那一支就有 572 条（`NOTABLE_BREAKTHROUGH_LEVEL` 的注释），窗口本来
+//   只够看三四十年；再把每场交手塞进去，窗口会短到看不出「这几十年的走向」。
+//   而**死讯本来就已经在编年史里了**（`recordDeath` 带凶手快照），
+//   所以「谁杀了谁」没丢——这里补的只是**凶手自己那本传记**里的战斗痕迹。
+//
+// ⚠️ **一次 `rng()` 都不抽**（铁律一）。所以这两句的选句用的是纯哈希
+//    （`pickDuelLine`），不是 `narrate()`——`narrate` 会抽签，往 `attack()`
+//    里加一次抽取等于把几百年的世界线整个挪位。
+//
+// ⚠️ kind 用 `'duel'`，**故意不登记进 `biography.js` 的 `KIND_TAG`**：
+//    那张表管的是**编年史**的面板筛选标签，而这些条目只进 `entity.log`、
+//    永远不进 `world.chronicle`。这与既有的 `'born'`（`upperLife.js` 的上界出生，
+//    同样只进个人日志）是同一种处理。代价是逝者传记会把它们印成「世界」——
+//    这是**既有**的口径（`born` 已如此），已记进 BACKLOG，不在本批扩大。
+const DUEL_KILL_LINES = [
+  '【{killer}】在{place}杀了【{victim}】。收剑的时候手是稳的——他自己也知道这一点。',
+  '【{killer}】与【{victim}】在{place}相遇，只有一个人走下山。',
+  '【{killer}】取了【{victim}】的性命。{victim}倒下时喊了一个名字，不是他的。',
+  '【{killer}】在{place}了结【{victim}】。事后他在原地站了很久，像在等一句不会来的话。',
+];
+
+const DUEL_SPARED_LINES = [
+  '【{victim}】在{place}挨了【{killer}】一击。本该当场毙命，却不知怎的留了一口气——醒来时天已经换了三次颜色。',
+  '【{victim}】与【{killer}】在{place}交手，倒下去又爬起来。{victim}说，那一下再深半寸，就没他这个人了。',
+  '【{victim}】从【{killer}】手底下爬了回来。那一击在身上留了疤，也留了三年不能动武的日子。',
+];
+
+/**
+ * 不抽 rng 的选句：拿两个 id 与年份做纯哈希（理由见上面那段注释）。
+ *
+ * ⚠️ 用 `>>> 0` 把结果夹成无符号：`Math.imul` 会溢出成负数，
+ *    负数取模在 JS 里得负数，`pool[-3]` 是 `undefined`——
+ *    那样这条文案会**静默变成空串**，而 `recordLifeEvent` 对空文本直接返回
+ *    `false`（不报错）。这正是本项目最怕的那种失效。
+ */
+function pickDuelLine(pool, a, b, day) {
+  const h = (Math.imul((a | 0) + 1, 0x9e3779b1)
+    ^ Math.imul((b | 0) + 1, 0x85ebca6b)
+    ^ ((day / 360) | 0)) >>> 0;
+  return pool[h % pool.length];
+}
+
+/**
+ * 被附身者（D6-3 工程包 D）游荡方向的抽签：`(id, 30 天桶)` → `[0, 1)`。
+ *
+ * **一次 `this.rng` 都不抽**（铁律一）：附身的行为锁挂在主循环里，往那里加一次
+ * 主流抽取会把几百年的世界线整个挪位。所以方向由**纯哈希**决定。
+ *
+ * ⚠️ 必须先过 `mulberry32` 这个 finalizer。直接拿 `Math.imul` 拼出来的整数
+ *    `/ 2^32` 当 `[0,1)` 均匀数会因**高位偏置**而偏（D6-3 工程包 C 在「幽冥物品
+ *    自生」上踩过这个坑：FNV-1a 高位恒落 0.70–0.74，阈值恒真、且**不报错**）。
+ *    `mulberry32` 是合格的 finalizer，输出通过均匀性要求。
+ */
+function possessionWanderRoll(id, bucket) {
+  const seed = (Math.imul((id | 0) + 1, 0x9e3779b1)
+    ^ Math.imul((bucket | 0) + 1, 0x85ebca6b)) >>> 0;
+  return mulberry32(seed)();
+}
+
+/**
+ * 个人交手的**重要度**（写进个人日志时用）。
+ *
+ * ⚠️ **必须严格低于 35（`SOURCE_BASE.log`）**。这一点是 2026-09-23 用 A/B 实测改过来的，
+ *    第一版给的是 45/40，理由是「打架不该盖过修行，但也不该被杂事盖过」——
+ *    **那个理由建立在一个错的前提上**：我以为 35 就是「普通杂事」。
+ *    实测（同一 preset + 同一种子跑 60 年，镜像剥掉本写入做对照）：
+ *      · 世界演化**逐字节相同**（除日志外所有读数一致）⇒ 本改动确实不扰动模拟；
+ *      · 但 `war`（宗门大战）的日志条目从 **255 掉到 178（−30%）**——
+ *        因为 `war.js` 写的那几类文本（「…的对峙不了了之」「…交锋第 N 阵」
+ *        「…杀到两败俱伤」）**一个加分词都不含** ⇒ `importanceOf` 给它们 **35 分**，
+ *        与杂事同分。于是 45 分的交手**系统性地把它们挤掉**。
+ *    这正是本项目反复记过的那条教训：「一个看起来只是好处的设定，
+ *    可能正在把旁边那条机制吃掉」——**新写入源必须配一条上界/让位判据**。
+ *
+ *    改成 34/30 之后，交手落在「**值得记，但最先让位**」那一档：
+ *      · 34 < 35 ⇒ 永远不会挤掉大战 / 关系 / 因果 / 法宝那些条目；
+ *      · 34 > 10（`DAMPEN_RE` 那一档，含「普通交锋」）⇒ 也不会被真正的杂事盖过；
+ *      · 日志远没满的人（实测人均 8.3 条 vs `LOG_CAP = 32`）照样看得到这一架。
+ *    注意 34 与 35 **不能取等**：淘汰规则是「同分留新的」，取等会去挤掉**更早**的
+ *    35 分条目（比如早年那场大战），比直接压过它们还糟。
+ *    ⚠️ 这两个数一动，必须重跑 `inkbox-longrun.mjs` 的「交手没有把个人日志变成战报」
+ *    与那两条 `kind` 分布读数，确认没有别的 kind 被吃掉。
+ */
+const DUEL_KILL_IMPORTANCE = 34;
+const DUEL_SPARED_IMPORTANCE = 30;
+
 export class Life {
   constructor(world, rng) {
     this.world = world;
@@ -238,7 +340,7 @@ export class Life {
      * 既有且已知的性质，不是这一块引入的。
      */
     this.warRng = mulberry32(((world.seed || 0) ^ 0x776172) >>> 0);
-    this.events = new WorldEvents(world, rng);
+    this.events = new WorldEvents(world, rng, world.worldEventState);
   }
 
   name() {
@@ -635,6 +737,37 @@ export class Life {
       return false;
     }
 
+    // ── 被附身（D6-3 工程包 D）：行为锁 ────────────────────────────
+    // 附身期未过（`possessionScar.mode === 'haunt'` 且 `until > day`）时，凡人的
+    // **行动被鬼修接管**：它不再按自己的计划过日子，也不再接战——只被驱使着
+    // 四处游荡（`state = 'possessed'`）。判据是**确定性**的（只读 `possessionScar`
+    // 与 `world.day`），**不抽任何 `this.rng`**（抽签只在 `stepNetherRift` 里做）。
+    //
+    // ⚠️ 与上面「入魔」同一位置：都在状态机**之前** `return`，所以被附身者
+    //    **绕过** `findEnemy`（不主动打人）与 `planNext`（不自己安排人生）。
+    //    这是「行为锁」的确切含义——与 `restUntil`（养伤锁）不同：那条只把自己
+    //    从**别人的**敌人名单里摘掉（`findEnemy` 顶部那句 `restUntil > day`），
+    //    本人照常过日子；这条是**反过来**：本人被接管，别人照常能打他。
+    //
+    // ⚠️ 真夺舍（`mode === 'possess'`）的 `until = -1` ⇒ `isControlled` 恒假，
+    //    所以它**不受此锁**：被夺舍者照常生活（只是身体里换了个人）。
+    //    只有**暂时附身**（`mode === 'haunt'`）才有期限、才锁行动。
+    if (isControlled(e, world.day)) {
+      e.state = 'possessed';
+      e.timer -= dtDays;
+      if (e.timer <= 0) {
+        // 每 30 天换一个方向（纯哈希，零 rng——见 `possessionWanderRoll` 的注释）。
+        const h = possessionWanderRoll(e.id, Math.floor(world.day / 30));
+        const ang = h * Math.PI * 2;
+        const reach = 10 + ((h * 977) % 11);
+        e.tx = e.x + Math.cos(ang) * reach;
+        e.ty = e.y + Math.sin(ang) * reach;
+        e.timer = 18 + h * 18;
+      }
+      this.moveTowards(e, dtDays, info);
+      return false;
+    }
+
     // 状态机
     e.timer -= dtDays;
     const enemy = this.findEnemy(e, 9);
@@ -985,6 +1118,13 @@ export class Life {
       if (MERCY > 0 && mercyRngFor(this.world)() < MERCY) {
         target.hp = Math.max(1, target.maxHp * 0.05);
         target.restUntil = this.world.day + GRIEVOUS_REST_DAYS;
+        // ── 记到**挨打的那个**身上（理由见 `DUEL_SPARED_LINES` 上方）──────
+        // ⚠️ 必须排在 `return` **之前**，否则这一句永远写不下去。
+        // ⚠️ 排在 mercy 抽签**之后**：它一次 rng 都不抽，所以不影响随机流。
+        recordLifeEvent(this.world, target, 'duel', fillTemplate(
+          pickDuelLine(DUEL_SPARED_LINES, e.id, target.id, this.world.day),
+          { killer: e.name, victim: target.name, place: placeName(this.world, target) },
+        ), { importance: DUEL_SPARED_IMPORTANCE });
         return;
       }
       e.kills += 1;
@@ -1004,6 +1144,17 @@ export class Life {
       // ⚠️ 本字段在同一 `step()` 内被 `onDeath` 消费掉，跨不过 tick，
       //    因此不进存档（已在 `io/save.js` 的 `VOLATILE` 登记并写明理由）。
       target.killedBy = { id: e.id, name: e.name };
+      // ── 凶手自己那本传记也要留下这一架（只进个人日志，理由见
+      //    `DUEL_KILL_LINES` 上方）──────────────────────────────────
+      // 受害者那一侧由 `recordDeath` 写（编年史 + 逝者日志），但**凶手这一侧
+      // 在此之前一个字都没有**：`e.kills` 只是个计数，既不进日志也不上屏
+      //（全仓只在 `biography.js` 的 `attentionOf` 与 `main.js` 的「血债累累」
+      //  规则里各被读一次）⇒「他这一生打过哪些架」在人物一生里是空的。
+      // ⚠️ 本句不抽 rng，所以排在 `wearArtifacts`（它要抽）之前也不挪世界线。
+      recordLifeEvent(this.world, e, 'duel', fillTemplate(
+        pickDuelLine(DUEL_KILL_LINES, e.id, target.id, this.world.day),
+        { killer: e.name, victim: target.name, place: placeName(this.world, target) },
+      ), { importance: DUEL_KILL_IMPORTANCE });
       if (e.faction) {
         const f = this.world.factionById(e.faction);
         if (f) f.kills += 1;

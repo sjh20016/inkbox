@@ -158,7 +158,13 @@ export class World {
      *
      * **必须进存档**：它反推不出来，丢了之后两条世界线的读数就对不上了。
      */
-    this.possessionLog = { succeeded: 0, failed: 0, suspected: 0 };
+    this.possessionLog = {
+      succeeded: 0, failed: 0, suspected: 0,
+      // D6-3 工程包 D 追加：跨位面夺舍的两个子账（幽冥鬼修 → 凡间活人）。
+      // `crossPlane` = 真夺舍次数；`haunted` = 暂时附身次数。与上面三键同属
+      // 「只增不减」的累计账本，形状必须与 `save.js` 的写 / 读侧**逐键一致**。
+      crossPlane: 0, haunted: 0,
+    };
 
     /**
      * 逝者名录（见 sim/necrology.js）。
@@ -206,6 +212,25 @@ export class World {
     this.nextRiftId = 1;
     this.riftLog = { opened: 0, closed: 0, leaked: 0, crossed: 0, lost: 0 };
 
+    /**
+     * 凡间鬼影（D6-3 工程包 B）：自幽冥缝爬入凡间的鬼的**独立容器**。
+     *
+     * ⚠️⚠️ 鬼**绝不能**放进 `world.entities`。凡间与上界共用
+     *    `cultivation.stepEntity`（`life.js:26` / `upperLife.js:54` 都是别名导入），
+     *    其「凡人试着觉醒」段的豁免名单只有 `beast` / `spirit`，`ghost` 不在其中：
+     *    ① 普通鬼魂（level 0）会被掷觉醒骰 → `awaken()` 给 level=1 + 灵根 +
+     *       寿元被 `lifespanForEntity` 重算 ⇒ 变成「`sp:'ghost'` 却 `level:1`」的怪物；
+     *    ② 鬼修（level ≥1）按 `world.qi[所在格]` 修炼 → 突破 → 40 级起天雷飞升
+     *       → 上界凭空多一个鬼（`world.plane !== 'upper'` 分流拦不住，凡间是 `'mortal'`）。
+     *    两条都**不报错**并污染上界人口账。⇒ 独立容器 + 独立 tick `stepMortalWraiths`
+     *    是**函数边界**（比一行守卫强，见 D6-3 A 包判决）。
+     *
+     * ⚠️ 与 `rifts` 同理：上界实例（也是 `World`）也会挂这两个字段、但**恒空**，
+     *    由 `worldgenUpper.resetUpperSystems` 的语义保证，不靠构造器少挂字段。
+     */
+    this.wraiths = [];
+    this.wraithLog = { dissolved: 0 };
+
     this.day = 0;
     this.year = 0;
     this.nextEntityId = 1;
@@ -236,6 +261,11 @@ export class World {
      *    各自都有、都照常存」的普通世界级字段——不删、不豁免。
      */
     this.milestones = [];
+    /**
+     * WorldEvents 的可存档快照。运行时控制器仍挂在 Life 上；这里只保存计时器、
+     * 活动灾祸和已结束事件，避免换 Life 或读档时灾祸静默消失。
+     */
+    this.worldEventState = null;
 
     /**
      * 卜算子（天道引路人）的状态。

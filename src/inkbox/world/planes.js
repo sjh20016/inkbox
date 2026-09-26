@@ -3,7 +3,7 @@
 // 这一层解决的是「同一份代码要操作三个世界」时的寻址问题：视界渲染、
 // 跨世界转移、长测读数都要先问一句「上界那张图在哪」。
 
-import { SEA_LEVEL, SPECIES, SPECIES_INFO } from '../core/config.js';
+import { SEA_LEVEL, SPECIES, SPECIES_INFO, TERRAIN_INFO } from '../core/config.js';
 //
 // ⚠️ **这个模块不进存档。** 它只是对三个 `World` 实例的引用（外加一个指向
 // 凡间魂池的别名）。存档存的是每个 world 各自的序列化块；读档时先各自
@@ -203,6 +203,40 @@ export function upperWalkable(upper, i) {
 }
 
 /**
+ * 幽冥实体 id 的落点判定：这一格能不能站「东西」。
+ *
+ * 与 `worldgenNether.js` 的刻河（`water[i] > 0.0015` 即冥河水面）以及
+ * `terrain.js` 的 `TERRAIN_INFO[type].walk` 是**同一套判据**——
+ * **不要另写一套阈值**：落点判定与生成侧一旦分叉，鬼魂会落进冥河里站不住、
+ * 漏下来的东西会掉进水面，而且**不报错**（同 `upperWalkable` 的纪律）。
+ *
+ * ── 为什么要有这个函数（2026-09-24 · D6-2 工程包 B）─────────────────
+ * 在它出现之前，「幽冥能不能站人」这件事有**两份手抄的判据**：
+ *   · `sim/netherLife.js` 的 `bankCandidates`（鬼魂落点）自己写了一对
+ *     「先判水、再判 `TERRAIN_INFO.walk`」；
+ *   · 而裂隙的位置过滤（`sim/rifts.js`）只认 `upperWalkable`——
+ *     幽冥裂缝**没有**自己的判据可用，只能错用上界那一把尺子。
+ * 于是「幽冥裂缝开在哪」这件事根本没有判据。这里把它收敛成**唯一一处**，
+ * 两边都调它：形状只有一份定义，是结构上的保证，不是靠注释提醒。
+ *
+ * ⚠️ 与 `upperWalkable` 的差别：上界判「云海 / 云下虚空」（`height`/`water`），
+ * 幽冥判「冥河水面 / 地表可通行」（`water`/`type`）。**两者不可互相顶替**——
+ * 幽冥的 `height` 语义是黄泉地脉高程，拿上界那两条阈值判它会得到一张
+ * 「哪儿都站不住」的图，而且不报错。
+ *
+ * @param {object} nether 幽冥 world（需要 `w` / `water` / `type`）
+ * @param {number} i 格索引（`y * w + x`）
+ * @returns {boolean} 这一格能不能站
+ */
+export function netherWalkable(nether, i) {
+  const info = TERRAIN_INFO[nether.type[i]];
+  // `!info` 兜底：`type` 是 Uint8Array，理论上恒是合法值，但手工构造的
+  // 测试 world 可能塞进越界值——`undefined.walk` 会抛错，而不是静默判否。
+  if (!info || !info.walk) return false;
+  return nether.water[i] <= 0.0015;
+}
+
+/**
  * 给飞升者找落点：从最近的仙脉出发，螺旋外扩找第一处可通行格。
  *
  * **全程不抽随机流**（与 `rememberDead` 同一条纪律：账本与转移是纯函数，
@@ -293,6 +327,35 @@ export function ensureUpperPopLog(upper) {
   // 「一个字段被两件事共用」正是本项目最怕的静默坏法，所以显式拆开。
   if (upper.popLog.bornMortal === undefined) upper.popLog.bornMortal = 0;
   return upper.popLog;
+}
+
+/**
+ * 上界**生态账本**的只读汇总（D6-2 工程包 E）：把 `popLog` 的七个计数归成一个
+ * 「生 / 亡 / 现存」三元组，供三界面板与测试**共用同一口径**。
+ *
+ *   生   = `seeded + arrived + born + bornMortal`
+ *          （开天播种 + 从凡间到达 + 修士化生 + 凡人生育——四种来源，合并成「生」）
+ *   亡   = `died`
+ *   现存 = `entities.length`
+ *
+ * 守恒式（**契约**）：`现存 === 生 − 亡`。smoke 5x 直接断言它——
+ * 这条式子的价值在于「账平不平」一眼可见，而不用玩家自己去加七个数。
+ *
+ * ⚠️ **本函数是这四项相加的唯一处**：面板与测试都调它，别在别处再拼一遍
+ *    （那就是第二份真相——`popLog` 将来加一个新来源时，只有一处会被更新）。
+ * ⚠️ 纯读：不写世界、不抽 rng。面板每 2.5 秒调一次也不会让世界漂。
+ * ⚠️ 与幽冥的 `netherEcoStats` 是**同款口径**，但**减项不同**：上界只有一条
+ *    离开路径（`died`），幽冥有两条（消散 + 逐出）——那是两个世界的规则差别，
+ *    不是口径不统一。
+ */
+export function upperEcoStats(upper) {
+  if (!upper) return { born: 0, died: 0, alive: 0, conserved: true };
+  const pop = ensureUpperPopLog(upper);
+  const born = (pop.seeded || 0) + (pop.arrived || 0)
+    + (pop.born || 0) + (pop.bornMortal || 0);
+  const died = pop.died || 0;
+  const alive = Array.isArray(upper.entities) ? upper.entities.length : 0;
+  return { born, died, alive, conserved: alive === born - died };
 }
 
 /**

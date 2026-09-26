@@ -11,6 +11,8 @@
 //     自然转世 / 滞留幽冥 / 成鬼修 / 怨魂化 / 魂火散尽。
 //     ⚠️ 五路里只有**前两路**会把魂推进魂池（`world.souls`）；后三路**不入轮回**，
 //        所以在池子里永远看不见——它们靠累计账本 `world.soulLog` 记账。
+//        （2026-09-23 起，`ghost` / `wraith` 两路还会在**幽冥界**留下实体，
+//         见 `sim/netherLife.js`；`soulLog` 的账本口径**不变**，实体是另一回事。）
 //     ⚠️ 下面几段历史注释里还写着「魂飞魄散」，那是**当时**这一路的名字
 //        （旧义 = 魂散了）。2026-09-21 按 06 册考古定名改为「成鬼修」（魂被留下）。
 //        那几段是**反面教材**，保留原措辞，别当成现行语义读。
@@ -34,6 +36,10 @@ import { lifespanFor, realmFor, realmLabel } from './cultivation.js';
 // necrology 用——那会把这条边变成双向环，而本项目已经有一条
 // `necrology ↔ cultivation` 的环在交学费了。
 import { markSoulRoute } from './necrology.js';
+// 幽冥侧的实体构造与 tick（契约 `reports/d5/BATCH2-DESIGN.md`）。
+// 方向是**单向**的：本模块 → netherLife，而 netherLife **不**import 本模块
+// （它要的字段全在 core/config.js 里），所以这条边不引入新的 import 环。
+import { spawnNetherGhost } from './netherLife.js';
 
 /** 神魂池上限。满了就丢掉等得最久的那个——「多數神魂散于天地」 */
 export const SOUL_CAP = 120;
@@ -339,6 +345,39 @@ export function deathRoute(entity) {
   return collectBonds(entity).length > 0 ? SOUL_ROUTES.LINGER : SOUL_ROUTES.NATURAL;
 }
 
+/**
+ * 死者身份的**快照**（契约 §三 的 `ghostOf`）。
+ *
+ * ⚠️⚠️ **零 id 引用，全是值**：`ref` 用 `'mortal:<id>'` **字符串**，绝不存裸的
+ * 凡间 id 数字。理由（`planes.arriveUpper` 已经踩过这个坑）：凡间 id 与幽冥 /
+ * 上界 id **同段会撞号**（三个 `World` 的 `nextEntityId` 各自从
+ * 1 / `UPPER_ID_BASE` / `NETHER_ID_BASE` 起编），存裸数字就是指向别人的
+ * 悬垂指针，而且**不报错**。
+ *
+ * 这是「幽冥里的这只鬼，对应到死去的哪个修士」的那根线，也是未来玩家操作
+ * 鬼魂的接口（本轮只留接口，不做操作）。
+ *
+ * ⚠️ 纯读、一次 `rng()` 都不抽——`enterNether` 在凡间主随机流上，任何抽签
+ *    都会静默移动世界线（铁律一）。
+ */
+export function ghostSnapshot(world, entity, route) {
+  const faction = world.factionById(entity.faction);
+  return {
+    ref: `mortal:${entity.id}`,
+    name: entity.name || null,
+    level: entity.level || 0,
+    // 灵根是**对象**（`rollSpiritRoot` 产 `{ elements, quality, rootName, ... }`），
+    // 快照只留名字（契约示例：`root: '幽冥灵根'`）。没有灵根就是 null。
+    root: entity.root ? (entity.root.rootName || null) : null,
+    // 宗门存**名字**（不是 id）：凡间宗门 id 与幽冥 / 上界 id 无关，
+    // 存 id 是悬垂引用（同 `soul.ofSectName` 的理由）。取不到就 null。
+    sectName: (faction && faction.name) || null,
+    deathDay: world.day,
+    route,
+    incarnation: entity.incarnation || 1,
+  };
+}
+
 /** 记一条神魂。返回 null 表示这个人不留神魂（魂散）。 */
 export function enterNether(world, entity, rng) {
   const tier = soulTier(entity);
@@ -396,18 +435,54 @@ export function enterNether(world, entity, rng) {
   //    随机流会平移一次。这无法避免（要免抽签就不能抽），但寿终极稀有，
   //    扰动面最小。**不要**为了「不扰动」改成无条件先抽一次再判断——
   //    那会让**每一个** `tier >= 1` 的实体都多抽一次，扰动面反而大得多。
-  if (tier < 1 && !diedOfOldAge(entity) && rng() >= tier) return null;
+  //
+  // ⚠️⚠️ **这一行的调用条件与位置逐字保持原样（2026-09-23）**：`tier >= 1` 与
+  //    「寿终」仍然短路**不抽**，其余照抽。把它拆成 `drawsLot` / `lotPass`
+  //    两行，**不是为了改抽签，而是为了让下面那个三分支能排在「落选 return」之前**
+  //    （理由见那个分支的注释）。抽签的次数与条件一个都没变 ⇒ 随机流位置不变。
+  //    `scripts/_ghostrng.mjs` 钉着这件事：它跑「不挂幽冥」与「挂幽冥」两条线，
+  //    要求前 40 位凡间实体逐条一致——**改这一行之前先跑它**。
+  const drawsLot = tier < 1 && !diedOfOldAge(entity);
+  const lotPass = !drawsLot || rng() >= tier;
 
-  // ── 入不了轮回的三路：**不**进魂池 ─────────────────────────────
+  // ── 入不了轮回的三路：**不**进魂池，但会在幽冥留下实体（8-C/8-D）─────────
   // 池子（`world.souls`）的语义是「排队等转世」——`takeDueSoul` 只按 `dueDay`
   // 到期取魂，**完全不读 `route`**。所以把这三种魂塞进池子，它们到期后会照常
   // 转世成人，而那正是这三条路要避免的事（魂散尽 / 被留下 / 不入轮回）。
   // ⚠️ 也就是说：**「记录」与「入池」是两件事**，账本记的是前者。
+  //
+  // ⚠️⚠️ **口径更新（2026-09-23，契约 `reports/d5/BATCH2-DESIGN.md` §二）**：
+  //    此前这三路「什么都不产出」——`return null` 之后就没了，幽冥里空无一物。
+  //    现在它们**仍然不进魂池**（这一点不变），但其中两路会在**幽冥界**
+  //    留下可观察的实体：
+  //      · `ghost`（成鬼修）  ⇒ 幽冥里一只 **鬼修**（起步=游魂，level 1）；
+  //      · `wraith`（怨魂化） ⇒ 照旧留怨气 `site`（不变），**并且**幽冥里一只
+  //                              **普通鬼魂**（`soulKind === 'ghost'`）；
+  //      · `gone`（魂火散尽） ⇒ 什么都不做（魂都散了，不该有任何实体）。
+  //    ⚠️ 落成实体**不改变随机流**：`spawnNetherGhost` 一次 `rng()` 都不抽
+  //       （落点走纯哈希，见 `netherLife.js` 头注释）。
+  //
+  // ⚠️⚠️ **本分支必须排在「落选 return」之前**（2026-09-23 修，**承重**）。
+  //    原先它排在 `if (tier < 1 && ... && rng() >= tier) return null;` **之后**，
+  //    于是这三路要先过**池子**的抽签才能走到这里——而 `soulTier` 对炼气
+  //    只有 **0.002**、筑基 0.03、金丹 0.1（见那个函数的表）。
+  //    实测后果：`ghost` 路 **45–61 条 / 300 年**，但真能留下实体的只有 **1–3%**
+  //    ⇒ **面板印「鬼修 45」，幽冥里只有个位数**。这正是 `BACKLOG.md` #1 那条
+  //    P1（「明显数据错误导致体验失真」）的最终形态。
+  //
+  //    为什么这是**范畴错误**而不是「数值偏低」：池子抽签的存在理由是管
+  //    「魂池别被凡人淹掉」（`soulTier` 注释的原话：凡人八百年几万条命，
+  //    排队转世既不现实也没意义）。而这三路**根本不进池**（见上）。
+  //    拿一个为池子设的抽签去管不进池子的三路，是拿错了尺子。
+  //    改后 `soulLog[route]` 与幽冥实体数**口径一致**，面板那句才不是谎。
   if (route === SOUL_ROUTES.GHOST
     || route === SOUL_ROUTES.WRAITH
     || route === SOUL_ROUTES.GONE) {
     // 怨魂化会在地上留一处「怨气」——`world.sites` 里唯一由死路产生的记号
-    if (route === SOUL_ROUTES.WRAITH && world.sites.length < 64) {
+    // ⚠️ **仍然只在抽签中选时留下**（保持 8-B 的既有行为**逐字不变**）：
+    //    `world.sites` 是**凡间**状态、上限 64，顺手把它也放开会让 site
+    //    更快饱和，等于偷偷改了几间的演化——那不是本改动的目的。
+    if (route === SOUL_ROUTES.WRAITH && lotPass && world.sites.length < 64) {
       world.addSite({
         kind: 'ruin',
         x: clamp(Math.floor(entity.x), 0, world.w - 1),
@@ -418,8 +493,26 @@ export function enterNether(world, entity, rng) {
         visits: 0,
       });
     }
+    // 幽冥实体（守卫：无头测试里 `world.nether` 是 `undefined`，必须安静跳过——
+    // 上面 `soulLog[route] += 1` 与 `markSoulRoute` 是既有账本，**照旧执行**，
+    // 它们与「有没有幽冥 world」无关）。
+    if (world.nether && Array.isArray(world.nether.entities) && route !== SOUL_ROUTES.GONE) {
+      spawnNetherGhost(world.nether, {
+        kind: route === SOUL_ROUTES.GHOST ? 'ghostCultivator' : 'ghost',
+        ghostOf: ghostSnapshot(world, entity, route),
+        soulId: null,
+        x: entity.x,
+        y: entity.y,
+      });
+    }
     return null;
   }
+
+  // ── 只有**进池的两路**（natural / linger）才受池子抽签管辖 ──────────
+  // ⚠️ 这一行**从 `:438` 搬到这里**（2026-09-23）：语义没变，只是位置挪到了
+  //    三分支**之后**。搬动的理由是那三路不进池、不该被池子的尺子量
+  //    （见上面那个分支的长注释）。抽签本身仍在原处照抽 ⇒ 随机流不变。
+  if (!lotPass) return null;
 
   const level = entity.level || 0;
   // 滞留者走得慢：等得久，但记忆碎片带得多——这是对「境界高」的回报
@@ -479,6 +572,27 @@ export function enterNether(world, entity, rng) {
       if (world.souls[i].dueDay > world.souls[latest].dueDay) latest = i;
     }
     world.souls.splice(latest, 1);
+  }
+  // ── 滞留者在幽冥留下一只普通鬼魂（契约 §二 / §六）────────────────────
+  // 「有些魂在河边坐下了，说等一个人」（`G13-07/G13-12`）——魂**留在池里**
+  // 排队等转世（上面的 `world.souls.push`），同时幽冥里有一只**绑着它**的鬼魂。
+  // 这只鬼的生死与那条魂绑死：魂一离开魂池（转世 / 被逐出），
+  // `stepNether` 的对账（契约 §六 第 1 条）下一 tick 就让它散。
+  //
+  // ⚠️ 放在**逐出之后**、且要求 `soul` 仍在池里：刚 push 就被 `SOUL_CAP` 逐出
+  //    的魂不该留下鬼影（否则它下一 tick 就被对账清掉，等于白造一只、还多记一笔
+  //    `ghostBorn`）。`indexOf` 是引用比较，池里最多 120 条，代价可忽略。
+  // ⚠️ 与上面的三路一样：不抽 `rng`（铁律一），无头测试里 `world.nether` 缺失
+  //    就安静跳过（`soulLog` / `markSoulRoute` 的账本**不受影响**）。
+  if (world.nether && Array.isArray(world.nether.entities)
+    && world.souls.indexOf(soul) >= 0) {
+    spawnNetherGhost(world.nether, {
+      kind: 'ghost',
+      ghostOf: ghostSnapshot(world, entity, route),
+      soulId: soul.id,
+      x: entity.x,
+      y: entity.y,
+    });
   }
   return soul;
 }
@@ -572,10 +686,23 @@ export function stepReincarnation(world, dtDays, rng) {
     else choice = 'fuse';
     past.choice = choice;
 
+    // ── 两世抉择的四种结局一律走 `milestone`（不只是编年史）──────────
+    // 用户框架 §6.1 要求大事账本「至少能够记录……重要转世/夺舍事件」——
+    // 夺舍那半早就进了（`possession.js` 的 `POSSESSION_SUCCESS`），转世这半
+    // 原先只写 `record`，于是「有人想起了前世」这件事快进几十年后就查不到了。
+    //
+    // 为什么不担心灌满 600 条窗口：这一支**很稀**。300 年长测
+    // （`reports/d2/longrun-b5-300y.log`）实测「转世者 28 位 · 已觉醒 25 位」，
+    // 约 12 年一次；作为对照，突破那一支当年是「60 年 572 条、548 条是突破」，
+    // 才需要设门槛。所以这里**不设门槛**，四种结局都记。
+    //
+    // ⚠️ `milestone()` 内部先调 `record()`，所以换过去**不会丢编年史那一笔**；
+    //    它一次 `rng()` 都不抽（见 `world/World.js` 的注释），因此这次改动
+    //    **不移动任何随机流**——把 `record` 换成 `milestone` 是安全的。
     if (choice === 'refuse') {
       past.bonds = [];
       e.mind = clamp(mind + 10, 0, 100);
-      world.record(
+      world.milestone(
         `【${e.name}】想起前世【${past.name}】，却在道心上把旧债与旧名一并斩了。`,
         'reincarn',
         e,
@@ -585,13 +712,13 @@ export function stepReincarnation(world, dtDays, rng) {
       const restored = restoreBonds(world, e, past.bonds, keep);
       if (choice === 'inherit') {
         e.exp = (e.exp || 0) + 40 * Math.max(1, Math.floor((e.level || 1) / 3));
-        world.record(
+        world.milestone(
           `【${e.name}】前世【${past.name}】的记忆尽数归来，${restored ? `旧日${restored}段因缘重新缠上今生` : '只是身边已无故人'}。`,
           'reincarn',
           e,
         );
       } else {
-        world.record(
+        world.milestone(
           `【${e.name}】梦见前世【${past.name}】的零碎片段，两世的人与事在心里各占一半${restored ? `，${restored}位旧人循着痕迹找了过来` : ''}。`,
           'reincarn',
           e,
@@ -603,7 +730,7 @@ export function stepReincarnation(world, dtDays, rng) {
     if (fragments >= 4) {
       e.heartDemon = clamp((e.heartDemon || 0) + 12, 0, 100);
       past.conflict = true;
-      world.record(
+      world.milestone(
         `【${e.name}】承载的前世记忆超过今生所能容纳，两世人格开始争夺同一段人生。`,
         'reincarn',
         e,

@@ -180,8 +180,19 @@ const BOOST_RE = /突破|飞升|陨落|成名|掌门|祖师|道祖|收徒|结侣
 /** 减分关键词（[照抄] §2.6，4 个） */
 const DAMPEN_RE = /日常|路过|抵达路线节点|普通交锋/;
 
-/** 修行轨迹认这些 kind 当里程碑 */
-const MILESTONE_KINDS = new Set(['awaken', 'breakthrough', 'dao', 'tribulation', 'ascend', 'daotrial']);
+/**
+ * 修行轨迹认这些 kind 当里程碑。
+ *
+ * ⚠️ `possess-cross`（D6-3 工程包 D）：真夺舍经 `world.milestone(..., kind, target)`
+ *    写进**受害者**的 `entity.log`（`World.record` 的 `actors` 分流）。把它列进来，
+ *    受害者传记的「修行轨迹」才会印出「他被一只鬼修夺舍了」——否则那条会静默消失
+ *    （不进白名单 = 不进传记，不报错）。
+ *    ⚠️ 不列 `haunt`：附身走 `world.record(..., HAUNT_KIND)`（**不传 actors**），
+ *    从不写 `entity.log`，列进来是死项。
+ */
+const MILESTONE_KINDS = new Set([
+  'awaken', 'breakthrough', 'dao', 'tribulation', 'ascend', 'daotrial', 'possess-cross',
+]);
 
 /**
  * 编年史的 kind → 面板 tag。
@@ -227,6 +238,19 @@ export const KIND_TAG = Object.freeze({
   // ⚠️ 这个例外曾经让 `inkbox-smoke.mjs` 的 kind 审计误报（它的字面量正则
   //    不接受连字符，见那里的注释）——**正则已修，不要为了迁就正则改名**。
   'rift-lost': 'person',
+  // D6-3 工程包 B：自幽冥缝**爬入凡间**的鬼（`sim/rifts.js` 的 `climbOutToMortal`）。
+  // 归 `person` 而不是 `world`：它与 `rift-lost` 是**同一组对照事件的两半**——
+  // 「某个人 / 某只鬼穿过这条缝」（一个跌进去、一个爬出来）。同源不同向，
+  // 落同一个 tag 才说得通（与 `death` / `ascend` 同组的道理一样）。
+  // ⚠️ 键名带连字符，与 `rift-lost` / `thunder-ascend` 同例——可读优先。
+  'rift-out': 'person',
+  // D6-3 工程包 C：自幽冥缝**漏入凡间**的物品（`sim/rifts.js` 的 `leakNetherItem`）。
+  // 归 `cultivation` 而不是 `person`：它是**一件东西**跨界，不是某个人——
+  // 所以不与 `rift-lost` / `rift-out`（那两个都落在具体的**存在**身上）混为一谈。
+  // 与既有的 `artifact`（也归 `cultivation`）同组：玩家点「修行」筛选时，
+  // 「某件法宝换主 / 碎了」与「某件幽冥之物落进凡间」是同一类可读事件。
+  // ⚠️ 键名带连字符，与 `rift-lost` / `rift-out` / `thunder-ascend` 同例——可读优先。
+  'rift-in': 'cultivation',
   sect: 'sect',
   war: 'battle', forbidden: 'battle',
   // ⚠️ 下面这 5 个 kind 都曾被漏配，于是全部落到默认的 `world`：
@@ -250,6 +274,15 @@ export const KIND_TAG = Object.freeze({
   // 夺舍与转世是同一套幽冥机制的两半，`reincarn` 已归 `nether`，
   // `possess` 落 `world` 说不通。
   possess: 'nether',
+  // D6-3 工程包 D：**跨位面**夺舍（`sim/possession.js` 的 `possessMortal` /
+  // `crossPlanePossession`，由幽冥缝 `stepNetherRift` 触发）。与上面的
+  // `possess`（凡间内部、人死了元神夺活人）是**同一个母题的跨位面版**——
+  // 都是「元神抢肉身」的幽冥机制，所以同归 `nether`，不另开 tag。
+  // ⚠️ 键名带连字符，与 `rift-lost` / `rift-out` / `thunder-ascend` 同例——可读优先。
+  'possess-cross': 'nether',
+  // D6-3 工程包 D：**暂时附身**（`hauntMortal`）。高阶鬼修远程附在凡人身上一段日子，
+  // 与真夺舍同属幽冥机制（同一个 `stepNetherRift` 第四支），故同归 `nether`。
+  haunt: 'nether',
 });
 
 /**
@@ -949,6 +982,25 @@ export function biographyFileName(entity) {
  *
  * 返回**纯文本多行**（不是 Markdown 标题），因为它的消费者是检视面板的一格，
  * 不是导出文件。面板上出现 `##` 会很怪。
+ *
+ * ⚠️⚠️ **2026-09-23 复核：本函数目前 `src/` 里零读者**（唯一调用方是探针
+ *    `scripts/_bioprobe.mjs`）。原因是它写完之后，面板那一格**被 `lineageOf`
+ *    占了**（`sim/family.js:477`，返回 `[标签, 值]` 两列行，正是面板的原生格式），
+ *    而它这里多出来的那几项**在别处已经可达**：
+ *      · 师承 / 道侣 / 宿敌 → `compileBiography` 的「## 重要关系」一节
+ *        （`importantRelations` 遍历**全部**关系类型，不筛）
+ *      · 双亲 / 子女 / 世家 / 始祖 / 家学 → 面板的「家世」一节（`lineageOf`）
+ *      · 本人（境界 / 宗门 / 在世）→ 面板的标题行与「仙道」一节
+ *    真正只有它有的只剩「同源转世」，而 `soulId` 是**一世一魂**，
+ *    两个活人同魂几乎不可能 ⇒ 绝大多数时候输出的是「此世独存」这句空话。
+ *
+ * **为什么不删**：`_bioprobe.mjs` 拿它当**证据表**在钉「每个分支都真能出字」
+ *    （那正是主线 `LineageStoryBuilder` 六个键里四个恒空的病）。
+ *    按「凡是一个数字被写进了文档，产生它的探针就必须留着、而且能跑」，
+ *    删函数就得连探针一起删，而那段断言是有价值的。
+ *    所以状态是**待定**（BACKLOG）：要么把它并进 `compileBiography` 的
+ *    「重要关系」一节（让它重新有读者），要么连同探针断言一起删。
+ *    **不要**为了「消灭零读者」而把面板再加长——右栏已经有 11 个区了。
  */
 export function lineageStory(world, entity) {
   if (!entity) return '';

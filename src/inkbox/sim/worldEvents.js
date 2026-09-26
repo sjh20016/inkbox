@@ -35,10 +35,11 @@ const IMMORTAL_ENVOYS = Object.freeze([
 const ALCHEMY_OMENS = Object.freeze(['丹劫', '丹香', '丹灵', '丹霞', '丹鸣']);
 
 export class WorldEvents {
-  constructor(world, rng) {
+  constructor(world, rng, savedState = null) {
     this.world = world;
     this.rng = rng;
-    this.reset();
+    if (savedState && savedState.version === 1) this.restore(savedState);
+    else this.reset();
   }
 
   reset() {
@@ -49,7 +50,86 @@ export class WorldEvents {
     this.caveIn = 60 * 360 + rng() * 60 * 360;
     this.formationIn = 100 * 360;
     this.crisisIn = 45 * 360;
+    this.nextEventId = 1;
     this.activeCrises = [];
+    this.history = [];
+    this.syncState();
+  }
+
+  restore(state) {
+    const timer = (key, fallback) => Number.isFinite(state[key]) ? Math.max(0, state[key]) : fallback;
+    this.envoyIn = timer('envoyIn', 150 * 360);
+    this.alchemyIn = timer('alchemyIn', 30 * 360);
+    this.secretIn = timer('secretIn', 80 * 360);
+    this.caveIn = timer('caveIn', 60 * 360);
+    this.formationIn = timer('formationIn', 100 * 360);
+    this.crisisIn = timer('crisisIn', 45 * 360);
+    this.nextEventId = Number.isInteger(state.nextEventId) && state.nextEventId > 0
+      ? state.nextEventId : 1;
+    this.activeCrises = Array.isArray(state.activeCrises)
+      ? state.activeCrises.map((entry) => this.normalizeCrisis(entry, 'active'))
+      : [];
+    this.history = Array.isArray(state.history)
+      ? state.history.slice(-120).map((entry) => this.normalizeCrisis(entry, entry.status || 'resolved'))
+      : [];
+    const largestId = [...this.activeCrises, ...this.history]
+      .reduce((largest, entry) => Math.max(largest, entry.id || 0), 0);
+    this.nextEventId = Math.max(this.nextEventId, largestId + 1);
+    this.syncState();
+  }
+
+  normalizeCrisis(entry, fallbackStatus) {
+    const id = Number.isInteger(entry?.id) && entry.id > 0 ? entry.id : this.nextEventId++;
+    const status = ['active', 'resolved', 'failed', 'expired', 'cancelled'].includes(entry?.status)
+      ? entry.status : fallbackStatus;
+    return {
+      ...entry,
+      id,
+      status,
+      startedDay: Number.isFinite(entry?.startedDay) ? entry.startedDay : this.world.day,
+      durationDays: Number.isFinite(entry?.durationDays) ? Math.max(0, entry.durationDays) : 0,
+      endedDay: Number.isFinite(entry?.endedDay) ? entry.endedDay : null,
+      outcome: typeof entry?.outcome === 'string' ? entry.outcome : null,
+      resolved: status !== 'active',
+      byPlayer: !!entry?.byPlayer,
+    };
+  }
+
+  snapshot() {
+    return {
+      version: 1,
+      nextEventId: this.nextEventId,
+      envoyIn: this.envoyIn,
+      alchemyIn: this.alchemyIn,
+      secretIn: this.secretIn,
+      caveIn: this.caveIn,
+      formationIn: this.formationIn,
+      crisisIn: this.crisisIn,
+      activeCrises: this.activeCrises.map((entry) => ({ ...entry })),
+      history: this.history.map((entry) => ({ ...entry })),
+    };
+  }
+
+  syncState() {
+    this.world.worldEventState = this.snapshot();
+  }
+
+  remember(entry) {
+    this.history.push({ ...entry });
+    if (this.history.length > 120) this.history.splice(0, this.history.length - 120);
+  }
+
+  finishCrisis(entry, status, outcome) {
+    const world = this.world;
+    entry.status = status;
+    entry.resolved = true;
+    entry.endedDay = world.day;
+    entry.outcome = outcome;
+    // 先写清结局和历史，再从活动列表移除；数组移除不是事件的终点。
+    this.remember(entry);
+    if (entry.byPlayer) world.milestone(outcome, 'crisis');
+    else world.record(outcome, 'crisis');
+    this.activeCrises = this.activeCrises.filter((active) => active.id !== entry.id);
   }
 
   step(dtDays) {
@@ -91,6 +171,7 @@ export class WorldEvents {
     this.stepForbidden();
     this.stepSpiritBeasts(dtDays);
     this.stepCrises(dtDays);
+    this.syncState();
   }
 
   // ── 仙使下凡 ────────────────────────────────────────────
@@ -216,14 +297,19 @@ export class WorldEvents {
     const village = world.villages[Math.floor(rng() * world.villages.length)];
     const crisis = CRISES[Math.floor(rng() * CRISES.length)];
     const entry = {
+      id: this.nextEventId++,
       key: crisis.key,
       name: crisis.name,
       note: crisis.note,
+      villageName: village.name,
       villageId: village.id,
       x: village.x,
       y: village.y,
       startedDay: world.day,
       durationDays: 360 * (2 + rng() * 4),
+      endedDay: null,
+      status: 'active',
+      outcome: null,
       resolved: false,
       byPlayer: false,
     };
@@ -233,38 +319,36 @@ export class WorldEvents {
       narrate(rng, 'crisis', { place: village.name, disaster: crisis.name, note: crisis.note }),
       'crisis',
     );
+    this.syncState();
   }
 
   stepCrises(dtDays) {
     const world = this.world;
-    const rng = this.rng;
     for (let i = this.activeCrises.length - 1; i >= 0; i -= 1) {
       const c = this.activeCrises[i];
       const village = world.villageById(c.villageId);
       if (!village) {
-        this.activeCrises.splice(i, 1);
+        this.finishCrisis(c, 'failed', `事件 #${c.id}「${c.name}」提前结束：受灾聚落已不在，灾祸未能继续。`);
+        continue;
+      }
+      if (c.durationDays <= 0) {
+        this.finishCrisis(c, 'expired', `事件 #${c.id}「${c.name}」期限已失效，灾祸提前结束。`);
         continue;
       }
       // 灾中：村子受损
       village.hp -= dtDays * 0.05;
       village.food = Math.max(0, village.food - dtDays * 0.02);
 
-      if (world.day - c.startedDay > c.durationDays) {
+      if (world.day - c.startedDay >= c.durationDays) {
         const survived = village.hp > 30;
         const ending = survived
-          ? `${village.name} 熬过了${c.name}。城中人少了一半，但还活着。`
-          : `${village.name} 没能撑过${c.name}，人散了。`;
-        // 世界自发的灾年走 chronicle 就够——它每 2~5 年就出一场，全塞进
-        // 大事账本会把真正的世界大事挤出 600 条滚动窗口（这个坑在突破那边
-        // 已经踩过一次：60 年 572 条、548 条是突破）。但**玩家亲手降下的灾**
-        // 必须进大事记：结局就是他那一手的代价，看不到结局等于没有反馈。
-        if (c.byPlayer) world.milestone(ending, 'crisis');
-        else world.record(ending, 'crisis');
+          ? `事件 #${c.id}：${village.name} 熬过了${c.name}。城中人少了一半，但还活着。`
+          : `事件 #${c.id}：${village.name} 没能撑过${c.name}，人散了。`;
         if (!survived) village.hp = 0;
-        this.activeCrises.splice(i, 1);
+        this.finishCrisis(c, survived ? 'resolved' : 'failed', ending);
       }
     }
-    void rng;
+    this.syncState();
   }
 
   /**
@@ -292,24 +376,50 @@ export class WorldEvents {
     const crisis = CRISES[Math.min(CRISES.length - 1, Math.floor(c * CRISES.length))];
     const village = world.villages.find((v) => Math.hypot(v.x - x, v.y - y) < 16) || null;
     const entry = {
+      id: this.nextEventId++,
       key: crisis.key,
       name: crisis.name,
       note: crisis.note,
+      villageName: village ? village.name : null,
       villageId: village ? village.id : 0,
       x,
       y,
       startedDay: world.day,
       durationDays: 360 * (2 + d * 3),
+      endedDay: null,
+      status: 'active',
+      outcome: null,
       resolved: false,
       byPlayer: true,
     };
-    this.activeCrises.push(entry);
     const text = village
       ? `${village.name}起${crisis.name}——${crisis.note}。这场灾要熬 ${Math.round(entry.durationDays / 360)} 年。`
       : `${placeOf(world, x, y)}起${crisis.name}——${crisis.note}。此地并无聚落，灾祸空悬。`;
     entry.text = text;
-    // 玩家亲手降下的灾：进大事记，与 `powers.js` 的即时天灾同一本账。
-    world.milestone(text, 'crisis');
+    if (!village) {
+      entry.status = 'cancelled';
+      entry.resolved = true;
+      entry.endedDay = world.day;
+      entry.outcome = `事件 #${entry.id}：${text}灾祸未进入活动状态。`;
+      this.remember(entry);
+      world.record(entry.outcome, 'crisis');
+      this.syncState();
+      return entry;
+    }
+    this.activeCrises.push(entry);
+    // 玩家亲手降下的灾：与 `powers.js` 的即时天灾同一本账。
+    //
+    // ⚠️ 但「进大事记」有个前提——**落点得真有后果**。大事账本是 600 条**滚动窗口**，
+    //    往里面塞无后果的条目会把真正的世界大事挤出去（这条契约由
+    //    `powers.js:291-294` 明文写下）。即时天灾守了它（`powers.js:326-327`：
+    //    `if (parts.length) world.milestone else world.record`），降灾原来没守：
+    //    落点无聚落时文案是「此地并无聚落，灾祸空悬」，照样进了大事记。
+    //    改成与即时天灾同一口径：有聚落 → `milestone`；空落 → `record`。
+    //
+    //    注意**不写大事记 ≠ 静默**——空落那一笔照旧进 chronicle（玩家翻编年史看得到），
+    //    而且落笔时仍有即时提示。这条区分让「有后果 / 无后果」两种落笔能被两侧断言分开测。
+    world.milestone(`事件 #${entry.id}：${text}`, 'crisis');
+    this.syncState();
     return entry;
   }
 }

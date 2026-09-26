@@ -65,9 +65,9 @@ export const TERRAIN_INFO = Object.freeze([
   { key: 'GRASS', name: '草原', color: [160, 168, 132], water: false, fertility: 0.72, walk: true, build: true },
   { key: 'MEADOW', name: '芳甸', color: [176, 182, 146], water: false, fertility: 0.85, walk: true, build: true },
   { key: 'FOREST', name: '林', color: [104, 126, 96], water: false, fertility: 0.7, walk: true, build: true },
-  { key: 'JUNGLE', name: '密林', color: [80, 104, 80], water: false, fertility: 0.66, walk: true, build: true },
+  { key: 'JUNGLE', name: '密林', color: [68, 92, 70], water: false, fertility: 0.66, walk: true, build: true },
   { key: 'SAVANNA', name: '疏林', color: [189, 178, 130], water: false, fertility: 0.42, walk: true, build: true },
-  { key: 'DESERT', name: '荒漠', color: [212, 200, 165], water: false, fertility: 0.05, walk: true, build: true },
+  { key: 'DESERT', name: '荒漠', color: [222, 178, 116], water: false, fertility: 0.05, walk: true, build: true },
   { key: 'TUNDRA', name: '冻原', color: [198, 195, 178], water: false, fertility: 0.12, walk: true, build: true },
   { key: 'SWAMP', name: '泽薮', color: [116, 121, 94], water: false, fertility: 0.4, walk: true, build: false },
   { key: 'ROCK', name: '石', color: [152, 147, 136], water: false, fertility: 0.05, walk: true, build: false },
@@ -142,6 +142,11 @@ export const SPECIES = Object.freeze({
   CULTIVATOR: 'cultivator',
   BEAST: 'beast',
   SPIRIT: 'spirit',
+  // 幽冥鬼魂 / 鬼修（契约 reports/d5/BATCH2-DESIGN.md §七）。
+  // ⚠️ 必须显式登记：`render/unitsLayer.js` 的 `SPECIES_INFO[e.sp] || SPECIES_INFO.human`
+  //    与 `SPRITES[species] || SPRITES[SPECIES.HUMAN]` 两处兜底会让**未注册的 sp
+  //    静默长成凡人**——不报错、不崩溃，只是幽冥里的鬼看起来全是活人。
+  GHOST: 'ghost',
 });
 
 export const SPECIES_INFO = Object.freeze({
@@ -149,6 +154,14 @@ export const SPECIES_INFO = Object.freeze({
   cultivator: { name: '修士', speed: 1.25, hp: 220, lifespan: 9000, power: 4, diet: 0.6, canBuild: true, color: '#7a5a3a' },
   beast: { name: '灵兽', speed: 0.85, hp: 150, lifespan: 6000, power: 3, diet: 0, canBuild: false, color: '#6b6152' },
   spirit: { name: '山精', speed: 0.7, hp: 80, lifespan: 12000, power: 2, diet: 0, canBuild: false, color: '#5d7a72' },
+  // 鬼魂（普通鬼魂与鬼修共用这一档；鬼修靠 `level > 0` 另叠束带/灵光，零渲染改动）。
+  //   · `lifespan` 取得极大（≈278 年）是**刻意**的：鬼魂的消散由 `ghostDecayDay`
+  //     控制（契约 §六 第 2 条），**不走**凡间那套 `age >= lifespan`。若给一个正常
+  //     寿元，鬼魂会按凡间规则被误判寿终、从幽冥里被清掉，而那条路径**不报错**。
+  //   · `diet: 0` / `canBuild: false`：幽冥不跑凡间的繁衍与建造，鬼魂不吃口粮、不起屋。
+  //   · `speed` 比凡人慢（幽魂飘忽）、`hp` 偏低（契约 §六 有消散与逐出两重淘汰）。
+  //   · `color` 取幽墨冷灰蓝，与凡人的暖墨（#3c3830）一眼可分。
+  ghost: { name: '鬼魂', speed: 0.5, hp: 60, lifespan: 100000, power: 1, diet: 0, canBuild: false, color: '#4a4f5c' },
 });
 
 /** 时间：1 游戏年 = 360 天；每个 tick 推进的天数由倍速决定 */

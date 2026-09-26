@@ -1,0 +1,32 @@
+{
+  "name": "zuotian-guan-jing-inkbox",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node scripts/inkbox-server.mjs",
+    "dev": "node scripts/inkbox-server.mjs",
+    "build": "node scripts/inkbox-package.mjs",
+    "test": "npm run test:core",
+    "test:core": "node scripts/inkbox-import-check.mjs && node scripts/inkbox-core-check.mjs && node scripts/inkbox-startup-check.mjs",
+    "test:regression": "node scripts/inkbox-intervention-regression.mjs",
+    "test:save-equivalence": "node scripts/inkbox-save-equiv.mjs",
+    "test:three-realms": "node scripts/inkbox-three-realms.mjs",
+    "test:browser": "node scripts/inkbox-playtest.mjs",
+    "test:simulation": "node scripts/inkbox-smoke.mjs",
+    "inkbox:dev": "node scripts/inkbox-server.mjs",
+    "inkbox:imports": "node scripts/inkbox-import-check.mjs",
+    "inkbox:core": "node scripts/inkbox-core-check.mjs",
+    "inkbox:smoke": "node scripts/inkbox-smoke.mjs",
+    "inkbox:equiv": "node scripts/inkbox-save-equiv.mjs",
+    "inkbox:realms": "node scripts/inkbox-three-realms.mjs",
+    "inkbox:longrun": "node scripts/inkbox-longrun.mjs",
+    "inkbox:play": "node scripts/inkbox-playtest.mjs",
+    "inkbox:package": "node scripts/inkbox-package.mjs"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

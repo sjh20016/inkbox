@@ -5,11 +5,13 @@
 // 有本土化生、有陨落、有极简仙门。
 //
 // ⚠️ **上界不是凡间的缩印**。凡间 `Life`（sim/life.js）跑的是一整套系统
-// （战争、转世、夺舍、世家、卜算子、妖潮、法宝推进……），上界只跑六件事：
-// 修炼推进、化生、陨落、极简仙门、**凡人繁衍**、**独立炼器**。
-// （后两件是「凡人也能在上界活着」与「上界独立炼器路径」两条决定落地时加的，
-//   见 `maybeBornMortals` / `maybeForge`；两处都刻意排在 `step()` 的最后，
-//   以免打乱既有步骤的随机流。）其余与凡间共用的世界状态
+// （战争、转世、夺舍、世家、卜算子、妖潮、法宝推进……），上界只跑七件事：
+// 修炼推进、化生、陨落、极简仙门、**凡人繁衍**、**独立炼器**、**空间行为**。
+// （凡人繁衍 / 独立炼器是两条决定落地时加的，见 `maybeBornMortals` / `maybeForge`；
+//   空间行为是 D6-2 工程包 C 加的，见 `stepSpatial`——它让上界实体**不再定格在出生点**。
+//   三者都刻意排在 `step()` 的最后，以免打乱既有步骤的随机流；
+//   空间行为更进一步：它**根本不用 `this.rng`**，而是自己一条独立流，
+//   所以它一步都不会移动上界既有的世界线，见下「随机流纪律」第 3 条。）其余与凡间共用的世界状态
 // （`busanzi` / `possessionLog` / `souls` / `clans` / `wars` / `ascended`）
 // 由 `generateUpperWorld` 的 `resetUpperSystems` 显式清零
 // ——那是「上界不跑这些系统」的机器可读形态，不是注释性的承诺。
@@ -20,6 +22,27 @@
 // 两层派生各司其职：上界种子区分「哪张图」，本键区分「哪个系统」）。
 // 独立流不入档（既有约定）：重建路径是 `attachUpper()` → `new UpperLife(upper)`，
 // 与凡间 `Life` 的重建方式一致；分叉等价由存读档等价测试按同一口径观察。
+//
+// ⚠️ **本模块有两条独立流**（D6-2 工程包 C 起）：
+//   ① `this.rng`        —— 人口 / 立派 / 法宝 / 繁衍 / 炼器（`UPPER_LIFE_SEED_KEY`）；
+//   ② `this.spatialRng` —— **只**给空间行为（`UPPER_SPATIAL_SEED_KEY`）。
+// 为什么空间行为要**另开**一条、而不是接着抽 `this.rng`：`this.rng` 是一条**串行**流，
+// 而空间行为每拍抽签的次数**挂在上界人口上**（每个实体重选目标时抽 `2×24+1` 次），
+// 接进去会把同一拍之后的步骤**整体错位**，下一拍的修炼 / 化生 / 立派 / 法宝 / 繁衍 / 炼器
+// 也跟着漂——那不是「多了个移动」，是**把上界既有的随机流地基换掉**
+// （`maybeForge` 的注释里记着同一个教训：逐人掷签曾让 200 年的 `popLog.born`
+// 从 16 掀到 584）。另开一条流之后，`stepSpatial` 抽 `this.rng` 的次数**恒为 0**。
+//
+// ⚠️⚠️ **但「不抽 `this.rng`」≠「不改变世界线」，这两件事必须分清楚**（实测踩过）：
+// 实体一旦会移动，`stepCultivation` 读的 `world.qi[所在格]`（`cultivation.js:306`）
+// 就变了 ⇒ 修炼速度变 ⇒ 突破时点变 ⇒ `this.rng` 的**抽签时机**变。
+// 实测（60 年 · seed 20260914）：把 `stepSpatial` 换成 no-op 跑一遍，
+// `popLog` 仍然逐字相同，但实体签名与 `this.rng` 的下一签**都不同了**。
+// **这是本包要的耦合，不是 bug**——「修士往灵气厚的地方走、于是修得更快」正是
+// 工程包 C 的生态含义（`pickSpatialTarget` 对修士按 `upper.qi` 判分）。
+// 所以本包**不**声称「上界既有标定不受影响」；它只声称一件可验证的事：
+// **空间行为自身不消费 `this.rng`**（`inkbox-smoke.mjs` 5r 组直接数抽签次数）。
+// 凡间标定**完全不受影响**（上界与凡间两条流本来就分家）。
 //
 // ⚠️ **时间轴纪律（规格 §6.4）**：上界的 `day` 由 `main.js` 的 `update()`
 // 赋值，本模块**不推进** `upper.day`。所有「到期的检查」（立派周期）
@@ -36,6 +59,70 @@ import { upperWalkable, ensureUpperPopLog } from '../world/planes.js';
 
 /** 上界模拟流的派生键：ASCII 'UPLI'（UPper LIfE）。 */
 const UPPER_LIFE_SEED_KEY = 0x55504c49;
+
+/**
+ * 上界**空间行为**流的派生键：ASCII 'UPSB'（UPper Spatial Behavior）。
+ *
+ * ⚠️ 必须与 `UPPER_LIFE_SEED_KEY`（'UPLI'）以及 `worldgenUpper` 的
+ * `K_SEED_POP`（'UPSP'）**三者互不相同**——复用任何一个都会让两条本应独立的
+ * 流抽到**逐次相同**的签，而且不报错（同 `deriveNetherSeed` 那条纪律）。
+ * 这里取 'UPSB' = 0x55505342，与 'UPSP'（0x55505350）只差最后一字节，
+ * 肉眼容易看错，所以**引用前先看这一行**，别凭记忆写。
+ */
+const UPPER_SPATIAL_SEED_KEY = 0x55505342;
+
+/**
+ * 空间行为的移动速度（格 / 游戏日，**待标定**）。
+ *
+ * 为什么取这么小：上界的 tick 是**每 10 游戏日一次**（`ADVANCE_PERIODS.upper`），
+ * 而凡间 `moveTowards` 的 `BASE_TILES_PER_DAY = 2.1` 是**每帧**（dtDays 很小）调的。
+ * 直接照抄 2.1 会让上界实体每拍位移 21 格——那不是「活动」，是**瞬移**。
+ * 取 0.9：一拍（10 日）走 9 格，被下面的 `UPPER_MAX_MOVE_TILES` 截到 8 格，
+ * 正好横跨一个 `UPPER_WANDER_RADIUS` 的半径量级，两三拍走完一段目标。
+ */
+const UPPER_TILES_PER_DAY = 0.9;
+
+/**
+ * 单拍位移上限（格）。子步化的意义见 `moveSpatially`：
+ * 没有它，`dtDays` 一大（长测 / 高倍速下 `state.upper` 可以是 30、100…）
+ * 位移就会超过一格，**直接穿过云海**（与凡间 `moveTowards` 的穿墙是同一个坑）。
+ * 同时它把子步数钉在 ≤ 16，避免长测里退化成「几百个实体 × 几千次格判定」。
+ *
+ * ⚠️ 代价：`dtDays` 超过 `UPPER_MAX_MOVE_TILES / UPPER_TILES_PER_DAY ≈ 8.9` 之后，
+ * 位移**不再随 dtDays 增长**（被截平）。这是刻意的取舍——空间行为是「漫游」，
+ * 不是「按游戏日精确位移的物理量」；截平换来的是「行为不随 tick 粒度抖动」。
+ */
+const UPPER_MAX_MOVE_TILES = 8;
+
+/** 子步长度（格）。与凡间 `moveTowards` 的 `MAX_SUBSTEP = 0.5` 同值、同理。 */
+const UPPER_MAX_SUBSTEP = 0.5;
+
+/** 漫游半径（格）：目标在当前位置周围这个方形半径内随机取。凡人取本值。 */
+const UPPER_WANDER_RADIUS = 14;
+
+/**
+ * 修士的漫游半径倍数（相对 `UPPER_WANDER_RADIUS`）。
+ *
+ * 为什么修士走得远：上界是「飞升者的去处」，修士御剑、境界越高越不受地形约束；
+ * 凡人只是被裂缝卷上来的过客，活动范围小而碎。这条差异**只改半径、不改机制**——
+ * 机制（低频选点 + 直线走 + 可通行检查）两者共用一份代码。
+ */
+const UPPER_WANDER_RADIUS_CULTIVATOR = 1.5;
+
+/** 选目标时的采样次数：与 `findSpawnSpot` 的 24 次同量级。 */
+const UPPER_TARGET_TRIES = 24;
+
+/**
+ * 重选目标的间隔（游戏日，**待标定**）。
+ *
+ * 这就是「**低频**目标选择」的落点：一拍（10 日）只是把 `timer` 减 10，
+ * 只有 `timer` 归零时才重选一次目标。取 20~60 日 ⇒ 每 2~6 拍换一次目标。
+ *
+ * ⚠️ 为什么不每拍重选：每拍重选等于每拍抽一串签选点，既贵又让实体**原地抖**——
+ * 走一步就被新目标拽回去，看起来像卡住而不是在走。
+ */
+const UPPER_RETARGET_MIN_DAYS = 20;
+const UPPER_RETARGET_MAX_DAYS = 60;
 
 /**
  * 化生：每次 `step`（10 游戏日）对每个候选修士掷一次。
@@ -202,6 +289,10 @@ export class UpperLife {
   constructor(upper) {
     this.upper = upper;
     this.rng = mulberry32(((upper.seed || 0) ^ UPPER_LIFE_SEED_KEY) >>> 0);
+    // 空间行为的**独立**流（D6-2 工程包 C）。为什么另开一条、不共用 `this.rng`：
+    // 见文件头「随机流纪律」第 3 条。它同样**不入档**，重建点与 `this.rng` 一致
+    // （`attachUpper()` → `new UpperLife(upper)`），所以读档后两条流从同一个位置重来。
+    this.spatialRng = mulberry32(((upper.seed || 0) ^ UPPER_SPATIAL_SEED_KEY) >>> 0);
     this.foundAccum = 0;
     // 人口账本的**唯一**归一入口（形状与兜底都在 `planes.ensureUpperPopLog`）。
     // 为什么放在构造器：新档 / 读档 / 导入三条路径都汇聚在 `attachUpper()` →
@@ -300,6 +391,21 @@ export class UpperLife {
     // ── 7. 上界独立炼器（不依赖突破的炼器路径）────────────────────
     // 同上的随机流取舍：排在最后。理由与标定目标见 `UPPER_FORGE_CHANCE` 的注释。
     this.maybeForge();
+
+    // ── 8. 空间行为（D6-2 工程包 C）──────────────────────────────
+    // 让上界实体不再**定格在出生点**。排在最后，但这里的「最后」与第 5–7 步
+    // **不是同一种取舍**：第 5–7 步排在最后是为了「尽量少打乱 `this.rng`」，
+    // 而本步**根本不抽 `this.rng`**（它用 `this.spatialRng`，见文件头纪律第 3 条），
+    // 所以它排在 `step()` 的哪个位置，都不会改变**它自己**对 `this.rng` 的消费
+    // （恒为 0）。放最后只是让阅读顺序与执行顺序一致（先结算人口，再让人走动）。
+    // ⚠️ 但它会通过「位置 → `world.qi[所在格]` → 修炼速度」**间接**改变世界线，
+    //    那是刻意的生态耦合，不是需要规避的扰动——理由见文件头纪律第 3 条。
+    //
+    // ⚠️ 语义上它**必须晚于第 2 步的收殓**：本拍刚陨落的人已经移出实体表，
+    //    所以这里遍历到的都是活人。下面那句 `e.hp <= 0` 是**额外**的守卫，
+    //    兜住「`stepCultivation` 把 hp 打到 0 但还没被第 2 步收走」的边界情形
+    //    （正常情况下第 2 步已经收走了）。
+    this.stepSpatial(dtDays);
   }
 
   /**
@@ -588,6 +694,193 @@ export class UpperLife {
     // 同款。返回值可能为 `null`（体修 / `LIVE_CAP` 打满），与那里一样不判。
     if (this.rng() >= UPPER_FORGE_CHANCE) return;
     forgeArtifact(upper, smith, this.rng);
+  }
+
+  // ── 空间行为（D6-2 工程包 C）─────────────────────────────────────
+  //
+  // 规格：D6-2 工程包 C「上界空间生态」——上界凡人 / 修士要有**最小限度**的空间行为：
+  // 低频目标选择 + 简单移动 + 可通行检查。**不做 A*，不做寻路，不 `new Life(upper)`。**
+  //
+  // 为什么「最小」是要写进注释的约束：上界的定位是「门后的另一个世界**活着**」，
+  // 不是「再跑一遍凡间」。凡间那套 `planNext` 有觅食 / 务农 / 回家 / 找秘境 /
+  // 打坐 / 追敌 / 逃命七种动机、还读村庄与宗门；上界**一条都不需要**。
+  // 这里只回答一个问题：**这个人今天往哪走**。
+  //
+  // ⚠️ **落点判据单源**：一律走 `upperWalkable`（`world/planes.js`），
+  //    绝不自己写 `height >= SEA_LEVEL && water <= 0.0015`。生成侧、飞升落点、
+  //    裂隙位置过滤、本步移动，四处共用同一把尺子——一旦分叉，实体走进云海，
+  //    而且**不报错**（`THREE_REALMS.md` 的 RIFT 节写死了这条纪律）。
+
+  /**
+   * 推进所有实体的空间行为（每拍一次）。
+   *
+   * 形状照凡间 `Life.stepEntity` 的「状态机 + moveTowards」两段：
+   *   ① `timer` 递减；归零（或当前目标已失效）→ **重选**一个目标；
+   *   ② 朝目标走一段（`moveSpatially`）。
+   * 差别只在于动机：凡间那七种动机换成「随机漫游」（修士偏向灵气厚的方向）。
+   *
+   * ⚠️ **只抽 `this.spatialRng`**，一次都不碰 `this.rng`（理由见文件头纪律第 3 条）。
+   * ⚠️ 目标失效的判据必须包含「**站不住**」而不只是「越界」：飞升者 / 被裂缝卷上来的
+   *    凡人身上带着**凡间的 `tx` / `ty`**（`arriveUpper` 是 `structuredClone`，
+   *    那两个字段跟着过来了），凡间坐标在上界可能正落在云海里。若不判可通行，
+   *    实体第一拍就会朝着云海中心走，然后被 `spatialCanStep` 卡住**原地不动**——
+   *    「上界实体不会动」这个 bug 会以「偶尔有几个人不动」的形态藏起来。
+   */
+  stepSpatial(dtDays) {
+    const upper = this.upper;
+    const rng = this.spatialRng;
+    const count = upper.entities.length;
+    for (let i = 0; i < count; i += 1) {
+      const e = upper.entities[i];
+      if (!e || e.hp <= 0) continue;
+
+      // 动画相位：与凡间 `stepEntity` 的 `e.anim += dtDays * 2.4` 同款。
+      // 纯渲染量，但它是**实体列**（`save.js` row[14]），所以走同一条确定性路径。
+      e.anim = (e.anim || 0) + dtDays * 2.4;
+
+      e.timer = (e.timer || 0) - dtDays;
+      if (e.timer <= 0 || !this.spatialTargetValid(e)) {
+        const target = this.pickSpatialTarget(e);
+        if (!target) {
+          // 周围一格都站不住（孤岛 / 全云海）：本拍不动，下一拍再试。
+          // **不设 `timer`**，所以下一拍会立刻重试——这不是死循环，是「等一次机会」。
+          e.timer = 0;
+          continue;
+        }
+        e.tx = target[0] + 0.5;
+        e.ty = target[1] + 0.5;
+        e.state = 'wander';
+        e.timer = UPPER_RETARGET_MIN_DAYS
+          + rng() * (UPPER_RETARGET_MAX_DAYS - UPPER_RETARGET_MIN_DAYS);
+      }
+      this.moveSpatially(e, dtDays);
+    }
+  }
+
+  /**
+   * 当前目标还能不能用（越界 / 非有限 / 落在云海 → 不能用）。
+   * 判据与 `pickSpatialTarget` 的入池条件**同源**（都走 `upperWalkable`）。
+   */
+  spatialTargetValid(e) {
+    const upper = this.upper;
+    if (!Number.isFinite(e.tx) || !Number.isFinite(e.ty)) return false;
+    const x = Math.floor(e.tx);
+    const y = Math.floor(e.ty);
+    if (x < 0 || y < 0 || x >= upper.w || y >= upper.h) return false;
+    return upperWalkable(upper, y * upper.w + x);
+  }
+
+  /**
+   * 选一个新目标：在当前位置周围随机采样 `UPPER_TARGET_TRIES` 次，取**最好**的一格。
+   *
+   * 「最好」的定义按物种分：
+   *   · **修士**——偏向灵气（`upper.qi`）厚的方向（飞升者的本能：往灵气走）；
+   *   · **凡人**——无偏好（纯随机），因为他们只是在上界活着，不是去修炼。
+   * 这仍然是「**简单**移动」：一次采样 + 取最大值，没有任何路径搜索。
+   *
+   * ⚠️ 抽签次数**与人口规模无关**：每个需要重选目标的实体固定抽
+   *    `2 × tries` 次（每次采样两个坐标），**外加每个被接受的样本一次判分**，
+   *    所以实际是 `2×tries + (可通行样本数)`，落在 `[48, 72]` 区间内——
+   *    **与上界有多少人无关**。与 `maybeForge` 那条「每拍抽签次数必须与人口解耦」
+   *    是同一条纪律，只是这里解耦的对象换成了「每个实体的采样次数」。
+   * ⚠️ 修士偏向灵气用的是 `upper.qi`：它是**推导层**（读档后重算），
+   *    本函数只读不写，所以不会把推导量变成隐藏状态。
+   *
+   * @returns {[number, number]|null} 目标格，或 `null`（采样全落空）
+   */
+  pickSpatialTarget(e) {
+    const upper = this.upper;
+    const rng = this.spatialRng;
+    const cx = Math.floor(e.x);
+    const cy = Math.floor(e.y);
+    const mortal = isUpperMortal(e);
+    const radius = Math.round(UPPER_WANDER_RADIUS
+      * (mortal ? 1 : UPPER_WANDER_RADIUS_CULTIVATOR));
+    let best = null;
+    let bestScore = -Infinity;
+    for (let k = 0; k < UPPER_TARGET_TRIES; k += 1) {
+      const x = cx + Math.floor((rng() * 2 - 1) * radius);
+      const y = cy + Math.floor((rng() * 2 - 1) * radius);
+      if (x < 0 || y < 0 || x >= upper.w || y >= upper.h) continue;
+      const i = y * upper.w + x;
+      if (!upperWalkable(upper, i)) continue;
+      // 修士按灵气判分（加一点抖动避免总挑同一格）；凡人纯随机。
+      const score = mortal ? rng() : upper.qi[i] + rng() * 0.05;
+      if (score > bestScore) {
+        bestScore = score;
+        best = [x, y];
+      }
+    }
+    return best;
+  }
+
+  /**
+   * 朝目标走一段。子步化的理由与凡间 `moveTowards` **逐字同源**：
+   * `dtDays` 一大，位移就超过一格，会直接穿过云海；拆成 ≤ `UPPER_MAX_SUBSTEP`
+   * 的小段、逐段判可通行，就绕不过去（也**不抽任何签**，所以不扰动流）。
+   *
+   * 走不通时的退路（**不是寻路**）：先试「只走 x」、再试「只走 y」——
+   * 这是最朴素的滑墙，能贴着云海边缘滑过去；两条单轴都不通就放弃本拍，
+   * 把 `timer` 清零让下一拍重选目标。**没有**任何多步前瞻。
+   */
+  moveSpatially(e, dtDays) {
+    const dx = e.tx - e.x;
+    const dy = e.ty - e.y;
+    if (Math.hypot(dx, dy) < 0.35) return;
+
+    const info = SPECIES_INFO[e.sp] || SPECIES_INFO.human;
+    const speed = UPPER_TILES_PER_DAY * (info.speed || 1);
+    const stepLen = Math.min(speed * dtDays, UPPER_MAX_MOVE_TILES);
+    if (!(stepLen > 0)) return;
+
+    const n = Math.max(1, Math.ceil(stepLen / UPPER_MAX_SUBSTEP));
+    const seg = stepLen / n;
+    for (let k = 0; k < n; k += 1) {
+      const ddx = e.tx - e.x;
+      const ddy = e.ty - e.y;
+      const d = Math.hypot(ddx, ddy);
+      if (d < 0.35) return;
+      const ux = ddx / d;
+      const uy = ddy / d;
+      const nx = e.x + ux * seg;
+      const ny = e.y + uy * seg;
+      if (this.spatialCanStep(nx, ny)) {
+        e.x = nx;
+        e.y = ny;
+        if (Math.abs(ux) > 0.05) e.face = ux > 0 ? 1 : -1;
+        continue;
+      }
+      // 滑墙：沿单轴试。⚠️ 只在**目标方向明显偏向某一轴**时才试，
+      // 免得在云海夹角里来回抖（两轴都试 = 原地对角线抖动）。
+      if (Math.abs(ux) >= Math.abs(uy)) {
+        if (this.spatialCanStep(nx, e.y)) { e.x = nx; continue; }
+        if (this.spatialCanStep(e.x, ny)) { e.y = ny; continue; }
+      } else {
+        if (this.spatialCanStep(e.x, ny)) { e.y = ny; continue; }
+        if (this.spatialCanStep(nx, e.y)) { e.x = nx; continue; }
+      }
+      // 走不通：本拍到此为止，下一拍重选目标。
+      e.timer = 0;
+      return;
+    }
+  }
+
+  /**
+   * 这一格能不能落脚（**只判可通行，不判结构 / 火焰**）。
+   *
+   * ⚠️ 与凡间 `canStep` **刻意不同**：凡间多判两条（`struct === 3` 是墙、
+   *    `isWalkable` 里还看 `fire`），因为凡间有建筑与野火。上界**没有**这两样
+   *    （`resetUpperSystems` 把 `struct` 归零，`fire` 不跑），所以这里只调
+   *    `upperWalkable`——多判一条不存在的规则，只会让「上界的地形判定」
+   *    悄悄多出一个与凡间耦合的旋钮。
+   * ⚠️ 边界留一格（`1..w-2`）：与凡间 `canStep` 同款，避免贴边实体的
+   *    `Math.floor` 在边界上取到越界格。
+   */
+  spatialCanStep(x, y) {
+    const upper = this.upper;
+    if (x < 1 || y < 1 || x > upper.w - 2 || y > upper.h - 2) return false;
+    const i = Math.floor(y) * upper.w + Math.floor(x);
+    return upperWalkable(upper, i);
   }
 
   /**

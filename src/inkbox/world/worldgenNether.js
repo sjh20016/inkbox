@@ -115,6 +115,12 @@ import {
   createNoise2D, fbm, ridged, domainWarp, clamp, smoothstep,
 } from '../core/noise.js';
 import { deriveNetherSeed, NETHER_ID_BASE } from './planes.js';
+// 幽冥人口账本的**唯一形状定义**在 `sim/netherLife.js` 的 `ensureNetherPopLog`
+// （与 `planes.ensureUpperPopLog` 同款纪律）。这里 import 它、而不是再抄一份
+// 五键字面量——「形状只有一处定义」是结构上的保证，不是靠注释提醒。
+// ⚠️ 这条边不会成环：`netherLife.js` 只 import `core/config.js`，
+//    不回头 import 本文件（`inkbox-import-check.mjs` 会验）。
+import { ensureNetherPopLog } from '../sim/netherLife.js';
 
 // ── 幽冥专属旋钮 ─────────────────────────────────────────
 
@@ -523,6 +529,10 @@ function resetNetherSystems(world) {
   world.possessionLog.succeeded = 0;
   world.possessionLog.failed = 0;
   world.possessionLog.suspected = 0;
+  // D6-3 工程包 D 追加的两键：跨位面夺舍的子账（幽冥实例上恒为零——
+  // 夺舍由**凡间**那侧的 `stepNetherRift` 记账，这里清是为了把「幽冥不跑它」钉成语义）。
+  world.possessionLog.crossPlane = 0;
+  world.possessionLog.haunted = 0;
   // 3. 逝者名录（幽冥不跑 `stepNecrology`）
   world.dead.length = 0;
   world.deadLog.total = 0;
@@ -572,6 +582,34 @@ function resetNetherSystems(world) {
   //     ⚠️ 8-D 的鬼修必须是**独立实体**（§8.2②：不从魂池就地升格），
   //     所以它们要用这一段 id——这正是这一行的用途。
   world.nextEntityId = NETHER_ID_BASE;
+  // 12. 幽冥人口账本（契约 `reports/d5/BATCH2-DESIGN.md` §四）。
+  //     形状的**唯一**定义在 `sim/netherLife.js` 的 `ensureNetherPopLog`；
+  //     这里调用它建初值，再**显式归零**（本函数的名字就是「reset」，语义上
+  //     要能在一张用过的 world 上把账本清干净，而不是只在缺键时才建）。
+  //     ⚠️ 序列化走 `io/save.js` 的 `NETHER_ONLY_KEYS`（另一 worker 维护，
+  //        本文件不碰 save.js）。与上界的 `popLog` 不撞车（不同 World 实例）。
+  const popLog = ensureNetherPopLog(world);
+  popLog.ghostBorn = 0;
+  popLog.cultivatorBorn = 0;
+  popLog.ghostDied = 0;
+  popLog.cultivatorAdvanced = 0;
+  popLog.evicted = 0;
+  popLog.fellIn = 0;   // D6-3 工程包 A：裂缝跌入者（`ghostBorn` 的子计数）
+  popLog.climbedOut = 0; // D6-3 工程包 B：自幽冥缝爬入凡间的鬼（第三条离开路径）
+  // 13. 幽冥物品账四条（D6-3 工程包 C）。形状的唯一真源是
+  //     `sim/netherLife.js` 的 `ensureNetherPopLog`；这里照上面各条的做法**显式归零**。
+  popLog.itemsSpawned = 0;    // 幽冥自生
+  popLog.itemsFellIn = 0;     // 跌入者带下来
+  popLog.itemsLeakedOut = 0;  // 经缝漏回凡间
+  popLog.itemsDecayed = 0;    // 超上限朽掉
+  popLog.possessedOut = 0;    // D6-3 工程包 D：被鬼修夺舍、元神搬进凡间的（第四条离开路径）
+  // 幽冥物品池本身（`nether.artifacts`）也是 C 包起的真实状态，与 `clans` /
+  // `dead` 等一样照零清（见本函数头注释的「幽冥没有例外」）。
+  // ⚠️ `nextArtifactId` 也归 1——它进存档、读档原样恢复，偏移只需在生成期设一次
+  //    （与 `nextEntityId = NETHER_ID_BASE` 不同：法宝 id **从不跨界**，
+  //     跨世界时由 `rifts.js` 重赋，所以幽冥物品不需要世界限定符）。
+  world.artifacts.length = 0;
+  world.nextArtifactId = 1;
 }
 
 /**

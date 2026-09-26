@@ -121,6 +121,13 @@ const SPRITES = Object.freeze({
   [SPECIES.CULTIVATOR]: [CULTIVATOR_A, CULTIVATOR_B],
   [SPECIES.BEAST]: [BEAST_A, BEAST_B],
   [SPECIES.SPIRIT]: [SPIRIT_A, SPIRIT_B],
+  // 鬼魂（契约 reports/d5/BATCH2-DESIGN.md §七）。**刻意复用凡人的剪影位图**，
+  // 不新画像素美术：考古文案（06册:186）的基调是「吓人的是在冥河边**看见熟脸**」——
+  // 复用凡人剪影正是要的效果。颜色由 `SPECIES_INFO.ghost.color`（幽墨冷灰蓝）提供，
+  // 视觉上仍与活人分得开。
+  // ⚠️ 必须显式登记：`framesFor` 的 `SPRITES[species] || SPRITES[SPECIES.HUMAN]`
+  //    兜底会让**未注册的 sp 静默长成凡人**——不报错，只是认不出这是鬼。
+  [SPECIES.GHOST]: [MORTAL_A, MORTAL_B],
 });
 
 // ── 建筑 ─────────────────────────────────────────────────
@@ -632,6 +639,60 @@ export class UnitsLayer {
     }
   }
 
+  /**
+   * 凡间鬼影（D6-3 工程包 B）。
+   *
+   * ⚠️ 这批实体**不在 `world.entities` 里**（理由见 `sim/wraiths.js` 头注释），
+   *    所以 `drawEntities` 一行都画不到它们——必须在主渲染链里**单独调一次**。
+   *    这就是「独立容器」在**渲染侧**的代价：多一次调用，换来的是「鬼不会被
+   *    凡间那套修炼 / 觉醒 / 飞升链吃掉」这条结构性保证。
+   *
+   * 外观：冷灰蓝（`SPECIES_INFO.ghost.color`）、**半透明**（0.55）、离地浮一点、
+   * 上下轻轻飘。半透明是关键——不然它和普通凡人像素小人长得一模一样，
+   * 玩家会以为那是个人（`SPECIES.GHOST` 的精灵本来就是借 `MORTAL_A/B` 画的）。
+   *
+   * ⚠️ 只画**可见矩形内**的（同 `drawEntities` 的裁剪）：`world.wraiths` 上限
+   *    120 只，全画也不会慢，但保持同款裁剪省得后来人以为这里可以偷懒。
+   */
+  drawWraiths(ctx, camera, world, time) {
+    const list = world.wraiths;
+    if (!list || !list.length) return;
+    const rect = camera.visibleRect(world);
+    const baseCell = Math.max(0.22, Math.min(3.1, camera.zoom * 0.215));
+    const showDetail = camera.zoom >= 2.2;
+    const info = SPECIES_INFO[SPECIES.GHOST] || SPECIES_INFO.human;
+
+    ctx.save();
+    ctx.globalAlpha = 0.55;                 // 半透明：一眼看出「不是人」
+    for (let i = 0; i < list.length; i += 1) {
+      const e = list[i];
+      if (e.x < rect.x0 || e.x > rect.x1 || e.y < rect.y0 || e.y > rect.y1) continue;
+      const idx = world.idx(Math.floor(e.x), Math.floor(e.y));
+      const height = world.height[idx];
+      const [sx, sy] = UnitsLayer.project(camera, e.x, e.y, height);
+
+      const frames = framesFor(e.sp);
+      const moving = Math.abs(e.tx - e.x) + Math.abs(e.ty - e.y) > 0.4;
+      const frame = moving ? ((Math.floor(time * 5 + (e.id || 0) * 0.37) % 2) + 2) % 2 : 0;
+      const rows = frames[frame];
+
+      const cell = baseCell;
+      const width = rows[0].length * cell;
+      const heightPx = rows.length * cell;
+      // 离地浮一点 + 上下飘（鬼不沾地）
+      const hover = cell * 1.6 + (showDetail ? Math.sin(time * 1.6 + (e.id || 0)) * cell * 0.5 : 0);
+
+      const colors = {
+        1: info.color,
+        2: '#2b2e36',
+        3: '#7d8698',
+        4: '#aab2c0',
+      };
+      drawSprite(ctx, rows, sx - width / 2, sy - heightPx - hover, cell, colors, e.face < 0);
+    }
+    ctx.restore();
+  }
+
   drawFireGlow(ctx, camera, world, time) {
     if (camera.zoom < 2) return;
     const rect = camera.visibleRect(world);
@@ -660,28 +721,81 @@ export class UnitsLayer {
     ctx.restore();
   }
 
+  /**
+   * 地图文字标签：聚落名、宗门名。
+   *
+   * 为什么要分级（2026-09-23 · D3-B1）
+   * --------------------------------
+   * 221 年的成熟世界里，六十多个聚落的名签在同一屏里一次全画，
+   * 白底小牌子互相压叠，山河被盖得看不见——玩家第一眼看到的不是画，是一层浮层。
+   * 所以标签先按「值不值得占这块地方」排好序，再**按缩放分级放出**：
+   * 远景只留大聚落（人多的先占位），放大才逐级展开；
+   * 已落下的标签记下包围盒，后来的撞上就让路。
+   *
+   * 样式一并水墨化：原来那块「白底 + 1px 描边」的矩形牌是网页控件的语言，
+   * 贴在宣纸上是两套东西。改成无硬框的淡纸晕底 + 墨字，
+   * 归属只用一枚宗门色小点表示（颜色只做点，不染字）。
+   *
+   * ⚠️ 排序键只用 `pop` / `id`，**不用任何随机**：渲染路径里出现 `Math.random()`
+   *   会让同种子两次运行分叉（MEMORY「模拟期确定性 ≠ 生成期确定性」）。
+   */
   drawLabels(ctx, camera, world) {
     if (!this.showLabels || camera.zoom < 3.4) return;
     const rect = camera.visibleRect(world);
+    const zoom = camera.zoom;
+    const size = Math.max(9, Math.min(14, zoom * 2.2));
     ctx.save();
-    ctx.font = `${Math.max(9, Math.min(14, camera.zoom * 2.2))}px "Noto Serif SC", KaiTi, serif`;
+    ctx.font = `${size}px "Noto Serif SC", KaiTi, serif`;
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
+    ctx.textBaseline = 'middle';
+    const placed = [];
+
+    // ① 聚落：人口多的先落笔，同人口按 id —— 排序稳定，与随机无关
+    const vis = [];
     for (let i = 0; i < world.villages.length; i += 1) {
       const v = world.villages[i];
       if (v.x < rect.x0 - 10 || v.x > rect.x1 + 10 || v.y < rect.y0 - 10 || v.y > rect.y1 + 10) continue;
+      vis.push(v);
+    }
+    vis.sort((a, b) => (b.pop - a.pop) || (a.id - b.id));
+    // 远景 8 枚，逐级放宽，放到足够大就不再限量
+    const budget = zoom < 4.2 ? 8 : zoom < 5.5 ? 16 : zoom < 7 ? 30 : zoom < 9 ? 60 : vis.length;
+
+    for (let i = 0; i < vis.length && placed.length < budget; i += 1) {
+      const v = vis[i];
       const idx = world.idx(Math.floor(v.x), Math.floor(v.y));
       const [sx, sy] = UnitsLayer.project(camera, v.x, v.y, world.height[idx]);
       const text = `${v.name}${v.level > 1 ? ` ·${v.pop}` : ''}`;
       const wpx = ctx.measureText(text).width;
-      const y = sy - camera.zoom * 1.6 - 6;
-      ctx.fillStyle = 'rgba(233,224,205,0.82)';
-      ctx.fillRect(sx - wpx / 2 - 4, y - 13, wpx + 8, 15);
-      ctx.strokeStyle = 'rgba(34,32,28,0.45)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(sx - wpx / 2 - 4, y - 13, wpx + 8, 15);
-      ctx.fillStyle = '#2b2822';
-      ctx.fillText(text, sx, y);
+      const cy = sy - zoom * 1.6 - 9;
+      const box = [sx - wpx / 2 - 7, cy - 8, wpx + 14, 16];
+      if (overlapsPlaced(placed, box)) continue;
+      const faction = v.faction ? world.factionById(v.faction) : null;
+      drawInkLabel(ctx, box, text, faction ? faction.color : null);
+      placed.push(box);
+    }
+
+    // ② 宗门：放大到看得清大殿时才写名字，远景靠大殿精灵认门派。
+    //    名字一律墨色，只用左侧那一点色块带出门派（与大殿屋顶同色）。
+    if (zoom >= 6) {
+      ctx.font = `${Math.min(15, size + 1.5)}px "Noto Serif SC", KaiTi, serif`;
+      for (let i = 0; i < world.factions.length; i += 1) {
+        const f = world.factions[i];
+        if (!f.capitalX) continue;
+        if (f.capitalX < rect.x0 - 6 || f.capitalX > rect.x1 + 6
+          || f.capitalY < rect.y0 - 6 || f.capitalY > rect.y1 + 6) continue;
+        const idx = world.idx(
+          Math.max(0, Math.min(world.w - 1, Math.floor(f.capitalX))),
+          Math.max(0, Math.min(world.h - 1, Math.floor(f.capitalY))),
+        );
+        const [sx, sy] = UnitsLayer.project(camera, f.capitalX, f.capitalY + 1, world.height[idx]);
+        const wpx = ctx.measureText(f.name).width;
+        const cy = sy - zoom * 2.6 - 12;
+        const box = [sx - wpx / 2 - 8, cy - 9, wpx + 16, 18];
+        if (overlapsPlaced(placed, box)) continue;
+        drawInkLabel(ctx, box, f.name, f.color || null, true);
+        placed.push(box);
+      }
     }
     ctx.restore();
   }
@@ -743,6 +857,60 @@ export class UnitsLayer {
     ctx.stroke();
     ctx.restore();
   }
+}
+
+/**
+ * 新标签撞上已落下的就不画。
+ * 只跟最近若干枚比：同屏标签最多几十枚，全量两两比没必要，
+ * 而「撞上一枚很远的」在视觉上本来就无所谓。
+ */
+function overlapsPlaced(placed, box, limit = 48) {
+  const start = Math.max(0, placed.length - limit);
+  for (let i = start; i < placed.length; i += 1) {
+    const b = placed[i];
+    if (box[0] < b[0] + b[2] && box[0] + box[2] > b[0]
+      && box[1] < b[1] + b[3] && box[1] + box[3] > b[1]) return true;
+  }
+  return false;
+}
+
+/** 圆角路径：自己画，不依赖 `ctx.roundRect`（稍旧的内核里没有）。 */
+function roundRectPath(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.lineTo(x + w - rr, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + rr);
+  ctx.lineTo(x + w, y + h - rr);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+  ctx.lineTo(x + rr, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - rr);
+  ctx.lineTo(x, y + rr);
+  ctx.quadraticCurveTo(x, y, x + rr, y);
+  ctx.closePath();
+}
+
+/**
+ * 一枚水墨标签：淡纸底托着墨字；有宗门时左侧点一枚宗门色。
+ * 不加硬描边——描边是网页控件的语言，宣纸上只该有墨与纸。
+ */
+function drawInkLabel(ctx, box, text, dotColor, strong = false) {
+  const [x, y, w, h] = box;
+  ctx.fillStyle = strong ? 'rgba(240,234,220,0.88)' : 'rgba(240,234,220,0.72)';
+  roundRectPath(ctx, x, y, w, h, 3);
+  ctx.fill();
+  // 一道极淡的墨边：只为把底从深色地形（密林、山阴）里托起来
+  ctx.strokeStyle = 'rgba(34,32,28,0.15)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  if (dotColor) {
+    ctx.fillStyle = dotColor;
+    ctx.beginPath();
+    ctx.arc(x + 5.5, y + h / 2, strong ? 2.4 : 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#26241f';
+  ctx.fillText(text, x + w / 2 + (dotColor ? 2 : 0), y + h / 2 + 0.5);
 }
 
 export { drawSprite, SPRITES, REALM_STYLE };

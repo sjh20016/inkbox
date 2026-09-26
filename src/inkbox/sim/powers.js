@@ -438,9 +438,7 @@ export function flood(world, x, y, radius, history) {
 
 /** 降雨：灭火、润泽、催生植被 */
 export function rain(world, x, y, radius, history) {
-  const cx = clamp(Math.round(x), 0, world.w - 1);
-  const cy = clamp(Math.round(y), 0, world.h - 1);
-  const t = brushIndices(world, cx, cy, radius, (i, _px, _py, falloff) => {
+  const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
     history.record(world, i);
     world.fire[i] = 0;
     if (world.water[i] < 0.004) {

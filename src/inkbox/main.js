@@ -27,12 +27,36 @@ import { UpperLife } from './sim/upperLife.js';
 // ⚠️ `ROUTE_LABEL` 不在 `necrology.js` 里再抄一份——它已经有 `longrun` 的
 //    键集断言盯着（`inkbox-longrun.mjs:737-745`），多一份真相就是多一个漂移点。
 import { reincarnationStats, ROUTE_LABEL, SOUL_ROUTES, SOUL_ROUTE_POSSESS } from './sim/reincarnation.js';
+// 幽冥鬼魂 / 鬼修的低频 tick（契约 `reports/d5/BATCH2-DESIGN.md` §六）。
+// ⚠️ `stepNether` 收的是**凡间 world**（它要读凡间魂池 `world.souls` 做对账），
+//    不是 `this.nether`——见 `netherLife.js` 里 `stepNether` 的 @param 注释。
+// `netherGhostStats` 是**唯一**的幽冥实体统计口径（契约 §七「Feedback」）：
+//    右栏那行与视界提示行都从它取数，**不在 main.js 里再 filter 一遍
+//    `nether.entities`**——那会出现第二份真相，两边迟早对不上。
+import { netherGhostStats, netherEcoStats, netherItemStats } from './sim/netherLife.js';
+// 上界生态账本的**只读**汇总（D6-2 工程包 E）。与幽冥的 `netherEcoStats` 同款口径：
+// 三界面板上两处都印「生 / 亡」，玩家可以横向对照，账平不平一眼可见。
+import { upperEcoStats } from './world/planes.js';
+// 凡间鬼影（D6-3 工程包 B）：**只 import 只读汇总**，不 import `stepMortalWraiths`
+// ——推进走 `sim/advance.js` 那个唯一入口（`ADVANCE_PERIODS.wraith`），本文件不驱动它。
+// `wraithStats` 是**唯一**的凡间鬼影统计口径（`sim/wraiths.js`）：右栏那格与
+// hover 提示都从它取数，**不在 main.js 里再 filter 一遍 `world.wraiths`**。
+import { wraithStats } from './sim/wraiths.js';
+// D6-3 工程包 D：`isControlled` 是「此刻被附身接管」的唯一判据（`life.js` 的行为锁
+// 与这里的面板都读它）。**只读**，不引入任何写路径。
+import { isControlled } from './sim/possession.js';
 import { stepHydrology } from './sim/hydrology.js';
-import { stepVegetation, stepFire, decayOverlay } from './sim/ecology.js';
-// 空间裂缝（阶段三）：开缝只在 pointerup 的提交点（commitSelection）发生，
-// 判定/漏物/闭合走一条低频时钟（见 update）。`stepRifts` 内部对 `world.upper`
-// 缺失有兜底，所以裂缝时钟**无条件跑**（裂缝属于凡间）。
-import { RIFT_PERIOD_DAYS, stepRifts, openRifts } from './sim/rifts.js';
+import { decayOverlay } from './sim/ecology.js';
+// 空间裂缝（阶段三）：**开缝**这个动作只在 pointerup 的提交点（commitSelection）
+// 发生；**判定 / 漏物 / 闭合**走低频时钟，那个时钟已搬进 `sim/advance.js`
+// （见下面的 `advanceWorld`），本文件不再自己驱动它。
+import { openRifts } from './sim/rifts.js';
+// ⚠️ `advanceWorld` / `createAdvanceState` 是**世界推进的唯一入口**：
+//    `update()` 里原先那段「life + upper + nether + rift + eco + fire」的时钟
+//    列表已**整段搬进** `sim/advance.js`。**别在本文件里再抄一遍**——测试侧
+//    （`inkbox-longrun.mjs` / `inkbox-playtest.mjs`）调的是同一个函数，
+//    抄第二份就会重演 BACKLOG #13（漏掉 `stepNether`，幽冥实体只增不减）。
+import { advanceWorld, createAdvanceState } from './sim/advance.js';
 import { computeTerritory } from './sim/territory.js';
 import { artifactStats, artifactPower, describeArtifact, ownerLine } from './sim/artifacts.js';
 import { lineageOf, clanStats } from './sim/family.js';
@@ -57,11 +81,22 @@ import {
 import { TerrainLayer } from './render/terrainLayer.js';
 import { UnitsLayer } from './render/unitsLayer.js';
 import { Camera } from './render/camera.js';
-import { TOOLS, TOOL_BY_ID, TOOL_GROUPS, TOOL_CURSOR } from './ui/tools.js';
+// ⚠️ `normalizeRegion as normalizeRegionGeometry` 是划选区域的**纯几何核心**
+//    （鞋带面积 / 钳界 / 面积上限）。它放在 `ui/tools.js` 而不是本文件的方法里，
+//    是因为本文件依赖 DOM、node 里 import 不了，而 `scripts/_riftprobe.mjs`
+//    要在 node 里断言它。别名是为了不与下面同名的方法打架。
+// ⚠️ 别把注释写进下面那对花括号里：`scripts/inkbox-import-check.mjs` 用正则
+//    扫具名导入，会把注释文字当成导入名而误报「对面没有这个导出」。
+import {
+  TOOLS, TOOL_BY_ID, TOOL_GROUPS, TOOL_CURSOR, normalizeRegion as normalizeRegionGeometry,
+} from './ui/tools.js';
 import { toCss } from './render/palette.js';
 import {
   saveToStorage, loadFromStorage, exportFile, importFile, listSlots, deleteSlot,
 } from './io/save.js';
+import {
+  CAUSAL_TOOL_IDS, createInterventionOutcome, measureChangedCells,
+} from './sim/interventionFeedback.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -277,20 +312,110 @@ function renderBiographyHtml(md) {
 }
 
 /**
- * 上界地形位图的最短重绘间隔（秒）。
+ * 另一界（上界 / 幽冥）地形位图的最短重绘间隔（秒）。
  *
  * 视界的贴图走「全量渲染到离屏 canvas，再裁剪贴出」（规格 §3.4 的 C2 方案，
  * 不改 terrainLayer.js）。`TerrainLayer.render()` 是**全量**的——它遍历整张
- * `w×h` 并逐像素写 ImageData。若每帧都重绘上界，地形成本直接翻倍。
+ * `w×h` 并逐像素写 ImageData。若每帧都重绘另一界，地形成本直接翻倍。
  *
- * 但上界地形**变化极慢**（不跑水文/生态，只有玩家工具会改），所以把它的重绘
+ * 但另一界地形**变化极慢**（不跑水文/生态，只有玩家工具会改），所以把它的重绘
  * 摊薄到 0.2 秒一档：视界里的云/浪会略顿，但这是 C2 方案下唯一能控成本的地方。
  * ⚠️ 这个数是**实测标定**的（见交付报告里的 FPS 读数），不要凭感觉改小。
+ * ⚠️ 名字里的 `UPPER` 是历史遗留（视界起初只能看上界）；现在上界与幽冥两个
+ *    图层**各自**按它节流，互不影响（各自的 `TerrainLayer.lastRender`）。
  */
 const UPPER_RENDER_PERIOD = 0.2;
 
 /** 视界面积上限（占全图比例）。划满全图会让渲染退化成「全图渲染两遍」 */
 const UPPER_VIEW_MAX_AREA = 0.4;
+
+/**
+ * 「视界」工具 → 它看的那一界（`ui/tools.js` 里 `mode: 'select'`、能看另一界的那些）。
+ *
+ * **这是「当前在看哪一界」的判据总表**，四处共用它：
+ *   · `riftViewOpen()` —— 裂缝冻结判据（契约 C1.1）；
+ *   · `commitSelection()` —— 开缝门控**与目标位面**（划选边缘裂开细缝，缝连哪一界）；
+ *   · `viewPlane()` —— 贴哪一界的地形。
+ * 散着写 `toolId === 'viewUpper'` 会让「加一界」变成「改 N 处、漏一处」，
+ * 而漏掉的那处**不报错**（比如裂缝照常开，只是开在没开窗的时候）。
+ *
+ * ⚠️ **目标位面也必须从这张表来**（D6-2 工程包 B1）：`openRifts` 的第三参
+ *    `targetPlane` 与这里**必须是同一个真源**。若在 `commitSelection` 里另写一句
+ *    `tool.id === 'viewNether' ? 'nether' : 'upper'`，那么「加第三界」时这里改了、
+ *    那里忘了，幽冥的缝会**静默地**连到上界去——正是本阶段要根除的那个语义错误。
+ *
+ * ⚠️ 它**只**回答「是不是视界工具」；「窗口真的开着」还要 `this.selection` 非空，
+ *    那是 `riftViewOpen()` 的第二半，两者不可互相替代。
+ */
+const VIEW_TOOL_PLANE = Object.freeze({
+  viewUpper: 'upper',
+  viewNether: 'nether',
+});
+
+/**
+ * 视界工具的 id 列表。**从 `VIEW_TOOL_PLANE` 的键派生**——不再另列一份字面量：
+ * 两份清单必然分叉，而分叉的后果是「工具能看幽冥，但裂缝按上界开」（不报错）。
+ */
+const VIEW_TOOL_IDS = Object.freeze(Object.keys(VIEW_TOOL_PLANE));
+
+/**
+ * 射线法：点 `(x, y)` 是否落在闭合多边形 `path`（`[x, y]` 格点数组，首尾不重复）内。
+ *
+ * 半开区间判定（`(yi > y) !== (yj > y)`）让顶点 / 水平边只被数一次——
+ * 否则恰好压在折线上的鬼魂会被算两次，计数凭空多一只。
+ */
+function pointInPolygon(path, x, y) {
+  let inside = false;
+  for (let i = 0, j = path.length - 1; i < path.length; j = i, i += 1) {
+    const xi = path[i][0];
+    const yi = path[i][1];
+    const xj = path[j][0];
+    const yj = path[j][1];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/**
+ * 视界窗口里**看得见**的鬼魂数（契约 `reports/d5/BATCH2-DESIGN.md` §七「Feedback」）。
+ *
+ * ⚠️ **为什么用多边形而不是包围盒**：`drawPlaneView` 的裁剪是
+ *    `ctx.clip()` 走 `sel.path` 那条自由折线（`main.js:1900-1909`），
+ *    玩家看到的窗口**就是那个形状**。包围盒会把套索凹进去的那几块也数进来，
+ *    于是「提示行说 7 只、窗里只看得见 3 只」——读数与画面打架，正是 D4 要治的病。
+ *    所以这里做**点在多边形内**判定，与 `ctx.clip()` 同形状。
+ *    代价 O(鬼魂数 × 顶点数)：鬼魂上限是几十、顶点也是几十，且只在**提交划选那一下**
+ *    算一次（不在每帧），完全可以接受。
+ *    `sel.path` 缺失时退回包围盒——与 `drawPlaneView` 的矩形兜底同款防御。
+ *
+ * ⚠️ **只对幽冥界计数**：上界没有鬼魂，加了会印出「窗内可见鬼魂 0 只」这种噪音。
+ *
+ * @param {object} plane `viewPlane()` 的产物（`world` / `label`）
+ * @param {object} sel   `normalizeRegion()` 的产物（`path` / `x0..y1`）
+ * @returns {number} 窗内鬼魂数（非幽冥界 / 无选区返回 0）
+ */
+function ghostsInRegion(plane, sel) {
+  if (!plane || plane.label !== '幽冥' || !sel) return 0;
+  const list = (plane.world && plane.world.entities) || [];
+  const path = sel.path;
+  let n = 0;
+  if (path && path.length >= 3) {
+    for (let i = 0; i < list.length; i += 1) {
+      const e = list[i];
+      if (e && pointInPolygon(path, e.x, e.y)) n += 1;
+    }
+    return n;
+  }
+  // 兜底：矩形（与 `drawPlaneView` 的 `ctx.rect` 分支一致，含端点格）。
+  for (let i = 0; i < list.length; i += 1) {
+    const e = list[i];
+    if (!e) continue;
+    if (e.x >= sel.x0 && e.x <= sel.x1 + 1 && e.y >= sel.y0 && e.y <= sel.y1 + 1) n += 1;
+  }
+  return n;
+}
 
 /**
  * 「退回明文」的短标签。**两个原因必须分开说**：
@@ -326,7 +451,6 @@ class Sandbox {
     this.toolId = 'raise';
     this.brushIndex = 3;
     this.showGrid = false;
-    this.followSelection = false;
 
     this.world = null;
     this.life = null;
@@ -339,11 +463,15 @@ class Sandbox {
     // （下一阶段的 ascend() 靠它找到上界）。
     this.upper = null;
     this.upperTerrain = null;
-    // 上界低频 step 的累积器（每 10 游戏日一次）。与 hydroAccum / ecoAccum 同构。
-    this.upperAccum = 0;
-    // 裂缝判定时钟的累积器（每 RIFT_PERIOD_DAYS = 30 游戏日一次）。
-    // 紧挨 upperAccum 放，方便对照：两个都是「低频但时间点对齐」的时钟。
-    this.riftAccum = 0;
+    // ⚠️ 各低频时钟的累积器（上界 / 幽冥 / 裂缝 / 植被 / 野火）**不再散着放**——
+    //    全部收进 `this.advanceState`（`sim/advance.js` 的 `createAdvanceState()`）。
+    //    理由见那个文件头：散着放就得在**每一处**推进代码里各抄一遍时钟列表，
+    //    而那个模式已经漏过两次时钟（植被 / 野火；以及 2026-09-23 新增的
+    //    `stepNether`，即 BACKLOG #13）。放一份，`update()` 与全部测试脚本
+    //    共用同一份节流状态。
+    //    ⚠️ `hydroAccum` / `decayAccum` **不在里面**：那两个按**真实时间**（`dt`）
+    //       驱动，不是「游戏日驱动的时钟」（见各自的注释）。
+    this.advanceState = createAdvanceState();
     /** 上界地形需要重绘（本轮只由低频 step 置位，为下一阶段留口） */
     this.upperDirty = false;
 
@@ -353,14 +481,22 @@ class Sandbox {
     // `this.nether` 会仍指着上一局的世界——`attachNether` 覆盖了它所以看不出来，
     // 但 `this.upper` / `this.upperTerrain` 都在这里置空，不置就是不对称。
     this.nether = null;
+    // 幽冥地形图层：与 `this.upperTerrain` 逐格对称（见 attachNether）。
+    // **这一格同样不能省**：漏了它，一次换世界之后残留的旧图层会仍指着上一局的
+    // 幽冥——`attachNether` 覆盖了它所以看不出来，但视界贴的就是别人的图。
+    this.netherTerrain = null;
+    /** 幽冥地形需要重绘（与 `upperDirty` 同构，本轮同样只置位、不读） */
+    this.netherDirty = false;
+    // （幽冥的低频时钟累积器在 `this.advanceState.nether`，见上面那段说明。）
 
-    // ── 上界视界（划选矩形）────────────────────────────────
+    // ── 上界视界（自由形状划选 / 套索）──────────────────────
     // ⚠️ `this.selection` 是 **UI 状态，不进世界存档**：存档是给「世界」的，
     //    不是给「屏幕」的（规格 §6.2）。所以它挂在这里，不挂 world。
-    /** 已提交的划选矩形 `{x0,y0,x1,y1}`（整数格、已钳到边界），null = 没开视界 */
+    /** 已提交的划选区域 `{path,x0,y0,x1,y1,area,capped}`（整数格、已钳到边界），null = 没开视界。
+     *  `path` 是自由闭合多边形的顶点序列（首尾不重复）；`x0/y0/x1/y1` 是它的包围盒。 */
     this.selection = null;
-    /** 拖拽中的矩形（同样的形状），null = 没在划。用来做实时反馈 */
-    this.selectDrag = null;
+    /** 拖拽中的路径（世界坐标格点数组 `[[x,y],...]`），null = 没在划。用来做实时反馈 */
+    this.selectPath = null;
 
     this.pointer = { x: 0, y: 0, inside: false, down: false, painting: false, panning: false, lastX: 0, lastY: 0 };
     this.hoverTile = { x: 0, y: 0 };
@@ -371,8 +507,7 @@ class Sandbox {
     this.fpsAccum = 0;
     this.fpsFrames = 0;
     this.hydroAccum = 0;
-    this.ecoAccum = 0;
-    this.fireAccum = 0;
+    // （植被 / 野火的时钟累积器在 `this.advanceState.eco` / `.fire`，同上。）
     this.decayAccum = 0;
     this.autoSaveAccum = 0;
     // 自动存档的并发护栏。存档现在是**异步**的（gzip 要走 CompressionStream），
@@ -413,12 +548,14 @@ class Sandbox {
     // 那句话说的事比「可撤销」重要得多，所以这里把它留到 pointerup 时**接在
     // 撤销提示前面**，而不是让它被盖掉。
     this.clickSaid = '';
+    this.strokeIntervention = null;
   }
 
   // ── 启动 ────────────────────────────────────────────────
   boot() {
     this.buildToolPanel();
     this.bindEvents();
+    this.setupSectionToggles();
     this.resize();
     this.newWorld(this.presetKey, this.seed);
     requestAnimationFrame((ts) => this.frame(ts));
@@ -444,7 +581,7 @@ class Sandbox {
     // 换世界就把视界收掉：它划的是上一个世界的地方，留着就是开在别人图上的窗，
     // 而窗口里贴的是旧上界——看起来完全正常，只是全错。
     this.selection = null;
-    this.selectDrag = null;
+    this.selectPath = null;
     // 换世界就把摊开的那份传记收起来：它属于上一个世界，
     // 留着就是一条查不到的旧闻（而且看起来完全正常）。
     this.hideDeadBiography();
@@ -502,7 +639,8 @@ class Sandbox {
     this.upperLife = new UpperLife(upper);
     // 第二个 TerrainLayer：全量渲染到它自己的离屏 canvas，视界贴图时再裁剪。
     this.upperTerrain = new TerrainLayer(upper, { relief: this.camera.relief });
-    this.upperAccum = 0;
+    // 换世界 / 读档后上界时钟归零，免得新一局继承上一局残留的累加量。
+    this.advanceState.upper = 0;
     this.upperDirty = true;
   }
 
@@ -515,9 +653,16 @@ class Sandbox {
    *     `qiAt`（阴气在 `veg` 层，不在 `qi` 层），生成器内部已 `recomputeQi` 一次
    *     （见 `worldgenNether.js:634-637`、`save.js:778-780`）。上界那行 `recomputeUpperQi`
    *     在幽冥这一侧对应的动作就是**什么都不做**。
-   *  3. **没有 `NetherLife`**（`sim/` 下只有 `upperLife.js`），也不新建。幽冥 tick 是
-   *     阶段 8-C 的活，本轮不做。
-   *  4. **不接 `TerrainLayer`、不渲染**：没有现成的幽冥渲染入口。
+   *  3. **没有 `NetherLife` 类**（`sim/` 下只有 `upperLife.js` 这个类），但幽冥 tick
+   *     **已接**（8-C 落地，2026-09-23）：低频 `stepNether(world, days)` 每 10 游戏日
+   *     跑一次（见 `update()`），收的是**凡间 world**（它要读 `world.souls` 对账）。
+   *     ⚠️ 这条注释原先写着「幽冥 tick 是阶段 8-C 的活，本轮不做」——**已过期**。
+   *  4. **接 `TerrainLayer`（本轮补上）**：幽冥是**真正的 `World` 实例**
+   *     （`worldgenNether.js` 里 `new World(...)`），height/water/type/veg 都填了，
+   *     而 `TerrainLayer.render()` 只从 world 解构那几张数组、构造函数只读
+   *     `reliefScale / w / h / seed` ⇒ **不需要新渲染器**，直接建第二个图层即可。
+   *     在这之前这里写着「不接 TerrainLayer、不渲染：没有现成的幽冥渲染入口」——
+   *     那是「视界只能看上界」时代的结论；现在视界能选看哪一界，入口就是这一行。
    *
    * ⚠️ 读档进来的世界若已自带 `nether`（`save.js:614-616` 会建）就**复用、不重生成**——
    *    重生成会与存档里那份幽冥分叉。新开一局时 `mortal.nether` 是 `undefined`，
@@ -535,8 +680,14 @@ class Sandbox {
       nether = generateNetherWorld({ preset, seed: mortal.seed });
       mortal.nether = nether;
     }
-    // 先挂上：下一阶段（8-C 接幽冥 tick）唯一的入口，免得回来补接线时漏掉调用方。
+    // 世界侧的正规引用（`world.nether`）在这里，本类缓存 `this.nether` 与上界同构。
     this.nether = nether;
+    // 第三个 TerrainLayer：与 `attachUpper` 那行逐字对称。视界贴图时按坐标裁剪。
+    this.netherTerrain = new TerrainLayer(nether, { relief: this.camera.relief });
+    this.netherDirty = true;
+    // 与 `attachUpper` 的 `this.advanceState.upper = 0` 对称：换世界 / 读档后
+    // 时钟归零，免得新一局继承上一局残留的累加量。
+    this.advanceState.nether = 0;
   }
 
   // 让底部控件反映「当前真正在跑的那个世界」。
@@ -605,7 +756,7 @@ class Sandbox {
 
   selectTool(id) {
     if (!TOOL_BY_ID[id]) return;
-    // ── 关闭路径 ①：切走 viewUpper 就收起视界 ──
+    // ── 关闭路径 ①：切走视界工具（viewUpper / viewNether）就收起视界 ──
     // 视界是「view 模式」的产物：离开这个工具就该离开这个视图。
     // 这也是**唯一的常规出口**——`render()` 只看 `this.selection`，不清的话那扇窗
     // 会永久盖在屏幕上，玩家会以为卡死了。
@@ -615,10 +766,14 @@ class Sandbox {
     //    无条件清会让「只是点了个分组标签」也把窗关掉。
     // ⚠️ 不置 `this.dirty`：视界开关只影响画中画那一层，不碰地形位图，
     //    而 `render()` 每帧都会按 `this.selection` 重画那扇窗。
+    // ⚠️ 界名取 `viewPlane().label`，且必须在 `this.toolId = id` **之前**取——
+    //    取的是**正在被切走的那一界**（窗里贴的就是它），说「上界视界」还是
+    //    「幽冥视界」得与玩家刚看到的一致。
     if (id !== this.toolId && this.selection) {
+      const label = this.viewPlane().label;
       this.selection = null;
-      this.selectDrag = null;
-      this.notify('已收起上界视界', 2200);
+      this.selectPath = null;
+      this.notify(`已收起${label}视界`, 2200);
     }
     this.toolId = id;
     document.querySelectorAll('.ink-tool').forEach((el) => el.classList.toggle('on', el.dataset.tool === id));
@@ -647,6 +802,60 @@ class Sandbox {
     this.canvas.style.cursor = tool.readonly
       ? 'help'
       : (tool.mode === 'click' || tool.mode === 'select') ? 'crosshair' : 'cell';
+  }
+
+  // ── 右栏分区折叠（BACKLOG ⑭ · D3-B3）───────────────────────
+  // 右栏 12 个 sec-title 都是信息墙，新玩家被压住、老玩家也用不到全部。
+  // 给每个分区加可点击折叠 + 持久化（localStorage）：
+  //   · 哪些默认折叠由 HTML 上 `data-default-collapsed="1"` 标注（图例、操作、门道）；
+  //   · 玩家的选择覆盖默认值，刷新后还在；
+  //   · 不重新写 HTML 结构，只是把每个 sec-title 之后到下一个 sec-title 之前
+  //     的兄弟元素包进一个 `.sec-body` 容器，用 max-height 做折叠动画。
+  //   · 这是 JS 一次性做，boot 之后所有 refresh 函数依然 appendChild 到 sec-body 内。
+  setupSectionToggles() {
+    const rail = document.querySelector('.rail.right');
+    if (!rail) return;
+    const STORAGE_KEY = 'inkbox.sec';
+    let stored = {};
+    try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (_) { /* localStorage 不可用就当空 */ }
+    const titles = rail.querySelectorAll('.sec-title');
+    for (const title of titles) {
+      const key = (title.textContent || '').trim();
+      if (!title.querySelector('.chev')) {
+        const chev = document.createElement('span');
+        chev.className = 'chev';
+        chev.textContent = '\u25BE'; // ▾ 展开；折叠时 CSS 旋转 -90°
+        title.appendChild(chev);
+      }
+      // 包后续兄弟到 sec-body（直到下一个 sec-title）
+      const body = document.createElement('div');
+      body.className = 'sec-body';
+      let sib = title.nextElementSibling;
+      while (sib && !sib.classList.contains('sec-title')) {
+        const after = sib.nextElementSibling;
+        body.appendChild(sib);
+        sib = after;
+      }
+      title.after(body);
+      // 状态恢复：localStorage > data-default-collapsed > 默认展开
+      const initialCollapsed = stored[key] !== undefined
+        ? stored[key]
+        : title.dataset.defaultCollapsed === '1';
+      if (initialCollapsed) {
+        body.classList.add('collapsed');
+        title.classList.add('collapsed');
+      }
+      title.addEventListener('click', () => {
+        const collapsed = !body.classList.contains('collapsed');
+        body.classList.toggle('collapsed', collapsed);
+        title.classList.toggle('collapsed', collapsed);
+        try {
+          const cur = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+          cur[key] = collapsed;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cur));
+        } catch (_) { /* 不存也不影响 UI */ }
+      });
+    }
   }
 
   // ── 事件 ────────────────────────────────────────────────
@@ -681,7 +890,9 @@ class Sandbox {
         // 「反复调用会不断重开视界」正是不能复用 'drag' 的理由（规格 §3.2）。
         const t = this.hoverTile;
         if (!this.world.inside(t.x, t.y)) return;
-        this.selectDrag = { x0: t.x, y0: t.y, x1: t.x, y1: t.y };
+        // 起一条路径，首点就是落笔格。路径是**世界坐标的格点序列**，
+        // 闭合但首尾不重复（最后一点 ≠ 第一点），由 normalizeRegion 收尾。
+        this.selectPath = [[t.x, t.y]];
         return;
       }
       if (tool.readonly) {
@@ -689,6 +900,11 @@ class Sandbox {
         return;
       }
       this.history.begin();
+      this.clickSaid = '';
+      this.lastInterventionOutcome = null;
+      this.strokeIntervention = CAUSAL_TOOL_IDS.includes(tool.id)
+        ? { toolId: tool.id, x: this.hoverTile.x, y: this.hoverTile.y }
+        : null;
       this.pointer.painting = true;
       this.applyTool(true);
     });
@@ -709,11 +925,15 @@ class Sandbox {
         this.pointer.lastY = this.pointer.y;
         return;
       }
-      // 划选拖拽：把当前格钳进地图，框跟着长（实时反馈）。
-      // 取整/排序放在提交时做——拖动过程中允许 x1 < x0（从右下往左上划）。
-      if (this.selectDrag) {
-        this.selectDrag.x1 = this.world.clampX(tile.x);
-        this.selectDrag.y1 = this.world.clampY(tile.y);
+      // 划选拖拽：把当前格钳进地图，追加进路径（实时反馈）。
+      // ⚠️ **连续去重**：只有与上一个点的格坐标不同才追加。鼠标每帧都发
+      //    pointermove，不去重的话一条划选会攒出上万个点，鞋带公式与光栅化
+      //    都跟着变慢，而形状一点没变。取整 / 收尾放在提交时做。
+      if (this.selectPath) {
+        const x = this.world.clampX(tile.x);
+        const y = this.world.clampY(tile.y);
+        const last = this.selectPath[this.selectPath.length - 1];
+        if (!last || last[0] !== x || last[1] !== y) this.selectPath.push([x, y]);
       }
       // 落笔统一交给主循环限速处理，这里只更新光标所在格
     });
@@ -721,21 +941,40 @@ class Sandbox {
     const endPointer = () => {
       // 划选在这里**提交一次**（也只有这里提交）。放在 painting 之前，
       // 因为 'select' 不置 painting 位。
-      if (this.selectDrag) {
-        this.commitSelection(this.selectDrag);
-        this.selectDrag = null;
+      if (this.selectPath) {
+        this.commitSelection(this.selectPath);
+        this.selectPath = null;
       }
       if (this.pointer.painting) {
         const label = this.tool.name;
         if (this.history.end(label)) {
+          if (this.strokeIntervention) {
+            const entry = this.history.stack[this.history.stack.length - 1];
+            const outcome = createInterventionOutcome({
+              ...this.strokeIntervention,
+              action: this.tool.name,
+              metrics: measureChangedCells(this.world, entry?.changes),
+            });
+            this.lastInterventionOutcome = outcome;
+            this.clickSaid = outcome.message;
+            if (outcome.status === 'success') {
+              this.world.record(outcome.message, 'intervention');
+              this.refreshChronicle();
+            }
+          }
           // ⚠️ 点选工具刚在 pointerdown 的 `applyTool` 里报过「发生了什么」
           //    （「乱石岗天降陨石：17 人罹难，3 所聚落受损。」）。通知栏只有
           //    一行、后写的赢，所以这里**接在后面**而不是盖掉它——否则玩家
           //    永远看不到自己刚才把世界改成了什么样。
-          const said = this.tool.mode === 'click' ? this.clickSaid : '';
-          this.notify(said ? `${said}可 Ctrl+Z 撤销。` : `${label} · 已记录，可 Ctrl+Z 撤销`);
+          const said = this.clickSaid;
+          const undoNote = this.lastInterventionOutcome?.status === 'failed'
+            ? '' : '可 Ctrl+Z 撤销。';
+          this.notify(said ? `${said}${undoNote}` : `${label} · 已记录，可 Ctrl+Z 撤销`);
         }
       }
+      this.strokeIntervention = null;
+      this.lastInterventionOutcome = null;
+      this.clickSaid = '';
       this.pointer.down = false;
       this.pointer.painting = false;
       this.pointer.panning = false;
@@ -850,7 +1089,7 @@ class Sandbox {
       this.selected = null;
       // 视界是 UI 状态，换世界就收掉。
       this.selection = null;
-      this.selectDrag = null;
+      this.selectPath = null;
       this.hideDeadBiography();
       this.dirty = true;
       this.notify(`已读取「${slot}」`);
@@ -904,7 +1143,7 @@ class Sandbox {
         this.history.clear();
         this.selected = null;
         this.selection = null;
-        this.selectDrag = null;
+        this.selectPath = null;
         this.hideDeadBiography();
         this.dirty = true;
         this.notify('世界已导入');
@@ -959,6 +1198,8 @@ class Sandbox {
     this.terrain.setRelief(this.camera.relief);
     // 上界图层也要跟着切投影，否则视界里还按旧投影贴图，与窗外的山水对不上。
     if (this.upperTerrain) this.upperTerrain.setRelief(this.camera.relief);
+    // 幽冥图层同理：漏了这行，看幽冥时贴的是旧投影的图，同样不报错。
+    if (this.netherTerrain) this.netherTerrain.setRelief(this.camera.relief);
     $('inkBtnRelief').classList.toggle('on', this.camera.relief);
     this.dirty = true;
     this.notify(this.camera.relief ? '立体视图：能看清山有多高' : '平面视图：适合精确改地形');
@@ -1040,7 +1281,7 @@ class Sandbox {
   applyTool(isFirst) {
     const tool = this.tool;
     if (tool.mode === 'click' && !isFirst) return;
-    // 划选工具没有「一个落点 + 半径」可言：它要的是一个矩形，走 commitSelection。
+    // 划选工具没有「一个落点 + 半径」可言：它要的是一片自由形状，走 commitSelection。
     // 这里直接挡住——否则 apply(ctx) 会拿到一个没有 rect / commitSelection 的 ctx
     // 而抛错。试玩测试第 9 节会无差别地对每个工具调 applyTool，这条守卫也是为它存在的。
     if (tool.mode === 'select') return;
@@ -1049,7 +1290,7 @@ class Sandbox {
     const y = this.hoverTile.y;
     if (!world.inside(x, y)) return;
 
-    const before = world.entities.length;
+    const eventIdBefore = this.life.events.nextEventId;
     const ctx = {
       world,
       life: this.life,
@@ -1075,6 +1316,26 @@ class Sandbox {
     }
 
     if (tool.mode === 'click') {
+      if (CAUSAL_TOOL_IDS.includes(tool.id)) {
+        const event = tool.id === 'crisis'
+          ? this.life.events.activeCrises.find((row) => row.id === eventIdBefore)
+            || this.life.events.history.find((row) => row.id === eventIdBefore)
+          : null;
+        const outcome = createInterventionOutcome({
+          toolId: tool.id,
+          action: tool.name,
+          x,
+          y,
+          rawResult: ctx.result,
+          event,
+        });
+        this.lastInterventionOutcome = outcome;
+        this.clickSaid = outcome.message;
+        this.notify(outcome.message, 5200);
+        this.refreshChronicle();
+        this.refreshMilestones();
+        return;
+      }
       // 仙道那批神力会把「发生了什么」写成人话返回，直接透给玩家；
       // 地形笔刷返回数字，退回「落于某格」的通用提示。
       const said = ctx.result;
@@ -1101,27 +1362,36 @@ class Sandbox {
   }
 
   /**
-   * 划选矩形 → 视界。**这是 'select' 模式唯一的提交点**（pointerup 调一次）。
+   * 自由划选路径 → 视界。**这是 'select' 模式唯一的提交点**（pointerup 调一次）。
    *
    * 为什么不复用 applyTool：applyTool 的 ctx 是「一个落点 + 半径」，
-   * 而划选要的是一个矩形；而且它会被主循环的限速**反复调用**，
+   * 而划选要的是一片**自由形状**；而且它会被主循环的限速**反复调用**，
    * 而「开一扇视界」是**一次成型**的动作——反复调用会不断重开（规格 §3.2）。
    * 所以走这条独立路径，且只由 pointerup 触发一次。
    *
-   * 视界矩形是 **UI 状态，不进世界存档**（规格 §6.2）：它挂在 `this.selection`，
+   * 划选区域是 **UI 状态，不进世界存档**（规格 §6.2）：它挂在 `this.selection`，
    * 不挂 `world`。换世界 / 读档都会把它清掉。
+   *
+   * ⚠️ 参数名是 `points`：它装的是**自由形状的原始路径**（世界坐标格点数组），
+   *    不是矩形。此前它叫 `rect`（矩形时代的遗留），名字与内容不符；
+   *    本轮把它改成诚实的名字，并**同步**改了 `scripts/_riftwire.mjs` 里
+   *    `extractBody(src, 'commitSelection(points) {')` 那处**按字面**切函数体的
+   *    字符串——两处必须一起改，否则那条接线断言会当场变红（这是有意的护栏）。
    */
-  commitSelection(rect) {
+  commitSelection(points) {
     const world = this.world;
     if (!world) return;
-    const sel = this.normalizeSelection(rect);
+    // 当前工具对应哪一界（决定文案里的界名与开缝门控）。它同时给出
+    // 「上界」/「幽冥」两个中文名，免得这里再抄一份三目。
+    const plane = this.viewPlane();
+    const sel = this.normalizeRegion(points);
     if (!sel) {
-      // 单格点击（'select' 模式下 pointerdown 与 pointerup 落在同一格）。
+      // 退化划选（点一下只有 1 点、划一条直线只有 2 点 / 面积太小）。
       // 它有两种语义，按「当前有没有开着的视界」分——**两种都必须发声**：
       // 静默地关掉和静默地拒绝一样坏，玩家只会觉得「刚才那下把东西弄没了」。
       //
       //   · 开着 → **收起**（关闭路径 ②，切换工具是路径 ①，见 selectTool）。
-      //     为什么敢让「点一格」兼任关闭：关掉是**可逆的**（再拖一次就回来，两秒），
+      //     为什么敢让「点一下」兼任关闭：关掉是**可逆的**（再拖一次就回来，两秒），
       //     而「关不掉」是不可逆的体验损失——那扇窗会永久盖在屏幕上，像卡死了。
       //     两者不对称，所以宁可允许误触关闭。
       //     这与「拒绝时不清已有视界」并不矛盾：那一版是**拒绝的副作用**，
@@ -1129,28 +1399,41 @@ class Sandbox {
       //   · 没开 → **拒绝**，并说清下一步该做什么（不只是「失败了」）。
       if (this.selection) {
         this.selection = null;
-        this.notify('已收起上界视界（再按住拖拽可重新划开）', 2600);
+        this.notify(`已收起${plane.label}视界（再按住拖拽可重新划开）`, 2600);
       } else {
-        this.notify('划选太小，未开视界——请按住鼠标拖拽出一片区域（不能只点一格）', 3200);
+        this.notify('划选太小，未开视界——请按住鼠标拖出一片形状（不能只点一格）', 3200);
       }
       return;
     }
-    const viewRect = { x0: sel.x0, y0: sel.y0, x1: sel.x1, y1: sel.y1 };
+    // 区域对象就是归一化结果本身：`path` + 包围盒 + `area` + `capped`。
+    // 工具只负责决定「划哪块」，**记在哪由 UI 决定**——所以给它一个接收器，
+    // 而不是让 ui/tools.js 反过来摸 Sandbox（那会让工具表依赖主程序）。
+    const region = sel;
     const tool = this.tool;
     const ctx = {
       world,
       life: this.life,
-      rect: viewRect,
+      rect: region,
       history: this.history,
       rng: this.rng,
-      // 工具只负责决定「划哪块」，**记在哪由 UI 决定**——所以给它一个接收器，
-      // 而不是让 ui/tools.js 反过来摸 Sandbox（那会让工具表依赖主程序）。
       commitSelection: (r) => { this.selection = r; },
     };
     const said = tool.apply(ctx);
 
-    // ── 开缝：这是「上界视界」这个动作的**副作用**（规格 §4.1）──────────
-    // 裂缝开在划选矩形的**四条边**上，是两界的接缝；内部不开（内部是「看到的上界」）。
+    // ── 开缝：这是「视界」这个动作的**副作用**（规格 §4.1）──────────
+    // 裂缝开在划选区域**边缘的连线**上，是两界的接缝；内部不开（内部是「看到的另一界」）。
+    //
+    // **两界都开缝**：`sim/rifts.js:5` 引的**用户原话**是「上界视界和**下界**的
+    // 边缘会因此产生轻微的空间裂缝」——上界与幽冥共用同一个凡间 `world.rifts`，
+    // 所以门控从「只认 viewUpper」扩成「认 VIEW_TOOL_IDS 里任一个」。
+    //
+    // ⚠️ **「都开缝」≠「都执行同一套跨界逻辑」**（D6-2 工程包 B）：缝开出来之后
+    //    行为按目标位面分流——上界缝走漏物 / 吸人，幽冥缝走**它自己那三个效果**
+    //    （凡人跌入幽冥 D6-3 A / 鬼爬入凡间 B / 幽冥物品漏回凡间 C），
+    //    各抽各的流、互不干扰。分流点在 `sim/rifts.js` 的 `stepRifts` 第 3 步
+    //    （`stepNetherRift`），**不在这里**：开缝是同一个动作，走路是两回事。
+    //    ⚠️ 本条原来写的是「幽冥缝**本阶段冻结跨界**」——那是 D6-2 的临时状态，
+    //    D6-3 A 已解冻。注释不跟着改就会变成一份**说谎的**设计说明。
     //
     // **为什么接在这里，而不是 ui/tools.js 的 `apply`**：`commitSelection` 是
     // pointerup 的**唯一**提交点，天然满足「一次成型、只能调一次」（规格 §3.2）。
@@ -1158,87 +1441,67 @@ class Sandbox {
     // 反过来依赖主程序，正是本文件一直在避免的方向（工具表只管「划哪块」）。
     //
     // ⚠️ **不许静默**：无论开成没开成都要发声。静默地关掉与静默地拒绝一样坏，
-    //    玩家只会觉得「刚才那下把东西弄没了」（见上面「单格点击」那段同款教训）。
-    const rift = (tool.id === 'viewUpper' && typeof openRifts === 'function')
-      ? openRifts(world, viewRect)
+    //    玩家只会觉得「刚才那下把东西弄没了」（见上面「退化划选」那段同款教训）。
+    //
+    // ⚠️ **目标位面从 `VIEW_TOOL_PLANE` 取**（D6-2 工程包 B1）：这条缝连的是
+    //    玩家此刻正在看的那一界——看上界就开上界缝，看幽冥就开幽冥缝。
+    //    在别处再写一遍三目会让「加第三界」变成改 N 处、漏一处。
+    const riftPlane = VIEW_TOOL_PLANE[tool.id];
+    const rift = (riftPlane && typeof openRifts === 'function')
+      ? openRifts(world, region, riftPlane)
       : null;
     let riftNote = '';
     if (rift && rift.opened > 0) {
       riftNote = `　边缘裂开 ${rift.opened} 道细缝`;
     } else if (rift && rift.refused) {
       // 拒绝也要说清为什么，不能只回一句「失败了」。
+      // ⚠️ `'no-plane'`（D6-2 新加）：目标位面不存在（比如幽冥图没挂上）。
+      //    说「地太薄」是**谎话**——玩家会去换一块地方划，而问题在世界没挂上，
+      //    他划一万次也开不出缝。所以单列一句。
       riftNote = rift.reason === 'active-cap'
         ? '　裂缝太多，暂不开新缝'
-        : '　这一带的地太薄/太虚，裂不开缝';
+        : rift.reason === 'no-plane'
+          ? '　这一界尚未成形，缝连不过去'
+          : '　这一带的地太薄/太虚，裂不开缝';
     }
 
-    const cols = viewRect.x1 - viewRect.x0 + 1;
-    const rows = viewRect.y1 - viewRect.y0 + 1;
-    const pct = ((cols * rows) / world.size * 100).toFixed(0);
+    // 文案用**多边形面积**（不是包围盒面积）：套索是不规则的，包围盒会把
+    // 「我划的那块」说得比实际大一圈。`area` 来自鞋带公式，可能是 .5，取整。
+    const shownArea = Math.round(sel.area);
+    const pct = ((sel.area) / world.size * 100).toFixed(0);
+    // ── 窗内可见鬼魂（契约 §七「Feedback」）────────────────────────────
+    // 「系统在跑、但没人看得见」正是 D4 要治的病：幽冥里明明有鬼魂
+    // （`enterNether` 生成，见 `sim/netherLife.js`），玩家划开视界却读不到数。
+    // 这一句只在**幽冥视界**且**窗内真的数得到鬼魂**时出现：
+    //   · 上界没有鬼魂 ⇒ 加这句会印「窗内可见鬼魂 0 只」的噪音；
+    //   · 幽冥但窗内 0 只 ⇒ 「0 只」不是信息，省掉。
+    const ghosts = ghostsInRegion(plane, sel);
+    const ghostNote = ghosts > 0 ? ` · 窗内可见鬼魂 ${ghosts} 只` : '';
     if (typeof said === 'string' && said) {
       this.notify(said + riftNote, 3200);
     } else {
-      this.notify(`上界视界 · ${cols}×${rows} 格（全图 ${pct}%）`
+      this.notify(`${plane.label}视界 · 约 ${shownArea} 格（全图 ${pct}%）`
         + (sel.capped ? `　已按 ${Math.round(UPPER_VIEW_MAX_AREA * 100)}% 上限收窄` : '')
-        + riftNote, 2800);
+        + riftNote + ghostNote, 2800);
     }
     this.dirty = true;
   }
 
   /**
-   * 把一次拖拽归一成一个合法的划选矩形：取整、排序、钳到地图边界、按面积上限截断。
-   * 返回 `{x0, y0, x1, y1, capped}`；**单格（一次点击）返回 null**，见下面的判据。
+   * 把一条自由划选路径归一成合法的视界区域（取整 / 钳界 / 面积上限）。
    *
-   * 取整/排序放在这里而不是拖动过程中：拖动时允许 `x1 < x0`（从右下往左上划），
-   * 每动一下就排序会让框在正负方向之间跳。
+   * 真正的几何在 `ui/tools.js` 的 `normalizeRegion`（纯函数、不碰 DOM）——
+   * 放在那里是为了让 `scripts/_riftprobe.mjs` 能在 node 里断言它（本文件依赖
+   * DOM，node 里 import 不了）。这里只是把 `this.world` 与面积上限接上去。
+   *
+   * 判据（替代旧 `normalizeSelection` 末尾那条单格守卫）：
+   *   · 去重后不足 3 点 ⇒ null（一次点击 / 一条直线都不构成「一片山河」）；
+   *   · 面积 < `REGION_MIN_AREA` ⇒ null。
+   * 那条旧守卫判的是**矩形跨度**，对自由形状已无意义——留着就是「看起来在防、
+   * 实际不防」的死守卫，已随 `normalizeSelection` 一起删掉。
    */
-  normalizeSelection(rect) {
-    const world = this.world;
-    if (!world || !rect) return null;
-    const round = (v) => Math.round(v);
-    let x0 = world.clampX(round(Math.min(rect.x0, rect.x1)));
-    let y0 = world.clampY(round(Math.min(rect.y0, rect.y1)));
-    let x1 = world.clampX(round(Math.max(rect.x0, rect.x1)));
-    let y1 = world.clampY(round(Math.max(rect.y0, rect.y1)));
-    if (x1 < x0 || y1 < y0) return null;
-
-    // 面积上限：划满全图会让视界退化成「全图渲染两遍」（规格 §3.4）。
-    // 超了就绕中心等比收窄，并把 `capped` 交回去让玩家知道——
-    // **不能静默截断**，否则玩家会以为「我明明划了全图，怎么只有中间一块」。
-    let capped = false;
-    const maxArea = Math.max(1, Math.floor(world.size * UPPER_VIEW_MAX_AREA));
-    let area = (x1 - x0 + 1) * (y1 - y0 + 1);
-    if (area > maxArea) {
-      const cx = (x0 + x1) / 2;
-      const cy = (y0 + y1) / 2;
-      const k = Math.sqrt(maxArea / area);
-      const hw = ((x1 - x0) / 2) * k;
-      const hh = ((y1 - y0) / 2) * k;
-      x0 = world.clampX(Math.floor(cx - hw));
-      y0 = world.clampY(Math.floor(cy - hh));
-      x1 = world.clampX(Math.ceil(cx + hw));
-      y1 = world.clampY(Math.ceil(cy + hh));
-      // 取整可能又顶出去一点，收紧到确实不超上限（循环有界，最多几轮）
-      let guard = 0;
-      while ((x1 - x0 + 1) * (y1 - y0 + 1) > maxArea && guard < 64) {
-        if (x1 - x0 >= y1 - y0) x1 -= 1;
-        else y1 -= 1;
-        guard += 1;
-      }
-      capped = true;
-    }
-    // ⚠️ 这里原来写的是 `area = (x1-x0+1)*(y1-y0+1); if (area <= 0) return null;`
-    //    —— **那是一句不可达的死代码**。`x1 >= x0` / `y1 >= y0` 上面已经保证过，
-    //    而 `+1` 让格数最小就是 `1*1 = 1`，所以 `area` 永远 ≥ 1，`<= 0` 永不成立。
-    //    后果：**点一下（pointerdown + pointerup 落在同一格）会开出一扇 1×1 的上界窗**，
-    //    而读代码的人会以为「退化选区已经挡住了」。**一句看起来在防、实际不防的守卫，
-    //    比没有守卫更坏** —— 它让人不去查那里。
-    //
-    //    判据必须是**跨度**，不是格数：
-    //      · 单格（`x1 === x0 && y1 === y0`）不构成「一片山河」，不该开窗；
-    //      · 但 1×N / N×1 的细条是合法的划选，要放行。
-    if (x1 === x0 && y1 === y0) return null;
-    return { x0, y0, x1, y1, capped };
+  normalizeRegion(points) {
+    return normalizeRegionGeometry(points, this.world, UPPER_VIEW_MAX_AREA);
   }
 
   inspectAt(x, y) {
@@ -1260,6 +1523,30 @@ class Sandbox {
       // 下面那段「家世」就永远显示不出来。改成「没选过就选第一个」。
       if (!strongest || (e.level || 0) > (strongest.level || 0)) strongest = e;
     }
+    // 近处鬼影（D6-3 工程包 B）：鬼**不在 `world.entities` 里**，上面那个循环
+    // 数不到它们（这正是「独立容器」在读数侧的代价）。单独数一遍。
+    // ⚠️ **恒印这一行**（哪怕 0 只）：忽有忽无的尾巴会让以文字为锚点的断言
+    //    随时变红（同右栏「最高 —」的理由）。
+    let haunts = 0;
+    if (Array.isArray(world.wraiths)) {
+      for (let k = 0; k < world.wraiths.length; k += 1) {
+        const g = world.wraiths[k];
+        if (Math.hypot(g.x - x, g.y - y) < 5) haunts += 1;
+      }
+    }
+    // 被附身（D6-3 工程包 D）：附近最强的那个人此刻**被一只鬼修接管着**吗？
+    // ⚠️ **必须印**（机制在跑、玩家看不见等于不存在）：被附身者会**不再按自己的
+    //    计划行动、也不接战**（`life.js` 的行为锁），不写这一行，玩家只会觉得
+    //    「这人怎么傻站着」。与「养伤」同一类：行为异常必须有解释。
+    // ⚠️ 用 `isControlled`（唯一判据）而不是自己比 `until > day`——那是第二份真相。
+    // ⚠️ 附身**可能是凡人**（`pickCrossTarget` 修士优先，附近没有修士时才挑凡人），
+    //    而凡人走下面 `else if (people > 0)` 那条**不显示修士详情**的分支——
+    //    所以这一行要**两处都印**，否则凡人被附身时玩家什么都看不到。
+    const possLine = (strongest && strongest.possessionScar && isControlled(strongest, world.day))
+      ? `被【${strongest.possessionScar.ghostName}】`
+        + `（${realmLabel(strongest.possessionScar.ghostLevel)}）驱使`
+        + ` · 还有 ${Math.ceil(strongest.possessionScar.until - world.day)} 天`
+      : null;
     const rows = [
       ['地貌', info ? info.name : '未知'],
       ['高程', world.height[i].toFixed(3)],
@@ -1271,6 +1558,7 @@ class Sandbox {
       ['灵气', `${(world.qi[i] * 100).toFixed(0)}%`],
       ['建筑', world.struct[i] ? ['', '屋舍', '宗祠', '垣墙', '望楼', '残垣'][world.struct[i]] : '无'],
       ['近处生灵', `${people} 人`],
+      ['近处鬼影', `${haunts} 只`],
     ];
     if (village) {
       rows.push(['聚落', `${village.name} · ${['', '村落', '集镇', '城池', '王都'][village.level]}`]);
@@ -1326,6 +1614,9 @@ class Sandbox {
       if (e.restUntil > world.day) {
         rows.push(['养伤', `还需 ${Math.ceil(e.restUntil - world.day)} 天`]);
       }
+      // 被附身（D6-3 工程包 D）：这具身体此刻被一只鬼修接管着（行为锁生效）。
+      // 与上面「养伤」同一类——行为异常必须在面板上有解释，否则机制等于不存在。
+      if (possLine) rows.push(['附身', possLine]);
       // ── 法宝 ──
       // 法宝这一块要摊的不是「加多少战力」，而是**这件东西的来历**——
       // 它是沙盒里唯一能横跨几百年的东西，面板上不写「历任主人」就白做了。
@@ -1342,6 +1633,9 @@ class Sandbox {
     } else if (people > 0) {
       rows.push(['—', '—']);
       rows.push(['近人', '皆是凡人，尚未觉醒']);
+      // 凡人也会被附身（`pickCrossTarget` 修士优先，附近没有修士时才挑凡人）。
+      // 这条分支不显示修士详情，所以「附身」要在这里再印一次（同上面那段注释）。
+      if (possLine) rows.push(['附身', possLine]);
     }
     // ── 家世 ──
     // 转世让一个人活得比一世长，法宝让一件东西活得比人长，
@@ -1422,17 +1716,22 @@ class Sandbox {
   }
 
   /**
-   * 「上界视界现在开着吗」——裂缝时钟的唯一判据（契约 C1.1）。
+   * 「视界现在开着吗」——裂缝时钟的唯一判据（契约 C1.1）。
    *
    * 判据是**两个条件同时成立**：
-   *   · `this.selection` 非空（玩家划开了一片矩形，那扇窗真的显示着）；
-   *   · `this.toolId === 'viewUpper'`（当前工具仍是视界工具）。
+   *   · `this.selection` 非空（玩家划开了一片自由形状，那扇窗真的显示着）；
+   *   · 当前工具是**视界工具**（`VIEW_TOOL_IDS`：`viewUpper` 或 `viewNether`）。
    *
    * ⚠️ 为什么两个都要：`selectTool` 切走工具时会清 `this.selection`（关闭路径①），
    * 但**读档 / 换世界**那条路径会直接把 `selection` 置空而工具不变；
-   * 反过来，工具是 `viewUpper` 但还没划开时 `selection` 是 null。
+   * 反过来，工具是视界工具但还没划开时 `selection` 是 null。
    * 只看一个都会在某个过渡帧上误判——而误判的后果是裂缝在「窗口没开」时
    * 偷偷推进（用户第 1 条要的正是「只在开启视界时有效」）。
+   *
+   * ⚠️ **「能看幽冥」不等于「放宽这条判据」**：两个视界工具都能开窗，
+   * 所以判据从「只认 viewUpper」扩成「认 VIEW_TOOL_IDS 里任一个」；
+   * 但 `selection` 那一半**一格都不许松**——退化成「有工具就算开着」会让
+   * 裂缝在没开窗时照常推进，正是这条契约要防的事。
    *
    * 单独抽成方法而不是把条件内联进 `update`：①测试可以直接调它，
    * 不必去戳 `update` 那一大坨；②读代码时「裂缝什么时候走」一眼可查。
@@ -1440,7 +1739,78 @@ class Sandbox {
    * @returns {boolean}
    */
   riftViewOpen() {
-    return Boolean(this.selection) && this.toolId === 'viewUpper';
+    return Boolean(this.selection) && VIEW_TOOL_IDS.includes(this.toolId);
+  }
+
+  /**
+   * 当前视界该看的那一界。`viewUpper` → 上界，`viewNether` → 幽冥。
+   *
+   * 返回 `{ world, terrain, label, clearDirty }`：
+   *   · `world` / `terrain` —— 贴图与画人与宗门用的那一界；
+   *   · `label` —— 玩家可见文案里的界名（「上界」/「幽冥」）；
+   *   · `clearDirty` —— 把这一界的「需要重绘」标记清掉（与 `upperDirty` /
+   *     `netherDirty` 一一对应，避免在 `drawPlaneView` 里再判一次工具）。
+   *
+   * ⚠️ 这是「按当前工具分流到哪一界」的**唯一**落点。散着写
+   *    `toolId === 'viewNether' ? ... : ...` 会让加第三界变成改 N 处、漏一处，
+   *    而漏掉那处**不报错**（视界照常开，只是贴着另一界的地形）。
+   */
+  viewPlane() {
+    const nether = this.toolId === 'viewNether';
+    return {
+      world: nether ? this.nether : this.upper,
+      terrain: nether ? this.netherTerrain : this.upperTerrain,
+      label: nether ? '幽冥' : '上界',
+      clearDirty: () => { if (nether) this.netherDirty = false; else this.upperDirty = false; },
+    };
+  }
+
+  /**
+   * 推进世界 `days` 个游戏日 —— **真实游戏与全部测试脚本共用的唯一入口**。
+   *
+   * 时钟列表（life / upper / nether / rift / eco / fire）与各自的节拍，全部
+   * 定义在 `sim/advance.js` 的 `ADVANCE_PERIODS`——**本文件不自己抄一遍**。
+   * 这是 BACKLOG #13 的修法：此前 main.js 与各测试脚本各抄一份时钟列表，
+   * 2026-09-23 新增 `stepNether` 时测试侧漏了，于是长测与 playtest 里幽冥四步
+   * （对账 / 到期 / 积怨 / 逐出）一次都不跑、实体只增不减——那些读数因此
+   * **不代表真实游戏**（60 年印 186 只，而同世界 `soulLog.linger` 只有 60）。
+   *
+   * ⚠️ **测试请调这个方法，别自己写 `w.day += 30; life.step(30)`**。
+   *    那正是这个 bug 的成因：手抄的时钟列表迟早会漏掉新加的那一个。
+   *    本方法把「跑时钟 + 置 dirty 位」两件事绑在一起，测试调它得到的
+   *    就是**真实游戏的那条路**。
+   *
+   * @param {number} days 游戏日数。`≤ 0`（或 NaN）直接返回 `null`。
+   * @param {object} [opts] 逃生口，**目前没有任何调用方用它**。存在的理由：
+   *   有些测试需要保住既有的世界线（eco/fire 是唯一抽签的两套，跑起来会改植被与
+   *   肥力、反馈回凡间）——那时传 `{ rng: null }` 显式关掉它们，比「再抄一份
+   *   时钟列表」好。**真实游戏永远不传**。若将来确实没人用，可以删掉。
+   * @returns {object|null} `{ upper, nether, rift, wraith, eco, fire }`，各时钟这一拍跑没跑。
+   */
+  advanceDays(days, opts) {
+    const world = this.world;
+    if (!world || !(days > 0)) return null;
+    // ⚠️ `riftActive` 传 `this.riftViewOpen()`（契约 C1.1：视界关着就冻结）。
+    // ⚠️ `rng` 默认 `this.rng`——**不是** `this.life.rng`（那是凡间主随机流，铁律一）。
+    const rng = opts && 'rng' in opts ? opts.rng : this.rng;
+    const fired = advanceWorld(world, days, {
+      life: this.life,
+      upperLife: this.upperLife,
+      rng,
+      state: this.advanceState,
+      riftActive: this.riftViewOpen(),
+    });
+    if (fired) {
+      if (fired.upper) this.upperDirty = true;
+      if (fired.nether) this.netherDirty = true;   // 实体动了要重画（与 upperDirty 同构）
+      // ⚠️ 裂缝**不置** `this.dirty`：`dirty` 管的是**地形位图**要不要重画，
+      //    而裂缝画在每帧重绘的叠加层上（`drawRifts`，与 `drawEntities` 同层）。
+      //    置了只会让整张地形位图每 30 天白重算一次，纯浪费。
+      // ⚠️ 凡间鬼影（`fired.wraith`）同理**不置** `dirty`：它们画在每帧重绘的
+      //    叠加层上（`drawWraiths`，与 `drawEntities` 同层），地形位图不受影响。
+      if (fired.eco || fired.fire) this.dirty = true;
+    }
+    return fired;
   }
 
   update(dt) {
@@ -1450,97 +1820,12 @@ class Sandbox {
     const paused = this.speedIndex === 0;
     const days = TIME.baseDaysPerSecond * speed * dt;
     if (days > 0) {
-      world.day += days;
-      world.year = Math.floor(world.day / TIME.daysPerYear);
-      this.life.step(days);
-
-      // ── 上界共享同一条时间轴（规格 §3.5 / §6.4）──────────────
-      // `world.day` 是**唯一**的时间源，上界不自己推进 day（它的 day 只是被赋值）。
-      // 所以「上界比凡间慢」不会发生——上界只是**更新频率低**，但**时间点永远对齐**。
-      // 与下面的 ecoAccum / fireAccum 完全同构：那几个时钟也是低频、但时间点对齐。
-      // 判据：每 tick 都有 `world.day === this.upper.day`。
-      if (this.upper) {
-        this.upper.day = world.day;
-        this.upper.year = world.year;
-        this.upperAccum += days;
-        if (this.upperAccum >= 10) {         // 每 10 游戏日跑一次上界
-          // 阶段二：上界模拟。⚠️ 绝不能拿凡间的 `this.life` 去 step 上界：
-          // `stepEntity` 会抽 `Life.rng`，那是全世界共用的一条主随机流，
-          // 多抽一次整个世界线就漂走（铁律一，见 life.js 的注释）。
-          // `UpperLife` 有自己从 `upper.seed` 派生的独立流。
-          this.upperLife.step(this.upperAccum);
-          this.upperDirty = true;
-          this.upperAccum = 0;
-        }
-      }
-
-      // ── 幽冥共享同一条时间轴（与上界逐字同构）──────────────
-      // ⚠️ 这一步**不是可有可无的**：`serializeWorld` 会把 `day` / `year` 一起写进档
-      //    （见 io/save.js 的标量区），所以幽冥那侧的 `day` **在存档格式里是有含义的**。
-      //    不同步它，一份凡间第 300 日写下的档，里面幽冥的 `day` 会是 0——读回来
-      //    照样还原成 0，**不报错、不 NaN**，等 8-C 接上幽冥 tick 时，幽冥就会
-      //    从「第 0 日」起步，而所有读数看上去都是对的（故障类 1）。
-      //    判据与上界同：每 tick 都有 `world.day === world.nether.day`。
-      if (this.nether) {
-        this.nether.day = world.day;
-        this.nether.year = world.year;
-      }
-
-      // ── 空间裂缝（阶段三）────────────────────────────────
-      // 与上界时钟同构的低频时钟，但**不套 `if (this.upper)`**：
-      // 裂缝属于**凡间**（`world.rifts` / `world.riftLog`），上界只是在渲染时
-      // 按坐标对位读它。`stepRifts` 内部对 `world.upper` 缺失有兜底
-      // （需要上界那一侧的方向会被跳过），所以上界没挂上时裂缝判定照常进行。
-      // ⚠️ 别以为「裂缝是两界之间的事」就该加 `if (this.upper)`——加了会让
-      //    没上界的档（老档 / 单世界测试）裂缝系统整个静默停摆。
-      // ⚠️ 本轮新增的 `if (this.riftViewOpen())` 是**另一件事**（契约 C1.1：
-      //    视界关着就冻结），与 `this.upper` 无关，两者不要混。
-      //
-      // **为什么不能每帧跑**（规格 §4.3 第 1 条）：漏物判定每跑一次都要抽签。
-      // 60 FPS 下每秒抽 60 次，而漏物概率是按「每 30 日 0.5%」标定的——
-      // 按帧抽等于把概率放大 60×，裂缝会瞬间漏到爆炸，而且**不报错**，
-      // 只是世界莫名其妙地被上界法宝塞满。
-      //
-      // **为什么周期取 30**：与 `TERRITORY_PERIOD_DAYS` 同频（规格 §4.3 第 1 条
-      // 的「建议 30 日」），两个低频系统共用同一个节拍，长测里也好对齐。
-      //
-      // **不置 `this.dirty`**：`this.dirty` 管的是**地形位图**要不要重画
-      // （见 render 里 `terrain.needsRender(now, this.dirty)`），而地形位图烤的是
-      // height / water / type / veg 那几张数组；裂缝是**画在每帧重绘的叠加层**上的
-      // （与 `drawLeylines` / `drawEntities` 同一层，见 render）。置 dirty 只会让
-      // 整张地形位图每 30 天白重算一次，是纯浪费。
-      //
-      // ⚠️⚠️ **只在视界开启时累加（契约 C1.1，用户第 1 条）**：
-      // 视界关着时裂缝**冻结**——不扩张、不闭合、不漏物。
-      // **为什么不是「只暂停漏物判定、让曲线照走」**：一条 30–40 年的缝会在
-      // 玩家关窗期间照常过完它的一生，玩家永远看不到它，与「只有开启视界时
-      // 有效」直接矛盾。曲线改读 `rift.age`（`rifts.js`）与本行是同一件事的
-      // 两半：一个管「什么时候推进」，一个管「推进的是哪条时间轴」。
-      //
-      // ⚠️ **关窗时既不累加也不清零**：累加器跨开关存活，与同段的
-      // `ecoAccum` / `fireAccum` 同性质（那几个也是「低频但时间点对齐」）。
-      // 清零会让「关一下再开」白白丢掉已经攒下的天数——玩家反复开关就能把
-      // 裂缝永久卡在扩张期，那是一条不报错的坏法。
-      if (this.riftViewOpen()) {
-        this.riftAccum += days;
-        if (this.riftAccum >= RIFT_PERIOD_DAYS) {
-          stepRifts(world);
-          this.riftAccum = 0;
-        }
-      }
-
-      this.ecoAccum += days;
-      if (this.ecoAccum >= 5) {
-        stepVegetation(world, this.ecoAccum, this.rng);
-        this.ecoAccum = 0;
-        this.dirty = true;
-      }
-      this.fireAccum += days;
-      if (this.fireAccum >= 0.8) {
-        stepFire(world, this.fireAccum, this.rng);
-        this.fireAccum = 0;
-        this.dirty = true;
-      }
+      // ── 世界推进：**全部游戏日驱动的时钟**都在 `advanceDays()` 里 ────
+      // ⚠️ 原先散在这里的四段注释（上界 / 幽冥 / 裂缝 / 植被野火）**已随逻辑
+      //    搬进 `sim/advance.js`**。要读「为什么周期是 30」「为什么关窗时既不
+      //    累加也不清零」「为什么裂缝不置 dirty」，去那边看——
+      //    **别在这里重新长出一份副本**，那正是 BACKLOG #13 的成因。
+      this.advanceDays(days);
     }
 
     // 水文按真实时间推进：无论时间倍速多快，地貌演化都保持稳定步长。
@@ -1649,12 +1934,17 @@ class Sandbox {
     this.units.drawSects(ctx, this.camera, world);
     this.units.drawSites(ctx, this.camera, world, now);
     this.units.drawEntities(ctx, this.camera, world, now);
+    // 凡间鬼影（D6-3 工程包 B）。**必须单独调**：这批实体不在 `world.entities`
+    // 里（理由见 `sim/wraiths.js` 头注释），`drawEntities` 一行都画不到它们。
+    // 画在凡人**之后**：鬼浮在人上面（半透明），视觉上像「从人身里透出来」。
+    // ⚠️ 这是**加法**——不要删掉上面那次 `drawEntities`，也不要合并两者。
+    this.units.drawWraiths(ctx, this.camera, world, now);
     this.units.drawFireGlow(ctx, this.camera, world, now);
     this.units.drawLabels(ctx, this.camera, world);
 
     if (this.selected) this.units.drawSelection(ctx, this.camera, world, this.selected.x, this.selected.y);
 
-    // 划选模式不画圆形笔刷——那会让玩家以为选出来的是圆的（划选是矩形语义）。
+    // 划选模式不画圆形笔刷——那会让玩家以为选出来的是圆的（划选是自由形状）。
     if (this.pointer.inside && this.tool.mode !== 'select') {
       const tool = this.tool;
       if (!tool.readonly && tool.mode === 'drag') {
@@ -1685,55 +1975,74 @@ class Sandbox {
     ctx.strokeStyle = 'rgba(34,32,28,0.16)';
     ctx.strokeRect(4.5, 4.5, width - 9, height - 9);
 
-    // ── 上界视界（画中画）──────────────────────────────────
+    // ── 视界（画中画）──────────────────────────────────────
     // 放在**最后**有两个理由：① 要盖住凡间的实体/聚落——规格 §3.3 说得很硬：
-    // 「窗里只有上界的东西」，凡间的人与村子漏进视界就是「串味」；
+    // 「窗里只有另一界的东西」，凡间的人与村子漏进视界就是「串味」；
     // ② 裂缝边框要在所有叠层之上。也正因为它压在最上面，视界不会被暗角压暗——
     // 「另一界的一扇窗」本来就该比周围亮一点。
-    if (this.selection) this.drawUpperView(ctx, now);
+    // 看哪一界由 `viewPlane()` 按当前工具（viewUpper / viewNether）决定。
+    if (this.selection) this.drawPlaneView(ctx, now, this.viewPlane());
     // 拖拽中的框只有虚线（还没成型），画在已开的视界之上，免得被盖住看不见。
-    if (this.selectDrag) this.drawSelectHint(ctx, this.selectDrag);
+    if (this.selectPath) this.drawSelectHint(ctx, this.selectPath);
   }
 
   /**
-   * 画中画：在划选矩形里贴出上界的对应区域（规格 §3.4 的 C2 方案）。
+   * 画中画：在划选区域里贴出**另一界**（上界 / 幽冥）的对应区域（规格 §3.4 的 C2 方案）。
    *
-   * 做法是「全量渲染到上界自己的离屏 canvas，再裁剪贴出」——**不改 terrainLayer.js**。
-   * 两个 canvas 同尺寸、同 pad、同 reliefScale，所以凡间 (x,y) 与上界 (x,y)
+   * 做法是「全量渲染到那一界自己的离屏 canvas，再裁剪贴出」——**不改 terrainLayer.js**。
+   * 两个 canvas 同尺寸、同 pad、同 reliefScale，所以凡间 (x,y) 与那一界 (x,y)
    * 是同一个坐标；视界里贴的必须正是**同一块坐标区域**，这是下一阶段
    * 「裂缝漏物落在同一个位置」的依据（规格 §3.4 第 3 条）。
    *
-   * ⚠️ 裁剪用的是屏幕矩形 + `ctx.clip()`，**不是** `drawImage` 的 `sourceRect`。
-   *    原因：立体视图下每一格的落笔行是 `y + pad - round(高程 × reliefScale)`，
-   *    **行号随各自的高程变**，所以「一块矩形区域」在 canvas 里并不是一个矩形——
-   *    sourceRect 在立体视图下会取错一块。clip 则总是裁出屏幕上那块方窗。
-   *    代价：clip 之下仍要 blit 整张上界 canvas（GPU 侧）；CPU 侧那次全量重绘
+   * `plane` 由 `viewPlane()` 给出（`{ world, terrain, label, clearDirty }`）——
+   * 上界与幽冥共用**同一段**裁剪 / 贴图 / 边框逻辑，唯一的分流就是「贴哪张地形、
+   * 画哪一界的人与宗门」。
+   *
+   * ⚠️ **口径更新（2026-09-23）**：这里原先写着「幽冥没有实体（`nether.entities`
+   *    为空），那两行 draw* 自然是空转」。**那句话现在过期了**——8-C/8-D 已落地，
+   *    `enterNether` 会在幽冥生成鬼魂与鬼修（`sim/netherLife.js`），
+   *    所以 `drawSects` / `drawEntities` 在幽冥这一支是**真的在画东西**。
+   *    `netherDirty` 由 `stepNether` 置位（见 `update()`），与上界同构。
+   *    ⇒ 别再把它当「空转的占位行」删掉或跳过。
+   *
+   * ⚠️ 裁剪用的是**屏幕多边形路径 + `ctx.clip()`**（自由形状划选），**不是**
+   *    `drawImage` 的 `sourceRect`。原因：立体视图下每一格的落笔行是
+   *    `y + pad - round(高程 × reliefScale)`，**行号随各自的高程变**，所以
+   *    「一块坐标区域」在 canvas 里并不是一块规整的矩形——sourceRect 在立体
+   *    视图下会取错一块。clip 则总是裁出屏幕上那片形状。
+   *    代价：clip 之下仍要 blit 整张 canvas（GPU 侧）；CPU 侧那次全量重绘
    *    已由 UPPER_RENDER_PERIOD 摊薄。
    */
-  drawUpperView(ctx, now) {
+  drawPlaneView(ctx, now, plane) {
     const sel = this.selection;
-    const up = this.upperTerrain;
-    if (!sel || !up) return;
+    const terrain = plane && plane.terrain;
+    const viewWorld = plane && plane.world;
+    if (!sel || !terrain || !viewWorld) return;
     const cam = this.camera;
 
-    // 上界地形低频重绘：全量 render 很贵，而它变化极慢（不跑水文/生态）。
-    // ⚠️ `upperDirty` 这一轮**刻意不作为重绘的触发条件**（它只被置位、不被读）：
+    // 另一界地形低频重绘：全量 render 很贵，而它变化极慢（不跑水文/生态）。
+    // ⚠️ `upperDirty` / `netherDirty` 这一轮**刻意不作为重绘的触发条件**
+    //    （它们只被置位、不被读）：
     //    高倍速下每 0.167 秒就跨一次「10 游戏日」边界（baseDaysPerSecond 3 ×
-    //    最高 20 倍 = 60 日/秒），若让脏标记绕过节流，就等于每帧全量重绘上界，
+    //    最高 20 倍 = 60 日/秒），若让脏标记绕过节流，就等于每帧全量重绘那一界，
     //    成本直接翻倍——而那正是这条节流要防的事。
-    //    它是给**下一阶段**留的：那时 `upperLife.step` 会改上界实体/宗门，
+    //    它们是给**下一阶段**留的：那时 `upperLife.step` 会改上界实体/宗门，
     //    「内容变了」才需要一次立刻重绘；届时也要守住 UPPER_RENDER_PERIOD 这个上限。
-    if (now - up.lastRender > UPPER_RENDER_PERIOD) {
-      up.render(now, true);
-      this.upperDirty = false;
+    // ⚠️ 两个图层**各自**有 `lastRender`，所以上界与幽冥各按各的节拍重绘，
+    //    互相不会把对方的节流打乱。
+    if (now - terrain.lastRender > UPPER_RENDER_PERIOD) {
+      terrain.render(now, true);
+      plane.clearDirty();
     }
 
     const zoom = cam.zoom;
     const originX = cam.toScreenX(0);
-    const originY = cam.toScreenY(-up.pad);
-    // 选区的屏幕矩形：用「零抬升」的映射（canvas 行 = y + pad）。
+    const originY = cam.toScreenY(-terrain.pad);
+    // 选区的屏幕**包围盒**：用「零抬升」的映射（canvas 行 = y + pad）。
     // 平面视图下这**严格**对位；立体视图下窗口边界落在零抬升基线上，
-    // 窗内仍是上界地形（只是边界与上界自身的抬升不完全贴合，见方法注释）。
+    // 窗内仍是那一界的地形（只是边界与那一界自身的抬升不完全贴合，见方法注释）。
+    // ⚠️ 路径顶点也走**同一个** `toScreenX/Y` 映射（见下面的 clip），
+    //    绝不另引入高程偏移——否则形状会相对那一界地形整体错位。
     const sx0 = cam.toScreenX(sel.x0);
     const sy0 = cam.toScreenY(sel.y0);
     const sw = cam.toScreenX(sel.x1 + 1) - sx0;
@@ -1742,57 +2051,147 @@ class Sandbox {
 
     ctx.save();
     ctx.beginPath();
-    ctx.rect(sx0, sy0, sw, sh);
+    // 自由形状：按 `path` 走线裁窗。`path` 不存在时退回矩形（防御性——
+    // 老形状 / 注入的旧对象不该把这一帧炸掉）。
+    if (sel.path && sel.path.length >= 3) {
+      ctx.moveTo(cam.toScreenX(sel.path[0][0]), cam.toScreenY(sel.path[0][1]));
+      for (let i = 1; i < sel.path.length; i += 1) {
+        ctx.lineTo(cam.toScreenX(sel.path[i][0]), cam.toScreenY(sel.path[i][1]));
+      }
+      ctx.closePath();
+    } else {
+      ctx.rect(sx0, sy0, sw, sh);
+    }
     ctx.clip();
     ctx.drawImage(
-      up.canvas,
-      0, 0, up.canvas.width, up.canvas.height,
+      terrain.canvas,
+      0, 0, terrain.canvas.width, terrain.canvas.height,
       originX, originY,
-      up.canvas.width * zoom, up.canvas.height * zoom,
+      terrain.canvas.width * zoom, terrain.canvas.height * zoom,
     );
+    // ── 那一界的人与宗门（2026-09-23 接线）──────────────────────────────
+    // 在这之前窗里**只有地形**：上界明明在跑（`:1525` 的 `upperLife.step`）、
+    // 有实体、有宗门（`upper.entities` / `upper.factions`），玩家却一个都看不见
+    // ——「系统在跑、但没人看得见」正是 D4 要治的病，只是这次犯在上界。
+    //
+    // 复用**同一个** `UnitsLayer`：它的 draw* 全部以 `world` 为参数
+    // （`render/unitsLayer.js:480 drawSects` / `:557 drawEntities`），
+    // 构造函数里没有任何绑定凡间的实例状态，所以把 `world` 换成 `plane.world`
+    // 即可，**不需要新渲染器、不需要新图层类**。
+    // ⚠️ **口径更新（2026-09-23，8-C/8-D 已落地）**：这条注释原先写着「幽冥这一侧
+    //    `entities` / `factions` 都是空数组，所以这两行对幽冥是**空转**」——**已过期**。
+    //    现在 `nether.entities` 里**真的有鬼魂与鬼修**（`enterNether` 生成，
+    //    见 `sim/netherLife.js`），所以 `drawEntities` 在幽冥这一支**真的在画东西**。
+    //    `factions` 仍恒空（`worldgenNether` 不填，`World` 构造函数给 `[]`）⇒
+    //    `drawSects` 对幽冥仍是空转，但它与 `drawEntities` 共用同一次调用，留着无害。
+    //
+    // ⚠️ 这里**刻意不调** `drawTerritory`：它的离屏画布是**单槽缓存**、
+    //    缓存键含 `world.seed`（`unitsLayer.js:240-242`）。凡间主图每帧调一次、
+    //    窗里再按另一界调一次 ⇒ 两边的键每帧互相覆盖 ⇒ **每帧重烘 5 万格两遍**。
+    //    地盘若要进窗，得先给另一界第二个槽位（已记 BACKLOG）。
+    //
+    // ⚠️ 实体是**直接画到主 ctx** 的，不受 `UPPER_RENDER_PERIOD` 节流影响
+    //    （那个节流只管上面那张地形位图）。所以那一界的人一动，窗里当帧就动
+    //    ——**不需要 `upperDirty` 参与**，上面 `upperDirty` 那段注释说的
+    //    「下一阶段」正是这里。
+    // ── 凡间的裂缝（2026-09-23 补）────────────────────────────────
+    // 裂缝**开在划选区域的边界格上**（`sim/rifts.js:465-477` 的候选格就是边界格），
+    // 而本窗口把整个选区裁住 ⇒ 主渲染链里那次 `drawRifts`（`:1755`）画的缝，
+    // **落在窗内那一半被窗口盖掉**，玩家只看得见框外半圈。
+    // 用户点名要的「划选区域**边缘**会产生不稳定的裂隙」，这个反馈因此只兑现了一半。
+    //
+    // 修法是**加法**，不是改顺序：在窗内再画一次凡间的缝。
+    // 窗外那半仍由主链那次负责，**两次合起来才是一道完整的缝**
+    // ⇒ **不要删掉主链那次调用、也不要移动它**（移了会连带动到标签/光晕的叠层次序）。
+    //
+    // 传 **`this.world`（凡间）**而不是 `viewWorld`：缝是凡间与另一界的接缝，
+    // 本来就长在凡间。放在地形之上、人之下，视觉上像「缝从地底裂出来」。
+    this.units.drawRifts(ctx, cam, this.world, now);
+    this.units.drawSects(ctx, cam, viewWorld);
+    this.units.drawEntities(ctx, cam, viewWorld, now);
     ctx.restore();
 
-    this.drawRiftBorder(ctx, sx0, sy0, sw, sh, now);
+    this.drawRiftBorder(ctx, sel, now);
   }
 
   /**
-   * 视界边缘的「裂缝」：一圈**断续的墨线 + 微光**，不是实线。
+   * 视界边缘的「裂缝」：沿划选形状一圈**断续的墨线 + 微光**，不是实线。
    *
    * 它既是 UI 提示（这里开着一扇窗），也是裂缝的空间位置提示——
-   * 下一阶段的裂缝就开在这四条边上（规格 §4.1「开在划选矩形的四条边」）。
-   * 刻意不画实线：实线看着像选择框，断续才像缝。
+   * 裂缝就开在这条边缘的**连线**上（规格 §4.1；矩形时代是「四条边」，
+   * 现在是自由形状的闭合折线）。刻意不画实线：实线看着像选择框，断续才像缝。
+   *
+   * 取屏幕坐标走的是与 `drawPlaneView` **同一个**零抬升映射，否则边框会与
+   * 窗口边界错位。`sel.path` 缺失时退回矩形四角（防御性）。
    */
-  drawRiftBorder(ctx, x, y, w, h, now) {
-    if (w <= 2 || h <= 2) return;
+  drawRiftBorder(ctx, sel, now) {
+    if (!sel) return;
+    const cam = this.camera;
+    let pts;
+    if (sel.path && sel.path.length >= 3) {
+      pts = sel.path.map((p) => [cam.toScreenX(p[0]), cam.toScreenY(p[1])]);
+    } else {
+      const x0 = cam.toScreenX(sel.x0);
+      const y0 = cam.toScreenY(sel.y0);
+      const x1 = cam.toScreenX(sel.x1 + 1);
+      const y1 = cam.toScreenY(sel.y1 + 1);
+      pts = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+    }
+    // 太小的窗不画边框（与旧版 `w <= 2 || h <= 2` 等价，按包围盒量）
+    let minX = pts[0][0];
+    let maxX = minX;
+    let minY = pts[0][1];
+    let maxY = minY;
+    for (let i = 1; i < pts.length; i += 1) {
+      if (pts[i][0] < minX) minX = pts[i][0];
+      if (pts[i][0] > maxX) maxX = pts[i][0];
+      if (pts[i][1] < minY) minY = pts[i][1];
+      if (pts[i][1] > maxY) maxY = pts[i][1];
+    }
+    if (maxX - minX <= 2 || maxY - minY <= 2) return;
+    const trace = () => {
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i += 1) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.closePath();
+    };
     ctx.save();
     // 微光：一条略粗的冷色描边垫在底下。**刻意不用 shadowBlur**——
-    // 那个在每帧都画的路径上出了名的贵，而这里只画四条边，粗线就够。
+    // 那个在每帧都画的路径上出了名的贵，而这里只画一圈折线，粗线就够。
     const glow = 0.30 + 0.22 * Math.sin(now * 1.7);
     ctx.lineWidth = 4;
     ctx.strokeStyle = `rgba(122, 186, 196, ${glow.toFixed(3)})`;
-    ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    trace();
+    ctx.stroke();
     // 断续墨线：断口缓慢流动，看着像「缝在动」，而不是像选择框
     ctx.lineWidth = 1.2;
     ctx.setLineDash([7, 5]);
     ctx.lineDashOffset = -now * 9;
     ctx.strokeStyle = 'rgba(34, 32, 28, 0.86)';
-    ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    trace();
+    ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();
   }
 
-  /** 拖拽中的划选框：只有一圈虚线，没有微光/裂缝——还没成型，不能与已开的视界混淆 */
-  drawSelectHint(ctx, rect) {
+  /**
+   * 拖拽中的划选路径：一条闭合的虚线预览（**还没成型**，所以没有微光/裂缝，
+   * 免得与已开的视界混淆）。首尾自动连上，让玩家边划边看到形状。
+   */
+  drawSelectHint(ctx, path) {
+    if (!Array.isArray(path) || path.length < 2) return;
     const cam = this.camera;
-    const x0 = cam.toScreenX(Math.min(rect.x0, rect.x1));
-    const y0 = cam.toScreenY(Math.min(rect.y0, rect.y1));
-    const w = cam.toScreenX(Math.max(rect.x0, rect.x1) + 1) - x0;
-    const h = cam.toScreenY(Math.max(rect.y0, rect.y1) + 1) - y0;
     ctx.save();
     ctx.setLineDash([5, 4]);
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'rgba(74, 122, 138, 0.9)';
-    ctx.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, h - 1);
+    ctx.beginPath();
+    ctx.moveTo(cam.toScreenX(path[0][0]), cam.toScreenY(path[0][1]));
+    for (let i = 1; i < path.length; i += 1) {
+      ctx.lineTo(cam.toScreenX(path[i][0]), cam.toScreenY(path[i][1]));
+    }
+    ctx.closePath();
+    ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();
   }
@@ -1832,6 +2231,12 @@ class Sandbox {
     $('inkSpeedPill').textContent = `${TIME.speeds[this.speedIndex].label}速 ×${TIME.speeds[this.speedIndex].mult}`;
     $('inkFpsPill').textContent = `${this.fps.toFixed(0)} FPS`;
     $('inkStatPeople').textContent = String(stats.entities);
+    // 凡间鬼影（D6-3 工程包 B）：**此刻**在凡间飘荡的鬼（自幽冥缝爬出来的）。
+    // ⚠️ 口径只有 `wraithStats` 一份（`sim/wraiths.js`）——不在这里自己 filter
+    //    `world.wraiths`（那是第二份真相，同幽冥那行 `netherGhostStats` 的理由）。
+    // ⚠️ 与「生灵」**分开报**：鬼影不在 `world.entities` 里，`stats.entities`
+    //    数不到它们；合成一格会让玩家以为「生灵 513」里包含鬼。
+    $('inkStatWraiths').textContent = String(wraithStats(world).alive);
     $('inkStatVillages').textContent = String(stats.villages);
     $('inkStatFactions').textContent = String(stats.factions);
     $('inkStatLand').textContent = `${((stats.land / world.size) * 100).toFixed(0)}%`;
@@ -1950,11 +2355,25 @@ class Sandbox {
     if (!box || !world) return;
     const all = Array.isArray(world.milestones) ? world.milestones : [];
     const items = all.slice(-MILESTONE_PANEL_LIMIT).reverse();
-    box.innerHTML = items.length
-      ? items.map((m) => {
+    const active = this.life?.events?.activeCrises || [];
+    const activeRows = active.map((event) => {
+      const village = world.villageById(event.villageId);
+      const yearsLeft = Math.max(0, Math.ceil(
+        ((event.startedDay || 0) + (event.durationDays || 0) - world.day) / 360,
+      ));
+      const impact = village
+        ? `聚落元气 ${Math.max(0, village.hp || 0).toFixed(0)} · 粮食 ${Math.max(0, village.food || 0).toFixed(0)}`
+        : '受灾聚落已不在';
+      return `<div class="ink-log crisis-active"><b>进行中 · 事件 #${event.id}「${event.name}」</b>`
+        + `${event.villageName || '受灾聚落'} · 约 ${yearsLeft} 年后结算 · ${impact}</div>`;
+    });
+    const milestoneRows = items.map((m) => {
         const year = Math.floor((m.day || 0) / 360) + 1;
         return `<div class="ink-log"><b>仙历 ${year} 年</b>${m.text}</div>`;
-      }).join('')
+      });
+    const rows = [...activeRows, ...milestoneRows];
+    box.innerHTML = rows.length
+      ? rows.join('')
       : '<div class="ink-empty">还没有值得记的大事。快进一些年，或者亲手去改一改这个世界。</div>';
   }
 
@@ -2074,8 +2493,18 @@ class Sandbox {
       // `arrived` 是**累计**从凡间到达的（`planes.arriveUpper` 记账），
       // 与 `upper.entities.length`（此刻活着几个）是两件事——两个都报，
       // 只报一个的话「上来过 1 个」与「此刻 13 个」谁都会读错。
+      //
+      // ── 生态账本（D6-2 工程包 E）──
+      // 追加「生 / 亡」两项，与**幽冥那一行同款口径**：生 = 四种来源之和
+      // （开天播种 + 从凡间到达 + 修士化生 + 凡人生育），亡 = 累计陨落。
+      // ⚠️ 守恒式 `生灵 === 生 − 亡` 是**契约**（`upperEcoStats` 是这四项相加的
+      //    唯一处，smoke 5x 直接断言）——三项摆在同行，账平不平一眼可见。
+      // ⚠️ **追加**而不是改写：playtest 10e 用 `includes('生灵 N')` 等子串对账，
+      //    改写会悄悄改掉那条断言的契约（规格明令：不新增区 / CSS 类，也不动锚点）。
+      const eco = upperEcoStats(upper);
       meta.textContent = `生灵 ${upper.entities.length} · 宗门 ${upper.factions.length}`
-        + ` · 飞升上来 ${pop.arrived || 0}`;
+        + ` · 飞升上来 ${pop.arrived || 0}`
+        + ` · 生态 生 ${eco.born} · 亡 ${eco.died}`;
     }
     if (!box) return;
     const rows = [];
@@ -2107,7 +2536,48 @@ class Sandbox {
     if (meta) {
       // `waiting` 是**此刻**池子里排队的（上限 SOUL_CAP = 120），
       // `total` 是**累计**判过路的魂——同「上界那两栏」的理由，两个都报。
-      meta.textContent = `魂池 ${st.waiting} · 累计 ${total} · 已归来 ${st.reborn}`;
+      let line = `魂池 ${st.waiting} · 累计 ${total} · 已归来 ${st.reborn}`;
+      // ── 幽冥实体读数（2026-09-23 补，契约 `reports/d5/BATCH2-DESIGN.md` §七）──
+      // 上三栏是**凡间魂池**的账（累计判过路），这一栏才是**幽冥里此刻站着谁**
+      // ——两者不是一回事：面板印「鬼修 45」曾让玩家开视界却一个都查不到
+      // （BATCH-REPORT 那条 P1）。所以**扩展现有这一行**（BACKLOG P3 #3：
+      // 右栏已 12 个区，加区前先考虑合并 ⇒ 不新增区、不加新 CSS 类）。
+      //
+      // ⚠️ `world.nether` 在老档 / 单世界路径下可能是 `undefined`：
+      //    此时**退回原字符串**，不抛错（守卫风格照抄 `refreshUpperRealm`）。
+      // ⚠️ 口径只有 `netherGhostStats` 一份（`sim/netherLife.js`）——
+      //    不要在这里自己 `filter` 一遍 `nether.entities`，那是第二份真相。
+      // ⚠️ 没有鬼修时「最高」印 `—` 而**不是**省略整段：忽有忽无的尾巴会让
+      //    以文字为锚点的断言（playtest / smoke）随时变红。
+      const nether = world.nether;
+      if (nether) {
+        const gs = netherGhostStats(nether);
+        // 生态账本（D6-2 工程包 E）：与**上界那一行同款口径**（生 / 亡）。
+        // ⚠️ 多一栏「逐」：幽冥有**两条**离开路径（消散 + 上限逐出），
+        //    而上界只有一条（陨落）——守恒式是 `鬼魂 + 鬼修 === 生 − 亡 − 逐`。
+        //    这是两个世界的规则差别，不是口径不统一。
+        // ⚠️ D6-3 工程包 B 再加一栏「出」：**第三条离开路径**——自幽冥缝
+        //    爬入凡间的鬼（`nether.popLog.climbedOut`）。守恒式因此变成
+        //    `鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出`（`netherEcoStats.conserved`
+        //    与 playtest 的断言同步改了）。**必须印**：不印的话玩家看到
+        //    「鬼魂 3 但生 100 亡 20 逐 5」，账差 72 却查不出差在哪。
+        const eco = netherEcoStats(nether);
+        // ⚠️ D6-3 工程包 C 再加一栏「物」：幽冥**此刻躺着几件物品**（自生 + 跌入者
+        //    带下来的，减去漏回凡间的）。它是 `netherItemStats().alive`——现算，
+        //    不入档（铁律二）。**必须印**：玩家开幽冥视界时，这一栏是「幽冥里有没有
+        //    东西」的唯一读数；不印的话「幽冥物品泄漏」这条通道对玩家不可见。
+        // ⚠️ D6-3 工程包 D 再加一栏「夺」：**第四条离开路径**——低阶鬼修真夺舍
+        //    凡间活人后**从幽冥消失**（`nether.popLog.possessedOut`）。守恒式因此
+        //    变成 `鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出 − 夺`（`netherEcoStats.conserved`
+        //    与 playtest 10e 的算式同步改了）。**必须印**：不印的话玩家看到
+        //    「鬼魂 3 但生 100 亡 20 逐 5 出 3」，账差 69 却查不出差在哪。
+        const items = netherItemStats(nether);
+        line += ` · 幽冥 鬼魂 ${gs.ghost} · 鬼修 ${gs.cultivator}`
+          + ` · 最高 ${gs.topTierName || '—'}`
+          + ` · 生态 生 ${eco.born} · 亡 ${eco.died} · 逐 ${eco.evicted} · 出 ${eco.climbedOut} · 夺 ${eco.possessedOut}`
+          + ` · 物 ${items.alive}`;
+      }
+      meta.textContent = line;
     }
     if (bars) {
       let max = 1;

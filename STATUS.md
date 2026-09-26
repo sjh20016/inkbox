@@ -1,0 +1,785 @@
+# Project Status
+
+- 当前活跃版本：Inkbox 1.0.0（`src/inkbox`）
+- 当前入口：`inkbox.html`；`npm run dev` 从 `http://127.0.0.1:4180/` 启动
+- 当前阶段：**D6-3 视界与跨界生态**（工程包 A ✅ 裂隙跨界框架 + 凡人跌入幽冥；工程包 B ✅ 鬼进入凡间；工程包 C ✅ 幽冥物品泄漏；工程包 D ✅ 跨位面夺舍；工程包 E ✅ 回归扩展 —— **A–E 六包齐，全部完成**）
+- 三界规则唯一成文处：`THREE_REALMS.md`（事实核对日期 2026-09-26 · D6-2 A–F · D6-3 A（09-24）· B（09-26）· C（09-26）· D（09-26）· E（09-26））
+- 禁止误认为主线：`src/main.js`、`demo/`、`剧情文案素材/`、`scripts/v341*` 至 `scripts/v400*` 与研究探针
+
+---
+
+## LAST COMPLETED
+
+- **工程包 A — 三界设计状态固化（2026-09-24）**：新增 `THREE_REALMS.md`（MORTAL / UPPER /
+  NETHER / TIME / COORDINATES / VIEW / RIFT 七节 + 阶段边界禁止事项；**READOUT 一节由 E 包补上，现为八节**）；
+  改写 `BACKLOG.md` 为 D6-2 六包清单。
+- **工程包 B — 裂隙目标位面化（2026-09-24）**：修掉「打开幽冥视界会偷偷执行上界漏物/吸人」的静默故障。
+- **工程包 C — 上界空间生态（2026-09-24）**：上界实体**不再定格在出生点**。
+  低频目标选择 + 简单移动 + `upperWalkable` 检查；不做寻路，不 `new Life(upper)`。
+- **工程包 D — 幽冥最低生态（2026-09-24）**：幽冥鬼魂 / 鬼修**不再定格在落点**。
+  普通鬼魂沿冥河窄带活动（D1）+ 鬼修分档活动范围（D2）+ 阴气 `veg` **影响**积怨增速（D3）+
+  消散地点轻量留痕（D4）+ 高阶鬼修空间吸引（D5）。**零 rng**；不做鬼城 / 鬼宗 / 寻路。
+- **工程包 E — 三界统一生态读数（2026-09-24）**：上界 / 幽冥在**现有**「三界」面板行上**追加**同一口径的
+  生态账本（`生态 生 N · 亡 M`，幽冥多 `逐 K`）——**不新增区、不新增 CSS 类、不动原有子串**。
+  口径抽成**纯函数**（`upperEcoStats` / `netherEcoStats`），面板与测试都调它。
+- **工程包 F — 三界生态不变量回归（2026-09-24）**：新增 `scripts/inkbox-three-realms.mjs`
+  （**7 节 61 条**断言），把前五包之间的**跨包契约**钉成可判定的回归。**不改任何生产逻辑**
+  （唯一源码改动是把 `DECAY_TRACE_VEG` 从 `const` 改成 `export const`，理由见该处注释）。
+- **D6-3 工程包 A — 裂隙跨界框架 + 凡人跌入幽冥（2026-09-24）**：解冻幽冥缝，但**不接回上界链路**
+  ——给它**自己的通道**（`stepNetherRift`）与**自己的流**（`netherRiftRngFor`，派生键 `0x4e524654` = `'NRFT'`）。
+  「上界链路不可达」的保证方式从**一行 `continue`** 换成**函数边界**（前者能被顺手删掉，后者不能）。
+  效果 = `fallIntoNether`：半径内 `isPerson` 且 `level < 40` 的活人里取境界最高的一个，
+  **先落成幽冥实体再把人 `splice` 出凡间**，法宝先 `scatterArtifacts` 留在原地，落成**鬼修**并带
+  `mortal:<id>` 身份快照；**零 rng**（抽签只在 `stepNetherRift`）。回归脚本升到 **8 节 77 条**（新增 F8）。
+- **D6-3 工程包 B — 鬼进入凡间（2026-09-26）**：同一条幽冥缝的**反方向**（幽 → 凡）——缝口的鬼魂爬进凡间，
+  在凡间飘荡一段日子再自行消散。**两个效果各抽各的签**（`stepNetherRift` 里两个独立 `if`，**不是** `else if`），
+  第二条流 = `mortalHauntRngFor`（派生键 `0x4841554e` = `'HAUN'`）。
+  效果 = `climbOutToMortal`：候选 = 幽冥里 `sp === ghost` 且**离缝口最近**（半径内）的一只，
+  **先落成、再移除**（撞上限 ⇒ 保留幽冥那一份，绝不凭空蒸发），**零 rng**。
+  ⭐⭐ **承重判决**：鬼住 `world.wraiths`（独立容器）+ `stepMortalWraiths`（独立 tick），**绝不进 `world.entities`**
+  ——凡间与上界共用 `cultivation.stepEntity`，其觉醒豁免名单只有 `beast` / `spirit`，`ghost` 不在其中，
+  鬼若进 `world.entities` 会被掷觉醒骰（`awaken()` 给 `level=1` + 灵根 + 重算寿元）或被修炼 → 飞升
+  → **上界凭空多一个鬼**，且不报错、污染上界人口账。用**函数边界**隔离（不是加一行守卫）。
+  记账落 `nether.popLog.climbedOut`（**第三条离开路径**）⇒ 幽冥守恒式扩成 **`鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出`**。
+  回归脚本升到 **9 节 94 条**（新增 F9）。
+- **D6-3 工程包 C — 幽冥物品泄漏（2026-09-26）**：幽冥有物品，而物品**两个方向**都走，
+  再加第三条来源（幽冥自生）。**三个独立 `if`**（人跌入 / 鬼爬出 / 物品漏出，**不是** `else if`），
+  第三条流 = `netherItemRngFor`（派生键 `0x4e49544d` = `'NITM'`）。
+  · 来源① **跌入者随身带下去**（`moveArtifactsToNether`，改掉 A 包的 `scatterArtifacts` 行为）；
+  · 来源② **幽冥自生**（`stepNetherItems`，**零 rng** 的 `hash32` + `hashStep` 确定性哈希流）；
+  · 去向③ **经缝漏回凡间地上**（`leakNetherItem` → `toGround`，**落地等捡**，**零 rng**）。
+  ⭐ **容器与记账全部复用 ⇒ 零存档结构改动**：物品池复用 `nether.artifacts`（`serializeWorld`
+  整数组写）；四条流水落 `nether.popLog`（属 `NETHER_ONLY_KEYS` **整对象**序列化，可安全加键）：
+  `itemsSpawned / itemsFellIn / itemsLeakedOut / itemsDecayed` ⇒ 守恒式
+  `alive === spawned + fellIn − leakedOut − decayed`；凡间侧对账落 `artifactLog.netherIn / netherOut`
+  （与上界的 `riftIn / riftOut` **分列四键**）。
+  ⚠️⚠️ **两个新踩的坑**：① `hash32`（FNV-1a）对「前缀相同、只差末尾数字」的短串有**极强高位偏置**
+  （实测全落 0.70–0.74 ⇒ 概率阈值恒真、`NETHER_ITEM_CHANCE` 形同不存在、10 个判定点只出 1 件，
+  **不报错**）⇒ 必须先过一遍 `hashStep` 再当均匀分布用；② **法宝 id 跨世界必须重赋**（铁律三）——
+  id 是**世界内**编号，不重赋会让「凡间第 5 件」与「幽冥第 5 件」同号，`claimGroundArtifact`
+  按 id 线性查找会命中**先出现的那一件**（不报错）。
+  另造幽冥名池（`NETHER_ARTIFACT_NAMES` 8 名 / `NETHER_TECHNIQUES` 6 名，**避开**「鬼/魂/莲/符」
+  考古定名、与凡间名池**零重名**）；幽冥法宝**携带一门功法**（`a.technique`，凡人拾到即习得，
+  上限 `TECHNIQUE_CAP = 3`）。
+  回归脚本升到 **10 节 119 条**（新增 F10 · 26 条）。
+- **D6-3 工程包 D — 跨位面夺舍（2026-09-26）**：A/B/C 跨的是**人 / 鬼 / 东西**，D 包让**鬼修的元神**
+  跨界，住进凡间活人的身体。判据不再是「谁离缝口最近」，而是**鬼修的阶**——两条完全不同的路：
+  · **低阶鬼修**（怨灵及以下，`level ≤ POSSESS_TIER_MAX_LEVEL` = **20**）⇒ **真夺舍**（`possessMortal`），
+    鬼修**从幽冥消失**（`splice`）；· **高阶鬼修**（厉鬼及以上 ≥ 21）⇒ **只暂时附身**（`hauntMortal`），
+    鬼修**留在幽冥**、凡人被驱使一段日子。动机 = 「继续修仙的执念」（用户裁决）。
+  **第四条流** = `netherPossessRngFor`（派生键 `0x4e505358` = `'NPSX'`）；`stepNetherRift` 里现在是
+  **四个独立 `if`**（**不是** `else if`）；触发概率 `POSSESS_CHANCE_PER_PERIOD = 0.01`。
+  成功率用**积怨 `ghostRancor`** 替代 `mind`，再乘「执念 / 魂虚」词条加成（派生、不入档）。
+  **不良状态**新字段 `possessionScar`（**新实体列 row[68]**，行总长 68 → 69）；**行为锁**在
+  `sim/life.js` 的 `stepEntity` 状态机**之前**接管（与「入魔」同位置，`return false` 绕过 `findEnemy`）。
+  记账落 `nether.popLog.possessedOut`（**第四条离开路径**）⇒ 守恒式扩成
+  **`鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出 − 夺`**；凡间 `world.possessionLog` 五键
+  （`succeeded / failed / suspected / crossPlane / haunted`）。**三个效果函数全部零 `rng`**。
+  ⚠️ 上界 / 幽冥 payload **刻意 `delete payload.possessionLog`**（与 `soulLog` 同款）——
+  **这一条此前漏删**，D 包补齐（见 CONTRACT 22）。
+  回归脚本升到 **11 节 134 条**（新增 F11 · 15 条）。
+- **D6-3 工程包 E — 回归扩展（2026-09-26）**：**不改任何生产逻辑**，把 A–D 四条跨界通道钉进
+  **长跑体检**与**回归**。本包补的是**一个洞**：在它之前，`scripts/inkbox-longrun.mjs`
+  **从来没有建过 `world.nether`** ⇒ `openRifts(..., 'nether')` 整条被第 0 步拒掉
+  ⇒ D6-3 的四条通道**一次都没在长跑里跑过**。
+  · **longrun**：主循环前挂 `generateNetherWorld`（`deriveNetherSeed(SEED)`，不抽主流）；
+    视界开着时**每年补开** 6 条幽冥缝（`NETHER_RIFT_SITES`）；新增一节 **10 条**断言
+    （幽冥生态守恒 / 幽冥物品守恒 / 鬼影两端 / 跨书三对 / A·B·C 存在性 / 幽冥缝开出来）；
+    **凡间法宝守恒式再扩一档**（`造物 + riftIn + netherIn === 在世 + 碎 + 朽 + riftOut + netherOut`）。
+  · **three-realms**：新增 **F12（10 条）** ⇒ **十二节 144 条**。F8–F11 各测**一条通道**；
+    F12 问「四条通道挂在**同一条缝**上时，四本账会不会串」。
+  · ⭐⭐ **两条承重结论**（后来人动三界前必须知道）：
+    ① **幽冥缝口必须落在「凡间可站 ∩ 幽冥河带」的交集格上**——`openRifts` 只把矩形**周长**格
+      当候选，而鬼 / 物品只落在河带格（`netherBankTiles`）；站点错位 ⇒ C/D **结构性饿死**
+      （实测：±10 矩形站点 10 条缝跑 300 年 C=18 但 **D 恒 0**；重叠格站点半径 3.63 格内有
+      26 河带格 + 42 凡人）。⇒ longrun 用 **1×1 区域**精确落点。
+    ② **1×1 区域 ⇒ `sites.length === 1` ⇒ `openRifts` 的洗牌循环不执行 ⇒ 消费裂隙流 0 次**
+      ⇒ 上界缝位置与「不开幽冥缝」时**逐字相同**。这是 longrun 敢「常年开幽冥缝」的唯一依据
+      （F12⑥ 用同种子双世界比对钉）。
+  · **判据口径**：A / B / C 判存在性（`≥ 1`）；**D 不判存在性**——它在真实长跑里几乎不触发
+    （800 年 6 站点：跌入 30 / 爬出 123 / 漏物 10 / **夺舍 0 · 附身 3**）。D 的**存在性**由隔离世界
+    钉（F11 真夺舍 7 / 附身 10 · F12 四支同缝 7 次），长跑只钉它的**账本耦合**
+    `possessedOut === possessionLog.crossPlane`。⚠️ 硬写 `D ≥ 1` 会是一条**永远红**的断言。
+
+## CHANGED
+
+- 工程包 A/B：`THREE_REALMS.md`（新）、`BACKLOG.md`、`README.md`、`world/planes.js`、`sim/rifts.js`、
+  `sim/netherLife.js`、`main.js`、`io/save.js`、`scripts/inkbox-{smoke,save-equiv,longrun,playtest,package}.mjs`
+- 工程包 C：**只动一个源文件** —— `src/inkbox/sim/upperLife.js`
+  （新增 `UPPER_SPATIAL_SEED_KEY` 等常量、构造器里的 `this.spatialRng`、`step()` 末尾的第 8 步、
+  `stepSpatial` / `pickSpatialTarget` / `spatialTargetValid` / `moveSpatially` / `spatialCanStep` 五个方法）
+  + `scripts/inkbox-smoke.mjs` 新增 5v 组（10 条断言）
+  ⚠️ **C 包没有改 `io/save.js`**：移动状态用的 `x/y/tx/ty/timer/state` 早就是实体列
+  （row[2]/[3]/[12]/[13]/[11]/[10]），不需要新增存档字段。
+- 工程包 D：**只动一个源文件** —— `src/inkbox/sim/netherLife.js`
+  （抽出 `nearRiverAt`（让落点窄带与活动范围共用判据）· 新增 `hashStep` ·
+  五个空间行为函数 `activityRadiusOf` / `netherCanStep` / `netherSpatialTargetValid` /
+  `pickNetherSpatialTarget` / `moveNetherSpatially` / `leaveDecayTrace` / `stepNetherSpatial` ·
+  `stepNether` 第 3 步加环境系数、第 1/2 步加消散留痕、末尾加第五步 ·
+  **新增三个只读导出**：`netherBankTiles` / `pickNetherSpatialTarget` / `NETHER_BANK_RADIUS` / `NETHER_TIER_REACH`）
+  + `scripts/inkbox-smoke.mjs` 新增 5w 组（21 条断言）。
+  ⚠️ **D 包也没有改 `io/save.js`**：`x/y/tx/ty/timer/state/anim/face` 早就是实体列；
+  D4 留痕写的是**进档**的 `nether.veg`（读档不重算），同样零存档改动。
+- 工程包 E：**改两个源文件 + 两处测试** ——
+  ① `src/inkbox/world/planes.js`：新增导出 `upperEcoStats(upper)`（只读汇总，**不改任何状态**）；
+  ② `src/inkbox/sim/netherLife.js`：新增导出 `netherEcoStats(nether)`（同上，复用 `netherGhostStats`）；
+  ③ `src/inkbox/main.js`：`refreshUpperRealm` / `refreshNetherRealm` 各**追加**一段生态栏
+  （**追加**而非改写：playtest 10e 用 `includes('生灵 N')` 等子串对账）；
+  ④ `scripts/inkbox-smoke.mjs` 新增 5x 组（**11** 条断言）· `scripts/inkbox-playtest.mjs` 10e 新增 3 条对账断言。
+  ⚠️ **E 包同样没有改 `io/save.js`**：两界账本（`upper.popLog` / `nether.popLog`）早就在档里，
+  本包只**读**它们；没有新增任何持久化状态。
+- 工程包 F：**新增一个测试脚本** —— `scripts/inkbox-three-realms.mjs`（F1–F7 七节，61 条）·
+  `package.json` 加两条入口（`test:three-realms` / `inkbox:realms`）·
+  `scripts/inkbox-package.mjs` 打包清单补登 `scripts/inkbox-three-realms.mjs`（随包出货，见 TESTED 的 build 行）·
+  `src/inkbox/sim/netherLife.js` 把 `DECAY_TRACE_VEG` 改成导出（**只为测试能引用**，
+  免得测试写死 `0.03` 而腐烂——与 `NETHER_BANK_RADIUS` 同款理由）。
+  ⚠️ **F 包没有改任何生产逻辑**：它是回归，不是功能。
+  F1 时间（唯一推进入口 / 三界 day 恒等 / 节拍 / 裂缝累加器跨开关存活）·
+  F2 世界身份（plane / 种子派生异或自逆 / 两两不同 / 同尺寸 / **落点判据不可互相顶替**）·
+  F3 id 空间（三段不相交 / 不撞号 / 跨界引用带世界限定符 / 快照引用切断）·
+  F4 上界闭环（人口守恒 / 无飞升出口 / 不跑凡间系统 / 两本死亡账一致）·
+  F5 幽冥闭环（守恒 / 逐出分流 / 魂五路 / 六级现算 / 魂池不搬家 / 零 rng）·
+  F6 存读档（三界 plane+seed / 裂缝 10 键 / `targetPlane` 与老档兜底 / 阴气留痕量化界 / 人口账本七键）·
+  F7 裂隙目标（**nether 缝消费裂隙随机流 0 次** + 上界缝必须消费的对照 / 生命周期照常 / 无幽冥位面如实报拒）。
+- **D6-3 工程包 A（2026-09-24）**：`sim/rifts.js` 新增 `NETHRIFT_SEED_KEY` / `netherRiftRngFor` /
+  `fallIntoNether` / `stepNetherRift`，`stepRifts` 第 3 步由「nether 在抽签前 `continue`」改为**分流**；
+  `sim/netherLife.js` 的 `ensureNetherPopLog` 加 `fellIn: 0`（`ghostBorn` 的子计数）；
+  `world/worldgenNether.js` 的 `resetNetherSystems` 显式归零 `popLog.fellIn`；
+  `sim/reincarnation.js` 的 `ghostSnapshot` 由内部函数改为 `export`（**零行为变化**，只为让 `rifts.js` 复用身份快照的唯一形状真源）。
+  `scripts/inkbox-smoke.mjs` 5q⑫/⑬ 按新契约改写 + 新增 5q⑭（7 条）；
+  `scripts/inkbox-three-realms.mjs` F7 加 6 条 + 新增 F8（9 条）⇒ **8 节 77 条**。
+- **D6-3 工程包 B（2026-09-26）**：
+  · **新建** `src/inkbox/sim/wraiths.js`（凡间鬼影的独立容器 + 独立 tick + 独立流；
+    头注释记着「为什么鬼不能进 `world.entities`」的完整事实链）——导出 `MORTALHAUNT_SEED_KEY` /
+    `mortalHauntRngFor` / `ensureWraiths` / `ensureWraithLog` / `spawnWraith` / `restoreWraiths` /
+    `stepMortalWraiths` / `wraithStats` / 常量（`WRAITH_CAP` 120 / `WRAITH_DISSOLVE_DAYS` 1080 /
+    `WRAITH_PERIOD_DAYS` 10 / 漫游与重选区间 / `WRAITH_TEMPLATE` 22 键）。
+  · `src/inkbox/sim/rifts.js`：加 `import { spawnWraith, mortalHauntRngFor }` ·
+    `WRAITH_CLIMB_CHANCE_PER_PERIOD`（0.05）· `climbOutToMortal`（导出以便测试直调）·
+    `stepNetherRift(world, rift, r, nrng, hrng)` 改双独立 `if` · `stepRifts` 里取 `hrng` 并传入。
+  · `src/inkbox/sim/netherLife.js`：`ensureNetherPopLog` 加 `climbedOut: 0`（初值 + 兜底 + 长注释）·
+    `netherEcoStats` 返回加 `climbedOut` 且 `conserved` 改成 `alive === born − died − evicted − climbedOut`。
+  · `src/inkbox/world/worldgenNether.js`：`resetNetherSystems` 显式归零 `popLog.climbedOut`。
+  · `src/inkbox/world/World.js`：构造器加 `this.wraiths = []` / `this.wraithLog = { dissolved: 0 }`。
+  · `src/inkbox/io/save.js`：凡间 payload 加 `wraiths`（22 字段逐字段显式）+ `wraithLog`（单键）·
+    `serializeUpperWorld` / `serializeNetherWorld` 各加 `delete payload.wraiths / wraithLog` ·
+    `restoreWorldState` 调 `restoreWraiths` + 兜底 `wraithLog` · import `restoreWraiths` ·
+    版本历史加「v11 内追加（**不升版本号**）」段（`SAVE_VERSION` 仍 11）。
+  · `src/inkbox/sim/advance.js`：`ADVANCE_PERIODS.wraith = 10` · `createAdvanceState` 加 `wraith: 0` ·
+    `fired` 加 `wraith: false` · 新增节流块（**不挂 `deps.riftActive`**，见该处注释）·
+    头注释补 `stepMortalWraiths` 那条流。
+  · `src/inkbox/sim/biography.js`：`KIND_TAG` 加 `'rift-out': 'person'`（与 `'rift-lost'` 同组）。
+  · `src/inkbox/render/unitsLayer.js`：新增 `drawWraiths(ctx, camera, world, time)`（冷灰蓝半透明）。
+  · `src/inkbox/main.js`：主渲染链 `drawEntities` 后**追加**一次 `drawWraiths` · 凡间统计加 `#inkStatWraiths`
+    （`wraithStats(world).alive`）· `inspectAt` 追加「近处鬼影 N 只」行 · 幽冥面板行追加 `· 出 N` ·
+    import `wraithStats`。
+  · `inkbox.html`：世界统计格加 `<div class="stat"><span>鬼影</span><b id="inkStatWraiths">0</b></div>`
+    （复用 `.stat`，**不新增 CSS 类**）。
+  · `scripts/inkbox-smoke.mjs`：新增 5q⑮（**17** 条断言）+ import `climbOutToMortal` / wraiths 模块。
+  · `scripts/inkbox-three-realms.mjs`：新增 **F9（17 条）** ⇒ **9 节 94 条**；import B 包符号 + `MERCY_SEED_KEY`。
+  · `scripts/inkbox-save-equiv.mjs`：加 `WRAITHS_FIXTURE`（存档前灌两只鬼）+ 4 条鬼影检查 ·
+    老档兼容加 `wraiths/wraithLog` 兜底 2 条 · `worldKeys` 加 `wraiths/wraithLog` ·
+    `UPPER_NOT_SAVED` 注册 `wraiths/wraithLog` · `upperForbidden` 加 `wraiths/wraithLog` ·
+    `NETHER_FORBIDDEN_KEYS` 加 `wraiths/wraithLog`。
+  · `scripts/inkbox-playtest.mjs`：10e 幽冥守恒式正则加 `· 出 (\d+)`，判据改成 `鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出`，
+    并加 `climbedOut` 直接对账。
+  ⚠️ **B 包改 `io/save.js`**（不像 C/D/E）：新增了**两个世界级键**，所以四处齐全（写 / 两处 delete / 读兜底）
+  + save-equiv 的键集与豁免表都要跟上。
+- **D6-3 工程包 C**：**改 8 个生产文件**（无新建文件；**复用 `nether.artifacts` ⇒ 零存档结构改动**）——
+  · `src/inkbox/core/lore.js`：新增两个冻结词池 `NETHER_ARTIFACT_NAMES`（8 名，带 `slots`）/
+    `NETHER_TECHNIQUES`（6 名，带 `note`），放在 `SPECIAL_UNITS` 之前，附 §5.6 命名纪律长注释。
+  · `src/inkbox/sim/netherLife.js`（**改动最多，约 +190 行**）：`ensureNetherPopLog` 加四条
+    `items*` 初值与兜底 · 新增 `NETHER_ITEM_CAP`(120) / `NETHER_ITEM_PERIOD_DAYS`(30) /
+    `NETHER_ITEM_CHANCE`(0.55) / `NETHER_ITEM_TIER`(1) / `NETHER_ITEM_QUALITY`(2) ·
+    新增 `spawnNetherItem`（形状与 `forgeArtifact` **逐字段同形** + `technique`，落点复用
+    `bankCandidates`）· 新增 `export stepNetherItems` / `export trimNetherItems` / `export netherItemStats` ·
+    `stepNether` 末尾加第 6 步。
+  · `src/inkbox/sim/rifts.js`：import `trimNetherItems` · 新增 `NETHER_ITEM_LEAK_CHANCE_PER_PERIOD`(0.02) ·
+    `NETHERITEM_SEED_KEY` + `netherItemRngFor` · 新增 `moveArtifactsToNether`（**重赋 id**，
+    落点用**人的落点**）· `fallIntoNether` 第 3 步由 `scatterArtifacts` 改为 `moveArtifactsToNether`
+    + 第 4 步记 `itemsFellIn` / `trimNetherItems` / `artifactLog.netherOut` ·
+    新增 `export leakNetherItem`（**零 rng**，候选 = 半径内**离缝口最近**的一件 → `findMortalSpot`
+    → **重赋凡间 id** → `toGround` → 记两端账 + `rift-in`）· `stepNetherRift` 签名加 `irng` 与**第三个独立 `if`** ·
+    `stepRifts` 里取 `irng` 并传入。
+  · `src/inkbox/sim/artifacts.js`：import `NETHER_TECHNIQUES` · 新增 `export TECHNIQUE_CAP`(3) +
+    `NETHER_TECHNIQUE_BY_NAME` + `grantTechnique`（查池子对象 / 查上限 / 去重）·
+    `giveTo` 末尾加 `if (a.technique) grantTechnique(...)`（**在收下之后**，被拒不白送）·
+    `describeArtifact` 加 `·载<功法>`。
+  · `src/inkbox/io/save.js`：import `NETHER_TECHNIQUES` · `MANUAL_BY_NAME` 扩成
+    `[...MANUALS, ...NETHER_TECHNIQUES]` · 两处 `artifactLog` 默认值加 `netherIn: 0, netherOut: 0`。
+    ⚠️ **没改 `serializeNetherWorld` / `serializeUpperWorld`**：`artifacts` 走 `serializeWorld`
+    通用路径自动往返；上界的 `artifacts` **恒空** ⇒ 不需要 `delete`（不触发「写侧 delete ≠ 豁免表注册」那个故障类）。
+  · `src/inkbox/world/worldgenNether.js`：`resetNetherSystems` 末尾加四条 `popLog.items* = 0` +
+    `world.artifacts.length = 0; world.nextArtifactId = 1;`。
+  · `src/inkbox/sim/biography.js`：`KIND_TAG` 加 `'rift-in': 'cultivation'`（与 `'artifact'` 同组——
+    它是**一件东西**跨界，不是某个人，故不与 `'rift-lost'` / `'rift-out'` 同归 `person`）。
+  · `src/inkbox/main.js`：import `netherItemStats` · `refreshNetherRealm` 幽冥行**行尾追加** `· 物 N`。
+  · `scripts/inkbox-smoke.mjs`：5q⑭⑤ 与 5g 守恒律按新契约改写（法宝去向 / 扩成四条跨位面流的等式）
+    + 新增 **5q⑯（41 条断言）** + import C 包符号。
+  · `scripts/inkbox-three-realms.mjs`：新增 **F10（26 条）** ⇒ **十节 119 条**；import C 包符号。
+  · `scripts/inkbox-save-equiv.mjs`：加 `NETHER_ITEMS_FIXTURE`（存档前灌两件幽冥物品，一件带
+    `technique` 一件不带）+ 6b 节新增 **⑧ 幽冥物品（5 条）** · ⑨ 老档降级加 2 条
+    （物品池是空数组 / 四条流水就位且为 0）· 夹具同时写 `artifactLog.netherIn/netherOut`。
+- **D6-3 工程包 D**：**改 10 个生产文件**（无新建文件；`sim/possession.js` 早已存在，D 包在其中加跨位面段）——
+  · `src/inkbox/sim/possession.js`：新增 D 包整段——`POSSESS_TIER_MAX_LEVEL`(20) / `CROSS_POSSESS_CAP`(8) /
+    `HAUNT_DAYS`(360) / `RANCOR_FULL`(300) / `OBSESSION_RATE`(0.06) / `HOLLOW_SOUL_RATE`(0.06) /
+    `OBSESSION_BOOST`(1.6) / `HOLLOW_SOUL_BOOST`(1.4) / `CROSS_POSSESS_KIND`('possess-cross') / `HAUNT_KIND`('haunt') ·
+    `normalizeRancor` / `crossPlanePossessionChance` / `isObsessed` / `isHollowSoul` / `isControlled(entity,day)` /
+    `crossPossessedCount` / `pickGhostAtRift` / `pickCrossTarget` / `keyGreater` / `hashRoll` /
+    `crossPlanePossession` / `possessMortal` / `hauntMortal`；`ensurePossessionLog` 初值扩成五键；
+    `possessionStats` 加 `crossPlane` / `haunted`。
+  · `src/inkbox/sim/rifts.js`：加 `import { crossPlanePossession }` · `NETHER_POSSESS_SEED_KEY`(0x4e505358) +
+    `netherPossessRngFor` · `POSSESS_CHANCE_PER_PERIOD`(0.01) · `stepNetherRift` 签名加 `prng` 与**第四个独立 `if`** ·
+    `stepRifts` 里取 `prng` 并传入。
+  · `src/inkbox/sim/netherLife.js`：`ensureNetherPopLog` 加 `possessedOut: 0`（初值 + 兜底 + 长注释）·
+    `netherEcoStats` 返回加 `possessedOut` 且 `conserved` 改成 `alive === born − died − evicted − climbedOut − possessedOut` ·
+    `GHOST_TEMPLATE` 加 `possessionScar: null`。
+  · `src/inkbox/sim/cultivation.js`：`initEntity` 在 `entity.possessedBy = null;` 后加 `entity.possessionScar = null;`。
+  · `src/inkbox/sim/life.js`：import `isControlled` · 新增纯哈希工具 `possessionWanderRoll` ·
+    `stepEntity` 内**状态机之前**插入行为锁（`state='possessed'` + 自己漫游 + `return false`）。
+  · `src/inkbox/sim/biography.js`：`KIND_TAG` 加 `'possess-cross': 'nether'` 与 `'haunt': 'nether'` ·
+    `MILESTONE_KINDS` 加 `'possess-cross'`（**不加 `haunt`**——附身不传 `actors`）。
+  · `src/inkbox/world/World.js`：构造器加 `this.possessionLog = { succeeded, failed, suspected, crossPlane, haunted }`。
+  · `src/inkbox/world/worldgenNether.js`：`resetNetherSystems` 加 `possessionLog.crossPlane/haunted = 0` + `popLog.possessedOut = 0`。
+  · `src/inkbox/io/save.js`：实体写侧 row[68] `possessionScar`（+ 长注释）· 读侧逐键兜底 ·
+    `restoreLegacyEntity` 补 `possessionScar: null` · `serializeWorld` 的 `possessionLog` 写侧**逐键显式 5 键** ·
+    `restoreWorldState` 读侧**逐键兜底 5 键** · `serializeUpperWorld` / `serializeNetherWorld`
+    各加 `delete payload.possessionLog;`（**此前漏删**）。
+  · `src/inkbox/main.js`：import `isControlled` · `refreshNetherRealm` 生态行追加 `· 夺 N` ·
+    `inspectAt` 新增「附身」行（`possLine`）。
+  · `scripts/inkbox-smoke.mjs`：新增 **5q⑰（~25 条断言）** + `NON_LITERAL` 豁免表加
+    `CROSS_POSSESS_KIND` / `HAUNT_KIND`（否则 5l 判「死映射 + 未豁免」两条假红）+ 5x 两条守恒式升五路径 + import D 包符号。
+  · `scripts/inkbox-three-realms.mjs`：新增 **F11（15 条）** ⇒ **十一节 134 条**；import D 包符号 + `initEntity`。
+  · `scripts/inkbox-save-equiv.mjs`：`ENTITY_COLUMNS` 68 → **69** · `UPPER_EXEMPT` 注册 `possessionLog` ·
+    `upperForbidden` 夺舍段加 `crossPlane/haunted` 恒零断言 · `NETHER_FORBIDDEN_KEYS` 加 `possessionLog`（六 → **七键**）·
+    夺舍账本两处 `diffFields` 3 → **5 键** · 夹具 `raw.possessionLog` 五键 · v5 老档 `possessionLog` 五键全零 ·
+    新增 `possessionScar` 列断言（`row[68]` 往返）· v5 老档 `possessionScar === null`。
+  · `scripts/inkbox-playtest.mjs`：10e 幽冥守恒式正则加 `· 夺 (\d+)`，判据改成
+    `鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出 − 夺`，并加 `possessedOut` 直接对账。
+  ⚠️ **D 包改 `io/save.js`**：新增了一个**实体列**（`row[68]`）⇒ 四处齐全（写 / 读 / 老档兜底 / `ENTITY_COLUMNS`），
+  且 `possessionLog` 从他界 payload `delete` 后必须同步 save-equiv 三处注册（`UPPER_EXEMPT` /
+  `NETHER_FORBIDDEN_KEYS` / 正向 `zero` 断言）——**「写侧 delete」与「豁免表注册」是同一个改动的两半**。
+- **D6-3 工程包 E**：**只改两个测试脚本，零生产代码改动**（这是「回归扩展」的定义）——
+  · `scripts/inkbox-longrun.mjs`：+4 处 import（`generateNetherWorld` / `netherEcoStats` /
+    `netherItemStats` / `wraithStats`）· 主循环前挂 `world.nether` · 新增 `NETHER_RIFT_SITES`（6 个
+    1×1 站点，带「为什么是点不是矩形」的长注释）· 新增 `netherOpenedByPlayer` 累加器 ·
+    视界开着时每年补开幽冥缝 · **法宝守恒式扩成含幽冥两向** · 新增「三界跨界生态（D6-3 A–D）」一节
+    （**10 条**断言 + 两行读数）· 报告「裂缝」行**分位面拆开**印活跃数（上界 / 幽冥）。
+  · `scripts/inkbox-three-realms.mjs`：+1 处 import（`artifactStats`）· 新增 **F12（10 条）**
+    ⇒ **十二节 144 条** · 文件头注释补 F12 定位。
+  ⚠️ **E 包没有改 `io/save.js`**（没有新增任何持久化状态）· **没有改 `src/` 任何文件**。
+  ⚠️ 施工期两条**假红**（都是判据 / 记账写错，不是代码错）：① F12 手工 `ghostBorn += 10`
+  与 `spawnNetherGhost` 的**自动记账**重复计 4 ⇒ 守恒式被本组自己搞红；② F12⑤ 忘了
+  `wraith: false` ——`mortalHauntRngFor` **不只**被 `stepNetherRift` 消费，
+  `stepMortalWraiths`（每 10 日一拍）也用它（`wraiths.js:333`）。
+
+## CONTRACT（本轮新增、不能破坏的规则）
+
+1. **裂隙必带 `targetPlane: 'upper' | 'nether'`**，且必须进存档；老档缺键一律兜 `'upper'`。
+2. **落点判据单源**：上界 = `planes.upperWalkable`，幽冥 = `planes.netherWalkable`。
+   不许另写一套地形阈值。
+3. **硬不变量**：打开幽冥视界**绝不会**偷偷执行上界转移。nether 缝的 `stepRifts` 分支
+   **排在漏物抽签之前** ⇒ 上界链路结构上不可达（判据用 `=== 'nether'`，老档无键的缝继续走上界逻辑）。
+   ⚠️ **D6-3 A 更新了保证方式**（见第 15 条）：那条 `continue` 变成了**分流**，
+   「不可达」现在由**函数边界**保证，不再是「那一行还在不在」。
+4. ~~本阶段**冻结幽冥跨界**：nether rift 只允许创建 / 成长 / 闭合 / 显示 / 保存。~~
+   ⚠️ **已被 D6-3 A / B 取代**（第 15 / 18 条）：幽冥缝现在有**两个**跨界效果
+   （凡人跌入幽冥 + 鬼爬入凡间）。
+   仍然**不做**：夺舍 / 幽冥物品泄漏（留给 D6-3 后续工程包）。
+5. 裂隙记录键集恰好 **10 个**：`age, closedDay, crossed, id, leaked, openedDay, strength, targetPlane, x, y`。
+6. **上界空间行为**：低频（`timer` 归零才重选目标）· 简单移动（直线 + 子步化 + 单轴滑墙）·
+   **不做寻路 / A\*** · 不 `new Life(upper)` · 不照搬凡间那七种行为动机。
+7. **空间行为消费 `upperLife.rng` 的次数恒为 0**（它走自己的 `spatialRng`）。
+   ⚠️ 但它会通过「位置 → `world.qi[所在格]` → 修炼速度」**间接**改变上界世界线——
+   这是**刻意的生态耦合**，不是 bug。**别把它当扰动去「修」。**
+8. **幽冥空间行为**：低频（`timer` 归零才重选目标，25–70 游戏日）· 简单移动（直线 + 子步化 + 单轴滑墙）·
+   **不做寻路 / A\***。**活动范围**判据单源 = `nearRiverAt`（D 包把它从 `bankCandidates` 的内联循环抽出，
+   落点窄带与活动范围共用）：普通鬼魂 = `NETHER_BANK_RADIUS`（4）⇒ 只在窄带；
+   鬼修 = `4 + ghostTierOf(level) × NETHER_TIER_REACH`（3）⇒ 游魂 4 → 鬼帝 19。
+   鬼将及以上是「吸引源」，低阶实体目标偏向最近的吸引源（**不做鬼城**）。
+9. **幽冥空间行为零 `rng`**：它**没有**独立流（`stepNether` 是纯函数、没地方挂流；
+   挂上去就被序列化器看见，违反铁律二）⇒ 采样走 `hashStep` 推进的确定性哈希流，
+   种子 = `hash32(entityId : day)`。⚠️ **验证手法与 C 包不同**（幽冥没有 `this.rng` 可拦）：
+   ① 同种子跑两遍轨迹**逐字一致**；② 源码**不 import 任何 rng 生成器**。
+   ⚠️ ② **只扫 `import` 行**——铁律一的注释里就有 `mulberry32` 字面量，grep 全文会假红。
+10. **阴气（`veg`）影响积怨，不是决定**：系数 = `RANCOR_ENV_MIN + (RANCOR_ENV_MAX − RANCOR_ENV_MIN) × veg`
+    = `0.6 + 0.8 × veg` ⇒ **[0.6, 1.4]**。下界 **0.6 > 0** 是承重的：
+    「离开最佳格就永远不能升级」**结构上不成立**。⚠️ 不得把下界调成 0（那就把「影响」改成了「决定」）。
+11. **消散留痕**：消散（对账 / 到期）时把**所在格** `veg` 抬 `DECAY_TRACE_VEG`（0.03，加性 clamp 到 1）。
+    **上限逐出不留痕**（那不是「消散」）。⚠️ 增量必须**远大于**量化步长 1/65535，
+    否则会被 `encodeQuantized` 抹平 ⇒ 「内存可见、存档消失」的静默故障。
+12. **生态读数口径单源**：`upperEcoStats`（`world/planes.js`）/ `netherEcoStats`（`sim/netherLife.js`），
+    返回**同名字段** `born / died / alive`（幽冥另有 `evicted`，D6-3 B 起另有 `climbedOut`）。面板与测试**都调它**——
+    各写一份就是第二个真相。守恒式：上界 `生灵 === 生 − 亡`；幽冥
+    **`鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出`**（`出` = 自幽冥缝爬入凡间的鬼，D6-3 B 新增的第三条离开路径）。
+    ⚠️ **「逐」「出」都是两界规则差别，不是口径不统一**：幽冥有**三条**离开路径（消散 + 上限逐出 + 爬入凡间），
+    上界只有一条（陨落）。把逐出 / 爬出并进「亡」= 把「被清出去」「走了」说成「死了」。
+13. **面板只在现有行上追加**：不新增区 / 不新增 CSS 类 / **不改动原有子串**——
+    playtest 10e 用 `includes('生灵 N')` 之类的**子串**对账，改写会悄悄改掉那条断言的契约。
+    ⚠️ D6-3 B 在幽冥行**行尾追加** `· 出 N`，并同步改了 playtest 10e 的**正则与守恒式**
+    （`鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出`）——这是**契约变更**（多了一条离开路径），
+    不是「把红改绿」。凡间侧新增一格 `#inkStatWraiths`（复用 `.stat`，无新类名）。
+14. **三界不变量的回归入口 = `scripts/inkbox-three-realms.mjs`**（`npm run test:three-realms`）。
+    它把 F1–F9 九组跨包契约钉成可判定断言。**动了三界任何一处，先跑它**。
+    ⚠️ 其中 F7 的「nether 缝不消费裂隙随机流」用的是**随机流位置**判据（数抽签次数），
+    并配一条「上界缝**必须**消费」的对照——**不要**把它改写成「跑 N 拍没漏东西」：
+    后者在「结构正确」与「运气好」下长得一模一样（假绿工厂）。
+15. **幽冥缝走自己的通道 + 自己的流**（D6-3 A，取代第 3/4 条）：
+    · 通道 = `stepNetherRift`（`sim/rifts.js`）——它及其下游**够不到** `arriveUpper` /
+      `leakFromUpper` / `leakToUpper`。「不可达」由**函数边界**保证（F7⑨ 用**源码结构**钉它）。
+    · 流 = `netherRiftRngFor(world)`，派生键 `0x4e524654`（`'NRFT'`）——与裂隙流 / 上界 / 幽冥
+      **两两不同**（F7 逐对断言）⇒ **玩家多开一条幽冥视界不会移动上界缝的抽签序列**。
+    · 判据仍是 `=== 'nether'`（**不是** `!== 'upper'`）：老档 / 手工构造的缝没有 `targetPlane`
+      （`undefined`），它们的历史语义是上界缝，必须继续走上界逻辑。
+16. **凡人跌入幽冥**（`fallIntoNether`，导出以便测试直调）：
+    · 候选 = 半径内 `isPerson` 且 `level < RIFT_CROSS_MAX_LEVEL`（40）的活人，取**境界最高**的一个。
+      判据用 `>=` 排除高修为（写成 `>` 会静默放过化神期）。
+    · **先落成幽冥实体、再把人 `splice` 出凡间**（顺序承重：反过来会让人凭空蒸发）。
+      撞 `LIMITS.maxEntities` ⇒ 返回 `false` 且**凡间毫发无伤**。
+    · 法宝先 `scatterArtifacts` 留在凡间地上（防「随人蒸发」）；`world.nether` 不存在时整条跳过。
+    · 落成**鬼修**（`level ≥ 1`）或鬼魂，带 `mortal:<id>` 身份快照（`route` 传 `null`——
+      他不是走魂路去的，硬塞五路之一会让名册说谎）。
+    · **本函数零 `rng`**：判定节奏的抽签在 `stepNetherRift`，**选谁不抽签**（F8⑤ 钉源码结构）。
+17. **幽冥方向的记账落 `nether.popLog.fellIn`**（`ghostBorn` 的**子计数** ⇒ 守恒式
+    `鬼魂 + 鬼修 === 生 − 亡 − 逐` 一个字都不用改）。
+    ⚠️ **不要**往 `world.riftLog` 加键：那是 `save.js` 里**逐键显式序列化的 5 键**
+    （`opened/closed/leaked/crossed/lost`），加键会读档丢失 + save-equiv 键集判据变红。
+    `nether.popLog` 属 `NETHER_ONLY_KEYS` **整对象**序列化 ⇒ 可以安全加键（F8③ 判存读档往返）。
+18. **鬼爬入凡间 = 同一条幽冥缝的反方向**（D6-3 B）：
+    · **两个效果各抽各的签**：`stepNetherRift` 里是两个**独立** `if`（**不是** `else if`），
+      第二支走**第二条流** `mortalHauntRngFor`（派生键 `0x4841554e` = `'HAUN'`）。
+      ⚠️ 六条独立流（rift / netherRift / wraith / upper / nether / mercy）**两两不同**（F9⑦ 逐对钉）。
+    · 效果 = `climbOutToMortal`（导出以便测试直调）：候选 = 幽冥里 `sp === ghost` 且
+      **离缝口最近**（半径内）的一只（平手保留先遇到的 ⇒ 顺序稳定可复现）；
+      **先落成、再移除**（`spawnWraith` 撞上限返回 `null` ⇒ **保留幽冥那一份**，绝不凭空蒸发）；
+      **零 `rng`**（谁爬出来由空间距离决定）。
+    · ⭐⭐ **鬼住 `world.wraiths`（独立容器）+ `stepMortalWraiths`（独立 tick），
+      **绝不进 `world.entities`**。理由（**查证过的事实**）：凡间与上界共用
+      `cultivation.stepEntity`，其「凡人试着觉醒」段的豁免名单只有 `beast` / `spirit`，
+      `ghost` **不在其中** ⇒ 鬼若进 `world.entities`：① 普通鬼魂被掷觉醒骰 → `awaken()` 给
+      `level=1` + 灵根 + **寿元被 `lifespanForEntity` 重算**；② 鬼修按 `world.qi[格]` 修炼
+      → 突破 → 40 级起**天雷飞升** → 上界凭空多一个鬼。两条都**不报错**并污染上界人口账。
+      ⇒ 用**函数边界**隔离（**不**往 `stepCultivation` 里塞 `sp === 'ghost'` 的守卫——
+      一行守卫能被顺手删掉，函数边界不能）。F9⑥ 用**源码结构**钉它
+      （`sim/wraiths.js` 去注释后**代码**里不出现 `world.entities` / `addEntity`）。
+    · **身份带世界限定符**：爬出来的鬼**保留幽冥 id**（`NETHER_ID_BASE` = 2_000_000 段），
+      不重赋凡间号 ⇒ 与 `world.entities` 结构上不相交（F9② 钉）。
+    · **消散判据是 `world.day >= dissolveDay`**，**不是** `age >= lifespan`：鬼不在
+      `world.entities` 里，`stepCultivation` 不给它累加 `age`，拿 lifespan 判会**永不消散**。
+    · **记账落 `nether.popLog.climbedOut`**（第三条离开路径，独立于 `ghostDied` / `evicted`）⇒
+      守恒式扩成 `鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出`。
+      ⚠️ **不要**往 `world.riftLog` 加键（那是 `save.js` 逐键显式序列化的 5 键）。
+    · **凡间侧账本 `world.wraithLog` 只有 `dissolved` 一键**；「累计来过」=
+      `wraiths.length + dissolved` **现算**（铁律二）。不变量：
+      **`wraithStats.total === nether.popLog.climbedOut`**（同一批鬼的两端记账，F9① 交叉核对）。
+    · **两个 key 进存档**（`wraiths` 22 字段逐字段显式 / `wraithLog`）；上界与幽冥 payload
+      **刻意不含**（缝开在凡间、鬼爬进凡间）。读侧形状由 `WRAITH_TEMPLATE` 单源定义（`restoreWraiths`）。
+    · **凡间 tick 周期 10 日，不挂 `deps.riftActive`**：鬼一旦爬出来就是凡间世界里的一只实体，
+      飘不飘与玩家开不开视界无关（挂上去会造成「关掉视界 ⇒ 满地图的鬼集体定住、永不消散」）。
+19. **幽冥物品泄漏 = 同一条幽冥缝的第三支 + 幽冥自生**（D6-3 C）：
+    · **三个效果各抽各的签**：`stepNetherRift` 里是**三个独立 `if`**（**不是** `else if`），
+      第三支走**第三条流** `netherItemRngFor`（派生键 `0x4e49544d` = `'NITM'`）。
+      ⚠️ **七条独立流**（rift / netherRift / wraith / item / upper / nether / mercy）**两两不同**（F10⑦ 逐对钉）。
+    · **来源① 跌入者随身带下去**：`fallIntoNether` 第 3 步 `moveArtifactsToNether`
+      （**改掉了 A 包的 `scatterArtifacts` 行为**），落点用**人的落点**、`ownerId = 0`。
+    · **来源② 幽冥自生**：`stepNetherItems`（`stepNether` 第 6 步）。⚠️⚠️ **必须先过一遍 `hashStep`**
+      再当均匀分布用：`hash32`（FNV-1a）对「前缀相同、只差末尾数字」的短串有**极强高位偏置**
+      （实测全落 0.70–0.74 ⇒ 概率阈值恒真、`NETHER_ITEM_CHANCE` 形同不存在、10 个判定点只出 1 件，**不报错**）。
+      凡间 `stepArtifacts` 用 `rng()` 没有这个问题——这是**幽冥专有**的坑。
+    · **去向③ 经缝漏回凡间地上**：`leakNetherItem`（导出以便测试直调）：候选 = 半径内
+      **离缝口最近**的一件（平手保留先遇到的）；**先找落点、再动手**（`findMortalSpot` 找不到 ⇒ 整次放弃，
+      物品留在幽冥）；**先落成、再移除**；**零 `rng`**（F10⑥ 钉源码结构）。
+    · ⚠️⚠️ **铁律三：法宝 id 跨世界必须重赋**。id 是**世界内**编号（每个 `World` 的
+      `nextArtifactId` 各自从 1 起）。不重赋 ⇒ 「凡间第 5 件」与「幽冥第 5 件」同号，
+      日后 `claimGroundArtifact` 按 id 线性查找会命中**先出现的那一件**（**不报错**）。
+      ⇒ 凡 → 幽（`moveArtifactsToNether`）与幽 → 凡（`leakNetherItem`）**各自重赋**。
+      ⚠️ `save.js` 的 `nextArtifactId` 兜底循环**只扫** `world.artifacts` + `entity.artifacts`
+      （**不扫** `nether.artifacts`）⇒ `nether.nextArtifactId` 必须自己进档。
+    · **容器与记账全部复用 ⇒ 零存档结构改动**：物品池复用 **`nether.artifacts`**
+      （`serializeWorld` 把 `artifacts` **整数组**写）；四条流水落 **`nether.popLog`**
+      （属 `NETHER_ONLY_KEYS` **整对象**序列化 ⇒ 可安全加键）：
+      `itemsSpawned / itemsFellIn / itemsLeakedOut / itemsDecayed`。
+      ⚠️ **不要**往 `world.riftLog` 加键（逐键显式序列化的 5 键）。
+    · **守恒式**：`nether.artifacts.length === itemsSpawned + itemsFellIn − itemsLeakedOut − itemsDecayed`
+      （`netherItemStats().conserved`）。凡间侧对账落 **`artifactLog.netherIn`（幽 → 凡流入）/
+      `netherOut`（凡 → 幽流出）**，与上界那两个（`riftIn` / `riftOut`）**分列四键**；
+      凡间守恒律随之扩成 **`造出 + 流入(riftIn + netherIn) === 在世 + 碎 + 朽 + 流出(riftOut + netherOut)`**。
+      ⚠️ `netherIn` / `netherOut` 与既有 `riftIn` / `riftOut` **同款**：`World` 构造器**不带**它们，
+      跨位面事件发生时才惰性添加（`save.js` 的默认值只在 `artifactLog` **整个缺失**时生效）。
+    · **池满裁剪单源**：`trimNetherItems` 朽掉**躺得最久**（`lostDay` 最小）的一件 + `itemsDecayed += 1`。
+      **自生与跌入共用这一处**（两处各写一份会分叉，而分叉的后果是「守恒式对不上，但每处看代码都对」）。
+      ⚠️ **顺序**：`stepNetherItems` **先判上限、再抽哈希**（池满不该动哈希流，
+      否则「池满」这件事会静默改变哈希序列）。
+    · **幽冥名池另造新名**（§5.6）：`NETHER_ARTIFACT_NAMES` / `NETHER_TECHNIQUES`（都在 `core/lore.js`）。
+      **不含**「鬼 / 魂 / 莲 / 符」（考古定名：幽冥三物 / 鬼修六级 / 魂分五路——**不得另造同义词**），
+      与**凡间**名池（`ARTIFACT_NAMES` / `MANUALS`）**零重名**。
+    · **幽冥法宝携带一门功法**（`a.technique = {name, note}`，是幽冥物品的**身份标记**——
+      凡间炼出的法宝没有这一字段）。凡人拾到即习得（`giveTo` → `grantTechnique`），
+      上限 `TECHNIQUE_CAP = 3`、已会不重复推、栏满**不推功法但法宝照收**（不白送也不拒收）。
+      ⚠️ 推的必须是**名池里的对象**（键集 `{name,note}`）——现场拼 `{name,note}` 会让 save-equiv 的
+      键集并集比对红（读档靠 `save.js` 的 `MANUAL_BY_NAME` 还原同一个对象）⇒
+      `MANUAL_BY_NAME` 已扩成 `[...MANUALS, ...NETHER_TECHNIQUES]`。
+    · **编年史**：`KIND_TAG` 新增 `'rift-in' → 'cultivation'`（与 `'artifact'` 同组）。
+20. **自生标定**：`NETHER_ITEM_CAP = 120` · `NETHER_ITEM_PERIOD_DAYS = 30`（与幽冥 10 日节拍错开）·
+    `NETHER_ITEM_CHANCE = 0.55` · 品阶 / 品质**固定档**（宝品 / 精良，不掷档——幽冥的东西是
+    「沉下来的」，不是按主人境界炼出来的）· 泄漏 `NETHER_ITEM_LEAK_CHANCE_PER_PERIOD = 0.02`。
+    ⚠️ 两个概率常量都必须在 `(0,1)`：写 0 ⇒ 该系统静默死掉；> 1 ⇒ 瞬间漏满凡间（都不报错）。
+21. **凡间实体守恒式判据（测试写法）**：幽冥物品跑满一生时，「凡间实体没被搅动」要写成
+    **`w.entities.length + fellIn 增量 === 原数`**，**不是**「实体数不变」——凡间是 `scatter: true`
+    撒过人的，缝口附近**可能**恰好站着一个活人，他会走 A 包**合法地**跌进去。
+    写「不变」会让这条断言**取决于地形与种子**（今天绿、换种子红，而红的理由与物品系统无关）。
+    这条纪律适用于所有「某个系统不该碰凡人列表」的断言。
+22. **跨位面夺舍 = 同一条幽冥缝的第四支，且按「鬼修的阶」分两条路**（D6-3 D）：
+    · **四个效果各抽各的签**：`stepNetherRift` 里是**四个独立 `if`**（**不是** `else if`），
+      第四支走**第四条流** `netherPossessRngFor`（派生键 `0x4e505358` = `'NPSX'`）。
+      ⚠️ **八条独立流**（rift / netherRift / wraith / item / possess / upper / nether / mercy）**两两不同**（F11⑦ 逐对钉）。
+      F11⑥ 用**源码结构**钉「不是 `else if`」（`if` 恰好 4 个、`else` 一次不出现）。
+    · **阶位分界（用户裁决 · 承重）**：`level ≤ POSSESS_TIER_MAX_LEVEL`（**20**，怨灵及以下）
+      ⇒ **真夺舍**（`possessMortal`），鬼修**从幽冥消失**；`level ≥ 21`（厉鬼及以上）
+      ⇒ **只暂时附身**（`hauntMortal`），鬼修**留在幽冥**。⚠️ 判据写成 `<= 20`（**含** 20）——
+      怨灵正好是真夺舍那一档（F11/smoke 用 `level 20` vs `level 21` 两两对照钉它）。
+    · **真夺舍五步（顺序承重）**：① `crossPossessedCount ≥ CROSS_POSSESS_CAP`（8）⇒ 收手；
+      ② 成功率 = `crossPlanePossessionChance(阶, normalizeRancor(积怨), 容器阶, 道心)` × boost
+      （`isObsessed` × 1.6 · `isHollowSoul` × 1.4），clamp `[0.05, 0.95]`，**走确定性哈希**（过 `mulberry32`）；
+      ③ 凡人容器 `awaken`（`level > 0` 时 no-op）；④ 名字加 `·异`（只加一次）+ `possessedBy` **快照**（无 id）+
+      `possessionScar{mode:'possess', until:-1}`（**永久**）；⑤ **先落成再 `splice` 移除鬼修**
+      （反过来会让人「既没得到元神、鬼修又没了」）⇒ `possessedOut += 1` + `crossPlane += 1` +
+      `milestone('possess-cross', target)`（进大事账本 + 受害者个人日志）。
+    · **附身**：`possessionScar{mode:'haunt', until: day + HAUNT_DAYS}`（360）· 鬼**留幽冥** ·
+      `haunted += 1` · `record('haunt')`（**不传 `actors`** ⇒ 不写个人日志）；不覆盖更晚的 `until`。
+    · **成功率用积怨 `ghostRancor` 替代 `mind`**（鬼修没有道心）；`normalizeRancor` 把 [0, 300] 归一到 [0, 100]。
+    · **行为锁在 `sim/life.js` 的 `stepEntity` 状态机之前**（与「入魔」同位置，`return false` 绕过
+      `findEnemy` / `planNext`）；`isControlled(entity, day)` **只认附身**（`mode==='haunt' && until>day`）——
+      真夺舍的 `until=-1` 恒假 ⇒ 被真夺舍者**照常行动**（它已是一个修士）。漫游走 `possessionWanderRoll`（纯哈希、零主流消费）。
+    · **不良状态 `possessionScar` 是实体列 row[68]**（行总长 **68 → 69**；列**只能追加行尾**）·
+      存**快照对象**（无 id，铁律三）· 老档（68 列）读侧逐键兜底成 `null`。
+    · **特殊词条是派生、不入档**（铁律二）：`isObsessed`（执念）/ `isHollowSoul`（魂虚），
+      `hashRoll` 现算、缺 id ⇒ false。⚠️ 频率必须落在率附近（`hash32` 直接当均匀数会全落 0.70–0.74 ⇒ 词条恒真/恒假、**不报错**）。
+    · **记账**：幽冥 `nether.popLog.possessedOut`（**第四条离开路径**）⇒ 守恒式扩成
+      **`鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出 − 夺`**；凡间 `world.possessionLog` 五键。
+      ⚠️ **不要**往 `world.riftLog` 加键（逐键显式序列化的 5 键）。
+    · **三个效果函数全部零 `rng`**（`crossPlanePossession` / `possessMortal` / `hauntMortal`）；
+      判定节奏的抽签只在 `stepNetherRift`（F11⑤ 用源码结构钉）。
+23. **`possessionLog` 是他界 payload 的 `delete` 键**（D6-3 D 补齐，与 `soulLog` 同款）：
+    `serializeUpperWorld` / `serializeNetherWorld` 各自 `delete payload.possessionLog;`
+    ——那两界不跑 `stepPossession`（跨位面夺舍是鬼修自幽冥缝夺舍**凡间活人**的子账），恒零、刻意不存。
+    ⚠️⚠️ **这一条此前漏删**（D6-3 D 施工时发现）。项目成文规则 =「某界不跑的账本 ⇒ worldgen 里归零 +
+    该界 payload 里 `delete`」；`possessionLog` 在 `resetUpperSystems` / `resetNetherSystems` 都被归零，
+    却只在凡间存 —— 补 `delete` 后必须**同步 save-equiv 三处注册**（`UPPER_EXEMPT` / `NETHER_FORBIDDEN_KEYS` /
+    正向 `zero` 断言），否则 save-equiv 红，且红得很像「产品 bug」。
+24. **新增常量式 `kind` 必须登记进 smoke 的 `NON_LITERAL` 豁免表**（D6-3 D 踩到）：
+    `CROSS_POSSESS_KIND` / `HAUNT_KIND` 走模块级常量（同 `RECORD_KIND`），第二参不是字符串字面量 ⇒
+    smoke 5l 的 kind 审计会同时判「**死映射**」（它们在 `KIND_TAG` 里但扫不到写入方）与「**未豁免**」两条假红。
+    ⇒ 新 kind 用常量写时，**三处一起改**：`biography.js` 的 `KIND_TAG` + `MILESTONE_KINDS`（若传 `actors`）+
+    `scripts/inkbox-smoke.mjs` 的 `NON_LITERAL`。
+25. **面板读数扩展的守恒式必须两端同步**（D6-3 D）：`netherEcoStats.conserved`、`main.js` 生态行、
+    playtest 10e 的**正则 + 算式**、smoke 5x 的两条守恒式——四处都在写「`鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出 − 夺`」。
+    漏改任一处 ⇒ 要么读数对不上（玩家看得见），要么断言只在「夺舍发生时」才红（更难查）。
+26. **幽冥缝的站点必须落在「凡间可站 ∩ 幽冥河带」的交集格上，且用 1×1 区域开**（D6-3 E · 承重）：
+    · `openRifts` 只把**矩形周长**上的格当候选缝口；幽冥缝口还必须**同时**满足
+      `world.isWalkable` **且** `netherWalkable`。而幽冥的鬼 / 物品**只落在河带格**
+      （`netherBankTiles` = 幽冥可站 ∩ 近河 ≤ `NETHER_BANK_RADIUS`）⇒ 缝口必须在**交集**里，
+      缝半径（峰值 ~5.7 格）才够得着鬼与物品。站点错位 ⇒ **C / D 结构性饿死**（不报错，只是恒 0）。
+    · **1×1 区域 ⇒ `sites.length === 1` ⇒ `openRifts` 的洗牌循环
+      `for (i = sites.length - 1; i > 0; i -= 1)` 不执行 ⇒ 消费裂隙流 0 次** ⇒ 上界缝位置与
+      「不开幽冥缝」时**逐字相同**。⚠️ 这是「不扰动随机流」落成**可数形态**的唯一依据；
+      别把站点改回矩形（那会开始消费裂隙流，上界缝位置随之漂移，而**不会有任何断言变红**）。
+      F12⑥ 用**同种子双世界比对**钉它。
+    · **长跑判据口径**：A / B / C 判**存在性**（`≥ 1`）；**D 不判存在性**——它在真实长跑里
+      几乎不触发（`pickGhostAtRift` 要「缝口半径内有鬼修」**且**「半径内有凡人」，同时成立极罕见）。
+      D 的**存在性**由隔离世界钉（F11 / F12）；长跑只钉它的**账本耦合**
+      `possessedOut === possessionLog.crossPlane`。⚠️ 硬写 `D ≥ 1` 是一条**永远红**的断言——
+      和永远绿的断言一样有害（它训练人去忽略它）。
+    · **凡间法宝守恒式含幽冥两向**：`造出 + (riftIn + netherIn) === 在世 + 碎 + 朽 + (riftOut + netherOut)`
+      （`netherIn` = 幽冥 → 凡间流入，`netherOut` = 凡 → 幽流出；与上界的 `riftIn` / `riftOut` **分列四键**）。
+
+## TESTED
+
+- 工程包 A/B：smoke 418 ✓ / 1 红（`intervention` 漏配 `KIND_TAG`）·
+  save-equiv **154 ✓ / 3 红**（当时记的数；E 包复核后确认应为「155 条断言 · 3 红」，
+  详见 E 段的 diff 说明）。
+- 工程包 C：`node --check` ✓ · `npm run test:core` ✓（42 文件 / 188 边 · core · startup）·
+  **smoke 428 ✓ / 1 红**（418 基线 + 5v 新增 10 条，**全部通过**；红项仍是同一条既有基线）·
+  局部 300 年长跑体检 ✓（medium preset：实体 16 · 非可通行格 0 · 非有限坐标 0 ·
+  守恒式 12+14−10=16 ✓ · 耗时 92ms）。
+  5v 关键读数：60 年开局 12 人 **12/12 移动** · 单拍位移 **8.000 格**（= 上限）·
+  `stepSpatial` 消费 `this.rng` **0 次**（对照 spatialRng 11192 次）·
+  修士落高灵气侧 **100%** vs 凡人 **45.9%** · 关掉 `stepSpatial` 后 60 年 **0 人移动**（反向对照）·
+  移动状态跨存档**逐字往返**。
+- 工程包 D：`node --check` ✓ · `npm run test:core` ✓（42 文件 / 188 边 · core · startup）·
+  **smoke 449 ✓ / 1 红**（428 基线 + 5w 新增 21 条，**全部通过**；红项仍是同一条既有基线）。
+  5w 关键读数：窄带 3486 格与**独立朴素扫描双向一致**（抽 `nearRiverAt` 语义不变）·
+  60 年 12 只普通鬼魂 **12/12 移动**、**0 出窄带**、**0 站不住** ·
+  鬼帝（reach 19）**离开窄带 1461 拍** · 单拍位移 **4.000 格**（上限 6）·
+  同种子两遍轨迹**逐字一致**（零 rng）· D3 **0.3889 vs 0.1667**（= 0.2778×1.4 / ×0.6，精确匹配公式）·
+  D4 留痕 **+0.03000**、对照格不变、存档往返 0.5 → 0.5000076 ·
+  D5 目标到吸引源平均距离 **6.382 → 3.143** · 5u⑦ 复现 level **29/31/31/21/31**（全 > 1，未被 D3 压红）。
+  ⚠️ 施工期发现 `spawnNetherGhost` 的 `decayYears < 0` 哨兵（`-1e9`）与注释「永不消散」**相反**
+  （判据 `day >= ghostDecayDay` 恒真 ⇒ 立即消散）；生产路径不传该参数 ⇒ 无玩家可见后果，已记 BACKLOG P3。
+- 工程包 E：`node --check` ✓（`main.js` / `planes.js` / `netherLife.js` / `inkbox-playtest.mjs`）·
+  `npm run test:core` ✓（import-check **42 文件 / 189 边** · core · startup）·
+  **smoke 460 ✓ / 1 红**（449 基线 + 5x 新增 **11** 条，**全部通过**；红项仍是同一条既有基线 `intervention`）。
+  5x 关键读数：上界**故障注入**（四项 3/5/7/11 + died 4 ⇒ 生 26 / 现存 22）·
+  上界**真实 300 年**守恒 `12 === 21 − 9`（seeded 12 + born 9 − died 9）·
+  幽冥故障注入（9/5/2 ⇒ 现存 2）· 幽冥隔离世界 `生 35 / 亡 30 / 逐 0 / 现存 5` ·
+  **逐出分流**：塞到上限之上跑一拍 ⇒ `逐 0 → 20`、`亡 0 → 0`、现存 400（= 上限）· 两界读数同名字段。
+  playtest 10e 新增 3 条（上界守恒 / 幽冥守恒 / 统一口径），判据**只从 DOM 反读**，
+  已用离线正/反例验证（正例全绿、反例必红）；⚠️ playtest 本体**未跑**（见下）。
+- 工程包 E：**save-equiv 152 ✓ / 3 红**（共 155 条断言）。3 条红**同一根因**
+  （`worldEventState` vs `worldEvents`，见 `BACKLOG.md` P3），**无新增红**。
+  ⚠️ 与 A/B 记录的「154 ✓ / 3 红」对不上的原因已查清：**逐条 diff 2026-09-23 14:26 的日志**
+  证明总断言数只多不少（154 → 155，B 包加了 1 条裂缝 `targetPlane` 键检查），
+  差的 3 条是那 3 条**从绿翻红**；而它们在 09-23 日志里**还是绿的**
+  （payload 顶层 45 键 → 现 46 键，多出的正是 `worldEvents`）⇒ 是 **D6-1 世界事件序列化**引入的，
+  不是 A/B/C/D/E 引入的。已回填 `BACKLOG.md`。
+- 工程包 F：`node --check` ✓ · `npm run test:core` ✓（42 文件 / 189 边）·
+  **`npm run test:three-realms` 61 ✓ / 0 红**（新增脚本，七节全绿）。F 关键读数：
+  · F1 全仓「游戏日 +=」**只有一处**（`advance.js:103`）· 三界 `day` 恒等（108000 = 300 年）·
+    上界/幽冥节拍 **100/100**（= 1000÷10）· 裂缝累加器**跨开关存活**（关窗 60 日不丢）。
+  · F2 三种子两两不同 · 异或自逆 · 两套落点判据在幽冥图上**分叉 37.5%**（不可互相顶替）。
+  · F3 三段 id 交集 **0** · 跨界快照引用字段全切断 + **反向对照（原实体未动）**。
+  · F4 守恒 `33 === 12 + 34 + 12 + 0 − 25` · `ascended` 恒空 · 两本死亡账一致（25 = 25）。
+  · F5 逐出分流 `逐 0→20 / 亡 0→0` · 魂池别名**同一引用** · 幽冥模块 2 条 import 无 rng。
+  · F6 裂缝 10 键 · `targetPlane` 往返 + 老档兜 `upper` · 阴气留痕误差 **7.629e-6 ≤ 0.5/65535**。
+  · F7 **nether 缝消费裂隙流 0 次**（对照：上界缝 1 次）· nether 缝 age 照常 +30。
+  ⚠️ F 施工期三条**假红**（都是判据写错，不是代码错）：① 把「跨界快照切断」套到**全部**上界实体
+  （本土始祖线**本来就**有 `clan`/`artifacts`）⇒ 改成**直接调 `arriveUpper` 在落地那一刻判**；
+  ② 把 `upper.dead` 当成「凡间系统泄漏」（那是上界**自己的**逝者名录）⇒ 移出名单，改钉
+  「`deadLog.total` === `popLog.died`」；③ 阴气留痕断言写成**逐位相等**（`veg` 走量化，
+  最大误差 0.5/65535）⇒ 改成**可推导的量化界** + 「远小于一次留痕增量」。
+  ⇒ **教训：写断言前先确认「这个字段在这条时间线上本来会是什么」**，
+  拿 300 年后的世界状态去判「落地那一刻的契约」必然假红。
+
+### D6-2 六包齐 · 全套验收（2026-09-24 · 清单第十四节）
+
+| 测试 | 结果 | 说明 |
+| --- | --- | --- |
+| `npm run test:core` | ✓ | 42 文件 / 189 边 · core · startup |
+| `npm run test:three-realms` | **61 ✓ / 0 红** | F 包新增脚本（七节） |
+| `npm run test:smoke` | **460 ✓ / 1 红** | 红项 = 既有基线 `intervention`（漏配 `KIND_TAG`） |
+| `npm run test:save-equivalence` | **152 ✓ / 3 红** | 3 红同一根因（`worldEventState` vs `worldEvents`，D6-1 引入）；**F 后复跑逐条一致** |
+| playtest（`--url=…:4180/inkbox.html`） | **143 通过 / 0 失败** | 含 10e 新增 3 条（上界守恒 / 幽冥守恒 / 统一口径），**全部绿** |
+| longrun（800 年 · medium） | **79 ✓ / 0 红** | 结论「世界是活的 ✓」 |
+| `npm run build`（打包） | ✓ | **70 files**；包内含 `scripts/inkbox-three-realms.mjs` / `THREE_REALMS.md` / 导出的 `DECAY_TRACE_VEG` |
+
+- playtest 关键读数（10e 段）：上界「生灵 12 · 宗门 0 · 飞升上来 0 · 生态 生 12 · 亡 0」·
+  幽冥「鬼魂 120 · 鬼修 0 · 生态 生 263 · 亡 143 · 逐 0」·
+  两条守恒式（上界 `生灵 === 生 − 亡`、幽冥 `鬼魂 + 鬼修 === 生 − 亡 − 逐`）**从 DOM 反读**均成立 ·
+  三界读数同词同序（`生态 生 … 亡 …`）。
+- longrun 关键读数（800 年）：上界守恒 `246 = 12 + 323 + 91 + 924 − 1104`（有本土化生 91 · 陨落 1104 ⇒ 不是只增不减）·
+  仙门 8 家 · 飞升者 39 在位（共到 323）· 裂缝 `opened 120 === closed 99 + 活跃 21` ·
+  门槛咬合（裂隙上界 === 天雷下界 = 40）· 魂路「滞留幽冥」1762 / 「鬼修」241 两条通道都活着。
+- ⚠️ **smoke / save-equiv 的红项都是既有基线，与 A/B/C/D/E/F 无因果**（已在 `BACKLOG.md` P3 登记）。
+- ⚠️ 打包在本机 Bash 环境需把 `System32` 提前（否则 Git Bash 的 GNU tar 把盘符当远程主机，见 `BACKLOG.md` P3）；
+  普通 cmd/PowerShell 用 System32 的 bsdtar 无此问题。
+
+### D6-3 工程包 A 验收（2026-09-24）
+
+| 测试 | 结果 | 说明 |
+| --- | --- | --- |
+| `node --check`（改动的 6 个文件） | ✓ | 语法过 |
+| `npm run test:core` | ✓ | import-check **42 文件 / 191 边**（A 前 189，+2 来自 `rifts.js` 新 import）· core · startup |
+| `npm run test:three-realms` | **77 ✓ / 0 红** | 八节（F 包 61 条 + F7 新 6 条 + F8 新 9 条，另 1 条为 F7① 改写） |
+| `npm run test:smoke` | **471 ✓ / 1 红** | 460 基线 + 5q⑫/⑭ 新增 **11** 条，**全部通过**；红项仍是同一条既有基线 `intervention` |
+| `npm run test:save-equivalence` | **152 ✓ / 3 红** | 与 D6-2 基线**逐条一致**（3 红仍是 `worldEventState` vs `worldEvents`，D6-1 引入）⇒ A 包**无新增红** |
+| `npm run test:regression`（干预） | **17 项 OK** | `Inkbox intervention regression OK · 17 项` |
+
+- 5q⑫/⑭ 关键读数：nether 缝推进 200 拍**裂隙流未前进**（`0.3635…` vs `0.3635…`）而
+  **幽冥流已前进**（`0.3510…` vs `0.8965…`）· 两条流派生键 `0x72696674` / `0x4e524654` ·
+  上界缝抽签次数「只有上界缝 1 次 / 再加一条幽冥缝 1 次」（**互不干扰**）·
+  5q⑬ 守恒 `凡间 0 + 幽冥新增 1 === 1`、上界 `entities 12→12 / artifacts 0→0 / arrived 0→0` ·
+  5q⑭ 落成鬼修 + `mortal:999999` 快照 · 化神期（`level === 40`）**不进候选** ·
+  跌入者法宝**留在凡间地上**（`0→1`）。
+- F8 关键读数（`test:three-realms`）：8 个固定种子**跌入 6 人 / 8 世界**（非空性守卫成立）·
+  守恒逐世界成立 · 上界三个口径逐世界零变化 · `fellIn === 跌入实体数 ≤ ghostBorn` ·
+  化神期对照跌入 **0** 人 · 存读档后 `fellIn === 1` 且幽冥实体数不变 ·
+  **反向对照**：上界缝跑满一生 `fellIn` 恒 0、幽冥实体数不变 ·
+  源码结构：`stepNetherRift`(87 字符) / `fallIntoNether`(2049 字符) 函数体里**没有**上界那三个名字。
+- ⚠️ **施工期踩到一条新故障类**（已记 `BACKLOG.md` P3）：第一版 smoke 5q⑫ 用了 `RIFT_SEED_KEY`
+  却漏了 import ⇒ `ReferenceError` **直接中断整个 smoke**（跑到第 352 条崩，后面 100+ 条一条没跑），
+  而日志尾部**看起来像**「只红了 1 条既有基线」。`node --check` **抓不到**未定义标识符。
+  ⇒ 看 smoke 日志**先确认结尾是「全部通过 / N 项未通过」而不是堆栈**。
+- ⚠️ 另一条：`openRifts` **自己会消费裂隙流**（洗牌候选站点）⇒「绝对位置计数」在跑过 `openRifts`
+  的世界里不可用（第一版探针两条判据都读 `-1`）；改用**同种子双世界比对**（一个跑 / 一个不跑，比下一签）。
+- 临时探针 `scripts/_tmp-d63a.mjs`（15/15 全绿）**已删**——断言已折进 smoke 5q⑭ 与回归 F7/F8。
+
+### D6-3 工程包 B 验收（2026-09-26）
+
+| 测试 | 结果 | 说明 |
+| --- | --- | --- |
+| `node --check`（改动的 12 个文件） | ✓ | 语法全过 |
+| `npm run test:core` | ✓ | import-check **43 文件 / 197 边**（A 后 42/191，+1 文件 `wraiths.js` / +6 边）· core · startup |
+| `npm run test:three-realms` | **94 ✓ / 0 红** | 九节（A 后 77 条 + 新增 F9 17 条） |
+| `npm run test:smoke` | **488 ✓ / 1 红** | A 后 471 基线 + 5q⑮ 新增 **17** 条，**全部通过**；红项仍是同一条既有基线 `intervention` |
+| `npm run test:save-equivalence` | **158 ✓ / 3 红** | A 后 152 基线 + 新增 **6** 条；3 红仍是 `worldEventState` vs `worldEvents`（D6-1 引入）⇒ **无新增红** |
+| `npm run test:regression`（干预） | **17 项 OK** | `Inkbox intervention regression OK · 17 项` |
+| playtest（`--url=…:4180/inkbox.html`） | **143 通过 / 0 失败** | 10e 幽冥守恒式**改判据后仍绿**（`鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出`） |
+| `npm run build`（打包） | ✓ | **71 files**（A 后 70，+1 = `sim/wraiths.js`） |
+
+- F9 关键读数（`test:three-realms`）：8 个固定种子**爬出 48 只 / 8 世界**（非空性守卫成立）·
+  守恒 `此刻在凡间 + 已消散 === climbedOut` 逐世界成立 · **凡间 `world.entities` 逐世界零变化** ·
+  上界三个口径逐世界零变化 · 直接调 `climbOutToMortal` 落进 `world.wraiths`（`entities 0→0`）·
+  **保留幽冥 id**（`id=2000000` ≥ 基址）· 编年史 `rift-out` · 到期消散 `alive 0 / 本拍 1 / 累计 1` ·
+  存读档 22 字段逐字段往返 · **源码结构：`wraiths.js` 代码里 `world.entities` 0 次 / `addEntity` 0 次** ·
+  `stepMortalWraiths` 函数体 `entities` 0 次 · `climbOutToMortal` 零 rng ·
+  **六条流派生键两两不同**（`rift=0x72696674 · netherRift=0x4e524654 · wraith=0x4841554e ·
+  upper=0x55505052 · nether=0x4e455452 · mercy=0x4d455243`）·
+  **反向对照**：上界缝跑满一生 `climbedOut` 恒 0 / `wraiths` 恒空。
+- smoke 5q⑮ 关键读数：`climbOutToMortal` 送出鬼（幽冥 `1→0`、鬼影 `1`）·
+  **`entities 0→0`（不变）** · `wraithStats.total === climbedOut`（`1 vs 1`）· 编年史 `rift-out` ·
+  半径外不动 / 无幽冥跳过 / **取最近的那只**（不是境界最高）/ 撞上限 `WRAITH_CAP` 时**保留幽冥那一份** ·
+  到期消散 + 消散后守恒仍成立 · `ensureWraithLog` 幂等 · 概率常量 `0.05 ∈ (0,1)` · 流键 `0x4841554e` · 寿数 1080。
+- playtest 10e 关键读数：上界「生灵 12 · 生态 生 12 · 亡 0」·
+  幽冥「鬼魂 120 · 鬼修 0 · 生态 生 260 · 亡 140 · 逐 0 · **出 0**」·
+  两条守恒式（含新增「出」）**从 DOM 反读**均成立 · 三界读数同词同序。
+- 临时探针 `scripts/_tmp-d63b.mjs`（20/20 全绿）**已删**——断言已折进 smoke 5q⑮ 与回归 F9。
+- ⚠️ **施工期一条新故障类**（已记 `BACKLOG.md` P3）：`save-equiv` 的**上界「漏写」检查**把
+  `wraiths` / `wraithLog` 报成「漏写」（它们被 `serializeUpperWorld` 显式 delete 了）
+  ⇒ 必须同步补进 `UPPER_NOT_SAVED` 豁免表。**新增凡间专属键时，「写侧 delete」与「豁免表注册」
+  是同一个改动的两半**——只做前者会让 save-equiv 红，且红得很像「产品 bug」。
+
+### D6-3 工程包 C 验收（2026-09-26）
+
+| 测试 | 结果 | 说明 |
+| --- | --- | --- |
+| `node --check`（改动的 8 个文件） | ✓ | 语法全过 |
+| `npm run test:core` | ✓ | import-check **43 文件 / 199 边**（B 后 197，+2 边来自 `netherLife.js` / `rifts.js` 新 import）· core · startup |
+| `npm run test:three-realms` | **119 ✓ / 0 红** | 十节（B 后 94 条 + 新增 F10 **26** 条） |
+| `npm run test:smoke` | **530 ✓ / 1 红** | B 后 488 基线 + C 新增 **42** 条（5q⑯ **41** + 5q⑭⑤ 改写 +1），**全部通过**；红项仍是同一条既有基线 `intervention` |
+| `npm run test:save-equivalence` | **165 ✓ / 3 红** | B 后 158 基线 + 新增 **7** 条；3 红仍是 `worldEventState` vs `worldEvents`（D6-1 引入）⇒ **无新增红** |
+| `npm run test:regression`（干预） | **17 项 OK** | `Inkbox intervention regression OK · 17 项` |
+| playtest（`--url=…:4180/inkbox.html`） | **143 通过 / 0 失败** | 全程无运行时报错；幽冥行尾追加 `· 物 N`（在 `· 出 N` 之后）后 10e 正则仍匹配 |
+| `npm run build`（打包） | ✓ | **71 files**（无新建文件） |
+
+- F10 关键读数（`test:three-realms`）：8 个固定种子**自生 429 件 / 8 世界**、**漏出 22 件**（非空性守卫成立）·
+  守恒 `alive === spawned + fellIn − leakedOut − decayed` 逐世界成立 ·
+  两端记账恒等（幽冥 `itemsLeakedOut` === 凡间 `artifactLog.netherIn`）· id 重赋（77 → 5）·
+  编年史 `rift-in`（归 `cultivation`）· `netherOut += 2` · **七条流派生键两两不同** ·
+  反向对照：上界缝跑满一生 `itemsLeakedOut` 恒 0 / 幽冥物品池不变。
+- smoke 5q⑯ 关键读数：跑 3000 天**自生 60 件且守恒** · **区分力**（100 个判定点出 60 件——钉 `hash32` 高位偏置）·
+  自生法宝与 `forgeArtifact` **逐键同形**（只多 `technique`）· 同种子两遍轨迹**逐字一致**（纯哈希，不是流）·
+  跌入者带物（`幽冥 0→1` / `itemsFellIn=2` / **id 重赋 1,2** / 落点 = 人的落点）·
+  `leakNetherItem` 漏回凡间（**id 重赋 77 → 5** / `nextArtifactId → 6` / 保留 `technique` / `rift-in`）·
+  习得功法（进 `techniques` / 推的是**名池对象** `{name,note}` / 去重 / **栏满不推功法但法宝照收**）·
+  池满 `trimNetherItems` 压回上限（170 → 120 / `decayed=50` / **池满抑制自生**）·
+  四条跨界流键两两不同（rift / nrift / haun / nitm）· 名池合规（**不含**鬼/魂/莲/符 · 与凡间零重名）。
+- save-equiv 关键读数：两件幽冥物品 **19 键逐字段往返** · `technique` 往返 · `nextArtifactId > max id`（3 > 2）·
+  四条流水 `3/1/1/1` 往返 · 守恒 `2 vs 2` · 老档降级（物品池空数组 / 四条流水就位且为 0）。
+- 临时探针 `scripts/_tmp-d63c.mjs`（28/28）与 `scripts/_tmp-d63c2.mjs`（41/41，5q⑯ 预演）**已删**。
+- ⚠️ **施工期两条新故障类**（已记 `BACKLOG.md` P3）：① `hash32`（FNV-1a）对「前缀相同、只差末尾数字」
+  的短串有极强高位偏置（全落 0.70–0.74 ⇒ 概率阈值恒真、不报错）⇒ 拿哈希当均匀分布用**必须先过 `hashStep`**；
+  ② 判据写成「凡间实体数不变」应改**守恒式**（凡间撒过人，缝口附近可能恰好站一个活人）——F10② 自纠。
+
+### D6-3 工程包 D 验收（2026-09-26）
+
+| 测试 | 结果 | 说明 |
+| --- | --- | --- |
+| `node --check`（改动的 10 个文件 + 4 个测试脚本） | ✓ | 语法全过 |
+| `npm run test:core` | ✓ | import-check **43 文件 / 203 边**（C 后 199，+4 边来自 `rifts.js` / `life.js` / `main.js` 新 import）· core · startup |
+| `npm run test:three-realms` | **134 ✓ / 0 红** | 十一节（C 后 119 条 + 新增 F11 **15** 条） |
+| `npm run test:smoke` | **561 ✓ / 1 红** | C 后 530 基线 + D 新增 **31** 条（5q⑰ ~25 + 5x 守恒式升五路径 + import/豁免），**全部通过**；红项仍是同一条既有基线 `intervention` |
+| `npm run test:save-equivalence` | **168 ✓ / 3 红** | C 后 165 基线 + 新增 **3** 条；3 红仍是 `worldEventState` vs `worldEvents`（D6-1 引入）⇒ **无新增红** |
+| `npm run test:regression`（干预） | **17 项 OK** | `Inkbox intervention regression OK · 17 项` |
+| playtest（`--url=…:4180/inkbox.html`） | **143 通过 / 0 失败** | 10e 幽冥守恒式**改判据后仍绿**（`鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出 − 夺`）；全程无运行时报错 |
+| `npm run build`（打包） | ✓（**71 files**） | 无新建文件（`sim/possession.js` 早已存在）⇒ 与 C 后同为 71 |
+
+- F11 关键读数（`test:three-realms`）：8 个固定种子**真夺舍 7 次 / 附身 10 次**（非空性守卫成立）·
+  守恒 `鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出 − 夺` 逐世界成立 · **凡间减员全部记在 `fellIn`** ·
+  上界三个口径逐世界零变化 · `crossPlanePossession` / `possessMortal` / `hauntMortal` **三个函数体零 rng** ·
+  `stepNetherRift` **四支齐全且 `else` 一次不出现** · `if (` 恰好 **4** 个 ·
+  **八条流派生键两两不同**（`possess=0x4e505358`）· `netherPossessRngFor` 同一实例 ·
+  **反向对照**：上界缝跑满一生 `possessedOut` / `crossPlane` / `haunted` 恒 0 · 概率常量 `0.01 ∈ (0,1)` ·
+  存读档 `possessedOut` / `crossPlane` / `haunted` / `possessionScar` 四样都留得住。
+- smoke 5q⑰ 关键读数：真夺舍（落 `possessionScar{mode:possess,until:-1}` / 点化 `sp=cultivator` / 名字 `·异` /
+  鬼修**从幽冥消失** / 两条账 `possessedOut=1` + `crossPlane=1` / `possess-cross` 进大事账本 / 受害者个人日志一笔 /
+  **不锁行动**）· 附身（`mode=haunt` `until=day+360` / 鬼**留幽冥** / `haunted=1` / 锁生效且到期自动解除 /
+  正被附身者不再被选）· 阶位分界 `20` 真夺舍 vs `21` 只附身 · cap 到顶不再夺舍 · 词条频率 `0.063` / `0.052`
+  （期望 0.06，钉「哈希先过 finalizer」）· `normalizeRancor` 四界 · 跨位面成功率与 `possessionChance` 逐位相等 ·
+  `possessionScar` row[68] 往返 · `haunted` 子账往返。
+- save-equiv 关键读数：`ENTITY_COLUMNS` **69** · `possessionScar` 列 `row[68]` 往返 ·
+  v5 老档 `possessionScar === null` / `possessionLog` **五字段全零** · 夺舍账本 `diffFields` **5 键** ·
+  `NETHER_FORBIDDEN_KEYS` **七键** · `UPPER_EXEMPT` 注册 `possessionLog` ·
+  上界不跑凡间专属系统 **31 项 × 2 侧** · 幽冥块里没有凡间专属的七个键 **40 键**。
+- ⚠️ **施工期两条新故障类**（已记 `BACKLOG.md` P3）：① **常量式 `kind` 撞 smoke 5l 双红**
+  （死映射 + 未豁免，都是假红）⇒ 必须同步补 `NON_LITERAL`；
+  ② **`initEntity` 在 `sim/cultivation.js` 而不是 `core/cultivation.js`**（两个同名文件）——
+  F11 首跑 `SyntaxError: does not provide an export named 'initEntity'`，**立刻中断整个回归**
+  （`node --check` 抓不到「导错文件」）。
+- ⚠️ **本机 `spawnSync` 被环境拦截（EBUSY，所有 exe 一律失败）** ⇒ `npm run build` 的 tar 步骤跑不完
+  （copy 步骤已完成，`dist/…-1.0.0/` 恰好 71 files）；本次用 System32 的 `bsdtar` 手工补上 `.zip`
+  （84 entries = 71 文件 + 13 目录）。**这是环境限制，不是产品问题**。
+
+### D6-3 工程包 E 验收（2026-09-26）
+
+> E 包**零生产代码改动**——只改两个测试脚本（`scripts/inkbox-longrun.mjs` / `scripts/inkbox-three-realms.mjs`），
+> 把 A–D 引入的跨包契约钉进长跑与回归。因此所有红项都应与 D 包基线**逐条一致**。
+
+| 测试 | 结果 | 说明 |
+| --- | --- | --- |
+| `node --check`（改动的 2 个测试脚本） | ✓ | 语法全过 |
+| `npm run test:core` | ✓ | import-check **43 文件 / 203 边**（与 D 后一致，E 不动 `src/`）· core · startup |
+| `npm run test:regression`（干预） | **17 项 OK** | `Inkbox intervention regression OK · 17 项` |
+| `npm run test:three-realms` | **144 ✓ / 0 红** | **十二节**（D 后 134 条 + 新增 F12 **10** 条） |
+| `npm run test:save-equivalence` | **185 ✓ / 3 红**（共 188 条） | 3 红仍是 `worldEventState` vs `worldEvents`（D6-1 引入）⇒ **无新增红**。⚠️ 断言总数随世界演化内容浮动（同脚本历史读数 155 → 171 → 188），不是 E 包引入 |
+| `npm run test:simulation`（smoke） | **561 ✓ / 1 红** | 与 D 后基线**逐条一致**；红项仍是既有基线 `intervention`（漏配 `KIND_TAG`，`main.js` 一处） |
+| playtest（`--url=…:4180/inkbox.html`） | **143 通过 / 0 失败** | 与 D 后基线一致。⚠️ 第 2 次跑出现过 1 条**竞态假红**（`点一个人能摊开「他的一生」`：`取坐标 → 点击` 之间右栏重渲染 ⇒ 点击落空；第 3 次重跑绿，读数 `992 字 · 已弹出`）。已记 `BACKLOG.md` P3 |
+| longrun（**800 年** · medium · **挂三界**） | **89 ✓ / 0 红** | 结论「世界是活的 ✓」；D 后基线 79 ✓ ⇒ E 新增 **10** 条 |
+| `npm run build`（打包） | ✓（**71 files**） | 无新建文件（E 只改已有测试脚本）⇒ 与 D 后同为 71 |
+
+**E 包关键读数（longrun 800 年 · 新增「三界跨界生态」一节 10 条断言）**：
+- 幽冥缝累计开 **36** 道（活跃 **6**）· 跌入 **30** · 爬出 **123** · 漏物 **10** · 夺舍 **0**（附身 3）。
+- 幽冥名册 400（自生 5793 / 亡 5057 / 逐 213）· 幽冥物品 120 件（自生 130 / 朽 20）· 凡间鬼影 0 只（已消散 123）。
+- **法宝守恒含幽冥两向：`1489 + 1 + 10 = 899 + 581 + 0 + 0 + 20`（差 0 件）**。
+- 裂缝 `活跃 27（上界 21 / 幽冥 6）`——报告行已按 `targetPlane` 分位面拆开。
+- ⏱️ 耗时 **1650695ms（27.5 分）**，D 后基线 1136834ms（18.9 分）——因为基线**从不建幽冥**，
+  `stepNether` 从没跑过。**这是 E 包引入的真实工作量，不是性能退化**。
+- 新增的 5 条**跨书对账**（幽冥 `itemsLeakedOut` === 凡间 `artifactLog.netherIn`、
+  `itemsFellIn` === `netherOut`、`possessedOut` === `possessionLog.crossPlane`、
+  鬼影账本 `wraithStats.total` === 幽冥 `climbedOut`）**全部成立**——这是三界「同一批东西两端记账」的硬证据。
+- 通道 A/B/C 判**存在性**（`≥1`）；**通道 D（夺舍）不判存在性**（真实长跑里几乎不触发，见下）。
+
+**E 包关键读数（`test:three-realms` · 新增 F12 十条）**：
+- 端到端 8 种子 × 200 个裂隙周期：四支同缝读数 `跌入 11 / 爬出 32 / 漏物 22 / 夺舍 7 / 附身 0`。
+- 五条守恒式（幽冥生态 / 幽冥物品 / 鬼影两端 / 两条跨书物品对账）**逐世界成立**；
+  上界三个口径逐世界零变化；`w.entities.length + fellIn === mEnt`（凡间减员全记在 `fellIn`）。
+- 四支独立流**各被消费恰好 `pass` 次**（`pass 60/60`：`netherRift` / `wraith` / `item` / `possess` 全 true）。
+- **1×1 开缝不消费裂隙流**：A 世界开一道 1×1 nether 缝后，下一签 `0.8958954561967403` 与未开缝的 B 世界**逐位相同**。
+- **反向对照**：上界缝跑满一生，四支账本恒 0。
+- 源码结构：`fallIntoNether` / `climbOutToMortal` / `leakNetherItem` **函数体零 rng**。
+
+**E 包判据口径决策（来自四个临时探针实测，探针已删）**：
+- 探针实测（10 站点 300 年 → A=30 / B=133 / C=18 / **D=0（附身 1）**；单站点 120 年 → A=3 / B=6 / C=3 / **D=0**）
+  证明：**A/B/C 在真实长跑里稳定触发，D（跨位面夺舍）几乎不触发**。
+- ⇒ 长跑只判 A/B/C 的**存在性**与 D 的**账本耦合**（`possessedOut === crossPlane`），
+  **不判 D 的存在性**；D 的存在性交给隔离世界（F11 / F12，8 种子得 7 次真夺舍）。
+- ⚠️ 站点选择有硬约束：`openRifts` 只把**矩形周长**格当候选缝口，且 nether 缝口要求
+  `isWalkable` **且** `netherWalkable` 同时成立（= 落在「凡间可站 ∩ 幽冥河带」的交集格）。
+  实测河带 5073 格中仅 **2549 格**凡间也可站（50.2%）⇒ 站点必须选在交集格上，否则开不出缝。
+  longrun 用 6 个散布站点 `[[127,45],[192,30],[66,46],[101,100],[189,101],[261,101]]`。
+- ⚠️ **1×1 区域是刻意的**：`openRifts` 洗牌循环 `for (i = sites.length - 1; i > 0; i -= 1)`
+  在 `sites.length === 1` 时**不执行** ⇒ 消费裂隙流 **0 次** ⇒ 挂幽冥缝**不会移动上界裂缝的世界线**。
+  这是 F7⑨ 的几何版证据（F7⑨ 从函数边界钉，F12⑥ 从「下一签逐位相同」钉）。
+
+**E 包施工期两条假红（都是测试侧写错，不是产品问题）**：
+- ① `stockRift` 手工 `log.ghostBorn += 10`，但 `spawnNetherGhost` **自己已经记了** `ghostBorn`
+  （`netherLife.js:667`）⇒ 重复计 4 ⇒ 生态守恒 false。**修法**：改成 `+= 6`（只补 6 只手推的鬼修）。
+  ⇒ **教训：往账本里塞东西前，先确认被调函数是否已经自己记过账。**
+- ② 四支流「各消费 `pass` 次」判据红：`mortalHauntRngFor` **不只**被 `stepNetherRift` 消费，
+  `stepMortalWraiths`（每 10 日一拍，`wraiths.js:333`）也用它 ⇒ 消费次数多于 pass 数。
+  **修法**：该段 `runWorld(..., { nether: false, wraith: false })`（两个消费者都要冻结）。
+  ⇒ **教训：判「某条流的消费次数」前，先 grep 出这条流的全部消费者。**
+
+
+## NEXT
+
+- ✅ **D6-2 六包（A–F）已完成 + 全套验收已跑完**（读数见本文件 TESTED 段）。
+- ✅ **D6-3 工程包 A 已完成**：裂隙跨界框架 + 凡人跌入幽冥。
+- ✅ **D6-3 工程包 B 已完成**：鬼进入凡间。
+- ✅ **D6-3 工程包 C 已完成**：幽冥物品泄漏。
+- ✅ **D6-3 工程包 D 已完成**：跨位面夺舍（读数见上一段）。
+- ✅ **D6-3 工程包 E 已完成**：回归扩展（读数见本文件 TESTED 段最后一节）。
+  **D6-3 六包（A–E）全部完成**——视界与跨界生态闭环。
+- **下一步：阶段性整理可玩 demo + 上传独立仓库**（用户 2026-09-26 指令）——
+  清理临时探针、复跑全套验收、把活跃分支（`inkbox.html` + `src/inkbox/**` + 启动脚本 +
+  文档）同步到 `github.com/sjh20016/inkbox`。
+- ⚠️ 每包完成后必须回来更新本文件。

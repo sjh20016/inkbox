@@ -32,7 +32,7 @@
 
 import {
   EQUIP_SLOTS, EQUIP_TIERS, EQUIP_QUALITIES,
-  ARTIFACT_NAMES, ARTIFACT_SPIRITS, narrate, pickFrom,
+  ARTIFACT_NAMES, ARTIFACT_SPIRITS, NETHER_TECHNIQUES, narrate, pickFrom,
 } from '../core/lore.js';
 import { clamp } from '../core/noise.js';
 
@@ -115,6 +115,21 @@ const TRANSFER_KINDS = new Set(['forged', 'gained', 'inherited', 'found']);
 
 /** 一件法宝最多记多少条履历。不设上限的话，八百年下来存档会被履历撑爆 */
 export const HISTORY_CAP = 10;
+
+/** 一个人最多记几门功法。与 `divine.js:114` / `sites.js:45` 的 `< 3` **同源** */
+export const TECHNIQUE_CAP = 3;
+
+/**
+ * 幽冥功法名 → **池子里的那个对象**。
+ *
+ * ⚠️⚠️ **习得时必须推池子里的那个对象，而不是现场拼一个 `{name, note}`**：
+ *    `io/save.js` 只存功法**名字**（`:320`），读档靠 `MANUAL_BY_NAME`（`:207`）
+ *    还原成**池子里的对象**。运行时推一个临时拼的对象、读档后推池子对象，
+ *    两者的键集就分叉了——而 `scripts/inkbox-save-equiv.mjs` 的
+ *    `compareEntityFields` 取**键集并集**，会当场红（这正是它存在的意义）。
+ *    所以走「按名字取回池子对象」这一条路，与 `sites.js:48` 推 `manual` 同款。
+ */
+const NETHER_TECHNIQUE_BY_NAME = new Map(NETHER_TECHNIQUES.map((t) => [t.name, t]));
 
 // ── 计算 ─────────────────────────────────────────────────
 
@@ -199,7 +214,9 @@ export function describeArtifact(a) {
   const tier = (EQUIP_TIERS[a.tier] || {}).name || '?';
   const quality = EQUIP_QUALITIES[a.quality] || '?';
   const spirit = a.spirit ? `·${a.spirit.name}「${a.spirit.personality}」` : '';
-  return `${a.name}（${quality}${tier}${a.slot}${spirit}）`;
+  // 幽冥法宝（C 包）多一句「载某功法」——它是这件东西**来自幽冥**的唯一标记。
+  const tech = (a.technique && a.technique.name) ? `·载${a.technique.name}` : '';
+  return `${a.name}（${quality}${tier}${a.slot}${spirit}${tech}）`;
 }
 
 // ── 命名 ─────────────────────────────────────────────────
@@ -405,6 +422,28 @@ export function claimGroundArtifact(world, entity, artifactId, rng, kind = 'foun
 }
 
 /**
+ * 一件**幽冥法宝**（D6-3 工程包 C）携带的功法，交给新主人。
+ *
+ * 只有幽冥自生的法宝带 `technique`（见 `netherLife.js` 的 `spawnNetherItem`），
+ * 凡间炼出的一律没有。所以「捡到一件带功法的法宝」= 「捡到一件幽冥之物」。
+ *
+ * ⚠️ **推池子里的那个对象**（见 `NETHER_TECHNIQUE_BY_NAME` 的注释）——现场拼
+ *    一个同名字段的对象会让运行时与读档后的**键集分叉**，save-equiv 当场红。
+ * ⚠️ 上限与 `divine.js` / `sites.js` 的 `< 3` 同源（`TECHNIQUE_CAP`）；已会的不重复推。
+ * @returns {boolean} 是否真的习得（已会 / 满了 / 名字不认识 ⇒ false）
+ */
+function grantTechnique(entity, techName) {
+  if (!techName) return false;
+  const entry = NETHER_TECHNIQUE_BY_NAME.get(techName);
+  if (!entry) return false;                        // 名字不在池子里（老档 / 手改档）
+  const list = entity.techniques || (entity.techniques = []);
+  if (list.length >= TECHNIQUE_CAP) return false;  // 功法栏满了
+  if (list.some((t) => t && t.name === entry.name)) return false;   // 已会
+  list.push(entry);
+  return true;
+}
+
+/**
  * 把一件法宝交到某人手上。
  * @returns {boolean} 是否真的收下了（手上那件更好时会拒绝）
  */
@@ -428,6 +467,9 @@ export function giveTo(world, entity, a, rng, kind = 'gained') {
   a.lostDay = -1;
   pushHistory(a, world.day, kind, entity.name || null);
   entity.artifacts.push(a);
+  // 幽冥法宝携带的功法：新主人当场习得（凡间法宝没有 `technique`，恒为 no-op）。
+  // ⚠️ 放在**收下之后**：被拒（`return false`）时不该白送一门功法。
+  if (a.technique) grantTechnique(entity, a.technique.name);
   return true;
 }
 

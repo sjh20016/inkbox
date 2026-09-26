@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-app="inkbox">
+<html lang="zh-CN" data-app="inkbox" data-app-version="1.0.0">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="app-version" content="1.0.0" />
 <link rel="icon" href="data:," />
-<title>水墨沙盒 · 坐天观井 v0.1</title>
+<title>水墨沙盒 · 坐天观井 v1.0.0</title>
 <style>
   :root {
     --paper: #e9e0cd;
@@ -56,6 +57,11 @@
     display: inline-flex; align-items: center; justify-content: center;
     width: 26px; height: 26px; border: 1.5px solid var(--cinnabar); color: var(--cinnabar);
     font-size: 13px; border-radius: 3px; letter-spacing: 0; font-weight: 700;
+    /* 印泥感：边缘微微洇开（外阴影）+ 印面不平（内阴影）+ 压歪一点点。
+       不改结构、不加资源，只是让这枚「井」不像网页小方块那样漂在纸面上。 */
+    transform: rotate(-3deg);
+    background: rgba(168,73,60,0.06);
+    box-shadow: 0 0 0 1px rgba(168,73,60,0.18), inset 0 0 0 1px rgba(168,73,60,0.22);
   }
   .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
   .pill {
@@ -75,8 +81,22 @@
   .sec-title {
     font-size: 11px; letter-spacing: 3px; color: var(--ink-soft);
     margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--line);
+    /* 折叠：点 sec-title 收起/展开本节。chev 是右侧的小箭头，靠 transition 旋转 90°。 */
+    cursor: pointer; user-select: none;
+    transition: color .15s, border-color .15s;
   }
+  .sec-title:hover { color: var(--ink-mid); border-bottom-color: var(--line-strong); }
+  .sec-title .chev {
+    display: inline-block; width: 12px; margin-left: 4px;
+    font-size: 9px; color: var(--ink-soft); transition: transform .25s ease;
+    vertical-align: 1px;
+  }
+  .sec-title.collapsed .chev { transform: rotate(-90deg); }
   .sec-title:first-child { margin-top: 0; }
+  /* sec-body 是 JS 在 boot 时包出来的「本节内容」容器；用 max-height 做折叠动画。
+     max-height 取一个够大的值（不可能超过的滚动区），避免内容真实高度算不准。 */
+  .sec-body { overflow: hidden; max-height: 8000px; transition: max-height .35s ease, opacity .2s ease; }
+  .sec-body.collapsed { max-height: 0; opacity: 0; pointer-events: none; }
 
   .groups { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
   .group {
@@ -182,6 +202,13 @@
   }
   button.btn:hover { background: #fff; color: var(--ink); }
   button.btn.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  button.btn:active { transform: translateY(1px); }
+  /* 键盘可达性：focus-visible 仅在键盘聚焦时显环，不打扰鼠标点击 */
+  button.btn:focus-visible, .ink-tool:focus-visible {
+    outline: 2px solid var(--cinnabar);
+    outline-offset: 1.5px;
+  }
+  .ink-tool:active { background: var(--paper-2); }
   button.btn.danger:hover { border-color: var(--cinnabar); color: var(--cinnabar); }
   input[type=range] { width: 108px; accent-color: var(--ink-mid); }
   input[type=number], select {
@@ -266,6 +293,15 @@
   .legend { display: grid; gap: 3px; }
   .legend div { display: flex; align-items: center; gap: 6px; color: var(--ink-mid); font-size: 11.5px; }
   .legend i { width: 11px; height: 11px; border-radius: 2px; border: 1px solid rgba(34,32,28,.25); }
+  /* ── 门道（概念说明）────────────────────────────────────────────
+     ⚠️ **不要复用 `.legend`**。第一版就是这么写的，结果 playtest 里
+     `document.querySelector('.legend')` 取到了这一块（它排在「图例」**前面**），
+     「图例已补上灵脉与宗门地盘」当场变红——那条断言其实是在钉
+     「页面上只有一处 `.legend`，且它是图例」。**复用一个被测试当锚点的类名，
+     等于悄悄改掉那条断言的契约**（本项目故障类 16 的界面版）。
+     所以这里单开一个类：语义上也更准（图例是配色对照，门道是词条）。 */
+  .glossary { display: grid; gap: 4px; }
+  .glossary div { color: var(--ink-mid); font-size: 11.5px; line-height: 1.65; }
   .keys { color: var(--ink-soft); font-size: 11px; line-height: 1.9; letter-spacing: .4px; }
 
   /* ── 仙道 ── */
@@ -309,8 +345,11 @@
   }
   .realm-soul i { height: 7px; border-radius: 2px; display: block; min-width: 2px; transition: width .35s ease; }
   .realm-soul b { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
-  /* 零的那几路压淡——五路里常年有三路是 0（`ghost` 至今零产出），
-     全一个亮度的话，玩家会以为那三根也是「有数的」。
+  /* 零的那几路压淡——五路里**早先**常年有三路是 0（`ghost` 当年零产出），
+     全一个亮度的话，玩家会以为那几根也是「有数的」。
+     ⚠️ 口径更新（2026-09-23）：`ghost` 路**已产出**——`enterNether` 会在幽冥
+     生成鬼修与鬼魂（见 `sim/netherLife.js`），`ghost` 那根条不再恒 0；
+     但「零路压淡」这条样式本身仍需要（`gone` 等路仍可能为 0）。
      用属性选择器而不是多拼一个类名：理由见 main.js 里 `data-zero` 那段注释。 */
   .realm-soul[data-zero="1"] { opacity: .42; }
 
@@ -374,6 +413,7 @@
       <div class="sec-title">世界</div>
       <div class="stat-grid">
         <div class="stat"><span>生灵</span><b id="inkStatPeople">0</b></div>
+        <div class="stat"><span>鬼影</span><b id="inkStatWraiths">0</b></div>
         <div class="stat"><span>聚落</span><b id="inkStatVillages">0</b></div>
         <div class="stat"><span>势力</span><b id="inkStatFactions">0</b></div>
         <div class="stat"><span>陆地</span><b id="inkStatLand">0%</b></div>
@@ -411,9 +451,14 @@
            这两界**早就在跑**，缺的从来不是系统，而是**出口**：
              · 上界有自己的 entities / factions / villages / milestones / arrivedLog，
                连突破都会写它自己的大事账本（B1 的里程碑门槛顺带覆盖了上界），
-               但界面上只在「上界视界」的画中画里贴地形，**一个人都不画**；
+               而画中画原先只贴地形、**一个人都不画**——2026-09-23 已补上：
+               贴完地形再画那一界的**人与宗门**（`main.js` 的 `drawPlaneView`），
+               且视界已从「只有上界」扩到**上界 / 幽冥两界**；
              · 幽冥的魂路账本（soulLog）与魂池（souls）一直在记账，
-               Batch 3 之前**一个读者都没有**。
+               Batch 3 之前**一个读者都没有**；
+               2026-09-23 又在同一行（`#inkNetherMeta`）追加了**幽冥实体读数**
+               （鬼魂 / 鬼修 / 最高阶名，取自 `netherGhostStats`）——不新增区、
+               不加新 CSS 类，见 `main.js` 的 `refreshNetherRealm`。
            这一块不新增任何后台状态，纯读现成读数。
            两个面板各自回答一句玩家真会问的话：
              · 上界 ——「我刚送上去的那个人后来怎么样了」；
@@ -449,7 +494,30 @@
       <div class="chronicle" id="inkNecrology"></div>
       <button class="btn" id="inkBtnNecrology" style="width:100%;margin-top:6px">导出逝者名录（Markdown）</button>
 
-      <div class="sec-title">图例</div>
+      <!-- ── 门道（概念说明，D4-3）────────────────────────────────────
+           右栏原来只有**读数**，没有**读数的意思**。最典型的缺口是「浊气」：
+           检视面板确实会在某人浊气 ≥ 20 时补一行说明（main.js 的 `@note` 伪标签），
+           可那是**按人**才看得到的——玩家不点开一个正好被污染的人，
+           就永远不知道「浊气」是什么，也无从知道「满 70 断飞升路」这条硬规则，
+           更看不到那条真陷阱：**凡间修到 60（天花板）又积满 70 ⇒ 上不去也飞升不了**。
+           这一块就是那个**全局入口**：纯静态文案，不随选中变化、不读任何状态、
+           不新增任何 JS。`data-default-collapsed="1"` 让它默认收起
+           （右栏已有 12 个区，BACKLOG ⑭ 记着「太长」）。
+           ⚠️ 措辞必须与代码一致，引用前重跑读数：
+              · 飞升闸门 `sim/cultivation.js:429` → `pollution < POLLUTION_ASCEND_LIMIT(70)`
+              · 拖慢修炼 `:296` → `1 - min(0.5, pollution*0.005)`（满值减半）
+              · 凡间天花板 `core/cultivation.js:47` → `MORTAL_CEILING = 60`
+              · 魂路五路标签 → `sim/reincarnation.js` 的 `ROUTE_LABEL`（考古定名，不得擅改）
+           ⚠️ 用 `.glossary` 而**不是** `.legend`——理由见样式表里那一段。 -->
+      <div class="sec-title" data-default-collapsed="1">门道</div>
+      <div class="glossary">
+        <div>浊气 —— 积于道基，来自禁术 · 秘境 · 天劫。它拖慢修炼，满 70 断飞升路；凡间修到 60 又积满 70，就上不去也飞升不了。</div>
+        <div>养伤 —— 打完一架后的恢复期。这段时间里他不接战，也不会被人选作目标。</div>
+        <div>魂路 —— 一个人死后魂去哪：自然转世 · 滞留幽冥 · 鬼修 · 怨魂化 · 魂火散尽。按人查在「史册」，按路查在「三界」。</div>
+        <div>大事记 —— 只记玩家真会回头看的那几件；「编年」什么都记，但窗口短得多。</div>
+      </div>
+
+      <div class="sec-title" data-default-collapsed="1">图例</div>
       <div class="legend">
         <div><i style="background:#7d99a3"></i>浅滩 · 泽 · 海 · 渊</div>
         <div><i style="background:#a3ae83"></i>草原 · 芳甸</div>
@@ -463,7 +531,7 @@
         <div><i style="background:#8a6a44"></i>聚落 · 田垄</div>
       </div>
 
-      <div class="sec-title">操作</div>
+      <div class="sec-title" data-default-collapsed="1">操作</div>
       <div class="keys">
         空格 暂停 / 继续<br />
         1-6 时间倍速<br />

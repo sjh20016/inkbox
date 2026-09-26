@@ -1,7 +1,23 @@
+
+node_modules/
+logs/
+dist/
+reports/
+!reports/
+reports/*
+!reports/archive/
+!reports/archive/**
+!reports/release/
+!reports/release/**
+run/
+*.log
+*.zip
+!reports/archive/v4-docs/*.zip
+.vscode/
+
+# AI 工作目录（本地记忆 / 工具数据，不属于项目源码）
+.workbuddy-ai/
+
 # 系统杂项
 .DS_Store
 Thumbs.db
-
-# 日志与临时文件
-*.log
-node_modules/

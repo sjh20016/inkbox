@@ -214,6 +214,16 @@ export function initEntity(entity, rng, { cultivator = false } = {}) {
    */
   entity.possessedBy = null;
   /**
+   * 不良状态印记（见 sim/possession.js，D6-3 工程包 D）。存的是**快照对象**
+   * `{ ghostName, ghostLevel, day, until, mode }`：
+   *   · `mode: 'possess'` + `until: -1` —— 被鬼修**真夺舍**（永久印记）；
+   *   · `mode: 'haunt'`   + `until > day` —— 被高阶鬼修**暂时附身**（到期自动解除，
+   *     `life.js` 的行为锁读 `until`）。
+   * ⚠️ 同样给初值：`save.js` 会把它写进实体行（row[68]），活体没有这个键而
+   *    读档后有，save-equiv 的「键集并集」判据当场红（同 `restUntil` / `possessedBy`）。
+   */
+  entity.possessionScar = null;
+  /**
    * 元婴脱壳记账（见 sim/war.js）。一生只能触发一次，所以必须记下来；
    * 不存的话读档后同一个人可以反复脱壳，重伤永远死不了。
    */
@@ -242,6 +252,22 @@ export function initEntity(entity, rng, { cultivator = false } = {}) {
   entity.heritageQ = -1;
   entity.heritageB = null;
   entity.heritageM = null;
+  // ── 幽冥鬼魂（契约 reports/d5/BATCH2-DESIGN.md §三；save.js 实体行 row[63..66]）──
+  // 凡间与上界的实体**不是**鬼魂，这四格取稳定默认值（`soulKind: null`）。
+  // ⚠️ **必须给初值**：`save.js` 的 `restoreEntity` 会把这四列建出来，若活体没有
+  //    这些键，save-equiv 的「键集并集」判据当场红
+  //    （实测：`只活在读档后：soulKind×634 ghostOf×634 ghostRancor×634 ghostDecayDay×634`）。
+  //    与上面 `restUntil` / `log` / `heritageM` 是同一类坑，理由见那几段注释。
+  // ⚠️ 键集必须与 `sim/netherLife.js` 的 `GHOST_TEMPLATE` 完全一致——那边是幽冥
+  //    鬼魂的模板，这四格在那里是真实取值（`ghostRancor` 积怨 / `ghostDecayDay` 消散日），
+  //    在凡间 / 上界只是占位。该模板的注释也点名「本模板键集必须与 initEntity 产物一致」。
+  // ⚠️ `soulBind`（列 67 的「魂池链接」）与上面那行 `entity.soulId = null`
+  //    （「这一世由哪个神魂**转来**」= 来源）**不是一回事**——2026-09-23 起拆成两个属性。
+  entity.soulKind = null;
+  entity.ghostOf = null;
+  entity.ghostRancor = 0;
+  entity.ghostDecayDay = -1e9;
+  entity.soulBind = null;
   if (cultivator) awaken(entity, rng, { silent: true });
   return entity;
 }
