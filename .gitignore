@@ -21,3 +21,7 @@ run/
 # 系统杂项
 .DS_Store
 Thumbs.db
+
+# GitHub Actions 工作流：本机 OAuth token 无 workflow scope，暂不入库。
+# 需要时把本地 .github/workflows/ci.yml 加回来（先 `gh auth refresh -h github.com -s workflow`）。
+.github/
