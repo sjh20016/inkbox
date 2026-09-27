@@ -767,6 +767,12 @@ function resetUpperSystems(world) {
   //    但它把「上界的大事账本从零开始」钉在代码里，免得将来谁给上界接上
   //    里程碑事件时，账本带着凡间（或读档）的旧值开局。
   world.milestones.length = 0;
+  // 6b. 「记挂」观察者列表（D7-E）。它是**玩家的**凡间观察状态（见 `sim/watch.js`），
+  //     上界既不跑 `stepWatch`、也没有玩家指着上界来客「记挂」这回事——恒空。
+  //     构造函数给的是空数组，这里显式清空是**实践中的空操作**，但它把「上界
+  //     永远是干净的基线」钉在代码里（同上面 `soulLog` 的理由）。
+  //     `serializeUpperWorld` 里 `delete payload.watch`，读侧靠 `restoreWorldState` 兜底。
+  world.watch.length = 0;
   // 6. 大战
   world.wars.length = 0;
   world.warLog.declared = 0;

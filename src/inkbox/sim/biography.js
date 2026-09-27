@@ -208,11 +208,13 @@ const MILESTONE_KINDS = new Set([
  */
 export const KIND_TAG = Object.freeze({
   // ── 有意归到 `world` 的世界级事件 ──
-  // 这 7 个 kind 与下面导出的 `WORLD_KINDS` 白名单必须**逐字一致**：
+  // 这 8 个 kind 与下面导出的 `WORLD_KINDS` 白名单必须**逐字一致**：
   // 白名单存在的意义就是把「故意归 world」与「忘了配」分开，
   // 两边一旦漂移，测试就再也分不清漏配了。
   world: 'world', settle: 'world', disaster: 'world', genesis: 'world',
   site: 'world', busanzi: 'world', crisis: 'world',
+  // 玩家落下的天道干预直接改变地形 / 天气 / 生灵，属于世界行为，不属于单个人物。
+  intervention: 'world',
   // 空间裂缝**开启**（`sim/rifts.js` 的开缝循环，2026-09-22 加）。
   // 归 `world` 而不是 `person`：开缝是玩家在世界**边缘**划出的一道口子，
   // 它不属于任何一个人（与 `rift-lost` 正相反——那一个是「某个人被吞了」）。
@@ -300,7 +302,7 @@ export const KIND_TAG = Object.freeze({
  * ⚠️ 内容必须与 KIND_TAG 里值为 `'world'` 的键逐字一致。
  */
 export const WORLD_KINDS = new Set([
-  'world', 'settle', 'disaster', 'genesis', 'site', 'busanzi', 'crisis', 'rift',
+  'world', 'settle', 'disaster', 'genesis', 'site', 'busanzi', 'crisis', 'rift', 'intervention',
 ]);
 
 /** tag 的中文名（[照抄] 主线 STORY_TAGS 的 8 个 UI 项） */

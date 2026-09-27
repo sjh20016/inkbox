@@ -51,7 +51,7 @@
 //    它与实体自带的 `soulId`（「这一世由哪个神魂转来」）**同名不同义**，
 //    故 2026-09-23 拆成两个独立属性（见 `GHOST_TEMPLATE` 的注释）。
 
-import { TIME, SPECIES, SPECIES_INFO } from '../core/config.js';
+import { NEVER_DECAY_DAY, TIME, SPECIES, SPECIES_INFO } from '../core/config.js';
 // ⚠️ 幽冥「能不能站人」的判据**只有一处**：`world/planes.js` 的 `netherWalkable`
 // （2026-09-24 · D6-2 工程包 B 收敛）。本模块原先自己手写「先判水、再判
 // `TERRAIN_INFO.walk`」那一对，与裂隙的位置过滤各有一份——两份判据迟早分叉，
@@ -597,7 +597,7 @@ const GHOST_TEMPLATE = Object.freeze({
   soulKind: null,
   ghostOf: null,
   ghostRancor: 0,
-  ghostDecayDay: -1e9,
+  ghostDecayDay: NEVER_DECAY_DAY,
   soulBind: null,
   // 关系网：鬼魂不与凡间实体共享关系网（跨世界 id 会撞号），恒空 Map。
   relations: new Map(),
@@ -636,8 +636,10 @@ export function spawnNetherGhost(nether, spec = {}) {
   const decayYears = Number.isFinite(spec.decayYears)
     ? spec.decayYears
     : (isCultivator ? CULTIVATOR_DECAY_YEARS : GHOST_DECAY_YEARS);
-  // 消散日：`-1e9` = 永不消散（契约 §三）。`decayYears < 0` 保留这个哨兵语义。
-  const ghostDecayDay = decayYears >= 0 ? day + decayYears * TIME.daysPerYear : -1e9;
+  // 负寿命表示永不消散。截止日必须在正向时间轴末端，否则 `day >= cutoff` 会立即成立。
+  const ghostDecayDay = decayYears >= 0
+    ? day + decayYears * TIME.daysPerYear
+    : NEVER_DECAY_DAY;
 
   // 落点种子：优先绑定的魂 id（唯一），否则用身份快照的 `mortal:<id>`。
   // 两者都没有时退回 `nether.nextEntityId`（仍是确定性的）。

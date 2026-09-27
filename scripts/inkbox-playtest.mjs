@@ -13,9 +13,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import net from 'node:net';
 import os from 'node:os';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { TOOLS, TOOL_GROUPS } from '../src/inkbox/ui/tools.js';
 // 境界横条的期望值**从境界表现算**，不写死条数与标签（理由见第 6b 节那条注释）。
@@ -78,18 +77,76 @@ function section(title) {
   console.log(`\n${title}`);
 }
 
-async function waitForPort(port, timeoutMs = 15000) {
+async function waitForDevTools(port, timeoutMs = 15000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
-    const ok = await new Promise((resolve) => {
-      const socket = net.createConnection({ host: '127.0.0.1', port });
-      socket.once('connect', () => { socket.destroy(); resolve(true); });
-      socket.once('error', () => resolve(false));
-    });
-    if (ok) return true;
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/json/version`);
+      if (response.ok) {
+        const version = await response.json();
+        if (version.webSocketDebuggerUrl) return version;
+      }
+    } catch { /* 浏览器的调试 HTTP 服务仍在启动 */ }
     await sleep(200);
   }
-  return false;
+  return null;
+}
+
+async function createDevToolsTarget(port) {
+  const url = `http://127.0.0.1:${port}/json/new?about:blank`;
+  // 新版 Chromium 要求 PUT；旧版可能接受 GET。两种都按响应状态和目标形状判断，
+  // 不能把 HTTP 405 的 JSON 错误对象误当成已创建的 target。
+  let response = await fetch(url);
+  if (response.ok) {
+    const target = await response.json();
+    if (target.webSocketDebuggerUrl) return target;
+  }
+  response = await fetch(url, { method: 'PUT' });
+  if (!response.ok) throw new Error(`创建浏览器页面失败：HTTP ${response.status}`);
+  const target = await response.json();
+  if (!target.webSocketDebuggerUrl) throw new Error('浏览器没有返回页面调试地址');
+  return target;
+}
+
+async function stopBrowser(child) {
+  if (process.platform === 'win32') {
+    // Edge 启动器可能把真正的 browser process 作为子进程再拉起；
+    // child.pid 有时只指向已退出的启动器。按这次唯一的临时 profile 找根进程，
+    // 再让 taskkill 结束其整棵进程树。
+    try {
+      const powershell = path.join(
+        process.env.SystemRoot || 'C:\\Windows',
+        'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe',
+      );
+      const script = [
+        '$targetDir = $env:INKBOX_PLAYTEST_PROFILE',
+        '$processes = @(Get-CimInstance -ClassName Win32_Process -ErrorAction Stop | Where-Object { $_.Name -eq \'msedge.exe\' -and $_.CommandLine -like (\'*\' + $targetDir + \'*\') })',
+        '$ids = @($processes | ForEach-Object { [int]$_.ProcessId })',
+        '$roots = @($processes | Where-Object { $ids -notcontains [int]$_.ParentProcessId })',
+        'foreach ($root in $roots) { & "$env:SystemRoot\\System32\\taskkill.exe" /PID $root.ProcessId /T /F | Out-Null }',
+      ].join('\n');
+      execFileSync(powershell, ['-NoProfile', '-NonInteractive', '-Command', script], {
+        env: { ...process.env, INKBOX_PLAYTEST_PROFILE: userDataDir },
+        stdio: 'ignore',
+        timeout: 15000,
+      });
+    } catch { /* PowerShell/WMI unavailable; still try the direct process handle */ }
+    try { child.kill(); } catch { /* ignore */ }
+  } else {
+    try { child.kill(); } catch { /* ignore */ }
+  }
+
+  if (child.exitCode !== null) return;
+  await new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      try { child.kill(); } catch { /* ignore */ }
+      resolve();
+    }, 5000);
+    child.once('close', () => {
+      clearTimeout(timer);
+      resolve();
+    });
+  });
 }
 
 class Cdp {
@@ -276,12 +333,9 @@ async function main() {
 
   let ws;
   try {
-    const up = await waitForPort(PORT);
-    if (!up) throw new Error('调试端口未就绪');
-    const target = await fetchJson(`http://127.0.0.1:${PORT}/json/new?about:blank`).catch(async () => {
-      const response = await fetch(`http://127.0.0.1:${PORT}/json/new?about:blank`, { method: 'PUT' });
-      return response.json();
-    });
+    const devtools = await waitForDevTools(PORT);
+    if (!devtools) throw new Error('调试 HTTP 端点未就绪');
+    const target = await createDevToolsTarget(PORT);
     ws = new WebSocket(target.webSocketDebuggerUrl);
     await new Promise((resolve, reject) => {
       ws.addEventListener('open', resolve, { once: true });
@@ -1517,26 +1571,48 @@ async function main() {
     if (notable && notable.count > 0) {
       const spot = await cdp.js(`
         const row = document.querySelector('#inkNotables [data-live]');
-        row.scrollIntoView({ block: 'center' });
-        const r = row.getBoundingClientRect();
-        return { x: r.left + r.width / 2, y: r.top + r.height / 2, id: row.dataset.live };
+        if (!row) return null;
+        const id = Number(row.dataset.live);
+        // 走真实面板的委托 click handler，避免取坐标后右栏刷新导致点击落空。
+        row.click();
+        return { id };
       `);
-      await click(cdp, spot.x, spot.y);
       const card = await cdp.js(`
         const p = document.getElementById('inkPersonDetail');
-        return { on: p.classList.contains('on'), len: p.textContent.length, text: p.textContent };
+        return {
+          on: p.classList.contains('on'), targetId: window.inkbox.personOpenId,
+          len: p.textContent.length, text: p.textContent,
+        };
       `);
       check('点一个人能摊开「他的一生」（活人传记面板）',
-        card.on && card.len > 40, `#${spot.id} · ${card.len} 字 · ${card.on ? '已弹出' : '未弹出'}`);
+        !!spot && card.on && card.targetId === spot.id && card.len > 40,
+        `#${spot?.id} → #${card.targetId} · ${card.len} 字 · ${card.on ? '已弹出' : '未弹出'}`);
       // 固定段：`compileBiography` 无论谁都会写这两段。
       // 断它而不是断某个具体事迹——事迹有多少取决于世界跑到哪一年（会漂）。
       check('活人传记含固定段「一眼看懂」与「修行轨迹」',
         /一眼看懂/.test(card.text) && /修行轨迹/.test(card.text), '');
+      // D7-F：人物卡「查看关系」能摊开一跳关系图（内联 SVG）。
+      // 断「有 svg + 按钮翻转成收起」——**不断具体几个人**：关系多少随世界跑的年数漂。
+      // 没关系时 SVG 里会写「尚无已知的人际关系」，仍然是一个 svg ⇒ 断言稳。
+      const rel = await cdp.js(`
+        const btn = document.getElementById('inkBtnPersonRel');
+        if (!btn) return null;
+        btn.click();
+        const box = document.getElementById('inkPersonRel');
+        return { hasSvg: !!box && !!box.querySelector('svg'), label: btn.textContent };
+      `);
+      check('人物卡「查看关系」能摊开一跳关系图（内联 SVG）',
+        !!rel && rel.hasSvg && rel.label === '收起关系',
+        rel ? `svg=${rel.hasSvg} · 按钮「${rel.label}」` : '未找到关系按钮');
       await shot(cdp, '10c-person-card');
       await cdp.js("document.getElementById('inkPersonClose').click(); return true;");
-      const closed = await cdp.js("return document.getElementById('inkPersonDetail').classList.contains('on');");
+      const closed = await cdp.js(`
+        const panel = document.getElementById('inkPersonDetail');
+        return { visible: panel.classList.contains('on'), targetId: window.inkbox.personOpenId };
+      `);
       check('点 × 能真的收起人物面板（反例：不然玩家以为按钮坏了）',
-        closed === false, '');
+        closed.visible === false && closed.targetId === null,
+        `visible=${closed.visible} · targetId=${closed.targetId}`);
     }
 
     // ── 10d. 玩家干预 → 世界反馈（UI 层） ─────────────────────
@@ -2329,15 +2405,11 @@ async function main() {
     if (failed) process.exitCode = 1;
   } finally {
     try { if (ws) ws.close(); } catch { /* ignore */ }
-    try { child.kill(); } catch { /* ignore */ }
-    await sleep(400);
-    try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    await stopBrowser(child);
+    try {
+      fs.rmSync(userDataDir, { recursive: true, force: true, maxRetries: 4, retryDelay: 100 });
+    } catch { /* 浏览器 profile 是临时产物，不影响测试结论 */ }
   }
-}
-
-async function fetchJson(url) {
-  const response = await fetch(url);
-  return response.json();
 }
 
 main().catch((error) => {

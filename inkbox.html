@@ -388,7 +388,7 @@
 
     <section class="stage">
       <canvas id="inkCanvas" aria-label="水墨世界"></canvas>
-      <div class="stage-hint" id="inkHint">左键落笔 · 右键平移 · 滚轮缩放 · 空格暂停</div>
+      <div class="stage-hint" id="inkHint">左键落笔 · 右键平移 · 滚轮缩放 · 空格暂停 · W 战争显示</div>
       <div class="inspect" id="inkInspect"></div>
       <!-- 史册条目点开后摊出的完整传记正文。与检视面板同一套外观，
            但内容是一整篇 Markdown，所以要能滚、要保留换行。 -->
@@ -476,6 +476,15 @@
 
       <div class="sec-title">值得关注</div>
       <div class="chronicle" id="inkNotables"></div>
+      <!-- ── 天道记挂（D7-E，见 sim/watch.js）──────────────────────────
+           玩家「指着一个人说：这个人我想继续看」的观察列表。**不是世界规律**——
+           它存在 `world.watch`，不进三界人口守恒、不抽 RNG、不给任何数值 buff、
+           不影响 AI。刻意做成「值得关注」下的**子区**（不再新增一个巨大的右栏
+           一级区域）。标题上那颗红点是「未读的重大事件」，点开这一块即已读。
+           三种状态三种出口：在世/异魂占身 → 镜头 focus + 人物卡；已入上界 →
+           就地摊出上界现况（不移动镜头）；故人 → 打开史册传记。 -->
+      <div class="sec-title" id="inkWatchTitle">天道记挂 · <span id="inkWatchCount">0</span><span id="inkWatchDot" style="display:none;color:var(--cinnabar)"> ●</span></div>
+      <div class="chronicle" id="inkWatch"></div>
 
       <div class="sec-title">编年</div>
       <div class="chronicle" id="inkChronicle"></div>

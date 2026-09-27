@@ -88,6 +88,8 @@ import { placeOf } from './sects.js';
 //   任何抽签都会静默移动世界线，铁律一）——裂缝这边借用它同样安全。
 import { spawnNetherGhost, ensureNetherPopLog, trimNetherItems } from './netherLife.js';
 import { ghostSnapshot } from './reincarnation.js';
+// 表现事件发射口（D7-D）：开缝那一下闪一下。只发事件，不改模拟、不抽 rng。
+import { emitPresentation } from './presentation.js';
 // D6-3 工程包 D：跨位面夺舍（鬼修 → 凡间活人）的效果函数。它**零 rng**，
 // 只做「选谁 / 成不成（确定性哈希） / 落成 / 记账」；判定节奏的抽签在本模块
 // （`stepNetherRift` 的第四支，走 `netherPossessRngFor`）。
@@ -884,6 +886,8 @@ export function openRifts(world, region, targetPlane = 'upper') {
         : `${placeOf(world, c.x, c.y)}的天地裂开一道缝隙，灵气自其中泄出。`,
       'rift',
     );
+    // 表现层：开缝那一下（FX 画一条短暂开裂的墨线）。只发事件，不改模拟、不抽 rng。
+    emitPresentation(world, 'rift-open', { x: c.x | 0, y: c.y | 0 });
   }
   return { opened: n, refused: false, reason: null };
 }

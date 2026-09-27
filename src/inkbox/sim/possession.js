@@ -119,6 +119,8 @@ import { awaken } from './cultivation.js';
 // ⚠️ `netherLife.js` 只 import core / planes / artifacts，**不 import 本模块**
 //    ⇒ 不成环（`scripts/inkbox-import-check.mjs` 会验）。
 import { ensureNetherPopLog } from './netherLife.js';
+// 表现事件发射口（D7-D）：夺舍 / 附身那一刻闪一下冷墨环。只发事件，不改模拟。
+import { emitPresentation } from './presentation.js';
 
 // ── 常量（照抄主线，出处标在行号上；不要按沙盒数值域「重标」）──────
 //
@@ -787,6 +789,14 @@ function possessMortal(world, nether, ghost, target) {
   if (typeof world.milestone === 'function') {
     world.milestone(`${ghost.name || '一只鬼修'}夺舍了${originalName}，以${target.name}之名在凡间续修`, CROSS_POSSESS_KIND, target);
   }
+  // 表现层：真夺舍（FX 在凡人位置画一圈冷墨 + 双重轮廓）。只发事件，不改模拟。
+  emitPresentation(world, 'possession', {
+    x: Math.floor(target.x),
+    y: Math.floor(target.y),
+    subjectId: ghost.id,
+    targetId: target.id,
+    data: { mode: 'possess' },
+  });
   return true;
 }
 
@@ -819,5 +829,13 @@ function hauntMortal(world, ghost, target) {
   if (typeof world.record === 'function') {
     world.record(`${ghost.name || '一只鬼修'}附在${target.name || '一人'}身上，${target.name || '他'}一时失了神`, HAUNT_KIND);
   }
+  // 表现层：暂时附身（同款冷墨环，但更轻）。只发事件，不改模拟。
+  emitPresentation(world, 'possession', {
+    x: Math.floor(target.x),
+    y: Math.floor(target.y),
+    subjectId: ghost.id,
+    targetId: target.id,
+    data: { mode: 'haunt' },
+  });
   return true;
 }

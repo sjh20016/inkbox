@@ -16,6 +16,7 @@ import {
   BREAKTHROUGH_LIFE_DAYS, KARMA_MIN, KARMA_MAX, realmIndexFor,
   THUNDER_ASCEND_MIN_LEVEL,
 } from '../core/cultivation.js';
+import { NEVER_DECAY_DAY } from '../core/config.js';
 import { BLOODLINES, narrate, pickFrom, DAO_TITLES, bloodlineProfile } from '../core/lore.js';
 import {
   equipBonus as equipBonusOf, forgeArtifact, dropArtifacts, wearArtifacts, leaveArtifacts,
@@ -23,6 +24,9 @@ import {
 } from './artifacts.js';
 import { applyHeritage } from './family.js';
 import { speak } from './busanzi.js';
+// 表现事件发射口（D7-D）：只入 transient 队列，不写世界、不抽 RNG。
+// 这里发的是「天雷落下」「某人飞升」——让模拟里的戏剧性第一次真的发生在画面上。
+import { emitPresentation } from './presentation.js';
 // 逝者名录（见 sim/necrology.js）。⚠️ 这里与 necrology.js 之间有一条 import 环：
 // 本文件的 `ascend()` 要在 `leaveArtifacts` **之前**把飞升者入册（否则随葬法宝永远是空的），
 // 而 necrology.js 要用本文件的 `placeName`。ESM 的环在这里安全——两边都只在
@@ -266,7 +270,7 @@ export function initEntity(entity, rng, { cultivator = false } = {}) {
   entity.soulKind = null;
   entity.ghostOf = null;
   entity.ghostRancor = 0;
-  entity.ghostDecayDay = -1e9;
+  entity.ghostDecayDay = NEVER_DECAY_DAY;
   entity.soulBind = null;
   if (cultivator) awaken(entity, rng, { silent: true });
   return entity;
@@ -647,6 +651,13 @@ export function stepThunderAscend(world, entity, rng) {
     'thunder-ascend',
     entity,
   );
+  // 表现层：天雷落下（FX 画一条折线）。**只发事件**——不改模拟、不抽 rng。
+  emitPresentation(world, 'tribulation', {
+    x: Math.floor(entity.x),
+    y: Math.floor(entity.y),
+    subjectId: entity.id,
+    intensity: 1,
+  });
 
   // 成功率与寻常渡劫**同源**（含法宝 tribulation 轴 / 心魔 / 污染 / 因果 / 气运），
   // 只加一个天雷专属的惩罚项。理由见 `THUNDER_CHANCE_PENALTY` 的注释。
@@ -865,6 +876,13 @@ export function ascend(world, entity, rng, { forceUpper = false, via = null } = 
   // 天雷飞升（40~59 级）是**第三条路**，它要进上界，靠上面的 `forceUpper` 显式指定。
   const plane = forceUpper || entity.level >= ASCEND_LEVEL ? 'upper' : 'blessed';
   world.recordAscension(entity, plane);
+  // 表现层：飞升（FX 从人物位置拉一缕墨气向上）。只发事件，不改模拟。
+  // ⚠️ 放在 `leaveArtifacts` / 移出 `entities` **之前**——那时 `entity.x/y` 还在原处。
+  emitPresentation(world, 'ascension', {
+    x: Math.floor(entity.x),
+    y: Math.floor(entity.y),
+    subjectId: entity.id,
+  });
   // 飞升是这个世界里**最不可逆**的一步（人走了就再不回来），必须进大事账本。
   world.milestone(
     narrate(rng, 'ascension', { name: entity.name, place: placeName(world, entity) }),

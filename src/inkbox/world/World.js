@@ -262,6 +262,23 @@ export class World {
      */
     this.milestones = [];
     /**
+     * 「记挂」观察者列表（D7-E，见 `sim/watch.js`）。
+     *
+     * ⚠️ 这是**玩家的观察状态**，不是世界规律：它记着「玩家指着哪几个人想继续看」，
+     *    因此**不参与任何模拟判定**（不给 buff、不影响 AI、不进人口守恒、不抽 RNG）。
+     *    它挂在 `world` 上纯粹是因为「哪个存档配哪份记挂」——**绝不挂到
+     *    `world.entities` 的实体行上**，否则记挂会跟着转世继承（记挂的是**这一世的人**）。
+     *
+     * **必须进存档**：它是玩家亲手攒下来的列表，反推不出来。不存的话读档后
+     *    玩家记挂的人凭空消失——与「从来没记挂过」在读数上长得一模一样。
+     *
+     * ⚠️ 三界**都**有这个字段（同一个 `World` 类），但只有**凡间**会往里写：
+     *    上界 / 幽冥恒空。接线照 `soulLog` 的先例——写侧 `serializeWorld` 照抄一行、
+     *    `serializeUpperWorld` / `serializeNetherWorld` 里 `delete payload.watch`、
+     *    读侧 `restoreWorldState` 兜成 `[]`（老档没有这个键）。
+     */
+    this.watch = [];
+    /**
      * WorldEvents 的可存档快照。运行时控制器仍挂在 Life 上；这里只保存计时器、
      * 活动灾祸和已结束事件，避免换 Life 或读档时灾祸静默消失。
      */

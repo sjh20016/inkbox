@@ -23,7 +23,7 @@
 //   · 可接受：继续演化后的轨迹分叉，量级与量化误差相符。
 // 见 scripts/inkbox-save-equiv.mjs。
 
-import { APP, WORLD_PRESETS } from '../core/config.js';
+import { APP, NEVER_DECAY_DAY, WORLD_PRESETS } from '../core/config.js';
 import { World } from '../world/World.js';
 import { recomputeAll, recomputeQi } from '../world/terrain.js';
 import { DAO_PATHS, TRIBULATION_OMENS } from '../core/cultivation.js';
@@ -408,7 +408,7 @@ export function serializeWorld(world, meta = {}) {
       //     理由同 v8 的 `fromMortal` / v6 的 `possessedBy`：凡间 id 与幽冥 / 上界 id
       //     **同段会撞号**，存裸 id 就是指向别人的悬垂指针，且**不报错**；
       //   · `ghostRancor`  —— 积怨（鬼修升阶燃料；普通鬼魂恒 0）；
-      //   · `ghostDecayDay`—— 消散日（`world.day` 坐标）。`-1e9` = 永不消散；
+      //   · `ghostDecayDay`—— 消散日（`world.day` 坐标）。`NEVER_DECAY_DAY` = 永不消散；
       //   · `soulBind`     —— 魂池链接（**仅 linger 普通鬼魂有**，指向魂池里那条
       //     「这只鬼在等的魂」，**不是**凡间实体 id）。
       //     ⚠️ 它与 row[47] 的 `soulId`（「这一世由哪个神魂**转来**」= 来源）**不是一回事**：
@@ -421,7 +421,7 @@ export function serializeWorld(world, meta = {}) {
       e.soulKind ?? null,
       e.ghostOf ?? null,
       num(e.ghostRancor, 0),
-      num(e.ghostDecayDay, -1e9),
+      num(e.ghostDecayDay, NEVER_DECAY_DAY),
       e.soulBind ?? null,
       // ── 不良状态印记（D6-3 工程包 D，row[68]）──────────────────
       // 存的是**快照对象** `{ ghostName, ghostLevel, day, until, mode }`，不是 id：
@@ -680,6 +680,14 @@ export function serializeWorld(world, meta = {}) {
     // 也不进 `WORLD_NOT_SAVED`（它不是推导量）。
     // 封顶在 `World.milestone()` 里（MILESTONE_CAP），这里同样不再截。
     milestones: world.milestones || [],
+    // ── 「记挂」观察者列表（D7-E）──────────────────────────────
+    // 玩家的观察状态（见 `sim/watch.js`）：记着「玩家指着哪几个人想继续看」。
+    // 它是**凡间专属**的玩家列表——上界 / 幽冥恒空，`serializeUpperWorld` /
+    // `serializeNetherWorld` 里显式 `delete payload.watch`（同 `soulLog` 的先例）。
+    // 这里写侧照抄一行；读侧 `restoreWorldState` 兜成 `[]`（老档没有这个键）。
+    // 元素形状（key/name/addedDay/lastKnownPlane/lastKnownId/lastReadDay）是**纯数据、
+    // 无 id 引用**（`key` 是字符串 `mortal:<id>`），读回来不会悬垂——照 `rifts` 的规矩。
+    watch: world.watch || [],
     // ── 世界事件生命周期（v11）─────────────────────────────
     // WorldEvents 的倒计时、活动灾祸和结局历史属于可变的世界状态；旧档没有时
     // 由 Life 创建一套新计时器。这里存快照而不存运行时控制器，避免保存 world 引用。
@@ -872,6 +880,11 @@ function serializeUpperWorld(upper) {
   //    的累计账本、在 `reset*Systems` 里被显式归零），却只删了前者。读侧靠
   //    `restoreWorldState` 兜底成五键全零，两侧形状各自自洽。
   delete payload.possessionLog;
+  // 「记挂」观察者列表同理（D7-E）：它是**玩家的**凡间观察状态（见 `sim/watch.js`），
+  // 上界既不跑 `stepWatch`、也没有玩家指着上界来客「记挂」这回事——恒空。
+  // 留着就是「上界也有记挂列表」这个**不存在**的语义（同上面 `soulLog` 的理由），
+  // 所以显式删掉；读侧靠 `restoreWorldState` 兜底成 `[]`，两侧形状各自自洽。
+  delete payload.watch;
   return payload;
 }
 
@@ -1014,6 +1027,8 @@ function serializeNetherWorld(nether) {
   //     （`resetNetherSystems` 第 2 条已把它钉成全零；D6-3 工程包 D 新加的
   //     `crossPlane` / `haunted` 是「鬼修自幽冥缝夺舍凡人」的子账，由凡间的
   //     `stepNetherRift` 记账——幽冥那一侧只负责「送出鬼修」，不记这笔账）。
+  //   · `watch`                            —— 「记挂」是**玩家的**凡间观察状态
+  //     （D7-E）：玩家记挂的是**凡间的人**，幽冥那一侧不持有它。
   delete payload.rifts;
   delete payload.nextRiftId;
   delete payload.riftLog;
@@ -1021,6 +1036,7 @@ function serializeNetherWorld(nether) {
   delete payload.wraithLog;
   delete payload.soulLog;
   delete payload.possessionLog;
+  delete payload.watch;
   return payload;
 }
 
@@ -1228,6 +1244,13 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
     crossPlane: num(data.possessionLog && data.possessionLog.crossPlane, 0),
     haunted: num(data.possessionLog && data.possessionLog.haunted, 0),
   };
+  // ── 「记挂」观察者列表（D7-E）────────────────────────────
+  // 老档（本包之前）没有这一项：玩家确实什么都没记挂——空数组是**诚实的缺省值**，
+  // 不是「猜」（同上面 `rifts` / `soulLog` 的降级形状）。
+  // ⚠️ 元素形状由 `sim/watch.js` 的 `addWatch` 单源产出（纯数据、无 id 引用），
+  //    这里**不做逐键重建**：列表本身就是契约，读回来直接用（同 `dead` 的 `|| []`）。
+  //    上界 / 幽冥两侧照旧靠这里兜成 `[]`（写侧已 `delete payload.watch`）。
+  world.watch = Array.isArray(data.watch) ? data.watch : [];
   // 逝者名录（v7）。老档（v7 之前）没有这两项：名录确实没有内容，账本确实为零——
   // 零是诚实的缺省值，不是「猜」。注意 `data.X || 默认值` 会把「存了默认值」
   // 与「根本没这个键」伪装成同一个结果，所以老档判据必须同时查**读回来的值**
@@ -1441,7 +1464,7 @@ function restoreEntity(row, id) {
     soulKind: row[63] ?? null,
     ghostOf: row[64] || null,
     ghostRancor: row[65] ?? 0,
-    ghostDecayDay: row[66] ?? -1e9,
+    ghostDecayDay: row[66] ?? NEVER_DECAY_DAY,
     // 列 67 的 `soulBind`（魂池链接）。**这个键必须写**：与 row[47] 的 `soulId`
     // 曾经同名，那时若在这里补键会**后者覆盖前者**（老档 row[67]=undefined→null，
     // 把 row[47] 的「转世来源」静默冲成 null）。2026-09-23 已把列 67 改名为
@@ -1503,7 +1526,7 @@ function restoreLegacyEntity(row, id) {
     // 幽冥鬼魂（v11 内追加，row[63..67]）。v1 档当然没有，但**键必须存在**——
     // 缺键就是「只在一侧存在的字段」（同上面 v6 / v8 那两组）。
     // `soulBind`（列 67 的魂池链接）与上面转世那三列的 `soulId`（来源）**不是一回事**。
-    soulKind: null, ghostOf: null, ghostRancor: 0, ghostDecayDay: -1e9, soulBind: null,
+    soulKind: null, ghostOf: null, ghostRancor: 0, ghostDecayDay: NEVER_DECAY_DAY, soulBind: null,
     // v1 档连修仙层都没有，家世当然也没有
     surname: null, parentA: 0, parentB: 0, clan: 0, gen: 0,
     heritageQ: -1, heritageB: null, heritageM: null,

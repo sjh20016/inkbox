@@ -551,6 +551,10 @@ function resetNetherSystems(world) {
   world.soulLog.ghost = 0;
   world.soulLog.wraith = 0;
   world.soulLog.gone = 0;
+  // 5b. 「记挂」观察者列表（D7-E）：它是**玩家的**凡间观察状态（见 `sim/watch.js`），
+  //     玩家记挂的是**凡间的人**——幽冥那一侧不持有它，恒空。同 §8.2「魂池不搬家」。
+  //     `serializeNetherWorld` 里 `delete payload.watch`，读侧靠 `restoreWorldState` 兜底。
+  world.watch.length = 0;
   // 6. 世家（幽冥没有姓氏传承；鬼修是**另一套**体系，§8.3②）
   world.clans.length = 0;
   world.clanLog.founded = 0;

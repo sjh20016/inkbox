@@ -20,6 +20,12 @@ export const WORLD_PRESETS = Object.freeze({
 export const SEA_LEVEL = 0.3;
 
 /**
+ * 幽冥实体的「永不消散」截止日哨兵。
+ * Number.MAX_SAFE_INTEGER 是正的有限整数，远超模拟所用时间，并可精确 JSON 往返。
+ */
+export const NEVER_DECAY_DAY = Number.MAX_SAFE_INTEGER;
+
+/**
  * 立体视图的抬升比例：1 个高程单位 = 多少格垂直偏移。
  * 按画幅高度取比例（而不是固定像素），这样小景与长卷的立体感一致。
  */

@@ -19,6 +19,8 @@ npm test                    # 快速 Inkbox 核心检查、入口 HTTP 检查
 npm run test:regression     # 四类干预、灾祸生命周期与存读档回归
 npm run test:three-realms   # 三界生态不变量回归（时间 / 世界身份 / id 空间 / 上界 / 幽冥 / 存读档 / 裂隙 / 跨界）
 npm run test:save-equivalence  # 存读档分叉等价
+npm run test:presentation   # 表现层回归（D7-C 起：相机补间 / 落点墨环 / FX / 记挂 / 关系图 / 战争线）
+npm run test:d7             # D7 开发者总验收（core + regression + three-realms + save-equivalence + presentation）
 npm run test:browser        # 浏览器交互检查，需要本机 Edge 或 Chrome
 npm run test:simulation     # 范围较大的旧 smoke，仅按需运行
 npm run build               # 生成仅含活跃主线的 dist 项目包
@@ -28,8 +30,8 @@ npm run build               # 生成仅含活跃主线的 dist 项目包
 
 ## 工程状态
 
-- 当前阶段：D6-3 视界与跨界生态（工程包 A **裂隙跨界框架 + 凡人跌入幽冥** ✅、工程包 B **鬼进入凡间** ✅、工程包 C **幽冥物品泄漏** ✅、工程包 D **跨位面夺舍** ✅、工程包 E **回归扩展** ✅ —— **六包齐，A–E 全部完成**）。
-  D6-2 三界生态闭环（A–F 六包齐）已完成并通过全套验收。
+- 当前阶段：**D7「观察与表现层」A–F 完成，G 收尾**。D6-2 三界生态与 D6-3 视界 / 跨界生态均已完成。
+- **接手先读**：[`HANDOFF.md`](./HANDOFF.md)（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）。
 - 三界规则（代码必须遵守的约束表）：[`THREE_REALMS.md`](./THREE_REALMS.md)
 - 当前状态与已知问题：[`STATUS.md`](./STATUS.md)
 - 有效待办与暂停研究：[`BACKLOG.md`](./BACKLOG.md)

@@ -123,6 +123,8 @@ import { equipBonus } from './artifacts.js';
 import { dissolveSect, placeOf, ALLIED_THRESHOLD } from './sects.js';
 import { sectSeat } from './territory.js';
 import { speak } from './busanzi.js';
+// 表现事件发射口（D7-D）：宣战那一刻，两宗据点之间闪一条墨线。只发事件，不改模拟。
+import { emitPresentation } from './presentation.js';
 
 // ── 常量：全部照抄 war.md §8，出处行号标在右边 ───────────────
 export const YEAR_DAYS = 360;                                    // config.js:14
@@ -732,6 +734,21 @@ function declareWar(world, rng, a, b) {
   world.milestone(fillTemplate(pickFrom(rng, GREAT_BATTLE_PRELUDE), {
     a: a.name, b: b.name, place, type: type.label,
   }), 'war', warActors(world, battle));
+  // 表现层：战争开始（FX 在两宗据点之间画一条短暂墨线）。只发事件，不改模拟。
+  // ⚠️ 位置取**两宗都城**（`a`/`b` 就是交战的宗门对象），不是中点——
+  //    那条线要「从这家连到那家」才有「谁打谁」的可读性。都城缺失时退回战地中点。
+  emitPresentation(world, 'war-start', {
+    x: battle.x,
+    y: battle.y,
+    data: {
+      ax: Number.isFinite(a.capitalX) ? a.capitalX : battle.x,
+      ay: Number.isFinite(a.capitalY) ? a.capitalY : battle.y,
+      bx: Number.isFinite(b.capitalX) ? b.capitalX : battle.x,
+      by: Number.isFinite(b.capitalY) ? b.capitalY : battle.y,
+      aName: a.name,
+      bName: b.name,
+    },
+  });
   return battle;
 }
 

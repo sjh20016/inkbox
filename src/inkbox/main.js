@@ -81,6 +81,28 @@ import {
 import { TerrainLayer } from './render/terrainLayer.js';
 import { UnitsLayer } from './render/unitsLayer.js';
 import { Camera } from './render/camera.js';
+// 表现叠层（D7-C）：落点墨环。**纯表现**——不写世界、不抽 RNG、不进存档，
+// 删掉这一层模拟结果逐字不变。镜头滑过去之后浮出一个收缩墨环，
+// 给「找到某人 / 某宗门」一个落点感（墨环属于表现层，**不属于 Camera**）。
+import { drawFocusPulses, drawWarLines, spawnFocusPulse, updateFocusPulses } from './render/overlayLayer.js';
+// 人物局部关系图（D7-F）：**纯 SVG 字符串生成器**，零 import、零副作用、零 RNG。
+// 它只吃「已解析好的邻居列表」，世界怎么查、点谁跳到哪全在本文件（见 showPersonCard）。
+import { relationGraphSvg, RELATION_GRAPH_MAX } from './render/relationGraph.js';
+// FX 表现层（D7-D）：读 transient 表现事件 → 短命特效（雷霆 / 陨石 / 飞升 /
+// 裂隙 / 夺舍 / 战争）。**纯表现**——删掉它模拟结果逐字不变，也不抽任何 RNG。
+import { createFxState, drawFx, ingestRuntimeEvents, updateFx } from './render/fxLayer.js';
+// 「记挂」观察者状态（D7-E，见 sim/watch.js）。这是**玩家的**观察列表——
+// 存在 `world.watch`（世界级字段），**不挂实体、不参与模拟、不抽 RNG**。
+// 面板只做三件事：增删、显示状态、点行导航。删掉这块 UI，模拟结果逐字不变。
+import {
+  WATCH_CAP, isWatched, toggleWatch, watchRows, watchHasNews,
+  ensureWatch, resolveWatch, markWatchRead, markAllWatchRead,
+} from './sim/watch.js';
+// transient 事件队列的抽取端（模拟侧只 `emit`，这里 `drain`）。
+// ⚠️ 事件不写世界、不进存档、读档后为空（见 core/runtimeEvents.js）。
+import { drainRuntimeEvents } from './core/runtimeEvents.js';
+// 表现事件的模拟侧发射口——玩家落笔（tool-impact）由本文件直接发。
+import { emitPresentation } from './sim/presentation.js';
 // ⚠️ `normalizeRegion as normalizeRegionGeometry` 是划选区域的**纯几何核心**
 //    （鞋带面积 / 钳界 / 面积上限）。它放在 `ui/tools.js` 而不是本文件的方法里，
 //    是因为本文件依赖 DOM、node 里 import 不了，而 `scripts/_riftprobe.mjs`
@@ -436,12 +458,24 @@ function plainSaveNotice(reason) {
   return `存档压缩失败，已退回明文写入：${reason || '原因未知'}`;
 }
 
+// ── 镜头动作时长（D7-C）──────────────────────────────────
+// 走真实时间（秒）。找人物 0.6~0.9 取 0.75，找宗门 0.7~1.0 取 0.85——
+// 宗门是「更大的地方」，稍慢一点读起来更稳。**不做镜头晃动、不自动跟随**。
+const PERSON_FOCUS_DURATION = 0.75;
+const SECT_FOCUS_DURATION = 0.85;
+
 class Sandbox {
   constructor() {
     this.canvas = $('inkCanvas');
     this.ctx = this.canvas.getContext('2d', { alpha: false });
     this.camera = new Camera();
     this.units = new UnitsLayer();
+    // ── 表现叠层状态（D7-C）────────────────────────────────
+    // `focusPulses` 是**真实时间**驱动的短命墨环列表（见 render/overlayLayer.js）。
+    // 它是 transient 表现，**不进存档**：读档后为空，与 runtime events 同性质。
+    this.focusPulses = [];
+    // FX 表现状态（D7-D）：由 transient 表现事件喂养，真实时间驱动，不进存档。
+    this.fx = createFxState();
     this.history = new History();
     this.dpr = Math.min(2, window.devicePixelRatio || 1);
 
@@ -540,6 +574,21 @@ class Sandbox {
     this.personOpenId = null;
     /** 活人榜的点击委托只挂一次（同上） */
     this.notablesBound = false;
+    /** 「天道记挂」的点击委托只挂一次（同上，D7-E） */
+    this.watchBound = false;
+    // ── 关系与战争可视化（D7-F）──────────────────────────────
+    // `showWarLines`：玩家按 W 打开的「战争显示」——打开时画全部活跃战线
+    //   （默认不画，否则几十个势力会变蜘蛛网）。
+    // `focusedSectId`：最近点过的那家宗门——只画**跟它有关**的战事（规格 F 的
+    //   「当前观察某个宗门」）。换世界 / 收面板不清它也没关系：找不到就画不出。
+    // `relationOpen`：人物卡里「查看关系」是否摊开（纯 UI 开关，不写世界）。
+    // `clock`：真实时间秒（墨环 / 战争线呼吸都吃它，与 `world.day` 无关）。
+    this.showWarLines = false;
+    this.focusedSectId = null;
+    this.relationOpen = false;
+    /** 关系图的点击委托只挂一次（容器常驻，见 bindRelationGraph） */
+    this.relationBound = false;
+    this.clock = 0;
     // ── 玩家干预的反馈（Batch 2）──────────────────────────
     // 点选类神力（天灾 / 抹除 / 仙道）在 `applyTool` 里会把「发生了什么」
     // 写成人话返回，然后 `notify` 出去。但**通知栏只有一行**，而 `pointerup`
@@ -592,6 +641,8 @@ class Sandbox {
     this.refreshNecrology();
     // 三界：换世界之后上界/幽冥也整个换了，面板不刷就是开在别人图上的窗
     this.refreshThreeRealms();
+    // 天道记挂（D7-E）：换世界后 `world.watch` 也换了，不刷就是上一个世界的列表。
+    this.refreshWatch();
     // 卜算子登场。台词只在「第一次见面」时说一次（met 存在世界里，读档不会重说）。
     greetOnBoot(this.world, this.rng);
     this.refreshBusanzi();
@@ -961,6 +1012,14 @@ class Sandbox {
               this.world.record(outcome.message, 'intervention');
               this.refreshChronicle();
             }
+            // 表现层：玩家落笔的落点反馈（FX 在落点画冲击环；陨石类工具演「天降」）。
+            // ⚠️ 无论成败都发——玩家确实落了这一笔，画面上就该有回响。
+            //    只发事件，不改模拟、不抽 rng。
+            emitPresentation(this.world, 'tool-impact', {
+              x: this.strokeIntervention.x,
+              y: this.strokeIntervention.y,
+              data: { tool: this.strokeIntervention.toolId },
+            });
           }
           // ⚠️ 点选工具刚在 pointerdown 的 `applyTool` 里报过「发生了什么」
           //    （「乱石岗天降陨石：17 人罹难，3 所聚落受损。」）。通知栏只有
@@ -1018,6 +1077,12 @@ class Sandbox {
       if (e.key === ']') this.setBrush(this.brushIndex + 1);
       if (e.key === 'g' || e.key === 'G') this.toggleGrid();
       if (e.key === 'v' || e.key === 'V') this.toggleRelief();
+      // D7-F：W 打开 / 关闭「战争显示」（画全部活跃战线）。纯表现开关，不写世界。
+      if (e.key === 'w' || e.key === 'W') {
+        this.showWarLines = !this.showWarLines;
+        this.notify(this.showWarLines ? '战争显示：开' : '战争显示：关');
+        this.dirty = true;
+      }
       if (e.key === 'h' || e.key === 'H') {
         this.camera.fit(this.world);
         this.dirty = true;
@@ -1816,6 +1881,24 @@ class Sandbox {
   update(dt) {
     const world = this.world;
     if (!world) return;
+
+    // ── 表现层真实时间（D7-C）────────────────────────────────
+    // 镜头补间与落点墨环都走**真实时间**（秒），与游戏倍速 / 暂停**无关**：
+    // 拉到「飞」速镜头动画的真实时长不变，暂停世界时墨环也照常播完。
+    // ⚠️ 必须放在下面 `paused` 判断**之前**——它们不是模拟的一部分，
+    //    放进去会变成「暂停时镜头卡在半路」。
+    this.camera.update(dt);
+    updateFocusPulses(this.focusPulses, dt);
+    // 真实时间秒：战争线的「呼吸 / 断裂」相位吃它（同相机补间一样与游戏倍速无关）。
+    this.clock += Number.isFinite(dt) ? dt : 0;
+
+    // ── 表现事件 → FX（D7-D）────────────────────────────────
+    // 每帧把本帧积累的 transient 事件**抽干**、转成短命特效。
+    // ⚠️ 必须每帧 drain（队列有 256 上限，攒着会被顶掉）；且走真实时间（上面那行
+    //    `updateFx` 与 `paused` 无关）。事件只描述「发生了什么」，不参与模拟。
+    ingestRuntimeEvents(this.fx, drainRuntimeEvents(world), world);
+    updateFx(this.fx, dt);
+
     const speed = TIME.speeds[this.speedIndex].mult;
     const paused = this.speedIndex === 0;
     const days = TIME.baseDaysPerSecond * speed * dt;
@@ -1940,7 +2023,25 @@ class Sandbox {
     // ⚠️ 这是**加法**——不要删掉上面那次 `drawEntities`，也不要合并两者。
     this.units.drawWraiths(ctx, this.camera, world, now);
     this.units.drawFireGlow(ctx, this.camera, world, now);
+    // ── FX 表现层（D7-D）────────────────────────────────────
+    // 画在实体 / 火光**之上**、标签**之下**：特效属于「此刻的舞台效果」，
+    // 但地名与人物名仍要能读清（标签盖在特效上）。
+    drawFx(ctx, this.camera, world, this.fx);
     this.units.drawLabels(ctx, this.camera, world);
+
+    // ── 表现叠层：落点墨环（D7-C）────────────────────────────
+    // 画在标签**之上**：它是「此刻的反馈」，压在所有地图元素上面才读得出来。
+    // 与实体层一样每帧重绘（墨环走真实时间，不在地形位图里）。
+    drawFocusPulses(ctx, this.camera, world, this.focusPulses);
+
+    // ── 表现叠层：活跃战争线（D7-F）──────────────────────────
+    // 「现在地图哪儿正在打？」——只在**观察某家宗门**或**玩家打开战争显示**时画，
+    // 默认一条都不画（否则几十个势力会变成蜘蛛网）。纯表现，不写世界、不抽 RNG。
+    drawWarLines(ctx, this.camera, world, {
+      activeSectId: this.focusedSectId,
+      showAll: this.showWarLines,
+      pulse: this.clock,
+    });
 
     if (this.selected) this.units.drawSelection(ctx, this.camera, world, this.selected.x, this.selected.y);
 
@@ -2252,10 +2353,15 @@ class Sandbox {
         + `<b>${f.pop}</b><em>${f.followers || f.pop} 人 · ${f.villages.length} 村</em>`
         + (f.war.size ? '<u>战</u>' : '');
       row.addEventListener('click', () => {
-        this.camera.x = f.capitalX;
-        this.camera.y = f.capitalY;
-        this.camera.zoom = Math.max(this.camera.zoom, 7);
-        this.camera.clamp();
+        // 找宗门：镜头**滑**过去（0.85 秒），落点浮一个墨环。
+        // 走 `focusOn` 而不是直接赋值——玩家一拖 / 一滚 / 按 H 就立刻接管（见 camera.js）。
+        this.camera.focusOn(f.capitalX, f.capitalY, {
+          zoom: Math.max(this.camera.zoom, 7),
+          duration: SECT_FOCUS_DURATION,
+        });
+        spawnFocusPulse(this.focusPulses, f.capitalX, f.capitalY);
+        // D7-F：记住「正在观察这家宗门」——有它的战事就画一条战线（见 render 里的 drawWarLines）。
+        this.focusedSectId = f.id;
         this.dirty = true;
       });
       factionList.appendChild(row);
@@ -2430,12 +2536,52 @@ class Sandbox {
     const panel = $('inkPersonDetail');
     if (!entity || !panel) return;
     this.personOpenId = id;
+    // D7-E：人物卡加一个「记挂」开关。记挂的是**这一世的人**（`mortal:<id>`），
+    // 所以转世后会拿到新 id、**不自动继承**（见 sim/watch.js 头注释）。
+    const watched = isWatched(world, entity);
     panel.innerHTML = `<div class="inspect-head">${displayName(entity)}的一生`
       + '<button class="ink-x" id="inkPersonClose">×</button></div>'
       + `<div class="necro-body">${renderBiographyHtml(compileBiography(world, entity))}</div>`
+      + `<button class="btn" id="inkBtnPersonWatch" style="width:calc(100% - 20px);margin:0 10px 6px">`
+      + `${watched ? '★ 已记挂' : '☆ 记挂此人'}</button>`
+      // D7-F：一跳关系图（默认收起，点「查看关系」摊开）
+      + '<button class="btn" id="inkBtnPersonRel" style="width:calc(100% - 20px);margin:0 10px 6px">'
+      + `${this.relationOpen ? '收起关系' : '查看关系'}</button>`
+      + '<div id="inkPersonRel" style="text-align:center;padding:0 10px"></div>'
       + '<button class="btn" id="inkBtnPersonBio" style="width:calc(100% - 20px);margin:0 10px 10px">导出此人传记（Markdown）</button>';
     panel.classList.add('on');
     $('inkPersonClose').addEventListener('click', () => this.hidePersonCard());
+    // 关系图开关。⚠️ 换人（点外圈节点）时 `relationOpen` 保持——于是能顺着关系网一路点下去；
+    //    这里同步把新中心的关系图填进容器（否则按钮写着「收起关系」、图却是空的）。
+    if (this.relationOpen) {
+      const relBox = $('inkPersonRel');
+      if (relBox) relBox.innerHTML = this.buildRelationSvg(entity);
+    }
+    this.bindRelationGraph();
+    $('inkBtnPersonRel').addEventListener('click', () => {
+      // 纯 UI 开关：重绘关系图容器，**不重排整张卡**（否则会把玩家的滚动位置重置）。
+      this.relationOpen = !this.relationOpen;
+      $('inkBtnPersonRel').textContent = this.relationOpen ? '收起关系' : '查看关系';
+      const box = $('inkPersonRel');
+      const now = findEntity(this.world, id);
+      if (box) box.innerHTML = (this.relationOpen && now) ? this.buildRelationSvg(now) : '';
+      if (this.relationOpen) this.bindRelationGraph();
+    });
+    $('inkBtnPersonWatch').addEventListener('click', () => {
+      // 再取一次实体：卡片可能开着不动、人却在这期间死了（面板每 2.5 秒刷新）。
+      const now = findEntity(this.world, id);
+      if (!now) return;
+      const res = toggleWatch(this.world, now, this.world.day);
+      if (!res.ok) {
+        // 上限满 ⇒ **不静默顶掉别人**，就地提示玩家先取关一个（不弹模态框）。
+        if (res.reason === 'full') {
+          $('inkBtnPersonWatch').textContent = `记挂已满（上限 ${WATCH_CAP}）`;
+        }
+        return;
+      }
+      this.showPersonCard(id);   // 重绘按钮状态（☆ / ★）
+      this.refreshWatch();       // 侧栏「天道记挂」同步
+    });
     $('inkBtnPersonBio').addEventListener('click', () => {
       // 再编译一遍：正文是纯派生，不值得为它多存一份（存了就会与世界不同步）
       const now = findEntity(this.world, id);
@@ -2443,10 +2589,12 @@ class Sandbox {
     });
     // 「找到这个人」和「看见他在哪」是同一件事——所以顺带把镜头挪过去。
     // 挪镜头**不是**改世界状态（camera 是渲染层），所以不影响存读档等价。
-    this.camera.x = entity.x;
-    this.camera.y = entity.y;
-    this.camera.zoom = Math.max(this.camera.zoom, 7);
-    this.camera.clamp();
+    // D7-C：改成 0.75 秒的滑行 + 落点墨环（不再是啪一下瞬移）。
+    this.camera.focusOn(entity.x, entity.y, {
+      zoom: Math.max(this.camera.zoom, 7),
+      duration: PERSON_FOCUS_DURATION,
+    });
+    spawnFocusPulse(this.focusPulses, entity.x, entity.y);
     this.dirty = true;
   }
 
@@ -2454,6 +2602,142 @@ class Sandbox {
     const panel = $('inkPersonDetail');
     if (panel) panel.classList.remove('on');
     this.personOpenId = null;
+    this.relationOpen = false;   // 收起卡片时也收起关系图（下次打开是干净状态）
+  }
+
+  // ── 人物局部关系图（D7-F，见 render/relationGraph.js）────────
+  /**
+   * 把中心人物的**一跳关系**喂给纯 SVG 生成器。
+   *
+   * 邻居来自 `entity.relations`（`Map<id, {type, score}>`，见 `sim/relations.js`），
+   * 每个 id 解析成「在世 / 故人 / 不可考」三态——**只查现成名录，不按名字猜**：
+   *   · `findEntity` 命中 ⇒ 在世（点开他的卡）；
+   *   · `findDead` 命中   ⇒ 故人（点开史册传记）；
+   *   · 都没有            ⇒ 不可考（点了只提示，不抛错）。
+   * 纯读派生，不改世界、不抽 RNG。
+   */
+  buildRelationSvg(entity) {
+    const world = this.world;
+    const neighbors = [];
+    const rels = entity && entity.relations;
+    if (rels && typeof rels.forEach === 'function') {
+      rels.forEach((rel, id) => {
+        const live = findEntity(world, id);
+        const dead = live ? null : findDead(world, id);
+        neighbors.push({
+          id,
+          name: (live && displayName(live)) || (dead && dead.name) || '无名',
+          type: rel && rel.type,
+          score: rel && rel.score,
+          state: live ? 'live' : (dead ? 'dead' : 'unknown'),
+        });
+      });
+    }
+    return relationGraphSvg(
+      { id: entity.id, name: displayName(entity) },
+      neighbors,
+      { max: RELATION_GRAPH_MAX },
+    );
+  }
+
+  /**
+   * 关系图外圈节点的点击委托。
+   * ⚠️ 绑在**常驻的 `#inkPersonDetail`**（不是被反复重建的 `#inkPersonRel`）——
+   *    卡片每开一次就 `panel.innerHTML = …` 重排一次，绑在子容器上的监听会被一起丢掉，
+   *    而且**不报错**，只是点了没反应（本仓记录过的故障类）。
+   */
+  bindRelationGraph() {
+    const panel = $('inkPersonDetail');
+    if (!panel || this.relationBound) return;
+    panel.addEventListener('click', (ev) => {
+      const el = ev.target.closest('[data-goto]');
+      if (!el) return;
+      const nid = Number(el.dataset.goto);
+      if (!Number.isFinite(nid)) return;
+      if (findEntity(this.world, nid)) this.showPersonCard(nid);
+      else if (findDead(this.world, nid)) this.showDeadBiography(nid);
+      else this.notify('此人已不可考');
+    });
+    this.relationBound = true;
+  }
+
+  // ── 天道记挂（D7-E，见 sim/watch.js）────────────────────────
+  /**
+   * 「天道记挂」子区。它是**玩家的观察列表**，不是世界规律——
+   * 所以这一块**只读** `world.watch`、只做增删与导航，从不写回模拟。
+   *
+   * 三种状态各有各的出口（判据顺序见 `resolveWatch`）：
+   *   · 在世 / 异魂占身 → 镜头走 C 包的 focus + 墨环 + 打开人物卡；
+   *   · 已入上界       → 就地摊出「上界现况」（`upperFateOf`），**不移动镜头**
+   *                      （上界那具身子不在凡间这张图上，挪过去只会看见空山）；
+   *   · 故人           → 打开史册传记，**不移动到不存在的人身上**。
+   *
+   * 标题上那颗红点是「有没有未读的重大事件」（`watchHasNews`）——
+   * 点开这一块即标为已读（`markAllWatchRead`）。第一版刻意**不造通知中心**。
+   *
+   * ⚠️ 纯读 + 一个只增的 `lastReadDay`：挂 2.5 秒定时器刷新，不抽 rng、不动世界。
+   */
+  refreshWatch() {
+    const box = $('inkWatch');
+    const world = this.world;
+    if (!box || !world) return;
+    const rows = watchRows(world);
+    const count = $('inkWatchCount');
+    if (count) count.textContent = String(rows.length);
+    const dot = $('inkWatchDot');
+    if (dot) dot.style.display = watchHasNews(world) ? '' : 'none';
+    box.innerHTML = rows.length
+      ? rows.map((r) => {
+        const e = r.entry;
+        const tags = [];
+        if (r.entity) tags.push(realmOrMortal(r.entity.level || 0));
+        tags.push(r.label);
+        // 已入上界的：顺手把「现在在上界怎么样」摊在小字里（复用三界面板的
+        // `upperFateOf`，不新增账本）。其余状态没有这一行。
+        const extra = (r.upper && world.upper)
+          ? `<div class="necro-epitaph">${upperFateOf(world.upper, r.upper)}</div>`
+          : '';
+        return `<div class="ink-log notable-row" data-watch="${e.key}">`
+          + `<span class="notable-reason">★</span>${e.name}（${tags.join(' · ')}）`
+          + `${extra}</div>`;
+      }).join('')
+      : '<div class="ink-empty">还没有记挂任何人。点开一个人物卡，按「☆ 记挂此人」。</div>';
+    // 事件委托（同活人榜 / 史册）：面板每 2.5 秒重建 innerHTML，
+    // 逐行挂监听会被下一次刷新全部丢掉——而且不报错，只是点了没反应。
+    if (!this.watchBound) {
+      box.addEventListener('click', (ev) => {
+        const el = ev.target.closest('[data-watch]');
+        if (el) this.openWatchRow(el.dataset.watch);
+      });
+      // 点标题 = 把全部记挂标为已读（红点熄灭）。第一版**不造通知中心**，
+      // 只用这一下「清红点」的手势。标题是常驻元素，挂一次即可。
+      const title = $('inkWatchTitle');
+      if (title) {
+        title.style.cursor = 'pointer';
+        title.addEventListener('click', () => {
+          markAllWatchRead(this.world, this.world.day);
+          this.refreshWatch();
+        });
+      }
+      this.watchBound = true;
+    }
+  }
+
+  /** 点一行「记挂」：按状态导航（见 refreshWatch 的三种出口）。**纯导航 + 标已读**。 */
+  openWatchRow(key) {
+    const world = this.world;
+    if (!world) return;
+    const entry = ensureWatch(world).find((w) => w.key === key);
+    if (!entry) return;
+    const r = resolveWatch(world, entry);
+    markWatchRead(world, key, world.day);   // 点开即已读（红点熄灭）
+    if ((r.state === 'alive' || r.state === 'possessed') && r.entity) {
+      this.showPersonCard(r.entity.id);     // 内含 focus + 墨环 + 人物卡
+    } else if (r.state === 'dead' && r.dead) {
+      this.showDeadBiography(r.dead.id);
+    }
+    // ascended / unknown：只标已读、就地显示现况（红点灭），不移动镜头。
+    this.refreshWatch();
   }
 
   // ── 三界（上界 / 幽冥，见 Batch 3）───────────────────────────
@@ -2794,4 +3078,7 @@ setInterval(() => {
   // 上面发生的事（有人飞升上来、某个魂排到了队）都不是玩家按出来的。
   // 不主动推一把，玩家永远不会知道那边动过。
   sandbox.refreshThreeRealms();
+  // 天道记挂（D7-E）：记挂的人可能在这 2.5 秒里突破 / 飞升 / 死了——
+  // 状态与红点都靠这个定时器浮上来。纯读 + 只增 `lastReadDay`，不在 rAF 里。
+  sandbox.refreshWatch();
 }, 2500);

@@ -756,6 +756,17 @@ const WORLD_EXEMPT = new Map([
   ['nether', '幽冥块（v10）：地形只存 6 层，第 6b 节整块逐字段比'],
 ]);
 
+// 存档外部键与 World 内部字段名有意不同的兼容映射（凡间与上界共用 serializeWorld）。
+// `worldEvents` 是 D6-1 已发布存档字段；保留它以兼容旧档，内存态继续叫 `worldEventState`。
+// 这不是豁免：映射后的字段仍走下面的通用逐字段等价检查。
+const WORLD_FIELD_MAPPINGS = new Map([
+  ['worldEvents', {
+    worldKey: 'worldEventState',
+    reason: 'D6-1 存档字段兼容：外部 worldEvents 对应 World 内部 worldEventState',
+  }],
+]);
+const MAPPED_WORLD_KEYS = new Set([...WORLD_FIELD_MAPPINGS.values()].map((entry) => entry.worldKey));
+
 /**
  * world 上有、但**按设计就不进存档**的键（推导量 / 渲染标记 / 临时缓冲）。
  *
@@ -783,14 +794,23 @@ const worldDiff = [];
 for (const k of Object.keys(payload)) {
   if (WORLD_EXEMPT.has(k)) continue;
   worldCompared.push(k);
-  const va = world[k];
-  const vb = clone[k];
+  const worldKey = WORLD_FIELD_MAPPINGS.get(k)?.worldKey || k;
+  const va = world[worldKey];
+  const vb = clone[worldKey];
   const scalar = va === null || typeof va !== 'object';
   const same = scalar ? va === vb : JSON.stringify(va) === JSON.stringify(vb);
   if (!same) {
     worldDiff.push(`${k}: 左 ${JSON.stringify(va).slice(0, 50)} ≠ 右 ${JSON.stringify(vb).slice(0, 50)}`);
   }
 }
+const invalidFieldMappings = [...WORLD_FIELD_MAPPINGS].filter(([payloadKey, entry]) =>
+  !Object.prototype.hasOwnProperty.call(payload, payloadKey)
+  || !Object.prototype.hasOwnProperty.call(world, entry.worldKey)
+  || !Object.prototype.hasOwnProperty.call(clone, entry.worldKey));
+check('有意存档字段映射指向真实 payload / World 字段', invalidFieldMappings.length === 0,
+  invalidFieldMappings.length
+    ? invalidFieldMappings.map(([key, entry]) => `${key}→${entry.worldKey}`).join(' ')
+    : [...WORLD_FIELD_MAPPINGS].map(([key, entry]) => `${key}→${entry.worldKey}`).join(' '));
 check('世界级字段逐键一致（键集从 payload 反推，不手抄清单）',
   worldDiff.length === 0,
   worldDiff.length
@@ -1130,10 +1150,10 @@ check('逝者账本三字段一致',
   //    光看 `clone.nether` 非 null 是**证明不了**的：读档侧无论有没有块都会补一个
   //    （有就还原、没有就地生成），所以「v10 块没写」这件事在 clone 侧完全看不出来。
   const worldKeys = ['wars', 'nextWarId', 'warLog', 'possessionLog', 'dead', 'deadLog', 'upper',
-    'nether', 'rifts', 'nextRiftId', 'riftLog', 'wraiths', 'wraithLog'];
+    'nether', 'rifts', 'nextRiftId', 'riftLog', 'wraiths', 'wraithLog', 'watch'];
   const missWorld = worldKeys.filter((k) => !Object.prototype.hasOwnProperty.call(payloadJson, k));
   check('序列化结果顶层含全部世界级新字段'
-    + '（wars/nextWarId/warLog/possessionLog/dead/deadLog/upper/nether/rifts/nextRiftId/riftLog/wraiths/wraithLog）',
+    + '（wars/nextWarId/warLog/possessionLog/dead/deadLog/upper/nether/rifts/nextRiftId/riftLog/wraiths/wraithLog/watch）',
     missWorld.length === 0,
     missWorld.length ? `缺：${missWorld.join(' ')}` : worldKeys.join(' '));
 
@@ -1274,7 +1294,11 @@ check('逝者账本三字段一致',
   //    也不在 WORLD_EXEMPT 里的键 → 有人加了字段却忘了接进比对。
   //    通用循环本来就是遍历 payload 的，所以这条眼下恒真；它是**守门人**——
   //    防的是以后有人把那个循环改回白名单，而新字段又没人想起来加。
-  const accounted = new Set([...worldCompared, ...WORLD_EXEMPT.keys()]);
+  const accounted = new Set([
+    ...worldCompared,
+    ...WORLD_EXEMPT.keys(),
+    ...WORLD_FIELD_MAPPINGS.keys(),
+  ]);
   const unregistered = Object.keys(payload).filter((k) => !accounted.has(k));
   check('payload 顶层没有「没接进比对」的键（新增字段必须注册或写明豁免理由）',
     unregistered.length === 0,
@@ -1288,6 +1312,7 @@ check('逝者账本三字段一致',
   const notSaved = Object.keys(world).filter((k) =>
     !k.startsWith('_')
     && !Object.prototype.hasOwnProperty.call(payload, k)
+    && !MAPPED_WORLD_KEYS.has(k)
     && !terrainKeys.has(k)
     && !WORLD_NOT_SAVED.has(k));
   check('world 上没有「serialize 漏写」的键（漏了就是读档后凭空消失）',
@@ -1308,7 +1333,9 @@ check('逝者账本三字段一致',
   // 什么故障会让它变红：serializeWorld 手滑多写一个键（如 `riftLogs` 拼错）、
   //    塞了临时调试键、或加了一个 payload 字段却忘了在 `World` 构造器上建它。
   const phantom = Object.keys(payloadJson).filter((k) =>
-    !Object.prototype.hasOwnProperty.call(world, k) && !WORLD_EXEMPT.has(k));
+    !Object.prototype.hasOwnProperty.call(world, k)
+    && !WORLD_EXEMPT.has(k)
+    && !WORLD_FIELD_MAPPINGS.has(k));
   check('payload 里的键在 world 上都有对应字段（反向断言：抓「序列化写了世界没有的键」）',
     phantom.length === 0,
     phantom.length ? `凭空多出：${phantom.join(' ')}`
@@ -1879,8 +1906,9 @@ if (up2) {
   for (const k of Object.keys(payloadJson.upper)) {
     if (UPPER_EXEMPT.has(k)) continue;
     upCompared.push(k);
-    const va = up[k];
-    const vb = up2[k];
+    const worldKey = WORLD_FIELD_MAPPINGS.get(k)?.worldKey || k;
+    const va = up[worldKey];
+    const vb = up2[worldKey];
     const scalar = va === null || typeof va !== 'object';
     const same = scalar ? va === vb : JSON.stringify(va) === JSON.stringify(vb);
     if (!same) {
@@ -2039,6 +2067,10 @@ if (up2) {
     //    空数组 / `{dissolved:0}`；这条同时钉住「上界不会长出鬼影」。
     empty('wraiths', w.wraiths);
     zero('wraithLog.dissolved', w.wraithLog.dissolved);
+    // 10. 「记挂」观察者列表（D7-E）—— 玩家的凡间观察状态，上界恒空。
+    //     `serializeUpperWorld` 刻意不写它，读侧靠 `restoreWorldState` 兜成 `[]`；
+    //     这条同时钉住「上界不会长出记挂列表」。
+    empty('watch', w.watch);
     return { bad, checked };
   };
   const fLive = upperForbidden(up);
@@ -2047,7 +2079,7 @@ if (up2) {
     ...fLive.bad.map((s) => `原世界 ${s}`),
     ...fLoaded.bad.map((s) => `读档后 ${s}`),
   ];
-  check('上界不跑凡间专属系统：卜算子 / 夺舍 / 神魂 / 大战 / 飞升记录 / 世家账本 / 凡人聚落 / 空间裂缝 / 凡间鬼影 全部恒空恒零',
+  check('上界不跑凡间专属系统：卜算子 / 夺舍 / 神魂 / 大战 / 飞升记录 / 世家账本 / 凡人聚落 / 空间裂缝 / 凡间鬼影 / 记挂 全部恒空恒零',
     forbiddenBad.length === 0,
     forbiddenBad.length
       ? forbiddenBad.join(' | ')
@@ -2397,11 +2429,15 @@ if (up2) {
       // 上界恒空恒零这件事由本节 ④b 的 `upperForbidden` 正面断言守着。
       ['wraiths', '凡间鬼影是凡间专属（缝开在凡间、鬼爬进凡间），上界恒空、刻意不存（serializeUpperWorld 里 delete）'],
       ['wraithLog', '同上'],
+      // 「记挂」观察者列表（D7-E）：玩家的凡间观察状态，上界恒空，
+      // `serializeUpperWorld` 里显式 `delete payload.watch`。
+      ['watch', '「记挂」是玩家的凡间观察状态（sim/watch.js），上界不跑、恒空、刻意不存（serializeUpperWorld 里 delete）'],
     ]);
     const terrainKeys = new Set(Object.keys(payloadJson.upper.terrain || {}));
     const notSaved = Object.keys(up).filter((k) =>
       !k.startsWith('_')
       && !Object.prototype.hasOwnProperty.call(payloadJson.upper, k)
+      && !MAPPED_WORLD_KEYS.has(k)
       && !terrainKeys.has(k)
       && !UPPER_NOT_SAVED.has(k));
     check('上界没有「serialize 漏写」的键（漏了就是读档后凭空消失）',
@@ -2565,10 +2601,12 @@ if (nth2) {
   // 魂路账本记在**凡间**那侧（§8.2「魂池不搬家」，`enterNether` 由凡间的
   // `Life` 调，幽冥实例上恒为零），凡间鬼影（D6-3 工程包 B）同理——缝在凡间、
   // 鬼爬进凡间；夺舍账本（D6-3 工程包 D 复核补删）也记在**凡间**那侧
-  // （`resetNetherSystems` 第 2 条钉零，跨位面子账由凡间的 `stepNetherRift` 记）。
-  // 留着会让 payload 平白多出几个**恒空**的键，读档后 `restoreWorldState` 又把
-  // 它们还原成空——两份空状态互相印证，看着无害，实则是「幽冥也跑裂缝 / 也转世 /
-  // 也夺舍」这个**不存在**的语义被写进了存档格式，后来人会照着它去接线。
+  // （`resetNetherSystems` 第 2 条钉零，跨位面子账由凡间的 `stepNetherRift` 记）；
+  // 「记挂」观察者列表（D7-E）更是**玩家的**凡间观察状态——玩家记挂的是凡间的人，
+  // 幽冥那一侧不持有它。留着会让 payload 平白多出几个**恒空**的键，读档后
+  // `restoreWorldState` 又把它们还原成空——两份空状态互相印证，看着无害，
+  // 实则是「幽冥也跑裂缝 / 也转世 / 也夺舍 / 也有记挂」这个**不存在**的语义
+  // 被写进了存档格式，后来人会照着它去接线。
   //
   // ⚠️ 查的是**序列化结果的键集**（`payloadJson.nether`），不是读回来的值：
   //    `restoreWorldState` 会给幽冥 world 补回这六样（空数组 / 零账本），所以
@@ -2576,13 +2614,13 @@ if (nth2) {
   //    这正是本文件开头那条规矩：判「存了没有」一律查序列化结果的键集。
   // 什么故障会让它变红：有人把 `serializeNetherWorld` 里那几行 delete 删掉
   //   （或漏删其中一行）——存档格式从此多出几个语义错误的键，且不报错。
-  const NETHER_FORBIDDEN_KEYS = ['rifts', 'nextRiftId', 'riftLog', 'soulLog', 'wraiths', 'wraithLog', 'possessionLog'];
+  const NETHER_FORBIDDEN_KEYS = ['rifts', 'nextRiftId', 'riftLog', 'soulLog', 'wraiths', 'wraithLog', 'possessionLog', 'watch'];
   const leakedMortal = NETHER_FORBIDDEN_KEYS.filter((k) =>
     Object.prototype.hasOwnProperty.call(payloadJson.nether, k));
-  check(`幽冥块里没有凡间专属的七个键（${NETHER_FORBIDDEN_KEYS.join('/')}）`,
+  check(`幽冥块里没有凡间专属的八个键（${NETHER_FORBIDDEN_KEYS.join('/')}）`,
     leakedMortal.length === 0,
     leakedMortal.length ? `不该有却出现：${leakedMortal.join(' ')}`
-      : `${Object.keys(payloadJson.nether).length} 键，七个凡间专属键一个都没带`);
+      : `${Object.keys(payloadJson.nether).length} 键，八个凡间专属键一个都没带`);
 
   // ── ⑦ 实体 id 从幽冥段起编（NETHER_ID_BASE = 2_000_000）──
   //

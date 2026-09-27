@@ -2423,6 +2423,9 @@ section('5l. 编年史 kind：白名单、映射表与写入方');
   check('WORLD_KINDS 与 KIND_TAG 里值为 world 的键逐字一致', drift.length === 0,
     `白名单 ${whitelist.length} 个 · KIND_TAG 归 world 的 ${worldMapped.length} 个`
     + ` · 漂移 ${drift.length} 个${drift.length ? `：${drift.join(', ')}` : ''}`);
+  check('天道干预 kind 归入现有 world 分类',
+    KIND_TAG.intervention === 'world' && WORLD_KINDS.has('intervention'),
+    `KIND_TAG=${KIND_TAG.intervention || '缺失'} · 白名单=${WORLD_KINDS.has('intervention')}`);
 
   // ── B/C. 扫源码，做双向缺口审计 ──
   //

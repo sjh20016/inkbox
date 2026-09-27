@@ -3,7 +3,6 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { APP } from '../src/inkbox/core/config.js';
@@ -13,11 +12,16 @@ const DIST = path.join(ROOT, 'dist');
 const PACKAGE_NAME = `zuotian-guan-jing-inkbox-${APP.version}`;
 const OUTPUT_DIR = path.join(DIST, PACKAGE_NAME);
 const OUTPUT_ZIP = path.join(DIST, `${PACKAGE_NAME}.zip`);
-const STAGE = fs.mkdtempSync(path.join(os.tmpdir(), 'inkbox-package-'));
+fs.mkdirSync(DIST, { recursive: true });
+// Keep staging beside the archive so tar receives only relative paths on Windows.
+const STAGE = fs.mkdtempSync(path.join(DIST, '.inkbox-package-'));
 
 const FILES = [
   '.gitignore',
   'README.md',
+  // 交接单（D7-G）：**极短**，新模型默认读 README → HANDOFF → THREE_REALMS → 本包源码，
+  // 不再先吞 8 万字的 STATUS。必须随包出货。
+  'HANDOFF.md',
   'STATUS.md',
   'BACKLOG.md',
   // 三界规则表（D6-2 工程包 A）。**必须随包出货**：它是「代码必须遵守的三界规则」
@@ -40,12 +44,14 @@ const FILES = [
   'scripts/inkbox-import-check.mjs',
   'scripts/inkbox-core-check.mjs',
   'scripts/inkbox-startup-check.mjs',
+  'scripts/inkbox-runtime-events.mjs',
   'scripts/inkbox-intervention-regression.mjs',
   'scripts/inkbox-save-equiv.mjs',
   'scripts/inkbox-playtest.mjs',
   'scripts/inkbox-smoke.mjs',
   'scripts/inkbox-longrun.mjs',
   'scripts/inkbox-three-realms.mjs',
+  'scripts/inkbox-presentation.mjs',
   'tests/README.md',
 ];
 const DIRECTORIES = ['src/inkbox'];
@@ -80,13 +86,16 @@ try {
     throw new Error('打包包身份或 build 脚本与 Inkbox 主线不一致');
   }
 
-  fs.mkdirSync(DIST, { recursive: true });
   fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
   copyPath(STAGE, OUTPUT_DIR);
   fs.rmSync(OUTPUT_ZIP, { force: true });
 
   if (process.platform === 'win32') {
-    const result = spawnSync('tar.exe', ['-a', '-c', '-f', OUTPUT_ZIP, '-C', STAGE, '.'], {
+    const stageFromDist = path.relative(DIST, STAGE).replaceAll('\\', '/');
+    const result = spawnSync('tar.exe', [
+      '-a', '-c', '-f', path.basename(OUTPUT_ZIP), '-C', stageFromDist, '.',
+    ], {
+      cwd: DIST,
       encoding: 'utf8',
       windowsHide: true,
     });

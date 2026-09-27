@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import { mulberry32 } from '../src/inkbox/core/noise.js';
-import { SPECIES, WORLD_PRESETS } from '../src/inkbox/core/config.js';
+import { NEVER_DECAY_DAY, SPECIES, TIME, WORLD_PRESETS } from '../src/inkbox/core/config.js';
 import { History } from '../src/inkbox/sim/powers.js';
 import { Life } from '../src/inkbox/sim/life.js';
 import { generateWorld } from '../src/inkbox/world/worldgen.js';
 import { recomputeRect, OVER } from '../src/inkbox/world/terrain.js';
 import { deserializeWorld, serializeWorld } from '../src/inkbox/io/save.js';
 import { TOOL_BY_ID } from '../src/inkbox/ui/tools.js';
+import { spawnNetherGhost, stepNether } from '../src/inkbox/sim/netherLife.js';
 import {
   createInterventionOutcome, measureChangedCells,
 } from '../src/inkbox/sim/interventionFeedback.js';
@@ -239,5 +240,34 @@ check('降灾达到并存上限时明确拒绝且不创建第三个事件',
   resolvedLife.events.activeCrises.length === 2 && cappedCrisisOutcome.status === 'failed'
     && cappedCrisisOutcome.failureReason.includes('两场'),
   cappedCrisisOutcome.failureReason);
+
+// 幽冥寿命契约：普通正寿命按期消散；负寿命使用正向 JSON 安全哨兵，长时段与读档都不消散。
+const shortLived = spawnNetherGhost(resolvedReload.nether, {
+  ghostOf: { ref: 'mortal:decay-test', name: '短命鬼', deathDay: resolvedReload.day },
+  decayYears: 1,
+});
+const immortal = spawnNetherGhost(resolvedReload.nether, {
+  ghostOf: { ref: 'mortal:never-decay-test', name: '不散鬼', deathDay: resolvedReload.day },
+  decayYears: -1,
+});
+check('正寿命截止日与负寿命永不消散哨兵分开', !!shortLived && !!immortal
+  && shortLived.ghostDecayDay === resolvedReload.day + TIME.daysPerYear
+  && immortal.ghostDecayDay === NEVER_DECAY_DAY,
+`${shortLived && shortLived.ghostDecayDay} / ${immortal && immortal.ghostDecayDay}`);
+resolvedReload.day = shortLived.ghostDecayDay - 1;
+stepNether(resolvedReload, 1);
+check('正寿命鬼魂不会提前一天消散', resolvedReload.nether.entities.includes(shortLived), shortLived.name);
+resolvedReload.day = shortLived.ghostDecayDay;
+stepNether(resolvedReload, 1);
+check('正寿命鬼魂在到期日消散', !resolvedReload.nether.entities.includes(shortLived), shortLived.name);
+
+const decayReload = deserializeWorld(serializeWorld(resolvedReload));
+const immortalReload = decayReload.nether.entities.find((entry) => entry.id === immortal.id);
+check('负寿命哨兵存档后精确恢复', immortalReload?.ghostDecayDay === NEVER_DECAY_DAY,
+  String(immortalReload?.ghostDecayDay));
+decayReload.day = 20_000 * TIME.daysPerYear;
+stepNether(decayReload, 20_000 * TIME.daysPerYear);
+check('负寿命鬼魂经过两万年推进仍不消散', decayReload.nether.entities.some((entry) => entry.id === immortal.id),
+  `day=${decayReload.day} cutoff=${immortalReload?.ghostDecayDay}`);
 
 console.log(`\nInkbox intervention regression OK · ${checks} 项`);
