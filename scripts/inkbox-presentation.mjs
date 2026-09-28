@@ -30,8 +30,11 @@ import {
 } from '../src/inkbox/render/relationGraph.js';
 import { LIMITS, WORLD_PRESETS } from '../src/inkbox/core/config.js';
 import { createFxState, drawFx, ingestRuntimeEvents, updateFx, FX_CAP } from '../src/inkbox/render/fxLayer.js';
+import { PresentationStage, STAGE_PLANES } from '../src/inkbox/render/presentationStage.js';
 import { drainRuntimeEvents, peekRuntimeEvents } from '../src/inkbox/core/runtimeEvents.js';
-import { emitPresentation } from '../src/inkbox/sim/presentation.js';
+import {
+  emitPresentation, emitRiftCross, RIFT_CROSS_KINDS, RIFT_CROSS_PHASES,
+} from '../src/inkbox/sim/presentation.js';
 import { generateWorld } from '../src/inkbox/world/worldgen.js';
 import { generateUpperWorld } from '../src/inkbox/world/worldgenUpper.js';
 import { openRifts } from '../src/inkbox/sim/rifts.js';
@@ -70,9 +73,72 @@ function makeCamera() {
  * ⚠️ 承重：本项目**文档注释与代码混排**，注释里常出现「不读 world.day」「mulberry32」
  * 这类**被禁止的字面量**（正是在解释「为什么不能这么写」）。直接 grep 全文会把
  * 「注释里提到了它」误判成「代码里用了它」——这正是仓库里已记录的假红故障类。
+ *
+ * ⚠️⚠️ **必须是逐字符状态机，不能拿一条朴素正则去删块注释**：本仓注释里会出现
+ * 「本模块不 import sim 下所有模块」这种**含块注释起始二字符序列的行注释**；
+ * 朴素正则会把它误认成块注释开头，一路吞到下一个块注释结束序列 —— **把中间的代码
+ * 也删掉**，于是「文件里有没有某个 import」这类断言**静默地**基于残缺源码判断
+ * （假红 / 假绿都可能）。
+ * 本函数**保留行号**（注释换成等长空白），报出的行号能直接跳。
  */
 function stripComments(src) {
-  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+  let out = '';
+  let i = 0;
+  let mode = 0;   // 0=代码 1=行注释 2=块注释
+  let quote = '';
+  while (i < src.length) {
+    const c = src[i];
+    const c2 = src[i + 1];
+    if (mode === 0 && !quote && c === '/' && c2 === '/') { mode = 1; out += '  '; i += 2; continue; }
+    if (mode === 0 && !quote && c === '/' && c2 === '*') { mode = 2; out += '  '; i += 2; continue; }
+    if (mode === 1) { out += c === '\n' ? '\n' : ' '; if (c === '\n') mode = 0; i += 1; continue; }
+    if (mode === 2) {
+      if (c === '*' && c2 === '/') { mode = 0; out += '  '; i += 2; continue; }
+      out += c === '\n' ? '\n' : ' ';
+      i += 1;
+      continue;
+    }
+    if (!quote && (c === "'" || c === '"' || c === '`')) { quote = c; out += c; i += 1; continue; }
+    if (quote) {
+      if (c === '\\') { out += c + (c2 || ''); i += 2; continue; }
+      if (c === quote) quote = '';
+      out += c;
+      i += 1;
+      continue;
+    }
+    out += c;
+    i += 1;
+  }
+  return out;
+}
+
+/**
+ * 取某个函数的**函数体**（已去注释的源码上），做「函数边界」类判据。
+ * 与 `three-realms.mjs` 的 `fnBodyOf` 同款：从 `function <name>(` 起找到签名后
+ * 第一个 `{`，再**括号配平**到配对的 `}`。找不到返回空串。
+ */
+function fnBodyOfCode(src, name) {
+  const i = src.indexOf(`function ${name}(`);
+  if (i < 0) return '';
+  // ⚠️ 必须先**配平参数表括号**再找函数体的 `{`：参数默认值里可能出现 `{}`
+  //    （例如 `emitRiftCross(world, spec = {})`），直接取「第一个 `{`」会拿到它，
+  //    于是函数体只剩 `{}`——一条静默的假红。
+  const p = src.indexOf('(', i);
+  if (p < 0) return '';
+  let pd = 0;
+  let q = p;
+  for (; q < src.length; q += 1) {
+    if (src[q] === '(') pd += 1;
+    else if (src[q] === ')') { pd -= 1; if (pd === 0) { q += 1; break; } }
+  }
+  const j = src.indexOf('{', q);
+  if (j < 0) return '';
+  let depth = 0;
+  for (let k = j; k < src.length; k += 1) {
+    if (src[k] === '{') depth += 1;
+    else if (src[k] === '}') { depth -= 1; if (depth === 0) return src.slice(j, k + 1); }
+  }
+  return src.slice(j);
 }
 
 console.log('══════════════════════════════════════════════════════════════');
@@ -259,7 +325,12 @@ console.log('\n[7] FX 层 · 事件 → 短命特效');
     { type: 'ascension', plane: 'upper', day: 1, x: 3, y: 4 },
     { type: 'unknown-type', plane: 'mortal', day: 1, x: 3, y: 4 },
   ], { plane: 'mortal' });
-  check('无坐标 / 非凡间 / 未登记类型的事件被跳过', fx2.items.length === 0);
+  // ⚠️ 契约变更（D8-C）：非凡间**不再**被跳过——上界 / 幽冥的事件也要入队（由舞台
+  //    分发给视界窗）。所以这里只剩「无坐标」与「未登记类型」两类被跳过。
+  check('无坐标 / 未登记类型的事件被跳过；非凡间不再跳过（D8-C 起入队）',
+    fx2.items.length === 1 && fx2.items[0].plane === 'upper');
+  check('FX 项自带 plane（供 drawPlane 按位面过滤）',
+    fx2.items[0].kind === 'ascension' && fx2.items[0].x === 3 && fx2.items[0].y === 4);
 
   const fx3 = createFxState();
   ingestRuntimeEvents(fx3, [{ type: 'tribulation', plane: 'mortal', day: 1, x: 1, y: 1 }], { plane: 'mortal' });
@@ -308,6 +379,114 @@ console.log('\n[7] FX 层 · 事件 → 短命特效');
   check('fxLayer.js 不 import sim / world（表现不反向依赖模拟）',
     !/from\s+'\.\.\/(sim|world)\//.test(stripComments(fxSrc)));
   check('fxLayer.js 不 import rng 生成器（视觉抖动走确定性哈希）', !/mulberry32/.test(stripComments(fxSrc)));
+}
+
+// ── 7b. 多位面舞台 · Presentation Stage（D8-C）────────────────────
+console.log('\n[7b] 多位面舞台 · Presentation Stage（D8-C）');
+{
+  const stageSrc = fs.readFileSync(path.join(ROOT, 'src/inkbox/render/presentationStage.js'), 'utf8');
+  const stageCode = stripComments(stageSrc);
+
+  check('舞台登记三个位面（mortal / upper / nether）',
+    STAGE_PLANES.length === 3 && STAGE_PLANES.includes('mortal')
+    && STAGE_PLANES.includes('upper') && STAGE_PLANES.includes('nether'));
+  check('presentationStage.js 不 import sim/*（够不到模拟就改不了世界）',
+    !/from\s+'\.\.\/(sim|world)\//.test(stageCode));
+  check('presentationStage.js 不 import rng 生成器（不抽签）', !/mulberry32/.test(stageCode));
+  check('舞台复用唯一的 fxLayer（不做三份 FX 类）', /from\s+'\.\/fxLayer\.js'/.test(stageCode));
+
+  // 三界最小世界桩：各自一个事件队列（WeakMap 按 world 分队列），外加绘制所需的地形字段。
+  const mkWorld = (plane) => ({
+    plane, day: 5, w: 50, h: 50,
+    height: new Float32Array(50 * 50), idx: (x, y) => y * 50 + x,
+  });
+  const root = mkWorld('mortal');
+  root.upper = mkWorld('upper');
+  root.nether = mkWorld('nether');
+
+  // 计数桩 ctx：画一次记一次。
+  const mkCountCtx = () => {
+    let n = 0;
+    const ctx = {
+      save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {}, arc() {},
+      stroke() { n += 1; }, ellipse() { n += 1; },
+      strokeStyle: '', lineWidth: 0, lineCap: '', lineJoin: '',
+    };
+    return { ctx, count: () => n };
+  };
+  const cam = makeCamera();
+  cam.bind(fakeWorld50);
+  const draw = (st, plane) => {
+    const { ctx, count } = mkCountCtx();
+    st.drawPlane(plane, ctx, cam, fakeWorld50);
+    return count();
+  };
+
+  emitPresentation(root, 'tribulation', { x: 5, y: 5, subjectId: 1 });
+  emitPresentation(root.upper, 'ascension', { x: 6, y: 6, subjectId: 2 });
+  emitPresentation(root.nether, 'possession', { x: 7, y: 7, subjectId: 3 });
+
+  const stage = new PresentationStage();
+  stage.ingestWorlds(root);
+  check('一次 ingestWorlds 收齐三界事件（各归各的 plane，不串）',
+    stage.fx.items.length === 3
+    && stage.fx.items.filter((i) => i.plane === 'mortal').length === 1
+    && stage.fx.items.filter((i) => i.plane === 'upper').length === 1
+    && stage.fx.items.filter((i) => i.plane === 'nether').length === 1);
+  check('drain 一次以后三界队列全空（transient，不攒着）',
+    peekRuntimeEvents(root).length === 0
+    && peekRuntimeEvents(root.upper).length === 0
+    && peekRuntimeEvents(root.nether).length === 0);
+  check('三界同时有事件：每界只画自己那一份（都 > 0）',
+    draw(stage, 'mortal') > 0 && draw(stage, 'upper') > 0 && draw(stage, 'nether') > 0);
+
+  // 隔离：只放一条 upper，凡间画布应当**一笔不画**。
+  const onlyUpper = new PresentationStage();
+  emitPresentation(root.upper, 'ascension', { x: 6, y: 6 });
+  onlyUpper.ingestWorlds(root);
+  check('上界事件不会被画到凡间画布', draw(onlyUpper, 'mortal') === 0);
+  check('上界事件能被画到上界画布', draw(onlyUpper, 'upper') > 0);
+
+  // 隔离：只放一条 nether，上界画布应当**一笔不画**。
+  const onlyNether = new PresentationStage();
+  emitPresentation(root.nether, 'possession', { x: 7, y: 7 });
+  onlyNether.ingestWorlds(root);
+  check('幽冥事件不会被画到上界画布', draw(onlyNether, 'upper') === 0);
+  check('幽冥事件能被画到幽冥画布', draw(onlyNether, 'nether') > 0);
+
+  // 真实秒：暂停世界时 FX 照播、倍速不改变它的实时时长。
+  const s4 = new PresentationStage();
+  emitPresentation(root, 'tribulation', { x: 1, y: 1 });
+  s4.ingestWorlds(root);
+  s4.update(0.3);
+  check('update 走真实秒（0.3s → age 0.3，与游戏暂停 / 倍速无关）',
+    Math.abs(s4.fx.items[0].age - 0.3) < 1e-9);
+  check('舞台三方法都返回 this（可链式）',
+    stage.update(0) === stage
+    && stage.ingestWorlds(root) === stage
+    && stage.drawPlane('mortal', mkCountCtx().ctx, cam, fakeWorld50) === stage);
+
+  // 纯读：收事件 / 更新 FX 不改变世界（关视界时消费上界 / 幽冥事件也不改世界）。
+  const w3 = generateWorld({ preset: WORLD_PRESETS.small, seed: 20260927 });
+  w3.upper = generateUpperWorld({ preset: WORLD_PRESETS.small, seed: w3.seed });
+  emitPresentation(w3, 'tribulation', { x: 3, y: 3 });
+  emitPresentation(w3.upper, 'ascension', { x: 4, y: 4 });
+  const before = JSON.stringify(serializeWorld(w3));
+  const s6 = new PresentationStage();
+  s6.ingestWorlds(w3).update(0.2);
+  const after = JSON.stringify(serializeWorld(w3));
+  check('关视界时上界 / 幽冥事件即使被消费也不得改变世界（收队列是纯读）', before === after);
+  check('FX 状态不进存档（序列化产物里没有 fx / stage 键）',
+    !('fx' in serializeWorld(w3)) && !('stage' in serializeWorld(w3)));
+
+  // 接线：main.js 用舞台一帧收齐三界，不再自己写三遍 drain。
+  const mainCode = stripComments(fs.readFileSync(path.join(ROOT, 'src/inkbox/main.js'), 'utf8'));
+  check('main.js 不再自己 drainRuntimeEvents（收队列收进舞台）', !/drainRuntimeEvents\s*\(/.test(mainCode));
+  check('main.js 在「暂停」判断之前就收齐三界（暂停照播）',
+    mainCode.indexOf('ingestWorlds') >= 0
+    && mainCode.indexOf('ingestWorlds') < mainCode.indexOf('const paused'));
+  check('main.js 只把凡间那一份画在主画布（上界 / 幽冥交给视界窗）',
+    /drawPlane\('mortal'/.test(mainCode) && /drawRealmView\(/.test(mainCode));
 }
 
 // ── 8. 事件接线：模拟侧真的发得出事件 ───────────────────────────
@@ -579,6 +758,143 @@ console.log('\n[13] 战争线 · 开关 / 过滤 / 结束即消失');
   const a = drawWarLines(stub, cam, warWorld, { showAll: true, pulse: 1.25 });
   const b = drawWarLines(stub, cam, warWorld, { showAll: true, pulse: 1.25 });
   check('同 pulse 下画出的条数一致（呼吸走确定性相位，不抽 RNG）', a === b && a === 1);
+}
+
+// ── 14. 跨界动作「在两边发生」· emitRiftCross（D8-E）─────────────
+console.log('\n[14] 跨界动作 · emitRiftCross（D8-E）');
+{
+  // ① 形状：一次跨界发**两条**事件（离开端 + 到达端），各带正确 plane 与锚点。
+  const w = { plane: 'mortal', day: 123 };
+  const out = emitRiftCross(w, {
+    kind: 'person', fromPlane: 'mortal', toPlane: 'nether',
+    fromX: 10, fromY: 20, toX: 30, toY: 40,
+    fromKey: 'mortal:777', subjectId: 777, targetId: 2000001,
+  });
+  check('一次跨界发两条事件（离开端 + 到达端）', out.length === 2);
+  const evs = peekRuntimeEvents(w);
+  check('两条事件都是 rift-cross 类型', evs.length === 2 && evs.every((e) => e.type === 'rift-cross'));
+  const depart = evs.find((e) => e.data && e.data.phase === 'depart');
+  const arrive = evs.find((e) => e.data && e.data.phase === 'arrive');
+  check('离开端画在**源**位面、锚点是离开端坐标',
+    !!depart && depart.plane === 'mortal' && depart.x === 10 && depart.y === 20);
+  check('到达端画在**目标**位面、锚点是到达端坐标',
+    !!arrive && arrive.plane === 'nether' && arrive.x === 30 && arrive.y === 40);
+  check('data 带齐统一形状（kind / fromPlane / toPlane / 两端坐标 / fromKey）',
+    !!depart && depart.data.kind === 'person'
+    && depart.data.fromPlane === 'mortal' && depart.data.toPlane === 'nether'
+    && depart.data.fromX === 10 && depart.data.fromY === 20
+    && depart.data.toX === 30 && depart.data.toY === 40
+    && depart.data.fromKey === 'mortal:777');
+  check('主体 / 目标 id 透传到事件顶层（FX 视觉种子用）',
+    !!arrive && arrive.subjectId === 777 && arrive.targetId === 2000001);
+  check('KINDS / PHASES 是冻结的取值表（形状单一真源）',
+    Object.isFrozen(RIFT_CROSS_KINDS) && RIFT_CROSS_KINDS.includes('possession')
+    && RIFT_CROSS_PHASES.length === 2 && RIFT_CROSS_PHASES.includes('depart'));
+
+  // ② sides：只发一端（夺舍用 'depart'，因为到达端已有 D7 的 'possession'）。
+  const wd = { plane: 'mortal', day: 5 };
+  emitRiftCross(wd, {
+    kind: 'possession', fromPlane: 'nether', toPlane: 'mortal',
+    fromX: 1, fromY: 1, toX: 2, toY: 2, sides: 'depart',
+  });
+  const dep = peekRuntimeEvents(wd);
+  check('sides:"depart" 只发离开端一条（夺舍不叠两套 FX）',
+    dep.length === 1 && dep[0].plane === 'nether' && dep[0].data.phase === 'depart');
+  const wa = { plane: 'mortal', day: 5 };
+  emitRiftCross(wa, {
+    kind: 'ghost', fromPlane: 'nether', toPlane: 'mortal',
+    fromX: 1, fromY: 1, toX: 2, toY: 2, sides: 'arrive',
+  });
+  const arv = peekRuntimeEvents(wa);
+  check('sides:"arrive" 只发到达端一条', arv.length === 1 && arv[0].plane === 'mortal');
+
+  // ③ 健壮性：非法参数**静默不发射**（返回空数组、不抛）——它埋在各转移函数的
+  //    成功路径上，一个表现层参数错误绝不能连累模拟。
+  const wk = { plane: 'mortal', day: 1 };
+  const bad = [
+    emitRiftCross(null, { kind: 'person', fromPlane: 'mortal', toPlane: 'upper', fromX: 0, fromY: 0, toX: 1, toY: 1 }),
+    emitRiftCross(wk, { kind: 'nope', fromPlane: 'mortal', toPlane: 'upper', fromX: 0, fromY: 0, toX: 1, toY: 1 }),
+    emitRiftCross(wk, { kind: 'person', fromPlane: 'mortal', toPlane: 'mortal', fromX: 0, fromY: 0, toX: 1, toY: 1 }),
+    emitRiftCross(wk, { kind: 'person', fromPlane: 'mortal', toPlane: 'upper', fromX: Number.NaN, fromY: 0, toX: 1, toY: 1 }),
+    emitRiftCross(wk, { kind: 'person', fromPlane: 'mortal', toPlane: 'void', fromX: 0, fromY: 0, toX: 1, toY: 1 }),
+    emitRiftCross(wk, { kind: 'person', fromPlane: 'mortal', toPlane: 'upper', fromX: 0, fromY: 0, toX: 1, toY: 1, sides: 'sideways' }),
+  ];
+  check('非法参数（坏 kind / 同位面 / NaN 坐标 / 坏 sides / 空世界）⇒ 全部空数组、不抛',
+    bad.every((r) => Array.isArray(r) && r.length === 0));
+  check('非法发射**不进队列**（不污染别的位面的事件流）', peekRuntimeEvents(wk).length === 0);
+
+  // ④ 发射**不改世界**（表现层铁律；「不抽 RNG」在 ⑥ 用源码结构钉）。
+  const pureWorld = { plane: 'mortal', day: 3, marker: 'untouched' };
+  const before = JSON.stringify(pureWorld);
+  emitRiftCross(pureWorld, {
+    kind: 'artifact', fromPlane: 'upper', toPlane: 'mortal',
+    fromX: 5, fromY: 5, toX: 6, toY: 6, fromKey: 'upper:artifact:1',
+  });
+  check('发射不改世界任何字段（逐字节快照不变）', JSON.stringify(pureWorld) === before);
+
+  // ⑤ 有向 FX：离开端「墨影向裂隙收缩」= 线段（moveTo/lineTo）；
+  //    到达端「墨点向外散开」= 圆环 + 散点（ellipse/arc）。两端的画法**不同**，
+  //    这正是「两边都在发生」在画面上的兑现。
+  const mkStub = () => {
+    const ops = { moveTo: 0, lineTo: 0, ellipse: 0, arc: 0, stroke: 0 };
+    const ctx = {
+      save() {}, restore() {}, beginPath() {},
+      moveTo() { ops.moveTo += 1; }, lineTo() { ops.lineTo += 1; },
+      arc() { ops.arc += 1; }, ellipse() { ops.ellipse += 1; },
+      stroke() { ops.stroke += 1; },
+      strokeStyle: '', lineWidth: 0, lineCap: '', lineJoin: '',
+    };
+    return { ctx, ops };
+  };
+  const cam2 = makeCamera();
+  cam2.bind(fakeWorld50);
+  const mkFx = (phase) => {
+    const fx = createFxState();
+    ingestRuntimeEvents(fx, [{
+      type: 'rift-cross', plane: 'mortal', day: 1, x: 5, y: 5, subjectId: 7,
+      data: { kind: 'ghost', fromPlane: 'nether', toPlane: 'mortal', phase, fromX: 4, fromY: 4, toX: 5, toY: 5, fromKey: 'nether:7' },
+    }], { plane: 'mortal' });
+    updateFx(fx, 0.15);
+    return fx;
+  };
+  const sd = mkStub(); drawFx(sd.ctx, cam2, fakeWorld50, mkFx('depart'));
+  const sa = mkStub(); drawFx(sa.ctx, cam2, fakeWorld50, mkFx('arrive'));
+  check('离开端画的是**收缩线段**（moveTo/lineTo > 0）', sd.ops.moveTo > 0 && sd.ops.lineTo > 0);
+  check('到达端画的是**向外散点**（ellipse/arc > 0）', sa.ops.ellipse > 0 && sa.ops.arc > 0);
+  check('两端画法**不同**（离开端不画散点环、到达端不画收缩段）',
+    sd.ops.ellipse === 0 && sd.ops.arc === 0 && sa.ops.moveTo === 0 && sa.ops.lineTo === 0);
+  // 无 phase 的旧形状退回通用冲击环（不改变老事件的表现）。
+  const so = mkStub();
+  const fxOld = createFxState();
+  ingestRuntimeEvents(fxOld, [{ type: 'rift-cross', plane: 'mortal', day: 1, x: 5, y: 5 }], { plane: 'mortal' });
+  updateFx(fxOld, 0.15);
+  drawFx(so.ctx, cam2, fakeWorld50, fxOld);
+  check('无 phase 的旧 rift-cross 退回通用冲击环（ellipse，不抛）',
+    so.ops.ellipse > 0 && so.ops.moveTo === 0);
+  // 确定性：同事件两次画出的调用序列一致（截图稳定）。
+  const d1 = mkStub(); drawFx(d1.ctx, cam2, fakeWorld50, mkFx('arrive'));
+  const d2 = mkStub(); drawFx(d2.ctx, cam2, fakeWorld50, mkFx('arrive'));
+  check('到达端 FX 确定性（同事件同调用次数，零 RNG）',
+    d1.ops.ellipse === d2.ops.ellipse && d1.ops.arc === d2.ops.arc);
+
+  // ⑥ 源码结构：六类跨界的成功点**都**接上了 `emitRiftCross`。
+  //    什么故障让它变红：新加一条跨界通道却忘了发事件（玩家看不见），
+  //    或把发射点从 `rifts.js` / `possession.js` 挪走（那两处是唯一真相）。
+  const riftsCode = stripComments(fs.readFileSync(path.join(ROOT, 'src/inkbox/sim/rifts.js'), 'utf8'));
+  const possCode = stripComments(fs.readFileSync(path.join(ROOT, 'src/inkbox/sim/possession.js'), 'utf8'));
+  const presCode = stripComments(fs.readFileSync(path.join(ROOT, 'src/inkbox/sim/presentation.js'), 'utf8'));
+  const riftsSites = (riftsCode.match(/emitRiftCross\s*\(/g) || []).length;
+  const possSites = (possCode.match(/emitRiftCross\s*\(/g) || []).length;
+  check('`emitRiftCross` 的**形状只定义一次**（在 presentation.js 里 export）',
+    /export function emitRiftCross/.test(presCode));
+  check('`rifts.js` 的跨界成功点接了 emitRiftCross（≥7 处：7 类转移）',
+    riftsSites >= 7, `实测 ${riftsSites} 处`);
+  check('`possession.js` 的夺舍 / 附身两处都接了 emitRiftCross（≥2 处）',
+    possSites >= 2, `实测 ${possSites} 处`);
+  check('发射口不抽 RNG（无 rng() / Math.random）',
+    !/\brng\s*\(/.test(presCode) && !/Math\.random/.test(presCode));
+  check('`emitRiftCross` 只往队列推事件（函数体里调 emitPresentation）',
+    fnBodyOfCode(presCode, 'emitRiftCross').includes('emitPresentation('));
 }
 
 console.log('\n══════════════════════════════════════════════════════════════');

@@ -12,8 +12,11 @@
 //   3. **真实时间**：`updateFx(fx, dt)` 的 dt 是秒。**暂停世界时特效照常播完**，
 //      因为它是显示动画，不是模拟时间；拉到「飞」速也不会缩成一帧。
 //
-// ⚠️ 只画凡间位面（`plane === 'mortal'`）的事件在主画布上；上界 / 幽冥的表现
-//    留给后续（D8 视界）。没有坐标的事件（x/y 缺失）跳过不画。
+// ⚠️ **plane-aware（D8-C）**：FX 项自带 `plane`（来自事件），`drawFx(..., plane)`
+//    只画**指定位面**那一份——一个系统按位面过滤，**不是三份 FX 类**。
+//    没有坐标的事件（x/y 缺失）跳过不画。
+//    （D7 时这里只演凡间；D8-C 起上界 / 幽冥的事件也会入队，由 `presentationStage.js`
+//     统一收齐、再分发给主画布与视界窗。）
 
 /** 同时活跃的 FX 上限。超了丢**最老的**——它们只是视觉反馈，不是历史。 */
 export const FX_CAP = 64;
@@ -81,7 +84,6 @@ export function ingestRuntimeEvents(fx, events, world) {
     const event = events[i];
     if (!event || typeof event !== 'object') continue;
     const plane = event.plane || world?.plane || 'mortal';
-    if (plane !== 'mortal') continue;                 // D7-D 只演凡间
     if (!Number.isFinite(event.x) || !Number.isFinite(event.y)) continue;  // 没坐标不画
 
     let kind = EVENT_TO_FX[event.type];
@@ -94,6 +96,7 @@ export function ingestRuntimeEvents(fx, events, world) {
     const ttl = FX_TTL[kind] ?? 0.8;
     const seed = visualHash(event.type, event.day ?? 0, event.x, event.y, event.subjectId ?? 0);
     const item = {
+      plane,
       kind,
       x: event.x,
       y: event.y,
@@ -130,14 +133,19 @@ function project(camera, world, x, y) {
 const INK_STROKE = '34,32,28';
 const COLD_STROKE = '60,78,96';
 
-/** 画所有 FX。凡间主画布调用。 */
-export function drawFx(ctx, camera, world, fx) {
+/**
+ * 画**指定一位面**的 FX（D8-C）。
+ * @param {string} [plane='mortal'] 只画 `item.plane === plane` 的那些。
+ *   默认 `'mortal'`：主画布那条老调用路径不变；视界窗内传 `'upper'` / `'nether'`。
+ */
+export function drawFx(ctx, camera, world, fx, plane = 'mortal') {
   if (!fx || !Array.isArray(fx.items) || !fx.items.length || !world || !ctx) return;
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   for (let i = 0; i < fx.items.length; i += 1) {
     const item = fx.items[i];
+    if (item.plane !== plane) continue;   // 只画这一界（三界不串）
     const k = item.ttl > 0 ? Math.min(1, item.age / item.ttl) : 1;
     const zoom = camera.zoom;
     switch (item.kind) {
@@ -149,7 +157,7 @@ export function drawFx(ctx, camera, world, fx) {
       case 'war': drawWarLine(ctx, camera, world, item, k, zoom); break;
       case 'sectfall': drawImpactRing(ctx, camera, world, item, k, zoom, 0.55, 0.85); break;
       case 'death': drawImpactRing(ctx, camera, world, item, k, zoom, 0.32, 0.6); break;
-      case 'riftcross': drawImpactRing(ctx, camera, world, item, k, zoom, 0.3, 0.5); break;
+      case 'riftcross': drawRiftCross(ctx, camera, world, item, k, zoom); break;
       case 'impact':
       default: drawImpactRing(ctx, camera, world, item, k, zoom, 0.42, 0.7); break;
     }
@@ -306,6 +314,84 @@ function drawWarLine(ctx, camera, world, item, k, zoom) {
   }
   ctx.lineTo(bx, by);
   ctx.stroke();
+}
+
+// ── 跨界（D8-E）────────────────────────────────────────────
+// 一条 `rift-cross` 事件**只画一端**：`data.phase` 说这是离开端还是到达端，
+// `data.kind` 说跨的是什么。两端各由源 / 目标位面的**两条独立事件**驱动——
+// 于是「凡间一个人从裂缝边消失」与「幽冥窗口同坐标处出现一团鬼影」各画在
+// 自己那一界的画面上（`drawFx` 已按 `item.plane` 过滤，见本文件头）。
+//
+//   离开端（depart）：墨影向裂隙**收缩**——线由外向内收、半径随 `k` 变小。
+//   到达端（arrive）：裂隙附近墨点向外**散开**——环由内向外扩、外圈散点。
+//   主体着色：鬼 / 夺舍走冷墨（`COLD_STROKE`），人 / 物走墨色（`INK_STROKE`）。
+//
+// ⚠️ **纯描边**（不 `fill`）：与整个 fxLayer 的墨线美学一致，也让测试桩不必
+//    实现 `fill` / `fillStyle`。抖动仍走确定性 `visualHash`（零 RNG）。
+// ⚠️ **没有 `phase` 的旧形状**（D8-E 之前发过的 `rift-cross`）退回原来的
+//    通用冲击环——不改变老事件的表现。
+function drawRiftCross(ctx, camera, world, item, k, zoom) {
+  const d = item.data || {};
+  if (d.phase !== 'depart' && d.phase !== 'arrive') {
+    drawImpactRing(ctx, camera, world, item, k, zoom, 0.3, 0.5);
+    return;
+  }
+  const kind = d.kind || 'artifact';
+  const cold = kind === 'ghost' || kind === 'possession';
+  const stroke = cold ? COLD_STROKE : INK_STROKE;
+  const [tx, ty] = project(camera, world, item.x + 0.5, item.y + 0.5);
+  const fade = Math.max(0, 1 - k);
+
+  if (d.phase === 'depart') {
+    // 墨影向裂隙收缩：半径由大收小，笔画越来越短、越来越淡。
+    const r = Math.max(2, (14 - k * 10) * zoom);
+    ctx.strokeStyle = `rgba(${stroke},${(fade * 0.85).toFixed(3)})`;
+    ctx.lineWidth = Math.max(0.9, 1.5 * (1 - k) + 0.4);
+    const n = 6;
+    for (let i = 0; i < n; i += 1) {
+      const a = (i / n) * Math.PI * 2 + item.seed * 6.28;
+      const inner = Math.max(1, r * (0.2 + k * 0.6));
+      ctx.beginPath();
+      ctx.moveTo(tx + Math.cos(a) * r, ty + Math.sin(a) * r * 0.72);
+      ctx.lineTo(tx + Math.cos(a) * inner, ty + Math.sin(a) * inner * 0.72);
+      ctx.stroke();
+    }
+    return;
+  }
+
+  // 到达端：裂隙附近墨点向外散开。
+  const r = Math.max(3, (4 + k * 22) * zoom);
+  ctx.strokeStyle = `rgba(${stroke},${(fade * 0.7).toFixed(3)})`;
+  ctx.lineWidth = Math.max(0.9, 1.3 * (1 - k) + 0.4);
+  ctx.beginPath();
+  ctx.ellipse(tx, ty, r, r * 0.72, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
+  const dots = kind === 'ghost' ? 5 : kind === 'person' ? 4 : 3;
+  const dotR = Math.max(0.8, 1.6 * zoom * 0.35) * (0.6 + fade * 0.6);
+  ctx.strokeStyle = `rgba(${stroke},${(fade * 0.55).toFixed(3)})`;
+  ctx.lineWidth = Math.max(0.8, 1.1 * (1 - k) + 0.3);
+  for (let i = 0; i < dots; i += 1) {
+    const a = (i / dots) * Math.PI * 2 + item.seed * 6.28;
+    const rr = r * (0.7 + visualHash(item.seed, i, 'scatter') * 0.5);
+    ctx.beginPath();
+    ctx.arc(tx + Math.cos(a) * rr, ty + Math.sin(a) * rr * 0.72, dotR, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // 主体再点一下：人 = 短暂残影（错开的一小圈）；物 = 一个小光点（小圈）。
+  if (kind === 'person') {
+    ctx.strokeStyle = `rgba(${stroke},${(fade * 0.5).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.ellipse(tx + 1.4, ty - 1.0,
+      Math.max(1, 2.4 * zoom * 0.4), Math.max(1.4, 3.6 * zoom * 0.4), 0, 0, Math.PI * 2);
+    ctx.stroke();
+  } else if (kind === 'artifact' || kind === 'herb') {
+    ctx.strokeStyle = `rgba(150,124,74,${(fade * 0.75).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(tx, ty, Math.max(1, 1.9 * zoom * 0.35), 0, Math.PI * 2);
+    ctx.stroke();
+  }
 }
 
 // ── 通用地面冲击环（玩家落笔 / 战殁 / 跨界 / 灭门）──────────

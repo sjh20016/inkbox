@@ -89,7 +89,9 @@ import { placeOf } from './sects.js';
 import { spawnNetherGhost, ensureNetherPopLog, trimNetherItems } from './netherLife.js';
 import { ghostSnapshot } from './reincarnation.js';
 // 表现事件发射口（D7-D）：开缝那一下闪一下。只发事件，不改模拟、不抽 rng。
-import { emitPresentation } from './presentation.js';
+// D8-E 起另加 `emitRiftCross`：六类跨界**成功之后**各发一次「两边都在发生」的
+// `rift-cross`（离开端 + 到达端）。形状只在 `presentation.js` 定义一次。
+import { emitPresentation, emitRiftCross } from './presentation.js';
 // D6-3 工程包 D：跨位面夺舍（鬼修 → 凡间活人）的效果函数。它**零 rng**，
 // 只做「选谁 / 成不成（确定性哈希） / 落成 / 记账」；判定节奏的抽签在本模块
 // （`stepNetherRift` 的第四支，走 `netherPossessRngFor`）。
@@ -978,6 +980,9 @@ function leakUpperArtifact(world, rift, r, rng) {
   const spot = findMortalSpot(world, rift, r);
   if (!spot) return false;
 
+  // D8-E：离开端坐标 / 身份要在**动手之前**捕获——`toGround` 会把 `pick.x/y`
+  // 改写成落点、`pick.id` 也在别处被重赋，之后再读就只剩「到达端」了。
+  const fromX = pick.x; const fromY = pick.y; const fromId = pick.id;
   const at = upper.artifacts.indexOf(pick);
   if (at >= 0) upper.artifacts.splice(at, 1);
   toGround(world, pick, spot.x, spot.y);
@@ -996,6 +1001,12 @@ function leakUpperArtifact(world, rift, r, rng) {
   if (world.artifactLog) world.artifactLog.riftIn = (world.artifactLog.riftIn || 0) + 1;
   rift.leaked += 1;
   world.riftLog.leaked += 1;
+  // D8-E：**成功之后**发跨界事件（上界的法宝消失 ↔ 凡间地上多一件）。
+  emitRiftCross(world, {
+    kind: 'artifact', fromPlane: 'upper', toPlane: 'mortal',
+    fromX, fromY, toX: spot.x, toY: spot.y,
+    fromKey: `upper:artifact:${fromId}`, subjectId: fromId,
+  });
   return true;
 }
 
@@ -1161,6 +1172,14 @@ function leakUpperHerb(world, rift, r, rng) {
   //    记了会让长测的法宝守恒律虚高。
   rift.leaked += 1;
   world.riftLog.leaked += 1;
+  // D8-E：**成功之后**发跨界事件（上界那格灵植被采走 ↔ 凡间长出一个秘境）。
+  // ⚠️ `pick` 是**上界** `veg` 的格坐标（`{x,y,i}`），`site` 是**凡间**新秘境；
+  //    两侧坐标不同界、但同尺寸对位，直接照发（表现层按 plane 分流）。
+  emitRiftCross(world, {
+    kind: 'herb', fromPlane: 'upper', toPlane: 'mortal',
+    fromX: pick.x, fromY: pick.y, toX: site.x, toY: site.y,
+    fromKey: `upper:herb:${pick.x},${pick.y}`,
+  });
   return true;
 }
 
@@ -1276,6 +1295,9 @@ function leakToUpper(world, rift, r, rng) {
     if (!best || lv > (best.level || 0)) best = e;
   }
   if (best) {
+    // D8-E：离开端坐标 / id 先捕获（`arriveUpper` 内部 `structuredClone`，
+    // `best` 本身不被改写，但显式取一份让「离开端」语义不依赖实现细节）。
+    const fromX = best.x; const fromY = best.y; const fromId = best.id;
     const at = world.entities.indexOf(best);
     if (at >= 0) world.entities.splice(at, 1);
     // ⚠️ **先把他身上的法宝放回凡间地上，再送人上去**——漏掉这一步就是
@@ -1314,11 +1336,21 @@ function leakToUpper(world, rift, r, rng) {
     // `scripts/_upperlife2probe.mjs:170-179` 早就把意图写成「低阶修士被裂缝
     // 吸上来也算 `sucked`（含凡人与低阶修士）」——**探针的意图对、接线没跟上**，
     // 所以修的是这里，不是改探针。
-    arriveUpper(world.upper, best, world, { via: 'rift' });
+    const arrived = arriveUpper(world.upper, best, world, { via: 'rift' });
     // `crossed` 现在数「真的进了上界的人」，**修士与凡人都在内**
     // （旧语义里凡人是「失踪」、不计 crossed；用户第 4 条推翻了它）。
     rift.crossed += 1;
     world.riftLog.crossed += 1;
+    // D8-E：**成功之后**发跨界事件（凡间那个人从裂缝边消失 ↔ 上界落点出现他）。
+    // ⚠️ 到达端坐标取自 `arriveUpper` 的返回值（上界落点），不是凡间坐标——
+    //    `arriveUpper` 用 `structuredClone` 另立一份，落点写在那份 copy 上。
+    if (arrived) {
+      emitRiftCross(world, {
+        kind: 'person', fromPlane: 'mortal', toPlane: 'upper',
+        fromX, fromY, toX: arrived.x, toY: arrived.y,
+        fromKey: `mortal:${fromId}`, subjectId: fromId, targetId: arrived.id,
+      });
+    }
     return true;
   }
 
@@ -1362,6 +1394,9 @@ function leakGroundArtifactToUpper(world, rift, r, rng) {
   if (!cands.length) return false;
 
   const pick = cands[Math.floor(rng() * cands.length)];
+  // D8-E：离开端坐标 / id 先捕获——下面会把 `pick.id` 重赋成上界号、`pick.x/y`
+  // 改写成上界落点，之后再读就只剩「到达端」了。
+  const fromX = pick.x; const fromY = pick.y; const fromId = pick.id;
   // 先找落点、再动手：找不到落点就整次放弃，法宝**留在凡间**
   // （不许先摘下来再丢进云海）。
   const spot = findUpperSpot(world, rift, r);
@@ -1410,6 +1445,12 @@ function leakGroundArtifactToUpper(world, rift, r, rng) {
 
   rift.leaked += 1;
   world.riftLog.leaked += 1;      // ⚠️ 是 `leaked`（一件「东西」），不是 `crossed`
+  // D8-E：**成功之后**发跨界事件（凡间地上那件法宝被卷走 ↔ 上界落点出现它）。
+  emitRiftCross(world, {
+    kind: 'artifact', fromPlane: 'mortal', toPlane: 'upper',
+    fromX, fromY, toX: spot.x, toY: spot.y,
+    fromKey: `mortal:artifact:${fromId}`, subjectId: fromId, targetId: pick.id,
+  });
   return true;
 }
 
@@ -1549,6 +1590,9 @@ export function fallIntoNether(world, rift, r) {
   });
   if (!ghost) return false;      // 撞实体硬顶：凡间毫发无伤
 
+  // D8-E：离开端坐标 / id 先捕获（`best` 之后会被 `splice` 出凡间实体表）。
+  const fromX = best.x; const fromY = best.y; const fromId = best.id;
+
   // ── 3. 把他身上的法宝**带进幽冥**（D6-3 工程包 C）──
   //    A 包时这里是 `scatterArtifacts`（法宝留在凡间地上）；C 包改成**随身带下去**
   //    ——这正是「幽冥物品从哪来」的第一条来源（第二条是幽冥自生，
@@ -1593,6 +1637,13 @@ export function fallIntoNether(world, rift, r) {
   if (typeof world.record === 'function') {
     world.record(`${name}跌入裂缝（${rift.x},${rift.y}），落入幽冥`, 'rift-lost');
   }
+  // D8-E：**成功之后**发跨界事件（凡间那个人消失 ↔ 幽冥落点出现一团鬼影）。
+  // 到达端坐标用 `ghost` 的落点（`spawnNetherGhost` 已解出）。
+  emitRiftCross(world, {
+    kind: 'person', fromPlane: 'mortal', toPlane: 'nether',
+    fromX, fromY, toX: ghost.x, toY: ghost.y,
+    fromKey: `mortal:${fromId}`, subjectId: fromId, targetId: ghost.id,
+  });
   return true;
 }
 
@@ -1666,6 +1717,9 @@ export function climbOutToMortal(world, rift, r) {
   });
   if (!w) return false;      // 撞凡间鬼影上限：**幽冥那一份留着**（绝不凭空蒸发）
 
+  // D8-E：离开端坐标 / id 先捕获（`best` 随后被 `splice` 出幽冥实体表）。
+  const fromX = best.x; const fromY = best.y; const fromId = best.id;
+
   // ── 3. 再从幽冥移除 ──
   const at = nether.entities.indexOf(best);
   if (at >= 0) nether.entities.splice(at, 1);
@@ -1686,6 +1740,13 @@ export function climbOutToMortal(world, rift, r) {
   if (typeof world.record === 'function') {
     world.record(`${name}自裂缝（${rift.x},${rift.y}）爬入凡间`, 'rift-out');
   }
+  // D8-E：**成功之后**发跨界事件（幽冥那团鬼影消失 ↔ 凡间缝口出现一只鬼）。
+  // 到达端坐标用 `w`（`spawnWraith` 已把它放在缝口 `rift.x/y + 0.5`）。
+  emitRiftCross(world, {
+    kind: 'ghost', fromPlane: 'nether', toPlane: 'mortal',
+    fromX, fromY, toX: w.x, toY: w.y,
+    fromKey: `nether:${fromId}`, subjectId: fromId, targetId: w.id,
+  });
   return true;
 }
 
@@ -1742,6 +1803,9 @@ export function leakNetherItem(world, rift, r) {
   // ── 3. 先落成（重赋凡间 id）→ 再移除 ──
   //    重赋必须在 `toGround` **之前**：`toGround` 会把它推进 `world.artifacts`，
   //    那时 id 已经是凡间的了。
+  // D8-E：离开端坐标 / id 先捕获——`toGround` 会把 `pick.x/y` 改写成落点、
+  // `pick.id` 立刻被重赋成凡间号，之后再读就只剩「到达端」了。
+  const fromX = pick.x; const fromY = pick.y; const fromId = pick.id;
   pick.id = world.nextArtifactId || 1;
   world.nextArtifactId = pick.id + 1;
   toGround(world, pick, spot.x, spot.y);
@@ -1766,6 +1830,12 @@ export function leakNetherItem(world, rift, r) {
   if (typeof world.record === 'function') {
     world.record(`${pick.name}自裂缝（${rift.x},${rift.y}）落入凡间`, 'rift-in');
   }
+  // D8-E：**成功之后**发跨界事件（幽冥那件物品消失 ↔ 凡间地上落出一个小光点）。
+  emitRiftCross(world, {
+    kind: 'artifact', fromPlane: 'nether', toPlane: 'mortal',
+    fromX, fromY, toX: spot.x, toY: spot.y,
+    fromKey: `nether:artifact:${fromId}`, subjectId: fromId, targetId: pick.id,
+  });
   return true;
 }
 

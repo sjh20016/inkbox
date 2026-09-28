@@ -28,6 +28,10 @@ const FILES = [
   // 的唯一成文处，也是不同模型轮换开发时的长期记忆锚——干净包缺了它，
   // 下一个接手的人只能从代码里重新反推一遍规则。
   'THREE_REALMS.md',
+  // 视界契约（D8-A）：**必须随包出货**。它是「视界是什么 / 什么不许做」的唯一成文处
+  // （一个时刻只一扇窗 / 不进存档 / 观察不改目标位面 / 划开仍开缝 / D8 不调裂隙数值…），
+  // 与 THREE_REALMS.md 分工：那份管**三界规则**，这份管**观察层契约**。
+  'VIEW_CONTRACT.md',
   'PLAYER_GUIDE.md',
   '版权说明.md',
   'package.json',
@@ -52,6 +56,20 @@ const FILES = [
   'scripts/inkbox-longrun.mjs',
   'scripts/inkbox-three-realms.mjs',
   'scripts/inkbox-presentation.mjs',
+  'scripts/inkbox-view.mjs',
+  'scripts/inkbox-render3d.mjs',
+  'scripts/inkbox-render3d-browser.mjs',
+  // Render3D M1（3D 世界实体可见化）的自动测试。**必须随包出货**：
+  // M0 的脚本在上面，M1 的漏了就是「发布了功能却不发布它的测试」——
+  // 下一个接手的人跑 `npm run test:render3d:m1` 会直接找不到文件。
+  'scripts/inkbox-render3d-m1.mjs',
+  'RENDER3D_M0.md',
+  'Render3D M1 工程报告.md',
+  'node_modules/three/package.json',
+  'node_modules/three/LICENSE',
+  'node_modules/three/build/three.module.js',
+  'node_modules/three/build/three.core.js',
+  'node_modules/three/examples/jsm/controls/OrbitControls.js',
   'tests/README.md',
 ];
 const DIRECTORIES = ['src/inkbox'];

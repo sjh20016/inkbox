@@ -6,16 +6,37 @@
 
 ---
 
+## 0. ⚠️ 当前状态与下一工程包
+
+> **Render3D M1（3D 世界实体可见化）已完成并通过验收。** 委托书：[`坐天观井 · 下一阶段工程委托书.md`](./坐天观井%20·%20下一阶段工程委托书.md)。
+> 工程报告：**`Render3D M1 工程报告.md`**（含修改/新增文件清单、各层职责、draw call 实测、测试结果、已知风险）。
+> 本阶段唯一战略目标：**保留现有模拟世界作为唯一真相，让 Three.js 从「地形技术原型」成长为「可以实际观察世界的沙盘」。**
+> ✅ 已达成：进 3D 能辨认凡人 / 修士 / 灵兽 / 山精、聚落屋舍、宗门山门、无主法宝与地点；点地面仍复用 `inspectAt(x,y)`。
+> ⚠️ **下一阶段由用户裁决，不得自行开始**（候选见工程报告 §九「下一阶段建议」）。
+> ⚠️ 不要被 `D8视界 2.0 …` 与旧 `STATUS.md` 的 D8 叙事带回 Canvas 路线。
+> **D8-G「跨界追迹」仍是 WIP / 暂缓**（地基已保存，UI 未做，本阶段未扩建）。
+
+---
+
 ## 1. 当前版本与阶段
 
 - **版本**：`v1.0.0`（`package.json` / `src/inkbox/core/config.js` 的 `APP.version`）。
-- **当前阶段**：**D7「观察与表现层」基建**（规划见 `D7「观察与表现层」.md`，A–G 七包**严格按序**）。
-- **进度**：**A ✅ · B ✅ · C ✅ · D ✅ · E ✅ · F ✅ · G ←（本包，收尾）**。
-  - A 零红基线（`38445e9`）· B transient 运行事件通道（`83e83d0`）
-  - C Camera 2.0 一次性 focus 补间 + 落点墨环（`0408290`）
-  - D FX 层 1.0 + E 记挂系统 1.0（`663d8ef`）
-  - F 关系图 + 战争线（本包）· G 测试/文档/交接（本包）
-- **下一包**：D7 之后的规划**尚未拍板**。BACKLOG 里 P2/P3 排着；**开工前先与用户确认方向**。
+- **当前阶段**：**Render3D M1**（`Render3D M0.5 → M1`）。活跃分支 `inkbox.html` + `src/inkbox/**`。
+- **正式完成**：
+  - **D7 观察与表现层 A–G 已封板**（`38445e9` A · `83e83d0` B · `0408290` C · `663d8ef` D+E · `0174305` F · `22a930e` G）。
+  - **D8「视界 2.0 · 穿透式跨界观察」A ✅ · B ✅ · C ✅ · D ✅ · E ✅ · F ✅**（视界契约见 `VIEW_CONTRACT.md`）。
+  - **Render3D M0 已完成**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻），独立测试 `npm run test:render3d`；技术报告 `RENDER3D_M0.md`。
+  - **Render3D M1 已完成**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环），独立测试 `npm run test:render3d:m1`（36 项）+ 浏览器探针 `scripts/_m1-viewshot.mjs`（场景 A–F 全过）；工程报告 `Render3D M1 工程报告.md`。
+- **WIP / 暂缓**：**D8-G「跨界追迹」**。已保存的纯逻辑地基（有测试钉住，见 §6）：
+  `sim/watch.js` 的 `netherGhostOf()`（第二条可靠跨界引用：只认 `ghostOf.route === null` 的「自裂缝跌入」者）·
+  `resolveWatch` 的 `nether` 分支（**排在 `dead` 之后**）· `ui/realmTrace.js` 的 `traceTargetOf()` / `crossRealmChain()`。
+  ⚠️ **追迹 UI 未做**（`main.js` 的 `maybePulseTraceTarget` 只有带 `?.` 保护的调用点、**没有实现体**）——
+  **不得声称 D8-G 已完成**，本阶段也不继续扩建 Canvas 版 D8-G。
+- **D8 硬指标**：D8 完成时 `main.js` **不得比 D7 baseline（3084 行）更大**——D8-F 后 **2889 行**；
+  叠加 D8-G 地基（+36）后当前 **2925 行**，仍达标。
+- **Render3D M1 硬禁（详见 §9）**：模拟层**禁止重写** · Three.js **只是观察者**（只读、不反写、不抽模拟 RNG）·
+  **禁止复制 Canvas 逻辑**（不重写 `inspectAt()`、不复制境界 / 裂缝公式）· M1 **只做凡间 3D** ·
+  **不得为「架构优雅」扩范围**（不重构 `save.js` / `rifts.js` / Sandbox，不改存档格式，不引 ECS / 状态库 / 物理引擎 / 额外渲染库）。
 
 ## 2. 唯一启动入口
 
@@ -51,15 +72,64 @@
 - ⚠️ **哈希当 `[0,1)` 均匀数用必须先过 `hashStep`**：`hash32`（FNV-1a）有**高位偏置**（实测 0.70–0.74），
   直接当概率阈值会恒真且**不报错**。凡间走 `rng()` 无此坑——**幽冥专有**。
 
-## 6. transient 事件纪律（表现层，D7-B/D）
+## 6. transient 事件纪律（表现层，D7-B/D · D8-C 多位面）
 
-- `core/runtimeEvents.js`：`emitRuntimeEvent(world, type, payload)` → WeakMap 队列（**cap 256**）。
-  **不进存档、不挂 World、读档后为空**。表现层每帧 `drainRuntimeEvents`。
-- **表现层绝不反向依赖模拟**：`render/fxLayer.js`、`render/overlayLayer.js`、`render/relationGraph.js`
-  **零 import sim/world**，**不抽任何 RNG**（视觉抖动走确定性哈希）。
-- **验收核心**：删掉 `render/fxLayer.js`，模拟结果**逐字不变**。
+- `core/runtimeEvents.js`：`emitRuntimeEvent(world, type, payload)` → **按 world 分队列**的 WeakMap（**cap 256**）。
+  **不进存档、不挂 World、读档后为空**。
+- **收队列 / 更新 / 分发全在 `render/presentationStage.js`**（D8-C）：一帧 `stage.ingestWorlds(world)`
+  收齐三界（凡间 / 上界 / 幽冥）→ `stage.update(dt)`（真实秒）→ `stage.drawPlane(plane, …)` 按位面画。
+  ⚠️ **`main.js` 不自己写三遍 `drainRuntimeEvents`**（那是「加一界改 N 处」）；主画布画 `'mortal'`，
+  上界 / 幽冥的 FX 由视界窗在自己的裁剪区里画。
+- **表现层绝不反向依赖模拟**：`render/fxLayer.js`、`render/presentationStage.js`、
+  `render/overlayLayer.js`、`render/relationGraph.js`、`render/realmViewLayer.js`
+  **不 import sim/world**，**不抽任何 RNG**（视觉抖动走确定性哈希）。
+- **验收核心**：删掉 `render/fxLayer.js`，模拟结果**逐字不变**；关视界时上界 / 幽冥事件
+  **即使被消费也不得改变世界**。
 - 模拟侧**只**通过 `sim/presentation.js` 的 `emitPresentation` 发射（它吞坏参数、绝不连累模拟）。
+- **D8-E 跨界事件（`rift-cross`）**：形状只在 `sim/presentation.js` 的 **`emitRiftCross`** 定义一次
+  （`{ kind, fromPlane, toPlane, phase, fromX, fromY, toX, toY, fromKey }`）。**一次跨界发两条**——
+  离开端（`phase:'depart'`，画在源位面）+ 到达端（`phase:'arrive'`，画在目标位面），
+  于是「玩家正看目标位面视界」时窗内直接播到达 FX。
+  ⚠️⚠️ **只在转移成功之后发**（蓝图原文：「**成功以后发。** 不是"开始尝试"就发」）——
+  否则落点失败 / cap 满时会出现「动画说跨界成功了，但模拟实际没发生」（表现层说谎）。
+  `test:three-realms` 的 **F13** 用两条判据钉它：①源码结构「发射点排在最后一个 `return false` 之后」；
+  ②运行时「失败 0 条 / 成功恰好 2 条（各在自己位面）」。
+  ⚠️ **夺舍是唯一只发一端的**（`sides:'depart'`）：到达端已有 D7 的 `'possession'`（冷墨双重轮廓），
+  再补 arrive 会在同一格叠两套 FX。
   发射点：cultivation（tribulation/ascension）· rifts（rift-open）· possession · war（war-start）· main（tool-impact）。
+- **D8-F 窗内检视（`ui/realmInspector.js`）**：**只读**——模块里没有任何 `world.xxx =` 赋值、
+  没有 `rng()` / `Math.random`、不 import `render/*` 或 `main.js`（`test:view` V8 逐条钉它）。
+  ⚠️ **不复用凡间 `inspectAt()`**（那里塞着记挂 / 传记 / 关系图 / 家世，全是凡间专有）；
+  **不写 `this.selected`**（那字段被 `render()` 用来在**凡间**画高亮环，塞幽冥坐标会画错地方）。
+  ⚠️ **★ 天道旧识只显示、不建 upper watch**——靠 `arrivedLog.fromKey === watch[].key` 匹配。
+  ⚠️ **短点击 vs 拖动的分派必须排在 `commitSelection` 之前**：检视不是一次划选，
+  顺手 `commitSelection` 会走进「退化划选 ⇒ 收起视界」把窗关掉。
+  分派判据（`isRealmInspectClick`）**两个条件缺一不可**：位移 < `VIEW_CLICK_PX` **且**落在已开的窗内
+  （只看位移 ⇒ 窗外点一下也去检视；只看窗内 ⇒ 窗内拖一大片再也重画不了）。
+  ⚠️ 阈值用**屏幕像素**不是格数（缩放到很远时一格只零点几像素）。
+- **D8-G 跨界追迹（WIP / 暂缓）**：纯逻辑地基已保存，`test:view` **V9 组（17 条）**钉它：
+  `sim/watch.js` 的 **`netherGhostOf(world, key)`** 只认 `ghostOf.route === null` 的鬼
+  （跌入者由 `rifts.js` 的 `fallIntoNether` 显式传 `route: null`；正常成鬼的 `route` 永不为 null）——
+  **不按名字猜**；`resolveWatch` 的 `nether` 分支**必须排在 `dead` 之后**（否则「死者成鬼」被误报成「跌入幽冥」）；
+  `ui/realmTrace.js` 的 `traceTargetOf` / `crossRealmChain` **零 RNG、不 import `sim/*`**
+  （「引路，不代替玩家开门」是**结构性**的）。
+  ⚠️ **追迹 UI 未做**：`main.js` 的 `maybePulseTraceTarget` 只有**带 `?.` 保护**的调用点、**没有实现体**——
+  本阶段不补它（补了就是「增加 Canvas 墨环」，超出本包范围）。
+
+## 6b. Render3D 观察层（M0 / M1）
+
+- **入口**：`inkbox.html?renderer=3d` 动态加载 `src/inkbox/render3d/Render3DAdapter.js`（默认 Canvas **不加载** Three.js）。
+  `main.js` 的接线只有一处：`render()` 里 `if (this.render3d?.render(now)) return;`。
+- **唯一坐标契约**：`render3d/coordinates.js`。世界整数 x/y = 格中心；Three X/Z = 地图平面；Three Y = 视觉高程。
+  `renderX = worldX - (w-1)/2`；高程 `visualElevation(height)`；**贴地**一律走 `surfaceElevation(world, x, y)`（双线性插值）。
+  ⚠️ **每层禁止各写一套「中心偏移」**。
+- **数据纯度纪律（M0 建立、M1 保持）**：渲染器持有**自己的只读快照**，**不给 `World` 加 `entitiesDirty` 之类的 Three.js 专用状态**。
+  地形 diff 仍归 `WorldRenderBridge`（height / water / type / veg）；**动态对象各层自管快照与刷新周期**。
+- **`terrain/sculpt.js` 是 `render3d/` 下唯一允许写世界的入口**（纯编辑命令，只写 `height`）。
+- ⚠️ 实体物种字段是 **`sp`**（不是 `kind`）；**`level > 0` 才是修士**；坐标是**浮点格中心（+0.5）**；
+  裂缝半径**必须调 `sim/rifts.js` 的 `riftRadiusAt(rift)` 现算**（`rift.radius` 字段**不存在**）。
+- 本机 `spawnSync` 偶发被环境拦截（EBUSY）⇒ 若 `npm run build` 卡在 tar 步骤，用 System32 的 bsdtar 手工补 zip
+  （**不能加 `--force-local`**：Git Bash 的 GNU tar 会把 `E:\…` 当远程主机）。
 
 ## 7. 记挂系统规则（D7-E）
 
@@ -77,15 +147,18 @@
 
 | 入口 | 结果 |
 | --- | --- |
-| `npm run test:core`（导入图 / 核心 / 启动 / 运行事件） | ✅ 49 文件 · 217 边 |
+| `npm run test:core`（导入图 / 核心 / 启动 / 运行事件） | ✅ 72 文件 · 262 边 |
 | `npm run test:regression` | ✅ 22 项 |
-| `npm run test:three-realms` | ✅ 144✓ / 0 红 |
+| `npm run test:three-realms`（D6-3 E 起 · D8-E 加 F13 跨界发射组） | ✅ 151 ✓ / 0 红 |
 | `npm run test:save-equivalence` | ✅ 全绿 / 0 红 |
-| `npm run test:presentation`（D7-C 起） | ✅ 86 ✓ / 0 红 |
+| `npm run test:presentation`（D7-C 起 · D8-C 多位面组 · D8-E 跨界组） | ✅ 127 ✓ / 0 红 |
+| `npm run test:view`（D8-A 起 · D8-F 穿透检视 · D8-G 追迹地基 V9） | ✅ 111 ✓ / 0 红 |
+| `npm run test:render3d`（M0：坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度） | ✅ 19 组 |
+| `npm run test:render3d:m1`（M1：数据纯度 / 实体 / 聚落 / 标记 / 坐标 / 模拟不受影响 / build） | ✅ 36 项 / 0 红 |
 | `npm run test:simulation`（smoke，~6.5–13 分） | ✅ 全部通过 |
-| `npm run test:browser`（playtest，需先起服务器） | ✅ 143 ✓ / 0 红 |
+| `npm run test:browser`（playtest，需先起服务器） | ✅ 144 ✓ / 0 红 |
 | `npm run test:longrun`（800 年，仅 RC） | ✅ 89 ✓ / 0 红 |
-| `npm run build` | ✅ 71 files |
+| `npm run build` | ✅ 113 files |
 
 - **一键开发者验收**：`npm run test:d7`（core + regression + three-realms + save-equivalence + presentation）。
   smoke / browser 单独跑（太慢，别塞进每次验收）。
@@ -95,8 +168,24 @@
 
 ## 9. 禁止顺手施工（本阶段硬禁 + 长期禁令）
 
-- **D7 全阶段**：不新增三界生态 · 不改数值平衡 · 表现层不得消费模拟 RNG · 不大改 `main.js` ·
-  不改存档格式（加法除外）· 不引 React/Vue/Vite/Three.js · 不随机生成轶事 · 无音频。
+- **D8 全阶段**（细则见 `VIEW_CONTRACT.md`）：
+  **不新增三界生态**（鬼城 / 鬼宗 / 仙官 / 上界政治 / 新物种 / 第四世界 / 跨界战争 / 幽冥入侵）·
+  **不调裂隙数值**（`RIFT_BASE_RADIUS` / `TAU_GROW` / `TAU_CLOSE` / `LEAK_CHANCE` /
+  `WRAITH_CLIMB_CHANCE` / `NETHER_ITEM_LEAK_CHANCE` / `POSSESS_CHANCE`，除非 P0/P1 bug）·
+  **不改变裂隙推进规则**（合法视界打开时 `riftActive` 的行为保持原样）·
+  **表现层不许写世界**（`render/*` 禁改 entity / rift / watch / artifacts，禁抽模拟 RNG）·
+  **不做多视界**（仍只有一扇窗）· **不做全图永久另一界模式**（视界仍是「井口」）·
+  不做大 UI 改版 · 不引音频 · 不引 React/Vue/Vite/Three.js · 不随机生成轶事。
+  ⚠️ 表现层**绝不消费模拟 RNG**：删掉 `render/fxLayer.js`，模拟结果逐字不变。
+- **Render3D M1 全阶段**（细则见委托书 §一 / §十一）：
+  **模拟层禁止重写**（不改 `advanceWorld` 时间推进 / 概率 / 随机流 / 人口上限 / 宗门村落法宝生成规则）·
+  **Three.js 只是观察者**（`world.entities` / `villages` / `factions` / `artifacts` 等仍是唯一真相；**不反写**实体位置 / 宗门数据 / 人口数据；**不抽模拟 RNG**）·
+  **禁止复制 Canvas 逻辑**（可参考 `render/unitsLayer.js` 的**视觉语义**，但不得把 `UnitsLayer` 大段复制成 `UnitsLayer3D`；不重写 `inspectAt()` / 传记 / 关系 / 法宝卡；不复制境界判定与裂缝生长公式）·
+  **M1 只做凡间 3D**（不做 Three.js 上界 / 幽冥 / 3D 视界 / 三界切换 / D8 视觉效果迁移——留给 M2/M3）·
+  **不得为「架构优雅」扩范围**（不重构 `save.js` / `rifts.js` / Sandbox，不改存档格式，不换构建系统，不引 ECS / 状态管理库 / 物理引擎 / 额外第三方渲染库）·
+  **性能**：禁止 `entities.map(e => new THREE.Mesh())`、每屋一 Mesh、每人一材质 / 一 geometry、每帧 dispose+new 整层；
+  用 `InstancedMesh` + `instanceColor` + 共享 geometry/material，人与建筑分开刷新。
+  ⚠️ 发现上述问题**只记 `BACKLOG.md`**，不顺手解决。
 - **长期禁令**：幽冥宗门/鬼城/战争 · 上界政治经济复制 · 第四世界 · 全面轮回重构 · 寻路 / A\* ·
   跨界战争 / 幽冥入侵 · 视界特效 · 裂隙大调 · 多视界同开 · `planes.transfer()` 重写。
 - **开发模式**（用户 2026-09-22 · 最高优先）：只做玩家**可见 / 可操作 / 可理解**的内容。
@@ -112,6 +201,30 @@
 - 同一文件编辑**串行**；改 import / 声明必须 `node --check`。
 - ⚠️ `cdp.js(...)` 模板串内部注释**不能出现反引号**（会截断模板串，已踩 4 次）。
 - 本机 `spawnSync` 被环境拦截（EBUSY）⇒ `npm run build` 的 tar 步骤需手工用 bsdtar 补 zip。
+
+## 11. Render3D M1 分层架构（新增表现层）
+
+- `render3d/entities/deriveEntities.js`（**纯派生，零 THREE / 零 DOM / 零 RNG**）：`world.entities` + `world.wraiths` → 按视觉类别分组的记录数组。
+  类别 `ENTITY_CLASSES = ['human','cultivator','beast','spirit','wraith']`；**判据是 `sp` 与 `level`**（`level > 0` 才是修士）。
+- `render3d/entities/EntityLayer.js`：**每类一个 `InstancedMesh`（共 5 个）**，`instanceColor` 上色，高度走 `surfaceElevation`。刷新 15 Hz；`terrainChanged` 时强制重贴地。
+- `render3d/settlements/SettlementLayer.js`：**只 2 个 `InstancedMesh`**（墙体盒 + 四边锥屋顶）。屋舍坐标**直接复用 `village.houses` 的 `{x,y,type}`**（整数格）；等级 `levelScale`；`STRUCT.HALL` 放大；等级 ≥2 加中心建筑；宗门用 `capitalX/capitalY` + `f.color/f.accent`。刷新 4 Hz。
+- `render3d/markers/WorldMarkerLayer.js`：`artifacts`（八面体）/ `sites`（四类几何）/ `leylines`（环）/ `rifts`（环，半径**必须 `riftRadiusAt()` 现算**）。LOD：法宝 `MARKER_MIN_ZOOM=1.6`、地点 1.05、灵脉 1.3、裂缝恒显。刷新 4 Hz。
+- `render3d/SelectionMarker.js`：3D 点选后的贴地选中环（`depthTest:false`、`renderOrder=6`；**不进存档、不写世界**）。
+- 每个 Layer **自管快照与刷新频率**，**不给 `World` 加 dirty 字段**。`Renderer3D.update(dt)` 里 `const terrainChanged = !!this.pending` 后依次调四层。
+- **实测 draw call**（本机软件光栅器，1500×940）：全图 **9**（M0 基线 3 ⇒ **+6**，达标 <15）；zoom=5 近景 **21**（LOD 放出全部标记网格；契约硬指标「几十以内」达标）；**2832 实体时全图仅 6**。
+- 测试：`scripts/inkbox-render3d-m1.mjs`（`npm run test:render3d:m1`，36 项）——数据纯度 / 数量对应 / 增删 / 移动 / 贴地 / LOD / 只读 / 模拟不受影响 / build 含新文件。
+- 浏览器探针：`scripts/_m1-viewshot.mjs`（RESEARCH，需先起 4180 + `?renderer=3d`）——场景 A–F 全过。
+
+### ⚠️ 探针侧两条踩坑（都是**探针自己的**，不是产品缺陷）
+
+1. **造内容一律走真工厂**（`life.foundVillage` / `foundSect` / `life.spawn` / `forgeArtifact`+`toGround` / `world.addSite`）。
+   手搓假对象（缺 `villages` / `pop` / `leylines` / `resources`）会让 `updateHud` 读 `f.villages.length` 抛 TypeError，
+   异常从 `update()` 冒出来 ⇒ **`render()` 与下一帧的 `requestAnimationFrame` 都不执行** ⇒ **帧循环静默死亡**。
+   症状极具欺骗性：`debug.metrics` 冻结在最后一次成功渲染的数值上，看起来像「渲染器不更新」。
+2. **不能假设「聚焦后点屏幕正中」就命中目标格**。`focusOn` 精确（屏幕正中 = `controls.target`，实测偏差 0 格），
+   但 `pick` 是**地面射线**：目标格在凹地、前方隔着更高的脊时，正中会先撞上**遮挡物**（实测偏 22 格，且与 zoom 无关）。
+   ⇒ 探针要**像玩家一样换方位角**（`cameraRig.rotate`）再用 `pick` 找落点。
+   ⚠️ 另注：`pointerdown` 里有 `cancelFocus()`（**点击会冻结正在飞行的相机**，是刻意设计）⇒ 探针必须 `waitFor` 动画结束，不能用固定 sleep。
 
 ---
 

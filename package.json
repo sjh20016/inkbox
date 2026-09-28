@@ -7,6 +7,8 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:render3d": "node scripts/inkbox-render3d.mjs",
+    "test:render3d:m1": "node scripts/inkbox-render3d-m1.mjs",
     "start": "node scripts/inkbox-server.mjs",
     "dev": "node scripts/inkbox-server.mjs",
     "build": "node scripts/inkbox-package.mjs",
@@ -17,6 +19,7 @@
     "test:save-equivalence": "node scripts/inkbox-save-equiv.mjs",
     "test:three-realms": "node scripts/inkbox-three-realms.mjs",
     "test:presentation": "node scripts/inkbox-presentation.mjs",
+    "test:view": "node scripts/inkbox-view.mjs",
     "test:d7": "npm run test:core && npm run test:regression && npm run test:three-realms && npm run test:save-equivalence && npm run test:presentation",
     "test:browser": "node scripts/inkbox-playtest.mjs",
     "test:simulation": "node scripts/inkbox-smoke.mjs",
@@ -27,10 +30,12 @@
     "inkbox:equiv": "node scripts/inkbox-save-equiv.mjs",
     "inkbox:realms": "node scripts/inkbox-three-realms.mjs",
     "inkbox:presentation": "node scripts/inkbox-presentation.mjs",
+    "inkbox:view": "node scripts/inkbox-view.mjs",
     "inkbox:longrun": "node scripts/inkbox-longrun.mjs",
     "inkbox:play": "node scripts/inkbox-playtest.mjs",
     "inkbox:package": "node scripts/inkbox-package.mjs"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "three": "0.186.1"
+  }
 }

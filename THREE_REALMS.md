@@ -4,8 +4,8 @@
 > 它只写「代码必须遵守的三界规则」，供不同模型轮换开发时当长期记忆锚。
 > 三界规则发生变化时才改这里；不要把它写成流水账，不要往里塞开发日志。
 >
-> 当前工程阶段：**D7 前置完成（A Baseline Zero + B 运行时表现事件基础设施）**。
-> 事实核对日期：2026-09-27（D6-2 A–F · D6-3 A–E · D7-A/B）。引用前先重跑一遍 grep，读数会腐烂。
+> 当前工程阶段：**D7 观察与表现层 A–G 已封板；D8 视界 2.0（穿透式跨界观察）A–F 完成 · G 待开工**。
+> 事实核对日期：2026-09-27（D6-2 A–F · D6-3 A–E · D7 A–G）。引用前先重跑一遍 grep，读数会腐烂。
 >
 > ⚠️ **实现细节一律看代码，不写在这里**：字段清单、常量标定、踩坑记录都在各自模块
 > 的头注释里（`sim/upperLife.js` / `sim/netherLife.js` / `sim/rifts.js` / `world/planes.js`）。
@@ -207,8 +207,8 @@
 
 视界是**画中画**：在凡间划出一块自由形状，窗里贴**同一块坐标区域**的另一界。
 
-- `viewUpper` → 上界；`viewNether` → 幽冥。判据总表在 `main.js` 的 `VIEW_TOOL_PLANE`
-  （`VIEW_TOOL_IDS` 由它的键派生）。
+- `viewUpper` → 上界；`viewNether` → 幽冥。判据总表在 `ui/realmView.js` 的 `VIEW_TOOL_PLANE`
+  （`VIEW_TOOL_IDS` 由它的键派生；D8-B 从 `main.js` 搬来）。
 - 视界**窗口本身**只读：不改世界、不抽 rng、不产生任何跨位面效果。
   ⚠️ **但「开视界」这个动作不是只读的**（D6-2 B 起）：它在划选区域的边缘**开出裂缝**
   （`openRifts`，会消费裂隙流洗牌候选站点），而裂缝随后会演化并产生跨位面效果
@@ -567,7 +567,7 @@ F8–F11 各测**一条通道**；F12 问的是「四条通道挂在**同一条�
 
 ---
 
-## 阶段边界（D6-2 / D6-3 完成 · D7 观察与表现层 A–F 完成）
+## 阶段边界（D6-2 / D6-3 完成 · D7 观察与表现层 A–G 完成 · D8 视界 2.0 A–F 完成）
 
 D6-2 做了一件事：**先让门后的两个世界真正活起来**（上界空间生态 + 幽冥最低生态）。
 D6-3 接着做了：**视界与跨界生态**（A 裂隙跨界框架 + 凡人跌入幽冥 → B 鬼进入凡间 →
@@ -579,10 +579,34 @@ D FX 层 → E 记挂系统 → F 关系图与战争线 → G 测试/文档/交�
 `render/relationGraph.js`）与**玩家的观察者状态**（`sim/watch.js` 的 `world.watch`）。
 表现层**不写世界、不抽 RNG、不进存档**——删掉 `render/fxLayer.js`，模拟结果逐字不变；
 「记挂」不进三界人口守恒、不影响 AI、不给数值 buff。**三界规则不因 D7 改变**。
+D7 A–G **已全部完成并封板**（测试读数见 `HANDOFF.md` §8）。
+
+D8 是**视界 2.0 · 穿透式跨界观察**（A D7 封板 + 视界契约固化 → B 视界模块抽离 →
+C 多位面 Presentation Stage → D 窗内内容补全 → E 跨界事件可视化 → F 穿透检视 →
+G 跨界追迹 → H 总回归）。⚠️ **D8 只提升可观察性，不改变三界模拟规则**：
+不新增三界生态 · 不调裂隙数值 · 不改变裂隙推进语义 · 表现层不写世界 · 不做多视界 ·
+不做全图永久另一界模式。视界「是什么、什么不许做」的正式契约在 **`VIEW_CONTRACT.md`**。
+**A / B / C / D / E / F 包已完成**：A = D7 封板 + `VIEW_CONTRACT.md` + `npm run test:view`（只钉旧行为，证明 D8 从稳定快照出发）；
+B = 视界模块抽离（`ui/realmView.js` + `render/realmViewLayer.js`）；C = 多位面表现舞台（`render/presentationStage.js`，
+三界 transient 事件按位面路由，`fxLayer` 变 plane-aware，窗内画目标位面 FX）；
+D = 窗内内容补全（`render/realmViewLayer.js` 加 `REALM_VIEW_PROFILE` 位面画像 + `drawGroundArtifacts` 地面法宝 +
+`drawRealmYin` 幽冥阴气——**只读**，不改任何生态数值、不改 `main.js`）；
+E = 跨界动作「在两边发生」（六类跨界在**成功之后**各发一条 `rift-cross`，**两侧各一条**——离开端在源位面、
+到达端在目标位面；形状只在 `sim/presentation.js` 的 `emitRiftCross` 定义一次，**不新造任何跨界概率**；
+`render/fxLayer.js` 加 `drawRiftCross`：`depart` 向内收缩 / `arrive` 向外散开——**只读、零 RNG、不改 `main.js`**）；
+F = 穿透检视（视界工具手势分两支——**拖动重画视界 / 短点击窗内检视**；新增**只读**纯模块 `ui/realmInspector.js`
+（上界人物 / 幽冥鬼魂 / 幽冥物品三张卡）；`main.js` 加 `inspectRealmAt` + `isRealmInspectClick`——
+**不复用**凡间 `inspectAt`、**不写** `this.selected`、窗内**无任何按钮**）。
+`main.js` **3084 → 2889 行**（仍 < D7 baseline）。
+⚠️ 视界仍是**只观察**：`selection` 是 UI 状态（不进存档）· 观察路径够不到任何跨界转移链路 ·
+「划开视界」的合法副作用**只有开缝**（`openRifts`），不转移三界人口 ·
+**窗内检视也不改任何东西**（不写世界、不抽 RNG、不新建 upper watch、不给任何操作入口）。
+⚠️ **跨界事件也一个字都不改模拟**：它只往 transient 队列推（`core/runtimeEvents.js` 的 WeakMap，读档后为空），
+**不抽任何 RNG**（八条独立流一条都不动）——删掉整个表现层，三界模拟结果逐字不变。
 
 **这一节的全部规则由 `scripts/inkbox-three-realms.mjs` 自动守**（`npm run test:three-realms`，
-**十二节**：时间 / 世界身份 / id 空间 / 上界闭环 / 幽冥闭环 / 存读档 / 裂隙目标 /
-凡人跌入幽冥 / 鬼进入凡间 / 幽冥物品泄漏 / 跨位面夺舍 / 三界跨界生态联合）。动了三界任何一处，**先跑它**——
+**十三节**：时间 / 世界身份 / id 空间 / 上界闭环 / 幽冥闭环 / 存读档 / 裂隙目标 /
+凡人跌入幽冥 / 鬼进入凡间 / 幽冥物品泄漏 / 跨位面夺舍 / 三界跨界生态联合 / 跨界发射「成功才发」）。动了三界任何一处，**先跑它**——
 它是「本文件不是一纸空文」的兑现方式。
 
 **明确不做**（想到就记 BACKLOG，不施工）：

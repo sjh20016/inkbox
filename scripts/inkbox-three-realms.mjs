@@ -99,6 +99,9 @@ import { Life } from '../src/inkbox/sim/life.js';
 import { mulberry32 } from '../src/inkbox/core/noise.js';
 import { SOUL_ROUTES, SOUL_ROUTE_POSSESS } from '../src/inkbox/sim/reincarnation.js';
 import { serializeWorld, deserializeWorld } from '../src/inkbox/io/save.js';
+// D8-E：跨界表现事件落在 transient 队列里（`core/runtimeEvents.js` 的 WeakMap），
+// 本组用 `peekRuntimeEvents` 只读地看「成功时到底发了几条」。
+import { peekRuntimeEvents } from '../src/inkbox/core/runtimeEvents.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const INKBOX_SRC = path.resolve(HERE, '../src/inkbox');
@@ -2022,6 +2025,111 @@ section('F12. 三界跨界生态联合：四支同缝 · 五守恒 · 不串账 
       body.length > 0 && !/\brng\s*\(/.test(body) && !body.includes('Math.random'),
       `命中 ${(body.match(/\brng\s*\(/g) || []).join('/') || '无'}`);
   }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// F13 · 跨界动作「在两边发生」（D8-E）
+// ══════════════════════════════════════════════════════════════════
+//
+// 蓝图原文：「不要新造任何跨界概率。**只在已经成功完成转移以后**发事件。」
+// 以及「**成功以后发。** 不是"开始尝试"就发。」
+//
+// 本组把这两句落成**可判定**的两条：
+//   ① **源码结构**：九个跨界效果函数体里，`emitRiftCross(` 都排在**最后一个
+//      `return false` 之后**——失败分支全部在前，发射只可能落在成功路径上。
+//      （这是「成功才发」唯一能在**不跑世界**时钉住它的形态。）
+//   ② **运行时**：三个导出的幽冥转移函数各跑一次「失败（没得转）」与「成功」；
+//      失败**一个事件都不发**、成功恰好发**两条**（离开端 + 到达端，各在自己位面）。
+//
+// 什么故障让它变红：把发射点写在函数开头（"开始尝试"就发）⇒ ①红；
+// 落点失败 / cap 满时也发了事件 ⇒ ②红（那是典型的「表现层说谎」）。
+//
+// ⚠️ 与 F8/F9/F10 同款：直调导出函数、手工摆位、`w.day += RIFT_PERIOD_DAYS` 之外
+//    不推进世界（本组根本不需要推进——转移函数是同步的、零 rng 的）。
+section('F13. 跨界动作「在两边发生」· 成功才发（D8-E）');
+{
+  // ── ① 源码结构：发射点排在最后一个 `return false` 之后 ────────────
+  const CROSS_FNS = [
+    ['rifts', 'leakUpperArtifact'], ['rifts', 'leakUpperHerb'], ['rifts', 'leakToUpper'],
+    ['rifts', 'leakGroundArtifactToUpper'], ['rifts', 'fallIntoNether'],
+    ['rifts', 'climbOutToMortal'], ['rifts', 'leakNetherItem'],
+    ['possess', 'possessMortal'], ['possess', 'hauntMortal'],
+  ];
+  const POSSESS_SRC2 = stripComments(fs.readFileSync(path.join(INKBOX_SRC, 'sim/possession.js'), 'utf8'));
+  const srcOf = (which) => (which === 'rifts' ? RIFT_SRC : POSSESS_SRC2);
+  let allHave = true; let allAfter = true;
+  const detail = [];
+  for (const [which, fn] of CROSS_FNS) {
+    const body = fnBodyOf(srcOf(which), fn);
+    const at = body.indexOf('emitRiftCross(');
+    const lastFail = body.lastIndexOf('return false');
+    if (at < 0) { allHave = false; detail.push(`${fn}:未发`); continue; }
+    if (!(lastFail >= 0 && at > lastFail)) { allAfter = false; detail.push(`${fn}:位置 ${at}<=${lastFail}`); }
+  }
+  check('★ 源码结构：九个跨界效果函数**都**发了 rift-cross（六类跨界全覆盖）',
+    allHave, detail.length ? detail.join(' ') : '九处齐全');
+  check('★ 源码结构：发射点**排在最后一个 `return false` 之后**（成功才发，不是"开始尝试"就发）',
+    allAfter, detail.length ? detail.join(' ') : '九处都在失败分支之后');
+
+  // ── ② 运行时：失败不发 / 成功恰好两条 ─────────────────────────────
+  const mkRiftWorld = (seed) => {
+    const w = makeThreeRealmWorld(seed);
+    let rx = 30; let ry = 30;
+    outer: for (let y = 5; y < w.h - 5; y += 1) {
+      for (let x = 5; x < w.w - 5; x += 1) {
+        if (w.isWalkable(y * w.w + x)) { rx = x; ry = y; break outer; }
+      }
+    }
+    w.rifts = [{
+      id: 1, x: rx, y: ry, strength: RIFT_BASE_RADIUS, openedDay: 0,
+      age: TAU_GROW, closedDay: -1, leaked: 0, crossed: 0, targetPlane: 'nether',
+    }];
+    w.nextRiftId = 2;
+    return w;
+  };
+  const crossOf = (w) => peekRuntimeEvents(w).filter((e) => e.type === 'rift-cross');
+
+  // 失败：半径内没人 / 没鬼 / 没物 ⇒ 一个 rift-cross 都不该有。
+  // ⚠️ 先清空 `world.entities`：`generateWorld({scatter:true})` 可能撒下活人，
+  //    万一正好站在缝口半径内，`fallIntoNether` 会**合法地**成功（那是 F8 的
+  //    正常路径，不是本组要测的失败）。清空后失败判据才干净。
+  const wFail = mkRiftWorld(5150);
+  wFail.entities = [];
+  const rf = wFail.rifts[0];
+  const failRes = [
+    fallIntoNether(wFail, rf, RIFT_BASE_RADIUS),
+    climbOutToMortal(wFail, rf, RIFT_BASE_RADIUS),
+    leakNetherItem(wFail, rf, RIFT_BASE_RADIUS),
+  ];
+  check('★ 运行时：三条转移**全部失败**（半径内没人 / 没鬼 / 没物）',
+    failRes.every((r) => r === false), `返回 ${failRes.join('/')}`);
+  check('★ 运行时：失败时**一个 rift-cross 都不发**（表现层不说谎）',
+    crossOf(wFail).length === 0, `实测 ${crossOf(wFail).length} 条`);
+
+  // 成功：放进一个人 ⇒ `fallIntoNether` 恰好发两条（凡间 depart + 幽冥 arrive）。
+  const wOk = mkRiftWorld(5150);
+  const rf2 = wOk.rifts[0];
+  wOk.entities = [];
+  const person = initEntity({
+    id: 7001, sp: SPECIES.HUMAN, x: rf2.x + 0.5, y: rf2.y + 0.5, tx: rf2.x, ty: rf2.y,
+    vx: 0, vy: 0, hp: 10, maxHp: 10, age: 20, lifespan: 80, name: '凡人7001',
+    kills: 0, relations: new Map(), techniques: [], artifacts: [],
+    village: 0, faction: 0, clan: 0, gen: 0, state: 'wander', timer: 0, anim: 0, face: 1,
+  }, mulberry32(7001));
+  wOk.entities.push(person);
+  const fellOk = fallIntoNether(wOk, rf2, RIFT_BASE_RADIUS);
+  const evs = crossOf(wOk);
+  const dep = evs.find((e) => e.data.phase === 'depart');
+  const arr = evs.find((e) => e.data.phase === 'arrive');
+  check('★ 运行时：成功转移恰好发**两条** rift-cross（离开端 + 到达端）',
+    fellOk === true && evs.length === 2, `转移=${fellOk} · 事件=${evs.length}`);
+  check('★ 运行时：离开端在**凡间**、到达端在**幽冥**（两边都在发生）',
+    !!dep && dep.plane === 'mortal' && !!arr && arr.plane === 'nether'
+    && dep.data.kind === 'person' && arr.data.fromPlane === 'mortal'
+    && arr.data.toPlane === 'nether',
+    dep && arr ? `${dep.plane}/${dep.data.phase} · ${arr.plane}/${arr.data.phase}` : '缺事件');
+  check('★ 运行时：`fromKey` 用稳定 key（`mortal:<id>`），不依赖名字做身份',
+    !!dep && dep.data.fromKey === 'mortal:7001', dep ? String(dep.data.fromKey) : '无');
 }
 
 console.log(`\n${'='.repeat(64)}`);

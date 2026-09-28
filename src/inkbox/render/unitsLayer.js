@@ -359,8 +359,8 @@ export class UnitsLayer {
    * 调用：`this.units.drawRifts(ctx, this.camera, world, now);`
    * （`now` 是渲染用的秒数，与其它 draw 函数的第四个参数同义）。
    *
-   * ⚠️ **与 `main.js` 的 `drawRiftBorder` 是两回事**：那个画的是**视界窗口**
-   *    的四条边（一圈整齐的断续矩形描边，是 UI 提示）；这里画的是地图上
+   * ⚠️ **与 `render/realmViewLayer.js` 的 `drawRiftBorder` 是两回事**：那个画的是
+   *    **视界窗口**边缘的缝（一圈整齐的断续描边，是 UI 提示）；这里画的是地图上
    *    真实存在的裂缝——**不规则的墨色裂纹**，像地面被撕开的口子。
    *    两者视觉上必须一眼可分：这里刻意**不画矩形**，只画从裂口向外撕开的折线。
    *

@@ -120,7 +120,10 @@ import { awaken } from './cultivation.js';
 //    ⇒ 不成环（`scripts/inkbox-import-check.mjs` 会验）。
 import { ensureNetherPopLog } from './netherLife.js';
 // 表现事件发射口（D7-D）：夺舍 / 附身那一刻闪一下冷墨环。只发事件，不改模拟。
-import { emitPresentation } from './presentation.js';
+// D8-E 另加 `emitRiftCross`：夺舍 / 附身是**跨界动作**，除了凡间那圈冷墨环
+// （`'possession'`，D7 的到达端 FX），还要补一条「离开端」——幽冥侧鬼影朝缝口淡去。
+// 见下面两处调用点的 `sides: 'depart'` 说明。
+import { emitPresentation, emitRiftCross } from './presentation.js';
 
 // ── 常量（照抄主线，出处标在行号上；不要按沙盒数值域「重标」）──────
 //
@@ -779,6 +782,8 @@ function possessMortal(world, nether, ghost, target) {
   target.level = Math.max(target.level || 0, inherited);
 
   // **先落成（上面全做完）→ 再从幽冥移除**
+  // D8-E：离开端坐标先捕获（鬼修随后被 `splice` 出幽冥实体表）。
+  const ghostX = ghost.x; const ghostY = ghost.y;
   const at = nether.entities.indexOf(ghost);
   if (at >= 0) nether.entities.splice(at, 1);
 
@@ -796,6 +801,18 @@ function possessMortal(world, nether, ghost, target) {
     subjectId: ghost.id,
     targetId: target.id,
     data: { mode: 'possess' },
+  });
+  // D8-E：跨界事件——**只发「离开端」**（`sides:'depart'`）。理由：到达端
+  // （凡间目标身上那圈冷墨双重轮廓）已由上面那条 D7 的 `'possession'` 演，
+  // 而蓝图对夺舍的到达端要求正是「凡间目标身上出现 D7 的冷墨双重轮廓」；
+  // 再补一条 arrive 会在同一格叠两套 FX。这里补的是幽冥侧那条——
+  // 「幽冥侧鬼影朝裂隙淡去」（鬼修从幽冥消失）。
+  emitRiftCross(world, {
+    kind: 'possession', fromPlane: 'nether', toPlane: 'mortal',
+    fromX: ghostX, fromY: ghostY,
+    toX: Math.floor(target.x), toY: Math.floor(target.y),
+    fromKey: `nether:${ghost.id}`, subjectId: ghost.id, targetId: target.id,
+    sides: 'depart',
   });
   return true;
 }
@@ -836,6 +853,17 @@ function hauntMortal(world, ghost, target) {
     subjectId: ghost.id,
     targetId: target.id,
     data: { mode: 'haunt' },
+  });
+  // D8-E：跨界事件——同样只发「离开端」（理由同 `possessMortal`：到达端已有
+  // D7 的 `'possession'`）。⚠️ 附身时鬼修**留在幽冥**（它本就能在凡间行走），
+  // 所以这一条不是「消失」而是「朝缝口探出去的那一缕」——视觉上同为
+  // 幽冥侧冷墨淡去。`fromX/fromY` 用鬼修此刻在幽冥的位置。
+  emitRiftCross(world, {
+    kind: 'possession', fromPlane: 'nether', toPlane: 'mortal',
+    fromX: ghost.x, fromY: ghost.y,
+    toX: Math.floor(target.x), toY: Math.floor(target.y),
+    fromKey: `nether:${ghost.id}`, subjectId: ghost.id, targetId: target.id,
+    sides: 'depart',
   });
   return true;
 }

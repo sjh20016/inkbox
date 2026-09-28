@@ -1,11 +1,32 @@
 # Project Status
 
 - 当前活跃版本：Inkbox 1.0.0（`src/inkbox`）
-- 当前入口：`inkbox.html`；`npm run dev` 从 `http://127.0.0.1:4180/` 启动
-- 当前阶段：**D7「观察与表现层」A–F 完成，G 收尾**。D6-2 三界生态与 D6-3 视界 / 跨界生态均已完成。
-- **接手先读 `HANDOFF.md`**（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）——本文件是历史，不是现状。
-- 三界规则唯一成文处：`THREE_REALMS.md`（事实核对日期 2026-09-27 · D6-2 A–F · D6-3 A–E · D7-A/B/C/D/E/F）
+- 当前入口：`inkbox.html`（3D 立体沙盘：`inkbox.html?renderer=3d`）；`npm run dev` 从 `http://127.0.0.1:4180/` 启动
+- 当前阶段：**Render3D M1「3D 世界实体可见化」已完成**（委托书 `坐天观井 · 下一阶段工程委托书.md`；工程报告 `Render3D M1 工程报告.md`）。**下一阶段由用户裁决，不得自行开始。**
+- **正式完成**：D6-2 三界生态 · D6-3 视界 / 跨界生态 · D7 观察与表现层 **A–G 封板** · D8 视界 2.0 **A–F** · **Render3D M0**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻，`npm run test:render3d`）· **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环，`npm run test:render3d:m1`）。
+- **WIP / 暂缓**：**D8-G「跨界追迹」**——纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）已保存并由 `test:view` V9 钉住，**追迹 UI 未做**；本阶段不继续扩建 Canvas 版 D8-G。
+- **接手先读 `HANDOFF.md`**（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）——本文件是历史，不是现状。视界契约见 `VIEW_CONTRACT.md`；Render3D M0 报告见 `RENDER3D_M0.md`。
+- 三界规则唯一成文处：`THREE_REALMS.md`（事实核对日期 2026-09-27 · D6-2 A–F · D6-3 A–E · D7-A/B/C/D/E/F/G）
 - 禁止误认为主线：`src/main.js`、`demo/`、`剧情文案素材/`、`scripts/v341*` 至 `scripts/v400*` 与研究探针
+
+---
+
+## Render3D M0.5 → M1「工程收束 + 3D 世界实体可见化」（2026-09-28）
+
+委托书：`坐天观井 · 下一阶段工程委托书.md`。唯一战略目标：**保留现有模拟世界作为唯一真相，
+让 Three.js 从「地形技术原型」成长为「可以实际观察世界的沙盘」**。
+
+- **M0.5 工程收束**：工作树审计（确认 D8-G 只有地基、无换行符 churn）· 单独封存 D8-G 语义修改
+  （`wip(d8-g): preserve cross-realm trace groundwork`）· 修正 README / HANDOFF / STATUS 文档真相 ·
+  建立阶段基线（core 67 文件 246 边 · view 111 · presentation 127 · render3d 19 组 · build 108 files 全绿）。
+- **M1-A EntityLayer**：`render3d/entities/deriveEntities.js`（纯派生）+ `entities/EntityLayer.js`（InstancedMesh）。
+- **M1-B SettlementLayer**：`render3d/settlements/SettlementLayer.js`（村落 / 屋舍 / 宗门山门）。
+- **M1-C WorldMarkerLayer**：`render3d/markers/WorldMarkerLayer.js`（无主法宝 / 地点 / 灵脉 / 裂缝）。
+- **M1-D 选中提示与工具保真**：`render3d/SelectionMarker.js` + 复用 `inspectAt()` 与 `cameraRig.focusOn()`。
+- **M1-E / M1-F**：LOD 与性能纪律、Render Bridge 纪律（渲染器自持快照，不给 `World` 加 dirty）。
+- **测试**：`scripts/inkbox-render3d-m1.mjs`（`npm run test:render3d:m1`，**36 项 / 0 红**）+ 浏览器探针 `scripts/_m1-viewshot.mjs`（场景 A–F 全过）。
+- **收尾实测**：core **72 文件 / 262 边** · view 111 · presentation 127 · render3d 19 组 · render3d:m1 36 · **build 113 files**；
+  全图 draw call **9**（M0 基线 3 ⇒ +6）· zoom=5 近景 **21** · **2832 实体全图仅 6** · 运行期**零控制台报错**。
 
 ---
 
@@ -21,6 +42,98 @@
 - **E 记挂系统 1.0**（`663d8ef`）：`sim/watch.js`——玩家的观察者状态（`world.watch`），不挂实体、不抽 RNG、不进人口守恒。
 - **F 关系与战争可视化**：`render/relationGraph.js`（一跳关系图，纯 SVG）+ `render/overlayLayer.js` 的 `drawWarLines`。
 - **G 测试 / 文档 / 交接**：`scripts/inkbox-presentation.mjs`（86 项）· `npm run test:d7` · `HANDOFF.md`。
+
+---
+
+## D8「视界 2.0 · 穿透式跨界观察」（2026-09-27）
+
+规划见 `D8视界 2.0 · 穿透式跨界观察.md`，A–H 八包**严格按序**（**不能把 E 提前到 C 前**，否则每种跨界事件各画各的，最后五套小特效）。
+一句话目标：把「裁一块另一界地图出来看」的视界，升级成一扇**活着的窗**——另一界的事件在窗里演、跨界过程看得见、窗内人物/鬼修/物品可点开追踪，而**整个系统仍只负责观察，不改变三界模拟**。
+**核心验收**：**表现可以错过，历史不能错过**。**硬指标**：D8 完成时 `main.js` **不得比 D7 baseline 更大**。
+
+- **A D7 封板 + 视界契约固化**（本包）：同步文档漂移（HANDOFF / STATUS / THREE_REALMS / BACKLOG 统一到 D7 A–G ✅）；
+  新增 **`VIEW_CONTRACT.md`**（「视界是什么 / 什么不许做」唯一成文处，11 条冻结规则 V1–V11）；
+  新增 **`npm run test:view`**（`scripts/inkbox-view.mjs`，先 **33 项**钉旧行为，D8-B 后 **42 项**）——证明 D8 从一个稳定的 D7 快照出发。
+  视界代码住在 DOM 绑定的 `main.js`（node 里 import 不进来），所以该脚本走**两条腿**：
+  ① 源码结构断言（去注释后**全树检索**函数体，D8-B 搬家不该让它变红）；② 纯模块运行时断言（`ui/tools.js` 几何 / `worldgen` / `save` / `rifts`）。
+  钉住：`viewUpper→upper` · `viewNether→nether` · 同坐标 · `selection` 单值不进存档 · 切走工具/退化划选两条关闭路径 ·
+  观察路径够不到跨界转移链路 · 划开视界只开缝不转移人口 · 观察不抽任何 RNG。
+  `npm run build` 文件数 **80 → 82**（+`VIEW_CONTRACT.md`、+`scripts/inkbox-view.mjs`）。
+- **B 视界模块抽离**（本包）：把视界从 `main.js` 拔成三层——
+  **`ui/realmView.js`**（纯状态 / 几何，**零 import**：`VIEW_TOOL_PLANE` / `isViewTool` / `viewPlaneForTool` / `planeLabel` /
+  `pointInRegion` / `regionContains` / `ghostsInRegion`）+ **`render/realmViewLayer.js`**（只画，**不 import `sim/*`**：
+  `drawRealmView` / `drawRiftBorder` / `drawSelectHint`）+ `main.js` 只留接线。
+  `main.js` **3084 → 2792 行**（−292），`render()` 只剩 `if (this.selection) drawRealmView(...)`——
+  **D8 硬指标「完成时 `main.js` 不得比 D7 baseline 更大」达标**。
+  `npm run test:view` 加 **V6 模块边界组**（钉「纯函数不在 main.js」「realmViewLayer 不碰 sim」「main.js 行数 ≤ D7 baseline」），
+  **33 → 42 项**。`npm run build` 文件数 **82 → 84**（+两个源模块，走 `DIRECTORIES` 递归自动入包）。
+- **C 多位面 Presentation Stage**（本包）：新增 **`render/presentationStage.js`**——一帧 `ingestWorlds(world)`
+  收齐三界（凡间 / 上界 / 幽冥）事件、`update(dt)` 走真实秒、`drawPlane(plane, …)` 按位面画。
+  **`render/fxLayer.js` 改造成 plane-aware**：FX 项自带 `plane`，删掉 D7 的 `if (plane !== 'mortal') continue;`，
+  `drawFx(…, plane='mortal')` 按位面过滤——**一个系统，不做三份 FX 类**。
+  `main.js` 只留 `this.stage.ingestWorlds(world).update(dt)` 与 `this.stage.drawPlane('mortal', …)`
+  （**不再自己写三遍 `drainRuntimeEvents`**）；`render/realmViewLayer.js` 在自己的 `ctx.clip()` 内、
+  实体之上画**目标位面**的 FX（`stage` 用鸭子类型传入 ⇒ 该模块仍**零 import**）。
+  `npm run test:presentation` **86 → 105 项**（新增 [7b] 多位面组：三界不串 / drain 一次全空 /
+  暂停照播 / 倍速不改实时时长 / 不进存档 / 不抽 RNG / **关视界时消费上界幽冥事件不改世界** / 模块边界）。
+  ⚠️ 顺手修掉一个**测试工具缺陷**：`inkbox-presentation.mjs` 的 `stripComments` 原先是朴素正则
+  （`/\*[\s\S]*?\*\//g`），会被**行注释里的 `` `sim/*` ``** 骗到、把中间代码一并删掉 ⇒ 换成**逐字符状态机**
+  （与 `inkbox-view.mjs` / `inkbox-three-realms.mjs` 同款，保留行号）。
+  `npm run build` 文件数 **84 → 85**（+`presentationStage.js`）。
+- **D 窗内内容补全**（本包）：`render/realmViewLayer.js` 加 **`REALM_VIEW_PROFILE`**——「这一界在窗里该画什么」的
+  按位面查的表（上界画宗门 / 法宝，幽冥画鬼 / 幽冥物品 / 阴气、**不画宗门**）。`drawRealmView` 只读它分流，
+  加第三界只需补一行表。新增两个只读绘制：
+  **`drawGroundArtifacts`**（D6-3 C 包落地的幽冥物品此前**地图上一个都看不见**——`drawEntities` 只画 `entities`；
+  现在画成「极小的墨点 + 一圈冷光」，`ARTIFACT_MARK_MIN_ZOOM = 1.6` 以上才显，**不是 RPG 宝箱**，tier ≥ 4 多一枚金心）；
+  **`drawRealmYin`**（把已有的 `veg`（阴气 / 荒芜）在窗里**轻轻加深一点**——**不加彩色 heatmap**，只铺很低 alpha 的
+  局部雾墨；`veg` 本就「离冥河越近越浓」⇒ 雾自然聚在冥河两岸。`YIN_STEP = 6` / `YIN_BUDGET = 1400` 封顶）。
+  **本包零 `main.js` 改动**（`drawRealmView` 早已收到 `plane.plane`）、**零新文件**。
+  `npm run test:view` 加 **V7 位面画像组**，**42 → 60 项**：运行时 import 断言画像形状 / 只装 boolean / 冻结；
+  用 stub ctx/cam/world **真跑**两个新函数，断言**确定性 / 缩放门控 / 只读世界（JSON 前后逐字相同）**；
+  另加两条结构性保证「绘制层通篇不向 `world.*` 赋值」「绘制层零 import」。
+  ⚠️ **只读**：本包不改任何幽冥生态数值（`REALM_VIEW_PROFILE` 每项都是 boolean，测试当场钉它）。
+  `npm run build` 文件数 **85 → 85**（无新文件）。
+- **E 跨界动作「在两边发生」**（本包）：把**六类跨界**（凡→上人 / 上→凡法宝 / 上→凡灵植 / 凡→上法宝 /
+  凡→幽人 / 幽→凡鬼 / 幽→凡物 / 幽→凡夺舍附身）接到 **`rift-cross`** 表现事件——玩家终于能看见
+  「有人正穿过去」，而不是「人突然少了」或「编年史多了一行」。
+  形状只在 **`sim/presentation.js` 的 `emitRiftCross(world, spec)`** 定义一次（**不新造任何跨界概率**）。
+  **一次跨界发两条事件**：离开端（`phase:'depart'`，画在**源**位面）+ 到达端（`phase:'arrive'`，画在**目标**位面）——
+  于是「玩家此时正在看目标位面的视界」时，**窗内直接播到达 FX**（`presentationStage.drawPlane` 早已按 `event.plane` 路由）。
+  **`render/fxLayer.js`** 新增 **`drawRiftCross`**：`depart` = 墨影**向内收缩**（收敛线段），
+  `arrive` = 墨点**向外散开**（扩散环 + 散点）；`kind` 决定冷墨（鬼 / 夺舍）或墨色（人 / 物），
+  人再补一小圈残影、物补一个小光点；**无 `phase` 的旧事件退回通用冲击环**（不改变老表现）。
+  ⚠️⚠️ **只在转移成功之后发**（蓝图原文：「**成功以后发。** 不是"开始尝试"就发」）——发射点全部排在
+  各效果函数**最后一个 `return false` 之后**；落点失败 / cap 满 / 目标不存在时**一个事件都不发**。
+  ⚠️ **夺舍是唯一只发一端的**（`sides:'depart'`）：到达端已有 D7 的 `'possession'`（冷墨双重轮廓，
+  正是蓝图对夺舍到达端的要求），再补 arrive 会在同一格叠两套 FX。
+  **本包零 `main.js` 改动**（`stage` 接线 D8-C 已铺好）、**零新源文件**。
+  `npm run test:presentation` 加 **[14] 跨界组**，**105 → 127 项**（形状 / 两侧 / `sides` / 非法静默 /
+  不改世界 / 两端画法不同 / 确定性 / 源码结构）；`npm run test:three-realms` 加 **F13**，**144 → 151 项**
+  （源码结构「发射点排在最后一个 `return false` 之后」+ 运行时「失败 0 条 / 成功恰好 2 条」）。
+  RESEARCH 视觉探针 `scripts/_d8e-crossshot.mjs`（不进 build / 不进测试链）用**页面内动态 `import()`**
+  复用同一模块实例发事件，截图确认「凡间主画布上的离开端收缩星芒 + 幽冥窗内的到达端扩散环」**同时可见**。
+  `npm run build` 文件数 **85 → 85**（无新源文件）。
+- **F 穿透检视「点击窗里的东西」**（本包）：视界工具的手势分**两支**——
+  **拖动 = 重画视界 / 短点击 = 窗内检视**（位移 < `VIEW_CLICK_PX`(6px) **且**抬起点仍在已开的窗内）。
+  新增 **`ui/realmInspector.js`**（**只读**纯模块，与 `ui/realmView.js` 同款）：
+  `pickRealmSubject(realmWorld, plane, x, y)` 挑「窗内最近的一件东西」（上界只挑人；幽冥**先鬼后物**）+
+  `realmInspectRows(picked, ctx)` 摊成卡片行。支持三张卡：
+  **上界人物**（姓名 / 境界 / 年龄 / 仙门 / 来路 / 凡间来历 / 凡间宗门；
+  记挂对象飞升而来 ⇒ **★ 天道旧识**，靠 `arrivedLog.fromKey === watch[].key` 匹配，**绝不新建 upper watch**）、
+  **幽冥鬼魂**（类别 / 鬼修阶位 / 积怨 / 滞留年数 / 前世快照 / 来路——`ghostOf.route === null` 判「自裂缝跌入」）、
+  **幽冥物品**（携带功法 / 来源——带 `technique` = 幽冥自生）。
+  `main.js` 新增 **`inspectRealmAt()`**（复用 `#inkInspect` 面板与 `.inspect-*` 样式，**语义不复用**）
+  + **`isRealmInspectClick()`**（分派判据，**排在 `commitSelection` 之前**）。
+  ⚠️ **不复用凡间 `inspectAt()`**（记挂 / 传记 / 关系图 / 家世全是凡间专有，硬塞会造出一串 `if plane === ...`）；
+  ⚠️ **不写 `this.selected`**（那字段让 `render()` 在**凡间**画高亮环，塞幽冥坐标会画错地方）；
+  ⚠️ **窗内无任何按钮**（不改属性 / 传功 / 记挂幽冥鬼 / 施神力 / 操控上界单位）——「D8 仍然是观察」是结构性的。
+  提示语改为「拖动重划视界 · 单击窗内事物查看」。**「点一下关窗」这条出口保留**（改由「窗外单击」触发）。
+  `npm run test:view` 加 **V8 穿透检视组**，**60 → 94 项**（阈值区间 / 挑拣优先级 / 三张卡的行 /
+  ★ 天道旧识不建 watch / 只读 JSON 逐字不变 / 源码「不复用 inspectAt、不写 selected、分派排在 commit 之前」）。
+  RESEARCH 交互探针 `scripts/_d8f-inspectshot.mjs`（不进 build / 不进测试链）用**真实指针事件**验证
+  「窗内单击人物 ⇒ 弹卡」「窗内空白 ⇒ 说无可检视之物且**不关窗**」「窗内拖动 ⇒ 重画」「窗外单击 ⇒ 收窗」。
+  ⚠️ **D8 硬指标**：`main.js` **2795 → 2889 行**，仍 < D7 baseline **3084**，达标。
+  `npm run build` 文件数 **85 → 86**（+`ui/realmInspector.js`）。
 
 ---
 

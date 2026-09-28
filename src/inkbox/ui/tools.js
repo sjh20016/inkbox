@@ -34,7 +34,7 @@ export const REGION_MIN_AREA = 6;
  *
  * @param {Array<[number,number]>} points 原始路径（世界坐标，可含浮点/越界值）
  * @param {object} world 凡间 world（需 `clampX`/`clampY`/`size`）
- * @param {number} maxAreaFrac 面积上限占全图比例（`main.js` 的 `UPPER_VIEW_MAX_AREA`）
+ * @param {number} maxAreaFrac 面积上限占全图比例（`ui/realmView.js` 的 `VIEW_MAX_AREA_FRAC`）
  * @returns {{path:Array<[number,number]>,x0:number,y0:number,x1:number,y1:number,area:number,capped:boolean}|null}
  */
 export function normalizeRegion(points, world, maxAreaFrac) {
@@ -302,7 +302,7 @@ export const TOOLS = Object.freeze([
   //    标成 true 会让光标变成 help、提示语也变成「不改动世界」，
   //    玩家就会以为它只是看——而裂缝是实打实的。提示语里已经写明「会裂开细缝」。
   T('viewUpper', '上界视界', '☯', 'view',
-    '按住拖出一片山河的形状（可圆可不规则），自裂缝中窥见上界；视界边缘会裂开细缝', {
+    '拖动重划视界 · 单击窗内事物查看；划出的边缘会裂开细缝，自缝中窥见上界', {
       mode: 'select',
       readonly: false,
       // 本轮 apply 只做一件事：把划选区域交出去（commitSelection）。
@@ -323,10 +323,11 @@ export const TOOLS = Object.freeze([
   // ⚠️ 两界共用同一个凡间 `world.rifts`，所以划幽冥视界同样会在边缘裂开细缝——
   //    这正是 `sim/rifts.js:5` 引的用户原话「上界视界和**下界**的边缘……会因此
   //    产生轻微的空间裂缝」。
-  // ⚠️ id 必须与 `main.js` 的 `VIEW_TOOL_IDS` 对得上：那边是裂缝冻结（C1.1）与
-  //    开缝门控的唯一判据总表，这里改了名而那边没改，视界会**静默地**不再开缝。
+  // ⚠️ id 必须与 `ui/realmView.js` 的 `VIEW_TOOL_PLANE` / `VIEW_TOOL_IDS` 对得上：
+  //    那边是裂缝冻结（C1.1）与开缝门控的唯一判据总表，这里改了名而那边没改，
+  //    视界会**静默地**不再开缝。
   T('viewNether', '幽冥视界', '⚰', 'view',
-    '按住拖出一片山河的形状（可圆可不规则），自裂缝中窥见幽冥；视界边缘会裂开细缝', {
+    '拖动重划视界 · 单击窗内事物查看；划出的边缘会裂开细缝，自缝中窥见幽冥', {
       mode: 'select',
       readonly: false,
       apply: (c) => { c.commitSelection(c.rect); return 0; },

@@ -9,9 +9,13 @@
 // ⚠️ 记挂的是「**这一世的人**」，不是灵魂。key 用凡间实体 id（`mortal:<id>`）：
 //    转世会拿到新的 id ⇒ **不自动继承**记挂。
 //
-// 跨界身份：飞升后凡间实体被移出 `entities`，唯一**可靠**的跨界引用是
-// `upper.arrivedLog[].fromKey`（`arriveUpper` 写的 `mortal:<凡间id>`）——
-// 与这里的 key 同格式。**没有可靠引用时不许按名字猜**（重名即错，且不报错）。
+// 跨界身份：人离开凡间后，本模块只认**两条可靠**的跨界引用，都不按名字猜
+// （重名即错，且不报错）：
+//   · 飞升 / 被裂缝吸上 ⇒ `upper.arrivedLog[].fromKey`（`arriveUpper` 写的
+//     `mortal:<凡间id>`）；
+//   · 跌入幽冥 ⇒ 幽冥那只鬼的 `ghostOf.ref`（`ghostSnapshot` 写的 `mortal:<凡间id>`，
+//     **且 `ghostOf.route === null`** 以区分「跌进去的」与「死后成鬼的」）。
+// 两条与这里的 key **同格式**（`mortal:<凡间id>`）。查不到就如实说「已不可考」。
 
 import { findEntity } from './biography.js';
 import { findDead } from './necrology.js';
@@ -100,13 +104,48 @@ export function upperArrivalOf(world, key) {
 }
 
 /**
+ * 在幽冥实体里按「前世身份」查一只鬼（D8-G 的另一条可靠跨界引用）。
+ *
+ * 可靠引用是 `ghostOf.ref`——`ghostSnapshot` 写的 `mortal:<凡间id>`，与本模块的
+ * `watchKeyOf` **同格式**（理由同 `upperArrivalOf`：跨界只认 id，不认名字）。
+ *
+ * ⚠️ **还必须 `ghostOf.route === null`**：那只鬼必须是**从裂缝跌进去的**，
+ *    而不是「正常死亡后按五路成鬼」。判据来源是 `sim/rifts.js` 的
+ *    `fallIntoNether` 显式传 `route: null`（「没走魂路」），而正常死亡的鬼
+ *    在 `reincarnation.js` 里 `route` 恒为 `SOUL_ROUTES` 五值之一（**永不为 null**）。
+ *    不加这一条，一个「死了、成鬼、`deadLog` 记录又被 800 上限淘汰掉」的旧人
+ *    会被误判成「已落幽冥」——而那是**谎话**（他并没跌进去）。**不猜**是这里的底线。
+ *
+ * @param {object} world 凡间 world（挂 `.nether` 的那个）
+ * @param {string} key   `mortal:<凡间id>`
+ * @returns {object|null} 那只鬼（含 `x`/`y`/`ghostOf`）；查不到返回 `null`
+ */
+export function netherGhostOf(world, key) {
+  const list = world && world.nether && Array.isArray(world.nether.entities)
+    ? world.nether.entities
+    : null;
+  if (!list) return null;
+  for (let i = list.length - 1; i >= 0; i -= 1) {
+    const e = list[i];
+    if (e && e.ghostOf && e.ghostOf.ref === key && e.ghostOf.route === null) return e;
+  }
+  return null;
+}
+
+/**
  * 解析一条记挂的当前状态。**纯读、不抛错**（人不存在也返回 `unknown`）。
  *
  * 判据顺序（承重）：
  *   ① 凡间还活着（含被夺舍 ⇒ `possessed`）
  *   ② 上界来客里有可靠引用 ⇒ `ascended`
  *   ③ 逝者名录里有 ⇒ `dead`（飞升者也进名录，所以②必须在③前）
- *   ④ 都没有 ⇒ `unknown`（**不按名字猜**）
+ *   ④ 幽冥里有「跌进去的」那只鬼 ⇒ `nether`（D8-G）
+ *   ⑤ 都没有 ⇒ `unknown`（**不按名字猜**）
+ *
+ * ⚠️ **④ 必须在 ③ 之后**：正常死亡（含成鬼）的人先进 `deadLog`，应当在③就被
+ *    认成「故人」；而「跌入幽冥」**不写 `deadLog`**（`fallIntoNether` 只写编年史），
+ *    所以跌入者到不了③，只在④命中。顺序反过来会把「死者成鬼」误报成「跌入幽冥」。
+ * ⚠️ ④ 只认 `route === null` 的鬼（见 `netherGhostOf`）——**不按名字猜**。
  */
 export function resolveWatch(world, entry) {
   if (!world || !entry) return { state: 'unknown', label: '已不可考' };
@@ -124,6 +163,8 @@ export function resolveWatch(world, entry) {
     const year = Math.floor((Number(dead.died) || 0) / 360) + 1;
     return { state: 'dead', label: `故人 · 故于仙历 ${year} 年`, dead };
   }
+  const ghost = netherGhostOf(world, entry.key);
+  if (ghost) return { state: 'nether', label: '已落幽冥', netherId: ghost.id, ghost };
   return { state: 'unknown', label: '已不可考' };
 }
 
@@ -149,6 +190,13 @@ export function watchHasNews(world) {
       return true;
     } else if (r.state === 'ascended' && r.upper && (Number(r.upper.day) || 0) > read) {
       return true;
+    } else if (r.state === 'nether' && r.ghost) {
+      // 「跌入幽冥」那一刻也算一条大事（锚是 `ghostOf.deathDay` = 跌落那天）。
+      // 没有它，记挂的人掉进幽冥后红点不亮，玩家不会知道「他去哪了」。
+      const fell = r.ghost.ghostOf && Number.isFinite(r.ghost.ghostOf.deathDay)
+        ? r.ghost.ghostOf.deathDay
+        : 0;
+      if (fell > read) return true;
     }
   }
   return false;

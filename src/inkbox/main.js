@@ -88,9 +88,10 @@ import { drawFocusPulses, drawWarLines, spawnFocusPulse, updateFocusPulses } fro
 // 人物局部关系图（D7-F）：**纯 SVG 字符串生成器**，零 import、零副作用、零 RNG。
 // 它只吃「已解析好的邻居列表」，世界怎么查、点谁跳到哪全在本文件（见 showPersonCard）。
 import { relationGraphSvg, RELATION_GRAPH_MAX } from './render/relationGraph.js';
-// FX 表现层（D7-D）：读 transient 表现事件 → 短命特效（雷霆 / 陨石 / 飞升 /
-// 裂隙 / 夺舍 / 战争）。**纯表现**——删掉它模拟结果逐字不变，也不抽任何 RNG。
-import { createFxState, drawFx, ingestRuntimeEvents, updateFx } from './render/fxLayer.js';
+// 多位面表现舞台（D8-C）：一帧收齐三界（凡间 / 上界 / 幽冥）的 transient 表现
+// 事件 → 按位面路由成短命特效 → 分发给主画布与视界窗。**纯表现**——删掉它模拟
+// 结果逐字不变，也不抽任何 RNG。收队列 / 更新 / 画哪一界全在舞台里，本文件不写三遍。
+import { PresentationStage } from './render/presentationStage.js';
 // 「记挂」观察者状态（D7-E，见 sim/watch.js）。这是**玩家的**观察列表——
 // 存在 `world.watch`（世界级字段），**不挂实体、不参与模拟、不抽 RNG**。
 // 面板只做三件事：增删、显示状态、点行导航。删掉这块 UI，模拟结果逐字不变。
@@ -98,10 +99,9 @@ import {
   WATCH_CAP, isWatched, toggleWatch, watchRows, watchHasNews,
   ensureWatch, resolveWatch, markWatchRead, markAllWatchRead,
 } from './sim/watch.js';
-// transient 事件队列的抽取端（模拟侧只 `emit`，这里 `drain`）。
-// ⚠️ 事件不写世界、不进存档、读档后为空（见 core/runtimeEvents.js）。
-import { drainRuntimeEvents } from './core/runtimeEvents.js';
 // 表现事件的模拟侧发射口——玩家落笔（tool-impact）由本文件直接发。
+// ⚠️ 队列的**抽取端**已收进 `render/presentationStage.js`（D8-C）：本文件不再
+//    自己 `drainRuntimeEvents`，否则三界要写三遍（见该文件头注释）。
 import { emitPresentation } from './sim/presentation.js';
 // ⚠️ `normalizeRegion as normalizeRegionGeometry` 是划选区域的**纯几何核心**
 //    （鞋带面积 / 钳界 / 面积上限）。它放在 `ui/tools.js` 而不是本文件的方法里，
@@ -112,6 +112,22 @@ import { emitPresentation } from './sim/presentation.js';
 import {
   TOOLS, TOOL_BY_ID, TOOL_GROUPS, TOOL_CURSOR, normalizeRegion as normalizeRegionGeometry,
 } from './ui/tools.js';
+// 视界的**纯状态与几何**（D8-B 从本文件拔出去）：判据总表 / 区域命中 / 窗内鬼魂计数。
+// 零 import 的纯模块——「视界不许改世界」因此是**结构性**成立的，不是靠注释保证。
+import {
+  VIEW_MAX_AREA_FRAC, VIEW_CLICK_PX, isViewTool, viewPlaneForTool, planeLabel,
+  ghostsInRegion, regionContains,
+} from './ui/realmView.js';
+// 视界的**穿透检视**（D8-F）：点开窗里的东西看它是什么。**只读**——本模块只产出
+// 字符串行，不暴露任何改状态的接口（「D8 仍然是观察」是结构性的，见其头注释）。
+import { pickRealmSubject, realmInspectRows } from './ui/realmInspector.js';
+// 跨界**追迹**（D8-G）：点一条「已入上界 / 已落幽冥」的记挂，算出他在哪一界、
+// 同坐标在哪，并摊出一条只针对他的「跨界来历」链。**纯逻辑、够不到 `openRifts`**
+// ——「引路，不代替玩家开门」因此是结构性的（见其头注释）。
+import { traceTargetOf, crossRealmChain } from './ui/realmTrace.js';
+// 视界的**绘制层**（D8-B 从本文件拔出去）：裁剪 / 贴另一界地形 / 画人与宗门 / 边框。
+// ⚠️ 它不 import `sim/*`——够不到模拟，就不可能改模拟。
+import { drawRealmView, drawSelectHint } from './render/realmViewLayer.js';
 import { toCss } from './render/palette.js';
 import {
   saveToStorage, loadFromStorage, exportFile, importFile, listSlots, deleteSlot,
@@ -333,111 +349,13 @@ function renderBiographyHtml(md) {
   return out.join('');
 }
 
-/**
- * 另一界（上界 / 幽冥）地形位图的最短重绘间隔（秒）。
- *
- * 视界的贴图走「全量渲染到离屏 canvas，再裁剪贴出」（规格 §3.4 的 C2 方案，
- * 不改 terrainLayer.js）。`TerrainLayer.render()` 是**全量**的——它遍历整张
- * `w×h` 并逐像素写 ImageData。若每帧都重绘另一界，地形成本直接翻倍。
- *
- * 但另一界地形**变化极慢**（不跑水文/生态，只有玩家工具会改），所以把它的重绘
- * 摊薄到 0.2 秒一档：视界里的云/浪会略顿，但这是 C2 方案下唯一能控成本的地方。
- * ⚠️ 这个数是**实测标定**的（见交付报告里的 FPS 读数），不要凭感觉改小。
- * ⚠️ 名字里的 `UPPER` 是历史遗留（视界起初只能看上界）；现在上界与幽冥两个
- *    图层**各自**按它节流，互不影响（各自的 `TerrainLayer.lastRender`）。
- */
-const UPPER_RENDER_PERIOD = 0.2;
-
-/** 视界面积上限（占全图比例）。划满全图会让渲染退化成「全图渲染两遍」 */
-const UPPER_VIEW_MAX_AREA = 0.4;
-
-/**
- * 「视界」工具 → 它看的那一界（`ui/tools.js` 里 `mode: 'select'`、能看另一界的那些）。
- *
- * **这是「当前在看哪一界」的判据总表**，四处共用它：
- *   · `riftViewOpen()` —— 裂缝冻结判据（契约 C1.1）；
- *   · `commitSelection()` —— 开缝门控**与目标位面**（划选边缘裂开细缝，缝连哪一界）；
- *   · `viewPlane()` —— 贴哪一界的地形。
- * 散着写 `toolId === 'viewUpper'` 会让「加一界」变成「改 N 处、漏一处」，
- * 而漏掉的那处**不报错**（比如裂缝照常开，只是开在没开窗的时候）。
- *
- * ⚠️ **目标位面也必须从这张表来**（D6-2 工程包 B1）：`openRifts` 的第三参
- *    `targetPlane` 与这里**必须是同一个真源**。若在 `commitSelection` 里另写一句
- *    `tool.id === 'viewNether' ? 'nether' : 'upper'`，那么「加第三界」时这里改了、
- *    那里忘了，幽冥的缝会**静默地**连到上界去——正是本阶段要根除的那个语义错误。
- *
- * ⚠️ 它**只**回答「是不是视界工具」；「窗口真的开着」还要 `this.selection` 非空，
- *    那是 `riftViewOpen()` 的第二半，两者不可互相替代。
- */
-const VIEW_TOOL_PLANE = Object.freeze({
-  viewUpper: 'upper',
-  viewNether: 'nether',
-});
-
-/**
- * 视界工具的 id 列表。**从 `VIEW_TOOL_PLANE` 的键派生**——不再另列一份字面量：
- * 两份清单必然分叉，而分叉的后果是「工具能看幽冥，但裂缝按上界开」（不报错）。
- */
-const VIEW_TOOL_IDS = Object.freeze(Object.keys(VIEW_TOOL_PLANE));
-
-/**
- * 射线法：点 `(x, y)` 是否落在闭合多边形 `path`（`[x, y]` 格点数组，首尾不重复）内。
- *
- * 半开区间判定（`(yi > y) !== (yj > y)`）让顶点 / 水平边只被数一次——
- * 否则恰好压在折线上的鬼魂会被算两次，计数凭空多一只。
- */
-function pointInPolygon(path, x, y) {
-  let inside = false;
-  for (let i = 0, j = path.length - 1; i < path.length; j = i, i += 1) {
-    const xi = path[i][0];
-    const yi = path[i][1];
-    const xj = path[j][0];
-    const yj = path[j][1];
-    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) {
-      inside = !inside;
-    }
-  }
-  return inside;
-}
-
-/**
- * 视界窗口里**看得见**的鬼魂数（契约 `reports/d5/BATCH2-DESIGN.md` §七「Feedback」）。
- *
- * ⚠️ **为什么用多边形而不是包围盒**：`drawPlaneView` 的裁剪是
- *    `ctx.clip()` 走 `sel.path` 那条自由折线（`main.js:1900-1909`），
- *    玩家看到的窗口**就是那个形状**。包围盒会把套索凹进去的那几块也数进来，
- *    于是「提示行说 7 只、窗里只看得见 3 只」——读数与画面打架，正是 D4 要治的病。
- *    所以这里做**点在多边形内**判定，与 `ctx.clip()` 同形状。
- *    代价 O(鬼魂数 × 顶点数)：鬼魂上限是几十、顶点也是几十，且只在**提交划选那一下**
- *    算一次（不在每帧），完全可以接受。
- *    `sel.path` 缺失时退回包围盒——与 `drawPlaneView` 的矩形兜底同款防御。
- *
- * ⚠️ **只对幽冥界计数**：上界没有鬼魂，加了会印出「窗内可见鬼魂 0 只」这种噪音。
- *
- * @param {object} plane `viewPlane()` 的产物（`world` / `label`）
- * @param {object} sel   `normalizeRegion()` 的产物（`path` / `x0..y1`）
- * @returns {number} 窗内鬼魂数（非幽冥界 / 无选区返回 0）
- */
-function ghostsInRegion(plane, sel) {
-  if (!plane || plane.label !== '幽冥' || !sel) return 0;
-  const list = (plane.world && plane.world.entities) || [];
-  const path = sel.path;
-  let n = 0;
-  if (path && path.length >= 3) {
-    for (let i = 0; i < list.length; i += 1) {
-      const e = list[i];
-      if (e && pointInPolygon(path, e.x, e.y)) n += 1;
-    }
-    return n;
-  }
-  // 兜底：矩形（与 `drawPlaneView` 的 `ctx.rect` 分支一致，含端点格）。
-  for (let i = 0; i < list.length; i += 1) {
-    const e = list[i];
-    if (!e) continue;
-    if (e.x >= sel.x0 && e.x <= sel.x1 + 1 && e.y >= sel.y0 && e.y <= sel.y1 + 1) n += 1;
-  }
-  return n;
-}
+// ── 视界（D8-B：实现已搬到 `ui/realmView.js` + `render/realmViewLayer.js`）──
+//
+// 这里只留**接线**：本文件依赖 DOM，node 里 import 不进来，所以「视界是什么」
+// 的判据总表与全部绘制都在上面那两个模块里（前者纯状态/几何、后者纯绘制）。
+// 主程序只剩 `if (this.selection) drawRealmView(...)`（见 `render()`）。
+//
+// ⚠️ 视界逻辑**不许再搬回本文件**：D8 的硬指标是 `main.js` 不得比 D7 baseline 更大。
 
 /**
  * 「退回明文」的短标签。**两个原因必须分开说**：
@@ -474,8 +392,19 @@ class Sandbox {
     // `focusPulses` 是**真实时间**驱动的短命墨环列表（见 render/overlayLayer.js）。
     // 它是 transient 表现，**不进存档**：读档后为空，与 runtime events 同性质。
     this.focusPulses = [];
-    // FX 表现状态（D7-D）：由 transient 表现事件喂养，真实时间驱动，不进存档。
-    this.fx = createFxState();
+    // ── 跨界追迹状态（D8-G）────────────────────────────────
+    // `traceTarget` = 玩家刚点开的那条记挂「现在在哪一界、同坐标在哪」
+    //   （`ui/realmTrace.js` 的 `traceTargetOf` 产物）。**只针对当前这个人**。
+    // `tracePulses` = 追迹专用的落点墨环列表。**为什么不并进 `focusPulses`**：
+    //   墨环在 `render()` 里画在**视界窗之前**（`drawFocusPulses` 那一处），
+    //   而追迹墨环要落在**窗里那个人身上**——它必须画在窗**之后**才看得见。
+    //   两条列表 → 两次绘制 → 层次各自正确，且不动既有 D7-C 的墨环层次。
+    // 两者都是 transient 表现，**不进存档**（读档后为空）。
+    this.traceTarget = null;
+    this.tracePulses = [];
+    // 多位面表现舞台（D8-C）：内部持有 FX 状态（`stage.fx`），由三界 transient
+    // 表现事件喂养，真实时间驱动，不进存档。
+    this.stage = new PresentationStage();
     this.history = new History();
     this.dpr = Math.min(2, window.devicePixelRatio || 1);
 
@@ -531,6 +460,9 @@ class Sandbox {
     this.selection = null;
     /** 拖拽中的路径（世界坐标格点数组 `[[x,y],...]`），null = 没在划。用来做实时反馈 */
     this.selectPath = null;
+    /** D8-F：划选按下的**屏幕坐标**，抬手时用它判「拖动 vs 短点击」（`VIEW_CLICK_PX`） */
+    this.pressX = null;
+    this.pressY = null;
 
     this.pointer = { x: 0, y: 0, inside: false, down: false, painting: false, panning: false, lastX: 0, lastY: 0 };
     this.hoverTile = { x: 0, y: 0 };
@@ -944,6 +876,10 @@ class Sandbox {
         // 起一条路径，首点就是落笔格。路径是**世界坐标的格点序列**，
         // 闭合但首尾不重复（最后一点 ≠ 第一点），由 normalizeRegion 收尾。
         this.selectPath = [[t.x, t.y]];
+        // D8-F：记下按下的**屏幕坐标**。抬手时用它算位移，区分「拖动重画视界」
+        // 与「短点击窗内检视」——判据取屏幕像素（手感在屏幕上，见 `VIEW_CLICK_PX`）。
+        this.pressX = this.pointer.x;
+        this.pressY = this.pointer.y;
         return;
       }
       if (tool.readonly) {
@@ -993,8 +929,18 @@ class Sandbox {
       // 划选在这里**提交一次**（也只有这里提交）。放在 painting 之前，
       // 因为 'select' 不置 painting 位。
       if (this.selectPath) {
-        this.commitSelection(this.selectPath);
+        const path = this.selectPath;
         this.selectPath = null;
+        // D8-F：视界工具的手势现在有**两支**——「拖动重画视界」与「短点击窗内检视」。
+        // 分派判据全在 `isRealmInspectClick()`（那里逐条说明为什么两个条件缺一不可）。
+        // ⚠️ **分支放在提交之前**：检视**不是**一次划选，不能顺手 commitSelection
+        //    （那会走进「退化划选 ⇒ 收起视界」那条路，把窗关掉）。
+        if (this.isRealmInspectClick()) {
+          const t = this.hoverTile;
+          this.inspectRealmAt(t.x, t.y);
+        } else {
+          this.commitSelection(path);
+        }
       }
       if (this.pointer.painting) {
         const label = this.tool.name;
@@ -1490,7 +1436,7 @@ class Sandbox {
     //
     // **两界都开缝**：`sim/rifts.js:5` 引的**用户原话**是「上界视界和**下界**的
     // 边缘会因此产生轻微的空间裂缝」——上界与幽冥共用同一个凡间 `world.rifts`，
-    // 所以门控从「只认 viewUpper」扩成「认 VIEW_TOOL_IDS 里任一个」。
+    // 所以门控从「只认 viewUpper」扩成「认视界工具里任一个」（`ui/realmView.js` 的 `isViewTool`）。
     //
     // ⚠️ **「都开缝」≠「都执行同一套跨界逻辑」**（D6-2 工程包 B）：缝开出来之后
     //    行为按目标位面分流——上界缝走漏物 / 吸人，幽冥缝走**它自己那三个效果**
@@ -1508,10 +1454,10 @@ class Sandbox {
     // ⚠️ **不许静默**：无论开成没开成都要发声。静默地关掉与静默地拒绝一样坏，
     //    玩家只会觉得「刚才那下把东西弄没了」（见上面「退化划选」那段同款教训）。
     //
-    // ⚠️ **目标位面从 `VIEW_TOOL_PLANE` 取**（D6-2 工程包 B1）：这条缝连的是
-    //    玩家此刻正在看的那一界——看上界就开上界缝，看幽冥就开幽冥缝。
+    // ⚠️ **目标位面从 `ui/realmView.js` 的 `viewPlaneForTool` 取**（D6-2 工程包 B1）：
+    //    这条缝连的是玩家此刻正在看的那一界——看上界就开上界缝，看幽冥就开幽冥缝。
     //    在别处再写一遍三目会让「加第三界」变成改 N 处、漏一处。
-    const riftPlane = VIEW_TOOL_PLANE[tool.id];
+    const riftPlane = viewPlaneForTool(tool.id);
     const rift = (riftPlane && typeof openRifts === 'function')
       ? openRifts(world, region, riftPlane)
       : null;
@@ -1546,9 +1492,15 @@ class Sandbox {
       this.notify(said + riftNote, 3200);
     } else {
       this.notify(`${plane.label}视界 · 约 ${shownArea} 格（全图 ${pct}%）`
-        + (sel.capped ? `　已按 ${Math.round(UPPER_VIEW_MAX_AREA * 100)}% 上限收窄` : '')
+        + (sel.capped ? `　已按 ${Math.round(VIEW_MAX_AREA_FRAC * 100)}% 上限收窄` : '')
         + riftNote + ghostNote, 2800);
     }
+    // ── 跨界追迹（D8-G）────────────────────────────────────────
+    // 玩家若刚点开一条「已入上界 / 已落幽冥」的记挂（`traceTarget` 非空），
+    // 而他此刻划开的窗**覆盖**了那个人 ⇒ 在他身上落一个轻墨环（step 6）。
+    // ⚠️ 这是**加法**：不改上面任何一句，也不碰 `openRifts`——
+    //    「引路，不代替玩家开门」；开缝与否只由玩家这一拖决定。
+    this.maybePulseTraceTarget?.();
     this.dirty = true;
   }
 
@@ -1556,8 +1508,8 @@ class Sandbox {
    * 把一条自由划选路径归一成合法的视界区域（取整 / 钳界 / 面积上限）。
    *
    * 真正的几何在 `ui/tools.js` 的 `normalizeRegion`（纯函数、不碰 DOM）——
-   * 放在那里是为了让 `scripts/_riftprobe.mjs` 能在 node 里断言它（本文件依赖
-   * DOM，node 里 import 不了）。这里只是把 `this.world` 与面积上限接上去。
+   * 放在那里是为了让测试能在 node 里断言它（本文件依赖 DOM，node 里 import 不了）。
+   * 这里只是把 `this.world` 与面积上限（`ui/realmView.js` 的 `VIEW_MAX_AREA_FRAC`）接上去。
    *
    * 判据（替代旧 `normalizeSelection` 末尾那条单格守卫）：
    *   · 去重后不足 3 点 ⇒ null（一次点击 / 一条直线都不构成「一片山河」）；
@@ -1566,7 +1518,79 @@ class Sandbox {
    * 实际不防」的死守卫，已随 `normalizeSelection` 一起删掉。
    */
   normalizeRegion(points) {
-    return normalizeRegionGeometry(points, this.world, UPPER_VIEW_MAX_AREA);
+    return normalizeRegionGeometry(points, this.world, VIEW_MAX_AREA_FRAC);
+  }
+
+  /**
+   * D8-F：这一次抬手是「短点击窗内检视」还是「拖动重画视界」？
+   *
+   * 判据**两个条件同时成立**（蓝图 §D8-F）：
+   *   · 位移 < `VIEW_CLICK_PX` 像素（手基本没动 ⇒ 是一次点击，不是拖拽）；
+   *   · 抬起点仍落在**已开的窗**内（`this.selection` 非空且 `regionContains`）。
+   *
+   * ⚠️ **两个都要**，少一个都会误判：
+   *   · 只看位移 ⇒ 在窗**外**点一下也会去检视——可窗外根本没有「那一界」的东西，
+   *     玩家会看到一个空卡，还会**失去**「点一下收起视界」这条既有出口；
+   *   · 只看「在窗内」 ⇒ 在窗内**拖一大片**会被当成点击 ⇒ 视界再也重画不了。
+   * ⚠️ 位移用**屏幕像素**（`VIEW_CLICK_PX` 是唯一真源）：缩放到很远时一格只有
+   *    零点几像素，用格数会把「点一下」判成「拖了半张图」。
+   * ⚠️ `this.selection` 空（还没开窗）⇒ 一律 false，走原来的提交路径
+   *    （点一下仍是「拒绝并说清下一步」，见 `commitSelection` 的退化分支）。
+   *
+   * @returns {boolean}
+   */
+  isRealmInspectClick() {
+    if (!this.selection) return false;
+    if (!isViewTool(this.toolId)) return false;
+    if (!Number.isFinite(this.pressX) || !Number.isFinite(this.pressY)) return false;
+    const moved = Math.hypot(this.pointer.x - this.pressX, this.pointer.y - this.pressY);
+    if (moved >= VIEW_CLICK_PX) return false;
+    const t = this.hoverTile;
+    if (!t) return false;
+    return regionContains(this.selection, t.x, t.y);
+  }
+
+  /**
+   * D8-F：窗内穿透检视 —— 点开「另一界」里 `(x, y)` 附近的那件东西。
+   *
+   * ⚠️ **为什么不复用 `inspectAt()`**（蓝图 §D8-F 明令）：凡间检视卡里塞着
+   *    记挂按钮 / 人物传记 / 关系图 / 家世谱系 / 地上无主之物——全是**凡间专有**。
+   *    直接拿来检查一只鬼修，会制造一串 `if (plane === ...)`。所以这里另走一条：
+   *    数据从 `ui/realmInspector.js`（**只读**、纯函数）拿，DOM 复用同一个
+   *    `#inkInspect` 面板与同一套 `.inspect-*` 样式——**面板复用，语义不复用**。
+   *
+   * ⚠️ **绝不写 `this.selected`**：那个字段被 `render()` 用来在**凡间**画高亮环
+   *    （`units.drawSelection`）。把幽冥坐标塞进去，会在凡间同坐标处画一个
+   *    莫名其妙的圈——正是「窗内不许操控」要防的那种越界。
+   *
+   * ⚠️ **窗内不许做的事**（蓝图 §D8-F 末段）：改属性 / 传功 / 记挂幽冥鬼 /
+   *    施神力 / 操控上界单位。本方法只往面板里写文字，**没有任何按钮**——
+   *    「D8 仍然是观察」这句话因此不是靠自觉。
+   *
+   * @param {number} x 世界格 x（窗内）
+   * @param {number} y 世界格 y
+   */
+  inspectRealmAt(x, y) {
+    const plane = this.viewPlane();
+    const picked = pickRealmSubject(plane.world, plane.plane, x, y);
+    const card = realmInspectRows(picked, {
+      day: this.world ? this.world.day : 0,
+      watch: this.world ? this.world.watch : null,
+      arrivedLog: plane.world ? plane.world.arrivedLog : null,
+      planeLabel: plane.label,
+    });
+    const head = card ? card.head : `${plane.label} · 格 (${x}, ${y})`;
+    // 命中不到东西**也要发声**（同 `commitSelection` 的「不许静默」纪律）：
+    // 静默地什么都不做，玩家会以为「点击没反应 / 工具坏了」。
+    const rows = card ? card.rows : [['此处', '窗内无可检视之物']];
+    const panel = $('inkInspect');
+    if (!panel) return;
+    panel.innerHTML = `<div class="inspect-head">${head}<button class="ink-x" id="inkInspectClose">×</button></div>`
+      + rows.map(([k, v]) => (k === '@note'
+        ? `<div class="inspect-note">${v}</div>`
+        : `<div class="inspect-row"><span>${k}</span><b>${v}</b></div>`)).join('');
+    panel.classList.add('on');
+    $('inkInspectClose').addEventListener('click', () => panel.classList.remove('on'));
   }
 
   inspectAt(x, y) {
@@ -1785,7 +1809,7 @@ class Sandbox {
    *
    * 判据是**两个条件同时成立**：
    *   · `this.selection` 非空（玩家划开了一片自由形状，那扇窗真的显示着）；
-   *   · 当前工具是**视界工具**（`VIEW_TOOL_IDS`：`viewUpper` 或 `viewNether`）。
+   *   · 当前工具是**视界工具**（`ui/realmView.js` 的 `VIEW_TOOL_IDS`：`viewUpper` 或 `viewNether`）。
    *
    * ⚠️ 为什么两个都要：`selectTool` 切走工具时会清 `this.selection`（关闭路径①），
    * 但**读档 / 换世界**那条路径会直接把 `selection` 置空而工具不变；
@@ -1794,7 +1818,7 @@ class Sandbox {
    * 偷偷推进（用户第 1 条要的正是「只在开启视界时有效」）。
    *
    * ⚠️ **「能看幽冥」不等于「放宽这条判据」**：两个视界工具都能开窗，
-   * 所以判据从「只认 viewUpper」扩成「认 VIEW_TOOL_IDS 里任一个」；
+   * 所以判据从「只认 viewUpper」扩成「认视界工具里任一个」（`isViewTool`）；
    * 但 `selection` 那一半**一格都不许松**——退化成「有工具就算开着」会让
    * 裂缝在没开窗时照常推进，正是这条契约要防的事。
    *
@@ -1804,28 +1828,32 @@ class Sandbox {
    * @returns {boolean}
    */
   riftViewOpen() {
-    return Boolean(this.selection) && VIEW_TOOL_IDS.includes(this.toolId);
+    return Boolean(this.selection) && isViewTool(this.toolId);
   }
 
   /**
    * 当前视界该看的那一界。`viewUpper` → 上界，`viewNether` → 幽冥。
    *
-   * 返回 `{ world, terrain, label, clearDirty }`：
+   * 返回 `{ plane, world, terrain, label, clearDirty }`：
+   *   · `plane` —— 位面 id（`'upper'` / `'nether'`）。D8-C 起事件路由按它分流；
    *   · `world` / `terrain` —— 贴图与画人与宗门用的那一界；
    *   · `label` —— 玩家可见文案里的界名（「上界」/「幽冥」）；
    *   · `clearDirty` —— 把这一界的「需要重绘」标记清掉（与 `upperDirty` /
-   *     `netherDirty` 一一对应，避免在 `drawPlaneView` 里再判一次工具）。
+   *     `netherDirty` 一一对应，避免在绘制层里再判一次工具）。
    *
-   * ⚠️ 这是「按当前工具分流到哪一界」的**唯一**落点。散着写
+   * ⚠️ 「工具 → 哪一界」的判据在 `ui/realmView.js` 的 `viewPlaneForTool`（**唯一**落点）；
+   *    本方法只负责把那一界**挂在本实例上的对象**接上去。散着写
    *    `toolId === 'viewNether' ? ... : ...` 会让加第三界变成改 N 处、漏一处，
    *    而漏掉那处**不报错**（视界照常开，只是贴着另一界的地形）。
    */
   viewPlane() {
-    const nether = this.toolId === 'viewNether';
+    const plane = viewPlaneForTool(this.toolId) || 'upper';
+    const nether = plane === 'nether';
     return {
+      plane,
       world: nether ? this.nether : this.upper,
       terrain: nether ? this.netherTerrain : this.upperTerrain,
-      label: nether ? '幽冥' : '上界',
+      label: planeLabel(plane),
       clearDirty: () => { if (nether) this.netherDirty = false; else this.upperDirty = false; },
     };
   }
@@ -1889,15 +1917,18 @@ class Sandbox {
     //    放进去会变成「暂停时镜头卡在半路」。
     this.camera.update(dt);
     updateFocusPulses(this.focusPulses, dt);
+    // 追迹墨环（D8-G）同款真实时间：暂停世界也照常播完。
+    updateFocusPulses(this.tracePulses, dt);
     // 真实时间秒：战争线的「呼吸 / 断裂」相位吃它（同相机补间一样与游戏倍速无关）。
     this.clock += Number.isFinite(dt) ? dt : 0;
 
-    // ── 表现事件 → FX（D7-D）────────────────────────────────
-    // 每帧把本帧积累的 transient 事件**抽干**、转成短命特效。
-    // ⚠️ 必须每帧 drain（队列有 256 上限，攒着会被顶掉）；且走真实时间（上面那行
-    //    `updateFx` 与 `paused` 无关）。事件只描述「发生了什么」，不参与模拟。
-    ingestRuntimeEvents(this.fx, drainRuntimeEvents(world), world);
-    updateFx(this.fx, dt);
+    // ── 表现事件 → FX（D7-D / D8-C 多位面）──────────────────
+    // 每帧把**三界**本帧积累的 transient 事件抽干、转成短命特效。
+    // ⚠️ 必须每帧收（每个队列有 256 上限，攒着会被顶掉）；且走真实时间
+    //    （`stage.update` 与 `paused` 无关）。事件只描述「发生了什么」，不参与模拟。
+    // ⚠️ 收队列这一步收进 `PresentationStage`——本文件**不**写三遍
+    //    `drainRuntimeEvents(world / world.upper / world.nether)`（那是「加一界改 N 处」）。
+    this.stage.ingestWorlds(world).update(dt);
 
     const speed = TIME.speeds[this.speedIndex].mult;
     const paused = this.speedIndex === 0;
@@ -1973,6 +2004,7 @@ class Sandbox {
   render(now) {
     const world = this.world;
     if (!world) return;
+    if (this.render3d?.render(now)) return;
     const ctx = this.ctx;
     const { width, height } = this.canvasSize();
 
@@ -2009,8 +2041,8 @@ class Sandbox {
     // （`main.js:1159` 之后、`drawStructures` 之前）。
     // ⚠️ 真实签名是 `drawRifts(ctx, camera, world, time)`（**不是我原先假设的
     //    `(ctx, world, cam, now)`**——参数顺序不同，按 B 的来）。
-    // ⚠️ 与 `drawRiftBorder` 是两回事：那个画的是**视界窗口**的四条边（UI 提示），
-    //    这个画的是地图上**真实存在**的裂缝实体。
+    // ⚠️ 与 `render/realmViewLayer.js` 的 `drawRiftBorder` 是两回事：那个画的是
+    //    **视界窗口**边缘的缝（UI 提示），这个画的是地图上**真实存在**的裂缝实体。
     this.units.drawRifts(ctx, this.camera, world, now);
     if (this.showGrid) this.units.drawGrid(ctx, this.camera, world);
     this.units.drawStructures(ctx, this.camera, world);
@@ -2023,10 +2055,12 @@ class Sandbox {
     // ⚠️ 这是**加法**——不要删掉上面那次 `drawEntities`，也不要合并两者。
     this.units.drawWraiths(ctx, this.camera, world, now);
     this.units.drawFireGlow(ctx, this.camera, world, now);
-    // ── FX 表现层（D7-D）────────────────────────────────────
+    // ── FX 表现层（D7-D / D8-C 多位面）──────────────────────
     // 画在实体 / 火光**之上**、标签**之下**：特效属于「此刻的舞台效果」，
     // 但地名与人物名仍要能读清（标签盖在特效上）。
-    drawFx(ctx, this.camera, world, this.fx);
+    // ⚠️ 这里只画**凡间**那一份（`'mortal'`）；上界 / 幽冥的 FX 由视界窗
+    //    在自己的裁剪区内画（见下面 `drawRealmView` 的 `stage` 参数）。
+    this.stage.drawPlane('mortal', ctx, this.camera, world);
     this.units.drawLabels(ctx, this.camera, world);
 
     // ── 表现叠层：落点墨环（D7-C）────────────────────────────
@@ -2081,220 +2115,22 @@ class Sandbox {
     // 「窗里只有另一界的东西」，凡间的人与村子漏进视界就是「串味」；
     // ② 裂缝边框要在所有叠层之上。也正因为它压在最上面，视界不会被暗角压暗——
     // 「另一界的一扇窗」本来就该比周围亮一点。
-    // 看哪一界由 `viewPlane()` 按当前工具（viewUpper / viewNether）决定。
-    if (this.selection) this.drawPlaneView(ctx, now, this.viewPlane());
+    // 看哪一界由 `viewPlane()` 按当前工具（viewUpper / viewNether）决定；
+    // 裁剪 / 贴图 / 边框全在 `render/realmViewLayer.js`（D8-B 拔出去的）。
+    if (this.selection) {
+      const plane = this.viewPlane();
+      drawRealmView(ctx, this.camera, this.units, this.world, this.selection, plane, now, this.stage);
+      // ── 追迹墨环（D8-G）────────────────────────────────────
+      // 「你记挂的那个人出现在窗里了」的那一点反馈。**必须画在窗之后**：
+      // 主链的 `drawFocusPulses`（上面那一处）在窗**之前**，落点会被窗盖掉。
+      // ⚠️ 用 **`plane.world`**（那一界）取高程，与窗内实体同口径 ⇒ 墨环精确套住他；
+      //    用凡间 `world` 会在立体视图下与那一界的人错开一个高差。
+      // ⚠️ 只在**开着窗**时画：`tracePulses` 只在「划开的区域覆盖目标」那一刻生一个，
+      //    寿命 1.2 秒，窗一关就不再画（避免它在凡间地面上凭空浮着）。
+      drawFocusPulses(ctx, this.camera, plane.world, this.tracePulses);
+    }
     // 拖拽中的框只有虚线（还没成型），画在已开的视界之上，免得被盖住看不见。
-    if (this.selectPath) this.drawSelectHint(ctx, this.selectPath);
-  }
-
-  /**
-   * 画中画：在划选区域里贴出**另一界**（上界 / 幽冥）的对应区域（规格 §3.4 的 C2 方案）。
-   *
-   * 做法是「全量渲染到那一界自己的离屏 canvas，再裁剪贴出」——**不改 terrainLayer.js**。
-   * 两个 canvas 同尺寸、同 pad、同 reliefScale，所以凡间 (x,y) 与那一界 (x,y)
-   * 是同一个坐标；视界里贴的必须正是**同一块坐标区域**，这是下一阶段
-   * 「裂缝漏物落在同一个位置」的依据（规格 §3.4 第 3 条）。
-   *
-   * `plane` 由 `viewPlane()` 给出（`{ world, terrain, label, clearDirty }`）——
-   * 上界与幽冥共用**同一段**裁剪 / 贴图 / 边框逻辑，唯一的分流就是「贴哪张地形、
-   * 画哪一界的人与宗门」。
-   *
-   * ⚠️ **口径更新（2026-09-23）**：这里原先写着「幽冥没有实体（`nether.entities`
-   *    为空），那两行 draw* 自然是空转」。**那句话现在过期了**——8-C/8-D 已落地，
-   *    `enterNether` 会在幽冥生成鬼魂与鬼修（`sim/netherLife.js`），
-   *    所以 `drawSects` / `drawEntities` 在幽冥这一支是**真的在画东西**。
-   *    `netherDirty` 由 `stepNether` 置位（见 `update()`），与上界同构。
-   *    ⇒ 别再把它当「空转的占位行」删掉或跳过。
-   *
-   * ⚠️ 裁剪用的是**屏幕多边形路径 + `ctx.clip()`**（自由形状划选），**不是**
-   *    `drawImage` 的 `sourceRect`。原因：立体视图下每一格的落笔行是
-   *    `y + pad - round(高程 × reliefScale)`，**行号随各自的高程变**，所以
-   *    「一块坐标区域」在 canvas 里并不是一块规整的矩形——sourceRect 在立体
-   *    视图下会取错一块。clip 则总是裁出屏幕上那片形状。
-   *    代价：clip 之下仍要 blit 整张 canvas（GPU 侧）；CPU 侧那次全量重绘
-   *    已由 UPPER_RENDER_PERIOD 摊薄。
-   */
-  drawPlaneView(ctx, now, plane) {
-    const sel = this.selection;
-    const terrain = plane && plane.terrain;
-    const viewWorld = plane && plane.world;
-    if (!sel || !terrain || !viewWorld) return;
-    const cam = this.camera;
-
-    // 另一界地形低频重绘：全量 render 很贵，而它变化极慢（不跑水文/生态）。
-    // ⚠️ `upperDirty` / `netherDirty` 这一轮**刻意不作为重绘的触发条件**
-    //    （它们只被置位、不被读）：
-    //    高倍速下每 0.167 秒就跨一次「10 游戏日」边界（baseDaysPerSecond 3 ×
-    //    最高 20 倍 = 60 日/秒），若让脏标记绕过节流，就等于每帧全量重绘那一界，
-    //    成本直接翻倍——而那正是这条节流要防的事。
-    //    它们是给**下一阶段**留的：那时 `upperLife.step` 会改上界实体/宗门，
-    //    「内容变了」才需要一次立刻重绘；届时也要守住 UPPER_RENDER_PERIOD 这个上限。
-    // ⚠️ 两个图层**各自**有 `lastRender`，所以上界与幽冥各按各的节拍重绘，
-    //    互相不会把对方的节流打乱。
-    if (now - terrain.lastRender > UPPER_RENDER_PERIOD) {
-      terrain.render(now, true);
-      plane.clearDirty();
-    }
-
-    const zoom = cam.zoom;
-    const originX = cam.toScreenX(0);
-    const originY = cam.toScreenY(-terrain.pad);
-    // 选区的屏幕**包围盒**：用「零抬升」的映射（canvas 行 = y + pad）。
-    // 平面视图下这**严格**对位；立体视图下窗口边界落在零抬升基线上，
-    // 窗内仍是那一界的地形（只是边界与那一界自身的抬升不完全贴合，见方法注释）。
-    // ⚠️ 路径顶点也走**同一个** `toScreenX/Y` 映射（见下面的 clip），
-    //    绝不另引入高程偏移——否则形状会相对那一界地形整体错位。
-    const sx0 = cam.toScreenX(sel.x0);
-    const sy0 = cam.toScreenY(sel.y0);
-    const sw = cam.toScreenX(sel.x1 + 1) - sx0;
-    const sh = cam.toScreenY(sel.y1 + 1) - sy0;
-    if (sw <= 0 || sh <= 0) return;
-
-    ctx.save();
-    ctx.beginPath();
-    // 自由形状：按 `path` 走线裁窗。`path` 不存在时退回矩形（防御性——
-    // 老形状 / 注入的旧对象不该把这一帧炸掉）。
-    if (sel.path && sel.path.length >= 3) {
-      ctx.moveTo(cam.toScreenX(sel.path[0][0]), cam.toScreenY(sel.path[0][1]));
-      for (let i = 1; i < sel.path.length; i += 1) {
-        ctx.lineTo(cam.toScreenX(sel.path[i][0]), cam.toScreenY(sel.path[i][1]));
-      }
-      ctx.closePath();
-    } else {
-      ctx.rect(sx0, sy0, sw, sh);
-    }
-    ctx.clip();
-    ctx.drawImage(
-      terrain.canvas,
-      0, 0, terrain.canvas.width, terrain.canvas.height,
-      originX, originY,
-      terrain.canvas.width * zoom, terrain.canvas.height * zoom,
-    );
-    // ── 那一界的人与宗门（2026-09-23 接线）──────────────────────────────
-    // 在这之前窗里**只有地形**：上界明明在跑（`:1525` 的 `upperLife.step`）、
-    // 有实体、有宗门（`upper.entities` / `upper.factions`），玩家却一个都看不见
-    // ——「系统在跑、但没人看得见」正是 D4 要治的病，只是这次犯在上界。
-    //
-    // 复用**同一个** `UnitsLayer`：它的 draw* 全部以 `world` 为参数
-    // （`render/unitsLayer.js:480 drawSects` / `:557 drawEntities`），
-    // 构造函数里没有任何绑定凡间的实例状态，所以把 `world` 换成 `plane.world`
-    // 即可，**不需要新渲染器、不需要新图层类**。
-    // ⚠️ **口径更新（2026-09-23，8-C/8-D 已落地）**：这条注释原先写着「幽冥这一侧
-    //    `entities` / `factions` 都是空数组，所以这两行对幽冥是**空转**」——**已过期**。
-    //    现在 `nether.entities` 里**真的有鬼魂与鬼修**（`enterNether` 生成，
-    //    见 `sim/netherLife.js`），所以 `drawEntities` 在幽冥这一支**真的在画东西**。
-    //    `factions` 仍恒空（`worldgenNether` 不填，`World` 构造函数给 `[]`）⇒
-    //    `drawSects` 对幽冥仍是空转，但它与 `drawEntities` 共用同一次调用，留着无害。
-    //
-    // ⚠️ 这里**刻意不调** `drawTerritory`：它的离屏画布是**单槽缓存**、
-    //    缓存键含 `world.seed`（`unitsLayer.js:240-242`）。凡间主图每帧调一次、
-    //    窗里再按另一界调一次 ⇒ 两边的键每帧互相覆盖 ⇒ **每帧重烘 5 万格两遍**。
-    //    地盘若要进窗，得先给另一界第二个槽位（已记 BACKLOG）。
-    //
-    // ⚠️ 实体是**直接画到主 ctx** 的，不受 `UPPER_RENDER_PERIOD` 节流影响
-    //    （那个节流只管上面那张地形位图）。所以那一界的人一动，窗里当帧就动
-    //    ——**不需要 `upperDirty` 参与**，上面 `upperDirty` 那段注释说的
-    //    「下一阶段」正是这里。
-    // ── 凡间的裂缝（2026-09-23 补）────────────────────────────────
-    // 裂缝**开在划选区域的边界格上**（`sim/rifts.js:465-477` 的候选格就是边界格），
-    // 而本窗口把整个选区裁住 ⇒ 主渲染链里那次 `drawRifts`（`:1755`）画的缝，
-    // **落在窗内那一半被窗口盖掉**，玩家只看得见框外半圈。
-    // 用户点名要的「划选区域**边缘**会产生不稳定的裂隙」，这个反馈因此只兑现了一半。
-    //
-    // 修法是**加法**，不是改顺序：在窗内再画一次凡间的缝。
-    // 窗外那半仍由主链那次负责，**两次合起来才是一道完整的缝**
-    // ⇒ **不要删掉主链那次调用、也不要移动它**（移了会连带动到标签/光晕的叠层次序）。
-    //
-    // 传 **`this.world`（凡间）**而不是 `viewWorld`：缝是凡间与另一界的接缝，
-    // 本来就长在凡间。放在地形之上、人之下，视觉上像「缝从地底裂出来」。
-    this.units.drawRifts(ctx, cam, this.world, now);
-    this.units.drawSects(ctx, cam, viewWorld);
-    this.units.drawEntities(ctx, cam, viewWorld, now);
-    ctx.restore();
-
-    this.drawRiftBorder(ctx, sel, now);
-  }
-
-  /**
-   * 视界边缘的「裂缝」：沿划选形状一圈**断续的墨线 + 微光**，不是实线。
-   *
-   * 它既是 UI 提示（这里开着一扇窗），也是裂缝的空间位置提示——
-   * 裂缝就开在这条边缘的**连线**上（规格 §4.1；矩形时代是「四条边」，
-   * 现在是自由形状的闭合折线）。刻意不画实线：实线看着像选择框，断续才像缝。
-   *
-   * 取屏幕坐标走的是与 `drawPlaneView` **同一个**零抬升映射，否则边框会与
-   * 窗口边界错位。`sel.path` 缺失时退回矩形四角（防御性）。
-   */
-  drawRiftBorder(ctx, sel, now) {
-    if (!sel) return;
-    const cam = this.camera;
-    let pts;
-    if (sel.path && sel.path.length >= 3) {
-      pts = sel.path.map((p) => [cam.toScreenX(p[0]), cam.toScreenY(p[1])]);
-    } else {
-      const x0 = cam.toScreenX(sel.x0);
-      const y0 = cam.toScreenY(sel.y0);
-      const x1 = cam.toScreenX(sel.x1 + 1);
-      const y1 = cam.toScreenY(sel.y1 + 1);
-      pts = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
-    }
-    // 太小的窗不画边框（与旧版 `w <= 2 || h <= 2` 等价，按包围盒量）
-    let minX = pts[0][0];
-    let maxX = minX;
-    let minY = pts[0][1];
-    let maxY = minY;
-    for (let i = 1; i < pts.length; i += 1) {
-      if (pts[i][0] < minX) minX = pts[i][0];
-      if (pts[i][0] > maxX) maxX = pts[i][0];
-      if (pts[i][1] < minY) minY = pts[i][1];
-      if (pts[i][1] > maxY) maxY = pts[i][1];
-    }
-    if (maxX - minX <= 2 || maxY - minY <= 2) return;
-    const trace = () => {
-      ctx.beginPath();
-      ctx.moveTo(pts[0][0], pts[0][1]);
-      for (let i = 1; i < pts.length; i += 1) ctx.lineTo(pts[i][0], pts[i][1]);
-      ctx.closePath();
-    };
-    ctx.save();
-    // 微光：一条略粗的冷色描边垫在底下。**刻意不用 shadowBlur**——
-    // 那个在每帧都画的路径上出了名的贵，而这里只画一圈折线，粗线就够。
-    const glow = 0.30 + 0.22 * Math.sin(now * 1.7);
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = `rgba(122, 186, 196, ${glow.toFixed(3)})`;
-    trace();
-    ctx.stroke();
-    // 断续墨线：断口缓慢流动，看着像「缝在动」，而不是像选择框
-    ctx.lineWidth = 1.2;
-    ctx.setLineDash([7, 5]);
-    ctx.lineDashOffset = -now * 9;
-    ctx.strokeStyle = 'rgba(34, 32, 28, 0.86)';
-    trace();
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
-  }
-
-  /**
-   * 拖拽中的划选路径：一条闭合的虚线预览（**还没成型**，所以没有微光/裂缝，
-   * 免得与已开的视界混淆）。首尾自动连上，让玩家边划边看到形状。
-   */
-  drawSelectHint(ctx, path) {
-    if (!Array.isArray(path) || path.length < 2) return;
-    const cam = this.camera;
-    ctx.save();
-    ctx.setLineDash([5, 4]);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(74, 122, 138, 0.9)';
-    ctx.beginPath();
-    ctx.moveTo(cam.toScreenX(path[0][0]), cam.toScreenY(path[0][1]));
-    for (let i = 1; i < path.length; i += 1) {
-      ctx.lineTo(cam.toScreenX(path[i][0]), cam.toScreenY(path[i][1]));
-    }
-    ctx.closePath();
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
+    if (this.selectPath) drawSelectHint(ctx, this.camera, this.selectPath);
   }
 
   canvasSize() {
@@ -3060,6 +2896,11 @@ class Sandbox {
 const sandbox = new Sandbox();
 sandbox.boot();
 window.inkbox = sandbox;
+if (new URLSearchParams(location.search).get('renderer') === '3d') {
+  import('./render3d/Render3DAdapter.js').then(({ Render3DAdapter }) => {
+    sandbox.render3d = new Render3DAdapter(sandbox);
+  }).catch(error => { console.error('Render3D:', error); sandbox.notify('3D 启动失败，继续使用 Canvas。'); });
+}
 
 // 编年史与卜算子对话条需要定期刷新。
 // 卜算子走这个定时器而不是只靠落笔触发，是为了让「里程碑」那几句话
