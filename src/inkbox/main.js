@@ -1973,6 +1973,7 @@ class Sandbox {
   render(now) {
     const world = this.world;
     if (!world) return;
+    if (this.render3d?.render(now)) return;
     const ctx = this.ctx;
     const { width, height } = this.canvasSize();
 
@@ -3060,6 +3061,11 @@ class Sandbox {
 const sandbox = new Sandbox();
 sandbox.boot();
 window.inkbox = sandbox;
+if (new URLSearchParams(location.search).get('renderer') === '3d') {
+  import('./render3d/Render3DAdapter.js').then(({ Render3DAdapter }) => {
+    sandbox.render3d = new Render3DAdapter(sandbox);
+  }).catch(error => { console.error('Render3D:', error); sandbox.notify('3D 启动失败，继续使用 Canvas。'); });
+}
 
 // 编年史与卜算子对话条需要定期刷新。
 // 卜算子走这个定时器而不是只靠落笔触发，是为了让「里程碑」那几句话

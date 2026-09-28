@@ -52,6 +52,14 @@ const FILES = [
   'scripts/inkbox-longrun.mjs',
   'scripts/inkbox-three-realms.mjs',
   'scripts/inkbox-presentation.mjs',
+  'scripts/inkbox-render3d.mjs',
+  'scripts/inkbox-render3d-browser.mjs',
+  'RENDER3D_M0.md',
+  'node_modules/three/package.json',
+  'node_modules/three/LICENSE',
+  'node_modules/three/build/three.module.js',
+  'node_modules/three/build/three.core.js',
+  'node_modules/three/examples/jsm/controls/OrbitControls.js',
   'tests/README.md',
 ];
 const DIRECTORIES = ['src/inkbox'];
