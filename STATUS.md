@@ -45,10 +45,15 @@ D8-G UI、新建筑、新交互、AI 行为、概率调整**全禁**）。只做
 - **D1 仓库真相统一**：README / HANDOFF / STATUS / BACKLOG 对齐 `main` 为唯一活跃主线；
   `BACKLOG.md` 整文件重划四区（P0 / P1 `#1`–`#7` / P2 `#8`–`#13` / P2-b `#14`–`#21` / ICEBOX `#22`–`#30`）
   并新增「已关闭编号」表；删掉全部**远端无法解析**的本地施工 hash（`f91ffd0` + D7 七包六个 hash）。
-- **D2 分支与版本基线**：确认 `3856cee3e60f…` 仍在远端 `refs/heads/codex/render3d-m0` ⇒ 在发布仓库建
-  annotated tag **`render3d-m0`**（指向它）并推送成功。**未做任何历史重写。**
 - **D3 分层 CI**：`.github/workflows/ci.yml`（**Fast Gate** + **Heavy Gate** 并行，`browser-smoke` 手动触发、
   `windows-latest`）+ 新建 `.github/workflows/nightly.yml`（smoke + 800 年长跑）。**无 `|| true`、不删测试。**
+  ✅ **2026-09-29 推送 `main` 后自动触发并全绿**：Fast Gate 11 步 success · Heavy Gate 7 步 success ·
+  Browser Smoke 按设计 skipped（run `36513752590` · 5.0 分钟）⇒「能运行」已从本地 YAML 合法性升级为**远端真绿**。
+- **D2 分支与版本基线**：确认 `3856cee3e60f…` 仍在远端 `refs/heads/codex/render3d-m0` ⇒ 在发布仓库建
+  annotated tag **`render3d-m0`**（指向它）并推送成功。**未做任何历史重写。**
+- **发布同步（2026-09-29）**：发布仓库 `main` `447fa54` → **`43bbb79`**（含 M1.1D 全部内容）。
+  `node_modules/three/*` 出库、`vendor/three/**` 入库、`.github/workflows/` 入库。⚠️ 本机 `github.com:443` 不通
+  ⇒ 推送走 `api.github.com` 的 **Git Data API**，远端 SHA 与本地逐字一致。
 - **D4 dirty 分类**：`WorldRenderBridge.changes()` 从「单 region」升级为 `{any, height, water, type, veg}`；
   新增纯函数 `mergeRegion(a, b)`；各 Layer 按**真实依赖**响应（Terrain ← height+type；Water ← height+water；
   Veg ← height+veg+type；Entity / Settlement / Marker / SelectionMarker ← **只有 height**）；

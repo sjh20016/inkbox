@@ -115,6 +115,22 @@ D6 把运行时迁到 `vendor/three/` 之后，这 5 个**必须从发布仓库�
 
 两个 YAML 用 PyYAML 6.0.3 解析通过（`yaml.safe_load`）。
 
+### ⭐ 首次真实运行（2026-09-29 · 发布仓库 main `43bbb79`）
+
+推送 `main` 后 `ci.yml` **自动触发并跑完**——这是「Fast Gate 能运行 / Heavy Gate 能运行」
+从「本地 YAML 合法」升级成**远端真绿**的证据：
+
+| Job | 结论 | 步数 |
+| --- | --- | --- |
+| **Fast Gate** | ✅ **success** | 11 步全绿（npm ci → core → view → presentation → render3d → render3d:m1 → render3d:bridge → build） |
+| **Heavy Gate** | ✅ **success** | 7 步全绿（npm ci → regression → three-realms → save-equivalence） |
+| **Browser Smoke（手动）** | ⏭ **skipped** | 按设计（`if: workflow_dispatch` 不满足） |
+
+- run id `36513752590` · 整体 **completed / success** · **5.0 分钟** ·
+  <https://github.com/sjh20016/inkbox/actions/runs/36513752590>
+- 两个 job **确实并行**（同时起 runner），且 GitHub 识别到 **2 个 active 工作流**
+  （`Inkbox CI` + `Inkbox Nightly`）⇒ `workflow` scope 生效、工作流正式入库。
+
 ## 6. Dirty 分类前后逻辑
 
 ### 前（M1）
@@ -336,21 +352,27 @@ B 完全不碰渲染，各推进 600 日 ⇒ `day` / `entities` / `villages` / `
 
 | 对象 | 结论 |
 | --- | --- |
-| **开发工作区**（`E:/world4/坐天观井-实验分支D1`） | ✅ **可以**。6 个提交已落地（`c438a66` → `f459f74`）；四份文档 + `ROADMAP.md` 与 `HEAD` 一致；全部 10 项自动测试 EXIT=0；`npm run build` 产出自包含 125 文件包；无不可解析的 commit 路标。 |
-| **发布仓库 `main`**（`E:/world4/inkbox` → GitHub） | ⚠️ **还差一步**。`main` 仍是 `447fa54`（**M1.1D 之前的**状态）：importmap 仍指 `node_modules/three/`、仓库里仍 `git add -f` 跟踪着那 5 个 `node_modules/three/*`、没有 `.github/`。⇒ 别人 `git clone` 后从 `main` 开始，拿到的是 M1.1D 之前的世界。 |
+| **开发工作区**（`E:/world4/坐天观井-实验分支D1`） | ✅ **可以**。6 个提交已落地（`c438a66` → `33f757d`）；四份文档 + `ROADMAP.md` 与 `HEAD` 一致；全部 10 项自动测试 EXIT=0；`npm run build` 产出自包含 125 文件包；无不可解析的 commit 路标。 |
+| **发布仓库 `main`**（`E:/world4/inkbox` → GitHub） | ✅ **可以**（2026-09-29 已同步）。`main` = `43bbb79`，含 M1.1D 全部内容：importmap 指 `vendor/three/`、`node_modules/three/*` 已出库、`.github/workflows/` 已入库并由 **CI 真跑一次全绿**（run `36513752590`）。 |
 
-**补这一步的做法**（本阶段**未执行**——推送是外发动作，留给用户决定）：
+**已执行**（2026-09-29 · 用户要求「推送至 git」后）：
 
 ```bash
-cd "E:/world4/坐天观井-实验分支D1" && npm run build
-# 把 dist/zuotian-guan-jing-inkbox-1.0.0/ 全量覆盖进 E:/world4/inkbox/
-# 然后（关键，D6.5 的真正落点）：
-git -C E:/world4/inkbox rm -r --cached node_modules/three      # 不再跟踪那 5 个文件
-git -C E:/world4/inkbox rm -r --cached .github                 # 现在可以入库了（PAT 有 workflow scope）
-# 去掉 .gitignore 里那段「.github/ 暂不入库」的注释块，再 add -A / commit / push
+cd "E:/world4/坐天观井-实验分支D1" && npm run build          # 125 文件
+cp -r dist/zuotian-guan-jing-inkbox-1.0.0/. E:/world4/inkbox/   # 全量覆盖（含新 .gitignore，自动去掉 .github/ 忽略块）
+git -C E:/world4/inkbox rm -r --cached node_modules/three      # D6.5 的真正落点：不再跟踪那 5 个文件
+git -C E:/world4/inkbox add -A && git -C E:/world4/inkbox commit -m "Render3D M1.1D 工程加固（…）"
+# 推送：github.com:443 被封 ⇒ 走 api.github.com 的 Git Data API（见下）
 ```
 
-除这一步之外，**没有任何阻塞交接的问题**。
+⚠️ **推送通道不是 `git push`**：本机 `github.com:443` **不通**（直连超时 / 走代理 `CONNECT tunnel failed, 502`），
+而 `api.github.com` 通（200 / 0.49 s）。⇒ 用 **Git Data API**（blob → tree → commit → ref）完成推送，
+并把 `author` / `committer` 的 name / email / **date** 与 message 的**原始字节**照抄本地提交，
+使**远端 SHA 与本地逐字一致**（`43bbb79…`，tree 亦相同）⇒ 以后 `git fetch` 恢复时不会分叉。
+推送后核验：125 个 blob（= build 文件数）、16 个新路径齐全、无 `node_modules/`/`reports/`/`dist/` 误传、
+抽查 blob 与本地 `git hash-object` 逐字节相同；`git update-ref refs/remotes/origin/main 43bbb79` 对齐跟踪引用。
+
+⇒ **发布仓库 `main` 已是可交接状态，没有任何阻塞交接的问题。**
 
 ### Q2 当前 Render3D 是否存在「必须在 M2 前解决的性能阻塞」？
 
