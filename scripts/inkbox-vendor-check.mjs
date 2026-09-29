@@ -138,7 +138,13 @@ check('node_modules 仍然被 .gitignore 挡住（D6.5：不许改成「所有 n
 section('G4 · 打包清单');
 check('打包脚本用 DIRECTORIES 递归收录 vendor/three', () => {
   const text = read(path.join(ROOT, 'scripts', 'inkbox-package.mjs'));
-  assert(/DIRECTORIES = \['src\/inkbox', 'vendor\/three'\]/.test(text), 'DIRECTORIES 里必须有 vendor/three');
+  // ⚠️ 这里原本是**逐字正则** `/DIRECTORIES = \['src\/inkbox', 'vendor\/three'\]/`。
+  //    2026-09-29 把 `剧情文案素材/` 补进数组后它会**假红**——数组内容变了，契约没变。
+  //    按纪律换成**解析数组判成员**：只要 `vendor/three` 还在就绿，丢了照样红。
+  const m = text.match(/DIRECTORIES\s*=\s*\[([^\]]*)\]/);
+  assert(m, '打包脚本里找不到 DIRECTORIES 声明');
+  const entries = m[1].split(',').map((s) => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+  assert(entries.includes('vendor/three'), `DIRECTORIES 必须含 vendor/three，实得 [${entries.join(', ')}]`);
   assert(!text.includes("'node_modules/three/"), 'FILES 里不许再逐个列 node_modules/three 文件');
 });
 check('package.json 有 vendor:sync 与 test:vendor 两个入口', () => {

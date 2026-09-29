@@ -87,6 +87,15 @@ const FILES = [
   // M1.1D 的委托书与工程报告：接手的人要能看到「这一阶段到底做了什么、为什么」。
   'Render3D M1.1D 工程任务清单.md',
   'Render3D M1.1D 工程报告.md',
+  // 被包内文档引用、但此前只在开发工作区存在的开发文档（2026-09-29 补齐）。
+  // ⚠️ 不补就是**悬空引用**：`STATUS.md` 写着「规划见 D7 / D8 …」，`STATUS.md` 与
+  //    `Render3D M1 工程报告.md` 又引用 M1 的委托书——接手的人在包里找不到这些文件。
+  //    注意 M1.1D 的委托书（`Render3D M1.1D 工程任务清单.md`）本来就在包里，
+  //    M1 的委托书却不在，这本身就是不一致。
+  '坐天观井 · 下一阶段工程委托书.md',
+  'D7「观察与表现层」早期规划已完成.md',
+  'D8视界 2.0 · 穿透式跨界观察早期规划完成至F部分.md',
+  'Inkbox M0 · 立体沙盘迁移技术原型.md',
   'tests/README.md',
 ];
 // ⚠️ Three.js 运行时走**仓库内的 `vendor/three/`**（M1.1D D6），不再从 `node_modules/`
@@ -94,7 +103,11 @@ const FILES = [
 //    `vendor/` 由 `scripts/inkbox-vendor.mjs` 从 npm 依赖重新生成（5 个文件 · ~2 MB），
 //    所以它永远可审计、可复现；`package.json` 里的 `three` 依赖**保留**给 node 测试用。
 //    ⚠️ 用 DIRECTORIES 递归收录 ⇒ 以后往 vendor 里加文件**不必改这份清单**。
-const DIRECTORIES = ['src/inkbox', 'vendor/three'];
+//    `剧情文案素材/`（2026-09-29 补齐）：`00_文案使用说明（AI与开发者必读）.md` 是
+//    `HANDOFF.md` §4 列为**有约束力**的文档（UI 禁令 / 考古定名不得擅改 / 机制缺口→停走设计流程），
+//    且 `core/lore.js`、`sim/reincarnation.js`、`world/World.js`、`scripts/inkbox-smoke.mjs`
+//    共 5 处注释引用它的行号作为**定名出处** ⇒ 不入包则接手者读不到规则、代码注释悬空。
+const DIRECTORIES = ['src/inkbox', 'vendor/three', '剧情文案素材'];
 
 function copyRelative(relative) {
   const from = path.join(ROOT, relative);
