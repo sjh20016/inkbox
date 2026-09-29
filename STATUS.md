@@ -67,7 +67,7 @@ D8-G UI、新建筑、新交互、AI 行为、概率调整**全禁**）。只做
 - **测试**：新增 `scripts/inkbox-render3d-bridge.mjs`（`npm run test:render3d:bridge`，**36 项 / 0 红**）+
   `scripts/inkbox-vendor-check.mjs`（`npm run test:vendor`，**13 项 / 0 红**）；M0 19 组 / M1 36 项继续全绿。
 - **收尾实测**：core **72 文件 / 262 边** · regression 22 · three-realms **151 ✓** · view 111 ✓ ·
-  presentation 127 ✓ · save-equivalence 全绿 · render3d:bridge 36 ✓ · vendor 13 ✓ · **build 125 files**。
+  presentation 127 ✓ · save-equivalence 全绿 · render3d:bridge 36 ✓ · vendor 13 ✓ · **build 136 files**。
   ⚠️ 性能读数采自**软件光栅器**，只作相对数据（见 `Render3D M1.1D 工程报告.md`）。
 
 ---

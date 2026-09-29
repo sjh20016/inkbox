@@ -282,7 +282,7 @@ G6 全仓扫源码（去注释）断言不出现 `heightDirty|waterDirty|typeDir
 | `npm run test:render3d:bridge`（**新增**） | ✅ **36 项断言**（G1 mergeRegion · G2 分类 Case 1–6 · G3 快照独立 · G4 各层真值表 · G5 Renderer3D 源码结构 · G6 边界 · G7 可数对比 · **G8 三界全开确定性**） |
 | `npm run test:vendor`（**新增**） | ✅ **13 项断言** |
 | `npm run test:render3d:perf`（**新增**） | ✅ 采集完成（4 场景 × 3 阶段 × 120 帧）；帧循环活着；无运行时报错；Three.js 确从 vendor 加载 |
-| `npm run build` | ✅ 自包含项目包 **125 文件**（`dist/zuotian-guan-jing-inkbox-1.0.0/` + `.zip` 5.3 MB）；含 `vendor/three/**`，**不含 `node_modules`**。⚠️ 本机**必须脱离沙箱**才能跑通（tar 步要 spawn 外部 exe，见 §12 第 3 条）；CI 的 `ubuntu-latest` 无此问题 |
+| `npm run build` | ✅ 自包含项目包 **125 文件**（⚠️ 这是 **M1.1D 时点**的数字；**2026-09-29 补齐交接文档后为 136 文件**，见报告末「追加记录（2026-09-29）」）；含 `vendor/three/**`，**不含 `node_modules`**。⚠️ 本机**必须脱离沙箱**才能跑通（tar 步要 spawn 外部 exe，见 §12 第 3 条）；CI 的 `ubuntu-latest` 无此问题 |
 
 **§十九 模拟确定性（本阶段重点回归）**：
 `test:render3d:bridge` 的 **G8** 用同 seed 造两个**三界齐全**的世界（凡间 + 上界 + 幽冥 + 鬼影 + 裂缝，
@@ -418,3 +418,35 @@ git -C E:/world4/inkbox add -A && git -C E:/world4/inkbox commit -m "Render3D M1
 | 不给 `World` 加 renderer dirty 字段 | ✅ G6 全仓源码断言 |
 | 模拟结果不变 | ✅ G8 三界全开 600 日逐字段相同 |
 | 不使用 `|| true` 掩盖失败 | ✅ 两个 workflow 内均无 |
+
+---
+
+## 追加记录（2026-09-29 · 推送后核验）
+
+**触发**：用户要求「检查推送是否成功、有没有遗漏」。
+
+**核验结论（推送本身）**：**零遗漏**——远端 `main` = 本地发布仓库 `HEAD`；远端树
+`truncated=false`、**125 blobs** = build 文件数；发布仓库与开发工作区的 125 个文件**逐字节一致**
+（sha256 全等，零缺失零差异）；无 `node_modules/` / `reports/` / `dist/` / `.workbuddy-ai/` 误传。
+
+**但扫出 4 处「文档引用了不在包里的文件」**：`README.md:62` 把 `剧情文案素材/` 归为
+「冻结历史材料」，而 `HANDOFF.md` §4 又把其中的 `00_文案使用说明` 列为**有约束力**；
+`STATUS.md` 引用的 D7 / D8 规划文档连**文件名都写错**；`STATUS.md` 与 `Render3D M1 工程报告.md`
+引用 M1 的委托书，而 M1.1D 的委托书在包里、M1 的却不在。
+
+**处置（用户裁决：补进发布包）** —— 补齐 **11 个文件**：
+
+| 类别 | 文件 | 理由 |
+| --- | --- | --- |
+| 文案素材（7） | `剧情文案素材/00`–`06` | `00` 是 `HANDOFF.md` §4 的**有约束力**文档；`core/lore.js`、`sim/reincarnation.js`、`world/World.js`、`scripts/inkbox-smoke.mjs` 共 **5 处注释**引用它的**行号**作为定名出处 |
+| 开发文档（4） | M1 委托书 · D7 / D8 阶段规划 · M0 技术原型 | 包内文档在引用它们 ⇒ 不补就是**悬空引用** |
+
+同时修正：`README.md`（去掉对 `剧情文案素材/` 的误分类）· `HANDOFF.md`（补全「只在开发工作区
+存在的文件」豁免清单 + 把 `….md` 的模糊引用换成全名）· `STATUS.md`（两个写错的文件名）。
+
+⚠️ **一处契约变更**：`scripts/inkbox-vendor-check.mjs` 的 DIRECTORIES 断言原是**逐字正则**
+`/DIRECTORIES = \['src\/inkbox', 'vendor\/three'\]/` —— 往数组里加元素必然假红。
+按纪律换成**解析数组判成员**（丢 `vendor/three` 照样红），**不是改绿**。
+
+**结果**：`build` **125 → 136 文件**；`test:vendor` 13 项全绿 · `test:render3d:m1` 36 项全绿；
+发布仓库 `main` `388a9ec` → **`c7feebb`**（远端树复核 **136 blobs**、6 个关键新路径齐全）。

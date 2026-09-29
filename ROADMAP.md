@@ -49,7 +49,7 @@ M2 是**新世界层级级**的改动，开工前需要用户拍板，不许自�
 - `npm run test:core` **72 文件 / 262 边** · `test:regression` 22 · `test:three-realms` **151 ✓**
 - `test:view` 111 ✓ · `test:presentation` 127 ✓ · `test:save-equivalence` 全绿
 - `test:render3d` 19 组 · `test:render3d:m1` 36 ✓ · `test:render3d:bridge` 36 ✓ · `test:vendor` 13 ✓
-- `npm run build` ✅ 自包含 **125 文件**（`clone` 即可跑，不必 `npm install`）
+- `npm run build` ✅ 自包含 **136 文件**（`clone` 即可跑，不必 `npm install`）
 - CI：`.github/workflows/ci.yml`（Fast Gate + Heavy Gate 并行）· `nightly.yml`（smoke + 800 年长跑）
   ✅ **已在 `ubuntu-latest` 真跑一次全绿**（2026-09-29 · run `36513752590` · 5.0 分钟）
 - ⚠️ 性能读数采自**软件光栅器**，只作相对数据——见 `Render3D M1.1D 工程报告.md`。
