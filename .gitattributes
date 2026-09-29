@@ -1,0 +1,9 @@
+# 行尾策略（M1.1D D6 vendor 治理）
+#
+# 背景：本机 `core.autocrlf=true`。若不给 vendored 的第三方运行时钉住行尾，
+# 新克隆时 `vendor/three/*` 会被转换成 CRLF，而 npm 装出来的 `node_modules/three/*`
+# 是 LF ⇒ `npm run test:vendor` 的「逐字节相同」断言会在**别的机器上假红**
+# （本机不红，因为工作区里两份都还是 LF —— 典型的「本机绿、别人红」）。
+#
+# 修法：把 vendored 运行时钉成 LF，与 npm 出货形态一致 ⇒ 任何平台克隆后都逐字节相同。
+vendor/three/** text eol=lf

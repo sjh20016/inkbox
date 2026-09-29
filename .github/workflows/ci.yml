@@ -1,0 +1,139 @@
+name: Inkbox CI
+
+# ─────────────────────────────────────────────────────────────────────────
+# 分层门禁（M1.1D D3）
+# ─────────────────────────────────────────────────────────────────────────
+#
+#   Fast Gate   —— 每次 push / PR 都跑。快速工程门禁，必须全绿。
+#   Heavy Gate  —— 与 Fast Gate **并行**跑。长回归，慢但同样必须全绿。
+#   browser-smoke —— **只手动触发**（workflow_dispatch）。浏览器探针依赖本机浏览器，
+#                    不是普通 CI 硬门槛；见下面 job 里的说明。
+#
+# ⚠️ 铁律（D3.6）——违反任何一条都算没做完：
+#   · **禁止**为了「CI 绿」删测试；
+#   · **禁止**给失败命令加 `|| true`（那等于把门禁拆了）；
+#   · **禁止**把 assertion 降级成 warning。
+#   如果 CI 暴露平台差异 ⇒ **修平台问题**，不得掩盖失败。
+#
+# 刻意**不**进本 workflow 的：
+#   · `npm run test:simulation`（smoke，6.5–13 分钟）与 `npm run inkbox:longrun`（800 年）
+#     ⇒ 见 `nightly.yml`（D3.5：长测不进普通 CI）。
+#   · `npm run test:browser` ⇒ 见下面的 `browser-smoke` job。
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ── 快速门禁：每次 push / PR 都跑 ───────────────────────────────────────
+  fast-gate:
+    name: Fast Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 核心检查（导入图 / 核心 / 启动 / 运行事件）
+        run: npm run test:core
+
+      - name: 视界回归（D8 视界契约）
+        run: npm run test:view
+
+      - name: 表现层回归（D7 FX / 记挂 / 关系图 / 战争线）
+        run: npm run test:presentation
+
+      - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
+        run: npm run test:render3d
+
+      - name: Render3D M1（实体 / 聚落 / 标记 / 只读 / 模拟不受影响）
+        run: npm run test:render3d:m1
+
+      - name: Render3D dirty 分类（height / water / type / veg 分层派发）
+        run: npm run test:render3d:bridge
+
+      - name: 构建发布包（自包含，clone 即可跑）
+        run: npm run build
+
+  # ── 长回归：与 Fast Gate 并行，慢但同样必须全绿 ─────────────────────────
+  heavy-gate:
+    name: Heavy Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 干预 / 灾祸 / 存读档回归
+        run: npm run test:regression
+
+      - name: 三界生态不变量回归（时间 / 身份 / id 空间 / 上界 / 幽冥 / 裂隙 / 跨界）
+        run: npm run test:three-realms
+
+      - name: 存读档分叉等价
+        run: npm run test:save-equivalence
+
+  # ── 浏览器探针：**手动触发**，不是普通 CI 硬门槛（D3.4）─────────────────
+  #
+  # 为什么不放在 push / PR：
+  #   `scripts/inkbox-playtest.mjs` 复用**本机已安装**的 Edge / Chrome，候选路径写的是
+  #   Windows 安装位置 ⇒ 放在 `windows-latest` 才低成本可用（GitHub 的 Windows runner
+  #   预装 Edge）。**不为了 CI 新增 Playwright / Puppeteer 之类的大依赖**，
+  #   也不改游戏本身的运行方式。
+  #
+  # 手动跑法：仓库 → Actions → Inkbox CI → Run workflow。
+  browser-smoke:
+    name: Browser Smoke（手动）
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 启动水墨沙盒服务器（后台，端口 4180）
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath "node" -ArgumentList "scripts/inkbox-server.mjs" -PassThru -NoNewWindow
+          $p.Id | Out-File -FilePath server.pid -Encoding ascii
+          for ($i = 0; $i -lt 60; $i++) {
+            try {
+              $r = Invoke-WebRequest -Uri "http://127.0.0.1:4180/inkbox.html" -UseBasicParsing -TimeoutSec 2
+              if ($r.StatusCode -eq 200) { Write-Host "服务器就绪"; exit 0 }
+            } catch { Start-Sleep -Milliseconds 500 }
+          }
+          throw "服务器 30 秒内未就绪"
+
+      - name: 浏览器交互检查（144 项）
+        run: npm run test:browser
+
+      - name: 停止服务器
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path server.pid) {
+            $serverPid = Get-Content server.pid
+            Stop-Process -Id $serverPid -Force -ErrorAction SilentlyContinue
+          }

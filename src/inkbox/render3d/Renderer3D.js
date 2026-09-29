@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { WorldRenderBridge } from './WorldRenderBridge.js';
+import { WorldRenderBridge, mergeRegion } from './WorldRenderBridge.js';
 import { CameraRig } from './CameraRig.js';
 import { TerrainMesh } from './terrain/TerrainMesh.js';
 import { TerrainPicker } from './terrain/TerrainPicker.js';
@@ -48,26 +48,69 @@ export class Renderer3D {
     this.pending = null; this.vegetationPending = false; this.treeClock = 0;
     if (this.width) this.resize(this.width, this.height);
   }
+  /**
+   * 显式标记一块地形脏区。
+   *
+   * ⚠️ 唯一调用方是雕刻笔刷（`Render3DAdapter.stamp`），而 `terrain/sculpt.js`
+   *    **只写 `height`** ⇒ 这里标记的是 **height 脏**（不是「地形全脏」）。
+   *    桥下一帧也会 diff 出同一块区域，所以它本质是个「早一步的提示」。
+   */
   markTerrainDirty(region) {
     if (!region) return;
-    const r = this.pending;
-    this.pending = r ? { x0: Math.min(r.x0, region.x0), y0: Math.min(r.y0, region.y0), x1: Math.max(r.x1, region.x1), y1: Math.max(r.y1, region.y1) } : { ...region };
+    this.pending = mergeRegion(this.pending, region);
   }
   update(dt) {
-    const scan = performance.now(); this.markTerrainDirty(this.bridge.changes()); this.scanMs = performance.now() - scan;
+    const scanStart = performance.now();
+    const dirty = this.bridge.changes();
+    this.scanMs = performance.now() - scanStart;
+
     const start = performance.now();
-    // 地形这一帧变过 ⇒ 所有贴地的东西（实体 / 建筑 / 标记 / 选中环）都得跟着重算 Y。
-    const terrainChanged = !!this.pending;
-    if (this.pending) { this.terrain.update(this.pending); this.water.update(this.pending); this.pending = null; this.vegetationPending = true; }
+    // ── 分类派发（M1.1D D4.2）：各层只吃自己**真正依赖**的那几层 ──────────
+    // height 脏区 = 桥报上来的 ∪ 雕刻笔刷的显式提示（两者都是 height）。
+    const heightRegion = mergeRegion(this.pending, dirty?.height ?? null);
+    const typeRegion = dirty?.type ?? null;
+    const waterRegion = dirty?.water ?? null;
+    const vegRegion = dirty?.veg ?? null;
+    this.pending = null;
+    const heightChanged = heightRegion !== null;
+
+    // 逐层计时（M1.1D D5.2）：光知道「总 frame time」不知道 CPU 花在哪。
+    const tTerrain0 = performance.now();
+    // TerrainMesh：height 改 Y、type 改顶点色，**分开调**——
+    // 只改 type 时绝不重写 Y（合成一块区域会把中间的格子白白重写一遍）。
+    if (heightRegion) this.terrain.update(heightRegion, { height: true, type: false });
+    if (typeRegion) this.terrain.update(typeRegion, { height: false, type: true });
+    const tTerrain1 = performance.now();
+    // WaterLayer：水面高度 = height + water ⇒ 两层任一脏都要重算。
+    if (heightChanged || waterRegion) this.water.update(mergeRegion(heightRegion, waterRegion));
+    const tWater1 = performance.now();
+    // VegetationLayer：树的落点与存活判据吃 height + veg + type（见 deriveVegetation）。
+    if (heightChanged || typeRegion || vegRegion) this.vegetationPending = true;
+
     this.treeClock += dt;
     if (this.vegetationPending && this.treeClock >= 0.15) { this.vegetation.update(); this.vegetationPending = false; this.treeClock = 0; }
-    const layers = { terrainChanged };
+    const tVeg1 = performance.now();
+    // 贴地三兄弟：**只有 height 变**才强制重贴地。water / type / veg 变化不该动它们。
+    const layers = { heightChanged };
     this.entities.update(dt, this.world, layers);
+    const tEntity1 = performance.now();
     this.settlements.update(dt, this.world, layers);
+    const tSettlement1 = performance.now();
     this.markers.update(dt, this.world, layers);
     this.markers.setZoom(this.cameraRig.camera.zoom);
-    this.selectionMarker.update(this.world);
+    this.selectionMarker.update(this.world, heightChanged);
+    const tMarker1 = performance.now();
     this.updateMs = performance.now() - start;
+    // ⚠️ 计时字段只给探针 / 调试面板读，**不进存档、不参与任何判定**。
+    this.profile = {
+      bridgeScanMs: this.scanMs,
+      terrainUpdateMs: tTerrain1 - tTerrain0,
+      waterUpdateMs: tWater1 - tTerrain1,
+      vegetationUpdateMs: tVeg1 - tWater1,
+      entityUpdateMs: tEntity1 - tVeg1,
+      settlementUpdateMs: tSettlement1 - tEntity1,
+      markerUpdateMs: tMarker1 - tSettlement1,
+    };
     this.cameraRig.update(dt); this.dt = dt;
   }
   /** 3D 点选：把选中环挪到该格（纯表现，不进存档）。 */
@@ -88,6 +131,7 @@ export class Renderer3D {
   pick(x, y) { return this.picker.pick(x, y, this.width, this.height); }
   render() {
     const start = performance.now(); this.gpu.render(this.scene, this.cameraRig.camera);
+    const profile = this.profile || {};
     return this.debug.record(this.dt, this.gpu, {
       renderMs: performance.now() - start,
       terrainVertices: this.world.size,
@@ -99,6 +143,14 @@ export class Renderer3D {
       entityInstances: this.entities.stats.instances,
       houseInstances: this.settlements.stats.buildings,
       markerInstances: this.markers.stats.total,
+      // ── M1.1D D5.2 逐层 CPU profiling（知道时间花在哪，而不是只有总 frame time）──
+      bridgeScanMs: this.scanMs,
+      waterUpdateMs: profile.waterUpdateMs ?? 0,
+      vegetationUpdateMs: profile.vegetationUpdateMs ?? 0,
+      entityUpdateMs: profile.entityUpdateMs ?? 0,
+      settlementUpdateMs: profile.settlementUpdateMs ?? 0,
+      markerUpdateMs: profile.markerUpdateMs ?? 0,
+      layerUpdateMs: this.updateMs,
     });
   }
   resize(width, height) { this.width = width; this.height = height; this.gpu.setSize(width, height, false); this.cameraRig.resize(width, height); }

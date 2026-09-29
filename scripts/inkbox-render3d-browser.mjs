@@ -1,5 +1,10 @@
 // Optional QA runner: uses an existing Playwright installation, no runtime dependency.
 // INKBOX_PLAYWRIGHT can point to a preinstalled playwright package directory.
+//
+// ⚠️ **本机默认跑不了**：需要外部 Playwright（`npm i -D playwright` 或设 `INKBOX_PLAYWRIGHT`），
+//    而项目**刻意不把它列为依赖**（否则干净克隆 + CI 都要多背一个浏览器栈）。
+//    ⇒ **性能基线请用零依赖的 `npm run test:render3d:perf`**（走 `scripts/cdp.mjs`，
+//      复用本机已装的 Edge / Chrome）。本脚本保留为「有 Playwright 时的可选 M0 QA」。
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
@@ -16,10 +21,25 @@ try {
   await page.goto(`${base}?renderer=3d`);
   await page.waitForFunction(() => window.inkbox?.render3d?.renderer?.debug.metrics.fps > 0);
   await page.evaluate(() => { window.inkbox.speedIndex = 0; });
+  // ── 环境（M1.1D D5.1）：没有这些，任何 FPS 都不可比 ──────────────────
   results.environment = await page.evaluate(() => {
-    const gl = window.inkbox.render3d.renderer.gpu.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
-    return { userAgent: navigator.userAgent, dpr: devicePixelRatio, gpu: ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER), width: innerWidth, height: innerHeight };
+    const r = window.inkbox.render3d.renderer;
+    const gl = r.gpu.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
+    return {
+      userAgent: navigator.userAgent, dpr: devicePixelRatio,
+      gpu: ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+      vendor: ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR),
+      webglVersion: gl.getParameter(gl.VERSION),
+      width: innerWidth, height: innerHeight,
+      viewport: [innerWidth, innerHeight], canvasSize: [r.canvas.width, r.canvas.height],
+      pixelRatioUsed: r.gpu.getPixelRatio(),
+      threeRuntime: './vendor/three',
+    };
   });
+  results.environment.softwareRasterizer = /basic render|swiftshader|llvmpipe|software/i.test(String(results.environment.gpu));
+  if (results.environment.softwareRasterizer) {
+    results.notes = ['当前仍运行于软件光栅器，性能结论只作为相对数据。'];
+  }
   for (const preset of ['small', 'medium', 'large']) {
     await page.evaluate(preset => { const s = window.inkbox; s.newWorld(preset, 20260928); s.speedIndex = 0; }, preset);
     await page.waitForFunction(() => window.inkbox.render3d.renderer.world === window.inkbox.world);
@@ -36,8 +56,10 @@ try {
         const timestamp = await new Promise(requestAnimationFrame), frameMs = timestamp - previous;
         previous = timestamp; samples.push({ ...r.debug.metrics, frameMs, fps: 1000 / frameMs });
       }
-      const keys = ['frameMs', 'fps', 'raycastMs', 'terrainUpdateMs', 'scanMs', 'renderMs'];
-      const means = Object.fromEntries(keys.map(key => [key, samples.reduce((sum, sample) => sum + sample[key], 0) / samples.length]));
+      const keys = ['frameMs', 'fps', 'raycastMs', 'terrainUpdateMs', 'scanMs', 'renderMs',
+        // M1.1D D5.2 逐层 profiling：知道 CPU 花在哪，而不是只有总 frame time。
+        'bridgeScanMs', 'waterUpdateMs', 'vegetationUpdateMs', 'entityUpdateMs', 'settlementUpdateMs', 'markerUpdateMs', 'layerUpdateMs'];
+      const means = Object.fromEntries(keys.map(key => [key, samples.reduce((sum, sample) => sum + (Number(sample[key]) || 0), 0) / samples.length]));
       const pure = snapshot() === before;
       means.fps = 1000 / means.frameMs;
       const { sculpt } = await import('./src/inkbox/render3d/terrain/sculpt.js');
@@ -66,7 +88,21 @@ try {
       for (let i = 0; i < 24; i++) { r.pick(r.width * 0.5 + i * 0.7, r.height * 0.5); queries.push(r.picker.timeMs); }
       return { frameMs: frames.reduce((a, b) => a + b, 0) / frames.length, movingFrameMs: movingFrames.reduce((a, b) => a + b, 0) / movingFrames.length, raycastMs: queries.reduce((a, b) => a + b, 0) / queries.length };
     });
-    results.maps[preset] = { ...data, ...steady, fps: 1000 / steady.frameMs };
+    results.maps[preset] = {
+      ...data, ...steady, fps: 1000 / steady.frameMs,
+      // D5.1 要求记下「这一组到底有多少东西」——否则 draw call 数字没有参照。
+      counts: await page.evaluate(() => {
+        const k = window.inkbox, r = k.render3d.renderer, w = k.world;
+        return {
+          entityCount: w.entities.length, wraithCount: (w.wraiths || []).length,
+          villageCount: w.villages.length, houseCount: r.settlements.stats.buildings,
+          sectCount: w.factions.length, artifactCount: w.artifacts.length,
+          siteCount: w.sites.length, leylineCount: w.leylines.length,
+          riftCount: w.rifts.length, markerCount: r.markers.stats.total,
+          entityInstances: r.entities.stats.instances,
+        };
+      }),
+    };
     await page.screenshot({ path: `${output}/${preset}.png` });
   }
   results.picking = await page.evaluate(async () => {
@@ -174,7 +210,7 @@ try {
     return !document.getElementById('inkCanvas3D') && !document.getElementById('inkRender3DTools') && s.camera.focusOn === adapter.originalFocus && !s.canvas.style.visibility;
   }));
   const plain = await browser.newPage(); let threeRequests = 0;
-  plain.on('request', request => { if (request.url().includes('/node_modules/three/')) threeRequests++; });
+  plain.on('request', request => { if (request.url().includes('/vendor/three/')) threeRequests++; });
   await plain.goto(base); await plain.waitForFunction(() => window.inkbox?.world);
   check('default Canvas does not download Three.js', threeRequests === 0);
   await plain.close();

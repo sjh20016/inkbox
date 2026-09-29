@@ -8,11 +8,13 @@
 
 ## 0. ⚠️ 当前状态与下一工程包
 
-> **Render3D M1（3D 世界实体可见化）已完成并通过验收。** 委托书：[`坐天观井 · 下一阶段工程委托书.md`](./坐天观井%20·%20下一阶段工程委托书.md)。
-> 工程报告：**`Render3D M1 工程报告.md`**（含修改/新增文件清单、各层职责、draw call 实测、测试结果、已知风险）。
-> 本阶段唯一战略目标：**保留现有模拟世界作为唯一真相，让 Three.js 从「地形技术原型」成长为「可以实际观察世界的沙盘」。**
-> ✅ 已达成：进 3D 能辨认凡人 / 修士 / 灵兽 / 山精、聚落屋舍、宗门山门、无主法宝与地点；点地面仍复用 `inspectAt(x,y)`。
-> ⚠️ **下一阶段由用户裁决，不得自行开始**（候选见工程报告 §九「下一阶段建议」）。
+> **当前阶段：Render3D M1.1D「Development Hardening」已完成**（工程加固，**不是新玩法**）。
+> 委托书：[`Render3D M1.1D 工程任务清单.md`](./Render3D%20M1.1D%20工程任务清单.md)；
+> 工程报告：[`Render3D M1.1D 工程报告.md`](./Render3D%20M1.1D%20工程报告.md)。
+> 本阶段只做了五件事：仓库真相统一 · 分层 CI 门禁 · `WorldRenderBridge` dirty 分类 · 性能基线重测 · Three.js vendor 治理。
+> **上一阶段 Render3D M1（3D 世界实体可见化）已完成并通过验收**，工程报告 `Render3D M1 工程报告.md`。
+> 唯一战略目标不变：**保留现有模拟世界作为唯一真相，让 Three.js 从「地形技术原型」成长为「可以实际观察世界的沙盘」。**
+> ⚠️ **下一阶段是 Render3D M2「三界空间表现架构」，尚未开始**——M2 尚未开始，**首先需要设计方案裁决**，**不得自行选方案开工**。
 > ⚠️ 不要被 `D8视界 2.0 …` 与旧 `STATUS.md` 的 D8 叙事带回 Canvas 路线。
 > **D8-G「跨界追迹」仍是 WIP / 暂缓**（地基已保存，UI 未做，本阶段未扩建）。
 
@@ -21,12 +23,18 @@
 ## 1. 当前版本与阶段
 
 - **版本**：`v1.0.0`（`package.json` / `src/inkbox/core/config.js` 的 `APP.version`）。
-- **当前阶段**：**Render3D M1**（`Render3D M0.5 → M1`）。活跃分支 `inkbox.html` + `src/inkbox/**`。
+- **当前阶段**：**Render3D M1.1D「Development Hardening」已完成**。活跃分支 `inkbox.html` + `src/inkbox/**`。
+- **分支角色**：`main` = **唯一活跃开发主线**（所有新功能都从它开始）；
+  `codex/render3d-m0` = **Render3D M0 历史技术快照**（tag `render3d-m0` 指向它）——
+  ⚠️ **禁止从它开发新功能**，只作考古。
 - **正式完成**：
-  - **D7 观察与表现层 A–G 已封板**（`38445e9` A · `83e83d0` B · `0408290` C · `663d8ef` D+E · `0174305` F · `22a930e` G）。
+  - **D7 观察与表现层 A–G 已封板**（发布仓库阶段提交 `dc456fa`；本工作区完整开发史**不对外发布**，
+    所以这里只写**可解析的**路标，不列本地施工提交）。
   - **D8「视界 2.0 · 穿透式跨界观察」A ✅ · B ✅ · C ✅ · D ✅ · E ✅ · F ✅**（视界契约见 `VIEW_CONTRACT.md`）。
   - **Render3D M0 已完成**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻），独立测试 `npm run test:render3d`；技术报告 `RENDER3D_M0.md`。
   - **Render3D M1 已完成**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环），独立测试 `npm run test:render3d:m1`（36 项）+ 浏览器探针 `scripts/_m1-viewshot.mjs`（场景 A–F 全过）；工程报告 `Render3D M1 工程报告.md`。
+  - **Render3D M1.1D 已完成**（仓库真相 / 分层 CI / dirty 分类 / 性能基线 / vendor 治理），
+    独立测试 `npm run test:render3d:bridge`（36 项）+ `npm run test:vendor`（13 项）；工程报告 `Render3D M1.1D 工程报告.md`。
 - **WIP / 暂缓**：**D8-G「跨界追迹」**。已保存的纯逻辑地基（有测试钉住，见 §6）：
   `sim/watch.js` 的 `netherGhostOf()`（第二条可靠跨界引用：只认 `ghostOf.route === null` 的「自裂缝跌入」者）·
   `resolveWatch` 的 `nether` 分支（**排在 `dead` 之后**）· `ui/realmTrace.js` 的 `traceTargetOf()` / `crossRealmChain()`。
@@ -34,9 +42,13 @@
   **不得声称 D8-G 已完成**，本阶段也不继续扩建 Canvas 版 D8-G。
 - **D8 硬指标**：D8 完成时 `main.js` **不得比 D7 baseline（3084 行）更大**——D8-F 后 **2889 行**；
   叠加 D8-G 地基（+36）后当前 **2925 行**，仍达标。
-- **Render3D M1 硬禁（详见 §9）**：模拟层**禁止重写** · Three.js **只是观察者**（只读、不反写、不抽模拟 RNG）·
-  **禁止复制 Canvas 逻辑**（不重写 `inspectAt()`、不复制境界 / 裂缝公式）· M1 **只做凡间 3D** ·
-  **不得为「架构优雅」扩范围**（不重构 `save.js` / `rifts.js` / Sandbox，不改存档格式，不引 ECS / 状态库 / 物理引擎 / 额外渲染库）。
+- **M1.1D 期间执行的硬禁（本阶段已完成，作为纪律记录保留；M2 的边界需另行裁决）**：
+  **不新增任何玩法**（上界 / 幽冥 / 3D 视界 / D8-G UI / 新建筑 / 新交互 / AI 改动 / 概率调整全禁）·
+  模拟层**禁止重写** · Three.js **只是观察者**（只读、不反写、不抽模拟 RNG）·
+  **不得为「架构优雅」扩范围**（不重构 `save.js` / `rifts.js` / Sandbox，不实装 `planes.transfer()`，
+  不引 ECS / 状态管理库 / 物理引擎 / BVH，不重写 Render3D）·
+  **不给 `World` 加任何 renderer dirty 字段**（dirty 状态永远属于 Render3D 自己）。
+  ⚠️ 施工中若发现上述问题，**只记 `BACKLOG.md`**。
 
 ## 2. 唯一启动入口
 
@@ -228,4 +240,8 @@
 
 ---
 
-**交接完。** 有疑问先看 `MEMORY.md`（判决与规则索引）与 `MEMORY-detail.md`（契约全文）。
+**交接完。** 有疑问先看 `ROADMAP.md`（30 秒定位）与 `BACKLOG.md`（还没做的事）。
+
+> ⚠️ **只在开发工作区存在的文件**（干净项目包 `dist/` 里**没有**，别去找）：
+> `.workbuddy-ai/memory/MEMORY.md`（判决与规则索引）· `.workbuddy-ai/memory/MEMORY-detail.md`（契约全文）·
+> `scripts/_*.mjs`（RESEARCH 探针，如 `_m1-viewshot.mjs`）· `reports/`（截图与长测日志）。

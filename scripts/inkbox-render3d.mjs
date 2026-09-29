@@ -85,7 +85,14 @@ check('dirty update retains geometry and refreshes exact heights', () => {
   const w = generateWorld({ preset: { w: 32, h: 24 }, seed: 7, scatter: false });
   const bridge = new WorldRenderBridge(w), t = new TerrainMesh(w, bridge.coordinates), geometry = t.geometry;
   sculpt(w, { mode: 'raise', x: 16, y: 12, radius: 3 });
-  const region = bridge.changes(); assert(region); t.update(region);
+  // M1.1D D4 起 `changes()` 返回**分类**脏区（不是单个 region）。
+  // 雕刻只写 `height` ⇒ 断言顺带钉住「它不该谎报 water / type / veg 也脏了」。
+  const dirty = bridge.changes();
+  assert(dirty && dirty.any && dirty.height, '雕刻后 height 必须报脏');
+  assert.equal(dirty.water, null, '雕刻不写 water');
+  assert.equal(dirty.type, null, '雕刻不写 type');
+  assert.equal(dirty.veg, null, '雕刻不写 veg');
+  t.update(dirty.height, { height: true, type: false });
   assert.equal(t.geometry, geometry); assert.equal(bridge.changes(), null);
   assert(Math.abs(t.geometry.attributes.position.getY(12 * w.w + 16) - visualElevation(w.height[12 * w.w + 16])) < 1e-5);
   t.dispose();
@@ -97,7 +104,7 @@ check('stationary picking cache invalidates after sculpt and camera movement', (
   camera.position.set(0.13, 200, 0.19); camera.up.set(0, 0, -1); camera.lookAt(0.13, 0, 0.19);
   const picker = new TerrainPicker(terrain, c, camera), first = picker.pick(500, 400, 1000, 800);
   assert(first); assert.equal(picker.pick(500, 400, 1000, 800), first); assert.equal(picker.timeMs, 0);
-  const region = sculpt(world, { x: first.x, y: first.y, radius: 4, mode: 'raise' }); terrain.update(region);
+  const region = sculpt(world, { x: first.x, y: first.y, radius: 4, mode: 'raise' }); terrain.update(region, { height: true, type: false });
   const raised = picker.pick(500, 400, 1000, 800); assert(raised.point.y > first.point.y);
   camera.position.x += 3; camera.lookAt(3.13, 0, 0.19);
   assert.notEqual(picker.pick(500, 400, 1000, 800).x, raised.x);

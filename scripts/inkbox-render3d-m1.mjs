@@ -149,14 +149,14 @@ for (const [name, preset] of Object.entries(WORLD_PRESETS)) {
   check(`${name}: 建三层 + 24 帧 update 后 world 逐字不变`, () => {
     selection.setCell(3, 4);
     for (let frame = 0; frame < 24; frame += 1) {
-      for (const layer of layers) layer.update(0.2, world, { terrainChanged: true });
+      for (const layer of layers) layer.update(0.2, world, { heightChanged: true });
       selection.update(world);
     }
     assert.equal(worldDigest(world), before);
   });
   check(`${name}: 反复 update 是幂等的（第二次不再重写实例）`, () => {
     const layer = layers[0];
-    layer.update(1, world, { terrainChanged: true });
+    layer.update(1, world, { heightChanged: true });
     assert.equal(layer.update(1, world, {}), false, '派生结果没变时不该重写');
     assert.equal(layers[1].update(1, world, {}), false);
     assert.equal(layers[2].update(1, world, {}), false);
@@ -174,7 +174,7 @@ section('G2 · EntityLayer（数量对应 / 增删 / 移动 / 贴地）');
   const derived = deriveEntities(world);
 
   check('实体数 = 各类实例数之和（含 wraiths 独立容器）', () => {
-    layer.update(1, world, { terrainChanged: true });
+    layer.update(1, world, { heightChanged: true });
     assert(derived.total > 0, '测试世界必须有实体');
     assert.equal(layer.stats.instances, derived.total);
     let sum = 0;
@@ -197,10 +197,10 @@ section('G2 · EntityLayer（数量对应 / 增删 / 移动 / 贴地）');
   check('新增实体 ⇒ 实例增加；删除实体 ⇒ 实例减少', () => {
     const before = layer.stats.instances;
     world.entities.push({ id: 9100, x: 20.5, y: 20.5, sp: 'human', level: 0, faction: 0 });
-    layer.update(1, world, { terrainChanged: true });
+    layer.update(1, world, { heightChanged: true });
     assert.equal(layer.stats.instances, before + 1);
     world.entities.pop();
-    layer.update(1, world, { terrainChanged: true });
+    layer.update(1, world, { heightChanged: true });
     assert.equal(layer.stats.instances, before);
   });
   check('改变 x/y ⇒ 该实例位置随之改变', () => {
@@ -209,7 +209,7 @@ section('G2 · EntityLayer（数量对应 / 增删 / 移动 / 贴地）');
     const index = indexOfId(deriveEntities(world)[cls], 9001);
     const from = instanceAt(layer.meshes[cls], index);
     entity.x += 6;
-    layer.update(1, world, { terrainChanged: true });
+    layer.update(1, world, { heightChanged: true });
     const to = instanceAt(layer.meshes[cls], index);
     assert(Math.abs(to.x - from.x - 6) < 1e-4, `render X 应恰好 +6：${from.x} → ${to.x}`);
   });
@@ -220,7 +220,7 @@ section('G2 · EntityLayer（数量对应 / 增删 / 移动 / 贴地）');
     const from = instanceAt(layer.meshes[cls], index);
     const cx = Math.round(entity.x); const cy = Math.round(entity.y);
     for (let i = 0; i < 3; i += 1) sculpt(world, { x: cx, y: cy, radius: 3, mode: 'raise', strength: 0.25 });
-    layer.update(1, world, { terrainChanged: true });
+    layer.update(1, world, { heightChanged: true });
     const to = instanceAt(layer.meshes[cls], index);
     assert(to.y > from.y + 1, `抬高地形后实例 Y 应变大：${from.y} → ${to.y}`);
     // 而且必须与地表插值一致（不是随便抬高）
@@ -247,7 +247,7 @@ section('G3 · SettlementLayer（真实 house 坐标 / 等级只读 / 宗门山�
   const before = worldDigest(world);
 
   check('真实 house 坐标被正确映射（含 +0.5 取格中心）', () => {
-    layer.update(1, world, { terrainChanged: true });
+    layer.update(1, world, { heightChanged: true });
     assert.equal(layer.stats.buildings, derived.buildings.length);
     assert.equal(layer.stats.houses, 4, '两村各 2 座屋');
     const village = world.villages[0];
@@ -302,15 +302,15 @@ section('G4 · 标记层（法宝增删 / 地点 kind 映射 / 灵脉 / 裂缝�
   const derived = deriveMarkers(world);
 
   check('无主法宝：数量与 world.artifacts 对应', () => {
-    layer.update(1, world, { terrainChanged: true });
+    layer.update(1, world, { heightChanged: true });
     assert.equal(layer.stats.artifacts, world.artifacts.length);
   });
   check('新增 ground artifact ⇒ marker 出现；移除 ⇒ 消失', () => {
     world.artifacts.push({ id: 599, name: '新落之器', x: 30, y: 30, ownerId: 0, lostDay: 99 });
-    layer.update(1, world, { terrainChanged: true });
+    layer.update(1, world, { heightChanged: true });
     assert.equal(layer.stats.artifacts, world.artifacts.length);
     world.artifacts.pop();
-    layer.update(1, world, { terrainChanged: true });
+    layer.update(1, world, { heightChanged: true });
     assert.equal(layer.stats.artifacts, world.artifacts.length);
   });
   check('site kind 映射稳定（四种各自入桶，未知 kind 跳过）', () => {
@@ -441,7 +441,7 @@ section('G7 · 模拟不受影响（同 seed 两世界：一个跑渲染派生�
     // 渲染世界：先推进，再跑一整套派生 / 更新（含点选与贴地重算）
     advanceWorld(rendered, 30, deps(lifeA, stateA));
     selection.setCell(round % rendered.w, round % rendered.h);
-    for (const layer of layers) layer.update(0.2, rendered, { terrainChanged: true });
+    for (const layer of layers) layer.update(0.2, rendered, { heightChanged: true });
     selection.update(rendered);
     // 对照世界：只推进，不碰渲染
     advanceWorld(control, 30, deps(lifeB, stateB));
@@ -472,7 +472,14 @@ section('G8 · 构建（新模块必须进包）');
 {
   const packageScript = fs.readFileSync(path.join(ROOT, 'scripts', 'inkbox-package.mjs'), 'utf8');
   check('打包脚本递归收录 src/inkbox（新模块自动入包）', () => {
-    assert(/DIRECTORIES\s*=\s*\[\s*'src\/inkbox'\s*\]/.test(packageScript));
+    // ⚠️ M1.1D D6 之后 `DIRECTORIES` 变成 `['src/inkbox', 'vendor/three']`。
+    //    旧写法是逐字匹配 `['src/inkbox']`，那是**把数组的当前内容当成了契约**——
+    //    多收一个目录就假红。真正的不变量是「`src/inkbox` **在里面**（因而递归入包）」，
+    //    所以这里解析出数组再判成员：丢掉 `src/inkbox` 照样变红。
+    const m = packageScript.match(/DIRECTORIES\s*=\s*\[([^\]]*)\]/);
+    assert(m, '打包脚本里找不到 DIRECTORIES 声明');
+    const entries = m[1].split(',').map((s) => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+    assert(entries.includes('src/inkbox'), `DIRECTORIES 必须含 src/inkbox，实得 [${entries.join(', ')}]`);
   });
   check('M1 新增模块都在磁盘上', () => {
     for (const rel of [

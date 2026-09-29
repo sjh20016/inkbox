@@ -34,18 +34,38 @@ export class TerrainMesh {
     this.palette = TERRAIN_INFO.map(t => new THREE.Color(`rgb(${t.color.join(',')})`));
     this.update({ x0: 0, y0: 0, x1: world.w - 1, y1: world.h - 1 });
   }
-  update(region) {
+  /**
+   * 刷新一块地形。
+   *
+   * @param {{x0:number,y0:number,x1:number,y1:number}|null} region 闭区间格坐标矩形。
+   * @param {{height?:boolean, type?:boolean}} [options] 这一帧要写哪几项：
+   *   · 只 `height` ⇒ 只重写顶点 Y；
+   *   · 只 `type`   ⇒ 只重写顶点色；
+   *   · 两者都给（**默认**）⇒ 都写。
+   *
+   * ⚠️ 默认「都写」是为了让「整图初始化」和「我只知道有一块区域要刷」的调用方
+   *    不必关心分类；**Renderer3D 永远显式传 flags**，因为 `WorldRenderBridge`
+   *    已经把 height 与 type 分成两条脏区（M1.1D D4.2）——
+   *    只改 `type` 时重写一遍 Y 是纯浪费，而 M2 之后图更大、浪费会被放大。
+   */
+  update(region, options = { height: true, type: true }) {
+    if (!region) return;
+    const writeHeight = options.height !== false;
+    const writeType = options.type !== false;
+    if (!writeHeight && !writeType) return;
     const { position, color } = this.geometry.attributes, w = this.world;
     for (let y = region.y0; y <= region.y1; y++) {
       for (let x = region.x0; x <= region.x1; x++) {
-        const i = y * w.w + x, c = this.palette[w.type[i]] || this.palette[5];
-        position.setY(i, visualElevation(w.height[i]));
-        color.setXYZ(i, c.r, c.g, c.b);
+        const i = y * w.w + x;
+        if (writeHeight) position.setY(i, visualElevation(w.height[i]));
+        if (writeType) { const c = this.palette[w.type[i]] || this.palette[5]; color.setXYZ(i, c.r, c.g, c.b); }
       }
       const start = (y * w.w + region.x0) * 3, count = (region.x1 - region.x0 + 1) * 3;
-      position.addUpdateRange(start, count); color.addUpdateRange(start, count);
+      if (writeHeight) position.addUpdateRange(start, count);
+      if (writeType) color.addUpdateRange(start, count);
     }
-    position.needsUpdate = true; color.needsUpdate = true;
+    if (writeHeight) position.needsUpdate = true;
+    if (writeType) color.needsUpdate = true;
     // Flat material derives normals in the shader; no full-grid normal rebuild.
   }
   dispose() { this.geometry.dispose(); this.material.dispose(); }

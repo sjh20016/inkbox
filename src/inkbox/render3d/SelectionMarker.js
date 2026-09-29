@@ -15,6 +15,7 @@ export class SelectionMarker {
   constructor(coordinates) {
     this.coordinates = coordinates;
     this.cell = null;
+    this.needsPlace = false;      // 选中格变了才置 true；高度变过也重摆（见 update）
     this.geometry = new THREE.RingGeometry(0.6, 0.86, 24);
     this.geometry.rotateX(-Math.PI / 2);
     this.material = new THREE.MeshBasicMaterial({
@@ -32,13 +33,26 @@ export class SelectionMarker {
     if (!Number.isFinite(x) || !Number.isFinite(y)) { this.cell = null; this.mesh.visible = false; return; }
     this.cell = { x, y };
     this.mesh.visible = true;
+    this.needsPlace = true;      // 选中格自己变了 ⇒ 下一帧必须重摆
   }
 
   clear() { this.setCell(null, null); }
 
-  /** 每帧跟随地形（雕刻 / 读档换世界后高度立刻正确）。 */
-  update(world) {
+  /**
+   * 跟随地表。**只在两种情况下真的重摆**（M1.1D D4.2）：
+   *   ① 选中格变了（`setCell` 打的标记）；
+   *   ② 地形**高度**变了（`heightChanged`）——雕刻 / 读档换世界后高度要立刻正确。
+   *
+   * ⚠️ `water` / `type` / `veg` 变化**不需要**重摆：环的高度只由 `height` 决定。
+   *    没有这两条判据时，每帧摆一次虽然也不贵，但那是「不知道自己在等什么」。
+   *
+   * @param {object} world
+   * @param {boolean} [heightChanged] 本帧地形高度是否变过。
+   */
+  update(world, heightChanged = false) {
     if (!this.cell || !world) { this.mesh.visible = false; return; }
+    if (!this.needsPlace && !heightChanged) return;
+    this.needsPlace = false;
     const { x, y } = this.cell;
     const p = this.coordinates.worldToRender(x, y, 0);
     this.mesh.position.set(p.x, surfaceElevation(world, x, y) + 0.18, p.z);

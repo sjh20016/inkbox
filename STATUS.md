@@ -2,12 +2,18 @@
 
 - 当前活跃版本：Inkbox 1.0.0（`src/inkbox`）
 - 当前入口：`inkbox.html`（3D 立体沙盘：`inkbox.html?renderer=3d`）；`npm run dev` 从 `http://127.0.0.1:4180/` 启动
-- 当前阶段：**Render3D M1「3D 世界实体可见化」已完成**（委托书 `坐天观井 · 下一阶段工程委托书.md`；工程报告 `Render3D M1 工程报告.md`）。**下一阶段由用户裁决，不得自行开始。**
-- **正式完成**：D6-2 三界生态 · D6-3 视界 / 跨界生态 · D7 观察与表现层 **A–G 封板** · D8 视界 2.0 **A–F** · **Render3D M0**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻，`npm run test:render3d`）· **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环，`npm run test:render3d:m1`）。
+- 当前阶段：**Render3D M1.1D「Development Hardening」已完成**（工程加固：仓库真相统一 / 分层 CI / dirty 分类 /
+  性能基线重测 / Three.js vendor 治理）。委托书 `Render3D M1.1D 工程任务清单.md`；工程报告 `Render3D M1.1D 工程报告.md`。**不是新玩法阶段。**
+- **上一阶段（已完成）**：**Render3D M1「3D 世界实体可见化」**——委托书 `坐天观井 · 下一阶段工程委托书.md`；工程报告 `Render3D M1 工程报告.md`。
+- **下一阶段**：**Render3D M2「三界空间表现架构」——尚未开始**。⚠️ M2 尚未开始，**首先需要设计方案裁决**（三个位面切换还是同时驻留 / 3D 视界实现路径 / 是否共享 `Renderer3D` 生命周期），**不得自行选方案开工**。
+- **正式完成**：D6-2 三界生态 **A–F** · D6-3 跨界生态 **A–E** · D7 观察与表现层 **A–G 封板** · D8 视界 2.0 **A–F** · **Render3D M0**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻，`npm run test:render3d`）· **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环，`npm run test:render3d:m1`）· **Render3D M1.1D**（工程加固，`npm run test:render3d:bridge` + `npm run test:vendor`）。
 - **WIP / 暂缓**：**D8-G「跨界追迹」**——纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）已保存并由 `test:view` V9 钉住，**追迹 UI 未做**；本阶段不继续扩建 Canvas 版 D8-G。
-- **接手先读 `HANDOFF.md`**（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）——本文件是历史，不是现状。视界契约见 `VIEW_CONTRACT.md`；Render3D M0 报告见 `RENDER3D_M0.md`。
+- **接手先读 `HANDOFF.md`**（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）——本文件是历史，不是现状。30 秒定位看 `ROADMAP.md`；视界契约见 `VIEW_CONTRACT.md`；Render3D M0 报告见 `RENDER3D_M0.md`。
 - 三界规则唯一成文处：`THREE_REALMS.md`（事实核对日期 2026-09-27 · D6-2 A–F · D6-3 A–E · D7-A/B/C/D/E/F/G）
+- 分支角色：`main` = 唯一活跃开发主线 · `codex/render3d-m0` = Render3D M0 历史技术快照（tag `render3d-m0`，**禁止从它开发新功能**）
 - 禁止误认为主线：`src/main.js`、`demo/`、`剧情文案素材/`、`scripts/v341*` 至 `scripts/v400*` 与研究探针
+- ⚠️ **本文件里的 commit hash 只写发布仓库可达的**。本工作区的完整开发史**不对外发布**，
+  本地施工提交（如 D7 七包各自的提交）在别人克隆的仓库里解析不了 ⇒ 这里一律改用**阶段描述**。
 
 ---
 
@@ -30,18 +36,52 @@
 
 ---
 
+## Render3D M1.1D「Development Hardening」（2026-09-28）
+
+委托书：`Render3D M1.1D 工程任务清单.md`。**工程加固阶段，不新增任何玩法**（上界 / 幽冥 3D、3D 视界、
+D8-G UI、新建筑、新交互、AI 行为、概率调整**全禁**）。只做五件事：仓库真相统一 · 分层 CI · dirty 分类 ·
+性能基线重测 · Three.js vendor 治理。工程报告：`Render3D M1.1D 工程报告.md`。
+
+- **D1 仓库真相统一**：README / HANDOFF / STATUS / BACKLOG 对齐 `main` 为唯一活跃主线；
+  `BACKLOG.md` 整文件重划四区（P0 / P1 `#1`–`#7` / P2 `#8`–`#13` / P2-b `#14`–`#21` / ICEBOX `#22`–`#30`）
+  并新增「已关闭编号」表；删掉全部**远端无法解析**的本地施工 hash（`f91ffd0` + D7 七包六个 hash）。
+- **D2 分支与版本基线**：确认 `3856cee3e60f…` 仍在远端 `refs/heads/codex/render3d-m0` ⇒ 在发布仓库建
+  annotated tag **`render3d-m0`**（指向它）并推送成功。**未做任何历史重写。**
+- **D3 分层 CI**：`.github/workflows/ci.yml`（**Fast Gate** + **Heavy Gate** 并行，`browser-smoke` 手动触发、
+  `windows-latest`）+ 新建 `.github/workflows/nightly.yml`（smoke + 800 年长跑）。**无 `|| true`、不删测试。**
+- **D4 dirty 分类**：`WorldRenderBridge.changes()` 从「单 region」升级为 `{any, height, water, type, veg}`；
+  新增纯函数 `mergeRegion(a, b)`；各 Layer 按**真实依赖**响应（Terrain ← height+type；Water ← height+water；
+  Veg ← height+veg+type；Entity / Settlement / Marker / SelectionMarker ← **只有 height**）；
+  新增逐层 CPU profiling（`bridgeScanMs` / `terrainUpdateMs` / `waterUpdateMs` / `vegetationUpdateMs` /
+  `entityUpdateMs` / `settlementUpdateMs` / `markerUpdateMs` / `layerUpdateMs`）。
+  **不给 `World` 加任何 renderer dirty 字段。**
+- **D5 性能基线**：新建零依赖 CDP 性能脚本 `scripts/inkbox-render3d-perf.mjs` → `reports/render3d/perf-baseline.json`；
+  自动记录 GPU 渲染器 / WebGL 版本 / 视口 / DPR / **Three.js 实际加载 URL**，并如实标注软件光栅器。
+- **D6 vendor 治理**：Three.js 运行时从 `node_modules` 迁到仓库内 **`vendor/three/`**（5 文件 / 2.07 MB，含 MIT 许可证）；
+  `inkbox.html` importmap 改指 `./vendor/three/...`；**npm `three` 依赖保留**给 node 测试。
+- **测试**：新增 `scripts/inkbox-render3d-bridge.mjs`（`npm run test:render3d:bridge`，**36 项 / 0 红**）+
+  `scripts/inkbox-vendor-check.mjs`（`npm run test:vendor`，**13 项 / 0 红**）；M0 19 组 / M1 36 项继续全绿。
+- **收尾实测**：core **72 文件 / 262 边** · regression 22 · three-realms **151 ✓** · view 111 ✓ ·
+  presentation 127 ✓ · save-equivalence 全绿 · render3d:bridge 36 ✓ · vendor 13 ✓ · **build 125 files**。
+  ⚠️ 性能读数采自**软件光栅器**，只作相对数据（见 `Render3D M1.1D 工程报告.md`）。
+
+---
+
 ## D7「观察与表现层」（2026-09-27）
 
 规划见 `D7「观察与表现层」.md`，A–G 七包严格按序。**核心验收**：表现层不写世界、不抽 RNG、不进存档——
 删掉 `render/fxLayer.js`，模拟结果**逐字不变**。
 
-- **A 零红基线**（`38445e9`）：关闭此前记录的干预分类、`worldEventState`/`worldEvents` 合法映射、负寿命哨兵、人物卡点击竞态与 tar 盘符路径问题。
-- **B transient 运行事件通道**（`83e83d0`）：`core/runtimeEvents.js`——WeakMap 队列、cap 256、**不进存档**、每帧 drain。
-- **C Camera 2.0**（`0408290`）：一次性 `focusOn` 补间 + 玩家输入立即接管 + 落点墨环（`render/overlayLayer.js`）。
-- **D FX 层 1.0**（`663d8ef`）：`render/fxLayer.js` 消费 B 的事件 → 短命特效；发射口 `sim/presentation.js`。
-- **E 记挂系统 1.0**（`663d8ef`）：`sim/watch.js`——玩家的观察者状态（`world.watch`），不挂实体、不抽 RNG、不进人口守恒。
+- **A 零红基线**：关闭此前记录的干预分类、`worldEventState`/`worldEvents` 合法映射、负寿命哨兵、人物卡点击竞态与 tar 盘符路径问题。
+- **B transient 运行事件通道**：`core/runtimeEvents.js`——WeakMap 队列、cap 256、**不进存档**、每帧 drain。
+- **C Camera 2.0**：一次性 `focusOn` 补间 + 玩家输入立即接管 + 落点墨环（`render/overlayLayer.js`）。
+- **D FX 层 1.0**：`render/fxLayer.js` 消费 B 的事件 → 短命特效；发射口 `sim/presentation.js`。
+- **E 记挂系统 1.0**：`sim/watch.js`——玩家的观察者状态（`world.watch`），不挂实体、不抽 RNG、不进人口守恒。
 - **F 关系与战争可视化**：`render/relationGraph.js`（一跳关系图，纯 SVG）+ `render/overlayLayer.js` 的 `drawWarLines`。
 - **G 测试 / 文档 / 交接**：`scripts/inkbox-presentation.mjs`（86 项）· `npm run test:d7` · `HANDOFF.md`。
+
+> ⚠️ A–G 各包在本工作区各有一个**独立施工提交**，但那些 hash 属**未发布的本地开发史**
+> ⇒ 本文件不列它们（在别人克隆的仓库里解析不了）。发布仓库里 D7 整体是**一个阶段提交**。
 
 ---
 
@@ -644,7 +684,7 @@
   D4 留痕 **+0.03000**、对照格不变、存档往返 0.5 → 0.5000076 ·
   D5 目标到吸引源平均距离 **6.382 → 3.143** · 5u⑦ 复现 level **29/31/31/21/31**（全 > 1，未被 D3 压红）。
   ⚠️ 施工期发现 `spawnNetherGhost` 的 `decayYears < 0` 哨兵（`-1e9`）与注释「永不消散」**相反**
-  （判据 `day >= ghostDecayDay` 恒真 ⇒ 立即消散）；生产路径不传该参数 ⇒ 无玩家可见后果，已记 BACKLOG P3。
+  （判据 `day >= ghostDecayDay` 恒真 ⇒ 立即消散）；生产路径不传该参数 ⇒ 无玩家可见后果，已记 BACKLOG `#20`。
 - 工程包 E：`node --check` ✓（`main.js` / `planes.js` / `netherLife.js` / `inkbox-playtest.mjs`）·
   `npm run test:core` ✓（import-check **42 文件 / 189 边** · core · startup）·
   **smoke 460 ✓ / 1 红**（449 基线 + 5x 新增 **11** 条，**全部通过**；红项仍是同一条既有基线 `intervention`）。
@@ -901,5 +941,7 @@
 
 ## NEXT
 
-- **D7 前置完成**：A Baseline Zero 与 B transient runtime event 通道已交付；事件不进存档、不参与 RNG，也不替代编年史。
-- 本轮停止扩张；下一阶段范围另行确定。本文件的 D6-2 / D6-3 条目是已交付历史，不是待施工主线。
+- **当前阶段**：Render3D M1.1D「Development Hardening」**已完成**（工程加固；范围见 `BACKLOG.md` 的 P1 `#1`–`#7`）。
+- **下一阶段**：**Render3D M2「三界空间表现架构」——尚未开始**。M2 尚未开始，**首先需要设计方案裁决**（见 `ROADMAP.md`）。
+- 本轮停止扩张；M1.1D 的 P0/P1 之外一切问题只记 `BACKLOG.md`。
+  本文件的 D6-2 / D6-3 / D7 / D8 / M0 / M1 / M1.1D 条目是**已交付历史**，不是待施工主线。

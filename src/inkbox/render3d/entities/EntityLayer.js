@@ -96,13 +96,15 @@ export class EntityLayer {
   /**
    * @param {number} dt 真实秒
    * @param {object} world 凡间 world
-   * @param {{terrainChanged?:boolean}} options `terrainChanged` ⇒ 跳过频率与去重，强制重写
-   *   （地形一改，所有人的贴地高度都得跟着变，哪怕人没动）。
+   * @param {{heightChanged?:boolean}} options `heightChanged` ⇒ 跳过频率与去重，强制重写
+   *   （**只有高度变了**才需要重贴地，哪怕人没动）。
+   *   ⚠️ M1.1D D4.2：`water` / `type` / `veg` 变化**不**该让所有人重写 Y——
+   *   那是 M1 把四层揉成一个 dirty region 时的过粗行为。
    * @returns {boolean} 本帧是否真的重写了实例
    */
   update(dt, world, options = {}) {
     this.clock += Number.isFinite(dt) ? dt : 0;
-    const force = !!options.terrainChanged;
+    const force = !!options.heightChanged;
     if (!force && this.clock < this.interval) return false;
     this.clock = 0;
     const derived = deriveEntities(world);

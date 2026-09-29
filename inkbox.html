@@ -511,7 +511,7 @@
            更看不到那条真陷阱：**凡间修到 60（天花板）又积满 70 ⇒ 上不去也飞升不了**。
            这一块就是那个**全局入口**：纯静态文案，不随选中变化、不读任何状态、
            不新增任何 JS。`data-default-collapsed="1"` 让它默认收起
-           （右栏已有 12 个区，BACKLOG ⑭ 记着「太长」）。
+           （右栏已有 12 个区，BACKLOG `#14` 记着「太长」）。
            ⚠️ 措辞必须与代码一致，引用前重跑读数：
               · 飞升闸门 `sim/cultivation.js:429` → `pollution < POLLUTION_ASCEND_LIMIT(70)`
               · 拖慢修炼 `:296` → `1 - min(0.5, pollution*0.005)`（满值减半）
@@ -601,7 +601,7 @@
     </div>
   </footer>
 </div>
-<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
 <script type="module" src="./src/inkbox/main.js"></script>
 </body>
 </html>

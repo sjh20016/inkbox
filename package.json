@@ -9,6 +9,10 @@
   "scripts": {
     "test:render3d": "node scripts/inkbox-render3d.mjs",
     "test:render3d:m1": "node scripts/inkbox-render3d-m1.mjs",
+    "test:render3d:bridge": "node scripts/inkbox-render3d-bridge.mjs",
+    "test:render3d:perf": "node scripts/inkbox-render3d-perf.mjs",
+    "test:vendor": "node scripts/inkbox-vendor-check.mjs",
+    "vendor:sync": "node scripts/inkbox-vendor.mjs",
     "start": "node scripts/inkbox-server.mjs",
     "dev": "node scripts/inkbox-server.mjs",
     "build": "node scripts/inkbox-package.mjs",

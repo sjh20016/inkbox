@@ -5374,7 +5374,7 @@ section('5w. 幽冥最低生态：会动 / 留在窄带 / 阴气影响积怨 / �
   // ⚠️ **不要传 `-1`**：`spawnNetherGhost` 的 `decayYears < 0` 会落成哨兵
   //    `ghostDecayDay = -1e9`，而 `stepNether` 的判据是 `day >= ghostDecayDay`
   //    ⇒ `0 >= -1e9` 恒真 ⇒ **立即消散**（源码注释说的「永不消散」与实现相反，
-  //    见 BACKLOG P3；生产路径（`reincarnation.js`）不传 `decayYears`，所以不受影响）。
+  //    见 BACKLOG `#20`；生产路径（`reincarnation.js`）不传 `decayYears`，所以不受影响）。
   const mkNetherWorld = (seed, nGhost, nCult) => {
     const w = generateWorld({ preset: WORLD_PRESETS.small, seed, scatter: true });
     w.nether = generateNetherWorld({ preset: WORLD_PRESETS.small, seed: w.seed });

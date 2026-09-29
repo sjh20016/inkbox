@@ -18,12 +18,17 @@ const STAGE = fs.mkdtempSync(path.join(DIST, '.inkbox-package-'));
 
 const FILES = [
   '.gitignore',
+  // 行尾策略（M1.1D D6）：钉住 `vendor/three/**` 为 LF，否则 `core.autocrlf=true` 的机器
+  // 克隆后 vendored 运行时会被转成 CRLF，`test:vendor` 的逐字节断言会假红。必须随包出货。
+  '.gitattributes',
   'README.md',
   // 交接单（D7-G）：**极短**，新模型默认读 README → HANDOFF → THREE_REALMS → 本包源码，
   // 不再先吞 8 万字的 STATUS。必须随包出货。
   'HANDOFF.md',
   'STATUS.md',
   'BACKLOG.md',
+  // 路线图（M1.1D D7）：**极短**，让下一个接手的人 30 秒知道项目在哪一步。
+  'ROADMAP.md',
   // 三界规则表（D6-2 工程包 A）。**必须随包出货**：它是「代码必须遵守的三界规则」
   // 的唯一成文处，也是不同模型轮换开发时的长期记忆锚——干净包缺了它，
   // 下一个接手的人只能从代码里重新反推一遍规则。
@@ -43,6 +48,9 @@ const FILES = [
   '启动水墨沙盒.bat',
   '快速自测.bat',
   '.github/workflows/ci.yml',
+  // 长测（smoke + 800 年长跑）**不进** ci.yml，单独按天跑（M1.1D D3.5）。
+  // 必须随包出货：接手的人要知道「慢测去哪了」，否则会以为项目没有长测。
+  '.github/workflows/nightly.yml',
   'scripts/inkbox-server.mjs',
   'scripts/inkbox-package.mjs',
   'scripts/inkbox-import-check.mjs',
@@ -59,20 +67,34 @@ const FILES = [
   'scripts/inkbox-view.mjs',
   'scripts/inkbox-render3d.mjs',
   'scripts/inkbox-render3d-browser.mjs',
+  // ⚠️ 这个脚本用外部 Playwright（`INKBOX_PLAYWRIGHT`），本机默认装不到 ⇒ 它是**可选** QA。
+  //    真正的性能基线走下面的 `inkbox-render3d-perf.mjs`（零依赖 CDP）。
   // Render3D M1（3D 世界实体可见化）的自动测试。**必须随包出货**：
   // M0 的脚本在上面，M1 的漏了就是「发布了功能却不发布它的测试」——
   // 下一个接手的人跑 `npm run test:render3d:m1` 会直接找不到文件。
   'scripts/inkbox-render3d-m1.mjs',
+  // M1.1D 新增：dirty 分类回归 + 零依赖性能基线。
+  'scripts/inkbox-render3d-bridge.mjs',
+  'scripts/inkbox-render3d-perf.mjs',
+  // 零依赖 CDP 胶水层：性能基线复用本机 Edge/Chrome 靠它。**必须随包出货**，
+  // 否则 `npm run test:render3d:perf` 会以「找不到模块」开场。
+  'scripts/cdp.mjs',
+  // vendor 目录的生成器与体检（M1.1D D6）。
+  'scripts/inkbox-vendor.mjs',
+  'scripts/inkbox-vendor-check.mjs',
   'RENDER3D_M0.md',
   'Render3D M1 工程报告.md',
-  'node_modules/three/package.json',
-  'node_modules/three/LICENSE',
-  'node_modules/three/build/three.module.js',
-  'node_modules/three/build/three.core.js',
-  'node_modules/three/examples/jsm/controls/OrbitControls.js',
+  // M1.1D 的委托书与工程报告：接手的人要能看到「这一阶段到底做了什么、为什么」。
+  'Render3D M1.1D 工程任务清单.md',
+  'Render3D M1.1D 工程报告.md',
   'tests/README.md',
 ];
-const DIRECTORIES = ['src/inkbox'];
+// ⚠️ Three.js 运行时走**仓库内的 `vendor/three/`**（M1.1D D6），不再从 `node_modules/`
+//    里硬塞文件——那是**包的安装产物**，不是源码，而且会被 `.gitignore` 静默挡住。
+//    `vendor/` 由 `scripts/inkbox-vendor.mjs` 从 npm 依赖重新生成（5 个文件 · ~2 MB），
+//    所以它永远可审计、可复现；`package.json` 里的 `three` 依赖**保留**给 node 测试用。
+//    ⚠️ 用 DIRECTORIES 递归收录 ⇒ 以后往 vendor 里加文件**不必改这份清单**。
+const DIRECTORIES = ['src/inkbox', 'vendor/three'];
 
 function copyRelative(relative) {
   const from = path.join(ROOT, relative);

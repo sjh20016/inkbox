@@ -182,7 +182,7 @@ export class WorldMarkerLayer {
 
   update(dt, world, options = {}) {
     this.clock += Number.isFinite(dt) ? dt : 0;
-    const force = !!options.terrainChanged;
+    const force = !!options.heightChanged;
     if (!force && this.clock < this.interval) return false;
     this.clock = 0;
     const derived = deriveMarkers(world);
