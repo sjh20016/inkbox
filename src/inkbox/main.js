@@ -115,9 +115,9 @@ import {
 // 视界的**纯状态与几何**（D8-B 从本文件拔出去）：判据总表 / 区域命中 / 窗内鬼魂计数。
 // 零 import 的纯模块——「视界不许改世界」因此是**结构性**成立的，不是靠注释保证。
 import {
-  VIEW_MAX_AREA_FRAC, VIEW_CLICK_PX, isViewTool, viewPlaneForTool, planeLabel,
-  ghostsInRegion, regionContains,
+  VIEW_MAX_AREA_FRAC, VIEW_CLICK_PX, viewPlaneForTool, planeLabel, ghostsInRegion,
 } from './ui/realmView.js';
+import { getRealmViewState } from './ui/realmViewState.js';
 // 视界的**穿透检视**（D8-F）：点开窗里的东西看它是什么。**只读**——本模块只产出
 // 字符串行，不暴露任何改状态的接口（「D8 仍然是观察」是结构性的，见其头注释）。
 import { pickRealmSubject, realmInspectRows } from './ui/realmInspector.js';
@@ -1540,14 +1540,14 @@ class Sandbox {
    * @returns {boolean}
    */
   isRealmInspectClick() {
-    if (!this.selection) return false;
-    if (!isViewTool(this.toolId)) return false;
+    const view = this.getRealmViewState();
+    if (!view.open) return false;
     if (!Number.isFinite(this.pressX) || !Number.isFinite(this.pressY)) return false;
     const moved = Math.hypot(this.pointer.x - this.pressX, this.pointer.y - this.pressY);
     if (moved >= VIEW_CLICK_PX) return false;
     const t = this.hoverTile;
     if (!t) return false;
-    return regionContains(this.selection, t.x, t.y);
+    return view.region.contains(t.x, t.y);
   }
 
   /**
@@ -1571,7 +1571,19 @@ class Sandbox {
    * @param {number} y 世界格 y
    */
   inspectRealmAt(x, y) {
-    const plane = this.viewPlane();
+    return this.inspectPlaneAt(this.getRealmViewState().targetPlane, x, y);
+  }
+
+  /** Route a pick by its actual plane; cross-realm inspection never selects a mortal cell. */
+  inspectPlaneAt(planeId, x, y) {
+    if (planeId === 'mortal') return this.inspectAt(x, y);
+    if (planeId !== 'upper' && planeId !== 'nether') return;
+    const nether = planeId === 'nether';
+    const plane = {
+      plane: planeId,
+      world: (this.world && this.world[planeId]) || (nether ? this.nether : this.upper),
+      label: planeLabel(planeId),
+    };
     const picked = pickRealmSubject(plane.world, plane.plane, x, y);
     const card = realmInspectRows(picked, {
       day: this.world ? this.world.day : 0,
@@ -1828,7 +1840,11 @@ class Sandbox {
    * @returns {boolean}
    */
   riftViewOpen() {
-    return Boolean(this.selection) && isViewTool(this.toolId);
+    return this.getRealmViewState().open;
+  }
+
+  getRealmViewState() {
+    return getRealmViewState({ selection: this.selection, toolId: this.toolId });
   }
 
   /**
@@ -1847,7 +1863,7 @@ class Sandbox {
    *    而漏掉那处**不报错**（视界照常开，只是贴着另一界的地形）。
    */
   viewPlane() {
-    const plane = viewPlaneForTool(this.toolId) || 'upper';
+    const plane = this.getRealmViewState().targetPlane || 'upper';
     const nether = plane === 'nether';
     return {
       plane,
@@ -2117,9 +2133,10 @@ class Sandbox {
     // 「另一界的一扇窗」本来就该比周围亮一点。
     // 看哪一界由 `viewPlane()` 按当前工具（viewUpper / viewNether）决定；
     // 裁剪 / 贴图 / 边框全在 `render/realmViewLayer.js`（D8-B 拔出去的）。
-    if (this.selection) {
+    const view = this.getRealmViewState();
+    if (view.open) {
       const plane = this.viewPlane();
-      drawRealmView(ctx, this.camera, this.units, this.world, this.selection, plane, now, this.stage);
+      drawRealmView(ctx, this.camera, this.units, this.world, view.region, plane, now, this.stage);
       // ── 追迹墨环（D8-G）────────────────────────────────────
       // 「你记挂的那个人出现在窗里了」的那一点反馈。**必须画在窗之后**：
       // 主链的 `drawFocusPulses`（上面那一处）在窗**之前**，落点会被窗盖掉。

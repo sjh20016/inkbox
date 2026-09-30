@@ -1,0 +1,1857 @@
+{
+  "generatedAt": "2026-09-30T00:06:54.390Z",
+  "environment": {
+    "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+    "gpuRenderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "gpuVendor": "Google Inc. (Intel)",
+    "webglVersion": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+    "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+    "viewport": [
+      1500,
+      940
+    ],
+    "canvasCss": [
+      1086,
+      806
+    ],
+    "canvasPixels": [
+      1086,
+      806
+    ],
+    "dpr": 1,
+    "pixelRatioUsed": 1,
+    "threeRuntimeUrl": "http://127.0.0.1:4180/vendor/three/build/three.module.js",
+    "softwareRasterizer": false,
+    "realGpu": true
+  },
+  "world": {
+    "preset": "small",
+    "seed": 20260929,
+    "dimensions": [
+      200,
+      128
+    ],
+    "paused": true,
+    "planeCounts": {
+      "mortal": {
+        "terrain": true,
+        "entities": 79,
+        "submittedEntityInstances": 79,
+        "terrainVertices": 25600
+      },
+      "upper": {
+        "terrain": true,
+        "entities": 12,
+        "submittedEntityInstances": 0,
+        "terrainVertices": 25600
+      },
+      "nether": {
+        "terrain": true,
+        "entities": 48,
+        "submittedEntityInstances": 0,
+        "terrainVertices": 25600
+      }
+    },
+    "debugMarker": {
+      "x": 100,
+      "y": 64,
+      "stageHeights": {
+        "mortal": 29.358671188354492,
+        "upper": -9.112013816833496,
+        "nether": -1.0437290668487549
+      },
+      "mounted": 3
+    }
+  },
+  "paused": true,
+  "frameCount": 60,
+  "conditions": {
+    "closed": {
+      "selection": null,
+      "frames": 60,
+      "timing": {
+        "intervalMs": {
+          "mean": 16.666666666666668,
+          "p95": 16.799999999999272,
+          "max": 16.80000000000109
+        },
+        "frameMs": {
+          "mean": 16.666208333333326,
+          "p95": 16.66750000000001,
+          "max": 16.667500000000015
+        },
+        "fps": {
+          "mean": 60.00165023752587,
+          "p95": 60.00900135020257,
+          "max": 60.00900135020258
+        },
+        "drawCalls": {
+          "mean": 7,
+          "p95": 7,
+          "max": 7
+        },
+        "triangles": {
+          "mean": 119216,
+          "p95": 119216,
+          "max": 119216
+        },
+        "bridgeScanMs": {
+          "mean": 0.21833333333488553,
+          "p95": 0.3000000002793968,
+          "max": 0.39999999990686774
+        },
+        "terrainUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "waterUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "vegetationUpdateMs": {
+          "mean": 0.0016666666682188709,
+          "p95": 0,
+          "max": 0.10000000009313226
+        },
+        "entityUpdateMs": {
+          "mean": 0.011666666669771075,
+          "p95": 0.10000000009313226,
+          "max": 0.10000000009313226
+        },
+        "settlementUpdateMs": {
+          "mean": 0.005000000004656613,
+          "p95": 0.10000000009313226,
+          "max": 0.10000000009313226
+        },
+        "markerUpdateMs": {
+          "mean": 0.010000000009313226,
+          "p95": 0.10000000009313226,
+          "max": 0.10000000009313226
+        },
+        "layerUpdateMs": {
+          "mean": 0.2700000000341485,
+          "p95": 0.39999999990686774,
+          "max": 0.40000000037252903
+        },
+        "renderMs": {
+          "mean": 0.5199999999875824,
+          "p95": 0.7000000001862645,
+          "max": 0.8999999999068677
+        },
+        "updateMs": {
+          "mean": null,
+          "p95": null,
+          "max": null
+        }
+      },
+      "last": {
+        "intervalMs": 16.700000000000728,
+        "fps": 59.99700014999246,
+        "frameMs": 16.66750000000001,
+        "drawCalls": 7,
+        "triangles": 119216,
+        "renderMs": 0.6000000000931323,
+        "terrainVertices": 25600,
+        "treeInstances": 4218,
+        "entityInstances": 79,
+        "houseInstances": 0,
+        "markerInstances": 3,
+        "raycastMs": 0,
+        "lastRaycastMs": 0,
+        "scanMs": 0.2999999998137355,
+        "layerUpdateMs": 0.39999999990686774,
+        "bridgeScanMs": 0.2999999998137355,
+        "terrainUpdateMs": 0,
+        "waterUpdateMs": 0,
+        "vegetationUpdateMs": 0,
+        "entityUpdateMs": 0,
+        "settlementUpdateMs": 0,
+        "markerUpdateMs": 0.10000000009313226,
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal"
+        ],
+        "updatedPlanes": [
+          "mortal"
+        ],
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "activePlane": "mortal",
+        "maskOpen": false
+      },
+      "state": {
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal"
+        ],
+        "updatedPlanes": [
+          "mortal"
+        ],
+        "drawCalls": 7,
+        "triangles": 119216,
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "typedArrayBytes": {
+          "mortal": {
+            "geometryAttributeAndIndexBytes": 2163092,
+            "instanceMatrixBytes": 3140576,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 5636468
+          },
+          "upper": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          },
+          "nether": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          }
+        },
+        "typedArrayEstimateNote": "CPU-side typed-array byte estimate only; excludes driver allocations and is not VRAM",
+        "stages": {
+          "mortal": {
+            "terrainTriangles": 50546,
+            "entities": 79
+          },
+          "upper": {
+            "terrainTriangles": 50546,
+            "entities": 4
+          },
+          "nether": {
+            "terrainTriangles": 50546,
+            "entities": 12
+          }
+        },
+        "profile": {
+          "bridgeScanMs": 0.2999999998137355,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 0,
+          "settlementUpdateMs": 0,
+          "markerUpdateMs": 0.10000000009313226
+        }
+      }
+    },
+    "upper-4pct": {
+      "selection": {
+        "target": "upper",
+        "region": {
+          "x0": 80,
+          "y0": 51,
+          "x1": 120,
+          "y1": 77,
+          "width": 40,
+          "height": 26
+        },
+        "requestedFraction": 0.04,
+        "actualFraction": 0.040625
+      },
+      "frames": 60,
+      "timing": {
+        "intervalMs": {
+          "mean": 16.666666666666668,
+          "p95": 16.80000000000109,
+          "max": 16.80000000000109
+        },
+        "frameMs": {
+          "mean": 16.66644444444444,
+          "p95": 16.66750000000001,
+          "max": 16.667500000000015
+        },
+        "fps": {
+          "mean": 60.000800135010984,
+          "p95": 60.006000600060034,
+          "max": 60.009001350202546
+        },
+        "drawCalls": {
+          "mean": 7,
+          "p95": 7,
+          "max": 7
+        },
+        "triangles": {
+          "mean": 52038,
+          "p95": 52038,
+          "max": 52038
+        },
+        "bridgeScanMs": {
+          "mean": 0.3716666666325182,
+          "p95": 0.5,
+          "max": 0.5
+        },
+        "terrainUpdateMs": {
+          "mean": 0.0016666666604578495,
+          "p95": 0,
+          "max": 0.09999999962747097
+        },
+        "waterUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "vegetationUpdateMs": {
+          "mean": 0.0033333333364377418,
+          "p95": 0,
+          "max": 0.10000000009313226
+        },
+        "entityUpdateMs": {
+          "mean": 0.015000000006208818,
+          "p95": 0.10000000009313226,
+          "max": 0.20000000018626451
+        },
+        "settlementUpdateMs": {
+          "mean": 0.008333333341094354,
+          "p95": 0.10000000009313226,
+          "max": 0.10000000009313226
+        },
+        "markerUpdateMs": {
+          "mean": 0.004999999996895591,
+          "p95": 0.09999999962747097,
+          "max": 0.10000000009313226
+        },
+        "layerUpdateMs": {
+          "mean": 0.4383333333224679,
+          "p95": 0.6000000000931323,
+          "max": 0.6000000000931323
+        },
+        "renderMs": {
+          "mean": 0.3816666667116806,
+          "p95": 0.6000000000931323,
+          "max": 0.7000000001862645
+        },
+        "updateMs": {
+          "mean": null,
+          "p95": null,
+          "max": null
+        }
+      },
+      "last": {
+        "intervalMs": 16.600000000000364,
+        "fps": 59.99999999999999,
+        "frameMs": 16.666666666666668,
+        "drawCalls": 7,
+        "triangles": 52038,
+        "renderMs": 0.3000000002793968,
+        "terrainVertices": 51200,
+        "treeInstances": 0,
+        "entityInstances": 79,
+        "houseInstances": 0,
+        "markerInstances": 0,
+        "raycastMs": 0,
+        "lastRaycastMs": 0,
+        "scanMs": 0.5,
+        "layerUpdateMs": 0.6000000000931323,
+        "bridgeScanMs": 0.5,
+        "terrainUpdateMs": 0,
+        "waterUpdateMs": 0,
+        "vegetationUpdateMs": 0,
+        "entityUpdateMs": 0,
+        "settlementUpdateMs": 0,
+        "markerUpdateMs": 0.10000000009313226,
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "upper"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "upper"
+        ],
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "activePlane": "mortal",
+        "maskOpen": true
+      },
+      "state": {
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "upper"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "upper"
+        ],
+        "drawCalls": 7,
+        "triangles": 52038,
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "typedArrayBytes": {
+          "mortal": {
+            "geometryAttributeAndIndexBytes": 2163092,
+            "instanceMatrixBytes": 3140576,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 5636468
+          },
+          "upper": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          },
+          "nether": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          }
+        },
+        "typedArrayEstimateNote": "CPU-side typed-array byte estimate only; excludes driver allocations and is not VRAM",
+        "stages": {
+          "mortal": {
+            "terrainTriangles": 48466,
+            "entities": 79
+          },
+          "upper": {
+            "terrainTriangles": 2080,
+            "entities": 0
+          },
+          "nether": {
+            "terrainTriangles": 50546,
+            "entities": 12
+          }
+        },
+        "profile": {
+          "bridgeScanMs": 0.5,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 0,
+          "settlementUpdateMs": 0,
+          "markerUpdateMs": 0.10000000009313226
+        }
+      }
+    },
+    "upper-20pct": {
+      "selection": {
+        "target": "upper",
+        "region": {
+          "x0": 55,
+          "y0": 35,
+          "x1": 144,
+          "y1": 92,
+          "width": 89,
+          "height": 57
+        },
+        "requestedFraction": 0.2,
+        "actualFraction": 0.1981640625
+      },
+      "frames": 60,
+      "timing": {
+        "intervalMs": {
+          "mean": 16.666666666666668,
+          "p95": 16.700000000000728,
+          "max": 16.80000000000109
+        },
+        "frameMs": {
+          "mean": 16.666708333333332,
+          "p95": 16.668333333333337,
+          "max": 16.66833333333334
+        },
+        "fps": {
+          "mean": 59.99985008749737,
+          "p95": 60.003000150007495,
+          "max": 60.003000150007516
+        },
+        "drawCalls": {
+          "mean": 8,
+          "p95": 8,
+          "max": 8
+        },
+        "triangles": {
+          "mean": 52022,
+          "p95": 52022,
+          "max": 52022
+        },
+        "bridgeScanMs": {
+          "mean": 0.3700000000108654,
+          "p95": 0.5000000004656613,
+          "max": 0.6000000000931323
+        },
+        "terrainUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "waterUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "vegetationUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "entityUpdateMs": {
+          "mean": 0.01833333334264656,
+          "p95": 0.10000000009313226,
+          "max": 0.20000000018626451
+        },
+        "settlementUpdateMs": {
+          "mean": 0.0016666666682188709,
+          "p95": 0,
+          "max": 0.10000000009313226
+        },
+        "markerUpdateMs": {
+          "mean": 0.005000000004656613,
+          "p95": 0.10000000009313226,
+          "max": 0.10000000009313226
+        },
+        "layerUpdateMs": {
+          "mean": 0.43666666669305415,
+          "p95": 0.6000000000931323,
+          "max": 0.7000000001862645
+        },
+        "renderMs": {
+          "mean": 0.3266666666371748,
+          "p95": 0.5,
+          "max": 0.8999999999068677
+        },
+        "updateMs": {
+          "mean": null,
+          "p95": null,
+          "max": null
+        }
+      },
+      "last": {
+        "intervalMs": 16.700000000000728,
+        "fps": 59.999999999999986,
+        "frameMs": 16.66666666666667,
+        "drawCalls": 8,
+        "triangles": 52022,
+        "renderMs": 0.2999999998137355,
+        "terrainVertices": 51200,
+        "treeInstances": 0,
+        "entityInstances": 79,
+        "houseInstances": 0,
+        "markerInstances": 0,
+        "raycastMs": 0,
+        "lastRaycastMs": 0,
+        "scanMs": 0.39999999990686774,
+        "layerUpdateMs": 0.5,
+        "bridgeScanMs": 0.39999999990686774,
+        "terrainUpdateMs": 0,
+        "waterUpdateMs": 0,
+        "vegetationUpdateMs": 0,
+        "entityUpdateMs": 0,
+        "settlementUpdateMs": 0,
+        "markerUpdateMs": 0,
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "upper"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "upper"
+        ],
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "activePlane": "mortal",
+        "maskOpen": true
+      },
+      "state": {
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "upper"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "upper"
+        ],
+        "drawCalls": 8,
+        "triangles": 52022,
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "typedArrayBytes": {
+          "mortal": {
+            "geometryAttributeAndIndexBytes": 2163092,
+            "instanceMatrixBytes": 3140576,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 5636468
+          },
+          "upper": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          },
+          "nether": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          }
+        },
+        "typedArrayEstimateNote": "CPU-side typed-array byte estimate only; excludes driver allocations and is not VRAM",
+        "stages": {
+          "mortal": {
+            "terrainTriangles": 40400,
+            "entities": 75
+          },
+          "upper": {
+            "terrainTriangles": 10146,
+            "entities": 4
+          },
+          "nether": {
+            "terrainTriangles": 50546,
+            "entities": 12
+          }
+        },
+        "profile": {
+          "bridgeScanMs": 0.39999999990686774,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 0,
+          "settlementUpdateMs": 0,
+          "markerUpdateMs": 0
+        }
+      }
+    },
+    "upper-40pct": {
+      "selection": {
+        "target": "upper",
+        "region": {
+          "x0": 37,
+          "y0": 23,
+          "x1": 163,
+          "y1": 104,
+          "width": 126,
+          "height": 81
+        },
+        "requestedFraction": 0.4,
+        "actualFraction": 0.398671875
+      },
+      "frames": 60,
+      "timing": {
+        "intervalMs": {
+          "mean": 16.666666666666636,
+          "p95": 16.799999999999272,
+          "max": 16.80000000000109
+        },
+        "frameMs": {
+          "mean": 16.66652777777778,
+          "p95": 16.66750000000002,
+          "max": 16.667500000000025
+        },
+        "fps": {
+          "mean": 60.00050008000199,
+          "p95": 60.003000150007544,
+          "max": 60.006000600059956
+        },
+        "drawCalls": {
+          "mean": 8,
+          "p95": 8,
+          "max": 8
+        },
+        "triangles": {
+          "mean": 51554,
+          "p95": 51554,
+          "max": 51554
+        },
+        "bridgeScanMs": {
+          "mean": 0.3966666666713233,
+          "p95": 0.6000000000931323,
+          "max": 0.7999999998137355
+        },
+        "terrainUpdateMs": {
+          "mean": 0.0033333333286767203,
+          "p95": 0,
+          "max": 0.10000000009313226
+        },
+        "waterUpdateMs": {
+          "mean": 0.0016666666682188709,
+          "p95": 0,
+          "max": 0.10000000009313226
+        },
+        "vegetationUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "entityUpdateMs": {
+          "mean": 0.004999999996895591,
+          "p95": 0.09999999962747097,
+          "max": 0.10000000009313226
+        },
+        "settlementUpdateMs": {
+          "mean": 0.0033333333286767203,
+          "p95": 0,
+          "max": 0.10000000009313226
+        },
+        "markerUpdateMs": {
+          "mean": 0.009999999993791182,
+          "p95": 0.10000000009313226,
+          "max": 0.10000000009313226
+        },
+        "layerUpdateMs": {
+          "mean": 0.44166666665890564,
+          "p95": 0.7000000001862645,
+          "max": 0.7999999998137355
+        },
+        "renderMs": {
+          "mean": 0.2883333333224679,
+          "p95": 0.40000000037252903,
+          "max": 0.5
+        },
+        "updateMs": {
+          "mean": null,
+          "p95": null,
+          "max": null
+        }
+      },
+      "last": {
+        "intervalMs": 16.599999999998545,
+        "fps": 59.99999999999999,
+        "frameMs": 16.666666666666668,
+        "drawCalls": 8,
+        "triangles": 51554,
+        "renderMs": 0.20000000018626451,
+        "terrainVertices": 51200,
+        "treeInstances": 0,
+        "entityInstances": 42,
+        "houseInstances": 0,
+        "markerInstances": 0,
+        "raycastMs": 0,
+        "lastRaycastMs": 0,
+        "scanMs": 0.10000000009313226,
+        "layerUpdateMs": 0.2999999998137355,
+        "bridgeScanMs": 0.10000000009313226,
+        "terrainUpdateMs": 0,
+        "waterUpdateMs": 0,
+        "vegetationUpdateMs": 0,
+        "entityUpdateMs": 0,
+        "settlementUpdateMs": 0,
+        "markerUpdateMs": 0.09999999962747097,
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "upper"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "upper"
+        ],
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "activePlane": "mortal",
+        "maskOpen": true
+      },
+      "state": {
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "upper"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "upper"
+        ],
+        "drawCalls": 8,
+        "triangles": 51554,
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "typedArrayBytes": {
+          "mortal": {
+            "geometryAttributeAndIndexBytes": 2163092,
+            "instanceMatrixBytes": 3140576,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 5636468
+          },
+          "upper": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          },
+          "nether": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          }
+        },
+        "typedArrayEstimateNote": "CPU-side typed-array byte estimate only; excludes driver allocations and is not VRAM",
+        "stages": {
+          "mortal": {
+            "terrainTriangles": 30134,
+            "entities": 36
+          },
+          "upper": {
+            "terrainTriangles": 20412,
+            "entities": 6
+          },
+          "nether": {
+            "terrainTriangles": 50546,
+            "entities": 12
+          }
+        },
+        "profile": {
+          "bridgeScanMs": 0.10000000009313226,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 0,
+          "settlementUpdateMs": 0,
+          "markerUpdateMs": 0.09999999962747097
+        }
+      }
+    },
+    "nether-4pct": {
+      "selection": {
+        "target": "nether",
+        "region": {
+          "x0": 80,
+          "y0": 51,
+          "x1": 120,
+          "y1": 77,
+          "width": 40,
+          "height": 26
+        },
+        "requestedFraction": 0.04,
+        "actualFraction": 0.040625
+      },
+      "frames": 60,
+      "timing": {
+        "intervalMs": {
+          "mean": 16.666666666666668,
+          "p95": 16.799999999999272,
+          "max": 16.799999999999272
+        },
+        "frameMs": {
+          "mean": 16.666638888888894,
+          "p95": 16.66750000000003,
+          "max": 16.66750000000003
+        },
+        "fps": {
+          "mean": 60.000100045000224,
+          "p95": 60.00300015000748,
+          "max": 60.003000150007495
+        },
+        "drawCalls": {
+          "mean": 8,
+          "p95": 8,
+          "max": 8
+        },
+        "triangles": {
+          "mean": 52098,
+          "p95": 52098,
+          "max": 52098
+        },
+        "bridgeScanMs": {
+          "mean": 0.424999999992239,
+          "p95": 0.7000000001862645,
+          "max": 0.7000000001862645
+        },
+        "terrainUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "waterUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "vegetationUpdateMs": {
+          "mean": 0.0016666666604578495,
+          "p95": 0,
+          "max": 0.09999999962747097
+        },
+        "entityUpdateMs": {
+          "mean": 0.023333333355064195,
+          "p95": 0.20000000018626451,
+          "max": 0.3000000002793968
+        },
+        "settlementUpdateMs": {
+          "mean": 0.008333333325572312,
+          "p95": 0.10000000009313226,
+          "max": 0.10000000009313226
+        },
+        "markerUpdateMs": {
+          "mean": 0.005000000004656613,
+          "p95": 0.10000000009313226,
+          "max": 0.10000000009313226
+        },
+        "layerUpdateMs": {
+          "mean": 0.4916666666821887,
+          "p95": 0.7999999998137355,
+          "max": 0.900000000372529
+        },
+        "renderMs": {
+          "mean": 0.3566666666418314,
+          "p95": 0.5,
+          "max": 0.6000000000931323
+        },
+        "updateMs": {
+          "mean": null,
+          "p95": null,
+          "max": null
+        }
+      },
+      "last": {
+        "intervalMs": 16.799999999999272,
+        "fps": 59.997000149992395,
+        "frameMs": 16.66750000000003,
+        "drawCalls": 8,
+        "triangles": 52098,
+        "renderMs": 0.599999999627471,
+        "terrainVertices": 51200,
+        "treeInstances": 0,
+        "entityInstances": 84,
+        "houseInstances": 0,
+        "markerInstances": 0,
+        "raycastMs": 0,
+        "lastRaycastMs": 0,
+        "scanMs": 0.2999999998137355,
+        "layerUpdateMs": 0.6000000000931323,
+        "bridgeScanMs": 0.2999999998137355,
+        "terrainUpdateMs": 0,
+        "waterUpdateMs": 0,
+        "vegetationUpdateMs": 0,
+        "entityUpdateMs": 0.20000000018626451,
+        "settlementUpdateMs": 0,
+        "markerUpdateMs": 0.10000000009313226,
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "nether"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "nether"
+        ],
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "activePlane": "mortal",
+        "maskOpen": true
+      },
+      "state": {
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "nether"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "nether"
+        ],
+        "drawCalls": 8,
+        "triangles": 52098,
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "typedArrayBytes": {
+          "mortal": {
+            "geometryAttributeAndIndexBytes": 2163092,
+            "instanceMatrixBytes": 3140576,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 5636468
+          },
+          "upper": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          },
+          "nether": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          }
+        },
+        "typedArrayEstimateNote": "CPU-side typed-array byte estimate only; excludes driver allocations and is not VRAM",
+        "stages": {
+          "mortal": {
+            "terrainTriangles": 48466,
+            "entities": 79
+          },
+          "upper": {
+            "terrainTriangles": 50546,
+            "entities": 6
+          },
+          "nether": {
+            "terrainTriangles": 2080,
+            "entities": 5
+          }
+        },
+        "profile": {
+          "bridgeScanMs": 0.2999999998137355,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 0.20000000018626451,
+          "settlementUpdateMs": 0,
+          "markerUpdateMs": 0.10000000009313226
+        }
+      }
+    },
+    "nether-20pct": {
+      "selection": {
+        "target": "nether",
+        "region": {
+          "x0": 55,
+          "y0": 35,
+          "x1": 144,
+          "y1": 92,
+          "width": 89,
+          "height": 57
+        },
+        "requestedFraction": 0.2,
+        "actualFraction": 0.1981640625
+      },
+      "frames": 60,
+      "timing": {
+        "intervalMs": {
+          "mean": 16.666666666666668,
+          "p95": 16.700000000000728,
+          "max": 16.799999999999272
+        },
+        "frameMs": {
+          "mean": 16.666638888888915,
+          "p95": 16.66750000000002,
+          "max": 16.66750000000002
+        },
+        "fps": {
+          "mean": 60.000100060000186,
+          "p95": 60.003000150007516,
+          "max": 60.00300015000756
+        },
+        "drawCalls": {
+          "mean": 8,
+          "p95": 8,
+          "max": 8
+        },
+        "triangles": {
+          "mean": 52118,
+          "p95": 52118,
+          "max": 52118
+        },
+        "bridgeScanMs": {
+          "mean": 0.41000000000931325,
+          "p95": 0.6000000000931323,
+          "max": 0.8000000002793968
+        },
+        "terrainUpdateMs": {
+          "mean": 0.0016666666604578495,
+          "p95": 0,
+          "max": 0.09999999962747097
+        },
+        "waterUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "vegetationUpdateMs": {
+          "mean": 0.0016666666682188709,
+          "p95": 0,
+          "max": 0.10000000009313226
+        },
+        "entityUpdateMs": {
+          "mean": 0.008333333333333333,
+          "p95": 0.10000000009313226,
+          "max": 0.10000000009313226
+        },
+        "settlementUpdateMs": {
+          "mean": 0.004999999996895591,
+          "p95": 0.09999999962747097,
+          "max": 0.10000000009313226
+        },
+        "markerUpdateMs": {
+          "mean": 0.004999999996895591,
+          "p95": 0.09999999962747097,
+          "max": 0.10000000009313226
+        },
+        "layerUpdateMs": {
+          "mean": 0.4616666666775321,
+          "p95": 0.6999999997206032,
+          "max": 0.8000000002793968
+        },
+        "renderMs": {
+          "mean": 0.3483333333084981,
+          "p95": 0.599999999627471,
+          "max": 1.5
+        },
+        "updateMs": {
+          "mean": null,
+          "p95": null,
+          "max": null
+        }
+      },
+      "last": {
+        "intervalMs": 16.700000000000728,
+        "fps": 59.99700014999252,
+        "frameMs": 16.667499999999993,
+        "drawCalls": 8,
+        "triangles": 52118,
+        "renderMs": 0.2999999998137355,
+        "terrainVertices": 51200,
+        "treeInstances": 0,
+        "entityInstances": 87,
+        "houseInstances": 0,
+        "markerInstances": 0,
+        "raycastMs": 0,
+        "lastRaycastMs": 0,
+        "scanMs": 0.5,
+        "layerUpdateMs": 0.6000000000931323,
+        "bridgeScanMs": 0.5,
+        "terrainUpdateMs": 0,
+        "waterUpdateMs": 0,
+        "vegetationUpdateMs": 0,
+        "entityUpdateMs": 0,
+        "settlementUpdateMs": 0.10000000009313226,
+        "markerUpdateMs": 0,
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "nether"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "nether"
+        ],
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "activePlane": "mortal",
+        "maskOpen": true
+      },
+      "state": {
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "nether"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "nether"
+        ],
+        "drawCalls": 8,
+        "triangles": 52118,
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "typedArrayBytes": {
+          "mortal": {
+            "geometryAttributeAndIndexBytes": 2163092,
+            "instanceMatrixBytes": 3140576,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 5636468
+          },
+          "upper": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          },
+          "nether": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          }
+        },
+        "typedArrayEstimateNote": "CPU-side typed-array byte estimate only; excludes driver allocations and is not VRAM",
+        "stages": {
+          "mortal": {
+            "terrainTriangles": 40400,
+            "entities": 75
+          },
+          "upper": {
+            "terrainTriangles": 50546,
+            "entities": 6
+          },
+          "nether": {
+            "terrainTriangles": 10146,
+            "entities": 12
+          }
+        },
+        "profile": {
+          "bridgeScanMs": 0.5,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 0,
+          "settlementUpdateMs": 0.10000000009313226,
+          "markerUpdateMs": 0
+        }
+      }
+    },
+    "nether-40pct": {
+      "selection": {
+        "target": "nether",
+        "region": {
+          "x0": 37,
+          "y0": 23,
+          "x1": 163,
+          "y1": 104,
+          "width": 126,
+          "height": 81
+        },
+        "requestedFraction": 0.4,
+        "actualFraction": 0.398671875
+      },
+      "frames": 60,
+      "timing": {
+        "intervalMs": {
+          "mean": 16.666666666666668,
+          "p95": 16.80000000000291,
+          "max": 16.80000000000291
+        },
+        "frameMs": {
+          "mean": 16.66704166666667,
+          "p95": 16.66833333333334,
+          "max": 16.668333333333376
+        },
+        "fps": {
+          "mean": 59.99865012249208,
+          "p95": 60.003000150007466,
+          "max": 60.00300015000757
+        },
+        "drawCalls": {
+          "mean": 8,
+          "p95": 8,
+          "max": 8
+        },
+        "triangles": {
+          "mean": 51758,
+          "p95": 51758,
+          "max": 51758
+        },
+        "bridgeScanMs": {
+          "mean": 0.5766666666604578,
+          "p95": 1.1000000000931323,
+          "max": 1.3000000002793968
+        },
+        "terrainUpdateMs": {
+          "mean": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "waterUpdateMs": {
+          "mean": 0.0016666666682188709,
+          "p95": 0,
+          "max": 0.10000000009313226
+        },
+        "vegetationUpdateMs": {
+          "mean": 0.0016666666604578495,
+          "p95": 0,
+          "max": 0.09999999962747097
+        },
+        "entityUpdateMs": {
+          "mean": 0.02833333333643774,
+          "p95": 0.19999999972060323,
+          "max": 0.20000000018626451
+        },
+        "settlementUpdateMs": {
+          "mean": 0.0016666666604578495,
+          "p95": 0,
+          "max": 0.09999999962747097
+        },
+        "markerUpdateMs": {
+          "mean": 0.011666666669771075,
+          "p95": 0.10000000009313226,
+          "max": 0.10000000009313226
+        },
+        "layerUpdateMs": {
+          "mean": 0.6816666666418314,
+          "p95": 1.2000000001862645,
+          "max": 1.6000000000931323
+        },
+        "renderMs": {
+          "mean": 0.526666666683741,
+          "p95": 0.8000000002793968,
+          "max": 0.900000000372529
+        },
+        "updateMs": {
+          "mean": null,
+          "p95": null,
+          "max": null
+        }
+      },
+      "last": {
+        "intervalMs": 16.5,
+        "fps": 59.99999999999997,
+        "frameMs": 16.666666666666675,
+        "drawCalls": 8,
+        "triangles": 51758,
+        "renderMs": 0.5,
+        "terrainVertices": 51200,
+        "treeInstances": 0,
+        "entityInstances": 59,
+        "houseInstances": 0,
+        "markerInstances": 0,
+        "raycastMs": 0,
+        "lastRaycastMs": 0,
+        "scanMs": 0.5,
+        "layerUpdateMs": 0.5,
+        "bridgeScanMs": 0.5,
+        "terrainUpdateMs": 0,
+        "waterUpdateMs": 0,
+        "vegetationUpdateMs": 0,
+        "entityUpdateMs": 0,
+        "settlementUpdateMs": 0,
+        "markerUpdateMs": 0,
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "nether"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "nether"
+        ],
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "activePlane": "mortal",
+        "maskOpen": true
+      },
+      "state": {
+        "residentPlanes": [
+          "mortal",
+          "upper",
+          "nether"
+        ],
+        "visiblePlanes": [
+          "mortal",
+          "nether"
+        ],
+        "updatedPlanes": [
+          "mortal",
+          "nether"
+        ],
+        "drawCalls": 8,
+        "triangles": 51758,
+        "memory": {
+          "geometries": 14,
+          "textures": 1
+        },
+        "typedArrayBytes": {
+          "mortal": {
+            "geometryAttributeAndIndexBytes": 2163092,
+            "instanceMatrixBytes": 3140576,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 5636468
+          },
+          "upper": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          },
+          "nether": {
+            "geometryAttributeAndIndexBytes": 1234264,
+            "instanceMatrixBytes": 1083040,
+            "bridgeSnapshotBytes": 332800,
+            "totalTypedArrayBytes": 2650104
+          }
+        },
+        "typedArrayEstimateNote": "CPU-side typed-array byte estimate only; excludes driver allocations and is not VRAM",
+        "stages": {
+          "mortal": {
+            "terrainTriangles": 30134,
+            "entities": 36
+          },
+          "upper": {
+            "terrainTriangles": 50546,
+            "entities": 6
+          },
+          "nether": {
+            "terrainTriangles": 20412,
+            "entities": 23
+          }
+        },
+        "profile": {
+          "bridgeScanMs": 0.5,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 0,
+          "settlementUpdateMs": 0,
+          "markerUpdateMs": 0
+        }
+      }
+    }
+  },
+  "openFrames": {
+    "upper": {
+      "first": {
+        "target": "upper",
+        "pass": "first-open",
+        "firstCompletedFrameMs": 26.700000000186265,
+        "wallMs": 6128.399999999907,
+        "metric": {
+          "fps": 38.45858010922236,
+          "frameMs": 26.002000000000006,
+          "drawCalls": 8,
+          "triangles": 52022,
+          "renderMs": 0.5,
+          "terrainVertices": 51200,
+          "treeInstances": 0,
+          "entityInstances": 79,
+          "houseInstances": 0,
+          "markerInstances": 0,
+          "raycastMs": 0,
+          "lastRaycastMs": 0,
+          "scanMs": 1.1000000005587935,
+          "layerUpdateMs": 1.2999999998137355,
+          "bridgeScanMs": 1.1000000005587935,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 0.09999999962747097,
+          "settlementUpdateMs": 0,
+          "markerUpdateMs": 0,
+          "residentPlanes": [
+            "mortal",
+            "upper",
+            "nether"
+          ],
+          "visiblePlanes": [
+            "mortal",
+            "upper"
+          ],
+          "updatedPlanes": [
+            "mortal",
+            "upper"
+          ],
+          "memory": {
+            "geometries": 10,
+            "textures": 1
+          },
+          "activePlane": "mortal",
+          "maskOpen": true
+        },
+        "state": {
+          "open": true,
+          "targetPlane": "upper",
+          "visiblePlanes": [
+            "mortal",
+            "upper"
+          ],
+          "updatedPlanes": [
+            "mortal",
+            "upper"
+          ],
+          "memory": {
+            "geometries": 10,
+            "textures": 1
+          },
+          "typedArrayBytes": {
+            "mortal": {
+              "geometryAttributeAndIndexBytes": 2163092,
+              "instanceMatrixBytes": 3140576,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 5636468
+            },
+            "upper": {
+              "geometryAttributeAndIndexBytes": 1234264,
+              "instanceMatrixBytes": 1083040,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 2650104
+            },
+            "nether": {
+              "geometryAttributeAndIndexBytes": 1234264,
+              "instanceMatrixBytes": 1043968,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 2611032
+            }
+          }
+        }
+      },
+      "repeat": {
+        "target": "upper",
+        "pass": "repeat-open",
+        "firstCompletedFrameMs": 17.200000000186265,
+        "wallMs": 6298.899999999907,
+        "metric": {
+          "fps": 40.908161178155034,
+          "frameMs": 24.445000000000004,
+          "drawCalls": 8,
+          "triangles": 52022,
+          "renderMs": 3.1000000000931323,
+          "terrainVertices": 51200,
+          "treeInstances": 0,
+          "entityInstances": 79,
+          "houseInstances": 0,
+          "markerInstances": 0,
+          "raycastMs": 0,
+          "lastRaycastMs": 0,
+          "scanMs": 0.599999999627471,
+          "layerUpdateMs": 1.599999999627471,
+          "bridgeScanMs": 0.599999999627471,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 1,
+          "settlementUpdateMs": 0,
+          "markerUpdateMs": 0,
+          "residentPlanes": [
+            "mortal",
+            "upper",
+            "nether"
+          ],
+          "visiblePlanes": [
+            "mortal",
+            "upper"
+          ],
+          "updatedPlanes": [
+            "mortal",
+            "upper"
+          ],
+          "memory": {
+            "geometries": 10,
+            "textures": 1
+          },
+          "activePlane": "mortal",
+          "maskOpen": true
+        },
+        "state": {
+          "open": true,
+          "targetPlane": "upper",
+          "visiblePlanes": [
+            "mortal",
+            "upper"
+          ],
+          "updatedPlanes": [
+            "mortal",
+            "upper"
+          ],
+          "memory": {
+            "geometries": 10,
+            "textures": 1
+          },
+          "typedArrayBytes": {
+            "mortal": {
+              "geometryAttributeAndIndexBytes": 2163092,
+              "instanceMatrixBytes": 3140576,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 5636468
+            },
+            "upper": {
+              "geometryAttributeAndIndexBytes": 1234264,
+              "instanceMatrixBytes": 1083040,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 2650104
+            },
+            "nether": {
+              "geometryAttributeAndIndexBytes": 1234264,
+              "instanceMatrixBytes": 1043968,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 2611032
+            }
+          }
+        }
+      }
+    },
+    "nether": {
+      "first": {
+        "target": "nether",
+        "pass": "first-open",
+        "firstCompletedFrameMs": 33.3000000002794,
+        "wallMs": 6484.600000000093,
+        "metric": {
+          "fps": 42.855393657401734,
+          "frameMs": 23.334285714285716,
+          "drawCalls": 8,
+          "triangles": 52118,
+          "renderMs": 21.100000000093132,
+          "terrainVertices": 51200,
+          "treeInstances": 0,
+          "entityInstances": 87,
+          "houseInstances": 0,
+          "markerInstances": 0,
+          "raycastMs": 0,
+          "lastRaycastMs": 0,
+          "scanMs": 2.5,
+          "layerUpdateMs": 3.6000000000931323,
+          "bridgeScanMs": 2.5,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 1,
+          "settlementUpdateMs": 0,
+          "markerUpdateMs": 0,
+          "residentPlanes": [
+            "mortal",
+            "upper",
+            "nether"
+          ],
+          "visiblePlanes": [
+            "mortal",
+            "nether"
+          ],
+          "updatedPlanes": [
+            "mortal",
+            "nether"
+          ],
+          "memory": {
+            "geometries": 12,
+            "textures": 1
+          },
+          "activePlane": "mortal",
+          "maskOpen": true
+        },
+        "state": {
+          "open": true,
+          "targetPlane": "nether",
+          "visiblePlanes": [
+            "mortal",
+            "nether"
+          ],
+          "updatedPlanes": [
+            "mortal",
+            "nether"
+          ],
+          "memory": {
+            "geometries": 12,
+            "textures": 1
+          },
+          "typedArrayBytes": {
+            "mortal": {
+              "geometryAttributeAndIndexBytes": 2163092,
+              "instanceMatrixBytes": 3140576,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 5636468
+            },
+            "upper": {
+              "geometryAttributeAndIndexBytes": 1234264,
+              "instanceMatrixBytes": 1083040,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 2650104
+            },
+            "nether": {
+              "geometryAttributeAndIndexBytes": 1234264,
+              "instanceMatrixBytes": 1083040,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 2650104
+            }
+          }
+        }
+      },
+      "repeat": {
+        "target": "nether",
+        "pass": "repeat-open",
+        "firstCompletedFrameMs": 23.5,
+        "wallMs": 6882.799999999814,
+        "metric": {
+          "fps": 39.02058335772117,
+          "frameMs": 25.627500000000015,
+          "drawCalls": 8,
+          "triangles": 52118,
+          "renderMs": 2.3000000002793968,
+          "terrainVertices": 51200,
+          "treeInstances": 0,
+          "entityInstances": 87,
+          "houseInstances": 0,
+          "markerInstances": 0,
+          "raycastMs": 0,
+          "lastRaycastMs": 0,
+          "scanMs": 0.39999999944120646,
+          "layerUpdateMs": 3,
+          "bridgeScanMs": 0.39999999944120646,
+          "terrainUpdateMs": 0,
+          "waterUpdateMs": 0,
+          "vegetationUpdateMs": 0,
+          "entityUpdateMs": 2.6000000005587935,
+          "settlementUpdateMs": 0,
+          "markerUpdateMs": 0,
+          "residentPlanes": [
+            "mortal",
+            "upper",
+            "nether"
+          ],
+          "visiblePlanes": [
+            "mortal",
+            "nether"
+          ],
+          "updatedPlanes": [
+            "mortal",
+            "nether"
+          ],
+          "memory": {
+            "geometries": 12,
+            "textures": 1
+          },
+          "activePlane": "mortal",
+          "maskOpen": true
+        },
+        "state": {
+          "open": true,
+          "targetPlane": "nether",
+          "visiblePlanes": [
+            "mortal",
+            "nether"
+          ],
+          "updatedPlanes": [
+            "mortal",
+            "nether"
+          ],
+          "memory": {
+            "geometries": 12,
+            "textures": 1
+          },
+          "typedArrayBytes": {
+            "mortal": {
+              "geometryAttributeAndIndexBytes": 2163092,
+              "instanceMatrixBytes": 3140576,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 5636468
+            },
+            "upper": {
+              "geometryAttributeAndIndexBytes": 1234264,
+              "instanceMatrixBytes": 1083040,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 2650104
+            },
+            "nether": {
+              "geometryAttributeAndIndexBytes": 1234264,
+              "instanceMatrixBytes": 1083040,
+              "bridgeSnapshotBytes": 332800,
+              "totalTypedArrayBytes": 2650104
+            }
+          }
+        }
+      }
+    }
+  },
+  "gpuRepeatRender": {
+    "method": "gpu.render repeated N times then gl.finish()",
+    "runs": {
+      "x1": {
+        "samplesMs": [
+          0.8000000002793968,
+          0.09999999962747097,
+          0.10000000009313226,
+          0.10000000009313226,
+          0,
+          0
+        ],
+        "meanMs": 0.18333333334885538,
+        "p95Ms": 0.8000000002793968
+      },
+      "x2": {
+        "samplesMs": [
+          0.10000000009313226,
+          0.19999999972060323,
+          0.10000000009313226,
+          0.10000000009313226,
+          0.19999999972060323,
+          0.10000000009313226
+        ],
+        "meanMs": 0.13333333330228925,
+        "p95Ms": 0.19999999972060323
+      },
+      "x3": {
+        "samplesMs": [
+          0.20000000018626451,
+          0.19999999972060323,
+          0.10000000009313226,
+          0.20000000018626451,
+          0.2999999998137355,
+          0.3000000002793968
+        ],
+        "meanMs": 0.2166666667132328,
+        "p95Ms": 0.3000000002793968
+      },
+      "x4": {
+        "samplesMs": [
+          0.2999999998137355,
+          0.2999999998137355,
+          0.3000000002793968,
+          0.19999999972060323,
+          0.3000000002793968,
+          0.19999999972060323
+        ],
+        "meanMs": 0.2666666666045785,
+        "p95Ms": 0.3000000002793968
+      }
+    }
+  },
+  "sceneNote": "Small seeded world, 10 simulated days, plus 48 nether probe inhabitants; debug rings included."
+}

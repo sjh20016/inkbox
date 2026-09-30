@@ -23,7 +23,7 @@
 // ⚠️ 这一组**刻意不构造 Renderer3D**：`new THREE.WebGLRenderer({canvas})` 要 DOM，
 //    node 里起不来。所以照本仓既有做法走**两条腿**：
 //      · **运行时腿**（G1–G4）：桥 / 地形 / 水 / 各 Layer 都是纯模块，直接 import 断言；
-//      · **源码结构腿**（G5）：`Renderer3D.update()` 的**分派**住在 DOM 绑定文件里，
+//      · **源码结构腿**（G5）：`PlaneStage.update()` 的**分派**住在 Stage 中，
 //        只能去注释后按结构断言「它确实只把 height 脏传给贴地物」。
 //
 // 运行：`node scripts/inkbox-render3d-bridge.mjs`（退出码 0 = 全绿）
@@ -490,42 +490,45 @@ check('Case 4 端到端：只改 height ⇒ 地形 / 水 / 实体 / 建筑 / 标
   terrain.dispose(); water.dispose(); entities.dispose(); settlements.dispose(); markers.dispose();
 });
 
-// ══ G5 · Renderer3D 的分派（源码结构腿）═══════════════════════════════
-section('G5 · Renderer3D 分派（DOM 绑定文件 ⇒ 只能按源码结构钉）');
+// ══ G5 · PlaneStage 的分派（源码结构腿）════════════════════════════════
+section('G5 · PlaneStage 分派（按 Stage 源码结构钉）');
 
 check('贴地三兄弟只吃 `heightChanged`，不再有 `terrainChanged` 这个过粗的名字', () => {
-  const src = readSource('src/inkbox/render3d/Renderer3D.js');
+  const src = readSource('src/inkbox/render3d/stage/PlaneStage.js');
   assert(!/terrainChanged/.test(src), 'M1.1D 起不许再出现 terrainChanged（那是四层揉一起的旧契约）');
   assert(/const heightChanged = heightRegion !== null;/.test(src), 'heightChanged 必须**只**由 height 脏区推出');
-  assert(/const layers = \{ heightChanged \};/.test(src), '三个贴地层必须收到同一个 heightChanged');
+  assert(/const options = \{ heightChanged \};/.test(src), '三个贴地层必须收到同一个 heightChanged');
+  for (const layer of ['entities', 'settlements', 'markers']) {
+    assert(new RegExp(`this\\.${layer}\\?\\.update\\(dt, this\\.world, options\\)`).test(src), `${layer} 必须收到同一个 options`);
+  }
   for (const file of ['entities/EntityLayer.js', 'settlements/SettlementLayer.js', 'markers/WorldMarkerLayer.js']) {
     assert(/options\.heightChanged/.test(readSource(`src/inkbox/render3d/${file}`)), `${file} 必须读 options.heightChanged`);
   }
 });
 
 check('TerrainMesh 分两次调：height 只写 Y、type 只写色', () => {
-  const src = readSource('src/inkbox/render3d/Renderer3D.js');
-  assert(/terrain\.update\(heightRegion, \{ height: true, type: false \}\)/.test(src), 'height 脏区必须显式关掉颜色');
-  assert(/terrain\.update\(typeRegion, \{ height: false, type: true \}\)/.test(src), 'type 脏区必须显式关掉 Y');
+  const src = readSource('src/inkbox/render3d/stage/PlaneStage.js');
+  assert(/terrain\?\.update\(heightRegion, \{ height: true, type: false \}\)/.test(src), 'height 脏区必须显式关掉颜色');
+  assert(/terrain\?\.update\(typeRegion, \{ height: false, type: true \}\)/.test(src), 'type 脏区必须显式关掉 Y');
 });
 
 check('水面吃 height ∨ water；植被吃 height ∨ type ∨ veg', () => {
-  const src = readSource('src/inkbox/render3d/Renderer3D.js');
-  assert(/if \(heightChanged \|\| waterRegion\) this\.water\.update/.test(src), '水面高度依赖 height + water');
-  assert(/if \(heightChanged \|\| typeRegion \|\| vegRegion\) this\.vegetationPending = true;/.test(src), '植被派生依赖 height + type + veg');
+  const src = readSource('src/inkbox/render3d/stage/PlaneStage.js');
+  assert(/if \(\(heightChanged \|\| waterRegion\) && this\.water\) this\.water\.update/.test(src), '水面高度依赖 height + water');
+  assert(/if \(this\.vegetation && \(heightChanged \|\| typeRegion \|\| vegRegion\)\) this\.vegetationPending = true;/.test(src), '植被派生依赖 height + type + veg');
 });
 
 check('区域合并只走 `mergeRegion`，不在 Renderer3D 里手抄一遍 min/max', () => {
-  const src = readSource('src/inkbox/render3d/Renderer3D.js');
+  const src = readSource('src/inkbox/render3d/stage/PlaneStage.js');
   assert(/import \{ WorldRenderBridge, mergeRegion \}/.test(src), '必须从桥里 import mergeRegion');
   const uses = src.match(/mergeRegion\(/g) || [];
-  assert(uses.length >= 3, `mergeRegion 至少要用在 3 处（pending∪height / 水面 / 笔刷），实得 ${uses.length}`);
+  assert(uses.length >= 2, `mergeRegion 至少用于 pending∪height 与水面脏区，实得 ${uses.length}`);
   assert(!/Math\.min\(\s*[rp]\.x0/.test(src), '不许再手抄 Math.min(x0) 那套合并逻辑');
 });
 
 check('选中环收到 heightChanged（不是每帧无脑重摆）', () => {
-  const src = readSource('src/inkbox/render3d/Renderer3D.js');
-  assert(/this\.selectionMarker\.update\(this\.world, heightChanged\)/.test(src));
+  const src = readSource('src/inkbox/render3d/stage/PlaneStage.js');
+  assert(/this\.selectionMarker\?\.update\(this\.world, heightChanged\)/.test(src));
   const markerSrc = readSource('src/inkbox/render3d/SelectionMarker.js');
   assert(/if \(!this\.needsPlace && !heightChanged\) return;/.test(markerSrc), '选中环必须自己判断要不要重摆');
 });

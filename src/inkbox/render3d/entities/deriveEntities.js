@@ -91,7 +91,7 @@ function byId(a, b) { return (a.id | 0) - (b.id | 0); }
  * @returns {{human:Array, cultivator:Array, beast:Array, spirit:Array, wraith:Array, total:number}}
  *   每条记录 `{ id, x, y, level, faction, lift, color }`。**纯派生，不写 world。**
  */
-export function deriveEntities(world) {
+function deriveFromWorld(world, includeWraiths) {
   const out = { human: [], cultivator: [], beast: [], spirit: [], wraith: [], total: 0 };
   if (!world) return out;
 
@@ -113,7 +113,7 @@ export function deriveEntities(world) {
     out.total += 1;
   }
 
-  const wraiths = Array.isArray(world.wraiths) ? world.wraiths : [];
+  const wraiths = includeWraiths && Array.isArray(world.wraiths) ? world.wraiths : [];
   for (const g of wraiths) {
     if (!g || !Number.isFinite(g.x) || !Number.isFinite(g.y)) continue;
     const level = Number.isFinite(g.level) ? g.level : 0;
@@ -128,6 +128,11 @@ export function deriveEntities(world) {
   for (const cls of ENTITY_CLASSES) out[cls].sort(byId);
   return out;
 }
+
+/** Stage ownership follows the container passed in, never an entity ID range. */
+export function deriveEntities(world) { return deriveFromWorld(world, true); }
+export function deriveUpperEntities(world) { return deriveFromWorld(world, false); }
+export function deriveNetherEntities(world) { return deriveFromWorld(world, false); }
 
 /**
  * 「这批派生结果和上一批一样吗」——精确逐字段比较（不用哈希，**没有碰撞风险**）。

@@ -2,10 +2,9 @@
 
 - 当前活跃版本：Inkbox 1.0.0（`src/inkbox`）
 - 当前入口：`inkbox.html`（3D 立体沙盘：`inkbox.html?renderer=3d`）；`npm run dev` 从 `http://127.0.0.1:4180/` 启动
-- 当前阶段：**Render3D M1.1D「Development Hardening」已完成**（工程加固：仓库真相统一 / 分层 CI / dirty 分类 /
-  性能基线重测 / Three.js vendor 治理）。委托书 `Render3D M1.1D 工程任务清单.md`；工程报告 `Render3D M1.1D 工程报告.md`。**不是新玩法阶段。**
+- 当前阶段：**Render3D M2-A 架构原型已完成**（2026-09-30）。一个 Host 管理三界 Stage，共享相机与视界状态，提供按位面拾取、只读 FX、Mask 与矩形 Slab 探针。13 组架构不变量、12 套发布门禁与 Edge 浏览器验收通过；交付证据和局限见 `Render3D M2-A 架构原型工程报告.md`。
 - **上一阶段（已完成）**：**Render3D M1「3D 世界实体可见化」**——委托书 `坐天观井 · 下一阶段工程委托书.md`；工程报告 `Render3D M1 工程报告.md`。
-- **下一阶段**：**Render3D M2「三界空间表现架构」——尚未开始**。⚠️ M2 尚未开始，**首先需要设计方案裁决**（三个位面切换还是同时驻留 / 3D 视界实现路径 / 是否共享 `Renderer3D` 生命周期），**不得自行选方案开工**。
+- **下一阶段**：**Render3D M2-B 尚未开始**。根据 M2-A 的实际截图、拾取与性能数据裁决后另定工程范围。
 - **正式完成**：D6-2 三界生态 **A–F** · D6-3 跨界生态 **A–E** · D7 观察与表现层 **A–G 封板** · D8 视界 2.0 **A–F** · **Render3D M0**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻，`npm run test:render3d`）· **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环，`npm run test:render3d:m1`）· **Render3D M1.1D**（工程加固，`npm run test:render3d:bridge` + `npm run test:vendor`）。
 - **WIP / 暂缓**：**D8-G「跨界追迹」**——纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）已保存并由 `test:view` V9 钉住，**追迹 UI 未做**；本阶段不继续扩建 Canvas 版 D8-G。
 - **接手先读 `HANDOFF.md`**（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）——本文件是历史，不是现状。30 秒定位看 `ROADMAP.md`；视界契约见 `VIEW_CONTRACT.md`；Render3D M0 报告见 `RENDER3D_M0.md`。

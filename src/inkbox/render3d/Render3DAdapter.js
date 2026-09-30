@@ -27,7 +27,7 @@ export class Render3DAdapter {
       const action = e.target.dataset.action;
       if (action === 'toggle') this.setActive(!this.active);
       if (action === 'fit') this.renderer.cameraRig.fit();
-      if (action === 'focus' && this.selectedCell) this.renderer.cameraRig.focusOn(this.selectedCell.x, this.selectedCell.y);
+      if (action === 'focus' && this.selectedCell) this.renderer.focusOn(this.selectedCell.x, this.selectedCell.y, {}, this.selectedCell.plane);
       if (action === 'undo') this.undo();
     });
     this.listen(this.canvas, 'contextmenu', e => e.preventDefault());
@@ -39,21 +39,22 @@ export class Render3DAdapter {
       this.canvas.focus(); this.renderer.cameraRig.cancelFocus();
       const hit = this.hit(e);
       if (!hit) return;
-      this.selectedCell = { x: hit.x, y: hit.y };
+      this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y };
       // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
-      this.renderer.setSelection(hit.x, hit.y);
-      if (this.mode === 'inspect') { sandbox.inspectAt(hit.x, hit.y); return; }
+      this.renderer.setSelection(hit.x, hit.y, hit.plane);
+      if (this.mode === 'inspect') { sandbox.inspectPlaneAt(hit.plane, hit.x, hit.y); return; }
+      if (!this.canSculpt(hit)) return;
       this.canvas.setPointerCapture(e.pointerId);
-      this.stroke = { world: sandbox.world, before: new Map(), last: hit.world, targetHeight: sandbox.world.height[hit.y * sandbox.world.w + hit.x], changed: false };
-      this.stamp(hit.world); this.lastStamp = performance.now();
+      this.stroke = { plane: 'mortal', world: sandbox.world, before: new Map(), last: hit.world, targetHeight: sandbox.world.height[hit.y * sandbox.world.w + hit.x], changed: false };
+      this.stamp(hit.world, hit.plane); this.lastStamp = performance.now();
     });
     this.listen(this.canvas, 'pointermove', e => {
       this.pointer = { x: e.clientX, y: e.clientY };
       if (!this.stroke) return;
       const hit = this.hit(e);
-      if (!hit) { this.stroke.last = null; return; }
-      if (this.stroke.last) for (const point of strokeSamples(this.stroke.last, hit.world, this.radius)) this.stamp(point);
-      else this.stamp(hit.world);
+      if (!this.canSculpt(hit)) { this.stroke.last = null; return; }
+      if (this.stroke.last) for (const point of strokeSamples(this.stroke.last, hit.world, this.radius)) this.stamp(point, hit.plane);
+      else this.stamp(hit.world, hit.plane);
       this.stroke.last = hit.world; this.lastStamp = performance.now();
     });
     for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) this.listen(this.canvas, event, () => this.endStroke());
@@ -73,11 +74,46 @@ export class Render3DAdapter {
     this.resizeObserver = new ResizeObserver(() => this.resize()); this.resizeObserver.observe(stage);
     this.originalFocus = sandbox.camera.focusOn; this.originalFit = sandbox.camera.fit;
     const adapter = this;
-    sandbox.camera.focusOn = function (...args) { if (adapter.active) return adapter.renderer.cameraRig.focusOn(...args); return adapter.originalFocus.apply(this, args); };
+    sandbox.camera.focusOn = function (...args) { if (adapter.active) return adapter.focusMortal(...args); return adapter.originalFocus.apply(this, args); };
     sandbox.camera.fit = function (...args) { const result = adapter.originalFit.apply(this, args); if (adapter.active) adapter.renderer.cameraRig.fit(); return result; };
+    this.addPrototypeControls();
     this.setActive(true); this.resize();
   }
   listen(target, name, fn, capture = false) { target.addEventListener(name, fn, { signal: this.abort.signal, capture }); }
+  addPrototypeControls() {
+    this.panel.querySelector('b').textContent = '山河沙盘 · M2-A 原型';
+    const controls = document.createElement('span');
+    controls.innerHTML = `<select aria-label="调试位面"><option value="mortal">凡间</option><option value="upper">上界</option><option value="nether">幽冥</option></select><button data-probe="upper">上界 Mask</button><button data-probe="nether">幽冥 Mask</button><button data-probe="close">关窗</button><button data-probe="slab">Slab 20×20</button>`;
+    this.panel.append(controls);
+    const select = controls.querySelector('select'); this.planeSelect = select;
+    const requested = new URLSearchParams(location.search).get('plane');
+    if (requested && this.renderer.setActivePlane(requested)) select.value = requested;
+    this.listen(select, 'change', () => { this.endStroke(); this.selectedCell = null; this.renderer.setSelection(null, null); if (!this.renderer.setActivePlane(select.value)) select.value = this.renderer.activePlane; });
+    this.listen(controls, 'click', event => {
+      const mode = event.target.dataset.probe; if (!mode) return;
+      this.endStroke(); this.renderer.setActivePlane('mortal'); select.value = 'mortal';
+      if (mode === 'close') { this.sandbox.selection = null; this.sandbox.dirty = true; return; }
+      if (mode === 'slab') {
+        this.sandbox.selection = null; this.renderer.setRealmViewState(this.sandbox.getRealmViewState());
+        this.renderer.setSlabProbe(true); return;
+      }
+      if (!this.renderer.stages.has(mode)) return;
+      const { w, h } = this.sandbox.world;
+      const x0 = Math.floor(w * 0.28), x1 = Math.floor(w * 0.72), y0 = Math.floor(h * 0.28), y1 = Math.floor(h * 0.72);
+      // Use the established selection and view tool: no second 3D view state.
+      this.sandbox.selectTool(mode === 'upper' ? 'viewUpper' : 'viewNether');
+      this.sandbox.selection = { x0, y0, x1, y1, area: (x1 - x0) * (y1 - y0), path: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]] };
+      this.sandbox.dirty = true;
+    });
+  }
+  // Existing faction/person links always refer to mortal subjects. Make that
+  // plane visible and use its elevation rather than the current debug stage.
+  focusMortal(x, y, options = {}) {
+    this.endStroke(); this.sandbox.selection = null; this.sandbox.dirty = true;
+    this.renderer.setActivePlane('mortal'); this.planeSelect.value = 'mortal';
+    this.renderer.setRealmViewState(this.sandbox.getRealmViewState());
+    this.renderer.focusOn(x, y, options, 'mortal');
+  }
   resize() { const r = this.sandbox.canvas.parentElement.getBoundingClientRect(); this.renderer.resize(Math.max(1, r.width), Math.max(1, r.height)); }
   setActive(active) {
     this.endStroke(); this.active = active; this.lastNow = null;
@@ -93,8 +129,11 @@ export class Render3DAdapter {
     this.sandbox.dirty = true;
   }
   hit(e) { const rect = this.canvas.getBoundingClientRect(); return this.renderer.pick(e.clientX - rect.left, e.clientY - rect.top); }
-  stamp(point) {
-    if (!this.stroke || this.stroke.world !== this.sandbox.world) return;
+  canSculpt(hit) {
+    return hit?.plane === 'mortal' && this.renderer.activePlane === 'mortal' && !this.renderer.realmPrototype.open && !this.renderer.slabProbe;
+  }
+  stamp(point, plane) {
+    if (plane !== 'mortal' || this.stroke?.plane !== 'mortal' || !this.canSculpt({ plane }) || this.stroke.world !== this.sandbox.world) return;
     const region = sculpt(this.sandbox.world, { ...point, radius: this.radius, strength: this.strength, mode: this.mode, targetHeight: this.stroke.targetHeight });
     if (region) {
       for (const [i, , old] of region.changes) if (!this.stroke.before.has(i)) this.stroke.before.set(i, old);
@@ -104,29 +143,34 @@ export class Render3DAdapter {
   endStroke() {
     if (this.stroke?.changed) {
       const changes = [...this.stroke.before];
-      this.undoStack.push({ world: this.stroke.world, changes });
+      this.undoStack.push({ plane: this.stroke.plane, world: this.stroke.world, changes });
       if (this.undoStack.length > 12) this.undoStack.shift();
     }
     this.stroke = null;
   }
   undo() {
-    this.endStroke(); const entry = this.undoStack.pop();
-    if (!entry || entry.world !== this.sandbox.world) return;
+    this.endStroke();
+    if (!this.canSculpt({ plane: this.renderer.activePlane })) return;
+    const entry = this.undoStack.pop();
+    if (!entry || entry.plane !== 'mortal' || entry.world !== this.sandbox.world) return;
     for (const [i, value] of entry.changes) entry.world.height[i] = value;
     entry.world.touch(); this.sandbox.dirty = true;
   }
   render(now) {
     if (!this.active) return false;
     const world = this.sandbox.world;
-    if (this.renderer.world !== world) { this.stroke = null; this.undoStack = []; this.selectedCell = null; this.renderer.setSelection(null, null); this.renderer.setWorld(world); this.lastNow = null; }
+    if (this.renderer.setWorld(world)) { this.stroke = null; this.undoStack = []; this.selectedCell = null; this.lastNow = null; this.planeSelect.value = this.renderer.activePlane; }
+    this.renderer.setRealmViewState(this.sandbox.getRealmViewState());
+    this.renderer.setPresentation(this.sandbox.stage);
     const dt = this.lastNow == null ? 0 : Math.max(0, now - this.lastNow); this.lastNow = now;
     this.renderer.update(dt);
     const hit = this.pointer ? this.hit({ clientX: this.pointer.x, clientY: this.pointer.y }) : null;
-    if (this.stroke && hit && performance.now() - this.lastStamp > 75) { this.stamp(hit.world); this.lastStamp = performance.now(); }
-    this.renderer.brush(this.mode === 'inspect' ? null : hit, this.radius);
+    if (this.stroke && this.canSculpt(hit) && performance.now() - this.lastStamp > 75) { this.stamp(hit.world, hit.plane); this.lastStamp = performance.now(); }
+    this.renderer.brush(this.mode === 'inspect' || !this.canSculpt(hit) ? null : hit, this.radius);
     const metrics = this.renderer.render();
     const cell = hit || this.selectedCell;
-    this.readout.textContent = cell ? `格 ${cell.x}, ${cell.y} · 高程 ${world.height[cell.y * world.w + cell.x].toFixed(4)} · ${TERRAIN_INFO[world.type[cell.y * world.w + cell.x]]?.name || '—'}` : '左键检视 / 雕刻 · 中键旋转 · 右键平移 · 滚轮缩放';
+    const viewedWorld = this.renderer.stages.get(cell?.plane || this.renderer.activePlane)?.world || world;
+    this.readout.textContent = cell ? `${cell.plane || 'mortal'} · 格 ${cell.x}, ${cell.y} · 高程 ${viewedWorld.height[cell.y * viewedWorld.w + cell.x]?.toFixed(4)} · ${TERRAIN_INFO[viewedWorld.type[cell.y * viewedWorld.w + cell.x]]?.name || '—'}` : '左键检视 / 雕刻 · 中键旋转 · 右键平移 · 滚轮缩放';
     if (!this.lastDebug || now - this.lastDebug > 0.3) {
       this.lastDebug = now;
       this.panel.querySelector('[data-debug]').textContent = `Q/E 旋转 · F 全图 · Ctrl+Z 撤销雕刻\n左键检视 / 雕刻 · 中键旋转 · 右键平移 · 滚轮缩放\n${metrics.fps.toFixed(1)} FPS · ${metrics.frameMs.toFixed(1)} ms/frame\n${metrics.drawCalls} draws · ${metrics.triangles} triangles\n${metrics.terrainVertices} terrain vertices · ${metrics.treeInstances} trees\n${metrics.entityInstances} entities · ${metrics.houseInstances} buildings · ${metrics.markerInstances} markers\nRaycast ${metrics.lastRaycastMs.toFixed(2)} ms（上次查询） · render submit ${metrics.renderMs.toFixed(2)} ms\nCPU 更新 ${metrics.layerUpdateMs.toFixed(2)} ms（桥扫描 ${metrics.bridgeScanMs.toFixed(2)} · 地形 ${metrics.terrainUpdateMs.toFixed(2)} · 水 ${metrics.waterUpdateMs.toFixed(2)} · 植被 ${metrics.vegetationUpdateMs.toFixed(2)}）\n实体 ${metrics.entityUpdateMs.toFixed(2)} ms · 建筑 ${metrics.settlementUpdateMs.toFixed(2)} ms · 标记 ${metrics.markerUpdateMs.toFixed(2)} ms`;

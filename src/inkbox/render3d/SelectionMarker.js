@@ -10,6 +10,7 @@
 import * as THREE from 'three';
 import { surfaceElevation } from './terrain/VisualElevation.js';
 import { INK } from '../core/config.js';
+import { RENDER_ORDER } from './shared/RenderOrder.js';
 
 export class SelectionMarker {
   constructor(coordinates) {
@@ -22,7 +23,7 @@ export class SelectionMarker {
       color: INK.cinnabar, side: THREE.DoubleSide, transparent: true, opacity: 0.9, depthTest: false,
     });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
-    this.mesh.renderOrder = 6;
+    this.mesh.renderOrder = RENDER_ORDER.selection;
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
     this.mesh.name = 'SelectionMarker';

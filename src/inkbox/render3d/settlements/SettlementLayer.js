@@ -27,6 +27,7 @@
 import * as THREE from 'three';
 import { surfaceElevation } from '../terrain/VisualElevation.js';
 import { STRUCT, INK } from '../../core/config.js';
+import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 /** 建筑实例容量：`maxVillages`(220) × 每村最多 19 屋 + 中心建筑 + 宗门（max 10）。 */
 const CAPACITY = 4608;
@@ -142,6 +143,7 @@ export class SettlementLayer {
     mesh.visible = false;
     mesh.count = 0;
     mesh.name = name;
+    mesh.renderOrder = RENDER_ORDER.settlements;
     this.group.add(mesh);
     return mesh;
   }

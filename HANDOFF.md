@@ -8,13 +8,11 @@
 
 ## 0. ⚠️ 当前状态与下一工程包
 
-> **当前阶段：Render3D M1.1D「Development Hardening」已完成**（工程加固，**不是新玩法**）。
-> 委托书：[`Render3D M1.1D 工程任务清单.md`](./Render3D%20M1.1D%20工程任务清单.md)；
-> 工程报告：[`Render3D M1.1D 工程报告.md`](./Render3D%20M1.1D%20工程报告.md)。
-> 本阶段只做了五件事：仓库真相统一 · 分层 CI 门禁 · `WorldRenderBridge` dirty 分类 · 性能基线重测 · Three.js vendor 治理。
-> **上一阶段 Render3D M1（3D 世界实体可见化）已完成并通过验收**，工程报告 `Render3D M1 工程报告.md`。
+> **Render3D M2-A「Multi-Plane Architecture Prototype」已完成**。委托书：[`坐天观井 · Render3D M2-A 架构原型工程委托书.md`](./坐天观井%20·%20Render3D%20M2-A%20架构原型工程委托书.md)；验收记录：[`Render3D M2-A 架构原型工程报告.md`](./Render3D%20M2-A%20架构原型工程报告.md)。
+> 一个 Host 管理三个位面 Stage，共用一个 WebGLRenderer / CameraRig；视界状态仍由现有 selection + toolId 派生，3D Mask / Slab 只是架构探针。
+> **上一阶段 Render3D M1.1D（工程加固）已完成**，工程报告 `Render3D M1.1D 工程报告.md`。
 > 唯一战略目标不变：**保留现有模拟世界作为唯一真相，让 Three.js 从「地形技术原型」成长为「可以实际观察世界的沙盘」。**
-> ⚠️ **下一阶段是 Render3D M2「三界空间表现架构」，尚未开始**——M2 尚未开始，**首先需要设计方案裁决**，**不得自行选方案开工**。
+> ⚠️ **M2-B 尚未开始**；根据 M2-A 的 Mask / Slab / 拾取 / 性能证据裁决路线后再立项。
 > ⚠️ 不要被 `D8视界 2.0 …` 与旧 `STATUS.md` 的 D8 叙事带回 Canvas 路线。
 > **D8-G「跨界追迹」仍是 WIP / 暂缓**（地基已保存，UI 未做，本阶段未扩建）。
 
@@ -23,7 +21,7 @@
 ## 1. 当前版本与阶段
 
 - **版本**：`v1.0.0`（`package.json` / `src/inkbox/core/config.js` 的 `APP.version`）。
-- **当前阶段**：**Render3D M1.1D「Development Hardening」已完成**。活跃分支 `inkbox.html` + `src/inkbox/**`。
+- **当前阶段**：**Render3D M2-A 架构原型**。活跃入口 `inkbox.html` + `src/inkbox/**`。
 - **分支角色**：`main` = **唯一活跃开发主线**（所有新功能都从它开始）；
   `codex/render3d-m0` = **Render3D M0 历史技术快照**（tag `render3d-m0` 指向它）——
   ⚠️ **禁止从它开发新功能**，只作考古。
@@ -35,6 +33,7 @@
   - **Render3D M1 已完成**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环），独立测试 `npm run test:render3d:m1`（36 项）+ 浏览器探针 `scripts/_m1-viewshot.mjs`（场景 A–F 全过）；工程报告 `Render3D M1 工程报告.md`。
   - **Render3D M1.1D 已完成**（仓库真相 / 分层 CI / dirty 分类 / 性能基线 / vendor 治理），
     独立测试 `npm run test:render3d:bridge`（36 项）+ `npm run test:vendor`（13 项）；工程报告 `Render3D M1.1D 工程报告.md`。
+  - **Render3D M2-A 架构原型已完成**：Host + 三界 Stage、共享视界状态、位面拾取、Mask / Slab 探针；13 组架构不变量、600 日三路纯度对照与 Edge 160 点拾取通过。运行 `npm run test:render3d:m2a:release` 和 `npm run test:render3d:m2a:browser` 复验；证据及局限见 M2-A 工程报告。
 - **WIP / 暂缓**：**D8-G「跨界追迹」**。已保存的纯逻辑地基（有测试钉住，见 §6）：
   `sim/watch.js` 的 `netherGhostOf()`（第二条可靠跨界引用：只认 `ghostOf.route === null` 的「自裂缝跌入」者）·
   `resolveWatch` 的 `nether` 分支（**排在 `dead` 之后**）· `ui/realmTrace.js` 的 `traceTargetOf()` / `crossRealmChain()`。
@@ -131,16 +130,18 @@
   ⚠️ **追迹 UI 未做**：`main.js` 的 `maybePulseTraceTarget` 只有**带 `?.` 保护**的调用点、**没有实现体**——
   本阶段不补它（补了就是「增加 Canvas 墨环」，超出本包范围）。
 
-## 6b. Render3D 观察层（M0 / M1）
+## 6b. Render3D 观察层（M0 / M1 / M2-A）
 
 - **入口**：`inkbox.html?renderer=3d` 动态加载 `src/inkbox/render3d/Render3DAdapter.js`（默认 Canvas **不加载** Three.js）。
   `main.js` 的接线只有一处：`render()` 里 `if (this.render3d?.render(now)) return;`。
 - **唯一坐标契约**：`render3d/coordinates.js`。世界整数 x/y = 格中心；Three X/Z = 地图平面；Three Y = 视觉高程。
-  `renderX = worldX - (w-1)/2`；高程 `visualElevation(height)`；**贴地**一律走 `surfaceElevation(world, x, y)`（双线性插值）。
+  `renderX = worldX - (w-1)/2`；高程 `visualElevation(height)`；**贴地**一律走 `surfaceElevation(world, x, y)`（与地形三角剖分一致的分片线性插值）。
   ⚠️ **每层禁止各写一套「中心偏移」**。
 - **数据纯度纪律（M0 建立、M1 保持）**：渲染器持有**自己的只读快照**，**不给 `World` 加 `entitiesDirty` 之类的 Three.js 专用状态**。
   地形 diff 仍归 `WorldRenderBridge`（height / water / type / veg）；**动态对象各层自管快照与刷新周期**。
 - **`terrain/sculpt.js` 是 `render3d/` 下唯一允许写世界的入口**（纯编辑命令，只写 `height`）。
+- **M2-A 生命周期**：`Render3DHost` 持有唯一 WebGLRenderer / CameraRig / Scene；`PlaneStage` 各绑定一个 world，以 Group 挂入 Scene。按 `?renderer=3d&plane=mortal|upper|nether` 或 3D 工具栏调试切界，不重建 GPU。缺位面允许运行；换 world 时重建对应 Stage。
+- **视界与拾取**：Canvas / Three 共用 selection + toolId 派生的 `RealmViewState`；Mask 只覆盖地形与实体，quad 按 `(x+0.5,y+0.5)` 判 `RegionMask.contains`，边缘精度一格。拾取回传 `plane`，跨界检视只读；Slab 是固定 20×20 矩形几何探针。雕刻和撤销只在凡间且 Mask / Slab 关闭时开放。PresentationStage 仍是 runtime event 唯一消费者。
 - ⚠️ 实体物种字段是 **`sp`**（不是 `kind`）；**`level > 0` 才是修士**；坐标是**浮点格中心（+0.5）**；
   裂缝半径**必须调 `sim/rifts.js` 的 `riftRadiusAt(rift)` 现算**（`rift.radius` 字段**不存在**）。
 - 本机 `spawnSync` 偶发被环境拦截（EBUSY）⇒ 若 `npm run build` 卡在 tar 步骤，用 System32 的 bsdtar 手工补 zip
@@ -158,7 +159,9 @@
   + `restoreWorldState` 兜底 `[]` + `reset*Systems` 归零 + save-equiv 四处注册（`UPPER_NOT_SAVED` /
   `upperForbidden` / `NETHER_FORBIDDEN_KEYS` / `worldKeys`）。**上界 / 幽冥恒空**。
 
-## 8. 当前正式测试是否全绿
+## 8. 历史测试基线与本次验收
+
+以下表格保留旧阶段基线，不代表本轮全部重跑。本次实际命令与结果见 [M2-A 工程报告](./Render3D%20M2-A%20架构原型工程报告.md) 和仓库 `reports/release/render3d-m2a/`；M2-A 架构不变量已经进入 Fast Gate。
 
 | 入口 | 结果 |
 | --- | --- |
@@ -221,11 +224,11 @@
 
 - `render3d/entities/deriveEntities.js`（**纯派生，零 THREE / 零 DOM / 零 RNG**）：`world.entities` + `world.wraiths` → 按视觉类别分组的记录数组。
   类别 `ENTITY_CLASSES = ['human','cultivator','beast','spirit','wraith']`；**判据是 `sp` 与 `level`**（`level > 0` 才是修士）。
-- `render3d/entities/EntityLayer.js`：**每类一个 `InstancedMesh`（共 5 个）**，`instanceColor` 上色，高度走 `surfaceElevation`。刷新 15 Hz；`terrainChanged` 时强制重贴地。
+- `render3d/entities/EntityLayer.js`：**每类一个 `InstancedMesh`（共 5 个）**，`instanceColor` 上色，高度走 `surfaceElevation`。刷新 15 Hz；`heightChanged` 时强制重贴地。
 - `render3d/settlements/SettlementLayer.js`：**只 2 个 `InstancedMesh`**（墙体盒 + 四边锥屋顶）。屋舍坐标**直接复用 `village.houses` 的 `{x,y,type}`**（整数格）；等级 `levelScale`；`STRUCT.HALL` 放大；等级 ≥2 加中心建筑；宗门用 `capitalX/capitalY` + `f.color/f.accent`。刷新 4 Hz。
 - `render3d/markers/WorldMarkerLayer.js`：`artifacts`（八面体）/ `sites`（四类几何）/ `leylines`（环）/ `rifts`（环，半径**必须 `riftRadiusAt()` 现算**）。LOD：法宝 `MARKER_MIN_ZOOM=1.6`、地点 1.05、灵脉 1.3、裂缝恒显。刷新 4 Hz。
 - `render3d/SelectionMarker.js`：3D 点选后的贴地选中环（`depthTest:false`、`renderOrder=6`；**不进存档、不写世界**）。
-- 每个 Layer **自管快照与刷新频率**，**不给 `World` 加 dirty 字段**。`Renderer3D.update(dt)` 里 `const terrainChanged = !!this.pending` 后依次调四层。
+- 每个 Layer **自管快照与刷新频率**，**不给 `World` 加 dirty 字段**。当前分派位于 `PlaneStage.update(dt)`，按 height / water / type / veg 分类；只有 height 变化触发实体等贴地层重写。
 - **实测 draw call**（本机软件光栅器，1500×940）：全图 **9**（M0 基线 3 ⇒ **+6**，达标 <15）；zoom=5 近景 **21**（LOD 放出全部标记网格；契约硬指标「几十以内」达标）；**2832 实体时全图仅 6**。
 - 测试：`scripts/inkbox-render3d-m1.mjs`（`npm run test:render3d:m1`，36 项）——数据纯度 / 数量对应 / 增删 / 移动 / 贴地 / LOD / 只读 / 模拟不受影响 / build 含新文件。
 - 浏览器探针：`scripts/_m1-viewshot.mjs`（RESEARCH，需先起 4180 + `?renderer=3d`）——场景 A–F 全过。

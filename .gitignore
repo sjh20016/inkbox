@@ -17,6 +17,7 @@ run/
 
 # AI 工作目录（本地记忆 / 工具数据，不属于项目源码）
 .workbuddy-ai/
+.local-backups/
 
 # 系统杂项
 .DS_Store

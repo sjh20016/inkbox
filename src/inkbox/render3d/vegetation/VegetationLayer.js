@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { deriveVegetation } from './deriveVegetation.js';
 import { surfaceElevation } from '../terrain/VisualElevation.js';
+import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 function pixelTree() {
   const data = new Uint8Array(16 * 24 * 4);
@@ -26,6 +27,7 @@ export class VegetationLayer {
     this.geometry = new THREE.PlaneGeometry(1, 1.5); this.geometry.translate(0, 0.75, 0);
     this.material = new THREE.MeshLambertMaterial({ map: this.texture, alphaTest: 0.5, side: THREE.DoubleSide });
     this.mesh = new THREE.InstancedMesh(this.geometry, this.material, 20000);
+    this.mesh.renderOrder = RENDER_ORDER.vegetation;
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.mesh.frustumCulled = false;
     this.update();

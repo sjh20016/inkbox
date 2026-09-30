@@ -66,6 +66,7 @@ import {
 // 所以 node 能直接 import —— 于是 V8 组能写成**运行时**断言（真跑挑拣与格式化），
 // 而不是只扫源码。位移阈值 `VIEW_CLICK_PX` 同理从纯模块取（唯一真源）。
 import { VIEW_CLICK_PX } from '../src/inkbox/ui/realmView.js';
+import { getRealmViewState } from '../src/inkbox/ui/realmViewState.js';
 import {
   pickRealmSubject, realmInspectRows, REALM_INSPECT_RADIUS,
 } from '../src/inkbox/ui/realmInspector.js';
@@ -344,21 +345,30 @@ check('isViewTool() 查 VIEW_TOOL_IDS（与真源同源）',
 check('两个界名只在 PLANE_LABEL 里出现一次（上界 / 幽冥）',
   /PLANE_LABEL\s*=\s*Object\.freeze\(\s*\{[^}]*upper:\s*'上界'[^}]*nether:\s*'幽冥'[^}]*\}/.test(ALL_SRC));
 
-// ⑤ `viewPlane()` 只负责把位面挂到**本实例**的 world/terrain 上（判据在 `viewPlaneForTool`）。
+// ⑤ 位面判据经共享 RealmViewState 派生，Canvas/Three/裂缝共用。
 const vpBody = (VIEW_BODIES.viewPlane && VIEW_BODIES.viewPlane.body) || '';
-check('viewPlane() 经 viewPlaneForTool(this.toolId) 分流（不再自己写三目）',
-  /viewPlaneForTool\(\s*this\.toolId\s*\)/.test(vpBody)
+check('viewPlane() 经 getRealmViewState() 分流（不再自己写三目）',
+  /this\.getRealmViewState\(\)\.targetPlane/.test(vpBody)
   && !/this\.toolId\s*===\s*'viewNether'/.test(vpBody));
 check('viewPlane() 两界都可选（同时够得到 this.upper 与 this.nether）',
   /\bthis\.upper\b/.test(vpBody) && /\bthis\.nether\b/.test(vpBody));
 check('viewPlane() 给出位面 id（D8-C 事件路由要按它分流）',
   /\bplane\b/.test(vpBody));
 
-// ⑥ `riftViewOpen()` = 有选区 **且** 工具是视界工具（两半都不可松）。
+// ⑥ `riftViewOpen()` 读取共享判据；纯模块断言两半条件。
 const rvBody = (VIEW_BODIES.riftViewOpen && VIEW_BODIES.riftViewOpen.body) || '';
-check('riftViewOpen() = Boolean(this.selection) && isViewTool(this.toolId)',
-  /Boolean\(\s*this\.selection\s*\)/.test(rvBody)
-  && /isViewTool\(\s*this\.toolId\s*\)/.test(rvBody));
+check('riftViewOpen() 读取共享 RealmViewState.open',
+  /this\.getRealmViewState\(\)\.open/.test(rvBody)
+  && !getRealmViewState({ selection: null, toolId: 'viewUpper' }).open
+  && !getRealmViewState({ selection: { x0: 0, y0: 0, x1: 2, y1: 2 }, toolId: 'raise' }).open
+  && getRealmViewState({ selection: { x0: 0, y0: 0, x1: 2, y1: 2 }, toolId: 'viewUpper' }).open);
+const stableSelection = { path: [[0, 0], [2, 0], [2, 2]], x0: 0, y0: 0, x1: 2, y1: 2, area: 2 };
+const stableRegion = getRealmViewState({ selection: stableSelection, toolId: 'viewUpper' }).region;
+check('同一未变选区保留 RegionMask 身份（3D 不每帧重建）',
+  getRealmViewState({ selection: stableSelection, toolId: 'viewUpper' }).region === stableRegion);
+stableSelection.path[1][0] = 3;
+check('原地修改 path 后刷新 RegionMask',
+  getRealmViewState({ selection: stableSelection, toolId: 'viewUpper' }).region !== stableRegion);
 
 // ⑦ 同坐标：三界同尺寸（坐标一一对应，地形语义独立）。
 {
@@ -851,15 +861,17 @@ check('ui/realmInspector.js 不 import render/* 或 main.js（不碰 DOM）',
 
 const mainSrc = (TREE.find((f) => f.rel === 'main.js') || {}).src || '';
 const inspBody = (findBody('inspectRealmAt') && findBody('inspectRealmAt').body) || '';
+const planeInspBody = (findBody('inspectPlaneAt') && findBody('inspectPlaneAt').body) || '';
 const clickBody = (findBody('isRealmInspectClick') && findBody('isRealmInspectClick').body) || '';
-check('main.js 有 inspectRealmAt() 且调用 realmInspector 的两个函数',
-  !!inspBody && inspBody.includes('pickRealmSubject(') && inspBody.includes('realmInspectRows('));
+check('main.js 的 inspectRealmAt() 经按界 adapter 调用 realmInspector 两函数',
+  !!inspBody && inspBody.includes('this.inspectPlaneAt(')
+  && planeInspBody.includes('pickRealmSubject(') && planeInspBody.includes('realmInspectRows('));
 check('inspectRealmAt() **不复用**凡间 inspectAt（函数体里没有 this.inspectAt(）',
   !!inspBody && !inspBody.includes('this.inspectAt('));
 check('inspectRealmAt() **不写** this.selected（避免在凡间画出幽冥坐标的高亮环）',
   !!inspBody && !/this\.selected\s*=/.test(inspBody));
-check('isRealmInspectClick() 同时要 selection 与 regionContains（两条件缺一不可）',
-  !!clickBody && clickBody.includes('this.selection') && clickBody.includes('regionContains('));
+check('isRealmInspectClick() 读取共享视界判据及 RegionMask 命中',
+  !!clickBody && clickBody.includes('view.open') && clickBody.includes('view.region.contains('));
 check('isRealmInspectClick() 用 VIEW_CLICK_PX 当位移阈值（不写死数字）',
   !!clickBody && clickBody.includes('VIEW_CLICK_PX'));
 check('endPointer 里检视分支**排在** commitSelection 之前（否则点窗会顺手关窗）',

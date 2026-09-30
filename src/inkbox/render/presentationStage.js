@@ -41,6 +41,15 @@ import { drainRuntimeEvents } from '../core/runtimeEvents.js';
 /** 三界位面名（与 `core/runtimeEvents.js` 的 `PLANES`、`world.plane` 一致）。 */
 export const STAGE_PLANES = Object.freeze(['mortal', 'upper', 'nether']);
 
+function readonlyCopy(value) {
+  if (Array.isArray(value)) return Object.freeze(value.map(readonlyCopy));
+  if (value && typeof value === 'object') {
+    return Object.freeze(Object.fromEntries(
+      Object.entries(value).map(([key, nested]) => [key, readonlyCopy(nested)])));
+  }
+  return value;
+}
+
 /**
  * 多位面表现舞台。
  *
@@ -98,6 +107,12 @@ export class PresentationStage {
   update(dt) {
     updateFx(this.fx, dt);
     return this;
+  }
+
+  /** Read-only, plane-filtered copy of the already ingested presentation state. */
+  snapshotPlane(plane) {
+    const items = this.fx.items.filter(item => item.plane === plane).map(readonlyCopy);
+    return Object.freeze({ plane, items: Object.freeze(items) });
   }
 
   /**

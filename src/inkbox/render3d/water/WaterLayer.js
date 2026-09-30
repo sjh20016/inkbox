@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import { gridGeometry } from '../terrain/TerrainMesh.js';
 import { visualElevation } from '../terrain/VisualElevation.js';
+import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 export class WaterLayer {
   constructor(world, coordinates) {
     this.world = world; this.geometry = gridGeometry(world, coordinates);
     this.material = new THREE.MeshBasicMaterial({ color: '#718f92', transparent: true, opacity: 0.68, depthWrite: false });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.mesh.renderOrder = RENDER_ORDER.water;
     this.update({ x0: 0, y0: 0, x1: world.w - 1, y1: world.h - 1 });
   }
   update(region) {

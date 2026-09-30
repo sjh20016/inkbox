@@ -29,6 +29,7 @@ import * as THREE from 'three';
 import { deriveEntities, sameEntities, ENTITY_CLASSES } from './deriveEntities.js';
 import { surfaceElevation } from '../terrain/VisualElevation.js';
 import { LIMITS } from '../../core/config.js';
+import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 /**
  * 实例容量。`LIMITS.maxEntities`（3000，凡间生灵上限）+ 余量覆盖 `world.wraiths`
@@ -64,8 +65,11 @@ function geometryFor(cls) {
 }
 
 export class EntityLayer {
-  constructor(world, coordinates) {
+  constructor(world, coordinates, { derive = deriveEntities } = {}) {
     this.coordinates = coordinates;
+    this.derive = derive;
+    this.regionMask = null;
+    this.regionInside = true;
     this.interval = 1 / 15;
     this.clock = Infinity;          // 首帧必刷
     this.lastDerived = null;
@@ -88,6 +92,7 @@ export class EntityLayer {
       mesh.visible = false;
       mesh.count = 0;
       mesh.name = `Entity:${cls}`;
+      mesh.renderOrder = RENDER_ORDER.entities;
       this.meshes[cls] = mesh;
       this.group.add(mesh);
     }
@@ -107,7 +112,7 @@ export class EntityLayer {
     const force = !!options.heightChanged;
     if (!force && this.clock < this.interval) return false;
     this.clock = 0;
-    const derived = deriveEntities(world);
+    const derived = this.derive(world);
     if (!force && sameEntities(derived, this.lastDerived)) return false;
     this.write(derived, world);
     return true;
@@ -118,7 +123,9 @@ export class EntityLayer {
     const byClass = {};
     for (const cls of ENTITY_CLASSES) {
       const mesh = this.meshes[cls];
-      const list = derived[cls];
+      const list = this.regionMask
+        ? derived[cls].filter(item => this.regionMask.contains(Math.floor(item.x) + 0.5, Math.floor(item.y) + 0.5) === this.regionInside)
+        : derived[cls];
       const capacity = mesh.instanceMatrix.count;
       const n = Math.min(list.length, capacity);
       if (list.length > capacity) overflow += list.length - capacity;
@@ -134,6 +141,8 @@ export class EntityLayer {
         mesh.setColorAt(i, this.colorOf(item.color));
       }
       mesh.count = n;
+      // instanceId is local to the filtered batch, not to the world container.
+      mesh.userData.renderEntities = list.slice(0, n);
       mesh.visible = n > 0;         // 空类别 ⇒ 连这次 draw call 都省掉
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
@@ -150,12 +159,22 @@ export class EntityLayer {
     return color;
   }
 
+  /** Entity visibility uses the same cell-centre rule as TerrainMesh. */
+  setRegionMask(region, inside = true) {
+    if (this.regionMask === region && this.regionInside === !!inside) return;
+    this.regionMask = region || null;
+    this.regionInside = !!inside;
+    this.lastDerived = null;
+    this.clock = Infinity;
+  }
+
   dispose() {
     for (const cls of ENTITY_CLASSES) {
       const mesh = this.meshes[cls];
       mesh.geometry.dispose();
       mesh.material.dispose();
       mesh.dispose();
+      mesh.userData.renderEntities = [];
     }
     this.group.clear();
     this.colorCache.clear();

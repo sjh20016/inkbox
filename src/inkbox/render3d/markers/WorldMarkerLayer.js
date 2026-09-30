@@ -25,7 +25,8 @@
 import * as THREE from 'three';
 import { surfaceElevation } from '../terrain/VisualElevation.js';
 import { INK } from '../../core/config.js';
-import { riftRadiusAt, riftIsActive } from '../../sim/rifts.js';
+import { visibleRift } from '../readers/riftViewModel.js';
+import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 /** 四类地点（与 `sim/sites.js` 写入的 `kind` 字面量一一对应，顺序即渲染顺序契约）。 */
 export const SITE_KINDS = Object.freeze(['secret', 'cave', 'formation', 'ruin']);
@@ -101,10 +102,9 @@ export function deriveMarkers(world) {
   const rifts = Array.isArray(world.rifts) ? world.rifts : [];
   for (const r of rifts) {
     if (!r || !Number.isFinite(r.x) || !Number.isFinite(r.y)) continue;
-    if (!riftIsActive(r)) continue;
-    const radius = riftRadiusAt(r);              // ⚠️ 唯一真源，绝不在这里重算
-    if (!(radius > 0.05)) continue;
-    out.rifts.push({ id: r.id, x: r.x, y: r.y, radius, targetPlane: r.targetPlane });
+    const view = visibleRift(r);
+    if (!view) continue;
+    out.rifts.push({ id: r.id, x: r.x, y: r.y, ...view });
     out.total += 1;
   }
   return out;
@@ -169,6 +169,7 @@ export class WorldMarkerLayer {
     mesh.visible = false;
     mesh.count = 0;
     mesh.name = name;
+    mesh.renderOrder = RENDER_ORDER.markers;
     this.group.add(mesh);
     this.entries.push({ mesh, minZoom });
     return mesh;

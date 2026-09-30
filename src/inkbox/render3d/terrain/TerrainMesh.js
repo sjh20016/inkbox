@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { TERRAIN_INFO } from '../../core/config.js';
 import { visualElevation } from './VisualElevation.js';
+import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 export function gridGeometry(world, coordinates) {
   const position = new Float32Array(world.size * 3);
@@ -31,6 +32,9 @@ export class TerrainMesh {
     // Steep boundary slopes can face away even while the camera stays above ground.
     this.material = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.mesh.renderOrder = RENDER_ORDER.terrain;
+    this.fullIndices = this.geometry.index.array.slice();
+    this.geometry.index.setUsage(THREE.DynamicDrawUsage);
     this.palette = TERRAIN_INFO.map(t => new THREE.Color(`rgb(${t.color.join(',')})`));
     this.update({ x0: 0, y0: 0, x1: world.w - 1, y1: world.h - 1 });
   }
@@ -67,6 +71,27 @@ export class TerrainMesh {
     if (writeHeight) position.needsUpdate = true;
     if (writeType) color.needsUpdate = true;
     // Flat material derives normals in the shader; no full-grid normal rebuild.
+  }
+  /** Keep or exclude quads by their world-grid centre, shared with entity filtering. */
+  setRegionMask(region, inside = true) {
+    if (this.regionMask === region && this.regionInside === !!inside) return;
+    this.regionMask = region || null;
+    this.regionInside = !!inside;
+    if (!region) {
+      this.geometry.index.array.set(this.fullIndices);
+      this.geometry.index.needsUpdate = true;
+      this.geometry.setDrawRange(0, this.fullIndices.length);
+      return;
+    }
+    const { w, h } = this.world;
+    const kept = this.geometry.index.array; let count = 0;
+    for (let y = 0; y < h - 1; y++) for (let x = 0; x < w - 1; x++) {
+      if (region.contains(x + 0.5, y + 0.5) !== this.regionInside) continue;
+      const i = (y * (w - 1) + x) * 6;
+      for (let k = 0; k < 6; k++) kept[count++] = this.fullIndices[i + k];
+    }
+    this.geometry.index.needsUpdate = true;
+    this.geometry.setDrawRange(0, count);
   }
   dispose() { this.geometry.dispose(); this.material.dispose(); }
 }

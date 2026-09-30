@@ -62,6 +62,9 @@ jobs:
       - name: Render3D dirty 分类（height / water / type / veg 分层派发）
         run: npm run test:render3d:bridge
 
+      - name: Render3D M2-A 多位面架构不变量
+        run: npm run test:render3d:m2a
+
       - name: 构建发布包（自包含，clone 即可跑）
         run: npm run build
 

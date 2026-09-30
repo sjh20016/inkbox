@@ -76,6 +76,9 @@ const FILES = [
   // M1.1D 新增：dirty 分类回归 + 零依赖性能基线。
   'scripts/inkbox-render3d-bridge.mjs',
   'scripts/inkbox-render3d-perf.mjs',
+  'scripts/inkbox-render3d-m2a.mjs',
+  'scripts/inkbox-render3d-m2a-browser.mjs',
+  'scripts/inkbox-render3d-m2a-verify.mjs',
   // 零依赖 CDP 胶水层：性能基线复用本机 Edge/Chrome 靠它。**必须随包出货**，
   // 否则 `npm run test:render3d:perf` 会以「找不到模块」开场。
   'scripts/cdp.mjs',
@@ -87,6 +90,8 @@ const FILES = [
   // M1.1D 的委托书与工程报告：接手的人要能看到「这一阶段到底做了什么、为什么」。
   'Render3D M1.1D 工程任务清单.md',
   'Render3D M1.1D 工程报告.md',
+  '坐天观井 · Render3D M2-A 架构原型工程委托书.md',
+  'Render3D M2-A 架构原型工程报告.md',
   // 被包内文档引用、但此前只在开发工作区存在的开发文档（2026-09-29 补齐）。
   // ⚠️ 不补就是**悬空引用**：`STATUS.md` 写着「规划见 D7 / D8 …」，`STATUS.md` 与
   //    `Render3D M1 工程报告.md` 又引用 M1 的委托书——接手的人在包里找不到这些文件。
@@ -107,7 +112,7 @@ const FILES = [
 //    `HANDOFF.md` §4 列为**有约束力**的文档（UI 禁令 / 考古定名不得擅改 / 机制缺口→停走设计流程），
 //    且 `core/lore.js`、`sim/reincarnation.js`、`world/World.js`、`scripts/inkbox-smoke.mjs`
 //    共 5 处注释引用它的行号作为**定名出处** ⇒ 不入包则接手者读不到规则、代码注释悬空。
-const DIRECTORIES = ['src/inkbox', 'vendor/three', '剧情文案素材'];
+const DIRECTORIES = ['src/inkbox', 'vendor/three', '剧情文案素材', 'reports/release/render3d-m2a'];
 
 function copyRelative(relative) {
   const from = path.join(ROOT, relative);
