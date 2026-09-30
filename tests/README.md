@@ -42,7 +42,8 @@ M2-A 本地记录为 view 113、M2-A 13 组、160 点拾取零错误；历史计
 ## GitHub 浏览器复验
 
 Actions → Inkbox CI → Run workflow，选择 main。
-Windows job 先起游戏服务器，再顺序跑 Canvas 与 M2-A；输出到 reports/ci 的独立目录，通过 artifact 保存截图、JSON 和日志，成功 / 失败均保留可用证据。
+Windows job 用 `scripts/inkbox-browser-smoke.mjs` 在同一宿主内启动 / 维持 / 释放服务器，顺序执行 Canvas 与 M2-A 原测试脚本，分别记录退出码；第一套失败也继续收集第二套结果。
+HTTP 资源先探测，启动失败补存页面 / 网络诊断。输出到 reports/ci 的独立目录，通过 artifact 保存截图、JSON 和日志，成功 / 失败均保留可用证据。
 这套远端功能复验不会改 reports/release 的已发布文件，也不把 runner 软件光栅读数当成本机 Intel UHD 730 性能基线。
 
 测试失败须保留失败条件与日志；修复平台问题或真实实现，不删断言、不加 `|| true`、不把 assertion 改 warning。

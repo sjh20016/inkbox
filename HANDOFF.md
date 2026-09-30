@@ -65,7 +65,7 @@ Three 固定为 `0.186.1`：浏览器 importmap 读 `vendor/three/`，Node 测�
 
 命令与用途详见 [tests/README](./tests/README.md)。本地浏览器测试先起 4180；playtest 的 `--port` 是 CDP 端口，游戏地址用 `--url`。
 普通 CI 不运行浏览器和 800 年长测，不删测试、不把断言改警告、不加 `|| true`。
-M2-A 的本地证据在 `reports/release/render3d-m2a/`；CI 重跑写入独立目录并上传 Actions artifact，不覆盖硬件基线。
+M2-A 的本地证据在 `reports/release/render3d-m2a/`；CI 的 `inkbox-browser-smoke.mjs` 自管服务器与两套原测试的生命周期，分别记录退出码；重跑写入独立目录并上传 Actions artifact，不覆盖硬件基线。
 旧阶段固定断言数与文件数只保留在对应报告；save-equivalence 的断言数量会随内容变化，不能当稳定指标。
 
 ## 6. Git、发布包与本地文件

@@ -119,44 +119,8 @@ jobs:
       - name: 安装依赖
         run: npm ci
 
-      - name: 启动水墨沙盒服务器（后台，端口 4180）
-        id: server
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path reports/ci -Force | Out-Null
-          $p = Start-Process -FilePath "node" -ArgumentList "scripts/inkbox-server.mjs" -PassThru -WindowStyle Hidden -RedirectStandardOutput reports/ci/server-stdout.log -RedirectStandardError reports/ci/server-stderr.log
-          $p.Id | Out-File -FilePath reports/ci/server.pid -Encoding ascii
-          for ($i = 0; $i -lt 60; $i++) {
-            try {
-              $r = Invoke-WebRequest -Uri "http://127.0.0.1:4180/inkbox.html" -UseBasicParsing -TimeoutSec 2
-              if ($r.StatusCode -eq 200) { Write-Host "服务器就绪"; exit 0 }
-            } catch { Start-Sleep -Milliseconds 500 }
-          }
-          throw "服务器 30 秒内未就绪"
-
-      - name: Canvas 浏览器交互检查
-        shell: pwsh
-        run: |
-          npm run test:browser -- --shots=reports/ci/canvas 2>&1 | Tee-Object -FilePath reports/ci/canvas-browser.log
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Render3D M2-A Edge（拾取 / 生命周期 / Mask / 性能环境）
-        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
-        shell: pwsh
-        env:
-          INKBOX_REPORT_DIR: reports/ci/render3d-m2a
-        run: |
-          npm run test:render3d:m2a:browser 2>&1 | Tee-Object -FilePath reports/ci/m2a-browser.log
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: 停止服务器
-        if: always()
-        shell: pwsh
-        run: |
-          if (Test-Path reports/ci/server.pid) {
-            $serverPid = Get-Content reports/ci/server.pid
-            Stop-Process -Id $serverPid -Force -ErrorAction SilentlyContinue
-          }
+      - name: Canvas + M2-A Edge（共享服务器生命周期）
+        run: node scripts/inkbox-browser-smoke.mjs
 
       - name: 保存浏览器复验证据（含失败时的可用输出）
         if: always()
