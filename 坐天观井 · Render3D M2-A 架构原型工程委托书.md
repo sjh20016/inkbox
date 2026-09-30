@@ -1,5 +1,7 @@
 # 坐天观井 · Render3D M2-A 架构原型工程委托书
 
+> 历史范围说明（2026-09-30）：本文保留对应阶段的原始委托 / 规划。已交付内容以工程报告为证，当前阶段以 ROADMAP / HANDOFF 为准；文内旧“下一阶段”、禁令和计数不能用作新的施工授权。
+
 阶段代号：
 
 **Render3D M2-A · Multi-Plane Architecture Prototype**

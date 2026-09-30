@@ -1,20 +1,37 @@
 # Project Status
 
+> 2026-09-30 收口：顶部是当前状态索引；下方日期章节保存当时事实，旧阶段的“当前 / 下一阶段”、测试数和禁令不适用于新任务。
+> 接手看 HANDOFF / ROADMAP；规则看 THREE_REALMS / VIEW_CONTRACT；本文件不承担当前施工授权。
+
 - 当前活跃版本：Inkbox 1.0.0（`src/inkbox`）
 - 当前入口：`inkbox.html`（3D 立体沙盘：`inkbox.html?renderer=3d`）；`npm run dev` 从 `http://127.0.0.1:4180/` 启动
 - 当前阶段：**Render3D M2-A 架构原型已完成**（2026-09-30）。一个 Host 管理三界 Stage，共享相机与视界状态，提供按位面拾取、只读 FX、Mask 与矩形 Slab 探针。13 组架构不变量、12 套发布门禁与 Edge 浏览器验收通过；交付证据和局限见 `Render3D M2-A 架构原型工程报告.md`。
-- **上一阶段（已完成）**：**Render3D M1「3D 世界实体可见化」**——委托书 `坐天观井 · 下一阶段工程委托书.md`；工程报告 `Render3D M1 工程报告.md`。
-- **下一阶段**：**Render3D M2-B 尚未开始**。根据 M2-A 的实际截图、拾取与性能数据裁决后另定工程范围。
+- **当前收口包**：**M2-A final cleanup**；只处理文档 / 记忆一致性、工作区归属、CI 和 checkpoint，M2-A 功能封板。
+- **上一阶段（已完成）**：Render3D M1.1D 工程加固；更早的 M1 实体可见化见各阶段报告。
+- **下一阶段**：**Render3D M2-B 未开始**。World-space Mask + grid boundary skirt + 完整 Layer Mask 是设计倾向；范围以 ROADMAP 与下一轮任务为准，本轮不施工。
 - **正式完成**：D6-2 三界生态 **A–F** · D6-3 跨界生态 **A–E** · D7 观察与表现层 **A–G 封板** · D8 视界 2.0 **A–F** · **Render3D M0**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻，`npm run test:render3d`）· **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环，`npm run test:render3d:m1`）· **Render3D M1.1D**（工程加固，`npm run test:render3d:bridge` + `npm run test:vendor`）。
 - **WIP / 暂缓**：**D8-G「跨界追迹」**——纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）已保存并由 `test:view` V9 钉住，**追迹 UI 未做**；本阶段不继续扩建 Canvas 版 D8-G。
-- **接手先读 `HANDOFF.md`**（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）——本文件是历史，不是现状。30 秒定位看 `ROADMAP.md`；视界契约见 `VIEW_CONTRACT.md`；Render3D M0 报告见 `RENDER3D_M0.md`。
+- **接手先读 `HANDOFF.md`**；阶段看 `ROADMAP.md`，目录与模块边界看 `ARCHITECTURE.md`，视界规则看 `VIEW_CONTRACT.md` v2。
 - 三界规则唯一成文处：`THREE_REALMS.md`（事实核对日期 2026-09-27 · D6-2 A–F · D6-3 A–E · D7-A/B/C/D/E/F/G）
-- 分支角色：`main` = 唯一活跃开发主线 · `codex/render3d-m0` = Render3D M0 历史技术快照（tag `render3d-m0`，**禁止从它开发新功能**）
-- 禁止误认为主线：`src/main.js`、`demo/`、`剧情文案素材/`、`scripts/v341*` 至 `scripts/v400*` 与研究探针
+- 主线与 checkpoint：`main` 唯一活跃；tag `render3d-m0` 为 M0 快照，`render3d-m2a` 指向 `f274def`，不重写已发布历史。
+- **活跃资产**：`剧情文案素材/` 已入 Git 并随包；`美术素材/` 已入 Git，尚未被 Render3D 消费，不在 dist。
+- **历史参考**：Git 中的旧 V3/V4 源码，以及当前 `scripts/_*.mjs` 一次性研究探针；旧 `src/main.js` / demo 不在本工作树，根 index / game 页面是跳转入口。
 - ⚠️ **本文件里的 commit hash 只写发布仓库可达的**。本工作区的完整开发史**不对外发布**，
   本地施工提交（如 D7 七包各自的提交）在别人克隆的仓库里解析不了 ⇒ 这里一律改用**阶段描述**。
 
 ---
+
+## Render3D M2-A 与 final cleanup（2026-09-30）
+
+- M2-A 功能基线：发布仓库 `f274def`；Host / 三界 Group Stage / 统一视界状态 / 位面拾取 / FX 只读探针 / 世界 Mask / 矩形 Slab 已交付。**M2 整体、M2-B 与 D8-G UI 未完成**。
+- 本地验收：13 组架构不变量、600 日三路等价、12 套门禁；Edge 160 点拾取零错误、11 项生命周期 / UI 检查。证据与原型局限见 `Render3D M2-A 架构原型工程报告.md` 和 `reports/release/render3d-m2a/`。
+- [M2-A CI run 36651925371](https://github.com/sjh20016/inkbox/actions/runs/36651925371)：`f274def` Fast / Heavy 成功。push 的 Browser Smoke 按设计 skipped；不能把本机 JSON 当该 runner 的浏览器复验。
+- [Nightly run 36636327689](https://github.com/sjh20016/inkbox/actions/runs/36636327689)：schedule 实跑成功，源码是 **`b9f9f12`**；记录成立，但不是 M2-A HEAD 的 Nightly 证据。
+- final cleanup：BACKLOG、HANDOFF、STATUS 收口；VIEW_CONTRACT v2 用世界 Region 描述 V1–V11；ARCHITECTURE 说明模块与 Git / dist 归属。本地记忆改为正式文档索引，重复旧笔记和诊断输出经校验备份后清除。
+- 门禁收口：Fast Gate 加 `test:vendor`；手动 Windows Browser Smoke 顺序复验 `test:browser` 与 `test:render3d:m2a:browser`，runner 输出独立上传 artifact，不改本机硬件基线。
+- checkpoint：`render3d-m2a` → `f274def`；cleanup 单独提交，不拆改原聚合历史。后续按可验证的架构 / 边界 / Layer / 测试 / 文档变更分包。
+
+## 历史记录（以下按当时阶段理解）
 
 ## Render3D M0.5 → M1「工程收束 + 3D 世界实体可见化」（2026-09-28）
 
@@ -941,11 +958,3 @@ D8-G UI、新建筑、新交互、AI 行为、概率调整**全禁**）。只做
   `stepMortalWraiths`（每 10 日一拍，`wraiths.js:333`）也用它 ⇒ 消费次数多于 pass 数。
   **修法**：该段 `runWorld(..., { nether: false, wraith: false })`（两个消费者都要冻结）。
   ⇒ **教训：判「某条流的消费次数」前，先 grep 出这条流的全部消费者。**
-
-
-## NEXT
-
-- **当前阶段**：Render3D M1.1D「Development Hardening」**已完成**（工程加固；范围见 `BACKLOG.md` 的 P1 `#1`–`#7`）。
-- **下一阶段**：**Render3D M2「三界空间表现架构」——尚未开始**。M2 尚未开始，**首先需要设计方案裁决**（见 `ROADMAP.md`）。
-- 本轮停止扩张；M1.1D 的 P0/P1 之外一切问题只记 `BACKLOG.md`。
-  本文件的 D6-2 / D6-3 / D7 / D8 / M0 / M1 / M1.1D 条目是**已交付历史**，不是待施工主线。

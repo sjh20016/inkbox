@@ -3,7 +3,7 @@
 > **本文件只放「还没做」的事。已完成的功能不许留在这里。**
 > 分区：**P0 阻塞** · **P1 当前工程** · **P2 后续体验** · **ICEBOX 暂停研究**。
 > 每条给一个稳定编号 `#N`；**源码注释引用编号即可**（已关闭的旧编号见文末表）。
-> 当前阶段去哪 → [`ROADMAP.md`](./ROADMAP.md)；历史 → `STATUS.md`。
+> 核对：2026-09-30，M2-A final cleanup。当前阶段去哪 → [`ROADMAP.md`](./ROADMAP.md)；历史 → `STATUS.md`。
 
 ## P0 阻塞
 
@@ -15,7 +15,7 @@
 
 > 上一轮 P1 `#1`–`#7`（**Render3D M1.1D「Development Hardening」**）**已全部完成**——
 > 落点见文末「已关闭编号」表；过程与数据见 `Render3D M1.1D 工程报告.md`。
-> 下一阶段 **Render3D M2「三界空间表现架构」尚未开始**，开工前先做设计方案裁决（见 `ROADMAP.md`）。
+> **Render3D M2-A 已完成并封板，M2-B 未开始。** Host / 三界 Stage / 世界空间 Mask 原型已经交付，不能重复立项；本轮仅做 final cleanup（见 `ROADMAP.md`）。
 
 ## P2 后续体验
 
@@ -26,12 +26,14 @@
 - `#12` 关系图只画「当前选中人物的一跳关系」（按 D7-F 规格，不做全世界社会网络）。
 - `#13` 「战争刚开始后几秒」的短暂战线由 `render/fxLayer.js` 的 `war-start` 特效承担；
   overlay 的常驻战争线只在「观察某宗门 / 按 W」时出现（避免蜘蛛网）。
+- `#31` **Three FX snapshot 成本**：当前 snapshotPlane 复制并冻结 FX。未来 FX 负载增加时再评估版本化快照或不可变记录；M2-A 事件量低，本轮不优化。
+- `#32` **完整视界的冷启动负载**：后续 Layer / FX 扩展保留 first-open / repeat-open 与实际 GPU 标识；当前测量不支持先造 PreloadManager。
 
 ### P2-b 工程瑕疵（非阻塞 · 原「P3 小修」）
 
 > 明确**不阻塞**主线的代码卫生问题。修它们要单独开包，**不许顺手改**。
 
-- `#14` **右栏太长**：`inkbox.html` 右栏已有 12 个区，滚到底很累。
+- `#14` **右栏布局继续收敛**：已有分区折叠；整体布局 / 阅读路径是否仍需改进，依玩家反馈单独开包。
 - `#15` `inspectAt(x, y)` **没有整数守卫**：传浮点坐标会静默落到别的格。
 - `#16` **零读者死数据**：`FIRST_LESSON` / `lineageStory` 全仓无人读。
 - `#17` `attack()` **缺 1v1 语义**：多人战斗与单挑走同一条路径。
@@ -40,8 +42,6 @@
 - `#20` `decayYears < 0` 的「永不消散」哨兵**与实现相反**：`stepNether` 判据是
   `day >= e.ghostDecayDay` ⇒ `0 >= -1e9` 恒真 ⇒ 传负数的鬼魂**立即消散**（与注释写反）。
   生产路径（`reincarnation.js`）不传该参数 ⇒ 目前无玩家可见后果。
-- `#21` 本机 `spawnSync(<任意 exe>)` 被环境拦截（EBUSY）⇒ `npm run build` 的 tar 步要手工补 zip
-  （copy 已完成；用 System32 的 bsdtar，**不能加 `--force-local`**）。
 
 ## ICEBOX 暂停研究
 
@@ -49,7 +49,7 @@
 
 - `#22` **D8-G「跨界追迹」UI**：纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）
   已保存并由 `test:view` V9 钉住，**UI 未做**；本阶段不扩建 Canvas 版 D8-G。
-- `#23` **三界 3D**：上界 / 幽冥 3D、3D 视界（属 Render3D M2/M3，M2 尚未开始）。
+- `#23` **完整三界视觉层 / 正式 3D 视界**：M2-A 的 Host、三界 Stage 和 Terrain + Entities Mask 已完成；M2-B 的格网边界侧壁、完整 Layer Mask、正式检视反馈 / Three FX 和后续 Art Pass 未完成。仅记录下一轮设计倾向，不在 cleanup 施工。
 - `#24` 复杂视界特效 · 多视界同开 · 全图永久另一界模式。
 - `#25` 幽冥宗门 / 鬼城 / 幽冥战争 · 上界大型政治经济系统 · 第四世界 · 新种族 · 寻路 / A\*。
 - `#26` 跨界战争 / 幽冥入侵。
@@ -75,6 +75,7 @@
 | `#5` | 性能基线重测（GPU 信息 + 逐层 profiling + JSON） | **已完成**：`npm run test:render3d:perf` |
 | `#6` | Three.js vendor 治理（运行时迁出 `node_modules`） | **已完成**：`vendor/three/**` + `npm run test:vendor` |
 | `#7` | 收尾文档与工程报告 | **已完成**：`Render3D M1.1D 工程报告.md` |
+| `#21` | 旧环境中 spawnSync EBUSY、需手工补 ZIP | **不作为当前产品待办**：2026-09-30 自动构建 / ZIP 已实测成功；若再出现，按当次执行权限或环境故障诊断，不伪报 build 通过 |
 | `#12` | 幽冥 `stepNether` 没接进推进循环 ⇒ 幽冥实体只增不减 | **已修**：统一入口 `sim/advance.js` |
 | `#13` | 「游戏日驱动」时钟被各测试各自手抄一份 ⇒ 迟早与真实游戏脱节 | **已修**：`advanceWorld(world, days, deps)` 是唯一定义处 |
 | `⑭` | 右栏区太多、太长 | **未修**：现为 `#14`（P2-b） |
@@ -90,5 +91,5 @@
   表现层（`render/fxLayer.js` / `render/overlayLayer.js` / `render/relationGraph.js`）**不写世界、不抽 RNG、不进存档**——
   删掉 `fxLayer.js`，模拟结果逐字不变。
 - 「记挂」（D7-E）是**玩家的观察者状态**（`world.watch`），不进三界人口守恒、不影响 AI、不给数值 buff。
-- **Render3D M0 / M1 / M1.1D 已完成**（M0 地形技术原型 · M1 世界实体可见化 · M1.1D 工程加固）；
-  性能数据采自**软件光栅器**，只作相对数据，见 `Render3D M1.1D 工程报告.md`。
+- **Render3D M0 / M1 / M1.1D / M2-A 已完成**；M2-B 和 D8-G UI 未开始。
+- M1.1D 的性能是软件光栅相对数据；M2-A 基线来自 Intel UHD 730 / ANGLE D3D11。Mask 当前隐藏多种 Layer，不能拿它的较低三角数证明完整视界更快。
