@@ -18,7 +18,7 @@ name: Inkbox CI
 # 刻意**不**进本 workflow 的：
 #   · `npm run test:simulation`（smoke，6.5–13 分钟）与 `npm run inkbox:longrun`（800 年）
 #     ⇒ 见 `nightly.yml`（D3.5：长测不进普通 CI）。
-#   · `npm run test:browser` ⇒ 见下面的 `browser-smoke` job。
+#   · `test:browser` + `test:render3d:m2a:browser` ⇒ 手动 browser-smoke；证据独立存 artifact。
 
 on:
   push:
@@ -43,6 +43,9 @@ jobs:
 
       - name: 安装依赖
         run: npm ci
+
+      - name: Three vendor 一致性（版本 / 许可证 / 字节）
+        run: npm run test:vendor
 
       - name: 核心检查（导入图 / 核心 / 启动 / 运行事件）
         run: npm run test:core
@@ -95,16 +98,16 @@ jobs:
   # ── 浏览器探针：**手动触发**，不是普通 CI 硬门槛（D3.4）─────────────────
   #
   # 为什么不放在 push / PR：
-  #   `scripts/inkbox-playtest.mjs` 复用**本机已安装**的 Edge / Chrome，候选路径写的是
-  #   Windows 安装位置 ⇒ 放在 `windows-latest` 才低成本可用（GitHub 的 Windows runner
-  #   预装 Edge）。**不为了 CI 新增 Playwright / Puppeteer 之类的大依赖**，
-  #   也不改游戏本身的运行方式。
+  #   Canvas playtest 优先 Edge；M2-A 强制 Edge，复用仓库零依赖 CDP。
+  #   windows-latest 预装 Edge；不引 Playwright / Puppeteer，不改游戏运行方式。
+  #   M2-A 结果写 reports/ci，保留 reports/release 的本机硬件基线。
   #
   # 手动跑法：仓库 → Actions → Inkbox CI → Run workflow。
   browser-smoke:
     name: Browser Smoke（手动）
     if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -117,10 +120,12 @@ jobs:
         run: npm ci
 
       - name: 启动水墨沙盒服务器（后台，端口 4180）
+        id: server
         shell: pwsh
         run: |
-          $p = Start-Process -FilePath "node" -ArgumentList "scripts/inkbox-server.mjs" -PassThru -NoNewWindow
-          $p.Id | Out-File -FilePath server.pid -Encoding ascii
+          New-Item -ItemType Directory -Path reports/ci -Force | Out-Null
+          $p = Start-Process -FilePath "node" -ArgumentList "scripts/inkbox-server.mjs" -PassThru -WindowStyle Hidden -RedirectStandardOutput reports/ci/server-stdout.log -RedirectStandardError reports/ci/server-stderr.log
+          $p.Id | Out-File -FilePath reports/ci/server.pid -Encoding ascii
           for ($i = 0; $i -lt 60; $i++) {
             try {
               $r = Invoke-WebRequest -Uri "http://127.0.0.1:4180/inkbox.html" -UseBasicParsing -TimeoutSec 2
@@ -129,14 +134,35 @@ jobs:
           }
           throw "服务器 30 秒内未就绪"
 
-      - name: 浏览器交互检查（144 项）
-        run: npm run test:browser
+      - name: Canvas 浏览器交互检查
+        shell: pwsh
+        run: |
+          npm run test:browser -- --shots=reports/ci/canvas 2>&1 | Tee-Object -FilePath reports/ci/canvas-browser.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Render3D M2-A Edge（拾取 / 生命周期 / Mask / 性能环境）
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        shell: pwsh
+        env:
+          INKBOX_REPORT_DIR: reports/ci/render3d-m2a
+        run: |
+          npm run test:render3d:m2a:browser 2>&1 | Tee-Object -FilePath reports/ci/m2a-browser.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: 停止服务器
         if: always()
         shell: pwsh
         run: |
-          if (Test-Path server.pid) {
-            $serverPid = Get-Content server.pid
+          if (Test-Path reports/ci/server.pid) {
+            $serverPid = Get-Content reports/ci/server.pid
             Stop-Process -Id $serverPid -Force -ErrorAction SilentlyContinue
           }
+
+      - name: 保存浏览器复验证据（含失败时的可用输出）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: inkbox-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/ci/
+          if-no-files-found: warn
+          retention-days: 14
