@@ -44,6 +44,6 @@ Slab 保留每边 ≤20 格的矩形研究探针，不扩任意 polygon；Render
 - M2-A 本地：13 组架构测试、12 套发布门禁、Edge 160 点拾取、11 项生命周期 / UI 检查；原始记录在 reports/release/render3d-m2a。
 - [M2-A CI 36651925371](https://github.com/sjh20016/inkbox/actions/runs/36651925371)：f274def 的 Fast / Heavy Gate 成功；该次 push 的 Browser Smoke 按设计 skipped。
 - [Nightly 36636327689](https://github.com/sjh20016/inkbox/actions/runs/36636327689)：schedule 实跑成功，源码 b9f9f12；它不构成 f274def 的 Nightly 证明。
-- cleanup 的远端浏览器复验须看 workflow_dispatch 的实际结果 / artifact；本地硬件基线不会被 runner 读数替换。
+- cleanup 远端复验已通过：[手动 CI 36670107531](https://github.com/sjh20016/inkbox/actions/runs/36670107531) 的 Fast / Heavy / Browser 全绿，源码 727f36a；具体统计与 artifact 身份只在 STATUS 记录。本地硬件基线不会被 runner 软件光栅读数替换。
 
 当前性能基线来自 Intel UHD 730 / ANGLE D3D11；M1.1D 的软件光栅读数属于旧阶段。驻留、可见、实际更新成本分别看工程报告。

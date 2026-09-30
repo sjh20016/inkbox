@@ -29,6 +29,8 @@
 - [Nightly run 36636327689](https://github.com/sjh20016/inkbox/actions/runs/36636327689)：schedule 实跑成功，源码是 **`b9f9f12`**；记录成立，但不是 M2-A HEAD 的 Nightly 证据。
 - final cleanup：BACKLOG、HANDOFF、STATUS 收口；VIEW_CONTRACT v2 用世界 Region 描述 V1–V11；ARCHITECTURE 说明模块与 Git / dist 归属。本地记忆改为正式文档索引，重复旧笔记和诊断输出经校验备份后清除。
 - 门禁收口：Fast Gate 加 `test:vendor`；手动 Windows Browser Smoke 顺序复验 `test:browser` 与 `test:render3d:m2a:browser`，runner 输出独立上传 artifact，不改本机硬件基线。
+- **cleanup 远端实跑成功**：源码 `727f36a` 的 [push CI 36670103840](https://github.com/sjh20016/inkbox/actions/runs/36670103840) 与 [手动 CI 36670107531](https://github.com/sjh20016/inkbox/actions/runs/36670107531) 均 success；手动的 Fast / Heavy / Browser 三个 job 全绿。Canvas **144 / 0**，M2-A 两界各 **80 点 / 零错误**。runner 为 Microsoft Basic Render Driver 软件光栅，属于功能复验，不替代 Intel UHD 730 性能基线。
+- 远端浏览器证据：artifact `inkbox-browser-36670107531-1`（34 文件，截图 / JSON / 日志），SHA256 `22541bf3aaa46202d8b4e19af28b453dcb4a784286603c4b2d7d5c54fe5c6400`。首次手动复验停在页面挂载；改由 `inkbox-browser-smoke.mjs` 同宿主管服务器 / 两套原测试，并保留启动诊断后复验成功，未修改原浏览器断言。
 - checkpoint：`render3d-m2a` → `f274def`；cleanup 单独提交，不拆改原聚合历史。后续按可验证的架构 / 边界 / Layer / 测试 / 文档变更分包。
 
 ## 历史记录（以下按当时阶段理解）
