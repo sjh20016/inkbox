@@ -8,9 +8,12 @@ import path from 'node:path';
 import * as THREE from 'three';
 import { fileURLToPath } from 'node:url';
 import { mulberry32 } from '../src/inkbox/core/noise.js';
+import { Life } from '../src/inkbox/sim/life.js';
+import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
 import { generateWorld } from '../src/inkbox/world/worldgen.js';
 import { generateUpperWorld } from '../src/inkbox/world/worldgenUpper.js';
 import { generateNetherWorld } from '../src/inkbox/world/worldgenNether.js';
+import { spawnNetherGhost } from '../src/inkbox/sim/netherLife.js';
 import { createCoordinates } from '../src/inkbox/render3d/coordinates.js';
 import { visualElevation, surfaceElevation, interpolateElevation } from '../src/inkbox/render3d/terrain/VisualElevation.js';
 import { ElevationField, RAW_ELEVATION_PROFILE, normalizeElevationProfile } from '../src/inkbox/render3d/terrain/ElevationField.js';
@@ -43,6 +46,8 @@ function makeWorld(seed = 616161, preset = { w: 64, h: 48 }) {
   const world = generateWorld({ preset, seed, scatter: true });
   world.upper = generateUpperWorld({ preset, seed: world.seed });
   world.nether = generateNetherWorld({ preset, seed: world.seed });
+  // 幽冥必须真的有人口，否则「窗内不泄漏 / 纯度对照」都会变成空断言。
+  for (let i = 0; i < 30; i += 1) spawnNetherGhost(world.nether, { kind: 'ghost', decayYears: 10 });
   return world;
 }
 
@@ -1522,6 +1527,63 @@ check('T8 结构：Three FX 只读 snapshotPlane，不新增 runtime event 消�
   // §66：不许趁机做完整粒子引擎
   const probe = readCode('src/inkbox/render3d/view/ThreeFxProbe.js');
   assert.doesNotMatch(probe, /Points|BufferGeometry[^)]*velocity|particle/i, '§66：不做粒子引擎');
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// T10 · 模拟纯度（§80）
+//
+// 「表现可以错过，历史不能错过」：视界 / 界缘 / Strata / 破口全部是**只读表现**，
+// 所以跑满 600 日之后世界 digest 必须逐字一致——无论 3D 里开着什么。
+// ══════════════════════════════════════════════════════════════════════════
+
+check('T10 600 日纯度：无 3D / 凡间 / 上界窗 / 幽冥窗 / 反复重画 / Strata ⇒ digest 逐字一致（§80）', () => {
+  const digest = w => JSON.stringify({
+    day: w.day, entities: w.entities, villages: w.villages, factions: w.factions,
+    artifacts: w.artifacts, artifactLog: w.artifactLog, sites: w.sites,
+    leylines: w.leylines, rifts: w.rifts, riftLog: w.riftLog,
+    wraiths: w.wraiths, wraithLog: w.wraithLog, watch: w.watch,
+    upper: w.upper, nether: w.nether,
+  });
+  const SHAPES = [
+    [[16, 12], [30, 12], [30, 24], [16, 24]],
+    [[22, 16], [40, 16], [40, 30], [22, 30]],
+    [[10, 20], [26, 20], [26, 34], [10, 34]],
+  ];
+  const run = mode => {
+    const world = makeWorld();
+    const opts = {
+      life: new Life(world, mulberry32(world.seed ^ 0xa5a5a5a5)),
+      upperLife: new Life(world.upper, mulberry32(world.seed ^ 0x55505052)),
+      state: createAdvanceState(), rng: mulberry32(world.seed ^ 0x1a2b3c4d),
+      nether: true, wraith: true, riftActive: true,
+    };
+    const created = mode === 'canvas' ? null : makeHost(world);
+    const host = created?.host;
+    if (mode === 'strata') host.setBoundaryMode('strata');
+    for (let round = 0; round < 20; round += 1) {
+      advanceWorld(world, 30, opts);
+      if (host) {
+        if (mode !== 'mortal') {
+          const targetPlane = mode === 'nether' ? 'nether' : 'upper';
+          const shape = mode === 'redraw' ? SHAPES[round % SHAPES.length] : SHAPES[0];
+          host.setRealmViewState({ open: true, targetPlane, region: regionOf(shape, world) });
+        }
+        host.update(0.2);
+      }
+    }
+    const value = digest(world);
+    assert.equal(world.day, 600);
+    assert(world.entities.length > 0 && world.upper.entities.length > 0 && world.nether.entities.length > 0,
+      '对照组必须真的在跑（否则「一致」可能只是「都空」）');
+    host?.dispose();
+    return value;
+  };
+  const base = run('canvas');
+  assert.equal(run('mortal'), base, '凡间 Stage 必须保持模拟纯度');
+  assert.equal(run('upper'), base, '开上界视界必须保持模拟纯度');
+  assert.equal(run('nether'), base, '开幽冥视界必须保持模拟纯度');
+  assert.equal(run('redraw'), base, '反复重画视界必须保持模拟纯度');
+  assert.equal(run('strata'), base, 'Strata 垂直表现必须保持模拟纯度');
 });
 
 // ══════════════════════════════════════════════════════════════════════════

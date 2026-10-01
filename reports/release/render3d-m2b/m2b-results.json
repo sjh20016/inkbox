@@ -1,7 +1,7 @@
 {
   "suite": "Render3D M2-B",
   "status": "passed",
-  "passed": 68,
+  "passed": 69,
   "failed": 0,
   "checks": [
     {
@@ -274,6 +274,10 @@
     },
     {
       "label": "T8 结构：Three FX 只读 snapshotPlane，不新增 runtime event 消费者（§64/S8）",
+      "status": "passed"
+    },
+    {
+      "label": "T10 600 日纯度：无 3D / 凡间 / 上界窗 / 幽冥窗 / 反复重画 / Strata ⇒ digest 逐字一致（§80）",
       "status": "passed"
     }
   ]
