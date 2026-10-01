@@ -6,6 +6,9 @@ import { TERRAIN_INFO } from '../core/config.js';
 export class Render3DAdapter {
   constructor(sandbox) {
     this.sandbox = sandbox; this.active = true; this.mode = 'inspect'; this.radius = 6; this.strength = 0.035;
+    // M2-B B2（§54）：垂直表现模式的**调试开关**。`?boundary=strata` 让视觉证据脚本
+    // 能在同一 seed / 同一 Region / 同一相机下切换 Raw 与 Strata。正式 UI 不并列它。
+    this.boundaryMode = new URLSearchParams(globalThis.location?.search || '').get('boundary') || null;
     this.abort = new AbortController(); this.undoStack = [];
     const stage = sandbox.canvas.parentElement;
     this.canvas = document.createElement('canvas'); this.canvas.id = 'inkCanvas3D';
@@ -164,6 +167,7 @@ export class Render3DAdapter {
     const world = this.sandbox.world;
     if (this.renderer.setWorld(world)) { this.stroke = null; this.undoStack = []; this.selectedCell = null; this.lastNow = null; this.planeSelect.value = this.renderer.activePlane; }
     this.renderer.setRealmViewState(this.sandbox.getRealmViewState());
+    if (this.boundaryMode) this.renderer.setBoundaryMode(this.boundaryMode);
     this.renderer.setPresentation(this.sandbox.stage);
     const dt = this.lastNow == null ? 0 : Math.max(0, now - this.lastNow); this.lastNow = now;
     this.renderer.update(dt);

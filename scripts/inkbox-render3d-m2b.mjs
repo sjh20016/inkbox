@@ -15,6 +15,7 @@ import { createCoordinates } from '../src/inkbox/render3d/coordinates.js';
 import { visualElevation, surfaceElevation, interpolateElevation } from '../src/inkbox/render3d/terrain/VisualElevation.js';
 import { ElevationField, RAW_ELEVATION_PROFILE, normalizeElevationProfile } from '../src/inkbox/render3d/terrain/ElevationField.js';
 import { RegionGeometry, DISTANCE_UNKNOWN } from '../src/inkbox/render3d/region/RegionGeometry.js';
+import { boundarySpec, boundaryElevation, buildRealmBoundaryField } from '../src/inkbox/render3d/boundary/strataProfile.js';
 import { ENTITY_CLASSES, deriveEntities } from '../src/inkbox/render3d/entities/deriveEntities.js';
 import { STRUCT } from '../src/inkbox/core/config.js';
 import { deriveVegetation } from '../src/inkbox/render3d/vegetation/deriveVegetation.js';
@@ -274,7 +275,7 @@ check('§9 结构：生产 Render3D 里只有 ElevationField.js 能 import 高�
       if (!entry.name.endsWith('.js')) continue;
       const relative = path.relative(root, full).replace(/\\/g, '/');
       if (relative === ELEVATION_ENTRY) continue;
-      const source = fs.readFileSync(full, 'utf8');
+      const source = stripComments(fs.readFileSync(full, 'utf8'));
       if (/from\s+'[^']*VisualElevation\.js'/.test(source)) offenders.push(relative);
     }
   };
@@ -292,7 +293,7 @@ check('§9 结构：生产 Render3D 里没有任何 surfaceElevation / visualEle
       if (!entry.name.endsWith('.js')) continue;
       const relative = path.relative(root, full).replace(/\\/g, '/');
       if (relative === ELEVATION_ENTRY || relative === 'src/inkbox/render3d/terrain/VisualElevation.js') continue;
-      const source = fs.readFileSync(full, 'utf8');
+      const source = stripComments(fs.readFileSync(full, 'utf8'));
       if (/\b(surfaceElevation|visualElevation)\s*\(/.test(source)) offenders.push(relative);
     }
   };
@@ -301,7 +302,7 @@ check('§9 结构：生产 Render3D 里没有任何 surfaceElevation / visualEle
 });
 
 check('§9 结构：ElevationField 复用 VisualElevation，不复制插值公式', () => {
-  const source = readSource(ELEVATION_ENTRY);
+  const source = readCode(ELEVATION_ENTRY);
   assert.match(source, /import \{[^}]*interpolateElevation[^}]*\} from '\.\/VisualElevation\.js'/);
   assert.match(source, /import \{[^}]*visualElevation[^}]*\} from '\.\/VisualElevation\.js'/);
   // 禁止在 ElevationField 里重新实现插值（出现 a + u * (b - a) 这种算式就是抄了）
@@ -953,6 +954,266 @@ check('T2 §27 目标位面内容纪律：不为了填满 Layer 而机械复制�
     }
     assert.match(block, /selection: true/, `${plane} 需要只读选择反馈（§25）`);
     assert.match(block, /selectionReadonly: true/);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// T3 · 同坐标与 Shoulder（§73）
+// ══════════════════════════════════════════════════════════════════════════
+
+check('T3 同一 (x,y) 的 XZ 完全一致，只有 Y 允许不同（§73）', () => {
+  const world = makeWorld(); const { host } = makeHost(world);
+  const region = regionOf(WINDOW, world);
+  openWindow(host, region, 'upper');
+  const mortal = host.stages.get('mortal'), upper = host.stages.get('upper');
+  const mp = mortal.terrain.geometry.attributes.position;
+  const up = upper.terrain.geometry.attributes.position;
+  for (let i = 0; i < world.size; i += 3) {
+    assert.equal(up.getX(i), mp.getX(i), `格 ${i} 的 X 必须一致`);
+    assert.equal(up.getZ(i), mp.getZ(i), `格 ${i} 的 Z 必须一致`);
+  }
+  // 界缘的 XZ 也必须来自同一套格网节点
+  const pos = host.boundary.position.array;
+  let v = 0;
+  for (const { ax, ay, bx, by } of upper.regionGeometry.boundaryEdges()) {
+    for (const [x, y] of [[ax, ay], [ax, ay], [bx, by], [bx, by]]) {
+      const expected = mortal.coordinates
+        ? mortal.coordinates.cellToRender(x, y)
+        : host.coordinates.cellToRender(x, y);
+      assert.equal(pos[v * 3], expected.x);
+      assert.equal(pos[v * 3 + 2], expected.z);
+      v += 1;
+    }
+  }
+  assert(v > 0, '必须真的走过边界顶点');
+  host.dispose();
+});
+
+check('T3 相机 / 反复 applyView 不得让 Region 与界缘漂移（§73）', () => {
+  const world = makeWorld(); const { host } = makeHost(world);
+  const region = regionOf(WINDOW, world);
+  openWindow(host, region, 'upper');
+  const before = {
+    key: host.boundary.key,
+    region: host.stages.get('upper').regionGeometry.region,
+    positions: host.boundary.position.array.slice(),
+    edges: host.boundary.stats.edges,
+  };
+  for (let i = 0; i < 8; i += 1) { host.applyView(); host.update(0.016); }
+  assert.equal(host.boundary.key, before.key, '缓存键不得变化 ⇒ 不重建');
+  assert.equal(host.stages.get('upper').regionGeometry.region, before.region, 'Region 身份不得变化');
+  assert.equal(host.boundary.stats.edges, before.edges);
+  assert.deepEqual(host.boundary.position.array.slice(), before.positions, '界缘几何不得有任何漂移');
+  host.dispose();
+});
+
+check('T3 Shoulder：边缘 = R、K 格之外恢复 T、中间 smoothstep 单调过渡（§37）', () => {
+  const world = makeWorld(); const { host } = makeHost(world);
+  const region = regionOf([[20, 16], [34, 16], [34, 28], [20, 28]], world);
+  host.setBoundaryMode('strata');
+  openWindow(host, region, 'upper');
+  const upper = host.stages.get('upper');
+  const field = host.boundaryField;
+  assert(field, 'strata 模式必须构建 shoulder 场');
+  const spec = boundarySpec('strata', 1);
+
+  // ① 边界节点：权重 1 ⇒ 目标高度必须**正好**等于 R
+  let onEdge = 0;
+  for (const { ax, ay } of upper.regionGeometry.boundaryEdges()) {
+    const M = host.stages.get('mortal').elevation.node(ax, ay);
+    const T = spec.datum + spec.relief * upper.elevation.baseNode(ax, ay);
+    const R = boundaryElevation({ M, T, sign: 1, hMin: spec.hMin, hCap: spec.hCap });
+    assert.equal(field.weightAt(ax, ay), 1, '边界节点权重必须是 1');
+    // ⚠️ shoulder 场是 Float32Array 缓存 ⇒ 与 Float64 重算比对要按 float32 精度。
+    //    缝隙的**精确性**不靠这里：墙顶与目标地形顶点读的是同一个存储值（见 T4）。
+    assert(Math.abs(field.edgeAt(ax, ay) - R) <= Math.abs(R) * 1e-6 + 1e-6,
+      `边界 R 不符：${field.edgeAt(ax, ay)} vs ${R}`);
+    assert.equal(upper.elevation.node(ax, ay), field.edgeAt(ax, ay), '边界节点的最终高度必须就是 R');
+    onEdge += 1;
+  }
+  assert(onEdge > 0);
+
+  // ② 距离 ≥ K：权重 0 ⇒ 回到 T（datum + relief * base）
+  const band = spec.shoulderK;
+  let farChecked = 0;
+  for (const [x, y] of [[27, 22], [26, 21], [28, 23]]) {
+    if (field.weightAt(x, y) !== 0) continue;
+    const T = spec.datum + spec.relief * upper.elevation.baseNode(x, y);
+    assert(Math.abs(upper.elevation.node(x, y) - T) < 1e-6, `K 之外必须回到 T：${x},${y}`);
+    farChecked += 1;
+  }
+  assert(farChecked > 0, `窗口必须足够大，让中心和边界距离 ≥ K=${band}`);
+
+  // ③ 权重随距离**单调不增**，且落在 [0,1]
+  for (const { ax, ay } of upper.regionGeometry.boundaryEdges()) {
+    let previous = 1;
+    for (let step = 0; step <= band + 1; step += 1) {
+      const x = ax + (ax < world.w / 2 ? step : -step);
+      if (x < 0 || x >= world.w) break;
+      const w = field.weightAt(x, ay);
+      assert(w >= 0 && w <= 1, `权重越界：${w}`);
+      assert(w <= previous + 1e-9, `权重必须随距离单调不增：${x},${ay} ⇒ ${w} > ${previous}`);
+      previous = w;
+    }
+  }
+
+  // ④ 凡间保持真实：mortal 的剖面永远是 RAW（§37）
+  assert.equal(host.stages.get('mortal').elevation.raw, true, '凡间地形必须保持真实');
+  assert.equal(upper.elevation.raw, false, 'strata 模式下目标界必须已套用剖面');
+  host.dispose();
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// T4 · 无缝界缘（§74）
+// ══════════════════════════════════════════════════════════════════════════
+
+/**
+ * 界缘体检：逐边核对「墙下端 = 凡间边缘」「墙上端 = 目标界边缘」，
+ * 并且**直接与地形网格的顶点取值比对**——那才是「零黑缝」的真正判据。
+ */
+function auditBoundarySeam(host, label, targetPlane = 'upper') {
+  const mortal = host.stages.get('mortal');
+  const target = host.stages.get(targetPlane);
+  const layer = host.boundary;
+  const world = target.world;
+  const pos = layer.position.array;
+  const mapos = mortal.terrain.geometry.attributes.position;
+  const tappos = target.terrain.geometry.attributes.position;
+  const indices = layer.geometry.index.array;
+  const drawCount = layer.geometry.drawRange.count;
+  assert.equal(drawCount, layer.stats.edges * 6, `${label}: 每边两个三角形（§86）`);
+  assert.equal(layer.vertices, layer.stats.edges * 4);
+
+  let v = 0;
+  for (const { ax, ay, bx, by } of target.regionGeometry.boundaryEdges()) {
+    const nodes = [[ax, ay], [ax, ay], [bx, by], [bx, by]];
+    for (let k = 0; k < 4; k += 1) {
+      const [x, y] = nodes[k];
+      const y3 = pos[v * 3 + 1], x3 = pos[v * 3], z3 = pos[v * 3 + 2];
+      assert(Number.isFinite(x3) && Number.isFinite(y3) && Number.isFinite(z3), `${label}: 顶点不得出现 NaN`);
+      assert.equal(x3, host.coordinates.cellToRender(x, y).x, `${label}: XZ 必须来自共享格网`);
+      assert.equal(z3, host.coordinates.cellToRender(x, y).z);
+      const i = y * world.w + x;
+      if (k % 2 === 0) {
+        // 上端 = 目标界在该节点的**最终**高程。
+        // ⚠️ 顶点缓冲是 Float32Array ⇒ 与 Float64 重算比对必须先 `Math.fround`；
+        //    而**真正的零缝隙判据**是下面那条 float32 对 float32 的比较。
+        assert.equal(y3, Math.fround(target.elevation.node(x, y)), `${label}: 墙顶必须等于目标界边缘高程`);
+        assert.equal(y3, tappos.getY(i), `${label}: 墙顶与目标地形顶点必须逐位相同（§33 零缝隙）`);
+      } else {
+        // 下端 = 凡间在该节点的高程。
+        assert.equal(y3, Math.fround(mortal.elevation.node(x, y)), `${label}: 墙底必须等于凡间边缘高程`);
+        assert.equal(y3, mapos.getY(i), `${label}: 墙底与凡间地形顶点必须逐位相同（§33 零缝隙）`);
+      }
+      v += 1;
+    }
+  }
+  for (let k = 0; k < drawCount; k += 1) {
+    assert(indices[k] >= 0 && indices[k] < layer.vertices, `${label}: 索引越界`);
+  }
+  assert.deepEqual(host.boundary.stats, {
+    ...host.boundary.stats, edges: host.boundary.stats.edges,
+  });
+  return { edges: layer.stats.edges, rawGapMax: layer.stats.rawGapMax, visualDepthMax: layer.stats.visualDepthMax };
+}
+
+const BOUNDARY_SHAPES = () => {
+  const world = makeWorld();
+  return {
+    world,
+    矩形: regionOf([[20, 16], [34, 16], [34, 28], [20, 28]], world),
+    凹形: regionOf([[14, 12], [30, 12], [30, 20], [22, 20], [22, 30], [14, 30]], world),
+    随机套索: regionOf([[16, 10], [28, 13], [36, 22], [30, 31], [18, 33], [11, 24], [10, 15]], world),
+    贴图边缘: regionOf([[0, 0], [18, 0], [18, 14], [0, 14]], world),
+  };
+};
+
+for (const mode of ['raw', 'strata']) {
+  for (const label of ['矩形', '凹形', '随机套索', '贴图边缘']) {
+    check(`T4 无缝界缘 · ${mode} · ${label}：墙底=凡间边缘、墙顶=目标界边缘、零 NaN`, () => {
+      const { world, [label]: region } = BOUNDARY_SHAPES();
+      const { host } = makeHost(world);
+      host.setBoundaryMode(mode);
+      openWindow(host, region, 'upper');
+      const result = auditBoundarySeam(host, `${mode}/${label}`);
+      assert(result.edges > 0, '必须有边界边');
+      assert(Number.isFinite(result.rawGapMax) && result.rawGapMax >= 0);
+      host.dispose();
+    });
+  }
+}
+
+check('T4 高山边缘 / 低谷边缘：极端高差下不 NaN、不翻折、仍然无缝', () => {
+  for (const kind of ['high', 'low']) {
+    const world = makeWorld();
+    // 在窗口边缘造一段极端地形：抬到接近 1 或压到接近 0。
+    const value = kind === 'high' ? 0.98 : 0.02;
+    for (let y = 14; y <= 30; y += 1) {
+      for (let x = 18; x <= 22; x += 1) world.height[y * world.w + x] = Math.fround(value);
+    }
+    const { host } = makeHost(world);
+    host.setBoundaryMode('strata');
+    const region = regionOf([[20, 16], [34, 16], [34, 28], [20, 28]], world);
+    openWindow(host, region, 'upper');
+    const result = auditBoundarySeam(host, kind);
+    assert(result.edges > 0);
+    assert(result.rawGapMax > 5, `极端高差用例必须真的有高差：${result.rawGapMax}`);
+    assert(result.visualDepthMax <= 26 + 8 + 1e-6, `strata 净空必须被 Hcap 压住：${result.visualDepthMax}`);
+    host.dispose();
+  }
+});
+
+check('T4 Raw 与 Strata 的差别只体现在表现：真实高差读数一致、模拟世界一字未动', () => {
+  const measure = mode => {
+    const world = makeWorld();
+    const heightSnapshot = world.height.slice();
+    const { host } = makeHost(world);
+    host.setBoundaryMode(mode);
+    const region = regionOf([[20, 16], [34, 16], [34, 28], [20, 28]], world);
+    openWindow(host, region, 'upper');
+    const result = {
+      rawGapMax: host.boundary.stats.rawGapMax,
+      visualDepthMax: host.boundary.stats.visualDepthMax,
+      heightIntact: world.height.every((v, i) => v === heightSnapshot[i]),
+      targetProfile: host.stages.get('upper').elevation.profile,
+      edges: host.boundary.stats.edges,
+    };
+    host.dispose();
+    return result;
+  };
+  const raw = measure('raw');
+  const strata = measure('strata');
+  assert.equal(raw.heightIntact, true, 'Raw 模式不得写世界');
+  assert.equal(strata.heightIntact, true, 'Strata 模式不得写世界（P4 / §39）');
+  assert.equal(raw.edges, strata.edges, '两种模式的边界边数必须相同');
+  assert(Math.abs(raw.rawGapMax - strata.rawGapMax) < 1e-6, '真实高差读数与模式无关（Raw 暴露它、Strata 塑形它）');
+  assert(strata.visualDepthMax !== raw.visualDepthMax, 'Strata 必须真的改变了画出来的深度');
+});
+
+check('T2 §30 结构：界缘层不是 rift manager，也不持有 world.rifts（S6）', () => {
+  const source = readCode('src/inkbox/render3d/boundary/RealmBoundaryLayer.js');
+  assert.doesNotMatch(source, /world\.rifts/, '界缘层不得持有 world.rifts（S6）');
+  assert.doesNotMatch(source, /riftRadiusAt|openRifts|LEAK_|CHANCE/, '界缘层不得碰裂缝逻辑或概率');
+  assert.match(source, /RENDER_ORDER\.realmBoundary/, '必须用 M2-A 预留的渲染次序');
+  // §44：不得引入重型管线
+  for (const banned of ['EffectComposer', 'RenderTarget', 'WebGLRenderTarget', 'WebGPU', 'ShaderMaterial']) {
+    assert.doesNotMatch(source, new RegExp(banned), `§44 禁止 ${banned}`);
+  }
+});
+
+check('T2 §39/§47 结构：strataProfile 不写 world、不抽 RNG、不碰概率，且命名是表现量', () => {
+  const source = readCode('src/inkbox/render3d/boundary/strataProfile.js');
+  assert.doesNotMatch(source, /world\.height\[[^\]]*\]\s*=/, '禁止反写 world.height（P4 / §39）');
+  assert.doesNotMatch(source, /Math\.random|mulberry32|rng\s*\(/, '不得抽 RNG');
+  assert.doesNotMatch(source, /LEAK_|WRAITH_CLIMB|POSSESS_|CHANCE/, '不得碰三界概率（S7）');
+  assert.doesNotMatch(source, /sealStrength|镇压/, '不得出现机制性命名（P2 / §47）');
+  for (const name of ['datum', 'relief', 'shoulder']) {
+    assert.match(source, new RegExp(name), `§47 允许的表现量命名应保留 ${name}`);
+  }
+  // §47 的其它两个表现量在界缘层（它才是画深度的那一层）
+  const layer = readCode('src/inkbox/render3d/boundary/RealmBoundaryLayer.js');
+  for (const name of ['rawGap', 'visualDepth', 'boundaryDirection']) {
+    assert.match(layer, new RegExp(name), `§47 允许的表现量命名应保留 ${name}`);
   }
 });
 

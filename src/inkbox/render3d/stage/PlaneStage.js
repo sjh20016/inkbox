@@ -69,6 +69,29 @@ export class PlaneStage {
   }
 
   /**
+   * M2-B B2：切换本 Stage 的**表现**高程剖面（Raw / Strata，§34）。
+   *
+   * ⚠️ 只改表现：`ElevationField` 是只读映射，**绝不**写 `world.height`（P4 / §39）。
+   * 剖面变了 ⇒ 地形顶点 Y 要整图重写；其余贴地层各自按节流刷新，这里直接催一次。
+   *
+   * @returns {boolean} 剖面是否真的变了
+   */
+  setElevationProfile(profile) {
+    const before = this.elevation.profile;
+    const next = this.elevation.setProfile(profile);
+    if (before === next) return false;
+    const region = { x0: 0, y0: 0, x1: this.world.w - 1, y1: this.world.h - 1 };
+    this.terrain?.update(region, { height: true, type: false });
+    this.water?.update(region);
+    if (this.entities) { this.entities.lastDerived = null; this.entities.clock = Infinity; }
+    if (this.settlements) { this.settlements.lastDerived = null; this.settlements.clock = Infinity; }
+    if (this.markers) { this.markers.lastDerived = null; this.markers.clock = Infinity; }
+    if (this.vegetation) this.vegetationPending = true;
+    if (this.selectionMarker) this.selectionMarker.needsPlace = true;
+    return true;
+  }
+
+  /**
    * 设置本 Stage 的 Region 遮罩。
    *
    * M2-B §12 / §85：`RegionGeometry` **只在 Region identity 变化时重建**。
@@ -141,6 +164,8 @@ export class PlaneStage {
       settlementUpdateMs: t5 - t4, markerUpdateMs: t6 - t5,
       layerUpdateMs: t6 - t0,
     };
+    // 本帧地形高度是否真的变过——界缘断面据此刷新（§85「相关 height dirty」）。
+    this.heightChanged = heightChanged;
   }
 
   releaseLayers() {

@@ -1,7 +1,7 @@
 {
   "suite": "Render3D M2-B",
   "status": "passed",
-  "passed": 41,
+  "passed": 56,
   "failed": 0,
   "checks": [
     {
@@ -166,6 +166,66 @@
     },
     {
       "label": "T2 §27 目标位面内容纪律：不为了填满 Layer 而机械复制凡间 profile",
+      "status": "passed"
+    },
+    {
+      "label": "T3 同一 (x,y) 的 XZ 完全一致，只有 Y 允许不同（§73）",
+      "status": "passed"
+    },
+    {
+      "label": "T3 相机 / 反复 applyView 不得让 Region 与界缘漂移（§73）",
+      "status": "passed"
+    },
+    {
+      "label": "T3 Shoulder：边缘 = R、K 格之外恢复 T、中间 smoothstep 单调过渡（§37）",
+      "status": "passed"
+    },
+    {
+      "label": "T4 无缝界缘 · raw · 矩形：墙底=凡间边缘、墙顶=目标界边缘、零 NaN",
+      "status": "passed"
+    },
+    {
+      "label": "T4 无缝界缘 · raw · 凹形：墙底=凡间边缘、墙顶=目标界边缘、零 NaN",
+      "status": "passed"
+    },
+    {
+      "label": "T4 无缝界缘 · raw · 随机套索：墙底=凡间边缘、墙顶=目标界边缘、零 NaN",
+      "status": "passed"
+    },
+    {
+      "label": "T4 无缝界缘 · raw · 贴图边缘：墙底=凡间边缘、墙顶=目标界边缘、零 NaN",
+      "status": "passed"
+    },
+    {
+      "label": "T4 无缝界缘 · strata · 矩形：墙底=凡间边缘、墙顶=目标界边缘、零 NaN",
+      "status": "passed"
+    },
+    {
+      "label": "T4 无缝界缘 · strata · 凹形：墙底=凡间边缘、墙顶=目标界边缘、零 NaN",
+      "status": "passed"
+    },
+    {
+      "label": "T4 无缝界缘 · strata · 随机套索：墙底=凡间边缘、墙顶=目标界边缘、零 NaN",
+      "status": "passed"
+    },
+    {
+      "label": "T4 无缝界缘 · strata · 贴图边缘：墙底=凡间边缘、墙顶=目标界边缘、零 NaN",
+      "status": "passed"
+    },
+    {
+      "label": "T4 高山边缘 / 低谷边缘：极端高差下不 NaN、不翻折、仍然无缝",
+      "status": "passed"
+    },
+    {
+      "label": "T4 Raw 与 Strata 的差别只体现在表现：真实高差读数一致、模拟世界一字未动",
+      "status": "passed"
+    },
+    {
+      "label": "T2 §30 结构：界缘层不是 rift manager，也不持有 world.rifts（S6）",
+      "status": "passed"
+    },
+    {
+      "label": "T2 §39/§47 结构：strataProfile 不写 world、不抽 RNG、不碰概率，且命名是表现量",
       "status": "passed"
     }
   ]

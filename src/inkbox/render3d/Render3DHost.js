@@ -9,6 +9,8 @@ import { RealmView3DPrototype } from './view/RealmView3DPrototype.js';
 import { SlabPrototype } from './view/SlabPrototype.js';
 import { ThreeFxProbe } from './view/ThreeFxProbe.js';
 import { BrushOverlay } from './BrushOverlay.js';
+import { RealmBoundaryLayer } from './boundary/RealmBoundaryLayer.js';
+import { BOUNDARY_MODES, RAW_BOUNDARY, boundarySpec, buildRealmBoundaryField } from './boundary/strataProfile.js';
 import { RenderDebug } from './debug/RenderDebug.js';
 
 export class Render3DHost {
@@ -25,6 +27,11 @@ export class Render3DHost {
     this.picker = new PlanePicker(this); this.realmPrototype = new RealmView3DPrototype(this);
     this.brushOverlay = new BrushOverlay(); this.ring = this.brushOverlay.mesh; this.scene.add(this.ring);
     this.realmViewState = { open: false, targetPlane: null, region: null };
+    // M2-B B2：垂直表现模式。默认 Raw —— 它是工程基线（§34 Mode R），
+    // 也就是「什么都不加」，保证 B1 之前的画面逐字不变。
+    this.boundaryMode = 'raw';
+    this.boundaryKey = null;
+    this.boundaryField = null;
     this.setWorld(world);
   }
   setWorld(world) {
@@ -44,6 +51,10 @@ export class Render3DHost {
       });
     } catch (error) { this.releaseWorld(); this.worldSet = null; throw error; }
     if (!this.stages.has(this.activePlane)) this.activePlane = 'mortal';
+    // M2-B B2：界缘断面跨「凡间 ↔ 目标界」两个 Stage，所以它属于 Host 而不是某个 Stage。
+    this.boundary = new RealmBoundaryLayer({ coordinates: this.coordinates });
+    this.scene.add(this.boundary.mesh);
+    this.boundaryKey = null; this.boundaryField = null;
     this.debug.samples = []; this.applyView(); return true;
   }
   setActivePlane(plane) {
@@ -51,6 +62,74 @@ export class Render3DHost {
     this.activePlane = plane; this.setSlabProbe(false); this.applyView(); return true;
   }
   setRealmViewState(state) { this.realmViewState = state; this.applyView(); }
+
+  /**
+   * M2-B B2（§34 / §54）：切换垂直表现模式 `raw` / `strata`。
+   * 这是**调试开关**，不占正式 UI 的位置（§54）。
+   */
+  setBoundaryMode(mode) {
+    const next = BOUNDARY_MODES.includes(mode) ? mode : 'raw';
+    if (this.boundaryMode === next) return false;
+    this.boundaryMode = next;
+    this.boundaryKey = null;
+    this.applyView();
+    return true;
+  }
+
+  /**
+   * 界缘断面的装配（B2）。
+   *
+   * 只在 **(Region identity, 模式, 目标位面)** 变化时重建（§12 / §85）：
+   * 这些量决定了 `RealmBoundaryLayer.keyFor()` 的缓存键。地形高度变脏时由
+   * `update()` 把键置空，下一帧走同一条重建路径。
+   *
+   * ⚠️ 顺序是**承重**的：先把目标位面的表现剖面换好，再画墙——墙顶取的就是
+   *    目标界在边界节点的**最终**高程（§33），顺序反了墙顶会慢一帧。
+   */
+  #applyBoundary() {
+    if (!this.boundary) return;
+    const mortal = this.stages.get('mortal');
+    const targetPlane = this.realmPrototype.open ? this.realmPrototype.targetPlane : null;
+    const target = targetPlane ? this.stages.get(targetPlane) : null;
+    if (!target || !mortal) {
+      this.boundary.setVisible(false);
+      this.boundaryKey = null;
+      this.boundaryField = null;
+      // 关窗 ⇒ 目标界回到 Raw 基线：没有窗就没有断面，别留着 datum 悬在天上。
+      if (target) target.setElevationProfile(RAW_BOUNDARY);
+      return;
+    }
+    const region = this.realmViewState.region;
+    const sign = targetPlane === 'upper' ? 1 : -1;
+    const spec = boundarySpec(this.boundaryMode, sign);
+    const key = RealmBoundaryLayer.keyFor({ region, mode: spec.mode, sign, targetPlane });
+    if (this.boundaryKey !== key) {
+      this.boundaryKey = key;
+      if (spec.mode === 'strata') {
+        // §38：shoulder 场只在这里构建一次，绝不每帧重算。
+        this.boundaryField = buildRealmBoundaryField({
+          world: target.world,
+          regionGeometry: target.regionGeometry,
+          mortalElevation: mortal.elevation,
+          targetElevation: target.elevation,
+          spec,
+        });
+        target.setElevationProfile({ datum: spec.datum, relief: spec.relief, shoulder: this.boundaryField.shoulder });
+      } else {
+        this.boundaryField = null;
+        target.setElevationProfile(RAW_BOUNDARY);
+      }
+      // ⚠️ 凡间 Stage **永远**保持真实高程（§37「凡间地形：保持真实」）。
+      mortal.setElevationProfile(RAW_BOUNDARY);
+      this.boundary.rebuild({
+        regionGeometry: target.regionGeometry,
+        mortalElevation: mortal.elevation,
+        targetElevation: target.elevation,
+        sign, key,
+      });
+    }
+    this.boundary.setVisible(true);
+  }
   setPresentation(presentation) { this.presentation = presentation; }
   applyView() {
     if (this.slabProbe) {
@@ -58,6 +137,7 @@ export class Render3DHost {
       this.slabRegion ||= { ...rectangle, contains: (x, y) => x >= rectangle.x0 && x < rectangle.x1 && y >= rectangle.y0 && y < rectangle.y1 };
     }
     this.realmPrototype.apply(this.realmViewState, this.activePlane);
+    this.#applyBoundary();
   }
   update(dt) {
     const start = performance.now(); this.applyView();
@@ -69,6 +149,13 @@ export class Render3DHost {
       for (const key of Object.keys(totals)) totals[key] += stage.timings?.[key] || 0;
       stage.fxProbe.root.visible = !this.realmPrototype.open;
       stage.fxProbe.update(this.presentation, stage.world);
+    }
+    // §85：地形高度真的变过（雕刻 / 水文 / 生态）⇒ 界缘断面必须跟着重建。
+    // 只把缓存键置空，下一帧走同一条重建路径——不在渲染循环里重建几何。
+    if (this.boundary?.mesh.visible) {
+      for (const stage of this.stages.values()) {
+        if (stage.heightChanged) { this.boundaryKey = null; break; }
+      }
     }
     this.slabProbe?.update();
     this.profile = totals; this.scanMs = totals.bridgeScanMs; this.updateMs = performance.now() - start;
@@ -110,11 +197,15 @@ export class Render3DHost {
       scanMs: this.scanMs || 0, layerUpdateMs: this.updateMs || 0, ...this.profile,
       residentPlanes: [...this.stages.keys()], visiblePlanes: visible.map(s => s.plane), updatedPlanes: this.updatedPlanes,
       memory: { ...this.gpu.info.memory }, activePlane: this.activePlane, maskOpen: this.realmPrototype.open,
+      boundaryMode: this.boundaryMode, boundaryEdges: this.boundary?.stats.edges || 0,
+      boundaryTriangles: this.boundary?.stats.triangles || 0, boundaryVisible: !!this.boundary?.mesh.visible,
+      boundaryRawGapMax: this.boundary?.stats.rawGapMax || 0, boundaryVisualDepthMax: this.boundary?.stats.visualDepthMax || 0,
     });
   }
   resize(width, height) { this.width = width; this.height = height; this.gpu.setSize(width, height, false); this.cameraRig.resize(width, height); }
   releaseWorld() {
     this.slabProbe?.dispose(); this.slabProbe = null; this.slabRegion = null;
+    this.boundary?.dispose(); this.boundary = null; this.boundaryKey = null; this.boundaryField = null;
     for (const stage of this.stages.values()) { stage.fxProbe?.dispose(); stage.dispose(); stage.root.removeFromParent(); }
     this.stages.clear();
   }
