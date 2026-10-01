@@ -1,15 +1,17 @@
 @echo off
 chcp 65001 >nul
-title Inkbox
+title Inkbox 3D
 cd /d "%~dp0"
 
 rem  KEEP THIS FILE PURE ASCII -- see the long note in the main launcher .bat.
-rem  Alias of the main launcher (shows the same menu).
+rem  One-click 3D sandbox, equivalent to `launcher 2`.
+rem  It calls the Node launcher directly instead of `call`-ing the other .bat,
+rem  so this file never has to spell a Chinese filename either.
 
 where node >nul 2>nul
 if errorlevel 1 goto :no_node
 
-node scripts/inkbox-launch.mjs --port=4180
+node scripts/inkbox-launch.mjs --mode=3d --port=4180
 set "CODE=%ERRORLEVEL%"
 if not "%CODE%"=="0" echo   [ERROR] launcher exited with code %CODE%.
 echo.

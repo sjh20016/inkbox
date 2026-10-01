@@ -1,25 +1,58 @@
 @echo off
 chcp 65001 >nul
-title 水墨沙盒 · 坐天观井
+title Inkbox
 cd /d "%~dp0"
+setlocal
 
-echo.
-echo   水墨沙盒 · 世界盒子
-echo   ------------------------------------
-echo   正在启动本地服务器...
-echo.
+rem ============================================================
+rem  Inkbox launcher shell.
+rem
+rem  !!  KEEP THIS FILE PURE ASCII  !!
+rem  cmd.exe re-reads a batch file by BYTE OFFSET while executing it.
+rem  Chinese text in a UTF-8 file, combined with `chcp 65001`, makes the
+rem  parser lose alignment: `if errorlevel 1 ( ... )` blocks then start
+rem  running garbage as commands and the script never reaches `node`.
+rem  (That is exactly how the previous version of this file was broken.)
+rem  All Chinese UI lives in scripts/inkbox-launch.mjs, which is UTF-8 safe.
+rem
+rem  Usage
+rem    double-click              -> menu (printed by the Node launcher)
+rem    this.bat 3                -> 3D sandbox + Strata boundary experiment
+rem    this.bat 2 4181           -> 3D sandbox on another port
+rem ============================================================
+
+set "MODE=%~1"
+set "PORT=%~2"
+if "%PORT%"=="" set "PORT=4180"
 
 where node >nul 2>nul
-if errorlevel 1 (
-  echo   [错误] 没有找到 Node.js，请先安装 Node.js 18 或更高版本。
+if errorlevel 1 goto :no_node
+
+if "%MODE%"=="" goto :run_menu
+node scripts/inkbox-launch.mjs --mode=%MODE% --port=%PORT%
+goto :done
+
+:run_menu
+node scripts/inkbox-launch.mjs --port=%PORT%
+
+:done
+set "CODE=%ERRORLEVEL%"
+if not "%CODE%"=="0" (
   echo.
-  pause
-  exit /b 1
+  echo   [ERROR] launcher exited with code %CODE%.
+  echo   Common causes:
+  echo     - port %PORT% is already used by another program
+  echo       try: this.bat %MODE% 4181
+  echo     - Node.js older than 18
 )
-
-rem 先起服务、再开浏览器——否则冷启动时第一个页面会因为服务还没监听而连接被拒。
-rem 这里用一条独立的延迟命令去开浏览器，本窗口则留在前台跑服务器。
-start "" cmd /c "timeout /t 2 /nobreak >nul & start "" http://127.0.0.1:4180/"
-node scripts/inkbox-server.mjs --port=4180
-
+echo.
 pause
+exit /b %CODE%
+
+:no_node
+echo.
+echo   [ERROR] Node.js not found.
+echo   Please install Node.js 18 or newer: https://nodejs.org/
+echo.
+pause
+exit /b 1
