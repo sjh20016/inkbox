@@ -114,6 +114,8 @@ export function sameSettlements(a, b) {
 export class SettlementLayer {
   constructor(world, coordinates, elevation = new ElevationField(world)) {
     this.elevation = elevation;
+    this.regionGeometry = null;
+    this.regionInside = true;
     this.coordinates = coordinates;
     this.interval = 1 / 4;                  // 半静态：4 Hz
     this.clock = Infinity;
@@ -160,8 +162,24 @@ export class SettlementLayer {
     return true;
   }
 
+  /**
+   * §19：区域判据只来自 `RegionGeometry`。
+   * §23：跨边建筑**按建筑中心格归属**（第一版不做 Mesh clipping）——
+   * 边缘会出现「轮廓泄漏半间屋」，已记录给 Art Pass，不在本阶段解决。
+   */
+  setRegionGeometry(geometry, inside = true) {
+    if (this.regionGeometry === geometry && this.regionInside === !!inside) return;
+    this.regionGeometry = geometry || null;
+    this.regionInside = !!inside;
+    this.lastDerived = null;
+    this.clock = Infinity;
+  }
+
   write(derived, world) {
-    const list = derived.buildings;
+    const all = derived.buildings;
+    const list = this.regionGeometry && !this.regionGeometry.allInside
+      ? all.filter(b => this.regionGeometry.isInsideCell(b.x, b.y) === this.regionInside)
+      : all;
     const capacity = this.bodies.instanceMatrix.count;
     const n = Math.min(list.length, capacity);
     const overflow = list.length > capacity ? list.length - capacity : 0;

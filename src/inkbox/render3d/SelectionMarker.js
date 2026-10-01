@@ -17,21 +17,32 @@ import { ElevationField } from './terrain/ElevationField.js';
 import { RENDER_ORDER } from './shared/RenderOrder.js';
 
 export class SelectionMarker {
-  constructor(coordinates, elevation = null) {
+  /**
+   * @param {object} coordinates 世界 ↔ 渲染坐标
+   * @param {object} elevation `ElevationField`
+   * @param {{readonly?: boolean, tint?: string}} [options]
+   *   `readonly` = 目标位面的**只读反馈**（§25）：冷色、更淡、不与凡间操作环混淆。
+   */
+  constructor(coordinates, elevation = null, options = {}) {
     this.coordinates = coordinates;
     this.elevation = elevation;
+    this.readonly = !!options.readonly;
     this.cell = null;
     this.needsPlace = false;      // 选中格变了才置 true；高度变过也重摆（见 update）
     this.geometry = new THREE.RingGeometry(0.6, 0.86, 24);
     this.geometry.rotateX(-Math.PI / 2);
     this.material = new THREE.MeshBasicMaterial({
-      color: INK.cinnabar, side: THREE.DoubleSide, transparent: true, opacity: 0.9, depthTest: false,
+      color: options.tint || INK.cinnabar,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: this.readonly ? 0.62 : 0.9,
+      depthTest: false,
     });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.mesh.renderOrder = RENDER_ORDER.selection;
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
-    this.mesh.name = 'SelectionMarker';
+    this.mesh.name = this.readonly ? 'RealmSelectionMarker' : 'SelectionMarker';
   }
 
   /** 选中一个世界格（`null` / 非法坐标 = 取消选中）。 */

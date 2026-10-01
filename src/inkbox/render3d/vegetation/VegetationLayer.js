@@ -30,6 +30,9 @@ function pixelTree() {
 export class VegetationLayer {
   constructor(world, coordinates, elevation = new ElevationField(world)) {
     this.world = world; this.coordinates = coordinates; this.elevation = elevation;
+    this.regionGeometry = null;
+    this.regionInside = true;
+    this.pendingRegionRebuild = false;
     this.texture = pixelTree();
     this.geometry = new THREE.PlaneGeometry(1, 1.5); this.geometry.translate(0, 0.75, 0);
     this.material = new THREE.MeshLambertMaterial({ map: this.texture, alphaTest: 0.5, side: THREE.DoubleSide });
@@ -39,8 +42,25 @@ export class VegetationLayer {
     this.mesh.frustumCulled = false;
     this.update();
   }
+  /**
+   * §19：区域判据只来自 `RegionGeometry`。
+   * §22：这里**只登记**「需要重建」，真正的重建交给 `PlaneStage.update()` 的
+   * 节流通道（0.15 s）——禁止每帧全量重写实例。
+   */
+  setRegionGeometry(geometry, inside = true) {
+    if (this.regionGeometry === geometry && this.regionInside === !!inside) return;
+    this.regionGeometry = geometry || null;
+    this.regionInside = !!inside;
+    this.pendingRegionRebuild = true;
+  }
+
   update() {
-    this.trees = deriveVegetation(this.world);
+    const all = deriveVegetation(this.world);
+    // 只在重建时过滤（本方法由节流通道调用，不是每帧）。
+    this.trees = this.regionGeometry && !this.regionGeometry.allInside
+      ? all.filter(tree => this.regionGeometry.isInsideCell(tree.x, tree.y) === this.regionInside)
+      : all;
+    this.pendingRegionRebuild = false;
     const dummy = new THREE.Object3D();
     let j = 0;
     for (const tree of this.trees) {

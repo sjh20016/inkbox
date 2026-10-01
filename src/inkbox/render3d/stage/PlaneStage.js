@@ -49,7 +49,9 @@ export class PlaneStage {
     if (this.settlements) this.root.add(this.settlements.group);
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
-    this.selectionMarker = p.selection ? new SelectionMarker(this.coordinates, this.elevation) : null;
+    this.selectionMarker = p.selection
+      ? new SelectionMarker(this.coordinates, this.elevation, { readonly: !!p.selectionReadonly, tint: p.selectionTint })
+      : null;
     if (this.selectionMarker) this.root.add(this.selectionMarker.mesh);
     this.pending = null;
     this.vegetationPending = false;
@@ -83,8 +85,14 @@ export class PlaneStage {
       this.regionMask = region || null;
       this.regionGeometry = region ? new RegionGeometry(this.world, region) : null;
     }
+    // §19：所有需要 Region 过滤的 Layer 走**同一份** RegionGeometry。
+    // 凡间取 outside、目标界取 inside（§20），同一张区域表 ⇒ V5 由构造保证。
     this.terrain?.setRegionGeometry(this.regionGeometry, this.regionInside);
-    this.entities?.setRegionMask(this.regionMask, this.regionInside);
+    this.water?.setRegionGeometry(this.regionGeometry, this.regionInside);
+    this.vegetation?.setRegionGeometry(this.regionGeometry, this.regionInside);
+    this.settlements?.setRegionGeometry(this.regionGeometry, this.regionInside);
+    this.markers?.setRegionGeometry(this.regionGeometry, this.regionInside);
+    this.entities?.setRegionGeometry(this.regionGeometry, this.regionInside);
   }
 
   markTerrainDirty(region) {
@@ -111,7 +119,8 @@ export class PlaneStage {
     const t1 = performance.now();
     if ((heightChanged || waterRegion) && this.water) this.water.update(mergeRegion(heightRegion, waterRegion));
     const t2 = performance.now();
-    if (this.vegetation && (heightChanged || typeRegion || vegRegion)) this.vegetationPending = true;
+    // §22：Region 变化也要重建植被实例（走同一条节流通道，不是每帧全量重写）。
+    if (this.vegetation && (heightChanged || typeRegion || vegRegion || this.vegetation.pendingRegionRebuild)) this.vegetationPending = true;
     this.treeClock += Number.isFinite(dt) ? dt : 0;
     if (this.vegetationPending && this.treeClock >= 0.15) {
       this.vegetation.update(); this.vegetationPending = false; this.treeClock = 0;

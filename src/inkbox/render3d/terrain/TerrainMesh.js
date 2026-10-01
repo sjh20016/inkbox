@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { ElevationField } from './ElevationField.js';
 import { RegionGeometry } from '../region/RegionGeometry.js';
+import { applyQuadMask } from '../region/quadMask.js';
 import { TERRAIN_INFO } from '../../core/config.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
@@ -92,21 +93,11 @@ export class TerrainMesh {
     this.regionGeometry = geometry || null;
     this.regionInside = !!inside;
     this.regionMask = geometry?.region || null;
-    if (!geometry || geometry.allInside) {
-      this.geometry.index.array.set(this.fullIndices);
-      this.geometry.index.needsUpdate = true;
-      this.geometry.setDrawRange(0, this.fullIndices.length);
-      return;
-    }
-    const { w, h } = this.world;
-    const kept = this.geometry.index.array; let count = 0;
-    for (let y = 0; y < h - 1; y++) for (let x = 0; x < w - 1; x++) {
-      if (geometry.isInsideQuad(x, y) !== this.regionInside) continue;
-      const i = (y * (w - 1) + x) * 6;
-      for (let k = 0; k < 6; k++) kept[count++] = this.fullIndices[i + k];
-    }
-    this.geometry.index.needsUpdate = true;
-    this.geometry.setDrawRange(0, count);
+    const keptQuads = applyQuadMask({
+      geometry: this.geometry, fullIndices: this.fullIndices, regionGeometry: this.regionGeometry,
+      inside: this.regionInside, quadW: this.world.w - 1, quadH: this.world.h - 1,
+    });
+    this.keptQuads = keptQuads;
   }
 
   /**

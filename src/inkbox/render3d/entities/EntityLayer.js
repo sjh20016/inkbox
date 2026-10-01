@@ -28,6 +28,7 @@
 import * as THREE from 'three';
 import { ElevationField } from '../terrain/ElevationField.js';
 import { deriveEntities, sameEntities, ENTITY_CLASSES } from './deriveEntities.js';
+import { RegionGeometry } from '../region/RegionGeometry.js';
 import { LIMITS } from '../../core/config.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
@@ -69,6 +70,7 @@ export class EntityLayer {
     this.coordinates = coordinates;
     this.elevation = elevation;
     this.derive = derive;
+    this.regionGeometry = null;
     this.regionMask = null;
     this.regionInside = true;
     this.interval = 1 / 15;
@@ -124,8 +126,8 @@ export class EntityLayer {
     const byClass = {};
     for (const cls of ENTITY_CLASSES) {
       const mesh = this.meshes[cls];
-      const list = this.regionMask
-        ? derived[cls].filter(item => this.regionMask.contains(Math.floor(item.x) + 0.5, Math.floor(item.y) + 0.5) === this.regionInside)
+      const list = this.regionGeometry && !this.regionGeometry.allInside
+        ? derived[cls].filter(item => this.regionGeometry.isInsideCell(item.x, item.y) === this.regionInside)
         : derived[cls];
       const capacity = mesh.instanceMatrix.count;
       const n = Math.min(list.length, capacity);
@@ -160,13 +162,22 @@ export class EntityLayer {
     return color;
   }
 
-  /** Entity visibility uses the same cell-centre rule as TerrainMesh. */
-  setRegionMask(region, inside = true) {
-    if (this.regionMask === region && this.regionInside === !!inside) return;
-    this.regionMask = region || null;
+  /**
+   * §19：区域判据只来自 `RegionGeometry`（不再自己调 `region.contains`）。
+   * `this.regionMask` 保留 `RegionMask` 本体供读数 / M2-A 断言使用。
+   */
+  setRegionGeometry(geometry, inside = true) {
+    if (this.regionGeometry === geometry && this.regionInside === !!inside) return;
+    this.regionGeometry = geometry || null;
     this.regionInside = !!inside;
+    this.regionMask = geometry?.region || null;
     this.lastDerived = null;
     this.clock = Infinity;
+  }
+
+  /** 兼容入口（M2-A 调用方与测试按 RegionMask 传参）。 */
+  setRegionMask(region, inside = true) {
+    this.setRegionGeometry(region ? new RegionGeometry(this.world, region) : null, inside);
   }
 
   dispose() {

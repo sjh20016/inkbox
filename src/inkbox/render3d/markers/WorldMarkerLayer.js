@@ -130,6 +130,8 @@ export class WorldMarkerLayer {
   constructor(world, coordinates, elevation = new ElevationField(world)) {
     this.coordinates = coordinates;
     this.elevation = elevation;
+    this.regionGeometry = null;
+    this.regionInside = true;
     this.interval = 1 / 4;                  // 标记是半静态的：4 Hz
     this.clock = Infinity;
     this.lastDerived = null;
@@ -193,21 +195,39 @@ export class WorldMarkerLayer {
     return true;
   }
 
+  /** §19：区域判据只来自 `RegionGeometry`。 */
+  setRegionGeometry(geometry, inside = true) {
+    if (this.regionGeometry === geometry && this.regionInside === !!inside) return;
+    this.regionGeometry = geometry || null;
+    this.regionInside = !!inside;
+    this.lastDerived = null;
+    this.clock = Infinity;
+  }
+
+  /**
+   * §24：法宝 / 地点 / 灵脉按**世界坐标**判 inside / outside。
+   * ⚠️ **裂缝不走这里** —— 它是 World 的持久对象，与当前这扇窗无关（§55–§57 / S6）。
+   */
+  regionFilter(list) {
+    if (!this.regionGeometry || this.regionGeometry.allInside) return list;
+    return list.filter(item => this.regionGeometry.isInsideCell(item.x, item.y) === this.regionInside);
+  }
+
   write(derived, world) {
     const stats = { artifacts: 0, sites: 0, leylines: 0, rifts: 0, total: 0 };
 
     // ── 法宝：贴地浮一点点的冷金小点 ──
-    stats.artifacts = this.fill(this.artifacts, derived.artifacts, world, 0.55, () => INK.gold);
+    stats.artifacts = this.fill(this.artifacts, this.regionFilter(derived.artifacts), world, 0.55, () => INK.gold);
 
     // ── 地点：四种符号 ──
     for (const kind of SITE_KINDS) {
-      stats.sites += this.fill(this.siteMeshes[kind], derived.sites[kind], world, 0, () => SITE_COLOR[kind]);
+      stats.sites += this.fill(this.siteMeshes[kind], this.regionFilter(derived.sites[kind]), world, 0, () => SITE_COLOR[kind]);
     }
 
     // ── 灵脉：悬浮环 ──
-    stats.leylines = this.fill(this.leylines, derived.leylines, world, 1.7, () => INK.orchid);
+    stats.leylines = this.fill(this.leylines, this.regionFilter(derived.leylines), world, 1.7, () => INK.orchid);
 
-    // ── 裂缝：贴地圆环，半径现算 ──
+    // ── 裂缝：贴地圆环，半径现算 ──（**故意不过滤**，见 `regionFilter` 注释）
     const riftMesh = this.rifts;
     const cap = riftMesh.instanceMatrix.count;
     const nRift = Math.min(derived.rifts.length, cap);

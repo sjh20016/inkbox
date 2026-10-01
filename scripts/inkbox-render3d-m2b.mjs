@@ -15,6 +15,11 @@ import { createCoordinates } from '../src/inkbox/render3d/coordinates.js';
 import { visualElevation, surfaceElevation, interpolateElevation } from '../src/inkbox/render3d/terrain/VisualElevation.js';
 import { ElevationField, RAW_ELEVATION_PROFILE, normalizeElevationProfile } from '../src/inkbox/render3d/terrain/ElevationField.js';
 import { RegionGeometry, DISTANCE_UNKNOWN } from '../src/inkbox/render3d/region/RegionGeometry.js';
+import { ENTITY_CLASSES, deriveEntities } from '../src/inkbox/render3d/entities/deriveEntities.js';
+import { STRUCT } from '../src/inkbox/core/config.js';
+import { deriveVegetation } from '../src/inkbox/render3d/vegetation/deriveVegetation.js';
+import { deriveSettlements } from '../src/inkbox/render3d/settlements/SettlementLayer.js';
+import { deriveMarkers, SITE_KINDS } from '../src/inkbox/render3d/markers/WorldMarkerLayer.js';
 import { sculpt as sculpt3D, strokeSamples, restoreHeights } from '../src/inkbox/render3d/terrain/sculpt.js';
 import { recomputeRect } from '../src/inkbox/world/terrain.js';
 import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
@@ -62,6 +67,41 @@ function makeHost(world) {
 
 /** 生产 Render3D 源码（不含测试脚本）里允许 import 高程实现的**唯一**文件。 */
 const ELEVATION_ENTRY = 'src/inkbox/render3d/terrain/ElevationField.js';
+
+/**
+ * 去注释（逐字符状态机）。
+ *
+ * ⚠️ 不能用朴素正则：行注释里出现 `` `sim/*` `` 这种字面量会把中间代码一并删掉
+ *    ——D8-C 已经踩过一次（见 `STATUS.md`）。结构断言必须先去掉注释，
+ *    否则**文档里提到某个函数名**就会被当成「代码里调了它」。
+ */
+function stripComments(source) {
+  let out = '';
+  let i = 0;
+  const n = source.length;
+  let state = 'code';
+  while (i < n) {
+    const c = source[i], d = source[i + 1];
+    if (state === 'code') {
+      if (c === '/' && d === '/') { state = 'line'; i += 2; continue; }
+      if (c === '/' && d === '*') { state = 'block'; i += 2; continue; }
+      if (c === "'") state = 'single';
+      else if (c === '"') state = 'double';
+      else if (c === '`') state = 'template';
+      out += c; i += 1; continue;
+    }
+    if (state === 'line') { if (c === '\n') { state = 'code'; out += c; } i += 1; continue; }
+    if (state === 'block') { if (c === '*' && d === '/') { state = 'code'; i += 2; } else i += 1; continue; }
+    out += c;
+    if (c === '\\') { out += source[i + 1] ?? ''; i += 2; continue; }
+    if ((state === 'single' && c === "'") || (state === 'double' && c === '"') || (state === 'template' && c === '`')) state = 'code';
+    i += 1;
+  }
+  return out;
+}
+
+/** 读源码并去注释——结构断言统一用这个。 */
+const readCode = relative => stripComments(readSource(relative));
 
 // ══════════════════════════════════════════════════════════════════════════
 // T0 · B0 identity —— ElevationField 默认模式必须与 M2-A 高程逐位一致
@@ -275,7 +315,7 @@ check('§9 结构：PlaneStage 把 this.elevation 显式传给每一个 Layer', 
     assert.match(source, new RegExp(`new ${layer}\\(world, this\\.coordinates, this\\.elevation`),
       `${layer} 必须收到 stage.elevation`);
   }
-  assert.match(source, /new SelectionMarker\(this\.coordinates, this\.elevation\)/);
+  assert.match(source, /new SelectionMarker\(this\.coordinates, this\.elevation, \{ readonly: !!p\.selectionReadonly, tint: p\.selectionTint \}\)/);
   assert.match(source, /new ElevationField\(world, p\.elevation\)/);
 });
 
@@ -647,6 +687,273 @@ check('T9 结构：Render3DAdapter.undo 走 restoreHeights，不再自己写 wor
   assert.match(source, /import \{ sculpt, strokeSamples, restoreHeights \}/);
   assert.match(source, /restoreHeights\(entry\.world, entry\.changes\)/);
   assert.doesNotMatch(source, /world\.height\[i\]\s*=/, '适配器不得绕过 sculpt.js 边界自己写高度');
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// T2 · 完整 Region Mask（§18–§29 / §72）
+//
+// M2-A 的毛病：一开窗就把 Water / Vegetation / Settlement / Markers **整层关掉**
+// ⇒ 窗外一片光秃。B1 改成「层一直画，由 RegionGeometry 决定画哪一半」。
+// 下面每条都拿**独立派生出来的清单**对账，不用实现自证。
+// ══════════════════════════════════════════════════════════════════════════
+
+const WINDOW = [[20, 16], [30, 16], [30, 24], [20, 24]];
+const LARGE_WINDOW = [[14, 10], [42, 10], [42, 32], [14, 32]];
+
+function openWindow(host, region, targetPlane = 'upper') {
+  host.setRealmViewState({ open: true, targetPlane, region });
+  host.update(0.2);   // 让各层写一次
+  host.update(0.2);   // 植被走 0.15 s 节流通道，需要第二拍
+}
+
+function outsideCount(list, geometry) {
+  return list.filter(item => !geometry.isInsideCell(item.x, item.y)).length;
+}
+
+/**
+ * 在窗口**两侧**都放上可控内容。
+ *
+ * 新生成的世界是空的（实体与村庄是模拟跑出来的），拿它验「窗内不泄漏」会是**空断言**：
+ * 两边都是 0，怎么写都绿。所以这里手工摆放，并让窗内 / 窗外各自都有东西可查。
+ * 摆放形状与 `scripts/inkbox-render3d-bridge.mjs` 的 `richWorld()` 一致。
+ */
+function populate(world) {
+  const at = (x, y, id) => ({ id, x: x + 0.5, y: y + 0.5, sp: 'human', level: 0, faction: 0, name: `凡人${id}` });
+  let id = 9000;
+  for (let i = 0; i < 8; i += 1) {
+    world.entities.push(at(21 + i, 17, (id += 1)));   // 窗内（窗口 x 20..29 / y 16..23）
+    world.entities.push(at(3 + i, 4, (id += 1)));     // 窗外
+  }
+  world.villages.push(
+    { id: 11, x: 24, y: 19, level: 1, faction: 0, name: '窗内村', pop: 0, houses: [{ x: 24, y: 19, type: STRUCT.HOUSE }] },
+    { id: 12, x: 6, y: 5, level: 3, faction: 1, name: '窗外城', pop: 0, houses: [{ x: 6, y: 5, type: STRUCT.HALL }, { x: 7, y: 5, type: STRUCT.HOUSE }] },
+  );
+  world.factions.push({ id: 1, name: '青云门', color: '#a8493c', accent: '#d98a72', capitalX: 6, capitalY: 5 });
+  world.artifacts.push({ id: 501, name: '窗内剑', x: 25, y: 18, ownerId: 0, lostDay: 10 });
+  world.artifacts.push({ id: 502, name: '窗外刀', x: 5, y: 6, ownerId: 0, lostDay: 10 });
+  for (const kind of SITE_KINDS) {
+    world.sites.push({ id: 700 + SITE_KINDS.indexOf(kind), kind, x: 26, y: 20, name: `内${kind}`, age: 0 });
+    world.sites.push({ id: 720 + SITE_KINDS.indexOf(kind), kind, x: 8, y: 8, name: `外${kind}`, age: 0 });
+  }
+  world.leylines.push({ id: 801, x: 23, y: 21, radius: 7, strength: 0.4 });
+  world.leylines.push({ id: 802, x: 10, y: 10, radius: 7, strength: 0.4 });
+  world.rifts.push({ id: 901, x: 27, y: 22, strength: 6, openedDay: 0, age: 900, closedDay: -1, targetPlane: 'upper' });
+  return world;
+}
+
+check('T2 开窗后窗外不再变秃：水 / 植被 / 聚落 / 标记仍有内容，且不再整层隐藏', () => {
+  const world = makeWorld(); const { host } = makeHost(world);
+  const stage = host.stages.get('mortal');
+  host.update(0.2); host.update(0.2);
+  const closed = {
+    waterQuads: stage.water.geometry.drawRange.count / 6,
+    trees: stage.vegetation.mesh.count,
+    buildings: stage.settlements.stats.buildings,
+    markers: stage.markers.stats.total,
+  };
+  assert(closed.waterQuads > 0 && closed.trees > 0, `关窗时必须先有内容可谈：${JSON.stringify(closed)}`);
+
+  const region = regionOf(WINDOW, world);
+  openWindow(host, region);
+  const rg = stage.regionGeometry;
+
+  // ① §18 的核心：层不再因为开窗就整层关掉
+  assert.equal(stage.water.mesh.visible, true, '水面层不得因开窗整体隐藏');
+  assert.equal(stage.vegetation.mesh.visible, true, '植被层不得因开窗整体隐藏');
+  assert.equal(stage.settlements.group.visible, true, '聚落层不得因开窗整体隐藏');
+  assert.equal(stage.markers.group.visible, true, '标记层不得因开窗整体隐藏');
+
+  // ② 窗外确实还有东西
+  assert(stage.water.geometry.drawRange.count / 6 > 0, '窗外必须还有水');
+  assert(stage.vegetation.mesh.count > 0, '窗外必须还有植被');
+
+  // ③ 而且窗内那部分**真的被排除了**——与独立派生清单逐项对账
+  const allTrees = deriveVegetation(world);
+  assert.equal(stage.vegetation.mesh.count, outsideCount(allTrees, rg) * 2,
+    '每棵树两个交叉面片；窗外的树数必须与独立派生一致');
+
+  const allBuildings = deriveSettlements(world).buildings;
+  assert.equal(stage.settlements.stats.buildings,
+    Math.min(outsideCount(allBuildings, rg), stage.settlements.bodies.instanceMatrix.count),
+    '建筑按中心格归属，窗外数量必须与独立派生一致');
+
+  assert.equal(stage.water.geometry.drawRange.count / 6, rg.outsideQuadCount,
+    '水面层保留的 quad 数必须正好等于窗外 quad 数（不多不少）');
+  host.dispose();
+});
+
+check('T2 窗内不得泄漏凡间实体 / 建筑 / 标记（§29 验收硬项）', () => {
+  const world = populate(makeWorld()); const { host } = makeHost(world);
+  const stage = host.stages.get('mortal');
+  const region = regionOf(WINDOW, world);
+  openWindow(host, region);
+  const rg = stage.regionGeometry;
+
+  // 实体：直接读**实际提交**的实例清单（`userData.renderEntities` 是拾取用的真源）
+  let insideKept = 0; let outsideKept = 0;
+  for (const cls of ENTITY_CLASSES) {
+    const mesh = stage.entities.meshes[cls];
+    for (const item of mesh.userData.renderEntities || []) {
+      if (rg.isInsideCell(item.x, item.y)) insideKept += 1;
+      else outsideKept += 1;
+    }
+  }
+  assert.equal(insideKept, 0, `窗内泄漏凡间实体 ${insideKept} 个`);
+  assert(outsideKept > 0, '窗外实体必须照常提交（否则「没泄漏」可能只是「整层空了」）');
+  const derivedMortal = deriveEntities(world);
+  const allEntities = ENTITY_CLASSES.flatMap(cls => derivedMortal[cls] || []);
+  assert.equal(outsideKept, outsideCount(allEntities, rg), '窗外实体数必须与独立派生一致');
+
+  // 建筑：按中心格归属；实际提交的必须**正好**是窗外那一批
+  const allBuildings = deriveSettlements(world).buildings;
+  const outsideBuildings = outsideCount(allBuildings, rg);
+  const insideBuildings = allBuildings.length - outsideBuildings;
+  assert(outsideBuildings > 0 && insideBuildings > 0,
+    `两侧都必须有建筑，否则断言空转：内 ${insideBuildings} / 外 ${outsideBuildings}`);
+  assert.equal(stage.settlements.stats.buildings, outsideBuildings,
+    '实际提交的建筑数必须正好等于窗外那一批（多一个就是泄漏，少一个就是变秃）');
+
+  // 标记：数量必须正好等于「窗外的」派生条数
+  const dm = deriveMarkers(world);
+  const outsideArtifacts = outsideCount(dm.artifacts, rg);
+  assert(outsideArtifacts > 0 && outsideArtifacts < dm.artifacts.length,
+    `法宝必须两侧都有：外 ${outsideArtifacts} / 共 ${dm.artifacts.length}`);
+  assert.equal(stage.markers.stats.artifacts, outsideArtifacts, '窗内法宝必须被排除、窗外留下');
+  let siteOutside = 0; let siteAll = 0;
+  for (const kind of SITE_KINDS) {
+    siteOutside += outsideCount(dm.sites[kind], rg);
+    siteAll += dm.sites[kind].length;
+  }
+  assert(siteOutside > 0 && siteOutside < siteAll, `地点必须两侧都有：外 ${siteOutside} / 共 ${siteAll}`);
+  assert.equal(stage.markers.stats.sites, siteOutside);
+  const outsideLey = outsideCount(dm.leylines, rg);
+  assert(outsideLey > 0 && outsideLey < dm.leylines.length, '灵脉必须两侧都有');
+  assert.equal(stage.markers.stats.leylines, outsideLey, '窗内灵脉必须被排除、窗外留下');
+
+  // §24：裂缝是 World 的持久对象 ⇒ **不随窗口过滤**
+  assert.equal(stage.markers.stats.rifts, Math.min(dm.rifts.length, stage.markers.rifts.instanceMatrix.count),
+    '裂缝数量不得因开窗而变（§24 / S6）');
+  assert(dm.rifts.length > 0, '本用例必须真的有一条裂缝，否则上面那条是空转');
+  host.dispose();
+});
+
+check('T2 目标界只提交窗内内容；两位面互补且不重叠（§20 / V5）', () => {
+  const world = populate(makeWorld()); const { host } = makeHost(world);
+  const mortal = host.stages.get('mortal');
+  const upper = host.stages.get('upper');
+  const region = regionOf(WINDOW, world);
+  openWindow(host, region, 'upper');
+  const rgM = mortal.regionGeometry;
+  const rgU = upper.regionGeometry;
+  // 同一张区域表：分类数组必须逐格相同（只是保留的那一半相反）
+  assert.equal(rgU.insideQuadCount, rgM.insideQuadCount);
+  assert.deepEqual(rgU.quadInside, rgM.quadInside, '两个位面必须共用同一张区域表');
+  // 互补：窗内 + 窗外 = 全部，且不相交
+  assert.equal(rgM.insideQuadCount + rgM.outsideQuadCount, rgM.quadW * rgM.quadH);
+  assert.equal(upper.terrain.geometry.drawRange.count, rgU.insideQuadCount * 6);
+  assert.equal(mortal.terrain.geometry.drawRange.count, rgM.outsideQuadCount * 6);
+  // 目标界的实体：凡间实体的同坐标内容**不得**泄漏进去（上界只有自己的人口）
+  let insideU = 0; let leak = 0;
+  for (const cls of ENTITY_CLASSES) {
+    const mesh = upper.entities.meshes[cls];
+    for (const item of mesh.userData.renderEntities || []) {
+      if (rgU.isInsideCell(item.x, item.y)) insideU += 1; else leak += 1;
+    }
+  }
+  assert.equal(leak, 0, '上界 Stage 不得提交窗内之外的内容');
+  assert.equal(insideU, 0, '本用例里上界没有人口 ⇒ 窗内不该凭空出现凡间人物（V5）');
+  // 凡间的实体一个都不许进上界 Stage
+  const mortalIds = new Set(ENTITY_CLASSES.flatMap(cls => deriveEntities(world)[cls] || []).map(e => e.id));
+  for (const cls of ENTITY_CLASSES) {
+    for (const item of upper.entities.meshes[cls].userData.renderEntities || []) {
+      assert.equal(mortalIds.has(item.id), false, '凡间实体泄漏进目标界 Stage');
+    }
+  }
+  host.dispose();
+});
+
+check('T2 大窗 / 幽冥窗同样成立，且窗外规模随窗口单调下降', () => {
+  const world = makeWorld(); const { host } = makeHost(world);
+  const stage = host.stages.get('mortal');
+  const small = regionOf(WINDOW, world);
+  openWindow(host, small, 'nether');
+  const smallOutside = stage.regionGeometry.outsideQuadCount;
+  const smallTrees = stage.vegetation.mesh.count;
+  const large = regionOf(LARGE_WINDOW, world);
+  openWindow(host, large, 'nether');
+  const largeOutside = stage.regionGeometry.outsideQuadCount;
+  const largeTrees = stage.vegetation.mesh.count;
+  assert(largeOutside < smallOutside, '大窗应当排除更多 quad');
+  assert(largeTrees <= smallTrees, '大窗留下的树不该更多');
+  assert(largeTrees > 0, '大窗之后窗外仍该有树（否则就是变秃）');
+  // 目标界换成幽冥：同一个 Stage 机制，换的是 targetPlane
+  const nether = host.stages.get('nether');
+  assert.equal(nether.terrain.geometry.drawRange.count, nether.regionGeometry.insideQuadCount * 6);
+  host.dispose();
+});
+
+check('T2 §25 选择环：凡间只画窗外、目标界画窗内且是只读样式', () => {
+  const world = makeWorld(); const { host } = makeHost(world);
+  const mortal = host.stages.get('mortal');
+  const nether = host.stages.get('nether');
+  const region = regionOf(WINDOW, world);
+  openWindow(host, region, 'nether');
+
+  // 选中一个**窗内**的凡间格 ⇒ 凡间环不得出现（那块地已被幽冥接管）
+  host.setSelection(25, 20, 'mortal'); host.applyView();
+  assert.equal(mortal.selectionMarker.cell.x, 25);
+  assert.equal(mortal.selectionMarker.mesh.visible, false, '窗内的凡间格不得画凡间操作环');
+  // 选中一个**窗外**的凡间格 ⇒ 正常显示
+  host.setSelection(4, 4, 'mortal'); host.applyView();
+  assert.equal(mortal.selectionMarker.mesh.visible, true, '窗外的凡间格照常显示');
+
+  // 选中幽冥对象 ⇒ 由**目标位面**给只读反馈
+  host.setSelection(25, 20, 'nether'); host.applyView();
+  assert.equal(nether.selectionMarker.mesh.visible, true, '窗内的幽冥对象必须有反馈');
+  assert.equal(nether.selectionMarker.readonly, true, '目标界的反馈必须是只读样式');
+  assert.equal(nether.selectionMarker.mesh.name, 'RealmSelectionMarker');
+  assert.equal(mortal.selectionMarker.mesh.visible, false, '此时凡间不该有环');
+  // 只读反馈不得复用凡间那枚朱红操作环的颜色
+  assert.notEqual(nether.selectionMarker.material.color.getHex(),
+    mortal.selectionMarker.material.color.getHex(), '只读反馈必须与凡间操作环在视觉上分开');
+  host.dispose();
+});
+
+check('T2 §19 结构：四个 Layer 都不再自己调 region.contains / 自己算包围盒', () => {
+  for (const file of ['src/inkbox/render3d/water/WaterLayer.js',
+    'src/inkbox/render3d/vegetation/VegetationLayer.js',
+    'src/inkbox/render3d/settlements/SettlementLayer.js',
+    'src/inkbox/render3d/markers/WorldMarkerLayer.js',
+    'src/inkbox/render3d/entities/EntityLayer.js',
+    'src/inkbox/render3d/terrain/TerrainMesh.js']) {
+    const source = readCode(file);
+    assert.doesNotMatch(source, /\.contains\(/, `${file} 不得自己调 region.contains（§19）`);
+    assert.doesNotMatch(source, /getBoundingBox\(\)/, `${file} 不得自造包围盒判据`);
+  }
+  // 过滤只允许走 RegionGeometry 的封装
+  const region = readCode('src/inkbox/render3d/region/RegionGeometry.js');
+  assert.match(region, /isInsideQuad\(/, '唯一区域判据必须是 RegionGeometry.isInsideQuad');
+});
+
+check('T2 §22 结构：植被过滤只在重建路径里，不在每帧重写', () => {
+  const source = readCode('src/inkbox/render3d/vegetation/VegetationLayer.js');
+  const update = source.slice(source.indexOf('  update() {'), source.indexOf('  dispose()'));
+  assert.match(update, /this\.regionGeometry\.isInsideCell/, '过滤发生在 update() 里');
+  assert.match(source, /setRegionGeometry\([\s\S]{0,400}?pendingRegionRebuild = true/,
+    'region 变化只登记「待重建」，重建交给节流通道');
+  assert.match(update, /pendingRegionRebuild = false/, '重建后必须清标记');
+});
+
+check('T2 §27 目标位面内容纪律：不为了填满 Layer 而机械复制凡间 profile', () => {
+  const profile = readCode('src/inkbox/render3d/stage/PlaneRenderProfile.js');
+  for (const plane of ['upper', 'nether']) {
+    const block = profile.slice(profile.indexOf(`${plane}: Object.freeze({`), profile.indexOf(`${plane}: Object.freeze({`) + 400);
+    for (const layer of ['water', 'vegetation', 'settlements', 'markers']) {
+      assert.match(block, new RegExp(`${layer}: false`), `${plane} 的 ${layer} 必须留空（§26/§27：没有可靠语义就先不画）`);
+    }
+    assert.match(block, /selection: true/, `${plane} 需要只读选择反馈（§25）`);
+    assert.match(block, /selectionReadonly: true/);
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════════════

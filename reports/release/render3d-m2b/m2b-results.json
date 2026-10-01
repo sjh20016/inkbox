@@ -1,7 +1,7 @@
 {
   "suite": "Render3D M2-B",
   "status": "passed",
-  "passed": 33,
+  "passed": 41,
   "failed": 0,
   "checks": [
     {
@@ -134,6 +134,38 @@
     },
     {
       "label": "T9 结构：Render3DAdapter.undo 走 restoreHeights，不再自己写 world.height",
+      "status": "passed"
+    },
+    {
+      "label": "T2 开窗后窗外不再变秃：水 / 植被 / 聚落 / 标记仍有内容，且不再整层隐藏",
+      "status": "passed"
+    },
+    {
+      "label": "T2 窗内不得泄漏凡间实体 / 建筑 / 标记（§29 验收硬项）",
+      "status": "passed"
+    },
+    {
+      "label": "T2 目标界只提交窗内内容；两位面互补且不重叠（§20 / V5）",
+      "status": "passed"
+    },
+    {
+      "label": "T2 大窗 / 幽冥窗同样成立，且窗外规模随窗口单调下降",
+      "status": "passed"
+    },
+    {
+      "label": "T2 §25 选择环：凡间只画窗外、目标界画窗内且是只读样式",
+      "status": "passed"
+    },
+    {
+      "label": "T2 §19 结构：四个 Layer 都不再自己调 region.contains / 自己算包围盒",
+      "status": "passed"
+    },
+    {
+      "label": "T2 §22 结构：植被过滤只在重建路径里，不在每帧重写",
+      "status": "passed"
+    },
+    {
+      "label": "T2 §27 目标位面内容纪律：不为了填满 Layer 而机械复制凡间 profile",
       "status": "passed"
     }
   ]
