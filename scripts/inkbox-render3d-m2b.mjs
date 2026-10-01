@@ -15,6 +15,8 @@ import { createCoordinates } from '../src/inkbox/render3d/coordinates.js';
 import { visualElevation, surfaceElevation, interpolateElevation } from '../src/inkbox/render3d/terrain/VisualElevation.js';
 import { ElevationField, RAW_ELEVATION_PROFILE, normalizeElevationProfile } from '../src/inkbox/render3d/terrain/ElevationField.js';
 import { RegionGeometry, DISTANCE_UNKNOWN } from '../src/inkbox/render3d/region/RegionGeometry.js';
+import { sculpt as sculpt3D, strokeSamples, restoreHeights } from '../src/inkbox/render3d/terrain/sculpt.js';
+import { recomputeRect } from '../src/inkbox/world/terrain.js';
 import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
 import { normalizeRegion } from '../src/inkbox/ui/tools.js';
 import { VIEW_MAX_AREA_FRAC } from '../src/inkbox/ui/realmView.js';
@@ -550,6 +552,101 @@ check('T1 地形索引与 RegionGeometry 同源：drawRange 等于保留 quad �
   // 两个位面用**同一张**区域表，只是互补（§20）
   assert.equal(mortal.regionGeometry.insideQuadCount, upper.regionGeometry.insideQuadCount);
   host.dispose();
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// T9 · 3D Sculpt 派生量一致性（§15 / §16 / §79）
+//
+// B0.3 审计确认：3D sculpt 原先只写 height、不重算 type / qi。修复方式是把
+// canonical 的 `recomputeRect()` 接进「唯一的 render3d 世界写边界」。
+// 下面这些断言是那次修复的**回归钉**——它们必须能抓住「修回去」。
+// ══════════════════════════════════════════════════════════════════════════
+
+/** 统计两段数组有多少格不同（只看全图，避免「只查笔刷矩形」漏掉邻格）。 */
+function countDiff(a, b) {
+  let n = 0;
+  for (let i = 0; i < a.length; i += 1) if (a[i] !== b[i]) n += 1;
+  return n;
+}
+
+check('T9 3D sculpt 之后 type / qi 必须已经是 canonical，且确实跟着高度变了', () => {
+  const world = makeWorld();
+  const before = { type: world.type.slice(), qi: world.qi.slice() };
+  const region = sculpt3D(world, { x: 32, y: 24, radius: 8, strength: 0.05, mode: 'raise' });
+  assert(region && region.count > 0, '笔刷必须真的改到格子');
+  const typeAfter = world.type.slice(), qiAfter = world.qi.slice();
+  // ① 派生量已是 canonical：再重算一遍不得有任何变化（重算是幂等的）
+  recomputeRect(world, region.x0, region.y0, region.x1, region.y1);
+  assert.equal(countDiff(world.type, typeAfter), 0, 'type 必须已 canonical（否则就是漏调 recomputeRect）');
+  assert.equal(countDiff(world.qi, qiAfter), 0, 'qi 必须已 canonical');
+  // ② 而且真的变了 —— 没有这一条，「压根没更新」也会通过 ①（审计期踩过的假绿）
+  assert(countDiff(world.type, before.type) > 0, '地形真的变了 ⇒ 地表类型必须跟着变');
+  assert(countDiff(world.qi, before.qi) > 0, '地形真的变了 ⇒ 灵气必须跟着变');
+});
+
+check('T9 一整笔拖动（多次落笔）之后派生量仍然 canonical', () => {
+  const world = makeWorld();
+  const before = { type: world.type.slice(), qi: world.qi.slice() };
+  let rect = null; let stamps = 0; let cells = 0;
+  for (const point of strokeSamples({ x: 24, y: 16 }, { x: 44, y: 34 }, 6)) {
+    const r = sculpt3D(world, { ...point, radius: 6, strength: 0.03, mode: 'raise' });
+    if (!r) continue;
+    stamps += 1; cells += r.count;
+    rect = rect
+      ? { x0: Math.min(rect.x0, r.x0), y0: Math.min(rect.y0, r.y0), x1: Math.max(rect.x1, r.x1), y1: Math.max(rect.y1, r.y1) }
+      : { ...r };
+  }
+  assert(stamps >= 2 && cells > 100, `一整笔应当有多次落笔与足够格次：${stamps} / ${cells}`);
+  const typeAfter = world.type.slice(), qiAfter = world.qi.slice();
+  recomputeRect(world, rect.x0, rect.y0, rect.x1, rect.y1);
+  assert.equal(countDiff(world.type, typeAfter), 0);
+  assert.equal(countDiff(world.qi, qiAfter), 0);
+  assert(countDiff(world.type, before.type) > 0);
+});
+
+check('T9 undo 之后派生量必须回到 canonical，且有反向对照证明判据有判别力', () => {
+  const world = makeWorld();
+  const pristine = { height: world.height.slice(), type: world.type.slice(), qi: world.qi.slice() };
+  const region = sculpt3D(world, { x: 32, y: 24, radius: 8, strength: 0.06, mode: 'lower' });
+  const sculpted = { type: world.type.slice(), qi: world.qi.slice() };
+  assert(countDiff(sculpted.type, pristine.type) > 0, '前进之后派生量必须已经变过（否则下面无从判别）');
+
+  // 走真实 undo 路径
+  restoreHeights(world, region.changes.map(([i, , old]) => [i, old]));
+  assert.equal(countDiff(world.height, pristine.height), 0, '高度必须逐位还原');
+  assert.equal(countDiff(world.type, pristine.type), 0, 'undo 后 type 必须回到 canonical');
+  assert.equal(countDiff(world.qi, pristine.qi), 0, 'undo 后 qi 必须回到 canonical');
+
+  // 反向对照：只还原高度、不重算 ⇒ 必须重新出现差异。没有这一条，
+  // 上面的「差 0」可能只是「两边都没动过」（审计期真实踩到的假绿）。
+  const control = makeWorld();
+  const controlRegion = sculpt3D(control, { x: 32, y: 24, radius: 8, strength: 0.06, mode: 'lower' });
+  for (const [i, , old] of controlRegion.changes) control.height[i] = old;
+  control.touch();
+  assert(countDiff(control.height, pristine.height) === 0, '对照组高度同样还原成功');
+  assert(countDiff(control.type, pristine.type) > 0, '反向对照必须仍失真——否则本组断言无判别力');
+});
+
+check('T9 修复纪律：复用 canonical API、不复制分类公式、不新增 RNG、不碰概率', () => {
+  const source = readSource('src/inkbox/render3d/terrain/sculpt.js');
+  assert.match(source, /import \{ recomputeRect \} from '\.\.\/\.\.\/world\/terrain\.js'/, '必须复用 canonical 重算 API');
+  assert.match(source, /recomputeRect\(world,/, 'sculpt 与 restoreHeights 都必须真的调用它');
+  assert.match(source, /export function restoreHeights/, 'undo 的还原也要住在这个边界里');
+  // 不复制地形分类：不得出现 TERRAIN_* 判定或 classify/qiAt 的自造版本
+  assert.doesNotMatch(source, /TERRAIN_INFO|classify\s*\(|qiAt\s*\(/, '不得复制 terrain classification');
+  // 不新增 RNG
+  assert.doesNotMatch(source, /Math\.random|mulberry32|rng\s*\(/, '不得新增 RNG');
+  // 不碰三界概率
+  assert.doesNotMatch(source, /CHANCE|LEAK_|WRAITH_CLIMB|POSSESS_/, '不得触碰三界概率常量');
+  // 不改 save schema
+  assert.doesNotMatch(source, /serialize|SAVE_VERSION|payload/, '不得改 save schema');
+});
+
+check('T9 结构：Render3DAdapter.undo 走 restoreHeights，不再自己写 world.height', () => {
+  const source = readSource('src/inkbox/render3d/Render3DAdapter.js');
+  assert.match(source, /import \{ sculpt, strokeSamples, restoreHeights \}/);
+  assert.match(source, /restoreHeights\(entry\.world, entry\.changes\)/);
+  assert.doesNotMatch(source, /world\.height\[i\]\s*=/, '适配器不得绕过 sculpt.js 边界自己写高度');
 });
 
 // ══════════════════════════════════════════════════════════════════════════

@@ -1,5 +1,5 @@
 import { Renderer3D } from './Renderer3D.js';
-import { sculpt, strokeSamples } from './terrain/sculpt.js';
+import { sculpt, strokeSamples, restoreHeights } from './terrain/sculpt.js';
 import { TERRAIN_INFO } from '../core/config.js';
 
 // DOM/input integration lives here; Sandbox sees only render() and dispose().
@@ -153,8 +153,11 @@ export class Render3DAdapter {
     if (!this.canSculpt({ plane: this.renderer.activePlane })) return;
     const entry = this.undoStack.pop();
     if (!entry || entry.plane !== 'mortal' || entry.world !== this.sandbox.world) return;
-    for (const [i, value] of entry.changes) entry.world.height[i] = value;
-    entry.world.touch(); this.sandbox.dirty = true;
+    // ⚠️ 高度还原与 canonical 派生量重算**一起**做（§16）：只还原高度会让 type / qi
+    //    停在被雕刻后的值上。写 world.height 的活儿统一留在 `terrain/sculpt.js` 边界里。
+    const restored = restoreHeights(entry.world, entry.changes);
+    if (restored) this.renderer.markTerrainDirty(restored);
+    this.sandbox.dirty = true;
   }
   render(now) {
     if (!this.active) return false;

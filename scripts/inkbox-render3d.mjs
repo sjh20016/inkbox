@@ -6,6 +6,7 @@ import { generateWorld } from '../src/inkbox/world/worldgen.js';
 import { createCoordinates } from '../src/inkbox/render3d/coordinates.js';
 import { visualElevation, surfaceElevation } from '../src/inkbox/render3d/terrain/VisualElevation.js';
 import { sculpt, strokeSamples } from '../src/inkbox/render3d/terrain/sculpt.js';
+import { recomputeRect } from '../src/inkbox/world/terrain.js';
 import { TerrainMesh } from '../src/inkbox/render3d/terrain/TerrainMesh.js';
 import { TerrainPicker } from '../src/inkbox/render3d/terrain/TerrainPicker.js';
 import { WorldRenderBridge } from '../src/inkbox/render3d/WorldRenderBridge.js';
@@ -63,7 +64,10 @@ for (const mode of ['raise', 'lower', 'flatten', 'smooth']) {
   check(`${mode}: bounded, deterministic, height-only editing`, () => {
     const world = generateWorld({ preset: { w: 32, h: 24 }, seed: 42, scatter: false });
     const copy = generateWorld({ preset: { w: 32, h: 24 }, seed: 42, scatter: false });
-    const old = world.height.slice(), rest = digest({ water: world.water, type: world.type, veg: world.veg, entities: world.entities, day: world.day });
+    // ⚠️ M2-B B0.3（§16）：`type` / `qi` 是**由 height 派生**的量，雕刻之后必须跟着重算
+    // ⇒ 它们不能进「不许变」的那一组。旧版把 `type` 也放进 rest，等于把 B0.3 的缺陷
+    //    （sculpt 漏调 canonical 重算）钉成了不变量。
+    const old = world.height.slice(), rest = digest({ water: world.water, veg: world.veg, entities: world.entities, day: world.day });
     const brush = { mode, x: 1, y: 1, radius: 5, strength: 0.1, targetHeight: 0.4 };
     sculpt(world, brush); sculpt(copy, brush);
     assert.deepEqual(world.height, copy.height);
@@ -74,7 +78,13 @@ for (const mode of ['raise', 'lower', 'flatten', 'smooth']) {
       if (old[i] !== world.height[i]) changed++;
     }
     assert(changed > 0);
-    assert.equal(digest({ water: world.water, type: world.type, veg: world.veg, entities: world.entities, day: world.day }), rest);
+    assert.equal(digest({ water: world.water, veg: world.veg, entities: world.entities, day: world.day }), rest,
+      '雕刻不得改非派生状态（water / veg / entities / day）');
+    // 派生量必须**已经是** canonical：再重算一遍不得有任何变化（canonical 重算是幂等的）。
+    const typeSnapshot = world.type.slice(), qiSnapshot = world.qi.slice();
+    recomputeRect(world, 0, 0, world.w - 1, world.h - 1);
+    assert.deepEqual(world.type, typeSnapshot, 'type 必须已 canonical（否则就是漏调 recomputeRect）');
+    assert.deepEqual(world.qi, qiSnapshot, 'qi 必须已 canonical');
   });
 }
 check('stroke spacing avoids disconnected brush stamps', () => {
@@ -84,13 +94,21 @@ check('stroke spacing avoids disconnected brush stamps', () => {
 check('dirty update retains geometry and refreshes exact heights', () => {
   const w = generateWorld({ preset: { w: 32, h: 24 }, seed: 7, scatter: false });
   const bridge = new WorldRenderBridge(w), t = new TerrainMesh(w, bridge.coordinates), geometry = t.geometry;
-  sculpt(w, { mode: 'raise', x: 16, y: 12, radius: 3 });
+  const typeBefore = w.type.slice();
+  // 笔刷要大到**确实**会改变地表分类，否则下面「type 报脏」那条没有判别力。
+  sculpt(w, { mode: 'raise', x: 16, y: 12, radius: 8, strength: 0.4 });
+  const typeChanged = typeBefore.some((value, i) => value !== w.type[i]);
+  assert(typeChanged, '本用例必须真的改变地表分类，否则 type 脏断言无判别力');
   // M1.1D D4 起 `changes()` 返回**分类**脏区（不是单个 region）。
-  // 雕刻只写 `height` ⇒ 断言顺带钉住「它不该谎报 water / type / veg 也脏了」。
+  // ⚠️ M2-B B0.3（§16）：雕刻现在会重算 `type`（它是 height 的派生物），
+  //    而 `type` 正是 TerrainMesh 的**顶点色**来源 ⇒ 这里必须报 type 脏；
+  //    报 null 才意味着「山被削平了，地表颜色还留在旧分类上」。
+  //    旧断言 `assert.equal(dirty.type, null, '雕刻不写 type')` 把缺陷钉成了不变量，
+  //    已随 bugfix 纠正为「water / veg 不脏、type 必须脏」。
   const dirty = bridge.changes();
   assert(dirty && dirty.any && dirty.height, '雕刻后 height 必须报脏');
   assert.equal(dirty.water, null, '雕刻不写 water');
-  assert.equal(dirty.type, null, '雕刻不写 type');
+  assert(dirty.type, '雕刻重算 type ⇒ 必须报 type 脏');
   assert.equal(dirty.veg, null, '雕刻不写 veg');
   t.update(dirty.height, { height: true, type: false });
   assert.equal(t.geometry, geometry); assert.equal(bridge.changes(), null);

@@ -1,7 +1,7 @@
 {
   "suite": "Render3D M2-B",
   "status": "passed",
-  "passed": 28,
+  "passed": 33,
   "failed": 0,
   "checks": [
     {
@@ -114,6 +114,26 @@
     },
     {
       "label": "T1 地形索引与 RegionGeometry 同源：drawRange 等于保留 quad 数",
+      "status": "passed"
+    },
+    {
+      "label": "T9 3D sculpt 之后 type / qi 必须已经是 canonical，且确实跟着高度变了",
+      "status": "passed"
+    },
+    {
+      "label": "T9 一整笔拖动（多次落笔）之后派生量仍然 canonical",
+      "status": "passed"
+    },
+    {
+      "label": "T9 undo 之后派生量必须回到 canonical，且有反向对照证明判据有判别力",
+      "status": "passed"
+    },
+    {
+      "label": "T9 修复纪律：复用 canonical API、不复制分类公式、不新增 RNG、不碰概率",
+      "status": "passed"
+    },
+    {
+      "label": "T9 结构：Render3DAdapter.undo 走 restoreHeights，不再自己写 world.height",
       "status": "passed"
     }
   ]
