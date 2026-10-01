@@ -1,6 +1,26 @@
 import { Renderer3D } from './Renderer3D.js';
 import { sculpt, strokeSamples, restoreHeights } from './terrain/sculpt.js';
 import { isViewTool } from '../ui/realmView.js';
+
+/**
+ * M2-B B4（§63）：界缘检视的文案。
+ *
+ * ⚠️ **只说中性事实**：哪一界的界缘、此处界差、附近有几道裂缝、这里是不是破口。
+ *    不许出现「镇压强度」「泄漏概率」「鬼魂风险 −30%」这类**机制性文案**——
+ *    那些机制目前根本不存在（P2 / §63）。界差是**表现读数**，不是封印强度。
+ */
+export function boundaryInspectorText(hit) {
+  if (!hit) return '';
+  const name = hit.targetPlane === 'upper' ? '上界界缘' : '幽冥界缘';
+  const rifts = hit.nearbyRifts || [];
+  const parts = [
+    `${name} · 格 ${Math.round(hit.x)}, ${Math.round(hit.y)}`,
+    `此处界差 ${hit.rawGap.toFixed(1)}（画出的深度 ${hit.visualDepth.toFixed(1)}）`,
+    rifts.length ? `附近裂缝 ${rifts.length} 道` : '附近无裂缝',
+  ];
+  if (rifts.length) parts.push(hit.breach ? '此处为破口' : '未与界缘相交');
+  return parts.join(' · ');
+}
 import { TERRAIN_INFO } from '../core/config.js';
 
 // DOM/input integration lives here; Sandbox sees only render() and dispose().
@@ -64,6 +84,15 @@ export class Render3DAdapter {
       }
       const hit = this.hit(e);
       if (!hit) return;
+      // M2-B B4（§62/§63）：界缘断面也能被命中，但它**不是**一格的检视对象，
+      // 也**不落选择环**——界缘属于「当前这扇窗」，不属于某一位面的某一格。
+      if (hit.kind === 'realm-boundary') {
+        this.selectedBoundary = hit; this.selectedCell = null;
+        this.renderer.setSelection(null, null);
+        this.sandbox.notify(boundaryInspectorText(hit), 3600);
+        return;
+      }
+      this.selectedBoundary = null;
       this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y };
       // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
       this.renderer.setSelection(hit.x, hit.y, hit.plane);
@@ -267,7 +296,11 @@ export class Render3DAdapter {
     const metrics = this.renderer.render();
     const cell = hit || this.selectedCell;
     const viewedWorld = this.renderer.stages.get(cell?.plane || this.renderer.activePlane)?.world || world;
-    this.readout.textContent = cell ? `${cell.plane || 'mortal'} · 格 ${cell.x}, ${cell.y} · 高程 ${viewedWorld.height[cell.y * viewedWorld.w + cell.x]?.toFixed(4)} · ${TERRAIN_INFO[viewedWorld.type[cell.y * viewedWorld.w + cell.x]]?.name || '—'}` : '左键检视 / 雕刻 · 中键旋转 · 右键平移 · 滚轮缩放';
+    // §63：界缘检视优先显示（它是中性的界差读数，与格子检视互斥）。
+    const boundaryText = this.selectedBoundary ? boundaryInspectorText(this.selectedBoundary) : null;
+    this.readout.textContent = boundaryText || (cell && cell.plane
+      ? `${cell.plane} · 格 ${cell.x}, ${cell.y} · 高程 ${viewedWorld.height[cell.y * viewedWorld.w + cell.x]?.toFixed(4)} · ${TERRAIN_INFO[viewedWorld.type[cell.y * viewedWorld.w + cell.x]]?.name || '—'}`
+      : '左键检视 / 雕刻 · 中键旋转 · 右键平移 · 滚轮缩放');
     if (!this.lastDebug || now - this.lastDebug > 0.3) {
       this.lastDebug = now;
       this.panel.querySelector('[data-debug]').textContent = `Q/E 旋转 · F 全图 · Ctrl+Z 撤销雕刻\n左键检视 / 雕刻 · 中键旋转 · 右键平移 · 滚轮缩放\n${metrics.fps.toFixed(1)} FPS · ${metrics.frameMs.toFixed(1)} ms/frame\n${metrics.drawCalls} draws · ${metrics.triangles} triangles\n${metrics.terrainVertices} terrain vertices · ${metrics.treeInstances} trees\n${metrics.entityInstances} entities · ${metrics.houseInstances} buildings · ${metrics.markerInstances} markers\nRaycast ${metrics.lastRaycastMs.toFixed(2)} ms（上次查询） · render submit ${metrics.renderMs.toFixed(2)} ms\nCPU 更新 ${metrics.layerUpdateMs.toFixed(2)} ms（桥扫描 ${metrics.bridgeScanMs.toFixed(2)} · 地形 ${metrics.terrainUpdateMs.toFixed(2)} · 水 ${metrics.waterUpdateMs.toFixed(2)} · 植被 ${metrics.vegetationUpdateMs.toFixed(2)}）\n实体 ${metrics.entityUpdateMs.toFixed(2)} ms · 建筑 ${metrics.settlementUpdateMs.toFixed(2)} ms · 标记 ${metrics.markerUpdateMs.toFixed(2)} ms`;

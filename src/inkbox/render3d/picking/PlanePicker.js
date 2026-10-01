@@ -35,6 +35,21 @@ export class PlanePicker {
       nearest = { ...cell, plane: stage.plane, entityId: entity?.id,
         point: hit.point, worldPoint: hit.point, world, stage, distance: hit.distance };
     }
+    // M2-B B4（§62）：界缘断面也可以被命中——它同样是**提交给 GPU 的可见几何**，
+    // 所以按 §61「visible geometry wins」参与同一场深度比较。
+    // ⚠️ 划窗采样时（onlyPlane 非空）不参与：那时只认凡间地形（§52）。
+    const boundary = host.boundary;
+    if (!onlyPlane && boundary?.mesh.visible && boundary.edges) {
+      const hit = this.raycaster.intersectObject(boundary.mesh, false)[0];
+      if (hit && (!nearest || hit.distance < nearest.distance)) {
+        nearest = {
+          ...boundary.edgeAtTriangle(hit.faceIndex),
+          plane: null, entityId: null,
+          point: hit.point, worldPoint: hit.point,
+          world: { x: hit.point.x, y: hit.point.z }, stage: null, distance: hit.distance,
+        };
+      }
+    }
     this.timeMs = performance.now() - start; this.lastRaycastMs = this.timeMs;
     return nearest;
   }

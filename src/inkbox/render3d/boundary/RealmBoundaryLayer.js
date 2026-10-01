@@ -2,41 +2,42 @@ import * as THREE from 'three';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 /**
- * M2-B B2 · 界缘断面（§30–§33 / §44–§47）。
+ * M2-B B2/B4 · 界缘断面（§30–§33 / §44–§47 / §55–§60）。
  *
  * 职责只有一件：画**当前 RealmView Region 的空间断面**。
  * 它**不是** rift manager，也**不是** simulation seal（§31 / S6）——
- * 裂缝是 World 的持久对象，界缘只是「当前这扇窗」的表现；两者的视觉交叠
- * （breach）由 B4 读取结果叠加，不在这里持有。
+ * 裂缝是 World 的持久对象（`world.rifts`），界缘只是「当前这扇窗」的表现。
  *
- * ── 几何（§32）────────────────────────────────────────────────────────
- * 每条 Region 边界边生成 **1 个 quad（2 个三角形）**：
- *   · XZ **完全来自共享世界格网节点**（`coordinates.cellToRender`），
- *     与地形网格用的是同一套坐标 ⇒ 同坐标必然对齐；
- *   · 下端 = `mortalElevation.node(x, y)`（凡间真实地形）；
- *   · 上端 = `targetElevation.node(x, y)`（目标位面的**最终**边界高程）。
+ * ── Rift Breach（§55–§60）─────────────────────────────────────────────
+ * 结构必须是（§56）：
+ * ```text
+ * World rifts → riftViewModel（唯一读入口）
+ * Current RealmBoundary → 与 active rifts 求**视觉交叠** → 出现 breach
+ * ```
+ * 界缘**不持有** `world.rifts`，只接收已经算好的 `rifts: [{x, y, radius}]`。
+ * 直径与 `riftRadiusAt()` 关联，而半径一律经 `readers/riftViewModel.js` 取，
+ * **不复制**裂缝半径公式（§58）。breach 纯表现：不改 rift、不改半径、不延寿、
+ * 不改概率、不改跨界结果（§60）。
  *
- * ⚠️⚠️ §33「禁止墙体自身悬空压缩」：上端**必须**是目标地形自己在同一节点的值，
- *    所以这里调用的就是目标 Stage 地形网格写顶点时**同一个** `elevation.node()`。
- *    两侧由同一个函数在同一节点取值 ⇒ 结构上不可能出现黑缝，
- *    而不是靠事后调参把缝对上。真实高差 40 就画 40，不许单独压成 15。
+ * ── 几何（§32 / §33）──────────────────────────────────────────────────
+ * 每条边界边 1 个 quad（2 三角形）。XZ 完全来自共享世界格网节点；
+ * 下端 = `mortalElevation.node()`，上端 = `targetElevation.node()`——
+ * 与目标地形网格写顶点时**同一个调用** ⇒ 零缝隙由构造保证，不是调参结果。
  *
  * ── 预算（§86）────────────────────────────────────────────────────────
- * 三角形数 = 边界边数 × 2，与 **Region 周长**相关；与面积无关。
- * 如果哪天变成「面积 × 大型网格」，说明设计走偏了。
+ * 三角形数 = 边界边数 × 2，与 **Region 周长**相关，与面积无关。
  *
  * ── 材质（§44）────────────────────────────────────────────────────────
- * 只用一档 `MeshLambertMaterial` + 顶点色。**没有** EffectComposer / RenderTarget /
+ * 一档 `MeshLambertMaterial` + 顶点色。没有 EffectComposer / RenderTarget /
  * WebGPU / TSL / 大型 shader pipeline，也没有全局水墨管线（§46 留给 Art Pass）。
- * 三个视觉通道（§45）都落在顶点色上：几何表达方向与深度、墨色表达深浅、
- * Upper 顶部轻 / Nether 向下沉。
  */
 
-/** 墨色浓淡的归一化参考深度（**表现量**，不是物理量）。 */
 const DEPTH_REFERENCE = 60;
 const INK_LIGHT = new THREE.Color('#8f8a7c');     // 上界顶部：轻、向上亮
 const INK_MID = new THREE.Color('#4a463e');
 const INK_DEEP = new THREE.Color('#22201c');      // 底端 / 幽冥：暗、向下沉
+// §59：继承 Canvas 的裂缝语言（青色微光），**不**新造红色科幻激光。
+const RIFT_GLOW = new THREE.Color('#4a7a8a');
 
 function inkFor(sign, visualDepth, isTop, target) {
   const depth = Math.max(0, Math.min(1, visualDepth / DEPTH_REFERENCE));
@@ -46,6 +47,15 @@ function inkFor(sign, visualDepth, isTop, target) {
     target.copy(isTop ? INK_MID : INK_DEEP).lerp(INK_DEEP, isTop ? depth * 0.5 : 0.55 + depth * 0.45);
   }
   return target;
+}
+
+/** 线段到圆心的最短距离 ≤ 半径 ⇒ 这条边界边落在破口里（§58）。 */
+export function edgeIntersectsRift(ax, ay, bx, by, cx, cy, radius) {
+  const dx = bx - ax, dy = by - ay;
+  const length2 = dx * dx + dy * dy;
+  let t = length2 > 0 ? ((cx - ax) * dx + (cy - ay) * dy) / length2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(cx - (ax + t * dx), cy - (ay + t * dy)) <= radius;
 }
 
 export class RealmBoundaryLayer {
@@ -69,21 +79,28 @@ export class RealmBoundaryLayer {
     this.mesh.visible = false;
     this.key = null;
     this.boundaryDirection = 'up';
-    this.stats = { edges: 0, triangles: 0, vertices: 0, rawGapMax: 0, rawGapMean: 0, visualDepthMax: 0, visualDepthMin: Infinity };
+    this.sign = 1;
+    // 拾取与读数用的逐边数据（§62）
+    this.edgeNodes = new Int32Array(0);
+    this.edgeRawGap = new Float32Array(0);
+    this.edgeVisualDepth = new Float32Array(0);
+    this.edgeBreach = new Uint8Array(0);
+    this.rifts = [];
+    this.stats = emptyStats();
   }
 
   setVisible(visible) { this.mesh.visible = !!visible; }
 
-  /** 缓存键：Region identity + 预设 + 两侧高程版本。变了才重建（§85）。 */
-  static keyFor({ region, mode, sign, targetPlane }) {
-    return `${mode}|${sign}|${targetPlane}|${region.x0},${region.y0},${region.x1},${region.y1},${region.path?.length ?? 0}`;
+  /** 缓存键：Region identity + 预设 + 目标位面 + 活跃裂缝签名（§85）。 */
+  static keyFor({ region, mode, sign, targetPlane, riftSignature = '' }) {
+    return `${mode}|${sign}|${targetPlane}|${region.x0},${region.y0},${region.x1},${region.y1},${region.path?.length ?? 0}|${riftSignature}`;
   }
 
   clear() {
     this.geometry.setDrawRange(0, 0);
     this.edges = 0;
     this.vertices = 0;
-    this.stats = { edges: 0, triangles: 0, vertices: 0, rawGapMax: 0, rawGapMean: 0, visualDepthMax: 0, visualDepthMin: Infinity };
+    this.stats = emptyStats();
   }
 
   #ensureCapacity(edgeCount) {
@@ -104,11 +121,15 @@ export class RealmBoundaryLayer {
    * @param {object} options.mortalElevation
    * @param {object} options.targetElevation
    * @param {number} options.sign `+1` 上界 / `-1` 幽冥
+   * @param {Array<{x:number,y:number,radius:number}>} [options.rifts] 已按目标位面过滤的活跃裂缝
    * @param {string} [options.key] 缓存键
    */
-  rebuild({ regionGeometry, mortalElevation, targetElevation, sign, key = null }) {
+  rebuild({ regionGeometry, mortalElevation, targetElevation, sign, rifts = [], key = null, targetPlane = null }) {
     const edgeCount = regionGeometry?.edgeCount ?? 0;
     this.key = key;
+    this.sign = sign;
+    this.targetPlane = targetPlane;
+    this.rifts = rifts;
     this.boundaryDirection = sign > 0 ? 'up' : 'down';
     if (!edgeCount) { this.clear(); return this.stats; }
     this.#ensureCapacity(edgeCount);
@@ -117,13 +138,14 @@ export class RealmBoundaryLayer {
     const color = this.color.array;
     const index = this.geometry.index.array;
     const scratch = new THREE.Color();
-    let v = 0;         // 顶点游标（每边 4 个）
-    let t = 0;         // 索引游标（每边 6 个）
+    let v = 0;
+    let t = 0;
     let gapSum = 0;
     let gapMax = 0;
     let depthMax = 0;
     let depthMin = Infinity;
     let edges = 0;
+    let breachEdges = 0;
 
     for (const { ax, ay, bx, by } of regionGeometry.boundaryEdges()) {
       const pa = this.coordinates.cellToRender(ax, ay);
@@ -135,29 +157,52 @@ export class RealmBoundaryLayer {
       const bottomB = mortalElevation.node(bx, by);
       const visualA = Math.abs(topA - bottomA);
       const visualB = Math.abs(topB - bottomB);
-      // rawGap 记录**未经 Strata 塑形**的真实高差，供读数与报告区分「真实 vs 画出来」。
       const rawA = Math.abs(targetElevation.baseNode(ax, ay) - bottomA);
       const rawB = Math.abs(targetElevation.baseNode(bx, by) - bottomB);
 
-      // 顶点顺序：[topA, bottomA, topB, bottomB]
+      // ── 破口（§58）：与任何活跃裂缝的圆相交即视为裂口 ──
+      let breach = false;
+      for (const rift of rifts) {
+        if (edgeIntersectsRift(ax, ay, bx, by, rift.x, rift.y, rift.radius)) { breach = true; break; }
+      }
+      if (breach) breachEdges += 1;
+
       const base = v;
       position[v * 3] = pa.x; position[v * 3 + 1] = topA; position[v * 3 + 2] = pa.z;
-      inkFor(sign, visualA, true, scratch); color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
+      (breach ? scratch.copy(RIFT_GLOW) : inkFor(sign, visualA, true, scratch));
+      color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
       v += 1;
       position[v * 3] = pa.x; position[v * 3 + 1] = bottomA; position[v * 3 + 2] = pa.z;
-      inkFor(sign, visualA, false, scratch); color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
+      (breach ? scratch.copy(RIFT_GLOW).multiplyScalar(0.72) : inkFor(sign, visualA, false, scratch));
+      color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
       v += 1;
       position[v * 3] = pb.x; position[v * 3 + 1] = topB; position[v * 3 + 2] = pb.z;
-      inkFor(sign, visualB, true, scratch); color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
+      (breach ? scratch.copy(RIFT_GLOW) : inkFor(sign, visualB, true, scratch));
+      color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
       v += 1;
       position[v * 3] = pb.x; position[v * 3 + 1] = bottomB; position[v * 3 + 2] = pb.z;
-      inkFor(sign, visualB, false, scratch); color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
+      (breach ? scratch.copy(RIFT_GLOW).multiplyScalar(0.72) : inkFor(sign, visualB, false, scratch));
+      color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
       v += 1;
 
-      // 两个三角形：topA-bottomA-topB、topB-bottomA-bottomB
+      // ⚠️ 破口**不是**「把墙切断」：墙仍然连续（§33 的零缝隙对每一段都成立），
+      //    只是这一段换成裂缝的青光。这样既读得出「这里被裂开了」，
+      //    又不会在看另一界时露出一条通向天空的真空缝。
       index[t] = base; index[t + 1] = base + 1; index[t + 2] = base + 2;
       index[t + 3] = base + 2; index[t + 4] = base + 1; index[t + 5] = base + 3;
       t += 6;
+
+      if (this.edgeNodes.length < (edges + 1) * 4) {
+        this.edgeNodes = new Int32Array(Math.max(edges + 1, edgeCount) * 4);
+        this.edgeRawGap = new Float32Array(Math.max(edges + 1, edgeCount));
+        this.edgeVisualDepth = new Float32Array(Math.max(edges + 1, edgeCount));
+        this.edgeBreach = new Uint8Array(Math.max(edges + 1, edgeCount));
+      }
+      this.edgeNodes[edges * 4] = ax; this.edgeNodes[edges * 4 + 1] = ay;
+      this.edgeNodes[edges * 4 + 2] = bx; this.edgeNodes[edges * 4 + 3] = by;
+      this.edgeRawGap[edges] = (rawA + rawB) / 2;
+      this.edgeVisualDepth[edges] = (visualA + visualB) / 2;
+      this.edgeBreach[edges] = breach ? 1 : 0;
 
       gapSum += (rawA + rawB) / 2;
       gapMax = Math.max(gapMax, rawA, rawB);
@@ -181,8 +226,47 @@ export class RealmBoundaryLayer {
       rawGapMean: edges ? gapSum / edges : 0,
       visualDepthMax: depthMax,
       visualDepthMin: Number.isFinite(depthMin) ? depthMin : 0,
+      breachEdges,
+      breachRatio: edges ? breachEdges / edges : 0,
+      riftCount: rifts.length,
     };
     return this.stats;
+  }
+
+  /**
+   * §62 Boundary Picking：按**三角形索引**反查这条边。
+   * @param {number} faceIndex `THREE.Intersection.faceIndex`（每条边 2 个三角形）
+   */
+  edgeAtTriangle(faceIndex) {
+    if (!Number.isInteger(faceIndex) || faceIndex < 0) return null;
+    const edge = faceIndex >> 1;
+    if (edge >= this.edges) return null;
+    const nodes = this.edgeNodes;
+    return {
+      kind: 'realm-boundary',
+      targetPlane: this.targetPlane,
+      direction: this.boundaryDirection,
+      x: (nodes[edge * 4] + nodes[edge * 4 + 2]) / 2,
+      y: (nodes[edge * 4 + 1] + nodes[edge * 4 + 3]) / 2,
+      ax: nodes[edge * 4], ay: nodes[edge * 4 + 1], bx: nodes[edge * 4 + 2], by: nodes[edge * 4 + 3],
+      rawGap: this.edgeRawGap[edge],
+      visualDepth: this.edgeVisualDepth[edge],
+      breach: this.edgeBreach[edge] === 1,
+      nearbyRifts: this.#nearbyRifts(edge),
+    };
+  }
+
+  /** 该边附近的活跃裂缝（**只读**读数，§62 / §63）。 */
+  #nearbyRifts(edge) {
+    const nodes = this.edgeNodes;
+    const ax = nodes[edge * 4], ay = nodes[edge * 4 + 1], bx = nodes[edge * 4 + 2], by = nodes[edge * 4 + 3];
+    const found = [];
+    for (const rift of this.rifts) {
+      if (edgeIntersectsRift(ax, ay, bx, by, rift.x, rift.y, rift.radius)) {
+        found.push({ x: rift.x, y: rift.y, radius: rift.radius, targetPlane: this.targetPlane });
+      }
+    }
+    return found;
   }
 
   dispose() {
@@ -190,4 +274,11 @@ export class RealmBoundaryLayer {
     this.material.dispose();
     this.mesh.removeFromParent();
   }
+}
+
+function emptyStats() {
+  return {
+    edges: 0, triangles: 0, vertices: 0, rawGapMax: 0, rawGapMean: 0,
+    visualDepthMax: 0, visualDepthMin: 0, breachEdges: 0, breachRatio: 0, riftCount: 0,
+  };
 }

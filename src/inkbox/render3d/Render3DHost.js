@@ -13,6 +13,25 @@ import { BrushOverlay } from './BrushOverlay.js';
 import { RealmBoundaryLayer } from './boundary/RealmBoundaryLayer.js';
 import { BOUNDARY_MODES, RAW_BOUNDARY, boundarySpec, buildRealmBoundaryField } from './boundary/strataProfile.js';
 import { RenderDebug } from './debug/RenderDebug.js';
+import { visibleRift } from './readers/riftViewModel.js';
+
+/**
+ * M2-B B4（§56–§58）：与**当前窗口目标位面**一致的活跃裂缝。
+ *
+ * ⚠️ 半径一律经 `readers/riftViewModel.js` 的 `visibleRift()` —— 它是
+ * render3d 通往权威裂缝公式的**唯一**入口，禁止在这里复制半径公式（§58）。
+ * ⚠️ 只读：不改 rift、不改半径、不延寿、不改概率（§60）。
+ * ⚠️ 界缘层本身**不持有** `world.rifts`（S6）——这里只是把算好的读数传下去。
+ */
+function activeRiftsFor(world, targetPlane) {
+  const out = [];
+  for (const rift of world?.rifts || []) {
+    const view = visibleRift(rift);
+    if (!view || view.targetPlane !== targetPlane) continue;
+    out.push({ id: rift.id, x: rift.x, y: rift.y, radius: view.radius });
+  }
+  return out;
+}
 
 export class Render3DHost {
   constructor(canvas, world, options = {}) {
@@ -104,7 +123,10 @@ export class Render3DHost {
     const region = this.realmViewState.region;
     const sign = targetPlane === 'upper' ? 1 : -1;
     const spec = boundarySpec(this.boundaryMode, sign);
-    const key = RealmBoundaryLayer.keyFor({ region, mode: spec.mode, sign, targetPlane });
+    const rifts = activeRiftsFor(this.world, targetPlane);
+    // 半径会随裂缝生长变化 ⇒ 量化后进缓存键，让破口宽度跟着更新（§58）。
+    const riftSignature = rifts.map(r => `${r.id}:${Math.round(r.radius * 20)}`).join(',');
+    const key = RealmBoundaryLayer.keyFor({ region, mode: spec.mode, sign, targetPlane, riftSignature });
     if (this.boundaryKey !== key) {
       this.boundaryKey = key;
       if (spec.mode === 'strata') {
@@ -127,7 +149,7 @@ export class Render3DHost {
         regionGeometry: target.regionGeometry,
         mortalElevation: mortal.elevation,
         targetElevation: target.elevation,
-        sign, key,
+        sign, key, rifts, targetPlane,
       });
     }
     this.boundary.setVisible(true);
@@ -172,6 +194,7 @@ export class Render3DHost {
     this.cameraRig.focusOn(x, y, stage.elevation.at(x, y), options);
   }
   brush(hit, radius) { this.brushOverlay.update(hit, radius, this.stages.get('mortal')); }
+  /** 默认拾取：可见几何优先（§61）——界缘也能被命中（§62）。 */
   pick(x, y) { return this.picker.pick(x, y, this.width, this.height); }
   /** M2-B B3（§52）：划窗时**只**拾凡间——目标界已经开着也不能把路径点写到它上面。 */
   pickPlane(x, y, plane) { return this.picker.pick(x, y, this.width, this.height, plane); }

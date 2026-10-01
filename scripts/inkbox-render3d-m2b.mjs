@@ -28,6 +28,8 @@ import { normalizeRegion } from '../src/inkbox/ui/tools.js';
 import { VIEW_MAX_AREA_FRAC } from '../src/inkbox/ui/realmView.js';
 import { Render3DHost } from '../src/inkbox/render3d/Render3DHost.js';
 import { Render3DAdapter } from '../src/inkbox/render3d/Render3DAdapter.js';
+import { emitRuntimeEvent, drainRuntimeEvents } from '../src/inkbox/core/runtimeEvents.js';
+import { PresentationStage } from '../src/inkbox/render/presentationStage.js';
 
 let passed = 0;
 const checks = [];
@@ -1340,6 +1342,150 @@ check('T6 结构：视界工具并进正式工具表、共用同一个 toolId（
   assert.match(tools, /T\('viewNether'/, 'Canvas 工具表里必须有 viewNether');
 });
 
+// ══════════════════════════════════════════════════════════════════════════
+// T5 · 位面拾取（§61 / §75）
+// ══════════════════════════════════════════════════════════════════════════
+
+/** 把一个世界格点投影到画布像素，保证射线**一定**打在那块几何上。 */
+function projectCell(host, x, y, height) {
+  const camera = host.cameraRig.camera;
+  // ⚠️ `Vector3.project()` 读的是 `matrixWorldInverse`，而 `Raycaster` 读的是
+  //    `matrixWorld` + `projectionMatrixInverse`。测试里手工摆过相机，
+  //    必须把两个缓存都同步一次，否则投影与反投影用的不是同一个相机姿态。
+  camera.updateMatrixWorld();
+  camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+  camera.updateProjectionMatrix();
+  const p = host.coordinates.cellToRender(x, y);
+  const v = new THREE.Vector3(p.x, height, p.z).project(camera);
+  return { px: (v.x + 1) / 2 * host.width, py: (1 - v.y) / 2 * host.height };
+}
+
+check('T5 位面拾取：Upper / Nether 各 80+ 采样，可见几何 === 返回命中（§61/§75）', () => {
+  const world = makeWorld();
+  const region = regionOf([[16, 12], [46, 12], [46, 32], [16, 32]], world);
+  for (const targetPlane of ['upper', 'nether']) {
+    const { host } = makeHost(world);
+    host.resize(960, 640);
+    // 拾取套件用**俯视**相机：斜视时近处山体会真实遮挡远处格，
+    // 那样「投影回去能不能命中自己」测的就变成遮挡关系而不是拾取正确性了。
+    const camera = host.cameraRig.camera;
+    camera.position.set(0, 400, 0.01); camera.up.set(0, 0, -1); camera.lookAt(0, 0, 0);
+    openWindow(host, region, targetPlane);
+    const target = host.stages.get(targetPlane);
+    const inside = [];
+    const outside = [];
+    for (let y = 14; y < 30; y += 2) for (let x = 18; x < 44; x += 2) inside.push([x, y]);
+    for (let y = 2; y < 40; y += 4) for (let x = 2; x < 60; x += 5) {
+      if (!target.regionGeometry.isInsideCell(x, y)) outside.push([x, y]);
+    }
+    const sample = (list, expectedPlane) => {
+      let hits = 0;
+      for (const [x, y] of list) {
+        const stage = host.stages.get(expectedPlane);
+        const at = projectCell(host, x + 0.5, y + 0.5, stage.elevation.at(x + 0.5, y + 0.5));
+        const hit = host.pick(at.px, at.py);
+        if (!hit || hit.plane !== expectedPlane) continue;
+        hits += 1;
+        // §61：返回的必须是**可见**几何
+        assert.equal(hit.stage.visible, true, '命中不可见几何');
+        assert.equal(hit.stage.terrain.mesh.visible, true);
+        assert(Math.abs(hit.x - x) <= 2 && Math.abs(hit.y - y) <= 2,
+          `命中坐标偏离采样格：(${hit.x},${hit.y}) vs (${x},${y})`);
+      }
+      return hits;
+    };
+    const insideHits = sample(inside, targetPlane);
+    assert(insideHits >= 80, `${targetPlane} 窗内命中必须 ≥80，实得 ${insideHits}/${inside.length}`);
+    const outsideHits = sample(outside, 'mortal');
+    assert(outsideHits >= 80, `${targetPlane} 窗外凡间命中必须 ≥80，实得 ${outsideHits}/${outside.length}`);
+    host.dispose();
+  }
+});
+
+check('T5 界缘可被命中：返回中性读数 rawGap / visualDepth / nearbyRifts（§62）', () => {
+  const world = makeWorld();
+  world.rifts.push({ id: 901, x: 30, y: 20, strength: 6, openedDay: 0, age: 900, closedDay: -1, targetPlane: 'upper' });
+  const { host } = makeHost(world);
+  host.resize(960, 640);
+  // 界缘是**竖直**面：俯视只能看到一条线，必须用斜视角才看得到墙面。
+  const camera = host.cameraRig.camera;
+  camera.position.set(10, 120, 120); camera.up.set(0, 1, 0); camera.lookAt(0, 0, 0);
+  host.setBoundaryMode('strata');   // 墙面更高，拾取窗口更宽
+  const region = regionOf([[30, 20], [44, 20], [44, 30], [30, 30]], world);
+  openWindow(host, region, 'upper');
+  assert(host.boundary.stats.edges > 0);
+  const target = host.stages.get('upper');
+  let checked = 0;
+  for (const { ax, ay, bx, by } of target.regionGeometry.boundaryEdges()) {
+    const mx = (ax + bx) / 2, my = (ay + by) / 2;
+    const top = target.elevation.at(mx, my);
+    const bottom = host.stages.get('mortal').elevation.at(mx, my);
+    // 取墙面下半段：上半段可能正好被目标地形自己的边缘挡住
+    const at = projectCell(host, mx, my, bottom + (top - bottom) * 0.3);
+    const hit = host.pick(at.px, at.py);
+    if (!hit || hit.kind !== 'realm-boundary') continue;
+    checked += 1;
+    assert.equal(hit.targetPlane, 'upper');
+    assert.equal(hit.direction, 'up');
+    assert(Number.isFinite(hit.rawGap) && hit.rawGap >= 0, 'rawGap 必须是有限读数');
+    assert(Number.isFinite(hit.visualDepth) && hit.visualDepth >= 0);
+    assert(Array.isArray(hit.nearbyRifts), 'nearbyRifts 必须是数组');
+    assert.equal(typeof hit.breach, 'boolean');
+  }
+  assert(checked >= 3, `至少要命中几段界缘，实得 ${checked}`);
+  host.dispose();
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// T7 · 裂缝持久性（§55–§57 / §60 / §77）
+// ══════════════════════════════════════════════════════════════════════════
+
+check('T7 重画窗口不删裂缝、只改变破口；裂缝世界对象一字未动（§55–§57/§60）', () => {
+  const world = makeWorld();
+  world.rifts.push({ id: 901, x: 30, y: 20, strength: 6, openedDay: 0, age: 900, closedDay: -1, targetPlane: 'upper' });
+  const before = JSON.parse(JSON.stringify(world.rifts));
+  const { host } = makeHost(world);
+  // 窗口 A：裂缝正落在它的角上 ⇒ 必有破口
+  const regionA = regionOf([[30, 20], [44, 20], [44, 30], [30, 30]], world);
+  openWindow(host, regionA, 'upper');
+  const breachA = host.boundary.stats.breachEdges;
+  assert(breachA > 0, `贴着裂缝的窗口必须出现破口，实得 ${breachA}`);
+  assert(host.boundary.stats.riftCount > 0 && host.boundary.stats.breachRatio > 0);
+
+  // 窗口 B：远离裂缝 ⇒ 没有破口，但裂缝**还在**
+  const regionB = regionOf([[8, 8], [20, 8], [20, 18], [8, 18]], world);
+  openWindow(host, regionB, 'upper');
+  assert.equal(host.boundary.stats.breachEdges, 0, '远离裂缝的窗口不该有破口');
+  assert.equal(world.rifts.length, 1, '重画窗口不得增删裂缝');
+  assert.deepEqual(JSON.parse(JSON.stringify(world.rifts)), before, '界缘/破口不得改裂缝任何字段（§60）');
+
+  // 回到窗口 A：破口必须**重新出现**（说明它一直是当前 boundary 的表象，不是被删了）
+  openWindow(host, regionA, 'upper');
+  assert.equal(host.boundary.stats.breachEdges, breachA, '回到原窗口 ⇒ 破口原样回来');
+
+  // §58：破口宽度与 riftRadiusAt() 关联 —— 半径 ∝ strength，放大它应当覆盖更多边
+  const small = host.boundary.stats.breachEdges;
+  world.rifts[0].strength = 24;
+  host.boundaryKey = null;
+  openWindow(host, regionA, 'upper');
+  assert(host.boundary.stats.breachEdges >= small, '半径变大 ⇒ 破口不该变小');
+  assert.equal(world.rifts.length, 1);
+  host.dispose();
+});
+
+check('T7 裂缝只经 riftViewModel 读取，界缘不持有 world.rifts（S6/§58）', () => {
+  const host = readCode('src/inkbox/render3d/Render3DHost.js');
+  assert.match(host, /import \{ visibleRift \} from '\.\/readers\/riftViewModel\.js'/, '必须经唯一入口读裂缝');
+  assert.doesNotMatch(host, /riftRadiusAt/, '禁止复制半径公式（§58）');
+  const layer = readCode('src/inkbox/render3d/boundary/RealmBoundaryLayer.js');
+  assert.doesNotMatch(layer, /world\.rifts|riftRadiusAt|riftIsActive/, '界缘层不得持有 / 读取 world.rifts（S6）');
+  assert.doesNotMatch(layer, /openRifts|closedDay|TAU_GROW|TAU_CLOSE/, '界缘层不得碰裂缝生命周期');
+  // 破口纯表现：不得写回任何裂缝字段
+  assert.doesNotMatch(layer, /rift\.\w+\s*=[^=]/, '破口不得修改裂缝');
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// T8 由下一个提交（plane presentation fx）补上。
 // ══════════════════════════════════════════════════════════════════════════
 
 const reportDir = path.join(root, 'reports', 'release', 'render3d-m2b');

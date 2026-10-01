@@ -1,7 +1,7 @@
 {
   "suite": "Render3D M2-B",
   "status": "passed",
-  "passed": 62,
+  "passed": 66,
   "failed": 0,
   "checks": [
     {
@@ -250,6 +250,22 @@
     },
     {
       "label": "T6 结构：视界工具并进正式工具表、共用同一个 toolId（§48/§54）",
+      "status": "passed"
+    },
+    {
+      "label": "T5 位面拾取：Upper / Nether 各 80+ 采样，可见几何 === 返回命中（§61/§75）",
+      "status": "passed"
+    },
+    {
+      "label": "T5 界缘可被命中：返回中性读数 rawGap / visualDepth / nearbyRifts（§62）",
+      "status": "passed"
+    },
+    {
+      "label": "T7 重画窗口不删裂缝、只改变破口；裂缝世界对象一字未动（§55–§57/§60）",
+      "status": "passed"
+    },
+    {
+      "label": "T7 裂缝只经 riftViewModel 读取，界缘不持有 world.rifts（S6/§58）",
       "status": "passed"
     }
   ]
