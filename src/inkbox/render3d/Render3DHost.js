@@ -9,7 +9,6 @@ import { RealmView3DPrototype } from './view/RealmView3DPrototype.js';
 import { SlabPrototype } from './view/SlabPrototype.js';
 import { ThreeFxProbe } from './view/ThreeFxProbe.js';
 import { BrushOverlay } from './BrushOverlay.js';
-import { surfaceElevation } from './terrain/VisualElevation.js';
 import { RenderDebug } from './debug/RenderDebug.js';
 
 export class Render3DHost {
@@ -40,7 +39,7 @@ export class Render3DHost {
         const plane = PLANES[i];
         const stage = new PlaneStage({ plane, world: entry.world, profile: PLANE_RENDER_PROFILE[plane], coordinates: this.coordinates });
         this.stages.set(plane, stage); this.scene.add(stage.root);
-        stage.fxProbe = new ThreeFxProbe({ plane, coordinates: this.coordinates });
+        stage.fxProbe = new ThreeFxProbe({ plane, coordinates: this.coordinates, elevation: stage.elevation });
         stage.root.add(stage.fxProbe.root);
       });
     } catch (error) { this.releaseWorld(); this.worldSet = null; throw error; }
@@ -81,7 +80,7 @@ export class Render3DHost {
   }
   focusOn(x, y, options = {}, plane = this.activePlane) {
     const stage = this.stages.get(plane); if (!stage) return;
-    this.cameraRig.focusOn(x, y, surfaceElevation(stage.world, x, y), options);
+    this.cameraRig.focusOn(x, y, stage.elevation.at(x, y), options);
   }
   brush(hit, radius) { this.brushOverlay.update(hit, radius, this.stages.get('mortal')); }
   pick(x, y) { return this.picker.pick(x, y, this.width, this.height); }
@@ -90,8 +89,11 @@ export class Render3DHost {
     if (!enabled || !this.stages.has(targetPlane)) return;
     const columns = Math.min(20, this.world.w - 1), rows = Math.min(20, this.world.h - 1);
     const x0 = Math.floor((this.world.w - 1 - columns) / 2), y0 = Math.floor((this.world.h - 1 - rows) / 2);
+    // ⚠️ Slab 是**历史研究探针**（§30 明令不扩它），但它仍必须走同一套高程口径，
+    //    否则就是 S10 说的「第二套高程真相」。两侧各给一份 ElevationField。
     this.slabProbe = new SlabPrototype({ mortalWorld: this.world, targetWorld: this.stages.get(targetPlane).world,
-      coordinates: this.coordinates, region: region || { x0, y0, x1: x0 + columns, y1: y0 + rows } });
+      coordinates: this.coordinates, region: region || { x0, y0, x1: x0 + columns, y1: y0 + rows },
+      mortalElevation: this.stages.get('mortal')?.elevation, targetElevation: this.stages.get(targetPlane).elevation });
     this.slabProbe.surfaceMesh.material.color.copy(this.stages.get(targetPlane).terrain.material.color);
     this.scene.add(this.slabProbe.root);
     this.applyView();

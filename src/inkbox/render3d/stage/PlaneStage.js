@@ -7,6 +7,7 @@ import { EntityLayer } from '../entities/EntityLayer.js';
 import { SettlementLayer } from '../settlements/SettlementLayer.js';
 import { WorldMarkerLayer } from '../markers/WorldMarkerLayer.js';
 import { SelectionMarker } from '../SelectionMarker.js';
+import { ElevationField } from '../terrain/ElevationField.js';
 import { renderProfileFor } from './PlaneRenderProfile.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
@@ -30,22 +31,24 @@ export class PlaneStage {
     this.bridge = new WorldRenderBridge(world);
     this.coordinates = coordinates || this.bridge.coordinates;
     const p = this.profile;
-    this.terrain = p.terrain ? new TerrainMesh(world, this.coordinates) : null;
+    // M2-B §6：每个 Stage 持有一份高程单源（默认 RAW ⇒ 与 M2-A 逐位一致）。
+    this.elevation = new ElevationField(world, p.elevation);
+    this.terrain = p.terrain ? new TerrainMesh(world, this.coordinates, this.elevation) : null;
     if (this.terrain) {
       if (p.terrainTint) this.terrain.material.color.set(p.terrainTint);
       this.root.add(this.terrain.mesh);
     }
-    this.water = p.water ? new WaterLayer(world, this.coordinates) : null;
+    this.water = p.water ? new WaterLayer(world, this.coordinates, this.elevation) : null;
     if (this.water) this.root.add(this.water.mesh);
-    this.vegetation = p.vegetation ? new VegetationLayer(world, this.coordinates) : null;
+    this.vegetation = p.vegetation ? new VegetationLayer(world, this.coordinates, this.elevation) : null;
     if (this.vegetation) this.root.add(this.vegetation.mesh);
-    this.entities = p.entities ? new EntityLayer(world, this.coordinates, { derive: p.entities }) : null;
+    this.entities = p.entities ? new EntityLayer(world, this.coordinates, this.elevation, { derive: p.entities }) : null;
     if (this.entities) this.root.add(this.entities.group);
-    this.settlements = p.settlements ? new SettlementLayer(world, this.coordinates) : null;
+    this.settlements = p.settlements ? new SettlementLayer(world, this.coordinates, this.elevation) : null;
     if (this.settlements) this.root.add(this.settlements.group);
-    this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates) : null;
+    this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
-    this.selectionMarker = p.selection ? new SelectionMarker(this.coordinates) : null;
+    this.selectionMarker = p.selection ? new SelectionMarker(this.coordinates, this.elevation) : null;
     if (this.selectionMarker) this.root.add(this.selectionMarker.mesh);
     this.pending = null;
     this.vegetationPending = false;
@@ -123,6 +126,7 @@ export class PlaneStage {
     this.root.clear();
     this.terrain = this.water = this.vegetation = this.entities = null;
     this.settlements = this.markers = this.selectionMarker = null;
+    this.elevation = null;
   }
 
   dispose() {

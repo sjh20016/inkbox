@@ -1,0 +1,68 @@
+{
+  "suite": "Render3D M2-B",
+  "status": "passed",
+  "passed": 15,
+  "failed": 0,
+  "checks": [
+    {
+      "label": "T0 ElevationField 默认 profile 就是 RAW，且 raw 短路生效",
+      "status": "passed"
+    },
+    {
+      "label": "T0 每个格点 node() 与 M2-A visualElevation() 逐位一致（全图）",
+      "status": "passed"
+    },
+    {
+      "label": "T0 4000 个随机点 at() 与 M2-A surfaceElevation() 逐位一致（含整数格 / 边界 / 两个三角）",
+      "status": "passed"
+    },
+    {
+      "label": "T0 Math.fround 行为一致：at() 复现「先 fround 再插值」的 M2-A 顺序",
+      "status": "passed"
+    },
+    {
+      "label": "T0 斜面 silhouette 不漂：陡坡格点与插值都与 M2-A 相同",
+      "status": "passed"
+    },
+    {
+      "label": "T0 Stage / Layer 拿到的是**同一个** ElevationField 实例（高程单源接线）",
+      "status": "passed"
+    },
+    {
+      "label": "T0 贴地不变：地形顶点、实体/建筑/标记贴地高度与 M2-A 逐位相同",
+      "status": "passed"
+    },
+    {
+      "label": "T0 Camera focus 高度不变：focusOn 传给相机的 Y 仍等于 M2-A surfaceElevation",
+      "status": "passed"
+    },
+    {
+      "label": "T0 非 RAW profile 也走同一个插值本体（不复制公式），且默认不影响 RAW",
+      "status": "passed"
+    },
+    {
+      "label": "§9 结构：生产 Render3D 里只有 ElevationField.js 能 import 高程实现",
+      "status": "passed"
+    },
+    {
+      "label": "§9 结构：生产 Render3D 里没有任何 surfaceElevation / visualElevation 调用点",
+      "status": "passed"
+    },
+    {
+      "label": "§9 结构：ElevationField 复用 VisualElevation，不复制插值公式",
+      "status": "passed"
+    },
+    {
+      "label": "§9 结构：PlaneStage 把 this.elevation 显式传给每一个 Layer",
+      "status": "passed"
+    },
+    {
+      "label": "§9 结构：Slab 保留特殊研究路径但明确注明并走 ElevationField",
+      "status": "passed"
+    },
+    {
+      "label": "§9 结构：Host 传给 Slab 的两侧高程都来自 stage.elevation，并注明 Slab 不扩建",
+      "status": "passed"
+    }
+  ]
+}

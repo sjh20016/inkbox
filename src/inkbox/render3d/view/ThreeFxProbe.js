@@ -1,15 +1,21 @@
 import * as THREE from 'three';
-import { surfaceElevation } from '../terrain/VisualElevation.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 const MAX_MARKERS = 32;
 const PLANE_COLOR = Object.freeze({ mortal: 0xa8493c, upper: 0xd6b664, nether: 0x7776a9 });
 
-/** Small debug rings for the already consumed PresentationStage events. */
+/**
+ * Small debug rings for the already consumed PresentationStage events.
+ *
+ * ⚠️ 唯一消费者仍是 `PresentationStage`（S8）：这里只读 `snapshotPlane()`，
+ *    绝不 `drainRuntimeEvents()`。
+ * ⚠️ 贴地高度走 `stage.elevation.at()`（M2-B §8），不再自己 import 高程函数。
+ */
 export class ThreeFxProbe {
-  constructor({ plane, coordinates }) {
+  constructor({ plane, coordinates, elevation }) {
     this.plane = plane;
     this.coordinates = coordinates;
+    this.elevation = elevation;
     this.root = new THREE.Group();
     this.group = this.root;
     this.geometry = new THREE.RingGeometry(0.38, 0.55, 24);
@@ -32,7 +38,7 @@ export class ThreeFxProbe {
   update(presentation, world) {
     // PresentationStage owns the event queue. This probe only reads its snapshot.
     const items = presentation?.snapshotPlane?.(this.plane)?.items ?? [];
-    if (!world || !this.coordinates || !Array.isArray(items)) {
+    if (!world || !this.coordinates || !this.elevation || !Array.isArray(items)) {
       this.mesh.count = 0;
       return;
     }
@@ -41,7 +47,7 @@ export class ThreeFxProbe {
       if (count >= MAX_MARKERS) break;
       if (!Number.isFinite(item.x) || !Number.isFinite(item.y)) continue;
       const point = this.coordinates.worldToRender(item.x, item.y,
-        surfaceElevation(world, item.x, item.y) + 0.2);
+        this.elevation.at(item.x, item.y) + 0.2);
       const life = item.ttl > 0 ? Math.max(0.2, 1 - item.age / item.ttl) : 1;
       this.transform.position.set(point.x, point.y, point.z);
       this.transform.scale.setScalar(life);

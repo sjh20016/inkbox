@@ -3,18 +3,23 @@
 // 3D 模式下点一个格子，在**地表稍上方**落一个轻量选中环——比 M0 的弱反馈清楚得多。
 //
 // ⚠️ 它是**纯表现**：
-//   · 按 `surfaceElevation()` **贴地**（相机旋转 / 地形雕刻后位置都正确）；
+//   · 按 `stage.elevation.at()` **贴地**（相机旋转 / 地形雕刻后位置都正确）；
 //   · **不写世界状态**、**不进存档**（`Sandbox` 那边也不把它塞进任何持久字段）；
 //   · 不是大型发光 UI——只是一个环。
+//
+// ⚠️ M2-B §25：视界打开后**不能**继续显示一个含糊的凡间操作型选择环。
+//    归属哪一界的反馈由 `RealmView3DPrototype` 决定（凡间对象只在凡间可见区显示，
+//    上界 / 幽冥对象走目标位面的**只读**反馈），本文件只负责画它自己那一个环。
 
 import * as THREE from 'three';
-import { surfaceElevation } from './terrain/VisualElevation.js';
 import { INK } from '../core/config.js';
+import { ElevationField } from './terrain/ElevationField.js';
 import { RENDER_ORDER } from './shared/RenderOrder.js';
 
 export class SelectionMarker {
-  constructor(coordinates) {
+  constructor(coordinates, elevation = null) {
     this.coordinates = coordinates;
+    this.elevation = elevation;
     this.cell = null;
     this.needsPlace = false;      // 选中格变了才置 true；高度变过也重摆（见 update）
     this.geometry = new THREE.RingGeometry(0.6, 0.86, 24);
@@ -56,7 +61,9 @@ export class SelectionMarker {
     this.needsPlace = false;
     const { x, y } = this.cell;
     const p = this.coordinates.worldToRender(x, y, 0);
-    this.mesh.position.set(p.x, surfaceElevation(world, x, y) + 0.18, p.z);
+    // 缺省只为测试 / 历史调用保留（等价 RAW）；生产路径由 PlaneStage 显式传入 stage.elevation。
+    const elevation = this.elevation || (this.fallbackElevation ||= new ElevationField(world));
+    this.mesh.position.set(p.x, elevation.at(x, y) + 0.18, p.z);
   }
 
   dispose() {

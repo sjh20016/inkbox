@@ -23,7 +23,7 @@
 // 这不是「复杂距离 LOD」，只是几条 `visible` 阈值——蓝图允许的最小规则。
 
 import * as THREE from 'three';
-import { surfaceElevation } from '../terrain/VisualElevation.js';
+import { ElevationField } from '../terrain/ElevationField.js';
 import { INK } from '../../core/config.js';
 import { visibleRift } from '../readers/riftViewModel.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
@@ -127,8 +127,9 @@ function sameMarkers(a, b) {
 }
 
 export class WorldMarkerLayer {
-  constructor(world, coordinates) {
+  constructor(world, coordinates, elevation = new ElevationField(world)) {
     this.coordinates = coordinates;
+    this.elevation = elevation;
     this.interval = 1 / 4;                  // 标记是半静态的：4 Hz
     this.clock = Infinity;
     this.lastDerived = null;
@@ -213,7 +214,7 @@ export class WorldMarkerLayer {
     for (let i = 0; i < nRift; i += 1) {
       const r = derived.rifts[i];
       const p = this.coordinates.worldToRender(r.x, r.y, 0);
-      this.dummy.position.set(p.x, surfaceElevation(world, r.x, r.y) + 0.3, p.z);
+      this.dummy.position.set(p.x, this.elevation.at(r.x, r.y) + 0.3, p.z);
       this.dummy.rotation.set(0, 0, 0);
       this.dummy.scale.set(r.radius, 1, r.radius);
       this.dummy.updateMatrix();
@@ -237,7 +238,7 @@ export class WorldMarkerLayer {
     for (let i = 0; i < n; i += 1) {
       const item = list[i];
       const p = this.coordinates.worldToRender(item.x, item.y, 0);
-      this.dummy.position.set(p.x, surfaceElevation(world, item.x, item.y) + lift, p.z);
+      this.dummy.position.set(p.x, this.elevation.at(item.x, item.y) + lift, p.z);
       this.dummy.rotation.set(0, 0, 0);
       this.dummy.scale.setScalar(1);
       this.dummy.updateMatrix();

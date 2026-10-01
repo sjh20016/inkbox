@@ -1,6 +1,6 @@
 import * as THREE from 'three';
+import { ElevationField } from './ElevationField.js';
 import { TERRAIN_INFO } from '../../core/config.js';
-import { visualElevation } from './VisualElevation.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 export function gridGeometry(world, coordinates) {
@@ -25,8 +25,10 @@ export function gridGeometry(world, coordinates) {
 }
 
 export class TerrainMesh {
-  constructor(world, coordinates) {
+  // `elevation` 缺省只为**测试 / 历史调用**保留（等价 RAW）；生产路径由 PlaneStage 显式传入。
+  constructor(world, coordinates, elevation = new ElevationField(world)) {
     this.world = world;
+    this.elevation = elevation;
     this.geometry = gridGeometry(world, coordinates);
     this.geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(world.size * 3), 3).setUsage(THREE.DynamicDrawUsage));
     // Steep boundary slopes can face away even while the camera stays above ground.
@@ -61,7 +63,7 @@ export class TerrainMesh {
     for (let y = region.y0; y <= region.y1; y++) {
       for (let x = region.x0; x <= region.x1; x++) {
         const i = y * w.w + x;
-        if (writeHeight) position.setY(i, visualElevation(w.height[i]));
+        if (writeHeight) position.setY(i, this.elevation.node(x, y));
         if (writeType) { const c = this.palette[w.type[i]] || this.palette[5]; color.setXYZ(i, c.r, c.g, c.b); }
       }
       const start = (y * w.w + region.x0) * 3, count = (region.x1 - region.x0 + 1) * 3;

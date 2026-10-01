@@ -1,6 +1,6 @@
 import * as THREE from 'three';
+import { ElevationField } from '../terrain/ElevationField.js';
 import { deriveVegetation } from './deriveVegetation.js';
-import { surfaceElevation } from '../terrain/VisualElevation.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 function pixelTree() {
@@ -20,9 +20,16 @@ function pixelTree() {
   return texture;
 }
 
+/**
+ * 植被实例层。
+ *
+ * M2-B §8：贴地高度走 `stage.elevation.at()`。
+ * M2-B §22：Region 过滤**只在 Region identity 变化或真实 veg/type dirty 时重建**，
+ * 禁止每帧全量重写实例（过滤逻辑见 B1，本文件只提供重建入口）。
+ */
 export class VegetationLayer {
-  constructor(world, coordinates) {
-    this.world = world; this.coordinates = coordinates;
+  constructor(world, coordinates, elevation = new ElevationField(world)) {
+    this.world = world; this.coordinates = coordinates; this.elevation = elevation;
     this.texture = pixelTree();
     this.geometry = new THREE.PlaneGeometry(1, 1.5); this.geometry.translate(0, 0.75, 0);
     this.material = new THREE.MeshLambertMaterial({ map: this.texture, alphaTest: 0.5, side: THREE.DoubleSide });
@@ -37,7 +44,7 @@ export class VegetationLayer {
     const dummy = new THREE.Object3D();
     let j = 0;
     for (const tree of this.trees) {
-      const p = this.coordinates.worldToRender(tree.x, tree.y, surfaceElevation(this.world, tree.x, tree.y));
+      const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
       dummy.position.set(p.x, p.y, p.z); dummy.scale.setScalar(tree.size);
       for (let side = 0; side < 2; side++) {
         dummy.rotation.y = tree.rotation + side * Math.PI / 2;

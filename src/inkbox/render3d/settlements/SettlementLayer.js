@@ -25,7 +25,7 @@
 // 建筑是半静态的 ⇒ 刷新频率 **4 Hz**（与实体分开，蓝图 §七 明令「建筑无需跟人物同频」）。
 
 import * as THREE from 'three';
-import { surfaceElevation } from '../terrain/VisualElevation.js';
+import { ElevationField } from '../terrain/ElevationField.js';
 import { STRUCT, INK } from '../../core/config.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
@@ -112,7 +112,8 @@ export function sameSettlements(a, b) {
 }
 
 export class SettlementLayer {
-  constructor(world, coordinates) {
+  constructor(world, coordinates, elevation = new ElevationField(world)) {
+    this.elevation = elevation;
     this.coordinates = coordinates;
     this.interval = 1 / 4;                  // 半静态：4 Hz
     this.clock = Infinity;
@@ -167,7 +168,7 @@ export class SettlementLayer {
     for (let i = 0; i < n; i += 1) {
       const b = list[i];
       const p = this.coordinates.worldToRender(b.x, b.y, 0);
-      const ground = surfaceElevation(world, b.x, b.y);
+      const ground = this.elevation.at(b.x, b.y);
       this.dummy.rotation.set(0, 0, 0);
 
       this.dummy.position.set(p.x, ground, p.z);

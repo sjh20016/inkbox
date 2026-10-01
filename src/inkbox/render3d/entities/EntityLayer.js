@@ -22,12 +22,12 @@
 // 更新频率 **15 Hz**（蓝图给的是 10～20 Hz）——相机仍按渲染帧更新，只有实体表现
 // 降频；且**派生结果没变就整层不重写**（写 `instanceMatrix` 的代价主要在 GPU 上传）。
 //
-// ⚠️ 高度**不得用固定 Y**：一律 `surfaceElevation(world, x, y)`（`VisualElevation.js`，
+// ⚠️ 高度**不得用固定 Y**：一律 `stage.elevation.at(x, y)`（M2-B §8 高程单源，
 //    与地形网格同一套三角插值）⇒ 玩家抬高山峰后，单位下一次刷新就站在新地表上。
 
 import * as THREE from 'three';
+import { ElevationField } from '../terrain/ElevationField.js';
 import { deriveEntities, sameEntities, ENTITY_CLASSES } from './deriveEntities.js';
-import { surfaceElevation } from '../terrain/VisualElevation.js';
 import { LIMITS } from '../../core/config.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
@@ -65,8 +65,9 @@ function geometryFor(cls) {
 }
 
 export class EntityLayer {
-  constructor(world, coordinates, { derive = deriveEntities } = {}) {
+  constructor(world, coordinates, elevation = new ElevationField(world), { derive = deriveEntities } = {}) {
     this.coordinates = coordinates;
+    this.elevation = elevation;
     this.derive = derive;
     this.regionMask = null;
     this.regionInside = true;
@@ -133,7 +134,7 @@ export class EntityLayer {
         const item = list[i];
         // ⚠️ 只读 x/y；高度一律走地表插值，不用固定 Y。
         const p = this.coordinates.worldToRender(item.x, item.y, 0);
-        this.dummy.position.set(p.x, surfaceElevation(world, item.x, item.y) + item.lift, p.z);
+        this.dummy.position.set(p.x, this.elevation.at(item.x, item.y) + item.lift, p.z);
         this.dummy.rotation.set(0, 0, 0);
         this.dummy.scale.setScalar(1);
         this.dummy.updateMatrix();

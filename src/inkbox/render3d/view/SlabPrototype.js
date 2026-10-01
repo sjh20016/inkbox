@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { TERRAIN_INFO } from '../../core/config.js';
-import { surfaceElevation } from '../terrain/VisualElevation.js';
+import { ElevationField } from '../terrain/ElevationField.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
 const MAX_CELLS_PER_SIDE = 20;
@@ -46,15 +46,20 @@ function writeColor(attribute, index, world, cellIndex, palette) {
  * @returns {SlabPrototype}
  */
 export class SlabPrototype {
-  constructor({ mortalWorld, targetWorld, coordinates, region }) {
+  constructor({ mortalWorld, targetWorld, coordinates, region, mortalElevation, targetElevation }) {
     if (!mortalWorld || !targetWorld || !coordinates?.cellToRender) {
       throw new TypeError('SlabPrototype requires mortalWorld, targetWorld, and coordinates.');
     }
+    // 缺省只为历史研究调用保留（等价 RAW）；Host 永远显式传入两侧 stage.elevation。
+    mortalElevation = mortalElevation || new ElevationField(mortalWorld);
+    targetElevation = targetElevation || new ElevationField(targetWorld);
     if (mortalWorld.w !== targetWorld.w || mortalWorld.h !== targetWorld.h) {
       throw new RangeError('SlabPrototype worlds must have matching dimensions.');
     }
     this.mortalWorld = mortalWorld;
     this.targetWorld = targetWorld;
+    this.mortalElevation = mortalElevation;
+    this.targetElevation = targetElevation;
     this.coordinates = coordinates;
     this.region = validateRegion(region, targetWorld);
     this.root = new THREE.Group();
@@ -118,7 +123,7 @@ export class SlabPrototype {
       const localIndex = (y - y0) * columns + x - x0;
       const worldIndex = y * targetWorld.w + x;
       const point = coordinates.cellToRender(x, y);
-      position.setXYZ(localIndex, point.x, surfaceElevation(targetWorld, x, y), point.z);
+      position.setXYZ(localIndex, point.x, this.targetElevation.at(x, y), point.z);
       writeColor(color, localIndex, targetWorld, worldIndex, palette);
     }
     position.needsUpdate = true;
@@ -136,8 +141,8 @@ export class SlabPrototype {
         const point = coordinates.cellToRender(x, y);
         const targetIndex = y * targetWorld.w + x;
         const mortalIndex = y * mortalWorld.w + x;
-        const topHeight = surfaceElevation(targetWorld, x, y);
-        const bottomHeight = surfaceElevation(mortalWorld, x, y);
+        const topHeight = this.targetElevation.at(x, y);
+        const bottomHeight = this.mortalElevation.at(x, y);
         const topVertex = edgeIndex * 4 + end * 2;
         const bottomVertex = topVertex + 1;
         wallPosition.setXYZ(topVertex, point.x, topHeight, point.z);
