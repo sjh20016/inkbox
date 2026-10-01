@@ -8,6 +8,7 @@ import { SettlementLayer } from '../settlements/SettlementLayer.js';
 import { WorldMarkerLayer } from '../markers/WorldMarkerLayer.js';
 import { SelectionMarker } from '../SelectionMarker.js';
 import { ElevationField } from '../terrain/ElevationField.js';
+import { RegionGeometry } from '../region/RegionGeometry.js';
 import { renderProfileFor } from './PlaneRenderProfile.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
@@ -54,6 +55,7 @@ export class PlaneStage {
     this.vegetationPending = false;
     this.treeClock = 0;
     this.regionMask = null;
+    this.regionGeometry = null;
     this.regionInside = true;
     this.timings = {};
     this.root.visible = this.visible;
@@ -64,11 +66,24 @@ export class PlaneStage {
     this.root.visible = this.visible;
   }
 
-  /** Only terrain and entities participate in the M2-A mask probe. */
+  /**
+   * 设置本 Stage 的 Region 遮罩。
+   *
+   * M2-B §12 / §85：`RegionGeometry` **只在 Region identity 变化时重建**。
+   * 视界开着时 `applyView()` 每帧都会调到这里，而 `getRealmViewState()` 在选区
+   * 未变时返回**同一个** `RegionMask` 实例（`ui/realmViewState.js` 的 WeakMap 缓存）
+   * ⇒ 身份比较就足以判定「要不要重建」，不需要每帧重算。
+   *
+   * @param {object|null} region `RegionMask`（或 Slab 的等价矩形对象）
+   * @param {boolean} [inside] `true` = 保留窗内（目标界），`false` = 保留窗外（凡间）
+   */
   setRegionMask(region, inside = true) {
-    this.regionMask = region || null;
     this.regionInside = !!inside;
-    this.terrain?.setRegionMask(this.regionMask, this.regionInside);
+    if (this.regionMask !== (region || null)) {
+      this.regionMask = region || null;
+      this.regionGeometry = region ? new RegionGeometry(this.world, region) : null;
+    }
+    this.terrain?.setRegionGeometry(this.regionGeometry, this.regionInside);
     this.entities?.setRegionMask(this.regionMask, this.regionInside);
   }
 

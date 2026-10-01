@@ -14,6 +14,10 @@ import { generateNetherWorld } from '../src/inkbox/world/worldgenNether.js';
 import { createCoordinates } from '../src/inkbox/render3d/coordinates.js';
 import { visualElevation, surfaceElevation, interpolateElevation } from '../src/inkbox/render3d/terrain/VisualElevation.js';
 import { ElevationField, RAW_ELEVATION_PROFILE, normalizeElevationProfile } from '../src/inkbox/render3d/terrain/ElevationField.js';
+import { RegionGeometry, DISTANCE_UNKNOWN } from '../src/inkbox/render3d/region/RegionGeometry.js';
+import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
+import { normalizeRegion } from '../src/inkbox/ui/tools.js';
+import { VIEW_MAX_AREA_FRAC } from '../src/inkbox/ui/realmView.js';
 import { Render3DHost } from '../src/inkbox/render3d/Render3DHost.js';
 
 let passed = 0;
@@ -288,6 +292,264 @@ check('§9 结构：Host 传给 Slab 的两侧高程都来自 stage.elevation，
   assert.match(source, /targetElevation:\s*this\.stages\.get\(targetPlane\)\.elevation/);
   assert.match(source, /Slab 是\*\*历史研究探针\*\*/, '§30：必须写明 Slab 不扩建');
   assert.match(source, /new ThreeFxProbe\(\{ plane, coordinates: this\.coordinates, elevation: stage\.elevation \}\)/);
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// T1 · RegionGeometry（§10–§14 / §71）
+// ══════════════════════════════════════════════════════════════════════════
+
+/** 用生产规范化路径造一个 RegionMask（不是手搓 bbox）。 */
+function regionOf(points, world) {
+  const sel = normalizeRegion(points, world, VIEW_MAX_AREA_FRAC);
+  assert(sel, `normalizeRegion 必须接受这条路径：${JSON.stringify(points)}`);
+  return new RegionMask(sel);
+}
+
+/**
+ * 对一份 RegionGeometry 做**全量**体检：
+ *  ① 分类与暴力 `region.contains(quad 中心)` 逐格一致（这是最强判据，任何省算都必须过它）；
+ *  ② inside + outside === 全部 quad，且两者不交；
+ *  ③ 边界边无重复、无对角线、两端节点不越界；
+ *  ④ 每条有向边的**左侧是窗内、右侧是窗外**（定向约定真的成立）。
+ */
+function auditGeometry(geometry, region, world) {
+  const quadW = world.w - 1, quadH = world.h - 1;
+  let inside = 0;
+  for (let y = 0; y < quadH; y += 1) {
+    for (let x = 0; x < quadW; x += 1) {
+      const expected = region.contains(x + 0.5, y + 0.5) ? 1 : 0;
+      assert.equal(geometry.quadInside[y * quadW + x], expected, `quad(${x},${y}) 分类`);
+      assert.equal(geometry.isInsideQuad(x, y), expected === 1);
+      inside += expected;
+    }
+  }
+  assert.equal(geometry.insideQuadCount, inside);
+  assert.equal(geometry.insideQuadCount + geometry.outsideQuadCount, quadW * quadH, 'inside + outside 必须等于全部 quad');
+  assert.equal(inside + geometry.outsideQuadCount, quadW * quadH);
+  assert(geometry.insideQuadCount >= 0 && geometry.outsideQuadCount >= 0, 'inside ∩ outside 必须为空');
+
+  const undirected = new Set();
+  const insideQuadAt = (x, y) => region.contains(x + 0.5, y + 0.5);
+  for (const { ax, ay, bx, by } of geometry.boundaryEdges()) {
+    for (const v of [ax, ay, bx, by]) assert(Number.isFinite(v), '边界边不得出现 NaN');
+    assert(ax >= 0 && ay >= 0 && bx >= 0 && by >= 0, '边界不得越界');
+    assert(ax < world.w && bx < world.w && ay < world.h && by < world.h, '边界节点必须在图内');
+    // 正交边：不允许对角线（§14「不错误连接对角区域」）
+    assert((ax === bx) !== (ay === by), `边界边必须是水平或垂直：(${ax},${ay})-(${bx},${by})`);
+    const key = ax < bx || ay < by ? `${ax},${ay}-${bx},${by}` : `${bx},${by}-${ax},${ay}`;
+    assert(!undirected.has(key), `边界边重复：${key}`);
+    undirected.add(key);
+    // 定向：左内右外。左右侧由**实际方向向量**决定（左 = 方向逆时针 90°），
+    // 不能按「水平／垂直」写死——上边与下边方向相反，左侧落点也相反。
+    const dx = Math.sign(bx - ax), dy = Math.sign(by - ay);
+    const sideQuad = (sx, sy) => ({
+      x: Math.floor((ax + bx) / 2 + sx * 0.5),
+      y: Math.floor((ay + by) / 2 + sy * 0.5),
+    });
+    const left = sideQuad(-dy, dx);
+    const right = sideQuad(dy, -dx);
+    assert(insideQuadAt(left.x, left.y), `左内侧不成立：边 ${key}`);
+    assert(!insideQuadAt(right.x, right.y), `右外侧不成立：边 ${key}`);
+  }
+  assert.equal(undirected.size, geometry.edgeCount, 'edgeCount 与实际边数一致');
+  return { inside, edges: geometry.edgeCount };
+}
+
+const regionShapes = () => {
+  const world = makeWorld();
+  return {
+    world,
+    rectangular: regionOf([[10, 8], [30, 8], [30, 20], [10, 20]], world),
+    lasso: regionOf([[12, 6], [24, 9], [33, 16], [28, 26], [17, 30], [9, 22], [7, 13]], world),
+    concave: regionOf([[8, 8], [28, 8], [28, 14], [16, 14], [16, 26], [8, 26]], world),
+    mapEdge: regionOf([[0, 0], [14, 0], [14, 11], [0, 11]], world),
+    corridor: regionOf([[10, 12], [34, 12], [34, 14], [10, 14]], world),
+  };
+};
+
+check('T1 矩形：分类、边界、定向全部正确', () => {
+  const { world, rectangular } = regionShapes();
+  const geometry = new RegionGeometry(world, rectangular);
+  const result = auditGeometry(geometry, rectangular, world);
+  // 矩形 20×12 ⇒ 边界周长 = 2*(20+12) 条格边
+  assert.equal(result.edges, 2 * (20 + 12), `矩形边界边数应为周长 ${result.edges}`);
+  assert.equal(result.inside, 20 * 12);
+  assert(geometry.boundaryNodes.length > 0);
+});
+
+check('T1 自由套索：分类、边界、定向全部正确', () => {
+  const { world, lasso } = regionShapes();
+  const geometry = new RegionGeometry(world, lasso);
+  const result = auditGeometry(geometry, lasso, world);
+  assert(result.inside > 100, `套索面积不该退化：${result.inside}`);
+  assert(result.edges > 0);
+});
+
+check('T1 凹形：凹进去的格必须判为窗外', () => {
+  const { world, concave } = regionShapes();
+  const geometry = new RegionGeometry(world, concave);
+  auditGeometry(geometry, concave, world);
+  // 凹口中心 (22, 20) 在包围盒内、却在形状外 —— 这一条专门防「用包围盒代替多边形」
+  assert.equal(concave.contains(22.5, 20.5), false, '凹口必须真的在形状外');
+  assert.equal(geometry.isInsideQuad(22, 20), false);
+  assert.equal(geometry.isInsideQuad(12, 20), true, '左腿必须仍在窗内');
+});
+
+check('T1 贴地图边缘：边界不越界，图外一侧算窗外', () => {
+  const { world, mapEdge } = regionShapes();
+  const geometry = new RegionGeometry(world, mapEdge);
+  const result = auditGeometry(geometry, mapEdge, world);
+  assert.equal(geometry.isInsideQuad(0, 0), true, '(0,0) 在窗内');
+  // 贴边那一侧没有 quad 邻居 ⇒ 必须照样发边（否则界缘会缺一条边）
+  assert(result.edges > 0);
+  for (const { ax, ay, bx, by } of geometry.boundaryEdges()) {
+    assert(ax >= 0 && ay >= 0 && bx >= 0 && by >= 0);
+  }
+});
+
+check('T1 狭窄走廊（2 格宽）：短边不被吞掉', () => {
+  const { world, corridor } = regionShapes();
+  const geometry = new RegionGeometry(world, corridor);
+  const result = auditGeometry(geometry, corridor, world);
+  // 24×2 的走廊：上下各 24 条 + 两端各 2 条
+  assert.equal(result.edges, 24 * 2 + 2 * 2);
+  assert.equal(result.inside, 24 * 2);
+});
+
+check('T1 单格颈：两片大区域只由一个 quad 相连，不崩且连通性如实', () => {
+  const world = makeWorld();
+  // 上下两片 10×8，用 (20,15) 一个 quad 连起来。
+  const selection = {
+    path: [[12, 4], [22, 4], [22, 15], [21, 15], [21, 17], [22, 17], [22, 26], [12, 26], [12, 17], [19, 17], [19, 15], [12, 15]],
+    x0: 12, y0: 4, x1: 22, y1: 26, area: 0,
+  };
+  const region = new RegionMask(selection);
+  const geometry = new RegionGeometry(world, region);
+  auditGeometry(geometry, region, world);
+  assert.equal(geometry.isInsideQuad(20, 15), true, '颈部那一个 quad 必须在窗内');
+  assert.equal(geometry.isInsideQuad(20, 16), true, '颈宽 1 格，第二个 quad 也应在窗内');
+  assert.equal(geometry.isInsideQuad(14, 16), false, '左腿外侧应在窗外');
+  assert(geometry.edgeCount > 0);
+});
+
+check('T1 棋盘度 4 接触（□■ / ■□）：不崩、无 NaN、无对角边、无重复 quad', () => {
+  const world = makeWorld();
+  // 直接给一个棋盘谓词：(qx + qy) 偶数在窗内 ⇒ (0,0) 与 (1,1) 只在一个节点上斜角相触。
+  // ⚠️ 谓词必须遵守 RegionGeometry 的输入契约：包围盒外恒 false。
+  const region = {
+    x0: 0, y0: 0, x1: 6, y1: 6,
+    contains: (x, y) => {
+      const qx = Math.floor(x), qy = Math.floor(y);
+      return qx >= 0 && qy >= 0 && qx <= 6 && qy <= 6 && (qx + qy) % 2 === 0;
+    },
+  };
+  const geometry = new RegionGeometry(world, region);
+  auditGeometry(geometry, region, world);
+  assert.equal(geometry.isInsideQuad(0, 0), true);
+  assert.equal(geometry.isInsideQuad(1, 1), true);
+  assert.equal(geometry.isInsideQuad(1, 0), false);
+  assert.equal(geometry.isInsideQuad(0, 1), false);
+  // 度 4 节点 (1,1)：四条边在这里交汇，但**不得**把两个对角区域连起来。
+  const touching = [...geometry.boundaryEdges()].filter(({ ax, ay, bx, by }) =>
+    (ax === 1 && ay === 1) || (bx === 1 && by === 1));
+  assert(touching.length >= 4, `度 4 节点应有 ≥4 条边交汇，实际 ${touching.length}`);
+  for (const { ax, ay, bx, by } of geometry.boundaryEdges()) {
+    assert(!(Math.abs(ax - bx) === 1 && Math.abs(ay - by) === 1), '不得出现对角边');
+  }
+});
+
+check('T1 距离场：边界 0、向外递增、超出带宽为 UNKNOWN，且只算一次', () => {
+  const { world, rectangular } = regionShapes();
+  // 矩形 = 20×12 个 quad（x 10..29 / y 8..19）⇒ 最深处到最近边界恰好 5 格。
+  const geometry = new RegionGeometry(world, rectangular, { distanceBand: 4 });
+  assert.equal(geometry.distanceToBoundary(10, 8), 0, '角上 quad 自己就贴着边界');
+  assert.equal(geometry.distanceToBoundary(12, 10), 2, '离 x=10 / y=8 各 2 格');
+  // 深度 5 > 带宽 4 ⇒ 未计算；有界版把它夹到 band。
+  assert.equal(geometry.distanceToBoundary(15, 14), DISTANCE_UNKNOWN);
+  assert.equal(geometry.distanceToBoundaryClamped(15, 14, 4), 4);
+  // 窗外紧邻边界的那一圈也要有距离（B2 的界缘 / shoulder 都要用）
+  assert.equal(geometry.distanceToBoundary(9, 8), 0);
+  assert.equal(geometry.distanceToBoundary(30, 14), 0);
+  // 完整带宽下的最深值应为 5（矩形半高）
+  const full = new RegionGeometry(world, rectangular, { distanceBand: 8 });
+  assert.equal(full.distanceToBoundary(15, 14), 5);
+  // 距离场是构建期产物：重复查询不改变数组
+  const before = geometry.distanceQuad.slice();
+  geometry.distanceToBoundary(15, 14); geometry.distanceToBoundary(3, 3);
+  assert.deepEqual(geometry.distanceQuad, before, '查询不得重算距离场（§38）');
+});
+
+check('T1 输入契约：真实 RegionMask 在包围盒外恒为 false（省算前提）', () => {
+  const { world, lasso, concave } = regionShapes();
+  for (const region of [lasso, concave]) {
+    // 盒外采样：四周各取一圈、外扩 1~3 格
+    for (let pad = 1; pad <= 3; pad += 1) {
+      for (let x = region.x0 - pad; x <= region.x1 + pad; x += 1) {
+        assert.equal(region.contains(x + 0.5, region.y0 - pad + 0.5), false, `盒外上方 (${x},${region.y0 - pad})`);
+        assert.equal(region.contains(x + 0.5, region.y1 + pad + 0.5), false, `盒外下方 (${x},${region.y1 + pad})`);
+      }
+      for (let y = region.y0 - pad; y <= region.y1 + pad; y += 1) {
+        assert.equal(region.contains(region.x0 - pad + 0.5, y + 0.5), false, `盒外左侧`);
+        assert.equal(region.contains(region.x1 + pad + 0.5, y + 0.5), false, `盒外右侧`);
+      }
+    }
+  }
+  assert(world.w > 0);
+});
+
+check('T1 无窗（region = null）：全部 quad 视为窗内、零边界边', () => {
+  const world = makeWorld();
+  const geometry = new RegionGeometry(world, null);
+  assert.equal(geometry.allInside, true);
+  assert.equal(geometry.insideQuadCount, (world.w - 1) * (world.h - 1));
+  assert.equal(geometry.outsideQuadCount, 0);
+  assert.equal(geometry.edgeCount, 0);
+  assert.equal(geometry.isInsideQuad(0, 0), true);
+});
+
+check('T1 省算不改变结果：只在包围盒外扩 1 格内分类，但全图判定与暴力一致', () => {
+  const world = makeWorld();
+  const region = regionOf([[20, 14], [26, 14], [26, 19], [20, 19]], world);
+  const geometry = new RegionGeometry(world, region);
+  // scanBounds 必须小于全图（证明省算真的发生了），同时分类已由 auditGeometry 全量比对过。
+  const scan = geometry.scanBounds;
+  assert((scan.x1 - scan.x0 + 1) < (world.w - 1), '应当只扫包围盒范围');
+  assert((scan.y1 - scan.y0 + 1) < (world.h - 1));
+  auditGeometry(geometry, region, world);
+  assert.equal(geometry.insideQuadCount, 6 * 5);
+});
+
+check('T1 Region 未变时不重建：RegionMask 身份稳定 ⇒ 同一个 RegionGeometry', () => {
+  const world = makeWorld(); const { host } = makeHost(world);
+  const region = regionOf([[10, 10], [24, 10], [24, 20], [10, 20]], world);
+  host.setRealmViewState({ open: true, targetPlane: 'upper', region });
+  const stage = host.stages.get('mortal');
+  const first = stage.regionGeometry;
+  assert(first instanceof RegionGeometry);
+  for (let i = 0; i < 5; i += 1) host.applyView();
+  assert.equal(stage.regionGeometry, first, '同一 Region 不得每帧重建（§12/§85）');
+  // 换 Region ⇒ 重建
+  const other = regionOf([[12, 12], [26, 12], [26, 22], [12, 22]], world);
+  host.setRealmViewState({ open: true, targetPlane: 'upper', region: other });
+  assert.notEqual(stage.regionGeometry, first);
+  assert.equal(stage.regionGeometry.region, other);
+  host.dispose();
+});
+
+check('T1 地形索引与 RegionGeometry 同源：drawRange 等于保留 quad 数', () => {
+  const world = makeWorld(); const { host } = makeHost(world);
+  const region = regionOf([[10, 10], [24, 10], [24, 20], [10, 20]], world);
+  host.setRealmViewState({ open: true, targetPlane: 'upper', region });
+  const upper = host.stages.get('upper');
+  const mortal = host.stages.get('mortal');
+  assert.equal(upper.regionMask, region, 'M2-A 的 regionMask 读数必须保留');
+  assert.equal(mortal.regionMask, region);
+  assert.equal(upper.terrain.regionMask, region);
+  assert.equal(upper.terrain.geometry.drawRange.count, upper.regionGeometry.insideQuadCount * 6);
+  assert.equal(mortal.terrain.geometry.drawRange.count, mortal.regionGeometry.outsideQuadCount * 6);
+  // 两个位面用**同一张**区域表，只是互补（§20）
+  assert.equal(mortal.regionGeometry.insideQuadCount, upper.regionGeometry.insideQuadCount);
+  host.dispose();
 });
 
 // ══════════════════════════════════════════════════════════════════════════

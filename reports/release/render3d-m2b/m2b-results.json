@@ -1,7 +1,7 @@
 {
   "suite": "Render3D M2-B",
   "status": "passed",
-  "passed": 15,
+  "passed": 28,
   "failed": 0,
   "checks": [
     {
@@ -62,6 +62,58 @@
     },
     {
       "label": "§9 结构：Host 传给 Slab 的两侧高程都来自 stage.elevation，并注明 Slab 不扩建",
+      "status": "passed"
+    },
+    {
+      "label": "T1 矩形：分类、边界、定向全部正确",
+      "status": "passed"
+    },
+    {
+      "label": "T1 自由套索：分类、边界、定向全部正确",
+      "status": "passed"
+    },
+    {
+      "label": "T1 凹形：凹进去的格必须判为窗外",
+      "status": "passed"
+    },
+    {
+      "label": "T1 贴地图边缘：边界不越界，图外一侧算窗外",
+      "status": "passed"
+    },
+    {
+      "label": "T1 狭窄走廊（2 格宽）：短边不被吞掉",
+      "status": "passed"
+    },
+    {
+      "label": "T1 单格颈：两片大区域只由一个 quad 相连，不崩且连通性如实",
+      "status": "passed"
+    },
+    {
+      "label": "T1 棋盘度 4 接触（□■ / ■□）：不崩、无 NaN、无对角边、无重复 quad",
+      "status": "passed"
+    },
+    {
+      "label": "T1 距离场：边界 0、向外递增、超出带宽为 UNKNOWN，且只算一次",
+      "status": "passed"
+    },
+    {
+      "label": "T1 输入契约：真实 RegionMask 在包围盒外恒为 false（省算前提）",
+      "status": "passed"
+    },
+    {
+      "label": "T1 无窗（region = null）：全部 quad 视为窗内、零边界边",
+      "status": "passed"
+    },
+    {
+      "label": "T1 省算不改变结果：只在包围盒外扩 1 格内分类，但全图判定与暴力一致",
+      "status": "passed"
+    },
+    {
+      "label": "T1 Region 未变时不重建：RegionMask 身份稳定 ⇒ 同一个 RegionGeometry",
+      "status": "passed"
+    },
+    {
+      "label": "T1 地形索引与 RegionGeometry 同源：drawRange 等于保留 quad 数",
       "status": "passed"
     }
   ]

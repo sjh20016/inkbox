@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { ElevationField } from './ElevationField.js';
+import { RegionGeometry } from '../region/RegionGeometry.js';
 import { TERRAIN_INFO } from '../../core/config.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
@@ -29,6 +30,9 @@ export class TerrainMesh {
   constructor(world, coordinates, elevation = new ElevationField(world)) {
     this.world = world;
     this.elevation = elevation;
+    this.regionGeometry = null;
+    this.regionMask = null;
+    this.regionInside = true;
     this.geometry = gridGeometry(world, coordinates);
     this.geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(world.size * 3), 3).setUsage(THREE.DynamicDrawUsage));
     // Steep boundary slopes can face away even while the camera stays above ground.
@@ -74,12 +78,21 @@ export class TerrainMesh {
     if (writeType) color.needsUpdate = true;
     // Flat material derives normals in the shader; no full-grid normal rebuild.
   }
-  /** Keep or exclude quads by their world-grid centre, shared with entity filtering. */
-  setRegionMask(region, inside = true) {
-    if (this.regionMask === region && this.regionInside === !!inside) return;
-    this.regionMask = region || null;
+  /**
+   * 按 Region 保留 / 排除 quad。
+   *
+   * M2-B §19：判据**只**来自 `RegionGeometry`——不再自己调 `region.contains()`。
+   * M2-B §85：几何只在 Region identity 变化时重建；本方法只重写索引，不动顶点。
+   *
+   * ⚠️ `this.regionMask` 仍保留 `RegionMask` 本体（M2-A 测试与读数按它断言身份），
+   *    但**判定不再走它**——避免「Terrain 一套 contains」那种第二判据。
+   */
+  setRegionGeometry(geometry, inside = true) {
+    if (this.regionGeometry === geometry && this.regionInside === !!inside) return;
+    this.regionGeometry = geometry || null;
     this.regionInside = !!inside;
-    if (!region) {
+    this.regionMask = geometry?.region || null;
+    if (!geometry || geometry.allInside) {
       this.geometry.index.array.set(this.fullIndices);
       this.geometry.index.needsUpdate = true;
       this.geometry.setDrawRange(0, this.fullIndices.length);
@@ -88,12 +101,21 @@ export class TerrainMesh {
     const { w, h } = this.world;
     const kept = this.geometry.index.array; let count = 0;
     for (let y = 0; y < h - 1; y++) for (let x = 0; x < w - 1; x++) {
-      if (region.contains(x + 0.5, y + 0.5) !== this.regionInside) continue;
+      if (geometry.isInsideQuad(x, y) !== this.regionInside) continue;
       const i = (y * (w - 1) + x) * 6;
       for (let k = 0; k < 6; k++) kept[count++] = this.fullIndices[i + k];
     }
     this.geometry.index.needsUpdate = true;
     this.geometry.setDrawRange(0, count);
+  }
+
+  /**
+   * 兼容入口：M2-A 的调用方（含测试）按 `RegionMask` 传参。
+   * 它会就地为该 mask 建一份 `RegionGeometry`——生产路径请用 `setRegionGeometry`，
+   * 那样 Region 改变时只构建一次。
+   */
+  setRegionMask(region, inside = true) {
+    this.setRegionGeometry(region ? new RegionGeometry(this.world, region) : null, inside);
   }
   dispose() { this.geometry.dispose(); this.material.dispose(); }
 }
