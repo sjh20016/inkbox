@@ -1485,7 +1485,45 @@ check('T7 裂缝只经 riftViewModel 读取，界缘不持有 world.rifts（S6/�
 });
 
 // ══════════════════════════════════════════════════════════════════════════
-// T8 由下一个提交（plane presentation fx）补上。
+// T8 · Presentation 单消费者（§64–§66 / §78）
+// ══════════════════════════════════════════════════════════════════════════
+
+check('T8 跨界 FX：开窗时源 Stage 与目标 Stage 都能看到（§64/§65）', () => {
+  const world = makeWorld();
+  emitRuntimeEvent(world, 'rift-cross', { x: 24, y: 18, phase: 'depart' });
+  emitRuntimeEvent(world.upper, 'rift-cross', { x: 26, y: 20, phase: 'arrive' });
+  const presentation = new PresentationStage();
+  presentation.ingestWorlds(world).update(0.016);
+  assert.deepEqual(drainRuntimeEvents(world), [], '唯一消费者仍是 PresentationStage（S8）');
+  const { host } = makeHost(world);
+  host.setPresentation(presentation);
+  const region = regionOf(WINDOW, world);
+  host.setRealmViewState({ open: true, targetPlane: 'upper', region });
+  host.update(0.016);
+  const mortal = host.stages.get('mortal'), upper = host.stages.get('upper'), nether = host.stages.get('nether');
+  assert.equal(mortal.root.visible, true);
+  assert.equal(upper.root.visible, true);
+  assert.equal(mortal.fxProbe.root.visible, true, '§65：源位面必须能看到 depart');
+  assert.equal(upper.fxProbe.root.visible, true, '§65：目标位面必须能看到 arrive');
+  assert.equal(mortal.fxProbe.mesh.count, 1);
+  assert.equal(upper.fxProbe.mesh.count, 1);
+  // §67：其余 Stage 不提交绘制
+  assert.equal(nether.root.visible, false);
+  host.dispose();
+});
+
+check('T8 结构：Three FX 只读 snapshotPlane，不新增 runtime event 消费者（§64/S8）', () => {
+  for (const file of ['src/inkbox/render3d/view/ThreeFxProbe.js', 'src/inkbox/render3d/Render3DHost.js',
+    'src/inkbox/render3d/boundary/RealmBoundaryLayer.js', 'src/inkbox/render3d/boundary/strataProfile.js']) {
+    const source = readCode(file);
+    assert.doesNotMatch(source, /drainRuntimeEvents/, `${file} 不得再开一个 runtime event 消费者（S8）`);
+  }
+  assert.match(readCode('src/inkbox/render3d/view/ThreeFxProbe.js'), /snapshotPlane/, 'FX 必须走 snapshotPlane');
+  // §66：不许趁机做完整粒子引擎
+  const probe = readCode('src/inkbox/render3d/view/ThreeFxProbe.js');
+  assert.doesNotMatch(probe, /Points|BufferGeometry[^)]*velocity|particle/i, '§66：不做粒子引擎');
+});
+
 // ══════════════════════════════════════════════════════════════════════════
 
 const reportDir = path.join(root, 'reports', 'release', 'render3d-m2b');

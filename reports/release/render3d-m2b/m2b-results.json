@@ -1,7 +1,7 @@
 {
   "suite": "Render3D M2-B",
   "status": "passed",
-  "passed": 66,
+  "passed": 68,
   "failed": 0,
   "checks": [
     {
@@ -266,6 +266,14 @@
     },
     {
       "label": "T7 裂缝只经 riftViewModel 读取，界缘不持有 world.rifts（S6/§58）",
+      "status": "passed"
+    },
+    {
+      "label": "T8 跨界 FX：开窗时源 Stage 与目标 Stage 都能看到（§64/§65）",
+      "status": "passed"
+    },
+    {
+      "label": "T8 结构：Three FX 只读 snapshotPlane，不新增 runtime event 消费者（§64/S8）",
       "status": "passed"
     }
   ]

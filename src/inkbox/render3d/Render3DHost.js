@@ -171,7 +171,9 @@ export class Render3DHost {
       if (!stage.visible) continue;
       stage.update(dt, this.cameraRig.camera.zoom); this.updatedPlanes.push(plane);
       for (const key of Object.keys(totals)) totals[key] += stage.timings?.[key] || 0;
-      stage.fxProbe.root.visible = !this.realmPrototype.open;
+      // §65：depart 画在源 Stage、arrive 画在目标 Stage。**不再因为开窗就整层关掉**
+      // ——stage.root.visible 已经负责「这一界这帧画不画」，这里不需要再加一条。
+      stage.fxProbe.root.visible = true;
       stage.fxProbe.update(this.presentation, stage.world);
     }
     // §85：地形高度真的变过（雕刻 / 水文 / 生态）⇒ 界缘断面必须跟着重建。
