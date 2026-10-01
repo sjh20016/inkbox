@@ -98,7 +98,12 @@ export async function probeServer(port, timeoutMs = 800) {
   try {
     const response = await fetch(`http://127.0.0.1:${port}/`, { signal: AbortSignal.timeout(timeoutMs) });
     return response.ok;
-  } catch {
+  } catch (error) {
+    // 设 INKBOX_LAUNCH_DEBUG=1 可以看到每一次探测为什么失败——现场排查「起不来」时先开它。
+    if (process.env.INKBOX_LAUNCH_DEBUG) {
+      const cause = error?.cause ? ` (cause: ${error.cause.code || error.cause.message || error.cause})` : '';
+      console.error(`  [probe ${port}] ${error?.name || 'Error'}: ${error?.message || error}${cause}`);
+    }
     return false;
   }
 }
@@ -250,13 +255,15 @@ async function main(argv) {
 
   // ③ 等**真的**就绪再开浏览器（端口占用之类的错误会由服务器自己打印，这里只等它退出）。
   const ready = await waitForServer(port, { aborted: () => exited });
-  if (exited) return exitCode;
+  if (exited) return exitCode;   // 服务器自己退了（EADDRINUSE 等），错误已在它那一侧打印
   if (!ready) {
-    console.error(`  [错误] 服务器在 15 秒内没有就绪。端口 ${port} 可能被占用，或 Node 版本过低。`);
-    try { child.kill(); } catch { /* 忽略 */ }
-    return 1;
+    // ⚠️ 探测失败**不等于**服务器没起来：实测出现过「服务器已经 HTTP 200、探测却连续失败」
+    //    的假阴性。所以这里**不杀服务器**、也不当作失败——照常给出地址让玩家自己试。
+    //    想查原因：INKBOX_LAUNCH_DEBUG=1 会打印每一次探测的失败原因。
+    console.error(`  [警告] 未能在预期时间内确认服务器就绪（端口 ${port}）。`);
+    console.error('  · 服务器进程仍在运行——直接在浏览器打开下面的地址试试。');
+    console.error('  · 想排查：设 INKBOX_LAUNCH_DEBUG=1 再运行一次。');
   }
-
   if (!args['no-open'] && mode !== 'server') openBrowser(url);
   printGuide(mode, url);
   return null;   // 保持运行：服务器子进程还在，事件循环不会空
