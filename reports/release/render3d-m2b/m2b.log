@@ -1,0 +1,71 @@
+PASS T0 ElevationField 默认 profile 就是 RAW，且 raw 短路生效
+PASS T0 每个格点 node() 与 M2-A visualElevation() 逐位一致（全图）
+PASS T0 4000 个随机点 at() 与 M2-A surfaceElevation() 逐位一致（含整数格 / 边界 / 两个三角）
+PASS T0 Math.fround 行为一致：at() 复现「先 fround 再插值」的 M2-A 顺序
+PASS T0 斜面 silhouette 不漂：陡坡格点与插值都与 M2-A 相同
+PASS T0 Stage / Layer 拿到的是**同一个** ElevationField 实例（高程单源接线）
+PASS T0 贴地不变：地形顶点、实体/建筑/标记贴地高度与 M2-A 逐位相同
+PASS T0 Camera focus 高度不变：focusOn 传给相机的 Y 仍等于 M2-A surfaceElevation
+PASS T0 非 RAW profile 也走同一个插值本体（不复制公式），且默认不影响 RAW
+PASS §9 结构：生产 Render3D 里只有 ElevationField.js 能 import 高程实现
+PASS §9 结构：生产 Render3D 里没有任何 surfaceElevation / visualElevation 调用点
+PASS §9 结构：ElevationField 复用 VisualElevation，不复制插值公式
+PASS §9 结构：PlaneStage 把 this.elevation 显式传给每一个 Layer
+PASS §9 结构：Slab 保留特殊研究路径但明确注明并走 ElevationField
+PASS §9 结构：Host 传给 Slab 的两侧高程都来自 stage.elevation，并注明 Slab 不扩建
+PASS T1 矩形：分类、边界、定向全部正确
+PASS T1 自由套索：分类、边界、定向全部正确
+PASS T1 凹形：凹进去的格必须判为窗外
+PASS T1 贴地图边缘：边界不越界，图外一侧算窗外
+PASS T1 狭窄走廊（2 格宽）：短边不被吞掉
+PASS T1 单格颈：两片大区域只由一个 quad 相连，不崩且连通性如实
+PASS T1 棋盘度 4 接触（□■ / ■□）：不崩、无 NaN、无对角边、无重复 quad
+PASS T1 距离场：边界 0、向外递增、超出带宽为 UNKNOWN，且只算一次
+PASS T1 输入契约：真实 RegionMask 在包围盒外恒为 false（省算前提）
+PASS T1 无窗（region = null）：全部 quad 视为窗内、零边界边
+PASS T1 省算不改变结果：只在包围盒外扩 1 格内分类，但全图判定与暴力一致
+PASS T1 Region 未变时不重建：RegionMask 身份稳定 ⇒ 同一个 RegionGeometry
+PASS T1 地形索引与 RegionGeometry 同源：drawRange 等于保留 quad 数
+PASS T9 3D sculpt 之后 type / qi 必须已经是 canonical，且确实跟着高度变了
+PASS T9 一整笔拖动（多次落笔）之后派生量仍然 canonical
+PASS T9 undo 之后派生量必须回到 canonical，且有反向对照证明判据有判别力
+PASS T9 修复纪律：复用 canonical API、不复制分类公式、不新增 RNG、不碰概率
+PASS T9 结构：Render3DAdapter.undo 走 restoreHeights，不再自己写 world.height
+PASS T2 开窗后窗外不再变秃：水 / 植被 / 聚落 / 标记仍有内容，且不再整层隐藏
+PASS T2 窗内不得泄漏凡间实体 / 建筑 / 标记（§29 验收硬项）
+PASS T2 目标界只提交窗内内容；两位面互补且不重叠（§20 / V5）
+PASS T2 大窗 / 幽冥窗同样成立，且窗外规模随窗口单调下降
+PASS T2 §25 选择环：凡间只画窗外、目标界画窗内且是只读样式
+PASS T2 §19 结构：四个 Layer 都不再自己调 region.contains / 自己算包围盒
+PASS T2 §22 结构：植被过滤只在重建路径里，不在每帧重写
+PASS T2 §27 目标位面内容纪律：不为了填满 Layer 而机械复制凡间 profile
+PASS T3 同一 (x,y) 的 XZ 完全一致，只有 Y 允许不同（§73）
+PASS T3 相机 / 反复 applyView 不得让 Region 与界缘漂移（§73）
+PASS T3 Shoulder：边缘 = R、K 格之外恢复 T、中间 smoothstep 单调过渡（§37）
+PASS T4 无缝界缘 · raw · 矩形：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
+PASS T4 无缝界缘 · raw · 凹形：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
+PASS T4 无缝界缘 · raw · 随机套索：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
+PASS T4 无缝界缘 · raw · 贴图边缘：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
+PASS T4 无缝界缘 · strata · 矩形：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
+PASS T4 无缝界缘 · strata · 凹形：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
+PASS T4 无缝界缘 · strata · 随机套索：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
+PASS T4 无缝界缘 · strata · 贴图边缘：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
+PASS T4 高山边缘 / 低谷边缘：极端高差下不 NaN、不翻折、仍然无缝
+PASS T4 Raw 与 Strata 的差别只体现在表现：真实高差读数一致、模拟世界一字未动
+PASS T2 §30 结构：界缘层不是 rift manager，也不持有 world.rifts（S6）
+PASS T2 §39/§47 结构：strataProfile 不写 world、不抽 RNG、不碰概率，且命名是表现量
+PASS T6 真实 raycast：3D 划窗采出来的是世界坐标路径，不是屏幕多边形（§50/§51）
+PASS T6 pointerup 只调用一次 commitSelection，且路径原样交出去（§49/§76/S9）
+PASS T6 退化路径也交给 commitSelection（不许静默），打断则取消（§49）
+PASS T6 采样：世界坐标累积、过近的点被丢弃（§50/§51）
+PASS T6 结构：唯一提交点、无第二套选择状态、不碰 openRifts（§49/S9）
+PASS T6 结构：视界工具并进正式工具表、共用同一个 toolId（§48/§54）
+PASS T5 位面拾取：Upper / Nether 各 80+ 采样，可见几何 === 返回命中（§61/§75）
+PASS T5 界缘可被命中：返回中性读数 rawGap / visualDepth / nearbyRifts（§62）
+PASS T7 重画窗口不删裂缝、只改变破口；裂缝世界对象一字未动（§55–§57/§60）
+PASS T7 裂缝只经 riftViewModel 读取，界缘不持有 world.rifts（S6/§58）
+PASS T8 跨界 FX：开窗时源 Stage 与目标 Stage 都能看到（§64/§65）
+PASS T8 结构：Three FX 只读 snapshotPlane，不新增 runtime event 消费者（§64/S8）
+PASS T10 600 日纯度：无 3D / 凡间 / 上界窗 / 幽冥窗 / 反复重画 / Strata ⇒ digest 逐字一致（§80）
+
+69 M2-B invariant groups passed.
