@@ -4,13 +4,22 @@ import * as THREE from 'three';
 // Depth wins at oblique angles; selecting an invisible plane behind a hill is wrong.
 export class PlanePicker {
   constructor(host) { this.host = host; this.raycaster = new THREE.Raycaster(); this.timeMs = 0; this.lastRaycastMs = 0; }
-  pick(x, y, width, height) {
+  /**
+   * @param {number} x 画布像素 X
+   * @param {number} y 画布像素 Y
+   * @param {number} width
+   * @param {number} height
+   * @param {string|null} [onlyPlane] 只拾某一个位面。M2-B §52：**划窗时只 raycast 凡间**——
+   *   否则鼠标经过已经开着的目标界时，会把路径点写到 Upper / Nether 坐标上去。
+   */
+  pick(x, y, width, height, onlyPlane = null) {
     const start = performance.now(), host = this.host, camera = host.cameraRig.camera;
     camera.updateMatrixWorld(); host.scene.updateMatrixWorld(true);
     this.raycaster.setFromCamera(new THREE.Vector2(x / width * 2 - 1, 1 - y / height * 2), camera);
     let nearest = null;
     for (const stage of host.stages.values()) {
       if (!stage.visible || !stage.terrain?.mesh.visible) continue;
+      if (onlyPlane && stage.plane !== onlyPlane) continue;
       const objects = [stage.terrain.mesh];
       // Entity silhouettes are pickable too: a tall ghost must not inspect the
       // mortal terrain visible behind it. Instanced hits resolve via stage data.

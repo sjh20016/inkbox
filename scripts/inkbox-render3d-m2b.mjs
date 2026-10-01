@@ -27,6 +27,7 @@ import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
 import { normalizeRegion } from '../src/inkbox/ui/tools.js';
 import { VIEW_MAX_AREA_FRAC } from '../src/inkbox/ui/realmView.js';
 import { Render3DHost } from '../src/inkbox/render3d/Render3DHost.js';
+import { Render3DAdapter } from '../src/inkbox/render3d/Render3DAdapter.js';
 
 let passed = 0;
 const checks = [];
@@ -1215,6 +1216,128 @@ check('T2 §39/§47 结构：strataProfile 不写 world、不抽 RNG、不碰概
   for (const name of ['rawGap', 'visualDepth', 'boundaryDirection']) {
     assert.match(layer, new RegExp(name), `§47 允许的表现量命名应保留 ${name}`);
   }
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// T6 · 正式 3D 划窗（§48–§52 / §76）
+//
+// ⚠️ 无浏览器环境：路径采样用**真实 raycast**（three 的 Raycaster 在 node 里可用），
+//    提交点则直接调用 `Render3DAdapter.prototype` 上的**真实方法**（配最小 stub 宿主），
+//    所以验的是产品代码本身，不是测试里重写一遍的逻辑。
+//    真正的端到端指针事件留给浏览器证据脚本。
+// ══════════════════════════════════════════════════════════════════════════
+
+check('T6 真实 raycast：3D 划窗采出来的是世界坐标路径，不是屏幕多边形（§50/§51）', () => {
+  const world = makeWorld(); const { host } = makeHost(world);
+  host.resize(800, 600);
+  const path = [];
+  for (const [px, py] of [[220, 180], [400, 180], [580, 180], [580, 420], [220, 420], [400, 300]]) {
+    const hit = host.pickPlane(px, py, 'mortal');
+    if (!hit) continue;
+    assert.equal(hit.plane, 'mortal', '划窗只能拾凡间');
+    assert(Number.isFinite(hit.world.x) && Number.isFinite(hit.world.y));
+    path.push([hit.world.x, hit.world.y]);
+  }
+  assert(path.length >= 3, `必须采到足够的世界坐标点：${path.length}`);
+  const unique = new Set(path.map(([x, y]) => `${x.toFixed(3)},${y.toFixed(3)}`));
+  assert(unique.size >= 3, '采样点必须是不同的世界坐标（否则路径退化成一个点）');
+  for (const [x, y] of path) {
+    assert(x >= 0 && x < world.w && y >= 0 && y < world.h, `世界坐标越界：${x},${y}`);
+  }
+  // §52：同样一次拾取，限定凡间之外拿不到东西（目标界开着也一样）
+  const netherHit = host.pickPlane(400, 300, 'nether');
+  assert.equal(netherHit, null, '指定凡间时不该返回别的位面');
+  host.dispose();
+});
+
+/** 最小 stub 宿主：只提供 `commitRealmDraw` 真正用到的三个字段。 */
+function adapterStub(path) {
+  const calls = { commits: [], drafts: [], dirty: 0 };
+  return {
+    calls,
+    realmDraw: path ? { path, last: path[path.length - 1] } : null,
+    renderer: { setDraftPath(p) { calls.drafts.push(p); } },
+    sandbox: { commitSelection(p) { calls.commits.push(p); }, dirty: 0 },
+  };
+}
+
+check('T6 pointerup 只调用一次 commitSelection，且路径原样交出去（§49/§76/S9）', () => {
+  const path = [[10, 10], [26, 10], [26, 22], [10, 22]];
+  const stub = adapterStub(path);
+  const returned = Render3DAdapter.prototype.commitRealmDraw.call(stub);
+  assert.deepEqual(returned, path);
+  assert.equal(stub.calls.commits.length, 1, '一次拖动只能提交一次');
+  assert.deepEqual(stub.calls.commits[0], path, '交出去的必须是世界坐标路径');
+  assert.equal(stub.realmDraw, null, '提交后必须清掉拖拽状态');
+  assert.equal(stub.calls.drafts.at(-1), null, '提交后必须清掉路径预览');
+  // 幂等：再调一次不得产生第二次提交（一笔拖动 ≠ 几十次裂缝）
+  Render3DAdapter.prototype.commitRealmDraw.call(stub);
+  assert.equal(stub.calls.commits.length, 1, '重复调用不得再提交');
+});
+
+check('T6 退化路径也交给 commitSelection（不许静默），打断则取消（§49）', () => {
+  // 只点一下（1 点）⇒ 照样交出去；由 commitSelection 决定「收起视界」还是「拒绝并发声」
+  const single = adapterStub([[12, 12]]);
+  Render3DAdapter.prototype.commitRealmDraw.call(single);
+  assert.equal(single.calls.commits.length, 1);
+  assert.deepEqual(single.calls.commits[0], [[12, 12]]);
+  // 取消：不提交
+  const cancelled = adapterStub([[12, 12], [18, 18]]);
+  const path = Render3DAdapter.prototype.cancelRealmDraw.call(cancelled);
+  assert.deepEqual(path, [[12, 12], [18, 18]]);
+  assert.equal(cancelled.calls.commits.length, 0, '取消不得提交');
+  assert.equal(cancelled.realmDraw, null);
+});
+
+check('T6 采样：世界坐标累积、过近的点被丢弃（§50/§51）', () => {
+  // `sampleRealmDraw` 每次调用只做**一次**命中查询 ⇒ stub 按调用顺序逐个返回。
+  const hits = [
+    { world: { x: 10, y: 10 } },      // 与起点重合 ⇒ 丢
+    { world: { x: 10.2, y: 10.1 } },  // 距离 0.22 < 0.6 ⇒ 丢
+    { world: { x: 14, y: 10 } },      // 够远 ⇒ 追加
+  ];
+  let index = 0;
+  const drafts = [];
+  const stub = {
+    realmDraw: { path: [[10, 10]], last: { x: 10, y: 10 } },
+    renderer: { setDraftPath(p) { drafts.push(p); } },
+    hitMortal() { return hits[index++] ?? null; },
+  };
+  const sample = Render3DAdapter.prototype.sampleRealmDraw;
+  sample.call(stub);
+  assert.deepEqual(stub.realmDraw.path, [[10, 10]], '重合的点必须被丢弃');
+  sample.call(stub);
+  assert.deepEqual(stub.realmDraw.path, [[10, 10]], '过近的点必须被丢弃');
+  sample.call(stub);
+  assert.deepEqual(stub.realmDraw.path, [[10, 10], [14, 10]], '够远的点要追加');
+  assert.equal(drafts.at(-1).length, 2, '每次追加都要刷新预览');
+  assert.equal(index, 3, '每次采样只查询一次命中');
+  assert.equal(drafts.length, 1, '被丢弃的采样不该刷新预览');
+});
+
+check('T6 结构：唯一提交点、无第二套选择状态、不碰 openRifts（§49/S9）', () => {
+  const source = readCode('src/inkbox/render3d/Render3DAdapter.js');
+  const commits = source.match(/commitSelection\(/g) || [];
+  assert.equal(commits.length, 1, `适配器只允许有**一个** commitSelection 调用点，实得 ${commits.length}`);
+  assert.doesNotMatch(source, /openRifts/, '禁止绕过 commitSelection 自己开缝（S9）');
+  assert.doesNotMatch(source, /commitSelection3D/, '不许新建 commitSelection3D（§49）');
+  assert.match(source, /pickPlane\([^)]*'mortal'\)/, '划窗必须只拾凡间（§52）');
+  // 打断路径必须取消而不是提交
+  assert.match(source, /endStroke\(\)\s*\{[\s\S]{0,200}?cancelRealmDraw\(\)/, 'endStroke 必须先取消未完成的划窗');
+  assert.match(source, /'pointerup', \(\) => \{ this\.commitRealmDraw\(\); this\.endStroke\(\); \}/);
+});
+
+check('T6 结构：视界工具并进正式工具表、共用同一个 toolId（§48/§54）', () => {
+  const source = readCode('src/inkbox/render3d/Render3DAdapter.js');
+  assert.match(source, /<option value="viewUpper">上界视界<\/option>/, '正式工具条必须有上界视界');
+  assert.match(source, /<option value="viewNether">幽冥视界<\/option>/, '正式工具条必须有幽冥视界');
+  assert.match(source, /isViewTool\(next\)\) this\.sandbox\.selectTool\(next\)/, '必须复用 Canvas 的工具表');
+  // §54：调试探针折进 details，不与玩家功能并列（但仍在 DOM 里）
+  assert.match(source, /createElement\('details'\)/, '调试探针必须折进 details');
+  assert.match(source, /data-probe="upper"/, '调试探针仍须留在 DOM（M2-A 证据脚本按它选取）');
+  const tools = readCode('src/inkbox/ui/tools.js');
+  assert.match(tools, /T\('viewUpper'/, 'Canvas 工具表里必须有 viewUpper');
+  assert.match(tools, /T\('viewNether'/, 'Canvas 工具表里必须有 viewNether');
 });
 
 // ══════════════════════════════════════════════════════════════════════════

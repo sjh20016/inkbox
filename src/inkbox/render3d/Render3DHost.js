@@ -8,6 +8,7 @@ import { PlanePicker } from './picking/PlanePicker.js';
 import { RealmView3DPrototype } from './view/RealmView3DPrototype.js';
 import { SlabPrototype } from './view/SlabPrototype.js';
 import { ThreeFxProbe } from './view/ThreeFxProbe.js';
+import { DraftPathOverlay } from './view/DraftPathOverlay.js';
 import { BrushOverlay } from './BrushOverlay.js';
 import { RealmBoundaryLayer } from './boundary/RealmBoundaryLayer.js';
 import { BOUNDARY_MODES, RAW_BOUNDARY, boundarySpec, buildRealmBoundaryField } from './boundary/strataProfile.js';
@@ -26,6 +27,7 @@ export class Render3DHost {
     this.cameraRig = options.cameraRig || new CameraRig(canvas, { w: world.w, h: world.h }, this.coordinates);
     this.picker = new PlanePicker(this); this.realmPrototype = new RealmView3DPrototype(this);
     this.brushOverlay = new BrushOverlay(); this.ring = this.brushOverlay.mesh; this.scene.add(this.ring);
+    this.draftPath = new DraftPathOverlay({ coordinates: this.coordinates }); this.scene.add(this.draftPath.mesh);
     this.realmViewState = { open: false, targetPlane: null, region: null };
     // M2-B B2：垂直表现模式。默认 Raw —— 它是工程基线（§34 Mode R），
     // 也就是「什么都不加」，保证 B1 之前的画面逐字不变。
@@ -171,6 +173,10 @@ export class Render3DHost {
   }
   brush(hit, radius) { this.brushOverlay.update(hit, radius, this.stages.get('mortal')); }
   pick(x, y) { return this.picker.pick(x, y, this.width, this.height); }
+  /** M2-B B3（§52）：划窗时**只**拾凡间——目标界已经开着也不能把路径点写到它上面。 */
+  pickPlane(x, y, plane) { return this.picker.pick(x, y, this.width, this.height, plane); }
+  /** 拖拽中的路径预览（世界坐标，纯表现）。 */
+  setDraftPath(path) { this.draftPath?.setPath(path, this.stages.get('mortal')?.elevation); }
   setSlabProbe(enabled, targetPlane = 'nether', region = null) {
     this.slabProbe?.dispose(); this.slabProbe = null; this.slabRegion = null;
     if (!enabled || !this.stages.has(targetPlane)) return;
@@ -211,7 +217,8 @@ export class Render3DHost {
   }
   dispose() {
     if (this.disposed) return;
-    this.disposed = true; this.releaseWorld(); this.brushOverlay.dispose(); this.cameraRig.dispose(); this.gpu.dispose(); this.scene.clear();
+    this.disposed = true; this.releaseWorld(); this.draftPath?.dispose(); this.draftPath = null;
+    this.brushOverlay.dispose(); this.cameraRig.dispose(); this.gpu.dispose(); this.scene.clear();
     this.world = null; this.worldSet = null; this.presentation = null;
   }
   // Compatibility for the existing M1 debug consumers, not layer ownership.

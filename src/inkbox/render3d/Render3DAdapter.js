@@ -1,5 +1,6 @@
 import { Renderer3D } from './Renderer3D.js';
 import { sculpt, strokeSamples, restoreHeights } from './terrain/sculpt.js';
+import { isViewTool } from '../ui/realmView.js';
 import { TERRAIN_INFO } from '../core/config.js';
 
 // DOM/input integration lives here; Sandbox sees only render() and dispose().
@@ -19,12 +20,22 @@ export class Render3DAdapter {
     catch (error) { this.canvas.remove(); throw error; }
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
     Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
-    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"></label><button data-action="undo">撤销雕刻</button><button data-action="fit">全图</button><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><details><summary>操作 / 性能</summary><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
+    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"></label><button data-action="undo">撤销雕刻</button><button data-action="fit">全图</button><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><details><summary>操作 / 性能</summary><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
     stage.append(this.panel);
     this.readout = document.createElement('div'); this.readout.id = 'inkRender3DReadout';
     Object.assign(this.readout.style, { position: 'absolute', bottom: '12px', left: '12px', zIndex: '3', padding: '6px 10px', background: '#eee5d3eb', borderRadius: '4px', fontSize: '12px', pointerEvents: 'none' });
     stage.append(this.readout);
-    this.listen(this.panel.querySelector('select'), 'change', e => { this.endStroke(); this.mode = e.target.value; });
+    this.listen(this.panel.querySelector('select'), 'change', e => {
+      this.endStroke();
+      const next = e.target.value;
+      const wasView = isViewTool(this.mode);
+      // 离开视界工具 ⇒ 走 Canvas 既有的「切换工具即关窗」出口（关闭路径 ①）。
+      if (wasView && !isViewTool(next)) this.sandbox.selectTool('inspect');
+      this.mode = next;
+      // M2-B B3（§48）：视界是**正式工具**，与 Canvas 工具表共用同一个 toolId ——
+      // 目标位面、门控、V7 语义全部由 `viewPlaneForTool` 一处决定。
+      if (isViewTool(next)) this.sandbox.selectTool(next);
+    });
     this.listen(this.panel.querySelector('input'), 'input', e => { this.radius = Number(e.target.value); });
     this.listen(this.panel, 'click', e => {
       const action = e.target.dataset.action;
@@ -40,6 +51,17 @@ export class Render3DAdapter {
     this.listen(this.canvas, 'pointerdown', e => {
       if (e.button !== 0 || e.pointerType === 'touch') return;
       this.canvas.focus(); this.renderer.cameraRig.cancelFocus();
+      // ── M2-B B3：正式 3D 划窗（§48–§52）─────────────────────────────
+      // 屏幕轨迹**只用于采样**；记下来的一律是 world x/y ⇒ 相机转了也不漂（§51）。
+      // 开窗动作仍然只由 `Sandbox.commitSelection` 在 pointerup 一次成型（§49 / S9）。
+      if (this.isViewMode()) {
+        const hit = this.hitMortal(e);
+        if (!hit) return;
+        this.canvas.setPointerCapture(e.pointerId);
+        this.realmDraw = { path: [[hit.world.x, hit.world.y]], last: hit.world };
+        this.renderer.setDraftPath(this.realmDraw.path);
+        return;
+      }
       const hit = this.hit(e);
       if (!hit) return;
       this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y };
@@ -53,6 +75,7 @@ export class Render3DAdapter {
     });
     this.listen(this.canvas, 'pointermove', e => {
       this.pointer = { x: e.clientX, y: e.clientY };
+      if (this.realmDraw) { this.sampleRealmDraw(e); return; }
       if (!this.stroke) return;
       const hit = this.hit(e);
       if (!this.canSculpt(hit)) { this.stroke.last = null; return; }
@@ -60,7 +83,10 @@ export class Render3DAdapter {
       else this.stamp(hit.world, hit.plane);
       this.stroke.last = hit.world; this.lastStamp = performance.now();
     });
-    for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) this.listen(this.canvas, event, () => this.endStroke());
+    // ⚠️ 只有 pointerup 才**提交**；pointercancel / lostpointercapture 一律**取消**
+    //    （拖动被打断不该开出一扇玩家没画完的窗）。
+    this.listen(this.canvas, 'pointerup', () => { this.commitRealmDraw(); this.endStroke(); });
+    for (const event of ['pointercancel', 'lostpointercapture']) this.listen(this.canvas, event, () => this.endStroke());
     this.listen(this.canvas, 'pointerleave', () => { this.pointer = null; this.renderer.brush(null); });
     this.listen(window, 'blur', () => { this.endStroke(); this.pointer = null; });
     this.listen(window, 'keydown', e => {
@@ -84,10 +110,18 @@ export class Render3DAdapter {
   }
   listen(target, name, fn, capture = false) { target.addEventListener(name, fn, { signal: this.abort.signal, capture }); }
   addPrototypeControls() {
-    this.panel.querySelector('b').textContent = '山河沙盘 · M2-A 原型';
+    this.panel.querySelector('b').textContent = '山河沙盘 · M2-B';
+    // ⚠️ §54：下面这些是**调试探针**（固定矩形 Mask / Slab / 位面切换），不是玩家功能。
+    //    它们被折进一个 details 里与正式工具分开——但**仍留在 DOM 中**，因为
+    //    M2-A 的浏览器证据脚本按 `[data-probe]` 与 `[aria-label="调试位面"]` 选取它们。
+    const debug = document.createElement('details');
+    debug.style.cssText = 'display:inline-block';
+    debug.innerHTML = '<summary style="cursor:pointer">调试探针</summary>';
     const controls = document.createElement('span');
+    controls.style.cssText = 'display:inline-flex;gap:5px;flex-wrap:wrap;padding-top:4px';
     controls.innerHTML = `<select aria-label="调试位面"><option value="mortal">凡间</option><option value="upper">上界</option><option value="nether">幽冥</option></select><button data-probe="upper">上界 Mask</button><button data-probe="nether">幽冥 Mask</button><button data-probe="close">关窗</button><button data-probe="slab">Slab 20×20</button>`;
-    this.panel.append(controls);
+    debug.append(controls);
+    this.panel.append(debug);
     const select = controls.querySelector('select'); this.planeSelect = select;
     const requested = new URLSearchParams(location.search).get('plane');
     if (requested && this.renderer.setActivePlane(requested)) select.value = requested;
@@ -132,8 +166,13 @@ export class Render3DAdapter {
     this.sandbox.dirty = true;
   }
   hit(e) { const rect = this.canvas.getBoundingClientRect(); return this.renderer.pick(e.clientX - rect.left, e.clientY - rect.top); }
+  /** §52：划窗只 raycast **凡间** terrain —— 鼠标经过已经开着的目标界不参与。 */
+  hitMortal(e) { const rect = this.canvas.getBoundingClientRect(); return this.renderer.pickPlane(e.clientX - rect.left, e.clientY - rect.top, 'mortal'); }
+  isViewMode() { return isViewTool(this.mode); }
   canSculpt(hit) {
-    return hit?.plane === 'mortal' && this.renderer.activePlane === 'mortal' && !this.renderer.realmPrototype.open && !this.renderer.slabProbe;
+    return !this.isViewMode()
+      && hit?.plane === 'mortal' && this.renderer.activePlane === 'mortal'
+      && !this.renderer.realmPrototype.open && !this.renderer.slabProbe;
   }
   stamp(point, plane) {
     if (plane !== 'mortal' || this.stroke?.plane !== 'mortal' || !this.canSculpt({ plane }) || this.stroke.world !== this.sandbox.world) return;
@@ -144,12 +183,63 @@ export class Render3DAdapter {
     }
   }
   endStroke() {
+    // 拖动被打断（pointercancel / 切工具 / 失焦 / 关面板）⇒ 取消未完成的划窗，
+    // **不提交**：不该开出一扇玩家没画完的窗。
+    this.cancelRealmDraw();
     if (this.stroke?.changed) {
       const changes = [...this.stroke.before];
       this.undoStack.push({ plane: this.stroke.plane, world: this.stroke.world, changes });
       if (this.undoStack.length > 12) this.undoStack.shift();
     }
     this.stroke = null;
+  }
+
+  // ── M2-B B3 · 正式 3D 划窗（§48–§52）──────────────────────────────────
+
+  /**
+   * 采样一个指针位置，追加到**世界坐标路径**上。
+   *
+   * §51：屏幕鼠标轨迹只用于**采样**，最终 Region 必须由 world x/y 构成——
+   * 相机转动后 Region 不漂移。所以这里每次采样都重新 raycast 凡间地形。
+   * 采样点间距小于 0.6 格就丢掉，避免路径被抖动的像素灌满。
+   */
+  sampleRealmDraw(e) {
+    const hit = this.hitMortal(e);
+    if (!hit) return;
+    const point = hit.world;
+    const last = this.realmDraw.last;
+    if (last && Math.hypot(point.x - last.x, point.y - last.y) < 0.6) return;
+    this.realmDraw.path.push([point.x, point.y]);
+    this.realmDraw.last = point;
+    this.renderer.setDraftPath(this.realmDraw.path);
+  }
+
+  /**
+   * pointerup：把世界坐标路径交给 **Canvas 侧唯一提交点**（§49 / S9）。
+   *
+   * ⚠️ 每次拖拽**只调一次** `commitSelection`——它自己负责 normalizeRegion、
+   *    选区、目标位面、`openRifts`、通知与 V7 语义。这里**绝不**自己调 `openRifts`，
+   *    也**没有**第二个 3D 选择状态。
+   * 退化路径（点一下 / 只划一条线）也照样交出去：`commitSelection` 会用既有的
+   *    「点一下 = 收起视界 / 太小 = 拒绝并发声」出口（不许静默）。
+   */
+  commitRealmDraw() {
+    const draw = this.realmDraw;
+    if (!draw) return null;
+    this.realmDraw = null;
+    this.renderer.setDraftPath(null);
+    const path = draw.path;
+    this.sandbox.commitSelection(path);
+    this.sandbox.dirty = true;
+    return path;
+  }
+
+  cancelRealmDraw() {
+    if (!this.realmDraw) return null;
+    const path = this.realmDraw.path;
+    this.realmDraw = null;
+    this.renderer.setDraftPath(null);
+    return path;
   }
   undo() {
     this.endStroke();

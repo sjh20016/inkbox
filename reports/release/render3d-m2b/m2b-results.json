@@ -1,7 +1,7 @@
 {
   "suite": "Render3D M2-B",
   "status": "passed",
-  "passed": 56,
+  "passed": 62,
   "failed": 0,
   "checks": [
     {
@@ -226,6 +226,30 @@
     },
     {
       "label": "T2 §39/§47 结构：strataProfile 不写 world、不抽 RNG、不碰概率，且命名是表现量",
+      "status": "passed"
+    },
+    {
+      "label": "T6 真实 raycast：3D 划窗采出来的是世界坐标路径，不是屏幕多边形（§50/§51）",
+      "status": "passed"
+    },
+    {
+      "label": "T6 pointerup 只调用一次 commitSelection，且路径原样交出去（§49/§76/S9）",
+      "status": "passed"
+    },
+    {
+      "label": "T6 退化路径也交给 commitSelection（不许静默），打断则取消（§49）",
+      "status": "passed"
+    },
+    {
+      "label": "T6 采样：世界坐标累积、过近的点被丢弃（§50/§51）",
+      "status": "passed"
+    },
+    {
+      "label": "T6 结构：唯一提交点、无第二套选择状态、不碰 openRifts（§49/S9）",
+      "status": "passed"
+    },
+    {
+      "label": "T6 结构：视界工具并进正式工具表、共用同一个 toolId（§48/§54）",
       "status": "passed"
     }
   ]
