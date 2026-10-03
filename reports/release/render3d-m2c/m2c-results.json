@@ -1,0 +1,53 @@
+{
+  "suite": "Render3D M2-C contract and integration",
+  "status": "passed",
+  "passed": 9,
+  "failed": 0,
+  "checks": [
+    {
+      "label": "ArtPassProfile: known presets are immutable, custom values clamp, and profile resolution is pure",
+      "status": "passed"
+    },
+    {
+      "label": "TerrainDataTextures: deterministic RGBA snapshots use nearest sampling and never write World",
+      "status": "passed"
+    },
+    {
+      "label": "TerrainDataTextures: height/type dirty channels stay independent with r186 RGBA component ranges",
+      "status": "passed"
+    },
+    {
+      "label": "PigmentTerrainMaterial: map size, profile uniforms, opaque output and cached material updates",
+      "status": "passed"
+    },
+    {
+      "label": "TerrainMesh / Host art toggle: original Lambert is restored and repeated toggles reuse cached art resources",
+      "status": "passed"
+    },
+    {
+      "label": "Host art resource lifetime: profile-off retains cache; final dispose releases each material and texture once",
+      "status": "passed"
+    },
+    {
+      "label": "Art-off pauses texture uploads and re-enabling performs one complete resync using the same cache",
+      "status": "passed"
+    },
+    {
+      "label": "Stage integration: view mask and elevation-profile dirty changes synchronize art textures",
+      "status": "passed"
+    },
+    {
+      "label": "600-day simulation digest stays identical with art disabled, enabled, tuned and repeatedly toggled",
+      "status": "passed"
+    }
+  ],
+  "simulation": {
+    "days": 600,
+    "comparedRuns": [
+      "canvas-no-stage",
+      "render3d-art-disabled",
+      "render3d-art-profile-toggle"
+    ],
+    "digestEqual": true
+  }
+}

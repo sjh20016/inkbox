@@ -1,0 +1,7 @@
+{
+  "name": "build",
+  "command": "npm run build",
+  "exitCode": 0,
+  "log": "build.log",
+  "capturedSummary": "Inkbox package built · v1.0.0 · 203 files"
+}

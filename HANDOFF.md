@@ -1,16 +1,15 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-> 事实核对：2026-09-30，M2-A final cleanup。读序：README → 本文 → 当前任务涉及的契约 / 源码。
+> 事实核对：2026-10-03，M2-C 写意渲染基线。读序：README → 本文 → 当前任务涉及的契约 / 源码。
 > 阶段看 ROADMAP，目录和模块责任看 ARCHITECTURE，历史查 STATUS；本地 MEMORY 只作索引。
 
 ## 0. 当前状态与范围
 
-**Render3D M2-A 已完成并封板，M2-B 未开始。** 基线是发布仓库的 `f274def`，checkpoint 为 `render3d-m2a`。
-一个 Host、一个 WebGLRenderer / Scene / CameraRig、三个 Group Stage 已成立；世界空间 Mask 只支持地形与实体，Slab 只支持每边不超过 20 格的矩形。
-验收范围、13 组架构不变量、600 日纯度对照、Edge 截图与性能局限见 [M2-A 工程报告](./Render3D%20M2-A%20架构原型工程报告.md)。这不等于 M2 整体完成。
+M2-B 的完整 Layer Mask、共享 ElevationField / RegionGeometry、界缘、3D 划窗与拾取已完成。M2-C 在同一个 Host/Renderer/Camera、三个 Stage 上增加薄 ArtPass；不改变模拟、存档或视界定义。范围与证据见 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md)。
 
-本轮只收口文档、记忆、目录冗余、CI 与 checkpoint。不实现 boundary skirt、完整 Layer Mask、Three FX / PNG 美术接线、预加载系统或 D8-G 追迹 UI。
-M2-B 的设计倾向记录在 [ROADMAP](./ROADMAP.md)，待下一轮确定施工范围。
+3D 默认 `art=pilot`，`art=baseline/pigment/ink/low` 用于对照；`artdebug=1` 才出现调参面板。地形 GPU 纹理由既有 height/type dirty 更新；实体仍按原类别实例化，不与 World 对象一一对应。完整资产家族、动画、几何 LOD/HLOD 和 Gameplay G 留到后续授权。
+
+用户允许实验建筑资产自由修改，并指定 `美术素材/配色参考` 为后续颜色参考；使用索引见 [参考资产索引](./美术素材/参考资产索引.md)。范式包用于研究，产品不依赖整套第三方素材。
 
 ## 1. 唯一工作区与版本
 
@@ -58,7 +57,7 @@ Three 固定为 `0.186.1`：浏览器 importmap 读 `vendor/three/`，Node 测�
 
 | 门禁 | 命令 / 环境 |
 | --- | --- |
-| Fast Gate（push / PR / 手动） | core、view、presentation、render3d、render3d:m1、render3d:bridge、render3d:m2a、vendor、build |
+| Fast Gate（push / PR / 手动） | core、view、presentation、render3d、render3d:m1、render3d:bridge、render3d:m2a、m2b、m2c、vendor、build |
 | Heavy Gate（与 Fast 并行） | regression、three-realms、save-equivalence |
 | Browser Smoke（仅 workflow_dispatch） | Windows Edge；依次 `test:browser` + `test:render3d:m2a:browser` |
 | Nightly（schedule / 手动） | `test:simulation` + `inkbox:longrun`；没有 `test:longrun` 入口 |
@@ -66,6 +65,7 @@ Three 固定为 `0.186.1`：浏览器 importmap 读 `vendor/three/`，Node 测�
 命令与用途详见 [tests/README](./tests/README.md)。本地浏览器测试先起 4180；playtest 的 `--port` 是 CDP 端口，游戏地址用 `--url`。
 普通 CI 不运行浏览器和 800 年长测，不删测试、不把断言改警告、不加 `|| true`。
 M2-A 的本地证据在 `reports/release/render3d-m2a/`；CI 的 `inkbox-browser-smoke.mjs` 自管服务器与两套原测试的生命周期，分别记录退出码；重跑写入独立目录并上传 Actions artifact，不覆盖硬件基线。
+M2-C 最新 Edge 复验见 `reports/release/render3d-m2c/browser/`。旧 M2-A oracle 已补齐 M2-B 可见界缘及独立解码，原样本与退出门禁保留，不能通过隐藏界缘或跳过样本来消除偏差。
 旧阶段固定断言数与文件数只保留在对应报告；save-equivalence 的断言数量会随内容变化，不能当稳定指标。
 
 ## 6. Git、发布包与本地文件
@@ -73,7 +73,7 @@ M2-A 的本地证据在 `reports/release/render3d-m2a/`；CI 的 `inkbox-browser
 `npm run build` 生成 dist 目录及 ZIP；收录依据 `scripts/inkbox-package.mjs` 的 FILES / DIRECTORIES。
 Git 的源码、素材和开发记录范围大于发布包，具体归属见 ARCHITECTURE。尤其注意：
 
-- `剧情文案素材/` 是活跃文案资产，已入 Git 且随包；`美术素材/` 已入 Git，当前 Render3D 未消费 PNG，也未收进运行包。
+- `剧情文案素材/` 是活跃文案资产，已入 Git 且随包；`美术素材/` 的设计输入见参考索引，产品只加载已接入的代码母版，整套参考包不进运行包。
 - `scripts/_*.mjs` 是已入 Git 的历史一次性探针，保留参考，不在 npm / CI / build 门禁中。
 - `reports/release/render3d-m2a/` 的正式截图 / JSON 已入 Git 且随包；其他 reports 与 `*.log` 是本地输出。
 - `.workbuddy-ai/`、`.local-backups/`、node_modules、dist 不入 Git。备份不能作为源码或发布依赖。

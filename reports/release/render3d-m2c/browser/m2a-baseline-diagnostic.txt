@@ -1,0 +1,24 @@
+GPU ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11) (hardware/unknown)
+  screenshot stage-mortal.png
+  screenshot stage-upper.png
+  screenshot stage-nether.png
+  screenshot mask-upper-overhead.png
+  screenshot mask-upper-oblique-45.png
+  screenshot mask-upper-low-angle.png
+  screenshot mask-upper-yaw-pan-zoom.png
+  screenshot mask-nether-overhead.png
+  screenshot mask-nether-oblique-45.png
+  screenshot mask-nether-low-angle.png
+  screenshot mask-nether-yaw-pan-zoom.png
+  perf closed: 16.66 ms / 119220 tris
+  perf upper-4pct: 16.67 ms / 117796 tris
+  perf upper-20pct: 16.67 ms / 107982 tris
+  perf upper-40pct: 16.67 ms / 90296 tris
+  perf nether-4pct: 16.66 ms / 117856 tris
+  perf nether-20pct: 16.67 ms / 108078 tris
+  perf nether-40pct: 16.67 ms / 90500 tris
+  screenshot slab-nether-20x20.png
+  screenshot slab-nether-overhead.png
+Raw performance JSON: E:\world4\坐天观井-实验分支D1\reports\release\render3d-m2c\browser\m2a-baseline-diagnostic\performance.json
+Raw browser evidence: E:\world4\坐天观井-实验分支D1\reports\release\render3d-m2c\browser\m2a-baseline-diagnostic\browser-evidence.json
+Picking summary: {"upper":{"total":80,"exact":72,"mismatch":4,"occluded":4,"byCategory":{"interior":{"total":32,"exact":27,"legalOcclusion":1,"mismatch":4,"offscreen":0},"exterior":{"total":32,"exact":31,"legalOcclusion":1,"mismatch":0,"offscreen":0},"boundary":{"total":16,"exact":14,"legalOcclusion":2,"mismatch":0,"offscreen":0}}},"nether":{"total":80,"exact":77,"mismatch":2,"occluded":1,"byCategory":{"interior":{"total":32,"exact":30,"legalOcclusion":0,"mismatch":2,"offscreen":0},"exterior":{"total":32,"exact":31,"legalOcclusion":1,"mismatch":0,"offscreen":0},"boundary":{"total":16,"exact":16,"legalOcclusion":0,"mismatch":0,"offscreen":0}}}}

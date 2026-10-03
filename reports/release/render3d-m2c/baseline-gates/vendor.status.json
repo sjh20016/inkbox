@@ -1,0 +1,7 @@
+{
+  "name": "vendor",
+  "command": "npm run test:vendor",
+  "exitCode": 0,
+  "log": "vendor.log",
+  "capturedSummary": "> zuotian-guan-jing-inkbox@1.0.0 test:vendor\n  ✓ package.json 有 vendor:sync 与 test:vendor 两个入口"
+}

@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { ElevationField } from '../terrain/ElevationField.js';
 import { deriveVegetation } from './deriveVegetation.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
+import { createTreePilot } from '../art/PilotAssets.js';
+import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
 
 function pixelTree() {
   const data = new Uint8Array(16 * 24 * 4);
@@ -33,6 +35,8 @@ export class VegetationLayer {
     this.regionGeometry = null;
     this.regionInside = true;
     this.pendingRegionRebuild = false;
+    this.artProfile = null;
+    this.pilotGeometry = null; this.pilotMaterial = null;
     this.texture = pixelTree();
     this.geometry = new THREE.PlaneGeometry(1, 1.5); this.geometry.translate(0, 0.75, 0);
     this.material = new THREE.MeshLambertMaterial({ map: this.texture, alphaTest: 0.5, side: THREE.DoubleSide });
@@ -42,6 +46,22 @@ export class VegetationLayer {
     this.mesh.frustumCulled = false;
     this.update();
   }
+
+  setArtProfile(profile) {
+    const changed = !!this.artProfile !== !!profile;
+    this.artProfile = profile || null;
+    if (profile && !this.pilotGeometry) {
+      this.pilotGeometry = createTreePilot();
+      this.pilotMaterial = createPilotMaterial(profile, 1.5);
+    }
+    if (profile) updatePilotMaterial(this.pilotMaterial, profile);
+    this.mesh.geometry = profile ? this.pilotGeometry : this.geometry;
+    this.mesh.material = profile ? this.pilotMaterial : this.material;
+    this.mesh.boundingBox = null; this.mesh.boundingSphere = null;
+    if (changed) this.update();
+  }
+
+  setArtView(view) { if (this.pilotMaterial) setPilotView(this.pilotMaterial, view); }
   /**
    * §19：区域判据只来自 `RegionGeometry`。
    * §22：这里**只登记**「需要重建」，真正的重建交给 `PlaneStage.update()` 的
@@ -66,12 +86,19 @@ export class VegetationLayer {
     for (const tree of this.trees) {
       const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
       dummy.position.set(p.x, p.y, p.z); dummy.scale.setScalar(tree.size);
-      for (let side = 0; side < 2; side++) {
+      // The opaque volume needs one real submission; baseline retains its cross cards.
+      for (let side = 0; side < (this.artProfile ? 1 : 2); side++) {
+        dummy.scale.setScalar(tree.size);
         dummy.rotation.y = tree.rotation + side * Math.PI / 2;
         dummy.updateMatrix(); this.mesh.setMatrixAt(j++, dummy.matrix);
       }
     }
     this.mesh.count = j; this.mesh.instanceMatrix.needsUpdate = true;
+    const triangles = (this.mesh.geometry.index?.count ?? this.mesh.geometry.getAttribute('position').count) / 3;
+    this.stats = { trees: this.trees.length, instances: j, triangles: j * triangles };
   }
-  dispose() { this.mesh.dispose(); this.geometry.dispose(); this.material.dispose(); this.texture.dispose(); }
+  dispose() {
+    this.mesh.dispose(); this.geometry.dispose(); this.material.dispose(); this.texture.dispose();
+    this.pilotGeometry?.dispose(); this.pilotMaterial?.dispose();
+  }
 }

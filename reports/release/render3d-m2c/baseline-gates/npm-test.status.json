@@ -1,0 +1,7 @@
+{
+  "name": "npm-test",
+  "command": "npm test",
+  "exitCode": 0,
+  "log": "npm-test.log",
+  "capturedSummary": "> zuotian-guan-jing-inkbox@1.0.0 test\n> npm run test:core\n> zuotian-guan-jing-inkbox@1.0.0 test:core"
+}

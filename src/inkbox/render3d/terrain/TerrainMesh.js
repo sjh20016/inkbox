@@ -4,6 +4,8 @@ import { RegionGeometry } from '../region/RegionGeometry.js';
 import { applyQuadMask } from '../region/quadMask.js';
 import { TERRAIN_INFO } from '../../core/config.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
+import { TerrainDataTextures } from '../art/TerrainDataTextures.js';
+import { PigmentTerrainMaterial } from '../art/PigmentTerrainMaterial.js';
 
 export function gridGeometry(world, coordinates) {
   const position = new Float32Array(world.size * 3);
@@ -45,6 +47,21 @@ export class TerrainMesh {
     this.palette = TERRAIN_INFO.map(t => new THREE.Color(`rgb(${t.color.join(',')})`));
     this.update({ x0: 0, y0: 0, x1: world.w - 1, y1: world.h - 1 });
   }
+  setArtProfile(profile) {
+    const wasEnabled = !!this.artProfile;
+    this.artProfile = profile || null;
+    if (profile) {
+      if (!this.artData) this.artData = new TerrainDataTextures(this.world, this.elevation);
+      else if (!wasEnabled) {
+        this.artData.heightTexture.clearUpdateRanges(); this.artData.typeTexture.clearUpdateRanges();
+        this.artData.update({ x0: 0, y0: 0, x1: this.world.w - 1, y1: this.world.h - 1 });
+      }
+      if (!this.inkMaterial) this.inkMaterial = new PigmentTerrainMaterial(this.artData, profile);
+      else this.inkMaterial.setProfile(profile);
+    }
+    // Keep material as the legacy tint source for the historical Slab probe.
+    this.mesh.material = profile ? this.inkMaterial : this.material;
+  }
   /**
    * 刷新一块地形。
    *
@@ -77,6 +94,9 @@ export class TerrainMesh {
     }
     if (writeHeight) position.needsUpdate = true;
     if (writeType) color.needsUpdate = true;
+    // The existing dirty channels are also the only GPU snapshot update source.
+    // Disabled art does not collect unbounded upload ranges; re-enable performs a full sync.
+    if (this.artProfile) this.artData.update(region, options);
     // Flat material derives normals in the shader; no full-grid normal rebuild.
   }
   /**
@@ -108,5 +128,5 @@ export class TerrainMesh {
   setRegionMask(region, inside = true) {
     this.setRegionGeometry(region ? new RegionGeometry(this.world, region) : null, inside);
   }
-  dispose() { this.geometry.dispose(); this.material.dispose(); }
+  dispose() { this.geometry.dispose(); this.material.dispose(); this.inkMaterial?.dispose(); this.artData?.dispose(); }
 }

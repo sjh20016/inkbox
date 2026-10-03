@@ -13,6 +13,8 @@
     "test:render3d:m2a": "node scripts/inkbox-render3d-m2a.mjs",
     "test:render3d:m2b": "node scripts/inkbox-render3d-m2b.mjs",
     "test:render3d:m2b:browser": "node scripts/inkbox-render3d-m2b-browser.mjs",
+    "test:render3d:m2c": "node scripts/inkbox-render3d-m2c.mjs && node scripts/inkbox-render3d-pilots.mjs",
+    "test:render3d:m2c:browser": "node scripts/inkbox-render3d-m2c-browser.mjs",
     "test:render3d:m2a:browser": "node scripts/inkbox-render3d-m2a-browser.mjs",
     "test:render3d:m2a:release": "node scripts/inkbox-render3d-m2a-verify.mjs",
     "test:render3d:perf": "node scripts/inkbox-render3d-perf.mjs",

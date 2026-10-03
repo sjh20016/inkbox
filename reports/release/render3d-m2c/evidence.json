@@ -1,0 +1,3746 @@
+{
+  "generatedAt": "2026-10-03T05:32:09.034Z",
+  "phase": "after",
+  "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+  "screenshots": [
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "WORLD_OVERVIEW",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.52,
+        "yaw": 0.15,
+        "zoom": 1.45
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        31.92872114091481,
+        391.27271040378446,
+        211.25930508532716
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.45,
+      "artProfile": "baseline",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "01_mortal_overview__baseline.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "WORLD_OVERVIEW",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.52,
+        "yaw": 0.15,
+        "zoom": 1.45
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        31.92872114091481,
+        391.27271040378446,
+        211.25930508532716
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.45,
+      "artProfile": "pigment",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "01_mortal_overview__pigment.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "WORLD_OVERVIEW",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.52,
+        "yaw": 0.15,
+        "zoom": 1.45
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        31.92872114091481,
+        391.27271040378446,
+        211.25930508532716
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.45,
+      "artProfile": "ink",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "01_mortal_overview__ink.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "WORLD_OVERVIEW",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.52,
+        "yaw": 0.15,
+        "zoom": 1.45
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        31.92872114091481,
+        391.27271040378446,
+        211.25930508532716
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.45,
+      "artProfile": "pilot",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "01_mortal_overview__pilot.png"
+    },
+    {
+      "seed": 20261003,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 10,
+      "viewRealm": "mortal",
+      "scenario": "TERRAIN_STRESS",
+      "preset": "medium",
+      "days": 10,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 81,
+        "cultivators": 0,
+        "villages": 0,
+        "houses": 0
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33040079,
+        "value": "3c84ec6b5cd174a44520f1be350e483752cce7bf7b7073da65b84eee4e3c0764"
+      },
+      "cameraRecipe": "REGIONAL",
+      "recipe": {
+        "target": "mountain",
+        "polar": 0.86,
+        "yaw": 0.32,
+        "zoom": 2.5
+      },
+      "poi": {
+        "x": 124,
+        "y": 75,
+        "source": "height-maximum",
+        "index": 21724
+      },
+      "position": [
+        128.11228212625332,
+        449.20928150788404,
+        430.9345244573268
+      ],
+      "target": [
+        -19.5,
+        45.220001220703125,
+        -14.499999999999998
+      ],
+      "zoom": 2.5,
+      "artProfile": "baseline",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "02_mortal_mountain__baseline.png"
+    },
+    {
+      "seed": 20261003,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 10,
+      "viewRealm": "mortal",
+      "scenario": "TERRAIN_STRESS",
+      "preset": "medium",
+      "days": 10,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 81,
+        "cultivators": 0,
+        "villages": 0,
+        "houses": 0
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33040079,
+        "value": "3c84ec6b5cd174a44520f1be350e483752cce7bf7b7073da65b84eee4e3c0764"
+      },
+      "cameraRecipe": "REGIONAL",
+      "recipe": {
+        "target": "mountain",
+        "polar": 0.86,
+        "yaw": 0.32,
+        "zoom": 2.5
+      },
+      "poi": {
+        "x": 124,
+        "y": 75,
+        "source": "height-maximum",
+        "index": 21724
+      },
+      "position": [
+        128.11228212625332,
+        449.20928150788404,
+        430.9345244573268
+      ],
+      "target": [
+        -19.5,
+        45.220001220703125,
+        -14.499999999999998
+      ],
+      "zoom": 2.5,
+      "artProfile": "pigment",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "02_mortal_mountain__pigment.png"
+    },
+    {
+      "seed": 20261003,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 10,
+      "viewRealm": "mortal",
+      "scenario": "TERRAIN_STRESS",
+      "preset": "medium",
+      "days": 10,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 81,
+        "cultivators": 0,
+        "villages": 0,
+        "houses": 0
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33040079,
+        "value": "3c84ec6b5cd174a44520f1be350e483752cce7bf7b7073da65b84eee4e3c0764"
+      },
+      "cameraRecipe": "REGIONAL",
+      "recipe": {
+        "target": "mountain",
+        "polar": 0.86,
+        "yaw": 0.32,
+        "zoom": 2.5
+      },
+      "poi": {
+        "x": 124,
+        "y": 75,
+        "source": "height-maximum",
+        "index": 21724
+      },
+      "position": [
+        128.11228212625332,
+        449.20928150788404,
+        430.9345244573268
+      ],
+      "target": [
+        -19.5,
+        45.220001220703125,
+        -14.499999999999998
+      ],
+      "zoom": 2.5,
+      "artProfile": "ink",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "02_mortal_mountain__ink.png"
+    },
+    {
+      "seed": 20261003,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 10,
+      "viewRealm": "mortal",
+      "scenario": "TERRAIN_STRESS",
+      "preset": "medium",
+      "days": 10,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 81,
+        "cultivators": 0,
+        "villages": 0,
+        "houses": 0
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33040079,
+        "value": "3c84ec6b5cd174a44520f1be350e483752cce7bf7b7073da65b84eee4e3c0764"
+      },
+      "cameraRecipe": "REGIONAL",
+      "recipe": {
+        "target": "mountain",
+        "polar": 0.86,
+        "yaw": 0.32,
+        "zoom": 2.5
+      },
+      "poi": {
+        "x": 124,
+        "y": 75,
+        "source": "height-maximum",
+        "index": 21724
+      },
+      "position": [
+        128.11228212625332,
+        449.20928150788404,
+        430.9345244573268
+      ],
+      "target": [
+        -19.5,
+        45.220001220703125,
+        -14.499999999999998
+      ],
+      "zoom": 2.5,
+      "artProfile": "pilot",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "02_mortal_mountain__pilot.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "ENTITY_MEDIUM",
+      "recipe": {
+        "target": "entity",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 9,
+        "poi": {
+          "x": 123.82364858846101,
+          "y": 94.88189958640949,
+          "source": "visible-real-cultivator",
+          "id": 34,
+          "kind": "cultivator",
+          "level": 2,
+          "nearestHouse": {
+            "x": 124,
+            "y": 88,
+            "type": 1
+          },
+          "distanceToHouse": 6.884158753092123
+        }
+      },
+      "poi": {
+        "x": 123.82364858846101,
+        "y": 94.88189958640949,
+        "source": "visible-real-cultivator",
+        "id": 34,
+        "kind": "cultivator",
+        "level": 2,
+        "nearestHouse": {
+          "x": 124,
+          "y": 88,
+          "type": 1
+        },
+        "distanceToHouse": 6.884158753092123
+      },
+      "position": [
+        279.4076145539346,
+        364.6801470956948,
+        -20.114737206510917
+      ],
+      "target": [
+        24.32364858846101,
+        22.36411371960074,
+        31.38189958640949
+      ],
+      "zoom": 9,
+      "visibilityProof": {
+        "entityId": 34,
+        "kind": "cultivator",
+        "projected": {
+          "x": 542.9999999999984,
+          "y": 380.66039292497385,
+          "inFrame": true
+        },
+        "pickedEntityId": 34,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 34,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 399.14834360775296,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 390.6746995448125,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 380.66039292497385,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 372.9570801404825,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 542.9999999999985,
+              "y": 362.1724422421947,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true
+      },
+      "artProfile": "baseline",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "03_pilot_entity_medium__baseline.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "ENTITY_MEDIUM",
+      "recipe": {
+        "target": "entity",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 9,
+        "poi": {
+          "x": 123.82364858846101,
+          "y": 94.88189958640949,
+          "source": "visible-real-cultivator",
+          "id": 34,
+          "kind": "cultivator",
+          "level": 2,
+          "nearestHouse": {
+            "x": 124,
+            "y": 88,
+            "type": 1
+          },
+          "distanceToHouse": 6.884158753092123
+        }
+      },
+      "poi": {
+        "x": 123.82364858846101,
+        "y": 94.88189958640949,
+        "source": "visible-real-cultivator",
+        "id": 34,
+        "kind": "cultivator",
+        "level": 2,
+        "nearestHouse": {
+          "x": 124,
+          "y": 88,
+          "type": 1
+        },
+        "distanceToHouse": 6.884158753092123
+      },
+      "position": [
+        279.4076145539346,
+        364.6801470956948,
+        -20.114737206510917
+      ],
+      "target": [
+        24.32364858846101,
+        22.36411371960074,
+        31.38189958640949
+      ],
+      "zoom": 9,
+      "visibilityProof": {
+        "entityId": 34,
+        "kind": "cultivator",
+        "projected": {
+          "x": 542.9999999999984,
+          "y": 380.66039292497385,
+          "inFrame": true
+        },
+        "pickedEntityId": 34,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 34,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 399.14834360775296,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 390.6746995448125,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 380.66039292497385,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 372.9570801404825,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 542.9999999999985,
+              "y": 362.1724422421947,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true
+      },
+      "artProfile": "pigment",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "03_pilot_entity_medium__pigment.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "ENTITY_MEDIUM",
+      "recipe": {
+        "target": "entity",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 9,
+        "poi": {
+          "x": 123.82364858846101,
+          "y": 94.88189958640949,
+          "source": "visible-real-cultivator",
+          "id": 34,
+          "kind": "cultivator",
+          "level": 2,
+          "nearestHouse": {
+            "x": 124,
+            "y": 88,
+            "type": 1
+          },
+          "distanceToHouse": 6.884158753092123
+        }
+      },
+      "poi": {
+        "x": 123.82364858846101,
+        "y": 94.88189958640949,
+        "source": "visible-real-cultivator",
+        "id": 34,
+        "kind": "cultivator",
+        "level": 2,
+        "nearestHouse": {
+          "x": 124,
+          "y": 88,
+          "type": 1
+        },
+        "distanceToHouse": 6.884158753092123
+      },
+      "position": [
+        279.4076145539346,
+        364.6801470956948,
+        -20.114737206510917
+      ],
+      "target": [
+        24.32364858846101,
+        22.36411371960074,
+        31.38189958640949
+      ],
+      "zoom": 9,
+      "visibilityProof": {
+        "entityId": 34,
+        "kind": "cultivator",
+        "projected": {
+          "x": 542.9999999999984,
+          "y": 380.66039292497385,
+          "inFrame": true
+        },
+        "pickedEntityId": 34,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 34,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 399.14834360775296,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 390.6746995448125,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 380.66039292497385,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 372.9570801404825,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 542.9999999999985,
+              "y": 362.1724422421947,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true
+      },
+      "artProfile": "ink",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "03_pilot_entity_medium__ink.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "ENTITY_MEDIUM",
+      "recipe": {
+        "target": "entity",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 9,
+        "poi": {
+          "x": 123.82364858846101,
+          "y": 94.88189958640949,
+          "source": "visible-real-cultivator",
+          "id": 34,
+          "kind": "cultivator",
+          "level": 2,
+          "nearestHouse": {
+            "x": 124,
+            "y": 88,
+            "type": 1
+          },
+          "distanceToHouse": 6.884158753092123
+        }
+      },
+      "poi": {
+        "x": 123.82364858846101,
+        "y": 94.88189958640949,
+        "source": "visible-real-cultivator",
+        "id": 34,
+        "kind": "cultivator",
+        "level": 2,
+        "nearestHouse": {
+          "x": 124,
+          "y": 88,
+          "type": 1
+        },
+        "distanceToHouse": 6.884158753092123
+      },
+      "position": [
+        279.4076145539346,
+        364.6801470956948,
+        -20.114737206510917
+      ],
+      "target": [
+        24.32364858846101,
+        22.36411371960074,
+        31.38189958640949
+      ],
+      "zoom": 9,
+      "visibilityProof": {
+        "entityId": 34,
+        "kind": "cultivator",
+        "projected": {
+          "x": 542.9999999999984,
+          "y": 380.66039292497385,
+          "inFrame": true
+        },
+        "pickedEntityId": 34,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 34,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 399.14834360775296,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 390.6746995448125,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 380.66039292497385,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 542.9999999999984,
+              "y": 372.9570801404825,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 542.9999999999985,
+              "y": 362.1724422421947,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true
+      },
+      "artProfile": "pilot",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "03_pilot_entity_medium__pilot.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "ENTITY_CLOSE",
+      "recipe": {
+        "target": "entity",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 18,
+        "poi": {
+          "x": 123.82364858846101,
+          "y": 94.88189958640949,
+          "source": "visible-real-cultivator",
+          "id": 34,
+          "kind": "cultivator",
+          "level": 2,
+          "nearestHouse": {
+            "x": 124,
+            "y": 88,
+            "type": 1
+          },
+          "distanceToHouse": 6.884158753092123
+        }
+      },
+      "poi": {
+        "x": 123.82364858846101,
+        "y": 94.88189958640949,
+        "source": "visible-real-cultivator",
+        "id": 34,
+        "kind": "cultivator",
+        "level": 2,
+        "nearestHouse": {
+          "x": 124,
+          "y": 88,
+          "type": 1
+        },
+        "distanceToHouse": 6.884158753092123
+      },
+      "position": [
+        279.4076145539346,
+        364.6801470956948,
+        -20.114737206510917
+      ],
+      "target": [
+        24.32364858846101,
+        22.36411371960074,
+        31.38189958640949
+      ],
+      "zoom": 18,
+      "visibilityProof": {
+        "entityId": 34,
+        "kind": "cultivator",
+        "projected": {
+          "x": 542.9999999999967,
+          "y": 358.32078584994764,
+          "inFrame": true
+        },
+        "pickedEntityId": 34,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 34,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 395.29668721550587,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 378.349399089625,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 358.32078584994764,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 342.914160280965,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 542.9999999999972,
+              "y": 321.3448844843893,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true
+      },
+      "artProfile": "baseline",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "04_pilot_entity_close__baseline.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "ENTITY_CLOSE",
+      "recipe": {
+        "target": "entity",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 18,
+        "poi": {
+          "x": 123.82364858846101,
+          "y": 94.88189958640949,
+          "source": "visible-real-cultivator",
+          "id": 34,
+          "kind": "cultivator",
+          "level": 2,
+          "nearestHouse": {
+            "x": 124,
+            "y": 88,
+            "type": 1
+          },
+          "distanceToHouse": 6.884158753092123
+        }
+      },
+      "poi": {
+        "x": 123.82364858846101,
+        "y": 94.88189958640949,
+        "source": "visible-real-cultivator",
+        "id": 34,
+        "kind": "cultivator",
+        "level": 2,
+        "nearestHouse": {
+          "x": 124,
+          "y": 88,
+          "type": 1
+        },
+        "distanceToHouse": 6.884158753092123
+      },
+      "position": [
+        279.4076145539346,
+        364.6801470956948,
+        -20.114737206510917
+      ],
+      "target": [
+        24.32364858846101,
+        22.36411371960074,
+        31.38189958640949
+      ],
+      "zoom": 18,
+      "visibilityProof": {
+        "entityId": 34,
+        "kind": "cultivator",
+        "projected": {
+          "x": 542.9999999999967,
+          "y": 358.32078584994764,
+          "inFrame": true
+        },
+        "pickedEntityId": 34,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 34,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 395.29668721550587,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 378.349399089625,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 358.32078584994764,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 342.914160280965,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 542.9999999999972,
+              "y": 321.3448844843893,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true
+      },
+      "artProfile": "pigment",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "04_pilot_entity_close__pigment.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "ENTITY_CLOSE",
+      "recipe": {
+        "target": "entity",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 18,
+        "poi": {
+          "x": 123.82364858846101,
+          "y": 94.88189958640949,
+          "source": "visible-real-cultivator",
+          "id": 34,
+          "kind": "cultivator",
+          "level": 2,
+          "nearestHouse": {
+            "x": 124,
+            "y": 88,
+            "type": 1
+          },
+          "distanceToHouse": 6.884158753092123
+        }
+      },
+      "poi": {
+        "x": 123.82364858846101,
+        "y": 94.88189958640949,
+        "source": "visible-real-cultivator",
+        "id": 34,
+        "kind": "cultivator",
+        "level": 2,
+        "nearestHouse": {
+          "x": 124,
+          "y": 88,
+          "type": 1
+        },
+        "distanceToHouse": 6.884158753092123
+      },
+      "position": [
+        279.4076145539346,
+        364.6801470956948,
+        -20.114737206510917
+      ],
+      "target": [
+        24.32364858846101,
+        22.36411371960074,
+        31.38189958640949
+      ],
+      "zoom": 18,
+      "visibilityProof": {
+        "entityId": 34,
+        "kind": "cultivator",
+        "projected": {
+          "x": 542.9999999999967,
+          "y": 358.32078584994764,
+          "inFrame": true
+        },
+        "pickedEntityId": 34,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 34,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 395.29668721550587,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 378.349399089625,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 358.32078584994764,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 342.914160280965,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 542.9999999999972,
+              "y": 321.3448844843893,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true
+      },
+      "artProfile": "ink",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "04_pilot_entity_close__ink.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "mortal",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "ENTITY_CLOSE",
+      "recipe": {
+        "target": "entity",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 18,
+        "poi": {
+          "x": 123.82364858846101,
+          "y": 94.88189958640949,
+          "source": "visible-real-cultivator",
+          "id": 34,
+          "kind": "cultivator",
+          "level": 2,
+          "nearestHouse": {
+            "x": 124,
+            "y": 88,
+            "type": 1
+          },
+          "distanceToHouse": 6.884158753092123
+        }
+      },
+      "poi": {
+        "x": 123.82364858846101,
+        "y": 94.88189958640949,
+        "source": "visible-real-cultivator",
+        "id": 34,
+        "kind": "cultivator",
+        "level": 2,
+        "nearestHouse": {
+          "x": 124,
+          "y": 88,
+          "type": 1
+        },
+        "distanceToHouse": 6.884158753092123
+      },
+      "position": [
+        279.4076145539346,
+        364.6801470956948,
+        -20.114737206510917
+      ],
+      "target": [
+        24.32364858846101,
+        22.36411371960074,
+        31.38189958640949
+      ],
+      "zoom": 18,
+      "visibilityProof": {
+        "entityId": 34,
+        "kind": "cultivator",
+        "projected": {
+          "x": 542.9999999999967,
+          "y": 358.32078584994764,
+          "inFrame": true
+        },
+        "pickedEntityId": 34,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 34,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 395.29668721550587,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 378.349399089625,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 358.32078584994764,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 542.9999999999967,
+              "y": 342.914160280965,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 542.9999999999972,
+              "y": 321.3448844843893,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true
+      },
+      "artProfile": "pilot",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "04_pilot_entity_close__pilot.png"
+    },
+    {
+      "seed": 20260928,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 1800,
+      "viewRealm": "mortal",
+      "scenario": "DENSITY_A",
+      "preset": "medium",
+      "days": 1800,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 146,
+        "cultivators": 17,
+        "villages": 7,
+        "houses": 133
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "cameraRecipe": "SETTLEMENT",
+      "recipe": {
+        "target": "settlement",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 9,
+        "poi": {
+          "x": 144.10075406636668,
+          "y": 41.39355558610883,
+          "source": "visible-house-cultivator-pair",
+          "entityId": 13,
+          "id": 3,
+          "house": {
+            "x": 146,
+            "y": 38,
+            "type": 1
+          },
+          "houses": 19,
+          "distance": 7.777751508613063
+        }
+      },
+      "poi": {
+        "x": 144.10075406636668,
+        "y": 41.39355558610883,
+        "source": "visible-house-cultivator-pair",
+        "entityId": 13,
+        "id": 3,
+        "house": {
+          "x": 146,
+          "y": 38,
+          "type": 1
+        },
+        "houses": 19,
+        "distance": 7.777751508613063
+      },
+      "position": [
+        367.92166505664864,
+        506.1964697591348,
+        -122.26160139569656
+      ],
+      "target": [
+        0.6007540663666759,
+        13.261381697559425,
+        -48.10644441389117
+      ],
+      "zoom": 9,
+      "visibilityProof": {
+        "entityId": 13,
+        "kind": "cultivator",
+        "projected": {
+          "x": 490.48176445842694,
+          "y": 259.6421904265692,
+          "inFrame": true
+        },
+        "pickedEntityId": 13,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 13,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 272.5683410144099,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 266.6438553283162,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 259.6421904265692,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 254.25629434830222,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 246.71603983872845,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true,
+        "house": {
+          "x": 585.0335391336484,
+          "y": 481.5833897936184,
+          "inFrame": true,
+          "visible": true,
+          "instanceId": 59
+        },
+        "tree": {
+          "x": 568.2723364026884,
+          "y": 389.4076159492453,
+          "inFrame": true,
+          "visible": true,
+          "instanceId": 1087,
+          "world": [
+            143.06474818662974,
+            40.15419710162096
+          ]
+        }
+      },
+      "artProfile": "baseline",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "05_building_tree_character__baseline.png"
+    },
+    {
+      "seed": 20260928,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 1800,
+      "viewRealm": "mortal",
+      "scenario": "DENSITY_A",
+      "preset": "medium",
+      "days": 1800,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 146,
+        "cultivators": 17,
+        "villages": 7,
+        "houses": 133
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "cameraRecipe": "SETTLEMENT",
+      "recipe": {
+        "target": "settlement",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 9,
+        "poi": {
+          "x": 144.10075406636668,
+          "y": 41.39355558610883,
+          "source": "visible-house-cultivator-pair",
+          "entityId": 13,
+          "id": 3,
+          "house": {
+            "x": 146,
+            "y": 38,
+            "type": 1
+          },
+          "houses": 19,
+          "distance": 7.777751508613063
+        }
+      },
+      "poi": {
+        "x": 144.10075406636668,
+        "y": 41.39355558610883,
+        "source": "visible-house-cultivator-pair",
+        "entityId": 13,
+        "id": 3,
+        "house": {
+          "x": 146,
+          "y": 38,
+          "type": 1
+        },
+        "houses": 19,
+        "distance": 7.777751508613063
+      },
+      "position": [
+        367.92166505664864,
+        506.1964697591348,
+        -122.26160139569656
+      ],
+      "target": [
+        0.6007540663666759,
+        13.261381697559425,
+        -48.10644441389117
+      ],
+      "zoom": 9,
+      "visibilityProof": {
+        "entityId": 13,
+        "kind": "cultivator",
+        "projected": {
+          "x": 490.48176445842694,
+          "y": 259.6421904265692,
+          "inFrame": true
+        },
+        "pickedEntityId": 13,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 13,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 272.5683410144099,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 266.6438553283162,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 259.6421904265692,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 254.25629434830222,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 246.71603983872845,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true,
+        "house": {
+          "x": 585.0335391336484,
+          "y": 481.5833897936184,
+          "inFrame": true,
+          "visible": true,
+          "instanceId": 59
+        },
+        "tree": {
+          "x": 568.2723364026884,
+          "y": 389.4076159492453,
+          "inFrame": true,
+          "visible": true,
+          "instanceId": 1087,
+          "world": [
+            143.06474818662974,
+            40.15419710162096
+          ]
+        }
+      },
+      "artProfile": "pigment",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "05_building_tree_character__pigment.png"
+    },
+    {
+      "seed": 20260928,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 1800,
+      "viewRealm": "mortal",
+      "scenario": "DENSITY_A",
+      "preset": "medium",
+      "days": 1800,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 146,
+        "cultivators": 17,
+        "villages": 7,
+        "houses": 133
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "cameraRecipe": "SETTLEMENT",
+      "recipe": {
+        "target": "settlement",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 9,
+        "poi": {
+          "x": 144.10075406636668,
+          "y": 41.39355558610883,
+          "source": "visible-house-cultivator-pair",
+          "entityId": 13,
+          "id": 3,
+          "house": {
+            "x": 146,
+            "y": 38,
+            "type": 1
+          },
+          "houses": 19,
+          "distance": 7.777751508613063
+        }
+      },
+      "poi": {
+        "x": 144.10075406636668,
+        "y": 41.39355558610883,
+        "source": "visible-house-cultivator-pair",
+        "entityId": 13,
+        "id": 3,
+        "house": {
+          "x": 146,
+          "y": 38,
+          "type": 1
+        },
+        "houses": 19,
+        "distance": 7.777751508613063
+      },
+      "position": [
+        367.92166505664864,
+        506.1964697591348,
+        -122.26160139569656
+      ],
+      "target": [
+        0.6007540663666759,
+        13.261381697559425,
+        -48.10644441389117
+      ],
+      "zoom": 9,
+      "visibilityProof": {
+        "entityId": 13,
+        "kind": "cultivator",
+        "projected": {
+          "x": 490.48176445842694,
+          "y": 259.6421904265692,
+          "inFrame": true
+        },
+        "pickedEntityId": 13,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 13,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 272.5683410144099,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 266.6438553283162,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 259.6421904265692,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 254.25629434830222,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 246.71603983872845,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true,
+        "house": {
+          "x": 585.0335391336484,
+          "y": 481.5833897936184,
+          "inFrame": true,
+          "visible": true,
+          "instanceId": 59
+        },
+        "tree": {
+          "x": 568.2723364026884,
+          "y": 389.4076159492453,
+          "inFrame": true,
+          "visible": true,
+          "instanceId": 1087,
+          "world": [
+            143.06474818662974,
+            40.15419710162096
+          ]
+        }
+      },
+      "artProfile": "ink",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "05_building_tree_character__ink.png"
+    },
+    {
+      "seed": 20260928,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 1800,
+      "viewRealm": "mortal",
+      "scenario": "DENSITY_A",
+      "preset": "medium",
+      "days": 1800,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 146,
+        "cultivators": 17,
+        "villages": 7,
+        "houses": 133
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "cameraRecipe": "SETTLEMENT",
+      "recipe": {
+        "target": "settlement",
+        "polar": 0.65,
+        "yaw": 1.77,
+        "zoom": 9,
+        "poi": {
+          "x": 144.10075406636668,
+          "y": 41.39355558610883,
+          "source": "visible-house-cultivator-pair",
+          "entityId": 13,
+          "id": 3,
+          "house": {
+            "x": 146,
+            "y": 38,
+            "type": 1
+          },
+          "houses": 19,
+          "distance": 7.777751508613063
+        }
+      },
+      "poi": {
+        "x": 144.10075406636668,
+        "y": 41.39355558610883,
+        "source": "visible-house-cultivator-pair",
+        "entityId": 13,
+        "id": 3,
+        "house": {
+          "x": 146,
+          "y": 38,
+          "type": 1
+        },
+        "houses": 19,
+        "distance": 7.777751508613063
+      },
+      "position": [
+        367.92166505664864,
+        506.1964697591348,
+        -122.26160139569656
+      ],
+      "target": [
+        0.6007540663666759,
+        13.261381697559425,
+        -48.10644441389117
+      ],
+      "zoom": 9,
+      "visibilityProof": {
+        "entityId": 13,
+        "kind": "cultivator",
+        "projected": {
+          "x": 490.48176445842694,
+          "y": 259.6421904265692,
+          "inFrame": true
+        },
+        "pickedEntityId": 13,
+        "pickedPlane": "mortal",
+        "frontmostEntityId": 13,
+        "bodyPoints": [
+          {
+            "lift": 0.25,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 272.5683410144099,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 0.8,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 266.6438553283162,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.45,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 259.6421904265692,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 1.95,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 254.25629434830222,
+              "inFrame": true
+            },
+            "visible": true
+          },
+          {
+            "lift": 2.65,
+            "pixel": {
+              "x": 490.48176445842694,
+              "y": 246.71603983872845,
+              "inFrame": true
+            },
+            "visible": true
+          }
+        ],
+        "visibleBodyPoints": 5,
+        "visible": true,
+        "house": {
+          "x": 585.0335391336484,
+          "y": 481.5833897936184,
+          "inFrame": true,
+          "visible": true,
+          "instanceId": 59
+        },
+        "tree": {
+          "x": 568.2723364026884,
+          "y": 389.4076159492453,
+          "inFrame": true,
+          "visible": true,
+          "instanceId": 1087,
+          "world": [
+            143.06474818662974,
+            40.15419710162096
+          ]
+        }
+      },
+      "artProfile": "pilot",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "05_building_tree_character__pilot.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "upper",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "REALM_BOUNDARY",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.85,
+        "yaw": 0.1,
+        "zoom": 1.4
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        32.25124257313654,
+        301.9032158729374,
+        321.4366669347322
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.4,
+      "artProfile": "baseline",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "06_upper_boundary__baseline.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "upper",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "REALM_BOUNDARY",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.85,
+        "yaw": 0.1,
+        "zoom": 1.4
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        32.25124257313654,
+        301.9032158729374,
+        321.4366669347322
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.4,
+      "artProfile": "pigment",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "06_upper_boundary__pigment.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "upper",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "REALM_BOUNDARY",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.85,
+        "yaw": 0.1,
+        "zoom": 1.4
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        32.25124257313654,
+        301.9032158729374,
+        321.4366669347322
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.4,
+      "artProfile": "ink",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "06_upper_boundary__ink.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "upper",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "REALM_BOUNDARY",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.85,
+        "yaw": 0.1,
+        "zoom": 1.4
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        32.25124257313654,
+        301.9032158729374,
+        321.4366669347322
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.4,
+      "artProfile": "pilot",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "06_upper_boundary__pilot.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "nether",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "REALM_BOUNDARY",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.85,
+        "yaw": 0.1,
+        "zoom": 1.4
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        32.25124257313654,
+        301.9032158729374,
+        321.4366669347322
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.4,
+      "artProfile": "baseline",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "07_nether_boundary__baseline.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "nether",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "REALM_BOUNDARY",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.85,
+        "yaw": 0.1,
+        "zoom": 1.4
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        32.25124257313654,
+        301.9032158729374,
+        321.4366669347322
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.4,
+      "artProfile": "pigment",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "07_nether_boundary__pigment.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "nether",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "REALM_BOUNDARY",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.85,
+        "yaw": 0.1,
+        "zoom": 1.4
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        32.25124257313654,
+        301.9032158729374,
+        321.4366669347322
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.4,
+      "artProfile": "ink",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "07_nether_boundary__ink.png"
+    },
+    {
+      "seed": 20260930,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        200,
+        128
+      ],
+      "worldDay": 1440,
+      "viewRealm": "nether",
+      "scenario": "GOLDEN_A",
+      "preset": "small",
+      "days": 1440,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 119,
+        "cultivators": 14,
+        "villages": 6,
+        "houses": 89
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "cameraRecipe": "REALM_BOUNDARY",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.85,
+        "yaw": 0.1,
+        "zoom": 1.4
+      },
+      "poi": {
+        "x": 99.5,
+        "y": 63.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        32.25124257313654,
+        301.9032158729374,
+        321.4366669347322
+      ],
+      "target": [
+        0,
+        18.110463142395016,
+        0
+      ],
+      "zoom": 1.4,
+      "artProfile": "pilot",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "07_nether_boundary__pilot.png"
+    },
+    {
+      "seed": 20260928,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 1800,
+      "viewRealm": "mortal",
+      "scenario": "DENSITY_A",
+      "preset": "medium",
+      "days": 1800,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 146,
+        "cultivators": 17,
+        "villages": 7,
+        "houses": 133
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "cameraRecipe": "WORLD_OVERVIEW",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.52,
+        "yaw": 0.15,
+        "zoom": 1.45
+      },
+      "poi": {
+        "x": 143.5,
+        "y": 89.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        45.97735844291733,
+        569.0249951185956,
+        304.2133993228711
+      ],
+      "target": [
+        0,
+        31.67135906219482,
+        0
+      ],
+      "zoom": 1.45,
+      "artProfile": "baseline",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "08_dense_test__baseline.png"
+    },
+    {
+      "seed": 20260928,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 1800,
+      "viewRealm": "mortal",
+      "scenario": "DENSITY_A",
+      "preset": "medium",
+      "days": 1800,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 146,
+        "cultivators": 17,
+        "villages": 7,
+        "houses": 133
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "cameraRecipe": "WORLD_OVERVIEW",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.52,
+        "yaw": 0.15,
+        "zoom": 1.45
+      },
+      "poi": {
+        "x": 143.5,
+        "y": 89.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        45.97735844291733,
+        569.0249951185956,
+        304.2133993228711
+      ],
+      "target": [
+        0,
+        31.67135906219482,
+        0
+      ],
+      "zoom": 1.45,
+      "artProfile": "pigment",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "08_dense_test__pigment.png"
+    },
+    {
+      "seed": 20260928,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 1800,
+      "viewRealm": "mortal",
+      "scenario": "DENSITY_A",
+      "preset": "medium",
+      "days": 1800,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 146,
+        "cultivators": 17,
+        "villages": 7,
+        "houses": 133
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "cameraRecipe": "WORLD_OVERVIEW",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.52,
+        "yaw": 0.15,
+        "zoom": 1.45
+      },
+      "poi": {
+        "x": 143.5,
+        "y": 89.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        45.97735844291733,
+        569.0249951185956,
+        304.2133993228711
+      ],
+      "target": [
+        0,
+        31.67135906219482,
+        0
+      ],
+      "zoom": 1.45,
+      "artProfile": "ink",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "08_dense_test__ink.png"
+    },
+    {
+      "seed": 20260928,
+      "worldGenVersion": "unversioned-source; see commit/source hash",
+      "mapSize": [
+        288,
+        180
+      ],
+      "worldDay": 1800,
+      "viewRealm": "mortal",
+      "scenario": "DENSITY_A",
+      "preset": "medium",
+      "days": 1800,
+      "rngRecipe": {
+        "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+        "life": "newWorld seed ^ 0xa5a5a5a5",
+        "advanceState": "fresh createAdvanceState()",
+        "stepDays": 1
+      },
+      "coverage": {
+        "entities": 146,
+        "cultivators": 17,
+        "villages": 7,
+        "houses": 133
+      },
+      "snapshotDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "cameraRecipe": "WORLD_OVERVIEW",
+      "recipe": {
+        "target": "bounds",
+        "polar": 0.52,
+        "yaw": 0.15,
+        "zoom": 1.45
+      },
+      "poi": {
+        "x": 143.5,
+        "y": 89.5,
+        "source": "world-bounds"
+      },
+      "position": [
+        45.97735844291733,
+        569.0249951185956,
+        304.2133993228711
+      ],
+      "target": [
+        0,
+        31.67135906219482,
+        0
+      ],
+      "zoom": 1.45,
+      "artProfile": "pilot",
+      "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+      "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+      "worldGenSourceHashes": {
+        "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+        "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+        "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+      },
+      "viewport": [
+        1500,
+        940
+      ],
+      "file": "08_dense_test__pilot.png"
+    }
+  ],
+  "performance": [
+    {
+      "profile": "baseline",
+      "kind": "CPU-visible renderer.render() submission timing",
+      "samples": 60,
+      "averageMs": 0.5383333329111337,
+      "medianMs": 0.5,
+      "p95Ms": 1.0999999977648258,
+      "rafFrameIntervals": {
+        "averageMs": 16.671666666666663,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.800000000000182
+      },
+      "calls": 11,
+      "triangles": 118676,
+      "instances": 6955,
+      "rtResolution": null,
+      "dpr": 1,
+      "canvasResolution": [
+        1086,
+        806
+      ]
+    },
+    {
+      "profile": "pigment",
+      "kind": "CPU-visible renderer.render() submission timing",
+      "samples": 60,
+      "averageMs": 0.27333333330849807,
+      "medianMs": 0.19999999925494194,
+      "p95Ms": 0.5,
+      "rafFrameIntervals": {
+        "averageMs": 16.66833333333334,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.800000000000182
+      },
+      "calls": 11,
+      "triangles": 118676,
+      "instances": 6955,
+      "rtResolution": null,
+      "dpr": 1,
+      "canvasResolution": [
+        1086,
+        806
+      ]
+    },
+    {
+      "profile": "ink",
+      "kind": "CPU-visible renderer.render() submission timing",
+      "samples": 60,
+      "averageMs": 0.35666666651765505,
+      "medianMs": 0.3999999985098839,
+      "p95Ms": 0.6999999992549419,
+      "rafFrameIntervals": {
+        "averageMs": 16.664999999999996,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 16.899999999999636
+      },
+      "calls": 11,
+      "triangles": 118676,
+      "instances": 6955,
+      "rtResolution": null,
+      "dpr": 1,
+      "canvasResolution": [
+        1086,
+        806
+      ]
+    },
+    {
+      "profile": "pilot",
+      "kind": "CPU-visible renderer.render() submission timing",
+      "samples": 60,
+      "averageMs": 0.2750000000620882,
+      "medianMs": 0.20000000298023224,
+      "p95Ms": 0.6000000014901161,
+      "rafFrameIntervals": {
+        "averageMs": 17.503333333333345,
+        "medianMs": 16.699999999999818,
+        "p95Ms": 33.29999999999927
+      },
+      "calls": 11,
+      "triangles": 384656,
+      "instances": 3584,
+      "rtResolution": null,
+      "dpr": 1,
+      "canvasResolution": [
+        1086,
+        806
+      ]
+    }
+  ],
+  "errors": [],
+  "sourceHashes": {
+    "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+    "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+    "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+  },
+  "renderSourceHashes": {
+    "src/inkbox/render3d/BrushOverlay.js": "64b52fd2df361f61742f01d4f13327346d0d090f6ccab967a7f38b869220f3c1",
+    "src/inkbox/render3d/CameraRig.js": "a0feb06e899ca97ffb7c1133dbb1969ebfd743d4bd3ed2a4b7d04a8179495b19",
+    "src/inkbox/render3d/Render3DAdapter.js": "673463c2b9bb4e7f8dca5bafa17cb63572443c3620d84989efefaea510f27788",
+    "src/inkbox/render3d/Render3DHost.js": "15ec73a28878d3b52dd0714f89ed7e28f4f84d6b6de30aa4a44b64525f3aa52a",
+    "src/inkbox/render3d/Renderer3D.js": "8668125c8c3c41373b4c0ef2bc41ace13466b7bea363b9f892b6fcb98c0c1621",
+    "src/inkbox/render3d/SelectionMarker.js": "bc2d8ae0962aa2f13cd37e0b930f7bf5a9006f4d519bc30d5d4d37cb379115a6",
+    "src/inkbox/render3d/WorldRenderBridge.js": "72ef919c56a91b40356ca5d56465ee44ae922e089ea0390a22052fdfe6e987ce",
+    "src/inkbox/render3d/art/ArtDebugPanel.js": "60f98fff9666399d57ea81bea86d3f1f67b2f83847851d6d79e53b60a10ace4b",
+    "src/inkbox/render3d/art/ArtPass.js": "b521e4138531d7868a2d4693838901daaccabc89eb432fb452a248558efd18a2",
+    "src/inkbox/render3d/art/ArtPassProfile.js": "a54445895ff47f99ba3312b28a71d2b5e2a446b6482b789fec7a2cbf2d74fac7",
+    "src/inkbox/render3d/art/PigmentTerrainMaterial.js": "61faab501fad69b7e933e6d8f622db2c81de911136ffbc00ccec2eee8ecbcbc1",
+    "src/inkbox/render3d/art/PilotAssets.js": "6c7d8b870b3cc01a4f3c2b480b8f907daa039e1222a59fa7891ac1ca44c900b2",
+    "src/inkbox/render3d/art/PilotMaterial.js": "7c5f983c9ac21f8cc0cf0c64e7d0dfadad8db76d0187989098e5287a78726aee",
+    "src/inkbox/render3d/art/TerrainDataTextures.js": "9040977d9ba599367919fd83a62d1abcdd278b29b4b0e9ec4e5657515d856ff7",
+    "src/inkbox/render3d/art/VisualScenarios.js": "c692155bb95a77a399dea9daff6adc7966be2597435a05780aca0b0066430824",
+    "src/inkbox/render3d/boundary/RealmBoundaryLayer.js": "4534ff9a4539e09c027e22bc5c1cdef105096418273ac157042f5828cb781f03",
+    "src/inkbox/render3d/boundary/strataProfile.js": "b495af2100bb20f5acb770f9bde881603795ddb71276874cfee700ba97565604",
+    "src/inkbox/render3d/coordinates.js": "729381c5524a9620fb2cc22c4f3b07067073ad5a85c3974c7bb0f611a5b241cc",
+    "src/inkbox/render3d/debug/RenderDebug.js": "d378ae5092949eafc0756b755522721f800efdd557cc5ec1c295e0a5e71038da",
+    "src/inkbox/render3d/entities/EntityLayer.js": "3d6b8ea7ecd45d17a1bc5afe8347dcc521b53630dec0dc722f41fd83d422512e",
+    "src/inkbox/render3d/entities/deriveEntities.js": "41c62755c69c5dca12a6949f086453a295844a0d74e994d94ffca7ac13afef33",
+    "src/inkbox/render3d/markers/WorldMarkerLayer.js": "b682fa12c6b21be21b2661e66b1d73668f8234b8e7721d65c79b9766879c8bc7",
+    "src/inkbox/render3d/picking/PlanePicker.js": "7c2c6607f78e140ab331e4c62dfa03534196ea3699e62bb7ec59f39b29b58665",
+    "src/inkbox/render3d/readers/riftViewModel.js": "95cdcadbe051280255fd8ac0cdcc4cca46f450d991110f9a2d78d3e6fdf6cd73",
+    "src/inkbox/render3d/region/RegionGeometry.js": "776ff73bc077f3a9f449f5eb49401b456c9d91eb8e753058167e5bf996c848d7",
+    "src/inkbox/render3d/region/quadMask.js": "4863bc16b2088924ce6bc8d124c3c45bd87c91b869518aeeb26e9598cfedd184",
+    "src/inkbox/render3d/settlements/SettlementLayer.js": "926ac8c5b211204df8607572600cc3fbd0b18c451ec64831d2804983c587a942",
+    "src/inkbox/render3d/shared/RenderOrder.js": "7b764f8aff8ac080b79e97af65a96bfc11bea93c8fa3e9fc36ac52775ce7a0b3",
+    "src/inkbox/render3d/stage/PlaneRenderProfile.js": "f337d692c4d1df0eb7632f638aa699f948fd1d67fe2773dcc02e9f21bbc458e5",
+    "src/inkbox/render3d/stage/PlaneStage.js": "8c0fb7d8a086bf8474fc793629be258bc8ee583cbb287667143130e02e9cea5c",
+    "src/inkbox/render3d/stage/WorldSetSnapshot.js": "6e4019c69232bf40ad88a262cf87f61e5064bc41672a7f00626e8603527cfd60",
+    "src/inkbox/render3d/terrain/ElevationField.js": "94d13cb43823c3ab9b8a6426f2595ccc00a73c2bf30e800eb32fcb8ce47dc72b",
+    "src/inkbox/render3d/terrain/TerrainMesh.js": "5f7617c661eb325eec7f825119140c87ff096bf1dc3e34a4eae18e49c67d44c7",
+    "src/inkbox/render3d/terrain/TerrainPicker.js": "9499dd090abea099c2ea0bb15f79aaed4d67647d196cc2bb7a5a3ee51160f845",
+    "src/inkbox/render3d/terrain/VisualElevation.js": "aad302822293bac9364b4132da8ae1de2c4dd3889445f585479056cab72221a8",
+    "src/inkbox/render3d/terrain/sculpt.js": "d8c61685a6c0fa57b58e01365b05655671771fb0e3a38402a42039ac7ade71f0",
+    "src/inkbox/render3d/vegetation/VegetationLayer.js": "06dd74c6d9e1282daa1ce1f6c7bb83c24fffa24714b997faaeec235f454f647a",
+    "src/inkbox/render3d/vegetation/deriveVegetation.js": "4573564ff7a6e081e4f38e854619e35966a8ed21bbeb1c2a261baec9a4d47a82",
+    "src/inkbox/render3d/view/DraftPathOverlay.js": "b2f5c26f06bd04136942b50607b3faddc52a08d20f992b3f1aed2d9042112d7f",
+    "src/inkbox/render3d/view/RealmView3DPrototype.js": "63aa7ae27a9da6032387d62a995092a29345c93706d41fa1b6f089ece9ad7d53",
+    "src/inkbox/render3d/view/SlabPrototype.js": "392a6977f9f74c4b4b359d61c775c3c421f7a1d87b18e097013826d26c33c67a",
+    "src/inkbox/render3d/view/ThreeFxProbe.js": "3e9287c57ed8ffd7ad7ed1784ef0a5cbd86af1a94310363cc096cf40c8222954",
+    "src/inkbox/render3d/water/WaterLayer.js": "37f064bee2554d4523b346f8da8cfa0c4cced643d8294abf9839efb50238abdc"
+  },
+  "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+  "environment": {
+    "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "webgl": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+    "dpr": 1,
+    "rendererDpr": 1,
+    "viewport": [
+      1500,
+      940
+    ]
+  },
+  "lifecycle": {
+    "frames": 600,
+    "rotationDegrees": 360,
+    "zoomRange": [
+      1.45,
+      18
+    ],
+    "rotations": [
+      {
+        "frame": 0,
+        "position": [
+          61.8356472265738,
+          569.0249951185956,
+          301.3902164122715
+        ]
+      },
+      {
+        "frame": 30,
+        "position": [
+          301.39021641227146,
+          569.0249951185956,
+          -61.835647226574025
+        ]
+      },
+      {
+        "frame": 60,
+        "position": [
+          -61.83564722657308,
+          569.0249951185956,
+          -301.3902164122716
+        ]
+      },
+      {
+        "frame": 90,
+        "position": [
+          -301.39021641227185,
+          569.0249951185956,
+          61.83564722657276
+        ]
+      }
+    ],
+    "zooms": [
+      {
+        "frame": 120,
+        "zoom": 1.45
+      },
+      {
+        "frame": 150,
+        "zoom": 9.724999999999998
+      },
+      {
+        "frame": 180,
+        "zoom": 18
+      },
+      {
+        "frame": 210,
+        "zoom": 9.725000000000001
+      }
+    ],
+    "picking": {
+      "upper": {
+        "counts": {
+          "miss": 283,
+          "mortal": 86,
+          "upper": 48,
+          "realm-boundary": 15
+        },
+        "hits": 149,
+        "visibleMismatch": 0,
+        "visiblePlanes": [
+          "mortal",
+          "upper"
+        ]
+      },
+      "nether": {
+        "counts": {
+          "miss": 287,
+          "mortal": 89,
+          "nether": 56
+        },
+        "hits": 145,
+        "visibleMismatch": 0,
+        "visiblePlanes": [
+          "mortal",
+          "nether"
+        ]
+      },
+      "mortal": {
+        "counts": {
+          "miss": 232,
+          "mortal": 200
+        },
+        "hits": 200,
+        "visibleMismatch": 0,
+        "visiblePlanes": [
+          "mortal"
+        ]
+      }
+    },
+    "memory": [
+      {
+        "frame": 430,
+        "geometries": 21,
+        "textures": 7,
+        "calls": 11,
+        "triangles": 689348
+      },
+      {
+        "frame": 599,
+        "geometries": 21,
+        "textures": 7,
+        "calls": 11,
+        "triangles": 689348
+      }
+    ],
+    "resourcesStable": true,
+    "worldFactsUnchanged": true,
+    "resizeRestored": [
+      1086,
+      806
+    ],
+    "kind": "CPU-visible requestAnimationFrame intervals, includes product loop",
+    "averageMs": 21.341068447412358,
+    "medianMs": 16.69999999999709,
+    "p95Ms": 16.80000000000291,
+    "limitation": "600-frame bounded stability run; not an endurance or GPU-time benchmark"
+  },
+  "renderTargetProbe": {
+    "kind": "CPU-visible frame submission timing; not GPU timer",
+    "direct": {
+      "averageMs": 0.0433333333581686,
+      "medianMs": 0,
+      "p95Ms": 0.10000000149011612
+    },
+    "results": [
+      {
+        "scale": 1,
+        "dpr": 1,
+        "resolution": [
+          1086,
+          806
+        ],
+        "samples": 4,
+        "depthType": "UnsignedIntType",
+        "colorSpace": "srgb-linear",
+        "framebufferComplete": true,
+        "colorSampling": {
+          "reference": [
+            128,
+            64,
+            32,
+            255
+          ],
+          "fullscreenCopy": [
+            128,
+            64,
+            34,
+            255
+          ],
+          "maxByteError": 2,
+          "passed": true
+        },
+        "depthSampling": {
+          "min": 50,
+          "max": 255,
+          "occupiedSamples": 426,
+          "totalSamples": 1024,
+          "passed": true
+        },
+        "glError": 0,
+        "timing": {
+          "averageMs": 0.12999999995032946,
+          "medianMs": 0.10000000149011612,
+          "p95Ms": 0.20000000298023224
+        },
+        "extraAverageMs": 0.08666666659216085,
+        "resize": {
+          "resolution": [
+            1069,
+            795
+          ],
+          "depthResolution": [
+            1069,
+            795
+          ],
+          "glError": 0
+        }
+      },
+      {
+        "scale": 0.5,
+        "dpr": 1,
+        "resolution": [
+          543,
+          403
+        ],
+        "samples": 4,
+        "depthType": "UnsignedIntType",
+        "colorSpace": "srgb-linear",
+        "framebufferComplete": true,
+        "colorSampling": {
+          "reference": [
+            128,
+            64,
+            32,
+            255
+          ],
+          "fullscreenCopy": [
+            128,
+            64,
+            34,
+            255
+          ],
+          "maxByteError": 2,
+          "passed": true
+        },
+        "depthSampling": {
+          "min": 50,
+          "max": 255,
+          "occupiedSamples": 428,
+          "totalSamples": 1024,
+          "passed": true
+        },
+        "glError": 0,
+        "timing": {
+          "averageMs": 0.0766666665673256,
+          "medianMs": 0.09999999776482582,
+          "p95Ms": 0.10000000149011612
+        },
+        "extraAverageMs": 0.033333333209157,
+        "resize": {
+          "resolution": [
+            526,
+            392
+          ],
+          "depthResolution": [
+            526,
+            392
+          ],
+          "glError": 0
+        }
+      },
+      {
+        "scale": 1,
+        "dpr": 1.5,
+        "resolution": [
+          1629,
+          1209
+        ],
+        "samples": 4,
+        "depthType": "UnsignedIntType",
+        "colorSpace": "srgb-linear",
+        "framebufferComplete": true,
+        "colorSampling": {
+          "reference": [
+            128,
+            64,
+            32,
+            255
+          ],
+          "fullscreenCopy": [
+            128,
+            64,
+            34,
+            255
+          ],
+          "maxByteError": 2,
+          "passed": true
+        },
+        "depthSampling": {
+          "min": 50,
+          "max": 255,
+          "occupiedSamples": 426,
+          "totalSamples": 1024,
+          "passed": true
+        },
+        "glError": 0,
+        "timing": {
+          "averageMs": 0.2066666666418314,
+          "medianMs": 0.19999999925494194,
+          "p95Ms": 0.5
+        },
+        "extraAverageMs": 0.16333333328366278,
+        "resize": {
+          "resolution": [
+            1612,
+            1198
+          ],
+          "depthResolution": [
+            1612,
+            1198
+          ],
+          "glError": 0
+        }
+      },
+      {
+        "scale": 0.5,
+        "dpr": 1.5,
+        "resolution": [
+          815,
+          605
+        ],
+        "samples": 4,
+        "depthType": "UnsignedIntType",
+        "colorSpace": "srgb-linear",
+        "framebufferComplete": true,
+        "colorSampling": {
+          "reference": [
+            128,
+            64,
+            32,
+            255
+          ],
+          "fullscreenCopy": [
+            128,
+            64,
+            34,
+            255
+          ],
+          "maxByteError": 2,
+          "passed": true
+        },
+        "depthSampling": {
+          "min": 50,
+          "max": 255,
+          "occupiedSamples": 427,
+          "totalSamples": 1024,
+          "passed": true
+        },
+        "glError": 0,
+        "timing": {
+          "averageMs": 0.14666666661699612,
+          "medianMs": 0.19999999925494194,
+          "p95Ms": 0.20000000298023224
+        },
+        "extraAverageMs": 0.10333333325882751,
+        "resize": {
+          "resolution": [
+            798,
+            594
+          ],
+          "depthResolution": [
+            798,
+            594
+          ],
+          "glError": 0
+        }
+      }
+    ],
+    "before": {
+      "geometries": 21,
+      "textures": 7
+    },
+    "after": {
+      "geometries": 21,
+      "textures": 7
+    },
+    "gate": true
+  }
+}

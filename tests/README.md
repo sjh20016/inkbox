@@ -54,3 +54,13 @@ HTTP 资源先探测，启动失败补存页面 / 网络诊断。输出到 repor
 scripts/_*.mjs 是已入 Git 的 D8 / M1 一次性研究探针，不进 npm 门禁或 dist；不是当前自动化覆盖的证明。
 旧 V3/V4 测试与 src/main.js 不在当前工作树；需要参考时查 Git 历史。
 其他本地 reports、旧日志与压缩记忆仅供考古；当前判据以维护中的契约、源码和实际命令结果为准。
+
+## M2-C 追加门禁
+
+`npm run test:render3d:m2c`：只读 DataTexture、分类完整性、增量上传、高程/Mask、材质开关缓存/释放、600 日纯度对照与实例母版批处理。既有测试断言保持。
+
+`npm run test:render3d:m2c:browser`：先起4180服务，使用本机 Edge 与仓库 CDP；逐日推进真实快照，8 个视图 × baseline/pigment/ink/pilot 四档、完整 manifest、CPU-visible timing、RT/Depth/MSAA/DPR 技术探针和生命周期验证。默认正式证据写入 `reports/release/render3d-m2c`，重跑可用 `INKBOX_REPORT_DIR` 指向独立目录。软件光栅与不同机器的性能不可直接比较。
+
+`node scripts/inkbox-render3d-m2c-soak.mjs`：在独立 Edge 中连续6000帧检查旋转、Resize、开关缓存、资源平台、完整 World 指纹与 ArtPass 状态。不要与性能采样并发运行。
+
+`python scripts/inkbox-m2c-image-metrics.py reports/release/render3d-m2c`：需要 Pillow/NumPy；六项图像统计仅为诊断，不自动判定画面通过。

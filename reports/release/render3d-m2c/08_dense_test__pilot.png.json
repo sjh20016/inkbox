@@ -1,0 +1,67 @@
+{
+  "seed": 20260928,
+  "worldGenVersion": "unversioned-source; see commit/source hash",
+  "mapSize": [
+    288,
+    180
+  ],
+  "worldDay": 1800,
+  "viewRealm": "mortal",
+  "scenario": "DENSITY_A",
+  "preset": "medium",
+  "days": 1800,
+  "rngRecipe": {
+    "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+    "life": "newWorld seed ^ 0xa5a5a5a5",
+    "advanceState": "fresh createAdvanceState()",
+    "stepDays": 1
+  },
+  "coverage": {
+    "entities": 146,
+    "cultivators": 17,
+    "villages": 7,
+    "houses": 133
+  },
+  "snapshotDigest": {
+    "algorithm": "SHA-256",
+    "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+    "bytes": 33113475,
+    "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+  },
+  "cameraRecipe": "WORLD_OVERVIEW",
+  "recipe": {
+    "target": "bounds",
+    "polar": 0.52,
+    "yaw": 0.15,
+    "zoom": 1.45
+  },
+  "poi": {
+    "x": 143.5,
+    "y": 89.5,
+    "source": "world-bounds"
+  },
+  "position": [
+    45.97735844291733,
+    569.0249951185956,
+    304.2133993228711
+  ],
+  "target": [
+    0,
+    31.67135906219482,
+    0
+  ],
+  "zoom": 1.45,
+  "artProfile": "pilot",
+  "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+  "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+  "worldGenSourceHashes": {
+    "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+    "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+    "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+  },
+  "viewport": [
+    1500,
+    940
+  ],
+  "file": "08_dense_test__pilot.png"
+}

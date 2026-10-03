@@ -1,0 +1,7 @@
+{
+  "name": "three-realms",
+  "command": "npm run test:three-realms",
+  "exitCode": 0,
+  "log": "three-realms.log",
+  "capturedSummary": "> zuotian-guan-jing-inkbox@1.0.0 test:three-realms\n  ✓ ★ 四支流各被消费**恰好 pass 次**（写成 `else if` 会让后三支少消费 ⇒ 立刻红） — pass 60/60 · netherRift true · wraith true · item true · possess true"
+}

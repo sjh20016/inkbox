@@ -30,6 +30,12 @@ const evidence = {
   picking: {},
   slab: {},
   runtimeErrors: [],
+  pickingOracle: {
+    version: 2,
+    geometry: 'visible terrain + entities + M2-B realm boundary; independent Three.Raycaster',
+    boundaryDecoder: 'faceIndex / 2 -> edgeNodes midpoint; no PlanePicker/edgeAtTriangle call',
+    assertions: 'unchanged 80 samples/plane, four poses, 32 interior + 32 exterior + 16 boundary; boundary identity, point and distance also required',
+  },
 };
 
 const session = await launch({ url: URL, browser: EDGE, width: 1500, height: 940, gpu: GPU_REQUESTED });
@@ -289,7 +295,9 @@ try {
   await session.js('window.inkbox.render3d.renderer.setSlabProbe(false); return true;');
 
   // Picking: 80 points per Mask target (32 inside, 32 outside, 16 boundary), across four poses.
-  // Oracle is an independent Three.Raycaster against visible terrain + entity meshes, not PlanePicker itself.
+  // Oracle is an independent Three.Raycaster over the submitted pickable geometry.
+  // M2-B added visible boundary facets: include them without calling PlanePicker or its decoder.
+  // Keep every original sample/count/exit assertion; boundary hits require full identity + geometry.
   for (const target of ['upper', 'nether']) {
     const selection = await setMask(target, 0.4); await camera(cameraPoses[1]); await sleep(180);
     const samples = await session.js(`return (async () => {
@@ -309,6 +317,8 @@ try {
         if(stage.terrain?.mesh.visible){ objects.push(stage.terrain.mesh); owner.set(stage.terrain.mesh,stage); }
         stage.entities?.group.traverse(o=>{if(o.isInstancedMesh&&o.visible&&o.count){objects.push(o);owner.set(o,stage);}});
       }
+      const boundary=r.boundary;
+      if(boundary?.mesh.visible&&boundary.edges) objects.push(boundary.mesh);
       const inside=(x,y)=>region.contains(x+.5,y+.5);
       for(let poseIndex=0;poseIndex<poses.length;poseIndex++){
         const pose=poses[poseIndex],distance=Math.max(w.w,w.h)*2.15, yaw=pose.yaw,polar=pose.polar,panX=pose.panX||0,panZ=pose.panZ||0;
@@ -328,13 +338,27 @@ try {
             oracle.setFromCamera(new THREE.Vector2(projected.x,projected.y),r.cameraRig.camera);
             const hits=oracle.intersectObjects(objects,false);
             const nearest=hits[0];
-            if(nearest){ const stage=owner.get(nearest.object), entity=nearest.instanceId==null?null:nearest.object.userData.renderEntities?.[nearest.instanceId];
+            if(nearest&&nearest.object===boundary?.mesh){
+              if(!Number.isInteger(nearest.faceIndex)||nearest.faceIndex<0)throw new Error('Boundary oracle needs a triangle index');
+              const edge=Math.floor(nearest.faceIndex/2), nodes=boundary.edgeNodes;
+              if(edge>=boundary.edges)throw new Error('Boundary oracle triangle exceeds submitted edges');
+              const ax=nodes[edge*4],ay=nodes[edge*4+1],bx=nodes[edge*4+2],by=nodes[edge*4+3];
+              oracleHit={kind:'realm-boundary',plane:null,targetPlane:boundary.targetPlane,x:(ax+bx)/2,y:(ay+by)/2,
+                ax,ay,bx,by,edge,distance:nearest.distance,object:nearest.object.name,
+                point:[nearest.point.x,nearest.point.y,nearest.point.z]};
+            }else if(nearest){ const stage=owner.get(nearest.object), entity=nearest.instanceId==null?null:nearest.object.userData.renderEntities?.[nearest.instanceId];
               const cell=entity?{x:Math.max(0,Math.min(stage.world.w-1,Math.floor(entity.x))),y:Math.max(0,Math.min(stage.world.h-1,Math.floor(entity.y)))}:stage.coordinates.renderPointToCell(nearest.point);
               oracleHit={plane:stage.plane,x:cell.x,y:cell.y,distance:nearest.distance,object:nearest.object.name||nearest.object.type,instanceId:nearest.instanceId??null,entityId:entity?.id??null,point:[nearest.point.x,nearest.point.y,nearest.point.z]}; }
             picked=r.pick(sx,sy);
-            const picker={plane:picked?.plane??null,x:picked?.x??null,y:picked?.y??null,distance:picked?.distance??null};
+            const picker={plane:picked?.plane??null,x:picked?.x??null,y:picked?.y??null,distance:picked?.distance??null,
+              kind:picked?.kind??null,targetPlane:picked?.targetPlane??null,ax:picked?.ax??null,ay:picked?.ay??null,bx:picked?.bx??null,by:picked?.by??null,
+              point:picked?.point?[picked.point.x,picked.point.y,picked.point.z]:null};
+            const boundaryMatches=oracleHit?.kind!=='realm-boundary'||(picker.kind==='realm-boundary'
+              &&picker.targetPlane===oracleHit.targetPlane&&['ax','ay','bx','by'].every(k=>picker[k]===oracleHit[k])
+              &&Math.abs(picker.distance-oracleHit.distance)<1e-6
+              &&picker.point?.every((value,i)=>Math.abs(value-oracleHit.point[i])<1e-6));
             if(!oracleHit)status='no-geometry-hit';
-            else if(picker.plane===oracleHit.plane&&picker.x===oracleHit.x&&picker.y===oracleHit.y)status=oracleHit.plane===expectedPlane?'exact-visible':'legal-occlusion';
+            else if(picker.plane===oracleHit.plane&&picker.x===oracleHit.x&&picker.y===oracleHit.y&&boundaryMatches)status=oracleHit.plane===expectedPlane?'exact-visible':'legal-occlusion';
             else status='picker-oracle-mismatch';
             const sample={pose:pose.name,category,index:i,target:[x,y],expectedPlane,onScreen,status,oracle:oracleHit,picker,oracleVisiblePlane:oracleHit?.plane??null};
             result.samples.push(sample); result.summary.total++;

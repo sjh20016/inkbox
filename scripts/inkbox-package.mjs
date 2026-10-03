@@ -85,6 +85,22 @@ const FILES = [
   'scripts/inkbox-render3d-m2a.mjs',
   'scripts/inkbox-render3d-m2a-browser.mjs',
   'scripts/inkbox-render3d-m2a-verify.mjs',
+  'scripts/inkbox-render3d-m2b.mjs',
+  'scripts/inkbox-render3d-m2b-browser.mjs',
+  'scripts/inkbox-render3d-m2c.mjs',
+  'scripts/inkbox-render3d-pilots.mjs',
+  'scripts/inkbox-render3d-m2c-browser.mjs',
+  'scripts/inkbox-render3d-m2c-soak.mjs',
+  'scripts/inkbox-m2c-image-metrics.py',
+  'M2C_EXPRESSIVE_INK_REPORT.md',
+  'BASELINE_TEST_COUNTS.md',
+  'VISUAL_SCENARIO_SPEC.md',
+  'ARTPASS_PROFILE.md',
+  'ENTITY_PRESENTATION_CONTRACT.md',
+  'PERFORMANCE_REPORT.md',
+  'VISUAL_ACCEPTANCE.md',
+  '美术素材/参考资产索引.md',
+  '美术素材/《坐天观井》M2-C：写意渲染基线与可扩展实体试装.md',
   // 零依赖 CDP 胶水层：性能基线复用本机 Edge/Chrome 靠它。**必须随包出货**，
   // 否则 `npm run test:render3d:perf` 会以「找不到模块」开场。
   'scripts/cdp.mjs',
@@ -123,7 +139,7 @@ const FILES = [
 //    `HANDOFF.md` §4 列为**有约束力**的文档（UI 禁令 / 考古定名不得擅改 / 机制缺口→停走设计流程），
 //    且 `core/lore.js`、`sim/reincarnation.js`、`world/World.js`、`scripts/inkbox-smoke.mjs`
 //    共 5 处注释引用它的行号作为**定名出处** ⇒ 不入包则接手者读不到规则、代码注释悬空。
-const DIRECTORIES = ['src/inkbox', 'vendor/three', '剧情文案素材', 'reports/release/render3d-m2a'];
+const DIRECTORIES = ['src/inkbox', 'vendor/three', '剧情文案素材', 'reports/release/render3d-m2a', 'reports/release/render3d-m2c'];
 
 function copyRelative(relative) {
   const from = path.join(ROOT, relative);

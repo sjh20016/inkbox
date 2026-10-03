@@ -2,6 +2,8 @@
 
 当前唯一活跃主线是 `src/inkbox`：一张会自行演化的水墨山河，玩家可以改地形、施神力、观察众生修行与灾祸结果。
 
+2026-10-03：M2-C 写意渲染基线已接入。3D 默认使用纸色、颜料吸收、稀疏结构墨和一套批处理民居/树/Mini 修士；`?renderer=3d&art=baseline` 可对照原 M2-B，`&artdebug=1` 仅供开发调参。范围、截图和验证见 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md)。
+
 ## 启动
 
 需要 Node.js 18 或更新版本。运行依赖**只有一项**：`three@0.186.1`——供可选的 **Render3D 立体沙盘**使用。
@@ -83,8 +85,9 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
 - **正式完成**：D6-2 三界生态 **A–F** · D6-3 跨界生态 **A–E** · D7 观察与表现层 **A–G 封板** ·
   D8 视界 2.0 **A–F** · **Render3D M0**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻）·
   **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环）· **Render3D M1.1D**（工程加固）。
-- **本轮**：**M2-A final cleanup**，收口文档 / 记忆、工作区归属、CI 与 checkpoint；`render3d-m2a` 定位 `f274def`，不改发布历史。
-- **下一阶段**：**Render3D M2-B 未开始**；World-space Mask + grid boundary skirt + 完整 Layer Mask 为设计倾向，Slab 保留研究、RenderTarget 暂缓。本轮不施工。
+- **已完成底座**：M2-B 的完整 Layer Mask、共享高程、Raw/Strata 界缘、3D 划窗、裂缝破口与拾取。
+- **本轮**：M2-C 的 S1/S2 写意地形与三个实体母版、可复现场景、开关/资源/纯度验证；性能和验收边界以 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md) 为准。
+- **后续**：实体家族、几何 LOD/HLOD、动画和 Trace Field 尚未施工；S3 后处理不进入默认路径。
 - **暂缓**：D8-G「跨界追迹」为 **WIP**——纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）已保存并有测试钉住，但**追迹 UI 未做**；本阶段不继续扩建 Canvas 版 D8-G。
 - **接手先读**：[`HANDOFF.md`](./HANDOFF.md)（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）。
 - 30 秒看懂项目在哪：[`ROADMAP.md`](./ROADMAP.md)
@@ -103,5 +106,5 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
 > （UI 禁令 / **考古定名不得擅改** / 机制缺口 → 停走设计流程），`01`–`06` 是它索引的
 > 台词 / 编年史 / 墓志 / 世界内文本 / 界面 / 三界预留文案库。**本包随包出货。**
 
-`美术素材/` 也已入 Git，包含 163 张 PNG 与生成器 / 说明；当前 Render3D 未消费这些 PNG，运行包不收录它们。
+`美术素材/初期素材构思/` 保留早期 163 张 PNG、生成器与说明；`配色参考/`、`实验建筑资产/`、Sonnet 参考包作为后续设计输入。当前运行使用代码生成的实例母版，不加载这些参考素材；约451MB第三方范式整包保留本地。见 [参考资产索引](./美术素材/参考资产索引.md)。
 正式 M2-A 截图 / JSON 随 Git 与 dist；其他 reports、本地 MEMORY、备份与安装 / 构建产物不入 Git。具体清单见 ARCHITECTURE。

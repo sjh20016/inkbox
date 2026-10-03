@@ -1,0 +1,7 @@
+
+> zuotian-guan-jing-inkbox@1.0.0 build
+> node scripts/inkbox-package.mjs
+
+Inkbox package built · v1.0.0 · 203 files
+dist/zuotian-guan-jing-inkbox-1.0.0
+dist/zuotian-guan-jing-inkbox-1.0.0.zip

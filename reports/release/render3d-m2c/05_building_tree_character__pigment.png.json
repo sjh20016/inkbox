@@ -1,0 +1,169 @@
+{
+  "seed": 20260928,
+  "worldGenVersion": "unversioned-source; see commit/source hash",
+  "mapSize": [
+    288,
+    180
+  ],
+  "worldDay": 1800,
+  "viewRealm": "mortal",
+  "scenario": "DENSITY_A",
+  "preset": "medium",
+  "days": 1800,
+  "rngRecipe": {
+    "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+    "life": "newWorld seed ^ 0xa5a5a5a5",
+    "advanceState": "fresh createAdvanceState()",
+    "stepDays": 1
+  },
+  "coverage": {
+    "entities": 146,
+    "cultivators": 17,
+    "villages": 7,
+    "houses": 133
+  },
+  "snapshotDigest": {
+    "algorithm": "SHA-256",
+    "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+    "bytes": 33113475,
+    "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+  },
+  "cameraRecipe": "SETTLEMENT",
+  "recipe": {
+    "target": "settlement",
+    "polar": 0.65,
+    "yaw": 1.77,
+    "zoom": 9,
+    "poi": {
+      "x": 144.10075406636668,
+      "y": 41.39355558610883,
+      "source": "visible-house-cultivator-pair",
+      "entityId": 13,
+      "id": 3,
+      "house": {
+        "x": 146,
+        "y": 38,
+        "type": 1
+      },
+      "houses": 19,
+      "distance": 7.777751508613063
+    }
+  },
+  "poi": {
+    "x": 144.10075406636668,
+    "y": 41.39355558610883,
+    "source": "visible-house-cultivator-pair",
+    "entityId": 13,
+    "id": 3,
+    "house": {
+      "x": 146,
+      "y": 38,
+      "type": 1
+    },
+    "houses": 19,
+    "distance": 7.777751508613063
+  },
+  "position": [
+    367.92166505664864,
+    506.1964697591348,
+    -122.26160139569656
+  ],
+  "target": [
+    0.6007540663666759,
+    13.261381697559425,
+    -48.10644441389117
+  ],
+  "zoom": 9,
+  "visibilityProof": {
+    "entityId": 13,
+    "kind": "cultivator",
+    "projected": {
+      "x": 490.48176445842694,
+      "y": 259.6421904265692,
+      "inFrame": true
+    },
+    "pickedEntityId": 13,
+    "pickedPlane": "mortal",
+    "frontmostEntityId": 13,
+    "bodyPoints": [
+      {
+        "lift": 0.25,
+        "pixel": {
+          "x": 490.48176445842694,
+          "y": 272.5683410144099,
+          "inFrame": true
+        },
+        "visible": true
+      },
+      {
+        "lift": 0.8,
+        "pixel": {
+          "x": 490.48176445842694,
+          "y": 266.6438553283162,
+          "inFrame": true
+        },
+        "visible": true
+      },
+      {
+        "lift": 1.45,
+        "pixel": {
+          "x": 490.48176445842694,
+          "y": 259.6421904265692,
+          "inFrame": true
+        },
+        "visible": true
+      },
+      {
+        "lift": 1.95,
+        "pixel": {
+          "x": 490.48176445842694,
+          "y": 254.25629434830222,
+          "inFrame": true
+        },
+        "visible": true
+      },
+      {
+        "lift": 2.65,
+        "pixel": {
+          "x": 490.48176445842694,
+          "y": 246.71603983872845,
+          "inFrame": true
+        },
+        "visible": true
+      }
+    ],
+    "visibleBodyPoints": 5,
+    "visible": true,
+    "house": {
+      "x": 585.0335391336484,
+      "y": 481.5833897936184,
+      "inFrame": true,
+      "visible": true,
+      "instanceId": 59
+    },
+    "tree": {
+      "x": 568.2723364026884,
+      "y": 389.4076159492453,
+      "inFrame": true,
+      "visible": true,
+      "instanceId": 1087,
+      "world": [
+        143.06474818662974,
+        40.15419710162096
+      ]
+    }
+  },
+  "artProfile": "pigment",
+  "commit": "c1596291c14f9c23c2af3361186b037699745bc2",
+  "renderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
+  "worldGenSourceHashes": {
+    "src/inkbox/world/worldgen.js": "3ef26d887cb722ecbad77de25ed0befb57603d1a4d8f8919083b34b624fde27a",
+    "src/inkbox/world/worldgenUpper.js": "58f4bf837f6b5ebb316d81db071b17b688aa09a49a03b1131868977d814e9767",
+    "src/inkbox/world/worldgenNether.js": "f08667cc59858010714b9de66386b97c59d431880cc4433afec107ff609e6bf3"
+  },
+  "viewport": [
+    1500,
+    940
+  ],
+  "file": "05_building_tree_character__pigment.png"
+}

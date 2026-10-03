@@ -1,0 +1,24 @@
+
+> zuotian-guan-jing-inkbox@1.0.0 test:render3d
+> node scripts/inkbox-render3d.mjs
+
+PASS small: coordinate round trips, corners, clamp
+PASS small: real heightfield, sea baseline, stable trees
+PASS small: raycast at 4 yaws and 2 pitches
+PASS small: render data purity
+PASS medium: coordinate round trips, corners, clamp
+PASS medium: real heightfield, sea baseline, stable trees
+PASS medium: raycast at 4 yaws and 2 pitches
+PASS medium: render data purity
+PASS large: coordinate round trips, corners, clamp
+PASS large: real heightfield, sea baseline, stable trees
+PASS large: raycast at 4 yaws and 2 pitches
+PASS large: render data purity
+PASS raise: bounded, deterministic, height-only editing
+PASS lower: bounded, deterministic, height-only editing
+PASS flatten: bounded, deterministic, height-only editing
+PASS smooth: bounded, deterministic, height-only editing
+PASS stroke spacing avoids disconnected brush stamps
+PASS dirty update retains geometry and refreshes exact heights
+PASS stationary picking cache invalidates after sculpt and camera movement
+Render3D M0: 19 groups passed

@@ -1,0 +1,11 @@
+PASS ArtPassProfile: known presets are immutable, custom values clamp, and profile resolution is pure
+PASS TerrainDataTextures: deterministic RGBA snapshots use nearest sampling and never write World
+PASS TerrainDataTextures: height/type dirty channels stay independent with r186 RGBA component ranges
+PASS PigmentTerrainMaterial: map size, profile uniforms, opaque output and cached material updates
+PASS TerrainMesh / Host art toggle: original Lambert is restored and repeated toggles reuse cached art resources
+PASS Host art resource lifetime: profile-off retains cache; final dispose releases each material and texture once
+PASS Art-off pauses texture uploads and re-enabling performs one complete resync using the same cache
+PASS Stage integration: view mask and elevation-profile dirty changes synchronize art textures
+PASS 600-day simulation digest stays identical with art disabled, enabled, tuned and repeatedly toggled
+
+9 M2-C invariant groups passed.

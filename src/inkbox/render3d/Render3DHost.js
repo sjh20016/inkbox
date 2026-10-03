@@ -14,6 +14,7 @@ import { RealmBoundaryLayer } from './boundary/RealmBoundaryLayer.js';
 import { BOUNDARY_MODES, RAW_BOUNDARY, boundarySpec, buildRealmBoundaryField } from './boundary/strataProfile.js';
 import { RenderDebug } from './debug/RenderDebug.js';
 import { visibleRift } from './readers/riftViewModel.js';
+import { ArtPass } from './art/ArtPass.js';
 
 /**
  * M2-B B4（§56–§58）：与**当前窗口目标位面**一致的活跃裂缝。
@@ -53,6 +54,7 @@ export class Render3DHost {
     this.boundaryMode = 'raw';
     this.boundaryKey = null;
     this.boundaryField = null;
+    this.art = new ArtPass(this, { profile: options.artProfile || 'baseline' });
     this.setWorld(world);
   }
   setWorld(world) {
@@ -76,8 +78,10 @@ export class Render3DHost {
     this.boundary = new RealmBoundaryLayer({ coordinates: this.coordinates });
     this.scene.add(this.boundary.mesh);
     this.boundaryKey = null; this.boundaryField = null;
+    this.art.setProfile(this.art.profile);
     this.debug.samples = []; this.applyView(); return true;
   }
+  setArtProfile(profile) { return this.art.setProfile(profile); }
   setActivePlane(plane) {
     if (!this.stages.has(plane)) return false;
     this.activePlane = plane; this.setSlabProbe(false); this.applyView(); return true;
@@ -185,7 +189,7 @@ export class Render3DHost {
     }
     this.slabProbe?.update();
     this.profile = totals; this.scanMs = totals.bridgeScanMs; this.updateMs = performance.now() - start;
-    this.cameraRig.update(dt); this.dt = dt;
+    this.cameraRig.update(dt); this.art.update(); this.dt = dt;
   }
   markTerrainDirty(region) { this.stages.get('mortal')?.markTerrainDirty(region); }
   setSelection(x, y, plane = 'mortal') {
@@ -243,7 +247,7 @@ export class Render3DHost {
   dispose() {
     if (this.disposed) return;
     this.disposed = true; this.releaseWorld(); this.draftPath?.dispose(); this.draftPath = null;
-    this.brushOverlay.dispose(); this.cameraRig.dispose(); this.gpu.dispose(); this.scene.clear();
+    this.art.dispose(); this.brushOverlay.dispose(); this.cameraRig.dispose(); this.gpu.dispose(); this.scene.clear();
     this.world = null; this.worldSet = null; this.presentation = null;
   }
   // Compatibility for the existing M1 debug consumers, not layer ownership.

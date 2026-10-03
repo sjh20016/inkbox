@@ -1,4 +1,5 @@
 import { Renderer3D } from './Renderer3D.js';
+import { ArtDebugPanel } from './art/ArtDebugPanel.js';
 import { sculpt, strokeSamples, restoreHeights } from './terrain/sculpt.js';
 import { isViewTool } from '../ui/realmView.js';
 
@@ -36,7 +37,10 @@ export class Render3DAdapter {
     this.canvas.setAttribute('aria-label', '立体山河沙盘'); this.canvas.tabIndex = 0;
     Object.assign(this.canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', touchAction: 'none', zIndex: '1' });
     stage.append(this.canvas);
-    try { this.renderer = new Renderer3D(this.canvas, sandbox.world); }
+    const artParams = new URLSearchParams(globalThis.location?.search || '');
+    const requestedArt = artParams.get('art');
+    const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'pilot';
+    try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile }); }
     catch (error) { this.canvas.remove(); throw error; }
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
     Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
@@ -135,11 +139,12 @@ export class Render3DAdapter {
     sandbox.camera.focusOn = function (...args) { if (adapter.active) return adapter.focusMortal(...args); return adapter.originalFocus.apply(this, args); };
     sandbox.camera.fit = function (...args) { const result = adapter.originalFit.apply(this, args); if (adapter.active) adapter.renderer.cameraRig.fit(); return result; };
     this.addPrototypeControls();
+    if (artParams.get('artdebug') === '1') this.artDebug = new ArtDebugPanel(this.renderer, stage);
     this.setActive(true); this.resize();
   }
   listen(target, name, fn, capture = false) { target.addEventListener(name, fn, { signal: this.abort.signal, capture }); }
   addPrototypeControls() {
-    this.panel.querySelector('b').textContent = '山河沙盘 · M2-B';
+    this.panel.querySelector('b').textContent = '山河沙盘';
     // ⚠️ §54：下面这些是**调试探针**（固定矩形 Mask / Slab / 位面切换），不是玩家功能。
     //    它们被折进一个 details 里与正式工具分开——但**仍留在 DOM 中**，因为
     //    M2-A 的浏览器证据脚本按 `[data-probe]` 与 `[aria-label="调试位面"]` 选取它们。
@@ -184,6 +189,7 @@ export class Render3DAdapter {
   setActive(active) {
     this.endStroke(); this.active = active; this.lastNow = null;
     this.canvas.hidden = !active; this.readout.hidden = !active;
+    if (this.artDebug) this.artDebug.element.hidden = !active;
     this.sandbox.canvas.style.visibility = active ? 'hidden' : '';
     this.panel.querySelector('[data-action="toggle"]').textContent = active ? '切回 Canvas' : '进入 3D';
     for (const element of this.panel.querySelectorAll('select,input,button:not([data-action="toggle"])')) element.disabled = !active;
@@ -308,7 +314,7 @@ export class Render3DAdapter {
     return true;
   }
   dispose() {
-    this.setActive(false); this.abort.abort(); this.resizeObserver.disconnect(); this.renderer.dispose();
+    this.setActive(false); this.artDebug?.dispose(); this.abort.abort(); this.resizeObserver.disconnect(); this.renderer.dispose();
     this.sandbox.camera.focusOn = this.originalFocus; this.sandbox.camera.fit = this.originalFit;
     this.canvas.remove(); this.panel.remove(); this.readout.remove();
   }

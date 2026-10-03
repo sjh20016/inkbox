@@ -68,6 +68,12 @@ jobs:
       - name: Render3D M2-A 多位面架构不变量
         run: npm run test:render3d:m2a
 
+      - name: Render3D M2-B 完整视界与界缘
+        run: npm run test:render3d:m2b
+
+      - name: Render3D M2-C 写意渲染与实体母版
+        run: npm run test:render3d:m2c
+
       - name: 构建发布包（自包含，clone 即可跑）
         run: npm run build
 

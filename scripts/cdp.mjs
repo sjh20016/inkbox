@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import net from 'node:net';
 import os from 'node:os';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 
 const DEFAULT_CANDIDATES = [
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
@@ -32,6 +32,16 @@ export function findBrowser(candidates = DEFAULT_CANDIDATES) {
 }
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Every launch owns an isolated temporary profile. Stop only that process tree.
+// Killing just the Edge leader on Windows can strand renderer/GPU subprocesses.
+function stopOwnedBrowser(child) {
+  if (!child) return;
+  if (process.platform === 'win32' && child.pid && child.exitCode === null) {
+    try { execFileSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true }); } catch { /* already exited */ }
+  }
+  try { child.kill(); } catch { /* already exited */ }
+}
 
 // CDP 的修饰键是位掩码，不是布尔
 export const input = {
@@ -252,8 +262,11 @@ export class Session {
   }
 
   async close() {
+    if (this.cdp.ws.readyState === 1) {
+      try { await this.cdp.send('Browser.close', {}, 2000); } catch { /* fallback below */ }
+    }
     try { this.cdp.ws.close(); } catch { /* ignore */ }
-    try { this.child.kill(); } catch { /* ignore */ }
+    stopOwnedBrowser(this.child);
     await sleep(400);
     try { fs.rmSync(this.userDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
   }
@@ -301,9 +314,10 @@ export async function launch({
     `--user-data-dir=${userDataDir}`,
     `--window-size=${width},${height}`,
     'about:blank',
-  ], { stdio: 'ignore', detached: false });
+  ], { stdio: 'ignore', detached: false, windowsHide: true });
 
   const base = `http://127.0.0.1:${debugPort}`;
+  let cdp = null;
   try {
     if (!(await waitForPort(debugPort, timeoutMs))) throw new Error('调试端口未就绪');
 
@@ -316,7 +330,7 @@ export async function launch({
       ws.addEventListener('error', reject, { once: true });
     });
 
-    const cdp = new Cdp(ws);
+    cdp = new Cdp(ws);
     await cdp.send('Page.enable');
     await cdp.send('Runtime.enable');
     await cdp.send('Log.enable');
@@ -327,7 +341,11 @@ export async function launch({
 
     return new Session(cdp, child, userDataDir, { browser: version.Browser, debugPort, width, height });
   } catch (error) {
-    try { child.kill(); } catch { /* ignore */ }
+    if (cdp?.ws.readyState === 1) {
+      try { await cdp.send('Browser.close', {}, 2000); } catch { /* process fallback below */ }
+      try { cdp.ws.close(); } catch { /* already closed */ }
+    }
+    stopOwnedBrowser(child);
     await sleep(300);
     try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
     throw error;

@@ -31,6 +31,8 @@ import { deriveEntities, sameEntities, ENTITY_CLASSES } from './deriveEntities.j
 import { RegionGeometry } from '../region/RegionGeometry.js';
 import { LIMITS } from '../../core/config.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
+import { createCultivatorPilot } from '../art/PilotAssets.js';
+import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
 
 /**
  * 实例容量。`LIMITS.maxEntities`（3000，凡间生灵上限）+ 余量覆盖 `world.wraiths`
@@ -83,6 +85,11 @@ export class EntityLayer {
 
     this.group = new THREE.Group();
     this.group.name = 'EntityLayer';
+    this.artProfile = null;
+    this.pilotGeometry = null;
+    this.pilotMaterial = null;
+    this.pilotWraithMaterial = null;
+    this.legacyMaterials = {};
     for (const cls of ENTITY_CLASSES) {
       const style = STYLE[cls];
       const material = new THREE.MeshLambertMaterial({ color: '#ffffff', flatShading: true });
@@ -97,8 +104,36 @@ export class EntityLayer {
       mesh.name = `Entity:${cls}`;
       mesh.renderOrder = RENDER_ORDER.entities;
       this.meshes[cls] = mesh;
+      this.legacyMaterials[cls] = material;
       this.group.add(mesh);
     }
+    this.legacyCultivator = { geometry: this.meshes.cultivator.geometry, material: this.meshes.cultivator.material };
+  }
+
+  setArtProfile(profile) {
+    this.artProfile = profile || null;
+    if (profile && !this.pilotGeometry) {
+      this.pilotGeometry = createCultivatorPilot();
+      this.pilotMaterial = createPilotMaterial(profile, 2.9);
+      this.pilotWraithMaterial = createPilotMaterial(profile, 2.2, { opacity: STYLE.wraith.opacity });
+    }
+    if (profile) {
+      updatePilotMaterial(this.pilotMaterial, profile);
+      updatePilotMaterial(this.pilotWraithMaterial, profile);
+    }
+    const mesh = this.meshes.cultivator;
+    mesh.geometry = profile ? this.pilotGeometry : this.legacyCultivator.geometry;
+    for (const cls of ENTITY_CLASSES) {
+      this.meshes[cls].material = profile
+        ? (cls === 'wraith' ? this.pilotWraithMaterial : this.pilotMaterial)
+        : this.legacyMaterials[cls];
+    }
+    mesh.boundingBox = null; mesh.boundingSphere = null;
+  }
+
+  setArtView(view) {
+    if (this.pilotMaterial) setPilotView(this.pilotMaterial, view);
+    if (this.pilotWraithMaterial) setPilotView(this.pilotWraithMaterial, view);
   }
 
   /**
@@ -181,6 +216,10 @@ export class EntityLayer {
   }
 
   dispose() {
+    this.setArtProfile(null);
+    this.pilotGeometry?.dispose();
+    this.pilotMaterial?.dispose();
+    this.pilotWraithMaterial?.dispose();
     for (const cls of ENTITY_CLASSES) {
       const mesh = this.meshes[cls];
       mesh.geometry.dispose();

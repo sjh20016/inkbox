@@ -28,6 +28,8 @@ import * as THREE from 'three';
 import { ElevationField } from '../terrain/ElevationField.js';
 import { STRUCT, INK } from '../../core/config.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
+import { createBuildingBodyPilot, createBuildingRoofPilot } from '../art/PilotAssets.js';
+import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
 
 /** 建筑实例容量：`maxVillages`(220) × 每村最多 19 屋 + 中心建筑 + 宗门（max 10）。 */
 const CAPACITY = 4608;
@@ -136,7 +138,26 @@ export class SettlementLayer {
     this.group.name = 'SettlementLayer';
     this.bodies = this.makeMesh(this.bodyGeometry, 'Settlement:body');
     this.roofs = this.makeMesh(this.roofGeometry, 'Settlement:roof');
+    this.artProfile = null;
+    this.pilotBody = null; this.pilotRoof = null; this.pilotMaterial = null;
+    this.legacyMaterials = [this.bodies.material, this.roofs.material];
   }
+
+  setArtProfile(profile) {
+    this.artProfile = profile || null;
+    if (profile && !this.pilotBody) {
+      this.pilotBody = createBuildingBodyPilot(); this.pilotRoof = createBuildingRoofPilot();
+      this.pilotMaterial = createPilotMaterial(profile, 1);
+    }
+    if (profile) updatePilotMaterial(this.pilotMaterial, profile);
+    this.bodies.geometry = profile ? this.pilotBody : this.bodyGeometry;
+    this.roofs.geometry = profile ? this.pilotRoof : this.roofGeometry;
+    this.bodies.material = profile ? this.pilotMaterial : this.legacyMaterials[0];
+    this.roofs.material = profile ? this.pilotMaterial : this.legacyMaterials[1];
+    for (const mesh of [this.bodies, this.roofs]) { mesh.boundingBox = null; mesh.boundingSphere = null; }
+  }
+
+  setArtView(view) { if (this.pilotMaterial) setPilotView(this.pilotMaterial, view); }
 
   makeMesh(geometry, name) {
     const material = new THREE.MeshLambertMaterial({ color: '#ffffff', flatShading: true });
@@ -221,6 +242,8 @@ export class SettlementLayer {
   }
 
   dispose() {
+    this.setArtProfile(null);
+    this.pilotBody?.dispose(); this.pilotRoof?.dispose(); this.pilotMaterial?.dispose();
     for (const mesh of [this.bodies, this.roofs]) {
       mesh.material.dispose();
       mesh.dispose();

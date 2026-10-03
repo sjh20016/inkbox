@@ -1,0 +1,210 @@
+{
+ "version": 1,
+ "edits": [
+  {
+   "file": "src/inkbox/render3d/terrain/TerrainMesh.js",
+   "old": "export function gridGeometry(world, coordinates) {",
+   "new": "export function gridGeometry(world, coordinates, bounds = { minY: -30, maxY: 120 }) {"
+  },
+  {
+   "file": "src/inkbox/render3d/terrain/TerrainMesh.js",
+   "old": "new THREE.Vector3(-(world.w - 1) / 2, -30, -(world.h - 1) / 2), new THREE.Vector3((world.w - 1) / 2, 120, (world.h - 1) / 2)",
+   "new": "new THREE.Vector3(-(world.w - 1) / 2, bounds.minY, -(world.h - 1) / 2), new THREE.Vector3((world.w - 1) / 2, bounds.maxY, (world.h - 1) / 2)"
+  },
+  {
+   "file": "src/inkbox/render3d/terrain/TerrainMesh.js",
+   "old": "  constructor(world, coordinates) {\n    this.world = world;\n    this.geometry = gridGeometry(world, coordinates);",
+   "new": "  constructor(world, coordinates, options = {}) {\n    this.world = world;\n    // 美术层钩子（缺省 = M2-A 行为）：elevation 提供最终 Y；colorize 提供顶点色。\n    this.elevation = options.elevation || null;\n    this.colorize = null;\n    this.geometry = gridGeometry(world, coordinates, options.bounds);"
+  },
+  {
+   "file": "src/inkbox/render3d/terrain/TerrainMesh.js",
+   "old": "    if (!writeHeight && !writeType) return;\n",
+   "new": "    if (!writeHeight && !writeType) return;\n    // 顶点色依赖坡度（四邻高程差）：只改高度时，外扩一圈重算顶点色。\n    if (this.colorize && writeHeight && !writeType) {\n      this.update({ x0: Math.max(0, region.x0 - 1), y0: Math.max(0, region.y0 - 1), x1: Math.min(this.world.w - 1, region.x1 + 1), y1: Math.min(this.world.h - 1, region.y1 + 1) }, { height: false, type: true });\n    }\n"
+  },
+  {
+   "file": "src/inkbox/render3d/terrain/TerrainMesh.js",
+   "old": "        if (writeHeight) position.setY(i, visualElevation(w.height[i]));\n        if (writeType) { const c = this.palette[w.type[i]] || this.palette[5]; color.setXYZ(i, c.r, c.g, c.b); }",
+   "new": "        if (writeHeight) position.setY(i, this.elevation ? this.elevation.nodeY(i) : visualElevation(w.height[i]));\n        if (writeType) { const c = this.colorize ? this.colorize(w, i) : (this.palette[w.type[i]] || this.palette[5]); color.setXYZ(i, c.r, c.g, c.b); }"
+  },
+  {
+   "file": "src/inkbox/render3d/terrain/TerrainMesh.js",
+   "old": "  dispose() { this.geometry.dispose(); this.material.dispose(); }",
+   "new": "  /** 换材质（美术层用）：释放旧材质，mesh 立即指向新材质。 */\n  setMaterial(material) { this.material.dispose(); this.material = material; this.mesh.material = material; }\n  dispose() { this.geometry.dispose(); this.material.dispose(); }"
+  },
+  {
+   "file": "src/inkbox/render3d/entities/EntityLayer.js",
+   "old": "  constructor(world, coordinates, { derive = deriveEntities } = {}) {\n    this.coordinates = coordinates;",
+   "new": "  constructor(world, coordinates, { derive = deriveEntities, elevAt = null } = {}) {\n    this.coordinates = coordinates;\n    this.elevAt = elevAt;            // 缺省 = 全局 surfaceElevation（M2-A 行为）"
+  },
+  {
+   "file": "src/inkbox/render3d/entities/EntityLayer.js",
+   "old": "    const byClass = {};\n    for (const cls of ENTITY_CLASSES) {\n      const mesh = this.meshes[cls];\n      const list = this.regionMask",
+   "new": "    const byClass = {};\n    const elevAt = this.elevAt || ((x, y) => surfaceElevation(world, x, y));\n    for (const cls of ENTITY_CLASSES) {\n      const mesh = this.meshes[cls];\n      const list = this.regionMask"
+  },
+  {
+   "file": "src/inkbox/render3d/entities/EntityLayer.js",
+   "old": "this.dummy.position.set(p.x, surfaceElevation(world, item.x, item.y) + item.lift, p.z);",
+   "new": "this.dummy.position.set(p.x, elevAt(item.x, item.y) + item.lift, p.z);"
+  },
+  {
+   "file": "src/inkbox/render3d/view/ThreeFxProbe.js",
+   "old": "  constructor({ plane, coordinates }) {\n    this.plane = plane;",
+   "new": "  constructor({ plane, coordinates, elevAt = null }) {\n    this.plane = plane;\n    this.elevAt = elevAt;"
+  },
+  {
+   "file": "src/inkbox/render3d/view/ThreeFxProbe.js",
+   "old": "        surfaceElevation(world, item.x, item.y) + 0.2);",
+   "new": "        (this.elevAt ? this.elevAt(item.x, item.y) : surfaceElevation(world, item.x, item.y)) + 0.2);"
+  },
+  {
+   "file": "src/inkbox/render3d/water/WaterLayer.js",
+   "old": "import { RENDER_ORDER } from '../shared/RenderOrder.js';",
+   "new": "import { RENDER_ORDER } from '../shared/RenderOrder.js';\nimport { applyQuadMask } from '../art/RegionMask3D.js';"
+  },
+  {
+   "file": "src/inkbox/render3d/water/WaterLayer.js",
+   "old": "    this.mesh.renderOrder = RENDER_ORDER.water;\n",
+   "new": "    this.mesh.renderOrder = RENDER_ORDER.water;\n    this.fullIndices = this.geometry.index.array.slice();\n    this.geometry.index.setUsage(THREE.DynamicDrawUsage);\n    this.artMask = null; this.artKeep = false;\n"
+  },
+  {
+   "file": "src/inkbox/render3d/water/WaterLayer.js",
+   "old": "  dispose() { this.geometry.dispose(); this.material.dispose(); }",
+   "new": "  /** 美术层：按 RegionMask3D 表保留窗内 / 窗外的 quad。mask = null 还原全图。 */\n  setArtMask(mask, keepInside) {\n    if (this.artMask === mask && this.artKeep === !!keepInside) return;\n    this.artMask = mask; this.artKeep = !!keepInside;\n    applyQuadMask(this.geometry, this.fullIndices, mask, this.artKeep);\n  }\n  dispose() { this.geometry.dispose(); this.material.dispose(); }"
+  },
+  {
+   "file": "src/inkbox/render3d/vegetation/VegetationLayer.js",
+   "old": "    this.world = world; this.coordinates = coordinates;\n    this.texture = pixelTree();",
+   "new": "    this.world = world; this.coordinates = coordinates;\n    this.artMask = null; this.artKeep = false;\n    this.texture = pixelTree();"
+  },
+  {
+   "file": "src/inkbox/render3d/vegetation/VegetationLayer.js",
+   "old": "    this.trees = deriveVegetation(this.world);\n",
+   "new": "    this.trees = deriveVegetation(this.world);\n    if (this.artMask) this.trees = this.trees.filter(t => this.artMask.cellInside(Math.floor(t.x), Math.floor(t.y)) === this.artKeep);\n"
+  },
+  {
+   "file": "src/inkbox/render3d/vegetation/VegetationLayer.js",
+   "old": "  dispose() { this.mesh.dispose();",
+   "new": "  /** 美术层：窗开着时只保留窗外（keepInside=false）的树。 */\n  setArtMask(mask, keepInside) {\n    if (this.artMask === mask && this.artKeep === !!keepInside) return;\n    this.artMask = mask; this.artKeep = !!keepInside; this.update();\n  }\n  dispose() { this.mesh.dispose();"
+  },
+  {
+   "file": "src/inkbox/render3d/settlements/SettlementLayer.js",
+   "old": "    const derived = deriveSettlements(world);\n    if (!force && sameSettlements(derived, this.lastDerived)) return false;",
+   "new": "    let derived = deriveSettlements(world);\n    if (this.artMask) derived = { ...derived, buildings: derived.buildings.filter(b => this.artMask.cellInside(Math.floor(b.x), Math.floor(b.y)) === this.artKeep) };\n    if (!force && sameSettlements(derived, this.lastDerived)) return false;"
+  },
+  {
+   "file": "src/inkbox/render3d/settlements/SettlementLayer.js",
+   "old": "    this.coordinates = coordinates;\n    this.interval = 1 / 4;",
+   "new": "    this.coordinates = coordinates;\n    this.artMask = null; this.artKeep = false;\n    this.interval = 1 / 4;"
+  },
+  {
+   "file": "src/inkbox/render3d/settlements/SettlementLayer.js",
+   "old": "  colorOf(hex) {\n    let color = this.colorCache.get(hex);",
+   "new": "  /** 美术层：窗开着时只保留窗外的建筑。 */\n  setArtMask(mask, keepInside) {\n    if (this.artMask === mask && this.artKeep === !!keepInside) return;\n    this.artMask = mask; this.artKeep = !!keepInside;\n    this.lastDerived = null; this.clock = Infinity;\n  }\n\n  colorOf(hex) {\n    let color = this.colorCache.get(hex);"
+  },
+  {
+   "file": "src/inkbox/render3d/stage/PlaneStage.js",
+   "old": "import { renderProfileFor } from './PlaneRenderProfile.js';",
+   "new": "import { renderProfileFor } from './PlaneRenderProfile.js';\nimport { surfaceElevation } from '../terrain/VisualElevation.js';"
+  },
+  {
+   "file": "src/inkbox/render3d/stage/PlaneStage.js",
+   "old": "  constructor({ plane, world, profile = renderProfileFor(plane), coordinates } = {}) {\n    if (!world) throw new Error(`PlaneStage ${plane}: world is required`);\n    this.plane = plane;",
+   "new": "  constructor({ plane, world, profile = renderProfileFor(plane), coordinates, art = null } = {}) {\n    if (!world) throw new Error(`PlaneStage ${plane}: world is required`);\n    this.plane = plane;\n    this.art = art;                       // ArtPass | null：null = 与 M2-A 逐位一致"
+  },
+  {
+   "file": "src/inkbox/render3d/stage/PlaneStage.js",
+   "old": "    const p = this.profile;\n    this.terrain = p.terrain ? new TerrainMesh(world, this.coordinates) : null;",
+   "new": "    const p = this.profile;\n    // 本界高程口径：美术层启用 ⇒ ElevationField（垂直档 + 肩部）；否则全局 surfaceElevation。\n    this.elevation = this.art ? this.art.elevationFor(this.plane, world) : null;\n    this.elevAt = this.elevation ? (x, y) => this.elevation.at(x, y) : (x, y) => surfaceElevation(this.world, x, y);\n    this.terrain = p.terrain ? new TerrainMesh(world, this.coordinates, this.elevation ? { elevation: this.elevation, bounds: { minY: -90, maxY: 160 } } : {}) : null;"
+  },
+  {
+   "file": "src/inkbox/render3d/stage/PlaneStage.js",
+   "old": "{ derive: p.entities }) : null;",
+   "new": "{ derive: p.entities, elevAt: this.elevation ? this.elevAt : null }) : null;"
+  },
+  {
+   "file": "src/inkbox/render3d/stage/PlaneStage.js",
+   "old": "    this.regionInside = true;\n    this.timings = {};\n    this.root.visible = this.visible;\n  }",
+   "new": "    this.regionInside = true;\n    this.timings = {};\n    this.root.visible = this.visible;\n    this.art?.styleStage(this);\n  }"
+  },
+  {
+   "file": "src/inkbox/render3d/stage/PlaneStage.js",
+   "old": "  markTerrainDirty(region) {",
+   "new": "  /** 美术层：窗外凡间的水 / 植被 / 聚落按同一张掩码表过滤。 */\n  setArtMask(mask, keepInside = false) {\n    this.water?.setArtMask(mask, keepInside);\n    this.vegetation?.setArtMask(mask, keepInside);\n    this.settlements?.setArtMask(mask, keepInside);\n  }\n\n  markTerrainDirty(region) {"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DHost.js",
+   "old": "import { RenderDebug } from './debug/RenderDebug.js';",
+   "new": "import { RenderDebug } from './debug/RenderDebug.js';\nimport { ArtPass } from './art/ArtPass.js';\nimport { artRequested } from './art/artConfig.js';"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DHost.js",
+   "old": "    this.realmViewState = { open: false, targetPlane: null, region: null };\n    this.setWorld(world);",
+   "new": "    this.realmViewState = { open: false, targetPlane: null, region: null };\n    // 墨界美术层：?art=ink 或 options.art 启用；关闭时与 M2-A 逐位一致。\n    this.art = new ArtPass(this, { enabled: options.art ?? artRequested() });\n    this.setWorld(world);"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DHost.js",
+   "old": "const stage = new PlaneStage({ plane, world: entry.world, profile: PLANE_RENDER_PROFILE[plane], coordinates: this.coordinates });\n        this.stages.set(plane, stage); this.scene.add(stage.root);\n        stage.fxProbe = new ThreeFxProbe({ plane, coordinates: this.coordinates });",
+   "new": "const stage = new PlaneStage({ plane, world: entry.world, profile: PLANE_RENDER_PROFILE[plane], coordinates: this.coordinates, art: this.art.enabled ? this.art : null });\n        this.stages.set(plane, stage); this.scene.add(stage.root);\n        stage.fxProbe = new ThreeFxProbe({ plane, coordinates: this.coordinates, elevAt: stage.elevation ? stage.elevAt : null });"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DHost.js",
+   "old": "    } catch (error) { this.releaseWorld(); this.worldSet = null; throw error; }\n    if (!this.stages.has(this.activePlane)) this.activePlane = 'mortal';",
+   "new": "      this.art.attach();\n    } catch (error) { this.releaseWorld(); this.worldSet = null; throw error; }\n    if (!this.stages.has(this.activePlane)) this.activePlane = 'mortal';"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DHost.js",
+   "old": "  setActivePlane(plane) {",
+   "new": "  /** 运行时开 / 关墨界美术层：重建 Stage 集合（GPU 与相机保留）。 */\n  setArt(enabled) {\n    enabled = !!enabled;\n    if (this.art.enabled === enabled) return false;\n    this.art.detach(); this.art.enabled = enabled;\n    const world = this.world; this.worldSet = null; this.setWorld(world);\n    return true;\n  }\n  setActivePlane(plane) {"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DHost.js",
+   "old": "    this.realmPrototype.apply(this.realmViewState, this.activePlane);\n  }",
+   "new": "    this.realmPrototype.apply(this.realmViewState, this.activePlane);\n    this.art.afterApply(this.realmViewState);\n  }"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DHost.js",
+   "old": "    this.slabProbe?.update();\n    this.profile = totals;",
+   "new": "    this.slabProbe?.update();\n    this.art.update();\n    this.profile = totals;"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DHost.js",
+   "old": "this.cameraRig.focusOn(x, y, surfaceElevation(stage.world, x, y), options);",
+   "new": "this.cameraRig.focusOn(x, y, stage.elevAt(x, y), options);"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DHost.js",
+   "old": "  releaseWorld() {\n    this.slabProbe?.dispose();",
+   "new": "  releaseWorld() {\n    this.art?.detach();\n    this.slabProbe?.dispose();"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DHost.js",
+   "old": "this.disposed = true; this.releaseWorld();",
+   "new": "this.disposed = true; this.releaseWorld(); this.art.dispose();"
+  },
+  {
+   "file": "src/inkbox/render3d/Render3DAdapter.js",
+   "old": "    this.panel.append(controls);\n",
+   "new": "    this.panel.append(controls);\n    const artButton = document.createElement('button');\n    const artLabel = () => { artButton.textContent = this.renderer.art.enabled ? '墨界：开' : '墨界：关'; };\n    artLabel(); artButton.title = '墨界美术层（水墨着色 / 界缘墙 / 宣纸）；也可用 URL ?art=ink';\n    artButton.addEventListener('click', () => { this.endStroke(); this.selectedCell = null; this.renderer.setSelection(null, null); this.renderer.setArt(!this.renderer.art.enabled); artLabel(); }, { signal: this.abort.signal });\n    controls.append(artButton);\n"
+  },
+  {
+   "file": "src/inkbox/render3d/SelectionMarker.js",
+   "old": "this.mesh.position.set(p.x, surfaceElevation(world, x, y) + 0.18, p.z);",
+   "new": "this.mesh.position.set(p.x, (this.elevAt ? this.elevAt(x, y) : surfaceElevation(world, x, y)) + 0.18, p.z);"
+  },
+  {
+   "file": "src/inkbox/render3d/stage/PlaneStage.js",
+   "old": "    if (this.selectionMarker) this.root.add(this.selectionMarker.mesh);",
+   "new": "    if (this.selectionMarker) this.root.add(this.selectionMarker.mesh);\n    if (this.selectionMarker && this.elevation) this.selectionMarker.elevAt = this.elevAt;"
+  },
+  {
+   "file": "package.json",
+   "old": "\"test:render3d:m2a\": \"node scripts/inkbox-render3d-m2a.mjs\",",
+   "new": "\"test:render3d:m2a\": \"node scripts/inkbox-render3d-m2a.mjs\",\n    \"test:render3d:art\": \"node scripts/inkbox-render3d-art.mjs\","
+  },
+  {
+   "file": "scripts/inkbox-package.mjs",
+   "old": "const DIRECTORIES = ['src/inkbox', 'vendor/three', '剧情文案素材', 'reports/release/render3d-m2a'];",
+   "new": "const DIRECTORIES = ['src/inkbox', 'vendor/three', '剧情文案素材', 'reports/release/render3d-m2a', 'assets/art'];"
+  }
+ ]
+}
