@@ -1,0 +1,98 @@
+{
+  "phase": "gray",
+  "original_asset": true,
+  "base_object": "cultivator_base",
+  "triangles": 434,
+  "triangle_budget": [
+    250,
+    450
+  ],
+  "budget_pass": true,
+  "parts_triangles": {
+    "short_robe": 44,
+    "belt": 28,
+    "cross_collar_left": 12,
+    "cross_collar_right": 12,
+    "large_head": 96,
+    "hair_cap": 22,
+    "hair_fringe_left": 8,
+    "hair_fringe_right": 8,
+    "topknot": 12,
+    "eyes": 24,
+    "l_upper_sleeve": 20,
+    "l_wide_cuff": 20,
+    "l_block_hand": 12,
+    "l_short_leg": 20,
+    "l_block_shoe": 12,
+    "r_upper_sleeve": 20,
+    "r_wide_cuff": 20,
+    "r_block_hand": 12,
+    "r_short_leg": 20,
+    "r_block_shoe": 12
+  },
+  "bone_count": 16,
+  "bones": [
+    "root",
+    "pelvis",
+    "spine",
+    "head",
+    "l_upperarm",
+    "l_lowerarm",
+    "l_hand",
+    "r_upperarm",
+    "r_lowerarm",
+    "r_hand",
+    "l_upperleg",
+    "l_lowerleg",
+    "l_foot",
+    "r_upperleg",
+    "r_lowerleg",
+    "r_foot"
+  ],
+  "feet_root_z": 0.0,
+  "mesh_min_z": 0.0,
+  "mesh_max_z": 2.2799999713897705,
+  "head_height": 0.9199999999999999,
+  "head_body_ratio": 2.478260838467142,
+  "head_body_ratio_excluding_topknot": 2.3097826086956523,
+  "facing_blender": "-Y",
+  "sockets": {
+    "socket_hair": {
+      "parent_bone": "head",
+      "rest_world_position": [
+        0,
+        0,
+        2.12
+      ]
+    },
+    "socket_back": {
+      "parent_bone": "spine",
+      "rest_world_position": [
+        0,
+        0.27,
+        1.17
+      ]
+    },
+    "socket_waist": {
+      "parent_bone": "pelvis",
+      "rest_world_position": [
+        0.28,
+        0,
+        0.83
+      ]
+    },
+    "socket_weapon": {
+      "parent_bone": "r_hand",
+      "rest_world_position": [
+        0.62,
+        -0.05,
+        0.72
+      ]
+    }
+  },
+  "files": {
+    "blend": "source/cultivator_gray_gate.blend",
+    "blockout": "preview/cultivator_gray_blockout.png",
+    "turnaround": "preview/cultivator_gray_turnaround.png"
+  }
+}

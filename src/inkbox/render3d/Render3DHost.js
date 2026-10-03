@@ -15,6 +15,7 @@ import { BOUNDARY_MODES, RAW_BOUNDARY, boundarySpec, buildRealmBoundaryField } f
 import { RenderDebug } from './debug/RenderDebug.js';
 import { visibleRift } from './readers/riftViewModel.js';
 import { ArtPass } from './art/ArtPass.js';
+import { loadCharacterLibrary } from './characters/CharacterLibrary.js';
 
 /**
  * M2-B B4（§56–§58）：与**当前窗口目标位面**一致的活跃裂缝。
@@ -55,7 +56,26 @@ export class Render3DHost {
     this.boundaryKey = null;
     this.boundaryField = null;
     this.art = new ArtPass(this, { profile: options.artProfile || 'baseline' });
+    this.lodEnabled = !!options.lodEnabled;
+    this.characterLibrary = options.characterLibrary || null;
+    this.ownsCharacterLibrary = !options.characterLibrary;
+
     this.setWorld(world);
+    const load = options.loadCharacterLibrary || (typeof window !== 'undefined' && options.characters !== false
+      ? loadCharacterLibrary : null);
+    if (!this.characterLibrary && load) {
+      this.characterLoadPromise = Promise.resolve().then(() => load()).then(library => {
+        if (this.disposed) { library.dispose(); return; }
+        this.characterLibrary = library;
+        for (const stage of this.stages.values()) {
+          stage.characterLibrary = library;
+          stage.entities?.setCharacterLibrary(library);
+        }
+      }).catch(error => {
+        this.characterLoadError = error;
+        if (!this.disposed) console.error('Cultivator character library failed to load', error);
+      });
+    }
   }
   setWorld(world) {
     const next = snapshotWorldSet(world);
@@ -67,7 +87,8 @@ export class Render3DHost {
       next.forEach((entry, i) => {
         if (!entry) return;
         const plane = PLANES[i];
-        const stage = new PlaneStage({ plane, world: entry.world, profile: PLANE_RENDER_PROFILE[plane], coordinates: this.coordinates });
+        const stage = new PlaneStage({ plane, world: entry.world, profile: PLANE_RENDER_PROFILE[plane],
+          coordinates: this.coordinates, characterLibrary: this.characterLibrary });
         this.stages.set(plane, stage); this.scene.add(stage.root);
         stage.fxProbe = new ThreeFxProbe({ plane, coordinates: this.coordinates, elevation: stage.elevation });
         stage.root.add(stage.fxProbe.root);
@@ -79,9 +100,34 @@ export class Render3DHost {
     this.scene.add(this.boundary.mesh);
     this.boundaryKey = null; this.boundaryField = null;
     this.art.setProfile(this.art.profile);
+    this.setLODEnabled(this.lodEnabled);
     this.debug.samples = []; this.applyView(); return true;
   }
   setArtProfile(profile) { return this.art.setProfile(profile); }
+  setLODEnabled(enabled) {
+    this.lodEnabled = !!enabled;
+    for (const stage of this.stages.values()) {
+      for (const layer of [stage.vegetation, stage.entities, stage.settlements]) layer?.setLODEnabled?.(this.lodEnabled);
+    }
+    this.art.update();
+    return this.lodEnabled;
+  }
+  getLODStats() {
+    const result = {};
+    for (const [name, key] of [['tree', 'vegetation'], ['character', 'entities'], ['building', 'settlements']]) {
+      const totals = { lod: [0, 0, 0], triangles: 0, instances: 0, overflow: 0, capacity: 0, hlod: 0 };
+      for (const stage of this.stages.values()) {
+        if (!stage.visible) continue;
+        const stats = stage[key]?.stats;
+        if (!stats) continue;
+        for (let level = 0; level < 3; level++) totals.lod[level] += stats.lod?.[level] || 0;
+        for (const field of ['triangles', 'overflow', 'capacity', 'hlod']) totals[field] += stats[field] || 0;
+        totals.instances += stats.instances ?? stats.buildings ?? 0;
+      }
+      result[name] = totals;
+    }
+    return result;
+  }
   setActivePlane(plane) {
     if (!this.stages.has(plane)) return false;
     this.activePlane = plane; this.setSlabProbe(false); this.applyView(); return true;
@@ -188,8 +234,10 @@ export class Render3DHost {
       }
     }
     this.slabProbe?.update();
+    this.cameraRig.update(dt);
+    const lodStart = performance.now(); this.art.update(); totals.lodUpdateMs = performance.now() - lodStart;
     this.profile = totals; this.scanMs = totals.bridgeScanMs; this.updateMs = performance.now() - start;
-    this.cameraRig.update(dt); this.art.update(); this.dt = dt;
+    this.dt = dt;
   }
   markTerrainDirty(region) { this.stages.get('mortal')?.markTerrainDirty(region); }
   setSelection(x, y, plane = 'mortal') {
@@ -226,7 +274,7 @@ export class Render3DHost {
     const sum = fn => visible.reduce((n, stage) => n + (fn(stage) || 0), 0);
     return this.debug.record(this.dt, this.gpu, {
       renderMs: performance.now() - start, terrainVertices: sum(s => s.world.size),
-      treeInstances: sum(s => s.vegetation?.mesh.visible ? s.vegetation.trees.length : 0), entityInstances: sum(s => s.entities?.stats.instances),
+      treeInstances: sum(s => s.vegetation?.stats.trees), entityInstances: sum(s => s.entities?.stats.instances),
       houseInstances: sum(s => s.settlements?.group.visible ? s.settlements.stats.buildings : 0), markerInstances: sum(s => s.markers?.group.visible ? s.markers.stats.total : 0),
       raycastMs: this.picker.timeMs, lastRaycastMs: this.picker.lastRaycastMs,
       scanMs: this.scanMs || 0, layerUpdateMs: this.updateMs || 0, ...this.profile,
@@ -235,6 +283,7 @@ export class Render3DHost {
       boundaryMode: this.boundaryMode, boundaryEdges: this.boundary?.stats.edges || 0,
       boundaryTriangles: this.boundary?.stats.triangles || 0, boundaryVisible: !!this.boundary?.mesh.visible,
       boundaryRawGapMax: this.boundary?.stats.rawGapMax || 0, boundaryVisualDepthMax: this.boundary?.stats.visualDepthMax || 0,
+      lodEnabled: this.lodEnabled, lod: this.getLODStats(),
     });
   }
   resize(width, height) { this.width = width; this.height = height; this.gpu.setSize(width, height, false); this.cameraRig.resize(width, height); }
@@ -248,6 +297,9 @@ export class Render3DHost {
     if (this.disposed) return;
     this.disposed = true; this.releaseWorld(); this.draftPath?.dispose(); this.draftPath = null;
     this.art.dispose(); this.brushOverlay.dispose(); this.cameraRig.dispose(); this.gpu.dispose(); this.scene.clear();
+    if (this.ownsCharacterLibrary) this.characterLibrary?.dispose();
+    this.characterLibrary = null;
+
     this.world = null; this.worldSet = null; this.presentation = null;
   }
   // Compatibility for the existing M1 debug consumers, not layer ownership.

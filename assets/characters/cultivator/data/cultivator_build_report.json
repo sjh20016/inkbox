@@ -1,0 +1,26 @@
+{
+  "phase": "full",
+  "role_triangles": {
+    "basic": 434,
+    "sect_disciple": 494,
+    "wanderer": 562,
+    "elder": 482,
+    "ghost": 550,
+    "alchemist": 466
+  },
+  "base_budget_including_hair": 434,
+  "shared_armature_count": 1,
+  "linked_role_previews": 6,
+  "linked_scale_counts": [
+    6,
+    20,
+    50
+  ],
+  "runtime_glb_has_preview_duplicates": false,
+  "files": {
+    "master": "source/cultivator_master.blend",
+    "family": "preview/cultivator_family_six.png",
+    "modules": "preview/cultivator_modules.png",
+    "turnaround": "preview/cultivator_color_turnaround.png"
+  }
+}

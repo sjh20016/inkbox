@@ -43,6 +43,9 @@ const REQUIRED = [
   'build/three.module.js',
   'build/three.core.js',
   'examples/jsm/controls/OrbitControls.js',
+  'examples/jsm/loaders/GLTFLoader.js',
+  'examples/jsm/utils/BufferGeometryUtils.js',
+  'examples/jsm/utils/SkeletonUtils.js',
 ];
 
 console.log('══════════════════════════════════════════════════════════════');
@@ -50,7 +53,7 @@ console.log('inkbox vendor/three 体检（M1.1D D6.6）');
 console.log('══════════════════════════════════════════════════════════════');
 
 section('G1 · 文件齐全（少一个 = 线上白屏）');
-check('D6.1 的五个文件全部存在且非空', () => {
+check('Three 核心、控制器和 GLB 加载依赖全部存在且非空', () => {
   for (const relative of REQUIRED) {
     const file = path.join(VENDOR, relative);
     assert(fs.existsSync(file), `缺 ${rel(file)}`);

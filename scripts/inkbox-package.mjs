@@ -43,6 +43,7 @@ const FILES = [
   'package.json',
   'package-lock.json',
   'inkbox.html',
+  'cultivator-lab.html',
   'index.html',
   'game.html',
   '启动游戏.bat',
@@ -91,6 +92,15 @@ const FILES = [
   'scripts/inkbox-render3d-pilots.mjs',
   'scripts/inkbox-render3d-m2c-browser.mjs',
   'scripts/inkbox-render3d-m2c-soak.mjs',
+  'scripts/inkbox-render3d-m2c2a.mjs',
+  'scripts/inkbox-render3d-m2c2a-audit.mjs',
+  'scripts/inkbox-render3d-m2c2a-browser.mjs',
+  'scripts/inkbox-render3d-m2c2a-soak.mjs',
+  'M2C2A_BASELINE.md',
+  'M2C2A_LOD_REPORT.md',
+  'M2C2A_PERFORMANCE_REPORT.md',
+  'M2C2A_VISUAL_ACCEPTANCE.md',
+  '《坐天观井 Inkbox · M2-C2A 实体 LODHLOD 与密度预算封板》.md',
   'scripts/inkbox-m2c-image-metrics.py',
   'M2C_EXPRESSIVE_INK_REPORT.md',
   'BASELINE_TEST_COUNTS.md',
@@ -107,6 +117,10 @@ const FILES = [
   // vendor 目录的生成器与体检（M1.1D D6）。
   'scripts/inkbox-vendor.mjs',
   'scripts/inkbox-vendor-check.mjs',
+  'scripts/build-cultivator-assets.py',
+  'scripts/character-blender-runtime.mjs',
+  'scripts/inkbox-characters-check.mjs',
+  'scripts/inkbox-characters-browser.mjs',
   'RENDER3D_M0.md',
   'Render3D M1 工程报告.md',
   // M1.1D 的委托书与工程报告：接手的人要能看到「这一阶段到底做了什么、为什么」。
@@ -139,7 +153,7 @@ const FILES = [
 //    `HANDOFF.md` §4 列为**有约束力**的文档（UI 禁令 / 考古定名不得擅改 / 机制缺口→停走设计流程），
 //    且 `core/lore.js`、`sim/reincarnation.js`、`world/World.js`、`scripts/inkbox-smoke.mjs`
 //    共 5 处注释引用它的行号作为**定名出处** ⇒ 不入包则接手者读不到规则、代码注释悬空。
-const DIRECTORIES = ['src/inkbox', 'vendor/three', '剧情文案素材', 'reports/release/render3d-m2a', 'reports/release/render3d-m2c'];
+const DIRECTORIES = ['src/inkbox', 'vendor/three', '剧情文案素材', 'reports/release/render3d-m2a', 'reports/release/render3d-m2c', 'reports/release/render3d-m2c2a', 'assets/characters/cultivator'];
 
 function copyRelative(relative) {
   const from = path.join(ROOT, relative);

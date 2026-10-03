@@ -7,6 +7,8 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:characters": "node scripts/inkbox-characters-check.mjs",
+    "test:characters:browser": "node scripts/inkbox-characters-browser.mjs",
     "test:render3d": "node scripts/inkbox-render3d.mjs",
     "test:render3d:m1": "node scripts/inkbox-render3d-m1.mjs",
     "test:render3d:bridge": "node scripts/inkbox-render3d-bridge.mjs",
@@ -44,7 +46,10 @@
     "inkbox:view": "node scripts/inkbox-view.mjs",
     "inkbox:longrun": "node scripts/inkbox-longrun.mjs",
     "inkbox:play": "node scripts/inkbox-playtest.mjs",
-    "inkbox:package": "node scripts/inkbox-package.mjs"
+    "inkbox:package": "node scripts/inkbox-package.mjs",
+    "test:render3d:m2c2a": "node scripts/inkbox-render3d-m2c2a.mjs",
+    "test:render3d:m2c2a:browser": "node scripts/inkbox-render3d-m2c2a-browser.mjs",
+    "test:render3d:m2c2a:soak": "node scripts/inkbox-render3d-m2c2a-soak.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

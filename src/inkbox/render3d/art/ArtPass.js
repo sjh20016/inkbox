@@ -43,9 +43,15 @@ export class ArtPass {
   update() {
     const rig = this.host.cameraRig, camera = rig.camera;
     const pixelsPerUnit = (this.host.height || 800) * camera.zoom / Math.max(1, camera.top - camera.bottom);
+    camera.updateMatrixWorld();
+    const inverse = camera.matrixWorldInverse.elements;
+    const view = { pixelsPerUnit: Number.isFinite(pixelsPerUnit) ? pixelsPerUnit : 1,
+      verticalPixelsPerUnit: Number.isFinite(pixelsPerUnit) ? pixelsPerUnit * Math.hypot(inverse[4], inverse[5]) : 1,
+      camera, width: this.host.width || 900, height: this.host.height || 800 };
     for (const stage of this.host.stages.values()) {
-      if (stage.terrain?.inkMaterial) stage.terrain.inkMaterial.uniforms.pixelsPerUnit.value = pixelsPerUnit;
-      for (const layer of [stage.entities, stage.vegetation, stage.settlements]) layer?.setArtView({ pixelsPerUnit });
+      if (!stage.visible) continue;
+      if (stage.terrain?.inkMaterial) stage.terrain.inkMaterial.uniforms.pixelsPerUnit.value = view.pixelsPerUnit;
+      for (const layer of [stage.entities, stage.vegetation, stage.settlements]) layer?.setArtView(view);
     }
   }
   dispose() { this.saved = new WeakMap(); this.host = null; }

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// CI glue only: keep the HTTP server alive while both existing browser suites run.
+// CI glue only: keep the HTTP server alive while browser suites run in sequence.
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -69,7 +69,12 @@ try {
   const env = { INKBOX_URL: url, INKBOX_REPORT_DIR: path.join(output, 'render3d-m2a') };
   if (await runSuite('canvas', 'scripts/inkbox-playtest.mjs', ['--shots=reports/ci/canvas', `--url=${url}`], env) !== 0) await diagnose('canvas');
   if (await runSuite('m2a', 'scripts/inkbox-render3d-m2a-browser.mjs', [], env) !== 0) await diagnose('m2a');
-  report.status = report.suites.length === 2 && report.suites.every(suite => suite.exitCode === 0) ? 'passed' : 'failed';
+  for (const name of ['m2b', 'm2c', 'm2c2a']) {
+    const suiteEnv = { ...env, INKBOX_REPORT_DIR: path.join(output, `render3d-${name}`),
+      INKBOX_RELEASE_DIR: path.join(output, `render3d-${name}`, 'representative') };
+    if (await runSuite(name, `scripts/inkbox-render3d-${name}-browser.mjs`, [], suiteEnv) !== 0) await diagnose(name);
+  }
+  report.status = report.suites.length === 5 && report.suites.every(suite => suite.exitCode === 0) ? 'passed' : 'failed';
 } catch (error) {
   report.status = 'failed'; report.error = String(error); console.error(error);
 } finally {

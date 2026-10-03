@@ -2148,10 +2148,14 @@ async function main() {
     const dragTo = { x: left + width * 0.62, y: top + height * 0.62 };
     await mouseMove(cdp, dragFrom.x, dragFrom.y);
     await mouseDown(cdp, dragFrom.x, dragFrom.y);
-    await mouseMove(cdp, (dragFrom.x + dragTo.x) / 2, (dragFrom.y + dragTo.y) / 2);
+    // The current player gesture is a lasso. A diagonal with a midpoint is
+    // collinear and must be rejected; trace all corners through real events.
+    await mouseMove(cdp, dragTo.x, dragFrom.y);
     await mouseMove(cdp, dragTo.x, dragTo.y);
+    await mouseMove(cdp, dragFrom.x, dragTo.y);
+    await mouseMove(cdp, dragFrom.x, dragFrom.y);
     await sleep(80);
-    await mouseUp(cdp, dragTo.x, dragTo.y);
+    await mouseUp(cdp, dragFrom.x, dragFrom.y);
     await sleep(300);
 
     // ①-3 便宜的状态断言：selection 非 null 且四角在世界内

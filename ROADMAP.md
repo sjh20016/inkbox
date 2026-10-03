@@ -1,7 +1,7 @@
 # ROADMAP · 坐天观井 Inkbox
 
 > 当前阶段和下一轮方向的唯一短表。接手看 HANDOFF，目录 / 模块看 ARCHITECTURE，未完事项看 BACKLOG，历史看 STATUS。
-> 更新：2026-10-03，M2-C 写意基线与实体试装。阶段完成不等于下一阶段已获施工授权。
+> 更新：2026-10-03，M2-C2A 实体 LOD 与密度预算。阶段完成不等于下一阶段已获施工授权。
 
 ## 阶段表
 
@@ -16,7 +16,9 @@
 | M2-A final cleanup | 文档与记忆一致性、工作区归属、vendor / 浏览器门禁 | 已完成 |
 | M2-B | 完整视界与界缘：ElevationField / RegionGeometry / 完整 Layer Mask / RealmBoundary + Strata / 3D 划窗 / Rift Breach / FX | **已完成**，见 [工程报告](./Render3D%20M2-B%20工程报告.md) |
 | M2-C | 写意地形 S1/S2、三个实例母版、视觉场景与性能证据 | 已接入；范围/局限见 [工程报告](./M2C_EXPRESSIVE_INK_REPORT.md) |
-| M2-C2 | 实体家族、动画、LOD/HLOD、Trace Field、三界视觉深化 | 后续候选，未施工 |
+| M2-C2A | 三档实体 LOD、密度预算、身份/Region/纯度验证 | 工程封板；凡间 HLOD 仅原型，验收见 [报告](./M2C2A_LOD_REPORT.md) |
+| M2-C2B | 修仙资产家族生产 | 下一阶段候选，未施工；扩产条件见 [性能报告](./M2C2A_PERFORMANCE_REPORT.md) |
+| M2-C2 后续 | 群体动画、完整 HLOD、Trace Field、三界视觉深化 | 未实施 |
 | Gameplay G · 镇 / 泄 | 模拟派生封印量影响幽冥裂缝 | 未开始；**未授权** |
 
 M2-A 成果与局限见 [工程报告](./Render3D%20M2-A%20架构原型工程报告.md)。Host / Stage 已交付，不能按旧 BACKLOG 或历史记忆重造。
@@ -44,7 +46,7 @@ Strata 抬起的窗口会遮挡身后凡间，缓解方向随 Art Pass 一起定
 
 ## 下一轮候选（均未授权）
 
-M2-C2 与 Gameplay G（模拟派生封印量 → 裂缝阈值调制）需要确定新一轮施工范围。
+M2-C2B 与 Gameplay G（模拟派生封印量 → 裂缝阈值调制）需要确定新一轮施工范围。
 用户已允许实验建筑素材调整、参考配色包；这不自动授权新增世界玩法。Gameplay G 若立项，必须重新审计随机流——
 上界裂缝存在条件式第二次 RNG 消费，**不得假设「只调概率阈值就一定不改变 RNG 流位置」**。
 

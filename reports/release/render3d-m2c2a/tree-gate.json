@@ -1,0 +1,463 @@
+{
+  "capturedAt": "2026-10-03T10:15:37.808Z",
+  "samples": [
+    {
+      "scenario": "GOLDEN_A",
+      "profile": "pilot-no-lod",
+      "lod": false,
+      "spec": {
+        "scenario": "GOLDEN_A",
+        "seed": 20260930,
+        "preset": "small",
+        "days": 1440,
+        "worldDay": 1440,
+        "mapSize": [
+          200,
+          128
+        ],
+        "rngRecipe": {
+          "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+          "life": "newWorld seed ^ 0xa5a5a5a5",
+          "advanceState": "fresh createAdvanceState()",
+          "stepDays": 1
+        },
+        "coverage": {
+          "entities": 119,
+          "cultivators": 14,
+          "villages": 6,
+          "houses": 89
+        }
+      },
+      "before": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "measurement": {
+        "profile": "pilot-no-lod",
+        "kind": "CPU-visible renderer.render() submission timing",
+        "samples": 120,
+        "averageMs": 0.17166666562358537,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "rafFrameIntervals": {
+          "averageMs": 16.513333333333335,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 27.699999999999818
+        },
+        "calls": 12,
+        "triangles": 386420,
+        "instances": 3584,
+        "rtResolution": null,
+        "dpr": 1,
+        "canvasResolution": [
+          1086,
+          797
+        ]
+      },
+      "trees": {
+        "trees": 3371,
+        "instances": 3371,
+        "triangles": 269680,
+        "lod": [
+          3371,
+          0,
+          0
+        ],
+        "lodCounts": {
+          "lod0": 3371,
+          "lod1": 0,
+          "lod2": 0
+        },
+        "lod0": 3371,
+        "lod1": 0,
+        "lod2": 0,
+        "budgetDemotions": 0,
+        "capacity": 10000,
+        "overflow": 0,
+        "capacityOverflow": 0
+      },
+      "characters": {
+        "instances": 119,
+        "byClass": {
+          "human": 69,
+          "cultivator": 14,
+          "beast": 33,
+          "spirit": 3,
+          "wraith": 0
+        },
+        "overflow": 0
+      },
+      "buildings": {
+        "buildings": 94,
+        "villages": 6,
+        "houses": 89,
+        "centers": 5,
+        "sects": 0,
+        "overflow": 0
+      },
+      "categoryTriangles": {
+        "trees": 269680,
+        "characters": 7360,
+        "buildings": 7520
+      },
+      "characterLibrary": true,
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "resources": {
+        "geometries": 14,
+        "textures": 3,
+        "programs": 9
+      },
+      "glError": 0
+    },
+    {
+      "scenario": "GOLDEN_A",
+      "profile": "pilot-lod",
+      "lod": true,
+      "spec": {
+        "scenario": "GOLDEN_A",
+        "seed": 20260930,
+        "preset": "small",
+        "days": 1440,
+        "worldDay": 1440,
+        "mapSize": [
+          200,
+          128
+        ],
+        "rngRecipe": {
+          "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+          "life": "newWorld seed ^ 0xa5a5a5a5",
+          "advanceState": "fresh createAdvanceState()",
+          "stepDays": 1
+        },
+        "coverage": {
+          "entities": 119,
+          "cultivators": 14,
+          "villages": 6,
+          "houses": 89
+        }
+      },
+      "before": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "measurement": {
+        "profile": "pilot-lod",
+        "kind": "CPU-visible renderer.render() submission timing",
+        "samples": 120,
+        "averageMs": 0.13583333318432173,
+        "medianMs": 0.10000002384185791,
+        "p95Ms": 0.20000001788139343,
+        "rafFrameIntervals": {
+          "averageMs": 13.358333333333333,
+          "medianMs": 11.199999999999818,
+          "p95Ms": 16.800000000000182
+        },
+        "calls": 13,
+        "triangles": 192906,
+        "instances": 3584,
+        "rtResolution": null,
+        "dpr": 1,
+        "canvasResolution": [
+          1086,
+          797
+        ]
+      },
+      "trees": {
+        "trees": 3371,
+        "instances": 3371,
+        "triangles": 76166,
+        "lod": [
+          0,
+          2894,
+          477
+        ],
+        "lodCounts": {
+          "lod0": 0,
+          "lod1": 2894,
+          "lod2": 477
+        },
+        "lod0": 0,
+        "lod1": 2894,
+        "lod2": 477,
+        "budgetDemotions": 0,
+        "capacity": 10000,
+        "overflow": 0,
+        "capacityOverflow": 0
+      },
+      "characters": {
+        "instances": 119,
+        "byClass": {
+          "human": 69,
+          "cultivator": 14,
+          "beast": 33,
+          "spirit": 3,
+          "wraith": 0
+        },
+        "overflow": 0
+      },
+      "buildings": {
+        "buildings": 94,
+        "villages": 6,
+        "houses": 89,
+        "centers": 5,
+        "sects": 0,
+        "overflow": 0
+      },
+      "categoryTriangles": {
+        "trees": 76166,
+        "characters": 7360,
+        "buildings": 7520
+      },
+      "characterLibrary": true,
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "resources": {
+        "geometries": 14,
+        "textures": 3,
+        "programs": 9
+      },
+      "glError": 0
+    },
+    {
+      "scenario": "DENSITY_A",
+      "profile": "pilot-no-lod",
+      "lod": false,
+      "spec": {
+        "scenario": "DENSITY_A",
+        "seed": 20260928,
+        "preset": "medium",
+        "days": 1800,
+        "worldDay": 1800,
+        "mapSize": [
+          288,
+          180
+        ],
+        "rngRecipe": {
+          "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+          "life": "newWorld seed ^ 0xa5a5a5a5",
+          "advanceState": "fresh createAdvanceState()",
+          "stepDays": 1
+        },
+        "coverage": {
+          "entities": 146,
+          "cultivators": 17,
+          "villages": 7,
+          "houses": 133
+        }
+      },
+      "before": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "measurement": {
+        "profile": "pilot-no-lod",
+        "kind": "CPU-visible renderer.render() submission timing",
+        "samples": 120,
+        "averageMs": 0.11749999970197678,
+        "medianMs": 0.09999999403953552,
+        "p95Ms": 0.20000001788139343,
+        "rafFrameIntervals": {
+          "averageMs": 23.05333333333333,
+          "medianMs": 22.299999999999272,
+          "p95Ms": 27.899999999999636
+        },
+        "calls": 12,
+        "triangles": 691490,
+        "instances": 6093,
+        "rtResolution": null,
+        "dpr": 1,
+        "canvasResolution": [
+          1086,
+          797
+        ]
+      },
+      "trees": {
+        "trees": 5807,
+        "instances": 5807,
+        "triangles": 464560,
+        "lod": [
+          5807,
+          0,
+          0
+        ],
+        "lodCounts": {
+          "lod0": 5807,
+          "lod1": 0,
+          "lod2": 0
+        },
+        "lod0": 5807,
+        "lod1": 0,
+        "lod2": 0,
+        "budgetDemotions": 0,
+        "capacity": 10000,
+        "overflow": 0,
+        "capacityOverflow": 0
+      },
+      "characters": {
+        "instances": 146,
+        "byClass": {
+          "human": 92,
+          "cultivator": 17,
+          "beast": 33,
+          "spirit": 4,
+          "wraith": 0
+        },
+        "overflow": 0
+      },
+      "buildings": {
+        "buildings": 140,
+        "villages": 7,
+        "houses": 133,
+        "centers": 7,
+        "sects": 0,
+        "overflow": 0
+      },
+      "categoryTriangles": {
+        "trees": 464560,
+        "characters": 8958,
+        "buildings": 11200
+      },
+      "characterLibrary": true,
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "resources": {
+        "geometries": 13,
+        "textures": 3,
+        "programs": 9
+      },
+      "glError": 0
+    },
+    {
+      "scenario": "DENSITY_A",
+      "profile": "pilot-lod",
+      "lod": true,
+      "spec": {
+        "scenario": "DENSITY_A",
+        "seed": 20260928,
+        "preset": "medium",
+        "days": 1800,
+        "worldDay": 1800,
+        "mapSize": [
+          288,
+          180
+        ],
+        "rngRecipe": {
+          "sandbox": "mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws",
+          "life": "newWorld seed ^ 0xa5a5a5a5",
+          "advanceState": "fresh createAdvanceState()",
+          "stepDays": 1
+        },
+        "coverage": {
+          "entities": 146,
+          "cultivators": 17,
+          "villages": 7,
+          "houses": 133
+        }
+      },
+      "before": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "measurement": {
+        "profile": "pilot-lod",
+        "kind": "CPU-visible renderer.render() submission timing",
+        "samples": 120,
+        "averageMs": 0.12416666770974795,
+        "medianMs": 0.09999999403953552,
+        "p95Ms": 0.20000001788139343,
+        "rafFrameIntervals": {
+          "averageMs": 16.00250000000001,
+          "medianMs": 16.69999999999891,
+          "p95Ms": 22.19999999999891
+        },
+        "calls": 13,
+        "triangles": 300161,
+        "instances": 6093,
+        "rtResolution": null,
+        "dpr": 1,
+        "canvasResolution": [
+          1086,
+          797
+        ]
+      },
+      "trees": {
+        "trees": 5807,
+        "instances": 5807,
+        "triangles": 73231,
+        "lod": [
+          0,
+          1575,
+          4232
+        ],
+        "lodCounts": {
+          "lod0": 0,
+          "lod1": 1575,
+          "lod2": 4232
+        },
+        "lod0": 0,
+        "lod1": 1575,
+        "lod2": 4232,
+        "budgetDemotions": 0,
+        "capacity": 10000,
+        "overflow": 0,
+        "capacityOverflow": 0
+      },
+      "characters": {
+        "instances": 146,
+        "byClass": {
+          "human": 92,
+          "cultivator": 17,
+          "beast": 33,
+          "spirit": 4,
+          "wraith": 0
+        },
+        "overflow": 0
+      },
+      "buildings": {
+        "buildings": 140,
+        "villages": 7,
+        "houses": 133,
+        "centers": 7,
+        "sects": 0,
+        "overflow": 0
+      },
+      "categoryTriangles": {
+        "trees": 73231,
+        "characters": 8958,
+        "buildings": 11200
+      },
+      "characterLibrary": true,
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "resources": {
+        "geometries": 14,
+        "textures": 3,
+        "programs": 9
+      },
+      "glError": 0
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+    "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "viewport": [
+      1500,
+      940
+    ],
+    "dpr": 1
+  }
+}

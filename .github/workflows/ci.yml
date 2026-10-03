@@ -18,7 +18,7 @@ name: Inkbox CI
 # 刻意**不**进本 workflow 的：
 #   · `npm run test:simulation`（smoke，6.5–13 分钟）与 `npm run inkbox:longrun`（800 年）
 #     ⇒ 见 `nightly.yml`（D3.5：长测不进普通 CI）。
-#   · `test:browser` + `test:render3d:m2a:browser` ⇒ 手动 browser-smoke；证据独立存 artifact。
+#   · Canvas + M2-A / M2-B / M2-C / M2-C2A ⇒ 手动 browser-smoke；证据独立存 artifact。
 
 on:
   push:
@@ -74,6 +74,9 @@ jobs:
       - name: Render3D M2-C 写意渲染与实体母版
         run: npm run test:render3d:m2c
 
+      - name: Render3D M2-C2A LOD/HLOD 与密度预算
+        run: npm run test:render3d:m2c2a
+
       - name: 构建发布包（自包含，clone 即可跑）
         run: npm run build
 
@@ -113,7 +116,7 @@ jobs:
     name: Browser Smoke（手动）
     if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -125,7 +128,7 @@ jobs:
       - name: 安装依赖
         run: npm ci
 
-      - name: Canvas + M2-A Edge（共享服务器生命周期）
+      - name: Canvas + M2-A / M2-B / M2-C / M2-C2A Edge（共享服务器生命周期）
         run: node scripts/inkbox-browser-smoke.mjs
 
       - name: 保存浏览器复验证据（含失败时的可用输出）

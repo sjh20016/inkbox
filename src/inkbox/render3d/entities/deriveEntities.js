@@ -22,6 +22,7 @@
 
 import { SPECIES, SPECIES_INFO } from '../../core/config.js';
 import { REALMS, realmIndexFor } from '../../core/cultivation.js';
+import { characterAppearanceOf } from '../characters/characterAppearance.js';
 
 /**
  * 视觉类别。前四个来自 `world.entities`，`wraith` 来自 `world.wraiths`（凡间鬼影）。
@@ -105,10 +106,12 @@ function deriveFromWorld(world, includeWraiths) {
     const level = Number.isFinite(e.level) ? e.level : 0;
     const faction = Number.isFinite(e.faction) ? e.faction : 0;
     const cls = entityClassOf(e.sp, level);
+    const color = entityColorOf(cls, level, faction, factionColorById);
     out[cls].push({
       id: e.id, x: e.x, y: e.y, level, faction,
       lift: entityLiftOf(cls, level),
-      color: entityColorOf(cls, level, faction, factionColorById),
+      color,
+      appearance: characterAppearanceOf(e, cls, color),
     });
     out.total += 1;
   }
@@ -117,10 +120,12 @@ function deriveFromWorld(world, includeWraiths) {
   for (const g of wraiths) {
     if (!g || !Number.isFinite(g.x) || !Number.isFinite(g.y)) continue;
     const level = Number.isFinite(g.level) ? g.level : 0;
+    const color = entityColorOf('wraith', level, 0, factionColorById);
     out.wraith.push({
       id: g.id, x: g.x, y: g.y, level, faction: 0,
       lift: entityLiftOf('wraith', level),
-      color: entityColorOf('wraith', level, 0, factionColorById),
+      color,
+      appearance: characterAppearanceOf(g, 'wraith', color),
     });
     out.total += 1;
   }
@@ -147,7 +152,10 @@ export function sameEntities(a, b) {
     for (let i = 0; i < x.length; i += 1) {
       const p = x[i]; const q = y[i];
       if (p.id !== q.id || p.x !== q.x || p.y !== q.y
-        || p.level !== q.level || p.faction !== q.faction) return false;
+        || p.level !== q.level || p.faction !== q.faction || p.color !== q.color
+        || p.lift !== q.lift
+        || p.appearance?.role !== q.appearance?.role
+        || p.appearance?.paletteIndex !== q.appearance?.paletteIndex) return false;
     }
   }
   return true;

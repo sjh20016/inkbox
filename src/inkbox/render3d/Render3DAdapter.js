@@ -40,7 +40,7 @@ export class Render3DAdapter {
     const artParams = new URLSearchParams(globalThis.location?.search || '');
     const requestedArt = artParams.get('art');
     const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'pilot';
-    try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile }); }
+    try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off' }); }
     catch (error) { this.canvas.remove(); throw error; }
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
     Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
@@ -97,10 +97,14 @@ export class Render3DAdapter {
         return;
       }
       this.selectedBoundary = null;
-      this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y };
+      this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y, kind: hit.kind, settlementId: hit.settlementId };
       // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
       this.renderer.setSelection(hit.x, hit.y, hit.plane);
-      if (this.mode === 'inspect') { sandbox.inspectPlaneAt(hit.plane, hit.x, hit.y); return; }
+      if (this.mode === 'inspect') {
+        const village = hit.kind === 'settlement'
+          ? hit.stage.world.villages?.find(v => v.id === hit.settlementId) : null;
+        sandbox.inspectPlaneAt(hit.plane, village?.x ?? hit.x, village?.y ?? hit.y); return;
+      }
       if (!this.canSculpt(hit)) return;
       this.canvas.setPointerCapture(e.pointerId);
       this.stroke = { plane: 'mortal', world: sandbox.world, before: new Map(), last: hit.world, targetHeight: sandbox.world.height[hit.y * sandbox.world.w + hit.x], changed: false };
@@ -304,12 +308,18 @@ export class Render3DAdapter {
     const viewedWorld = this.renderer.stages.get(cell?.plane || this.renderer.activePlane)?.world || world;
     // §63：界缘检视优先显示（它是中性的界差读数，与格子检视互斥）。
     const boundaryText = this.selectedBoundary ? boundaryInspectorText(this.selectedBoundary) : null;
-    this.readout.textContent = boundaryText || (cell && cell.plane
+    const village = cell?.kind === 'settlement' ? viewedWorld.villages?.find(v => v.id === cell.settlementId) : null;
+    this.readout.textContent = boundaryText || (village ? `聚落 · ${village.name}` : cell && cell.plane
       ? `${cell.plane} · 格 ${cell.x}, ${cell.y} · 高程 ${viewedWorld.height[cell.y * viewedWorld.w + cell.x]?.toFixed(4)} · ${TERRAIN_INFO[viewedWorld.type[cell.y * viewedWorld.w + cell.x]]?.name || '—'}`
       : '左键检视 / 雕刻 · 中键旋转 · 右键平移 · 滚轮缩放');
     if (!this.lastDebug || now - this.lastDebug > 0.3) {
       this.lastDebug = now;
       this.panel.querySelector('[data-debug]').textContent = `Q/E 旋转 · F 全图 · Ctrl+Z 撤销雕刻\n左键检视 / 雕刻 · 中键旋转 · 右键平移 · 滚轮缩放\n${metrics.fps.toFixed(1)} FPS · ${metrics.frameMs.toFixed(1)} ms/frame\n${metrics.drawCalls} draws · ${metrics.triangles} triangles\n${metrics.terrainVertices} terrain vertices · ${metrics.treeInstances} trees\n${metrics.entityInstances} entities · ${metrics.houseInstances} buildings · ${metrics.markerInstances} markers\nRaycast ${metrics.lastRaycastMs.toFixed(2)} ms（上次查询） · render submit ${metrics.renderMs.toFixed(2)} ms\nCPU 更新 ${metrics.layerUpdateMs.toFixed(2)} ms（桥扫描 ${metrics.bridgeScanMs.toFixed(2)} · 地形 ${metrics.terrainUpdateMs.toFixed(2)} · 水 ${metrics.waterUpdateMs.toFixed(2)} · 植被 ${metrics.vegetationUpdateMs.toFixed(2)}）\n实体 ${metrics.entityUpdateMs.toFixed(2)} ms · 建筑 ${metrics.settlementUpdateMs.toFixed(2)} ms · 标记 ${metrics.markerUpdateMs.toFixed(2)} ms`;
+      if (metrics.lod) {
+        const names = { tree: 'Trees', character: 'Characters', building: 'Buildings' };
+        this.panel.querySelector('[data-debug]').textContent += '\n' + Object.entries(metrics.lod).map(([key, value]) =>
+          `${names[key]} L0/L1/L2 ${value.lod.join('/')} · ${value.triangles} tris · overflow ${value.overflow} · capacity ${value.capacity}${value.hlod ? ` · HLOD ${value.hlod}` : ''}`).join('\n');
+      }
     }
     return true;
   }

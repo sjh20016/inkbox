@@ -13,6 +13,11 @@ export class ArtDebugPanel {
     select.value = host.art.profile.name;
     select.addEventListener('change', () => { host.setArtProfile(select.value); this.refresh(); }, { signal: this.abort.signal });
     el.append(select); this.inputs = new Map();
+    const lodLabel = document.createElement('label'); lodLabel.style.cssText = 'display:block;margin:7px 0';
+    const lod = document.createElement('input'); lod.type = 'checkbox'; lod.checked = host.lodEnabled;
+    lod.setAttribute('aria-label', 'Geometry LOD');
+    lod.addEventListener('change', () => host.setLODEnabled(lod.checked), { signal: this.abort.signal });
+    lodLabel.append(lod, document.createTextNode(' Geometry LOD')); el.append(lodLabel);
     for (const key of ['paperColor', ...Object.keys(ART_CONTROLS)]) {
       const label = document.createElement('label'); label.style.cssText = 'display:block;margin:7px 0';
       const text = document.createElement('span'); text.textContent = key; label.append(text);

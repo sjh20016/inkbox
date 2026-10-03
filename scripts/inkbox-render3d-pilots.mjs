@@ -23,7 +23,10 @@ assert.ok(trees.mesh.count > 0);
 const meshes = [people.meshes.cultivator, trees.mesh, houses.bodies, houses.roofs];
 const originals = meshes.map(mesh => ({ geometry: mesh.geometry, material: mesh.material,
   count: mesh.count, matrices: mesh.instanceMatrix.array.slice(), buffer: mesh.instanceMatrix }));
-const stats = JSON.stringify([people.stats, houses.stats]);
+// Geometry cost changes with the profile; world-derived counts and identity do
+// not. C2A exposes actual triangle counts rather than silently caching baseline.
+const factStats = () => [people.stats, houses.stats].map(({ triangles, ...facts }) => facts);
+const stats = JSON.stringify(factStats());
 const pilot = createCultivatorPilot();
 assert.ok(pilot.userData.triangles >= 250 && pilot.userData.triangles <= 450);
 assert.ok(pilot.boundingBox.min.y >= -0.001);
@@ -76,7 +79,9 @@ const mask = { allInside: false, isInsideCell: (x) => x < 12 };
 for (const layer of [people, trees, houses]) layer.setRegionGeometry(mask);
 people.update(1, world); houses.update(1, world); trees.update();
 assert.ok(trees.trees.every(t => t.x < 12));
-assert.equal(JSON.stringify([people.stats, houses.stats]), stats);
+assert.equal(JSON.stringify(factStats()), stats);
+assert.equal(people.stats.triangles, pilot.userData.triangles);
+assert.equal(houses.stats.triangles, 80);
 assert.equal(JSON.stringify(world), before);
 for (const layer of [people, trees, houses]) layer.dispose();
 console.log('Pilot contracts passed: finite palette, triangle budget, opaque instancing, toggles, height/mask/picking and world purity.');

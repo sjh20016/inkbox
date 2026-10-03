@@ -4,6 +4,8 @@
 
 2026-10-03：M2-C 写意渲染基线已接入。3D 默认使用纸色、颜料吸收、稀疏结构墨和一套批处理民居/树/Mini 修士；`?renderer=3d&art=baseline` 可对照原 M2-B，`&artdebug=1` 仅供开发调参。范围、截图和验证见 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md)。
 
+M2-C2A 已接入树、角色、建筑三档几何 LOD、屏幕优先密度预算与凡间聚落 HLOD 原型。3D 默认开启；`&lod=off` 保留完整模型对照。实施、实测与视觉边界分别见 [LOD 报告](./M2C2A_LOD_REPORT.md)、[性能报告](./M2C2A_PERFORMANCE_REPORT.md)、[视觉验收](./M2C2A_VISUAL_ACCEPTANCE.md)。
+
 ## 启动
 
 需要 Node.js 18 或更新版本。运行依赖**只有一项**：`three@0.186.1`——供可选的 **Render3D 立体沙盘**使用。
@@ -53,6 +55,19 @@ Strata 下窗口被明确抬起（幽冥压下），四周出现连续断面。�
 熟悉 M2-A 的读者注意，`?renderer=3d&plane=upper` 之类的初始位面参数仍然有效，
 但「上界 Mask / 幽冥 Mask」按钮已经折进调试探针，不再是正式入口。
 
+## Mini 修士资产
+
+3D 模式从 `assets/characters/cultivator/mesh/cultivator_library.glb` 加载原创低模修士。身体、发型与身份道具共享实例批次；职业和宗门色只是只读视觉投影。
+
+启动服务器后，打开 [`cultivator-lab.html`](./cultivator-lab.html) 可查看六种组合、6/20/50 人固定尺度与300人压力场景。源工程、模块配置、调色图、实测截图和报告均在 [`assets/characters/cultivator`](./assets/characters/cultivator/docs/COMPLETION_REPORT.md)。继续生产前阅读 [`CHARACTER_SPEC.md`](./assets/characters/cultivator/docs/CHARACTER_SPEC.md)，并使用 `source/cultivator_master.blend`。
+
+```bash
+npm run test:characters          # GLB真实结构、预算、共享和组合纪律
+npm run test:characters:browser  # 本机Edge/Chrome实载、尺度截图和生命周期
+```
+
+角色资产随发布包收录；运行游戏不需要安装 Blender。Blender 只用于修改或重建源资产。当前群体采用休止姿态实例绘制；原生 GLB 保留 Idle/Walk，完整群体动画仍是后续工作。几何 LOD 保留现有 GLB 近景与真实身份。
+
 ## 检查与测试
 
 ```bash
@@ -66,6 +81,9 @@ npm run test:render3d       # Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 
 npm run test:render3d:m1    # Render3D M1（实体 / 聚落 / 标记层：数量对应、贴地、只读、模拟不受影响）
 npm run test:render3d:bridge # Render3D M1.1D（dirty 分类：height / water / type / veg 分层派发）
 npm run test:render3d:m2a  # Render3D M2-A（多 Stage / 掩码 / 拾取 / 纯度等架构不变量）
+npm run test:render3d:m2c2a # 屏幕LOD/密度预算/真实HLOD/拾取/Region/600日六模式纯度
+npm run test:render3d:m2c2a:browser # Edge固定场景三档对照与真实POI近中远景
+npm run test:render3d:m2c2a:soak # 600帧生命周期与6000帧资源耐久
 npm run test:vendor       # npm Three 与浏览器 vendor 的版本、许可证、逐字节一致性
 npm run test:render3d:m2a:release  # 顺序执行 12 套发布门禁并保存实际结果
 npm run test:render3d:perf # 浏览器性能探针（本机 Edge/Chrome，记录 GPU 环境）
@@ -75,7 +93,7 @@ npm run test:simulation     # 范围较大的旧 smoke，仅按需运行
 npm run build               # 生成仅含活跃主线的 dist 项目包
 ```
 
-M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端执行 `npm run test:render3d:m2a:browser`。需要 Node 22+ 和本机 Microsoft Edge。默认输出到 `reports/release/render3d-m2a/`；重跑可用 `INKBOX_REPORT_DIR` 指向本地临时目录，保留已发布的硬件基线。GitHub 手动 Browser Smoke 顺序运行 Canvas 与 M2-A 两套测试，截图 / JSON 存为独立 artifact。
+M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端执行 `npm run test:render3d:m2a:browser`。需要 Node 22+ 和本机 Microsoft Edge。默认输出到 `reports/release/render3d-m2a/`；重跑可用 `INKBOX_REPORT_DIR` 指向本地临时目录，保留已发布的硬件基线。GitHub 手动 Browser Smoke 顺序运行 Canvas、M2-A、M2-B、M2-C、M2-C2A，截图 / JSON 存为独立 artifact。
 
 测试分类和各旧探针的位置见 [`tests/README.md`](./tests/README.md)。
 
@@ -86,8 +104,8 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
   D8 视界 2.0 **A–F** · **Render3D M0**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻）·
   **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环）· **Render3D M1.1D**（工程加固）。
 - **已完成底座**：M2-B 的完整 Layer Mask、共享高程、Raw/Strata 界缘、3D 划窗、裂缝破口与拾取。
-- **本轮**：M2-C 的 S1/S2 写意地形与三个实体母版、可复现场景、开关/资源/纯度验证；性能和验收边界以 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md) 为准。
-- **后续**：实体家族、几何 LOD/HLOD、动画和 Trace Field 尚未施工；S3 后处理不进入默认路径。
+- **本轮**：M2-C2A 的真实几何 LOD、密度预算、身份拾取与凡间聚落 HLOD 原型；性能和验收边界以 [本轮报告](./M2C2A_LOD_REPORT.md) 为准。
+- **后续**：资产家族扩产、动画、完整 HLOD 和 Trace Field 尚未施工；S3 后处理不进入默认路径。
 - **暂缓**：D8-G「跨界追迹」为 **WIP**——纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）已保存并有测试钉住，但**追迹 UI 未做**；本阶段不继续扩建 Canvas 版 D8-G。
 - **接手先读**：[`HANDOFF.md`](./HANDOFF.md)（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）。
 - 30 秒看懂项目在哪：[`ROADMAP.md`](./ROADMAP.md)
@@ -107,4 +125,4 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
 > 台词 / 编年史 / 墓志 / 世界内文本 / 界面 / 三界预留文案库。**本包随包出货。**
 
 `美术素材/初期素材构思/` 保留早期 163 张 PNG、生成器与说明；`配色参考/`、`实验建筑资产/`、Sonnet 参考包作为后续设计输入。当前运行使用代码生成的实例母版，不加载这些参考素材；约451MB第三方范式整包保留本地。见 [参考资产索引](./美术素材/参考资产索引.md)。
-正式 M2-A 截图 / JSON 随 Git 与 dist；其他 reports、本地 MEMORY、备份与安装 / 构建产物不入 Git。具体清单见 ARCHITECTURE。
+正式 M2-A / M2-C 证据与 M2-C2A 的代表截图、摘要随 Git 与 dist；C2A 完整矩阵与日志保留本地或 Actions artifact。本地 MEMORY、备份与安装 / 构建产物不入 Git。具体清单见 ARCHITECTURE。

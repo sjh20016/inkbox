@@ -13,7 +13,7 @@ import { renderProfileFor } from './PlaneRenderProfile.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
-  constructor({ plane, world, profile = renderProfileFor(plane), coordinates } = {}) {
+  constructor({ plane, world, profile = renderProfileFor(plane), coordinates, characterLibrary = null } = {}) {
     if (!world) throw new Error(`PlaneStage ${plane}: world is required`);
     this.plane = plane;
     this.profile = profile;
@@ -21,6 +21,7 @@ export class PlaneStage {
     this.root.name = `PlaneStage:${plane}`;
     this.visible = true;
     this.timings = {};
+    this.characterLibrary = characterLibrary;
     this.setWorld(world, coordinates);
   }
 
@@ -42,8 +43,9 @@ export class PlaneStage {
     this.water = p.water ? new WaterLayer(world, this.coordinates, this.elevation) : null;
     if (this.water) this.root.add(this.water.mesh);
     this.vegetation = p.vegetation ? new VegetationLayer(world, this.coordinates, this.elevation) : null;
-    if (this.vegetation) this.root.add(this.vegetation.mesh);
-    this.entities = p.entities ? new EntityLayer(world, this.coordinates, this.elevation, { derive: p.entities }) : null;
+    if (this.vegetation) this.root.add(this.vegetation.group || this.vegetation.mesh);
+    this.entities = p.entities ? new EntityLayer(world, this.coordinates, this.elevation,
+      { derive: p.entities, characterLibrary: this.characterLibrary }) : null;
     if (this.entities) this.root.add(this.entities.group);
     this.settlements = p.settlements ? new SettlementLayer(world, this.coordinates, this.elevation) : null;
     if (this.settlements) this.root.add(this.settlements.group);

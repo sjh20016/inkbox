@@ -12,6 +12,8 @@ CI 定义在 [ci.yml](../.github/workflows/ci.yml) / [nightly.yml](../.github/wo
 | `test:render3d:m1` | 实体 / 聚落 / 标记、LOD、只读与模拟不受影响 | Fast |
 | `test:render3d:bridge` | height / water / type / veg dirty 分类 | Fast |
 | `test:render3d:m2a` | Host / Stage 生命周期、Mask / pick、写守卫、单消费者、Slab、600 日三路等价 | Fast |
+| `test:render3d:m2b` / `test:render3d:m2c` | 完整视界界缘 / ArtPass 与实例母版 | Fast |
+| `test:render3d:m2c2a` | 屏幕LOD/迟滞/密度预算/身份/真实HLOD/Region/600日六模式纯度 | Fast |
 | `test:vendor` | Three npm / vendor 版本、许可证、字节一致性；检查 LF 策略 | Fast |
 | `npm run build` | 按显式清单生成自包含目录与 ZIP | Fast |
 | `test:regression` | 干预 / 灾祸 / 存读档 | Heavy |
@@ -19,6 +21,7 @@ CI 定义在 [ci.yml](../.github/workflows/ci.yml) / [nightly.yml](../.github/wo
 | `test:save-equivalence` | 真实保存 / 恢复后的分叉等价；断言总数随内容浮动 | Heavy |
 | `test:browser` | Canvas 的真实浏览器交互与存储 | 手动 Browser Smoke，Windows Edge |
 | `test:render3d:m2a:browser` | Edge WebGL：13 图、两界各 80 拾取点、存读档 / 缺位面 / Canvas 切换 / 编辑守卫、性能环境 | 手动 Browser Smoke，接在 Canvas 检查后 |
+| `test:render3d:m2b:browser` / `m2c:browser` / `m2c2a:browser` | M2-B / ArtPass / LOD 浏览器证据 | 手动 Browser Smoke，依次接在 M2-A 后 |
 | `test:simulation` / `inkbox:longrun` | 较慢 smoke / 800 年长局；没有 test:longrun 命令 | Nightly，schedule / 手动 |
 
 ## 本地复验与证据
@@ -42,7 +45,7 @@ M2-A 本地记录为 view 113、M2-A 13 组、160 点拾取零错误；历史计
 ## GitHub 浏览器复验
 
 Actions → Inkbox CI → Run workflow，选择 main。
-Windows job 用 `scripts/inkbox-browser-smoke.mjs` 在同一宿主内启动 / 维持 / 释放服务器，顺序执行 Canvas 与 M2-A 原测试脚本，分别记录退出码；第一套失败也继续收集第二套结果。
+Windows job 用 `scripts/inkbox-browser-smoke.mjs` 在同一宿主内启动 / 维持 / 释放服务器，顺序执行 Canvas、M2-A、M2-B、M2-C、M2-C2A 原测试脚本，分别记录退出码；失败也继续收集其余结果。
 HTTP 资源先探测，启动失败补存页面 / 网络诊断。输出到 reports/ci 的独立目录，通过 artifact 保存截图、JSON 和日志，成功 / 失败均保留可用证据。
 这套远端功能复验不会改 reports/release 的已发布文件，也不把 runner 软件光栅读数当成本机 Intel UHD 730 性能基线。
 
@@ -64,3 +67,13 @@ scripts/_*.mjs 是已入 Git 的 D8 / M1 一次性研究探针，不进 npm 门�
 `node scripts/inkbox-render3d-m2c-soak.mjs`：在独立 Edge 中连续6000帧检查旋转、Resize、开关缓存、资源平台、完整 World 指纹与 ArtPass 状态。不要与性能采样并发运行。
 
 `python scripts/inkbox-m2c-image-metrics.py reports/release/render3d-m2c`：需要 Pillow/NumPy；六项图像统计仅为诊断，不自动判定画面通过。
+
+## M2-C2A 追加门禁
+
+`npm run test:render3d:m2c2a`：屏幕像素/迟滞、实际几何降面、密度预算、身份、共享Region、真实房屋HLOD/近景恢复/分割回退、HLOD拾取与只地形划窗，以及六模式600个真实游戏日的完整World与活动RNG调用数对照。
+
+`node scripts/inkbox-render3d-m2c2a-audit.mjs`：施工前完整模型审计；`--tree-gate` 是树木第一实验。`npm run test:render3d:m2c2a:browser`：GOLDEN_A、DENSITY_A、真实最密森林POI、上界/幽冥大窗口，各 baseline / pilot-no-lod / pilot-lod；实际批次面数、CPU更新/提交、rAF、Region、GL与shader门禁，加真实角色/树/聚落近中远截图和picker证明。
+
+`npm run test:render3d:m2c2a:soak`：600帧生命周期 +6000帧连续旋转/缩放、Art/LOD/两界切换、资源与World指纹；不要和性能矩阵并发。C2A脚本可自管服务器，也接受 `INKBOX_URL` 根地址或完整 inkbox.html 地址；`INKBOX_REPORT_DIR` 改本地输出目录，`INKBOX_RELEASE_DIR` 可改代表截图目录。
+
+默认完整产物在 `reports/m2c2a/`，Git仅保存 `reports/release/render3d-m2c2a/` 的代表图片与摘要。正式解释见 [LOD报告](../M2C2A_LOD_REPORT.md)、[性能报告](../M2C2A_PERFORMANCE_REPORT.md)、[视觉验收](../M2C2A_VISUAL_ACCEPTANCE.md)。CPU renderer submission 不称GPU时间；未执行timer query时写GPU time unavailable。

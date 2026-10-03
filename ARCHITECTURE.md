@@ -1,6 +1,6 @@
 # ARCHITECTURE · 工作区与模块地图
 
-事实核对：2026-10-03，Render3D M2-C。当前阶段以 [ROADMAP](./ROADMAP.md) 为准；历史实现范围以各阶段报告为准。
+事实核对：2026-10-03，Render3D M2-C2A。当前阶段以 [ROADMAP](./ROADMAP.md) 为准；历史实现范围以各阶段报告为准。
 
 ## 1. 工作区归属
 
@@ -18,6 +18,8 @@
 | `剧情文案素材/` | 活跃文案资产；00 册为接线约束 | 是 | 是 |
 | `美术素材/` | 范式/配色/Sonnet/实验建筑设计参考；运行使用代码母版与有限色板 | 使用的设计资料 | 否 |
 | `reports/release/render3d-m2a/` | 已发布的正式 M2-A 截图与 JSON | 是（日志除外） | 是 |
+| `reports/release/render3d-m2c/` | M2-C 正式证据 | 是（日志除外） | 是 |
+| `reports/release/render3d-m2c2a/` | 代表 baseline/no-LOD/LOD、关键POI、摘要 | 小集合；完整矩阵走 artifact | 是 |
 | 其他 `reports/` 输出 | 本机探针、日志、发布核验；CI 证据由 Actions artifact 保存 | 否 | 否 |
 | `.workbuddy-ai/memory/` | 本地交接索引；历史记录压缩归档 | 否 | 否 |
 | `.local-backups/` | 经校验的原工程 / Git 历史 / 清理备份 | 否 | 否 |
@@ -71,6 +73,7 @@ render3d/Render3DHost.js          1 GPU + 1 Scene + 1 CameraRig；Stage 生命�
 `Renderer3D.js` 只作兼容导出。PlaneStage 没有自己的 Camera / Scene / WebGLRenderer；root Group 可保留未来 pass 扩展口。
 
 M2-C 的 `render3d/art/ArtPass.js` 由 Host 持有，只协调已有 Layer 的材质和参数。`TerrainDataTextures` 随 TerrainMesh 生命周期，直接接已有 dirty 通道；`PigmentTerrainMaterial` 将纸、颜料与结构墨组合。`PilotAssets/PilotMaterial` 提供共享母版；`VisualScenarios` 是显式载入的开发证据模块，`ArtDebugPanel` 仅在 URL 开启时创建。没有第二套高程、Region 或 Renderer。
+M2-C2A 的 `lod/PresentationBudget.js` 统一屏幕像素、迟滞与细节配额；Layer 持有按类别/LOD 固定的实例批次与身份映射。ArtPass 提供当前投影倍率，Host 只编排开关和统计；LOD 分配变化才上传矩阵。SettlementLayer 的凡间 HLOD 从真实屋舍派生，成员及完整包围范围跨 Region 时拒绝合并。全部高程和归属继续使用 Stage 的 ElevationField / RegionGeometry。
 CameraRig 只持有 dimensions / coordinates；聚焦高程由 Host 按目标 Stage 计算。
 各界数据解释集中在 profile 与 derive 函数，Layer 共享机制；dirty 分类是 height / water / type / veg，不给 World 新增 renderer dirty。
 world 集合的身份、尺寸或地形数组变化会释放旧 Stage 集合并重建；相机与 GPU 保留。缺失子世界允许回退，尺寸不一致明确拒绝。
@@ -84,7 +87,7 @@ Canvas 把 Region 投影成 screen path 后 clip；Three 按 quad / entity 所�
 
 M2-B 已扩展 Mask 到全部已有 Layer，M2-C 复用其判据。上界/幽冥不额外伪造凡间式水体和植被；ThreeFxProbe 沿用既有 Presentation snapshot。
 一格边缘、跨边实体轮廓和高差侧向缺口是已声明局限；Slab 的矩形封边没有变成自由 Region 的 boundary skirt。
-常驻 Stage、可见 Stage、实际更新 Stage 是不同成本，性能原始数据见 [performance.json](./reports/release/render3d-m2a/performance.json)。
+常驻 Stage、可见 Stage、实际更新 Stage 是不同成本，最新实测见 [M2-C2A 性能报告](./M2C2A_PERFORMANCE_REPORT.md)，M2-A 历史数据保留在原阶段目录。
 
 ## 5. 文档维护与提交边界
 

@@ -1,0 +1,2934 @@
+{
+  "generatedAt": "2026-10-03T15:17:39.502Z",
+  "remoteBase": "0ae4239",
+  "renderSourceHash": {
+    "algorithm": "SHA-256",
+    "files": [
+      "src/inkbox/render3d/BrushOverlay.js",
+      "src/inkbox/render3d/CameraRig.js",
+      "src/inkbox/render3d/Render3DAdapter.js",
+      "src/inkbox/render3d/Render3DHost.js",
+      "src/inkbox/render3d/Renderer3D.js",
+      "src/inkbox/render3d/SelectionMarker.js",
+      "src/inkbox/render3d/WorldRenderBridge.js",
+      "src/inkbox/render3d/art/ArtDebugPanel.js",
+      "src/inkbox/render3d/art/ArtPass.js",
+      "src/inkbox/render3d/art/ArtPassProfile.js",
+      "src/inkbox/render3d/art/PigmentTerrainMaterial.js",
+      "src/inkbox/render3d/art/PilotAssets.js",
+      "src/inkbox/render3d/art/PilotMaterial.js",
+      "src/inkbox/render3d/art/TerrainDataTextures.js",
+      "src/inkbox/render3d/art/VisualScenarios.js",
+      "src/inkbox/render3d/boundary/RealmBoundaryLayer.js",
+      "src/inkbox/render3d/boundary/strataProfile.js",
+      "src/inkbox/render3d/charactersLab.js",
+      "src/inkbox/render3d/characters/CharacterBatch.js",
+      "src/inkbox/render3d/characters/CharacterLibrary.js",
+      "src/inkbox/render3d/characters/characterAppearance.js",
+      "src/inkbox/render3d/coordinates.js",
+      "src/inkbox/render3d/debug/RenderDebug.js",
+      "src/inkbox/render3d/entities/EntityLayer.js",
+      "src/inkbox/render3d/entities/deriveEntities.js",
+      "src/inkbox/render3d/lod/BuildingLODAssets.js",
+      "src/inkbox/render3d/lod/CharacterLODAssets.js",
+      "src/inkbox/render3d/lod/PresentationBudget.js",
+      "src/inkbox/render3d/lod/TreeLODAssets.js",
+      "src/inkbox/render3d/markers/WorldMarkerLayer.js",
+      "src/inkbox/render3d/picking/PlanePicker.js",
+      "src/inkbox/render3d/readers/riftViewModel.js",
+      "src/inkbox/render3d/region/RegionGeometry.js",
+      "src/inkbox/render3d/region/quadMask.js",
+      "src/inkbox/render3d/settlements/SettlementLayer.js",
+      "src/inkbox/render3d/shared/RenderOrder.js",
+      "src/inkbox/render3d/stage/PlaneRenderProfile.js",
+      "src/inkbox/render3d/stage/PlaneStage.js",
+      "src/inkbox/render3d/stage/WorldSetSnapshot.js",
+      "src/inkbox/render3d/terrain/ElevationField.js",
+      "src/inkbox/render3d/terrain/TerrainMesh.js",
+      "src/inkbox/render3d/terrain/TerrainPicker.js",
+      "src/inkbox/render3d/terrain/VisualElevation.js",
+      "src/inkbox/render3d/terrain/sculpt.js",
+      "src/inkbox/render3d/vegetation/VegetationLayer.js",
+      "src/inkbox/render3d/vegetation/deriveVegetation.js",
+      "src/inkbox/render3d/view/DraftPathOverlay.js",
+      "src/inkbox/render3d/view/RealmView3DPrototype.js",
+      "src/inkbox/render3d/view/SlabPrototype.js",
+      "src/inkbox/render3d/view/ThreeFxProbe.js",
+      "src/inkbox/render3d/water/WaterLayer.js"
+    ],
+    "value": "b60234ed123b09a832b581c7aa43f7fa42f482ad6789f566b8eeddd3e566d147"
+  },
+  "environment": {
+    "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36 Edg/154.0.0.0",
+    "version": "Edg/154.0.4258.48",
+    "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "viewport": [
+      1500,
+      940
+    ],
+    "pixelRatio": 1,
+    "gpuTimerQuery": true
+  },
+  "measurements": {
+    "samplesPerPass": 150,
+    "gpuTime": "unavailable: no GPU timer query was issued",
+    "cpuTiming": "host.update and host.render submission; rAF includes product loop plus explicit test submission"
+  },
+  "overview": [
+    {
+      "scenario": "GOLDEN_A",
+      "baselineTriangles": 124584,
+      "noLodTriangles": 386420,
+      "lodTriangles": 179874,
+      "totalReduction": 0.5345116712385487,
+      "categories": {
+        "trees": {
+          "from": 269680,
+          "to": 76166,
+          "reduction": 0.71756897063186
+        },
+        "characters": {
+          "from": 7360,
+          "to": 964,
+          "reduction": 0.8690217391304348
+        },
+        "buildings": {
+          "from": 7520,
+          "to": 884,
+          "reduction": 0.8824468085106383
+        }
+      },
+      "draws": [
+        12,
+        12
+      ],
+      "rafBefore": {
+        "samples": 150,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 27.899999999999636,
+        "meanMs": 17.773333333333333
+      },
+      "rafAfter": {
+        "samples": 150,
+        "medianMs": 16.69999999999891,
+        "p95Ms": 22.399999999999636,
+        "meanMs": 15.998666666666661
+      }
+    },
+    {
+      "scenario": "DENSITY_A",
+      "baselineTriangles": 241758,
+      "noLodTriangles": 691490,
+      "lodTriangles": 282411,
+      "totalReduction": 0.5915906231471171,
+      "categories": {
+        "trees": {
+          "from": 464560,
+          "to": 73231,
+          "reduction": 0.8423648183227139
+        },
+        "characters": {
+          "from": 8958,
+          "to": 1120,
+          "reduction": 0.8749720919848181
+        },
+        "buildings": {
+          "from": 11200,
+          "to": 1288,
+          "reduction": 0.885
+        }
+      },
+      "draws": [
+        12,
+        12
+      ],
+      "rafBefore": {
+        "samples": 150,
+        "medianMs": 21.900000000001455,
+        "p95Ms": 33.29999999999927,
+        "meanMs": 20.816666666666666
+      },
+      "rafAfter": {
+        "samples": 150,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 22.30000000000291,
+        "meanMs": 16.476666666666667
+      }
+    }
+  ],
+  "cases": [
+    {
+      "scenario": "GOLDEN_A:WORLD_OVERVIEW",
+      "mode": "baseline",
+      "triangles": 124584,
+      "drawCalls": 12,
+      "categoryTriangles": {
+        "trees": 13484,
+        "characters": 7360,
+        "buildings": 1880
+      },
+      "categoryInstances": {
+        "trees": 6742,
+        "characters": 133,
+        "buildings": 188
+      },
+      "logicalCounts": {
+        "trees": 3371,
+        "characters": 119,
+        "buildings": 94
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.600000000000364,
+        "p95Ms": 16.899999999999636,
+        "meanMs": 14.025999999999998
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.6000000238418579,
+        "p95Ms": 1.199999988079071,
+        "meanMs": 0.6546666665871939
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.19399999976158142
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 3371,
+            "instances": 6742,
+            "triangles": 13484,
+            "lod": [
+              3371,
+              0,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 3371,
+              "lod1": 0,
+              "lod2": 0
+            },
+            "lod0": 3371,
+            "lod1": 0,
+            "lod2": 0,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 119,
+            "byClass": {
+              "human": 69,
+              "cultivator": 14,
+              "beast": 33,
+              "spirit": 3,
+              "wraith": 0
+            },
+            "lod": [
+              119,
+              0,
+              0
+            ],
+            "triangles": 7360,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 94,
+            "villages": 6,
+            "houses": 89,
+            "centers": 5,
+            "sects": 0,
+            "instances": 188,
+            "triangles": 1880,
+            "lod": [
+              94,
+              0,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 21,
+        "textures": 4,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "regionAudit": []
+    },
+    {
+      "scenario": "GOLDEN_A:WORLD_OVERVIEW",
+      "mode": "pilot-no-lod",
+      "triangles": 386420,
+      "drawCalls": 12,
+      "categoryTriangles": {
+        "trees": 269680,
+        "characters": 7360,
+        "buildings": 7520
+      },
+      "categoryInstances": {
+        "trees": 3371,
+        "characters": 133,
+        "buildings": 188
+      },
+      "logicalCounts": {
+        "trees": 3371,
+        "characters": 119,
+        "buildings": 94
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 27.899999999999636,
+        "meanMs": 17.773333333333333
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.6000000238418579,
+        "p95Ms": 1.100000023841858,
+        "meanMs": 0.6533333309491476
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.18
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 3371,
+            "instances": 3371,
+            "triangles": 269680,
+            "lod": [
+              3371,
+              0,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 3371,
+              "lod1": 0,
+              "lod2": 0
+            },
+            "lod0": 3371,
+            "lod1": 0,
+            "lod2": 0,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 119,
+            "byClass": {
+              "human": 69,
+              "cultivator": 14,
+              "beast": 33,
+              "spirit": 3,
+              "wraith": 0
+            },
+            "lod": [
+              119,
+              0,
+              0
+            ],
+            "triangles": 7360,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 94,
+            "villages": 6,
+            "houses": 89,
+            "centers": 5,
+            "sects": 0,
+            "instances": 188,
+            "triangles": 7520,
+            "lod": [
+              94,
+              0,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 24,
+        "textures": 4,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "regionAudit": []
+    },
+    {
+      "scenario": "GOLDEN_A:WORLD_OVERVIEW",
+      "mode": "pilot-lod",
+      "triangles": 179874,
+      "drawCalls": 12,
+      "categoryTriangles": {
+        "trees": 76166,
+        "characters": 964,
+        "buildings": 884
+      },
+      "categoryInstances": {
+        "trees": 3371,
+        "characters": 119,
+        "buildings": 94
+      },
+      "logicalCounts": {
+        "trees": 3371,
+        "characters": 119,
+        "buildings": 94
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.69999999999891,
+        "p95Ms": 22.399999999999636,
+        "meanMs": 15.998666666666661
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.5,
+        "p95Ms": 1,
+        "meanMs": 0.597333333492279
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.10000002384185791,
+        "p95Ms": 0.20000004768371582,
+        "meanMs": 0.1253333330154419
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 3371,
+            "instances": 3371,
+            "triangles": 76166,
+            "lod": [
+              0,
+              2894,
+              477
+            ],
+            "lodCounts": {
+              "lod0": 0,
+              "lod1": 2894,
+              "lod2": 477
+            },
+            "lod0": 0,
+            "lod1": 2894,
+            "lod2": 477,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 119,
+            "byClass": {
+              "human": 69,
+              "cultivator": 14,
+              "beast": 33,
+              "spirit": 3,
+              "wraith": 0
+            },
+            "lod": [
+              0,
+              33,
+              86
+            ],
+            "triangles": 964,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 94,
+            "villages": 6,
+            "houses": 89,
+            "centers": 5,
+            "sects": 0,
+            "instances": 94,
+            "triangles": 884,
+            "lod": [
+              0,
+              11,
+              83
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 24,
+        "textures": 4,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "regionAudit": []
+    },
+    {
+      "scenario": "DENSITY_A:WORLD_OVERVIEW",
+      "mode": "baseline",
+      "triangles": 241758,
+      "drawCalls": 12,
+      "categoryTriangles": {
+        "trees": 23228,
+        "characters": 8958,
+        "buildings": 2800
+      },
+      "categoryInstances": {
+        "trees": 11614,
+        "characters": 163,
+        "buildings": 280
+      },
+      "logicalCounts": {
+        "trees": 5807,
+        "characters": 146,
+        "buildings": 140
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 22.399999999997817,
+        "meanMs": 16.327333333333346
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.699999988079071,
+        "p95Ms": 1.2999999523162842,
+        "meanMs": 0.7766666646798451
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.1593333331743876
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 5807,
+            "instances": 11614,
+            "triangles": 23228,
+            "lod": [
+              5807,
+              0,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 5807,
+              "lod1": 0,
+              "lod2": 0
+            },
+            "lod0": 5807,
+            "lod1": 0,
+            "lod2": 0,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 146,
+            "byClass": {
+              "human": 92,
+              "cultivator": 17,
+              "beast": 33,
+              "spirit": 4,
+              "wraith": 0
+            },
+            "lod": [
+              146,
+              0,
+              0
+            ],
+            "triangles": 8958,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 140,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 280,
+            "triangles": 2800,
+            "lod": [
+              140,
+              0,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 19,
+        "textures": 4,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "regionAudit": []
+    },
+    {
+      "scenario": "DENSITY_A:WORLD_OVERVIEW",
+      "mode": "pilot-no-lod",
+      "triangles": 691490,
+      "drawCalls": 12,
+      "categoryTriangles": {
+        "trees": 464560,
+        "characters": 8958,
+        "buildings": 11200
+      },
+      "categoryInstances": {
+        "trees": 5807,
+        "characters": 163,
+        "buildings": 280
+      },
+      "logicalCounts": {
+        "trees": 5807,
+        "characters": 146,
+        "buildings": 140
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 21.900000000001455,
+        "p95Ms": 33.29999999999927,
+        "meanMs": 20.816666666666666
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.699999988079071,
+        "p95Ms": 1.300000011920929,
+        "meanMs": 0.7519999961058299
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.10000002384185791,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.14866666674613951
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 5807,
+            "instances": 5807,
+            "triangles": 464560,
+            "lod": [
+              5807,
+              0,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 5807,
+              "lod1": 0,
+              "lod2": 0
+            },
+            "lod0": 5807,
+            "lod1": 0,
+            "lod2": 0,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 146,
+            "byClass": {
+              "human": 92,
+              "cultivator": 17,
+              "beast": 33,
+              "spirit": 4,
+              "wraith": 0
+            },
+            "lod": [
+              146,
+              0,
+              0
+            ],
+            "triangles": 8958,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 140,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 280,
+            "triangles": 11200,
+            "lod": [
+              140,
+              0,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 22,
+        "textures": 4,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "regionAudit": []
+    },
+    {
+      "scenario": "DENSITY_A:WORLD_OVERVIEW",
+      "mode": "pilot-lod",
+      "triangles": 282411,
+      "drawCalls": 12,
+      "categoryTriangles": {
+        "trees": 73231,
+        "characters": 1120,
+        "buildings": 1288
+      },
+      "categoryInstances": {
+        "trees": 5807,
+        "characters": 146,
+        "buildings": 140
+      },
+      "logicalCounts": {
+        "trees": 5807,
+        "characters": 146,
+        "buildings": 140
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.700000000000728,
+        "p95Ms": 22.30000000000291,
+        "meanMs": 16.476666666666667
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.6000000238418579,
+        "p95Ms": 1,
+        "meanMs": 0.6540000017484029
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.16799999992052714
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 5807,
+            "instances": 5807,
+            "triangles": 73231,
+            "lod": [
+              0,
+              1575,
+              4232
+            ],
+            "lodCounts": {
+              "lod0": 0,
+              "lod1": 1575,
+              "lod2": 4232
+            },
+            "lod0": 0,
+            "lod1": 1575,
+            "lod2": 4232,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 146,
+            "byClass": {
+              "human": 92,
+              "cultivator": 17,
+              "beast": 33,
+              "spirit": 4,
+              "wraith": 0
+            },
+            "lod": [
+              0,
+              33,
+              113
+            ],
+            "triangles": 1120,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 140,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 140,
+            "triangles": 1288,
+            "lod": [
+              0,
+              14,
+              126
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 24,
+        "textures": 4,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "regionAudit": []
+    },
+    {
+      "scenario": "DENSITY_A:forest-stress",
+      "mode": "baseline",
+      "triangles": 241758,
+      "drawCalls": 12,
+      "categoryTriangles": {
+        "trees": 23228,
+        "characters": 8958,
+        "buildings": 2800
+      },
+      "categoryInstances": {
+        "trees": 11614,
+        "characters": 163,
+        "buildings": 280
+      },
+      "logicalCounts": {
+        "trees": 5807,
+        "characters": 146,
+        "buildings": 140
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.700000000004366,
+        "p95Ms": 27.799999999995634,
+        "meanMs": 16.995333333333352
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.800000011920929,
+        "p95Ms": 1.5,
+        "meanMs": 0.85199999888738
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.17599999984105427
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 5807,
+            "instances": 11614,
+            "triangles": 23228,
+            "lod": [
+              5807,
+              0,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 5807,
+              "lod1": 0,
+              "lod2": 0
+            },
+            "lod0": 5807,
+            "lod1": 0,
+            "lod2": 0,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 146,
+            "byClass": {
+              "human": 92,
+              "cultivator": 17,
+              "beast": 33,
+              "spirit": 4,
+              "wraith": 0
+            },
+            "lod": [
+              146,
+              0,
+              0
+            ],
+            "triangles": 8958,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 140,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 280,
+            "triangles": 2800,
+            "lod": [
+              140,
+              0,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 26,
+        "textures": 4,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "regionAudit": []
+    },
+    {
+      "scenario": "DENSITY_A:forest-stress",
+      "mode": "pilot-no-lod",
+      "triangles": 691490,
+      "drawCalls": 12,
+      "categoryTriangles": {
+        "trees": 464560,
+        "characters": 8958,
+        "buildings": 11200
+      },
+      "categoryInstances": {
+        "trees": 5807,
+        "characters": 163,
+        "buildings": 280
+      },
+      "logicalCounts": {
+        "trees": 5807,
+        "characters": 146,
+        "buildings": 140
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.80000000000291,
+        "p95Ms": 22.400000000001455,
+        "meanMs": 19.37
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.6000000238418579,
+        "p95Ms": 1,
+        "meanMs": 0.6520000004768371
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.10000002384185791,
+        "p95Ms": 0.20000004768371582,
+        "meanMs": 0.1353333330154419
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 5807,
+            "instances": 5807,
+            "triangles": 464560,
+            "lod": [
+              5807,
+              0,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 5807,
+              "lod1": 0,
+              "lod2": 0
+            },
+            "lod0": 5807,
+            "lod1": 0,
+            "lod2": 0,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 146,
+            "byClass": {
+              "human": 92,
+              "cultivator": 17,
+              "beast": 33,
+              "spirit": 4,
+              "wraith": 0
+            },
+            "lod": [
+              146,
+              0,
+              0
+            ],
+            "triangles": 8958,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 140,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 280,
+            "triangles": 11200,
+            "lod": [
+              140,
+              0,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 26,
+        "textures": 4,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "regionAudit": []
+    },
+    {
+      "scenario": "DENSITY_A:forest-stress",
+      "mode": "pilot-lod",
+      "triangles": 414037,
+      "drawCalls": 13,
+      "categoryTriangles": {
+        "trees": 201495,
+        "characters": 2130,
+        "buildings": 3640
+      },
+      "categoryInstances": {
+        "trees": 5807,
+        "characters": 146,
+        "buildings": 154
+      },
+      "logicalCounts": {
+        "trees": 5807,
+        "characters": 146,
+        "buildings": 140
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.80000000000291,
+        "p95Ms": 27.900000000001455,
+        "meanMs": 20.482666666666677
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.699999988079071,
+        "p95Ms": 1.199999988079071,
+        "meanMs": 0.7606666664282481
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.15133333325386047
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 5807,
+            "instances": 5807,
+            "triangles": 201495,
+            "lod": [
+              1024,
+              4783,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 1024,
+              "lod1": 4783,
+              "lod2": 0
+            },
+            "lod0": 1024,
+            "lod1": 4783,
+            "lod2": 0,
+            "budgetDemotions": 3185,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 146,
+            "byClass": {
+              "human": 92,
+              "cultivator": 17,
+              "beast": 33,
+              "spirit": 4,
+              "wraith": 0
+            },
+            "lod": [
+              33,
+              113,
+              0
+            ],
+            "triangles": 2130,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 140,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 154,
+            "triangles": 3640,
+            "lod": [
+              14,
+              126,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 26,
+        "textures": 4,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal"
+      ],
+      "regionAudit": []
+    },
+    {
+      "scenario": "DENSITY_A:upper-window",
+      "mode": "baseline",
+      "triangles": 213084,
+      "drawCalls": 15,
+      "categoryTriangles": {
+        "trees": 18536,
+        "characters": 8216,
+        "buildings": 2440
+      },
+      "categoryInstances": {
+        "trees": 9268,
+        "characters": 136,
+        "buildings": 244
+      },
+      "logicalCounts": {
+        "trees": 4634,
+        "characters": 120,
+        "buildings": 122
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 27.80000000000291,
+        "meanMs": 17.997333333333323
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 1.2000000476837158,
+        "p95Ms": 2.5,
+        "meanMs": 1.384666669368744
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.20333333333333334
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 4634,
+            "instances": 9268,
+            "triangles": 18536,
+            "lod": [
+              4634,
+              0,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 4634,
+              "lod1": 0,
+              "lod2": 0
+            },
+            "lod0": 4634,
+            "lod1": 0,
+            "lod2": 0,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 116,
+            "byClass": {
+              "human": 75,
+              "cultivator": 12,
+              "beast": 26,
+              "spirit": 3,
+              "wraith": 0
+            },
+            "lod": [
+              116,
+              0,
+              0
+            ],
+            "triangles": 6480,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 122,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 244,
+            "triangles": 2440,
+            "lod": [
+              122,
+              0,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        },
+        "upper": {
+          "trees": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          },
+          "characters": {
+            "instances": 4,
+            "byClass": {
+              "human": 0,
+              "cultivator": 4,
+              "beast": 0,
+              "spirit": 0,
+              "wraith": 0
+            },
+            "lod": [
+              4,
+              0,
+              0
+            ],
+            "triangles": 1736,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 24,
+        "textures": 6,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal",
+        "upper"
+      ],
+      "regionAudit": [
+        {
+          "plane": "mortal",
+          "inside": false,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "WaterLayer",
+            "VegetationLayer",
+            "EntityLayer",
+            "SettlementLayer",
+            "WorldMarkerLayer"
+          ],
+          "seen": {
+            "trees": 4634,
+            "characters": 128,
+            "buildings": 244
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        },
+        {
+          "plane": "upper",
+          "inside": true,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "EntityLayer"
+          ],
+          "seen": {
+            "trees": 0,
+            "characters": 8,
+            "buildings": 0
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "DENSITY_A:upper-window",
+      "mode": "pilot-no-lod",
+      "triangles": 572588,
+      "drawCalls": 15,
+      "categoryTriangles": {
+        "trees": 370720,
+        "characters": 8216,
+        "buildings": 9760
+      },
+      "categoryInstances": {
+        "trees": 4634,
+        "characters": 136,
+        "buildings": 244
+      },
+      "logicalCounts": {
+        "trees": 4634,
+        "characters": 120,
+        "buildings": 122
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.700000000004366,
+        "p95Ms": 27.799999999995634,
+        "meanMs": 18.701333333333313
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 1,
+        "p95Ms": 1.399999976158142,
+        "meanMs": 1.0099999976158143
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.19
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 4634,
+            "instances": 4634,
+            "triangles": 370720,
+            "lod": [
+              4634,
+              0,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 4634,
+              "lod1": 0,
+              "lod2": 0
+            },
+            "lod0": 4634,
+            "lod1": 0,
+            "lod2": 0,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 116,
+            "byClass": {
+              "human": 75,
+              "cultivator": 12,
+              "beast": 26,
+              "spirit": 3,
+              "wraith": 0
+            },
+            "lod": [
+              116,
+              0,
+              0
+            ],
+            "triangles": 6480,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 122,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 244,
+            "triangles": 9760,
+            "lod": [
+              122,
+              0,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        },
+        "upper": {
+          "trees": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          },
+          "characters": {
+            "instances": 4,
+            "byClass": {
+              "human": 0,
+              "cultivator": 4,
+              "beast": 0,
+              "spirit": 0,
+              "wraith": 0
+            },
+            "lod": [
+              4,
+              0,
+              0
+            ],
+            "triangles": 1736,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 27,
+        "textures": 6,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal",
+        "upper"
+      ],
+      "regionAudit": [
+        {
+          "plane": "mortal",
+          "inside": false,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "WaterLayer",
+            "VegetationLayer",
+            "EntityLayer",
+            "SettlementLayer",
+            "WorldMarkerLayer"
+          ],
+          "seen": {
+            "trees": 4634,
+            "characters": 128,
+            "buildings": 244
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        },
+        {
+          "plane": "upper",
+          "inside": true,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "EntityLayer"
+          ],
+          "seen": {
+            "trees": 0,
+            "characters": 8,
+            "buildings": 0
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "DENSITY_A:upper-window",
+      "mode": "pilot-lod",
+      "triangles": 244448,
+      "drawCalls": 14,
+      "categoryTriangles": {
+        "trees": 58492,
+        "characters": 944,
+        "buildings": 1120
+      },
+      "categoryInstances": {
+        "trees": 4634,
+        "characters": 120,
+        "buildings": 122
+      },
+      "logicalCounts": {
+        "trees": 4634,
+        "characters": 120,
+        "buildings": 122
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 22.30000000000291,
+        "meanMs": 16.215999999999962
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.9000000357627869,
+        "p95Ms": 1.399999976158142,
+        "meanMs": 0.9346666697661082
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.17466666658719382
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 4634,
+            "instances": 4634,
+            "triangles": 58492,
+            "lod": [
+              0,
+              1260,
+              3374
+            ],
+            "lodCounts": {
+              "lod0": 0,
+              "lod1": 1260,
+              "lod2": 3374
+            },
+            "lod0": 0,
+            "lod1": 1260,
+            "lod2": 3374,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 116,
+            "byClass": {
+              "human": 75,
+              "cultivator": 12,
+              "beast": 26,
+              "spirit": 3,
+              "wraith": 0
+            },
+            "lod": [
+              0,
+              26,
+              90
+            ],
+            "triangles": 864,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 122,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 122,
+            "triangles": 1120,
+            "lod": [
+              0,
+              12,
+              110
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        },
+        "upper": {
+          "trees": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          },
+          "characters": {
+            "instances": 4,
+            "byClass": {
+              "human": 0,
+              "cultivator": 4,
+              "beast": 0,
+              "spirit": 0,
+              "wraith": 0
+            },
+            "lod": [
+              0,
+              0,
+              4
+            ],
+            "triangles": 80,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 29,
+        "textures": 6,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal",
+        "upper"
+      ],
+      "regionAudit": [
+        {
+          "plane": "mortal",
+          "inside": false,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "WaterLayer",
+            "VegetationLayer",
+            "EntityLayer",
+            "SettlementLayer",
+            "WorldMarkerLayer"
+          ],
+          "seen": {
+            "trees": 4634,
+            "characters": 116,
+            "buildings": 122
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        },
+        {
+          "plane": "upper",
+          "inside": true,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "EntityLayer"
+          ],
+          "seen": {
+            "trees": 0,
+            "characters": 4,
+            "buildings": 0
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "DENSITY_A:nether-window",
+      "mode": "baseline",
+      "triangles": 211348,
+      "drawCalls": 13,
+      "categoryTriangles": {
+        "trees": 18536,
+        "characters": 6480,
+        "buildings": 2440
+      },
+      "categoryInstances": {
+        "trees": 9268,
+        "characters": 128,
+        "buildings": 244
+      },
+      "logicalCounts": {
+        "trees": 4634,
+        "characters": 116,
+        "buildings": 122
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 22.30000000000291,
+        "meanMs": 15.362666666666629
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 1,
+        "p95Ms": 1.600000023841858,
+        "meanMs": 1.0466666682561239
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.21266666650772095
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 4634,
+            "instances": 9268,
+            "triangles": 18536,
+            "lod": [
+              4634,
+              0,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 4634,
+              "lod1": 0,
+              "lod2": 0
+            },
+            "lod0": 4634,
+            "lod1": 0,
+            "lod2": 0,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 116,
+            "byClass": {
+              "human": 75,
+              "cultivator": 12,
+              "beast": 26,
+              "spirit": 3,
+              "wraith": 0
+            },
+            "lod": [
+              116,
+              0,
+              0
+            ],
+            "triangles": 6480,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 122,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 244,
+            "triangles": 2440,
+            "lod": [
+              122,
+              0,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        },
+        "nether": {
+          "trees": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          },
+          "characters": {
+            "instances": 0,
+            "byClass": {
+              "human": 0,
+              "cultivator": 0,
+              "beast": 0,
+              "spirit": 0,
+              "wraith": 0
+            },
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 21,
+        "textures": 6,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal",
+        "nether"
+      ],
+      "regionAudit": [
+        {
+          "plane": "mortal",
+          "inside": false,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "WaterLayer",
+            "VegetationLayer",
+            "EntityLayer",
+            "SettlementLayer",
+            "WorldMarkerLayer"
+          ],
+          "seen": {
+            "trees": 4634,
+            "characters": 128,
+            "buildings": 244
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        },
+        {
+          "plane": "nether",
+          "inside": true,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "EntityLayer"
+          ],
+          "seen": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "DENSITY_A:nether-window",
+      "mode": "pilot-no-lod",
+      "triangles": 570852,
+      "drawCalls": 13,
+      "categoryTriangles": {
+        "trees": 370720,
+        "characters": 6480,
+        "buildings": 9760
+      },
+      "categoryInstances": {
+        "trees": 4634,
+        "characters": 128,
+        "buildings": 244
+      },
+      "logicalCounts": {
+        "trees": 4634,
+        "characters": 116,
+        "buildings": 122
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 16.69999999999709,
+        "p95Ms": 22.39999999999418,
+        "meanMs": 17.774666666666647
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.9000000357627869,
+        "p95Ms": 1.5999999642372131,
+        "meanMs": 0.988666665951411
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.10000002384185791,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.14200000007947286
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 4634,
+            "instances": 4634,
+            "triangles": 370720,
+            "lod": [
+              4634,
+              0,
+              0
+            ],
+            "lodCounts": {
+              "lod0": 4634,
+              "lod1": 0,
+              "lod2": 0
+            },
+            "lod0": 4634,
+            "lod1": 0,
+            "lod2": 0,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 116,
+            "byClass": {
+              "human": 75,
+              "cultivator": 12,
+              "beast": 26,
+              "spirit": 3,
+              "wraith": 0
+            },
+            "lod": [
+              116,
+              0,
+              0
+            ],
+            "triangles": 6480,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 122,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 244,
+            "triangles": 9760,
+            "lod": [
+              122,
+              0,
+              0
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        },
+        "nether": {
+          "trees": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          },
+          "characters": {
+            "instances": 0,
+            "byClass": {
+              "human": 0,
+              "cultivator": 0,
+              "beast": 0,
+              "spirit": 0,
+              "wraith": 0
+            },
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 24,
+        "textures": 6,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal",
+        "nether"
+      ],
+      "regionAudit": [
+        {
+          "plane": "mortal",
+          "inside": false,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "WaterLayer",
+            "VegetationLayer",
+            "EntityLayer",
+            "SettlementLayer",
+            "WorldMarkerLayer"
+          ],
+          "seen": {
+            "trees": 4634,
+            "characters": 128,
+            "buildings": 244
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        },
+        {
+          "plane": "nether",
+          "inside": true,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "EntityLayer"
+          ],
+          "seen": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "DENSITY_A:nether-window",
+      "mode": "pilot-lod",
+      "triangles": 244368,
+      "drawCalls": 13,
+      "categoryTriangles": {
+        "trees": 58492,
+        "characters": 864,
+        "buildings": 1120
+      },
+      "categoryInstances": {
+        "trees": 4634,
+        "characters": 116,
+        "buildings": 122
+      },
+      "logicalCounts": {
+        "trees": 4634,
+        "characters": 116,
+        "buildings": 122
+      },
+      "raf": {
+        "samples": 150,
+        "medianMs": 12,
+        "p95Ms": 16.90000000000873,
+        "meanMs": 13.581333333333314
+      },
+      "layerUpdate": {
+        "samples": 150,
+        "medianMs": 0.800000011920929,
+        "p95Ms": 1.300000011920929,
+        "meanMs": 0.8653333334128062
+      },
+      "renderSubmitCpu": {
+        "samples": 150,
+        "medianMs": 0.19999998807907104,
+        "p95Ms": 0.30000001192092896,
+        "meanMs": 0.18800000031789144
+      },
+      "layerStats": {
+        "mortal": {
+          "trees": {
+            "trees": 4634,
+            "instances": 4634,
+            "triangles": 58492,
+            "lod": [
+              0,
+              1260,
+              3374
+            ],
+            "lodCounts": {
+              "lod0": 0,
+              "lod1": 1260,
+              "lod2": 3374
+            },
+            "lod0": 0,
+            "lod1": 1260,
+            "lod2": 3374,
+            "budgetDemotions": 0,
+            "capacity": 10000,
+            "overflow": 0,
+            "capacityOverflow": 0
+          },
+          "characters": {
+            "instances": 116,
+            "byClass": {
+              "human": 75,
+              "cultivator": 12,
+              "beast": 26,
+              "spirit": 3,
+              "wraith": 0
+            },
+            "lod": [
+              0,
+              26,
+              90
+            ],
+            "triangles": 864,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "buildings": 122,
+            "villages": 7,
+            "houses": 133,
+            "centers": 7,
+            "sects": 0,
+            "instances": 122,
+            "triangles": 1120,
+            "lod": [
+              0,
+              12,
+              110
+            ],
+            "hlod": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "capacityOverflow": 0,
+            "budgetDemotions": 0
+          }
+        },
+        "nether": {
+          "trees": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          },
+          "characters": {
+            "instances": 0,
+            "byClass": {
+              "human": 0,
+              "cultivator": 0,
+              "beast": 0,
+              "spirit": 0,
+              "wraith": 0
+            },
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacityOverflow": 0,
+            "capacity": 3256,
+            "budgetDemotions": 0
+          },
+          "buildings": {
+            "absent": true,
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "overflow": 0,
+            "capacity": 0
+          }
+        }
+      },
+      "resources": {
+        "geometries": 26,
+        "textures": 6,
+        "programs": 12
+      },
+      "worldDigest": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 33113475,
+        "value": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74"
+      },
+      "visiblePlanes": [
+        "mortal",
+        "nether"
+      ],
+      "regionAudit": [
+        {
+          "plane": "mortal",
+          "inside": false,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "WaterLayer",
+            "VegetationLayer",
+            "EntityLayer",
+            "SettlementLayer",
+            "WorldMarkerLayer"
+          ],
+          "seen": {
+            "trees": 4634,
+            "characters": 116,
+            "buildings": 122
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        },
+        {
+          "plane": "nether",
+          "inside": true,
+          "shared": true,
+          "presentLayers": [
+            "TerrainMesh",
+            "EntityLayer"
+          ],
+          "seen": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          },
+          "leaks": {
+            "trees": 0,
+            "characters": 0,
+            "buildings": 0
+          }
+        }
+      ]
+    }
+  ],
+  "pickerIdentity": {
+    "entityId": 34,
+    "x": 123.82364858846101,
+    "y": 94.88189958640949,
+    "kind": "cultivator",
+    "level": 2,
+    "nearestHouse": {
+      "x": 124,
+      "y": 88,
+      "type": 1
+    },
+    "distanceToHouse": 6.884158753092123,
+    "source": "deriveEntities cultivator 5-20 cells from real house; all visible GLB modules and Host.pick confirmed at LOD0/1",
+    "preferredByApplyVisibleCamera": true,
+    "levels": [
+      {
+        "ok": true,
+        "id": 34,
+        "wantedLod": 0,
+        "pickedEntityId": 34,
+        "mesh": "Cultivator:body_base",
+        "instance": 4,
+        "zoom": 18,
+        "yaw": 1.77,
+        "polar": 0.65,
+        "surface": {
+          "triangle": 0,
+          "pixel": [
+            547.1196670340528,
+            398.52969381387095
+          ],
+          "worldPoint": [
+            24.6200207422177,
+            22.790779531002045,
+            31.238643345112603
+          ],
+          "boundBefore": {
+            "center": [
+              -0.7536968495686729,
+              5.596231455834679,
+              24.968053441924322
+            ],
+            "radius": 79.46764346338735
+          },
+          "selfInstance": 4,
+          "frontObject": "Cultivator:body_base",
+          "frontInstance": 4,
+          "pick": {
+            "entityId": 34,
+            "plane": "mortal",
+            "kind": "entity"
+          },
+          "repairedBoundRadius": 79.46764346338735,
+          "repairedSelfInstance": null,
+          "repairedFrontObject": null,
+          "repairedFrontInstance": null,
+          "repairedPick": null
+        },
+        "counts": [
+          119,
+          0,
+          0
+        ]
+      },
+      {
+        "ok": true,
+        "id": 34,
+        "wantedLod": 1,
+        "pickedEntityId": 34,
+        "mesh": "Entity:cultivator:LOD1",
+        "instance": 4,
+        "zoom": 6,
+        "yaw": 1.77,
+        "polar": 0.65,
+        "surface": {
+          "triangle": 0,
+          "pixel": [
+            538.7643437049283,
+            386.15550963220363
+          ],
+          "worldPoint": [
+            24.392930482824642,
+            23.629383246103924,
+            31.625232212245464
+          ],
+          "boundBefore": {
+            "center": [
+              -0.7536968495686764,
+              5.983731384309105,
+              24.929642375988234
+            ],
+            "radius": 79.83767701196523
+          },
+          "selfInstance": 4,
+          "frontObject": "Entity:cultivator:LOD1",
+          "frontInstance": 4,
+          "pick": {
+            "entityId": 34,
+            "plane": "mortal",
+            "kind": "entity"
+          },
+          "repairedBoundRadius": 79.83767701196523,
+          "repairedSelfInstance": null,
+          "repairedFrontObject": null,
+          "repairedFrontInstance": null,
+          "repairedPick": null
+        },
+        "counts": [
+          33,
+          86,
+          0
+        ]
+      }
+    ]
+  },
+  "simulation": [
+    {
+      "mode": "no-render",
+      "days": 600,
+      "sha256": "935cfa00a5e67da9bea5b53a7d88efe0521d9d33739721c79547f8878072d486",
+      "rngCalls": 182879,
+      "rngByStream": {
+        "life": 169051,
+        "upperSpatial": 12827,
+        "upper": 1001
+      },
+      "populations": {
+        "mortal": 93,
+        "upper": 12,
+        "nether": 30
+      }
+    },
+    {
+      "mode": "baseline",
+      "days": 600,
+      "sha256": "935cfa00a5e67da9bea5b53a7d88efe0521d9d33739721c79547f8878072d486",
+      "rngCalls": 182879,
+      "rngByStream": {
+        "life": 169051,
+        "upperSpatial": 12827,
+        "upper": 1001
+      },
+      "populations": {
+        "mortal": 93,
+        "upper": 12,
+        "nether": 30
+      }
+    },
+    {
+      "mode": "pilot-no-lod",
+      "days": 600,
+      "sha256": "935cfa00a5e67da9bea5b53a7d88efe0521d9d33739721c79547f8878072d486",
+      "rngCalls": 182879,
+      "rngByStream": {
+        "life": 169051,
+        "upperSpatial": 12827,
+        "upper": 1001
+      },
+      "populations": {
+        "mortal": 93,
+        "upper": 12,
+        "nether": 30
+      }
+    },
+    {
+      "mode": "pilot-lod",
+      "days": 600,
+      "sha256": "935cfa00a5e67da9bea5b53a7d88efe0521d9d33739721c79547f8878072d486",
+      "rngCalls": 182879,
+      "rngByStream": {
+        "life": 169051,
+        "upperSpatial": 12827,
+        "upper": 1001
+      },
+      "populations": {
+        "mortal": 93,
+        "upper": 12,
+        "nether": 30
+      }
+    },
+    {
+      "mode": "pilot-camera",
+      "days": 600,
+      "sha256": "935cfa00a5e67da9bea5b53a7d88efe0521d9d33739721c79547f8878072d486",
+      "rngCalls": 182879,
+      "rngByStream": {
+        "life": 169051,
+        "upperSpatial": 12827,
+        "upper": 1001
+      },
+      "populations": {
+        "mortal": 93,
+        "upper": 12,
+        "nether": 30
+      }
+    },
+    {
+      "mode": "pilot-realms",
+      "days": 600,
+      "sha256": "935cfa00a5e67da9bea5b53a7d88efe0521d9d33739721c79547f8878072d486",
+      "rngCalls": 182879,
+      "rngByStream": {
+        "life": 169051,
+        "upperSpatial": 12827,
+        "upper": 1001
+      },
+      "populations": {
+        "mortal": 93,
+        "upper": 12,
+        "nether": 30
+      }
+    }
+  ],
+  "checks": {
+    "core": [
+      {
+        "name": "empty LOD bounds invalidate when a real entity enters the batch",
+        "passed": true
+      },
+      {
+        "name": "screen projection follows zoom/viewport/vertical tilt and finite dead bands",
+        "passed": true
+      },
+      {
+        "name": "density budget demotes detailed presentation instead of deleting facts",
+        "passed": true
+      },
+      {
+        "name": "tree fixed batches reduce real geometry; camera changes preserve facts and resources",
+        "passed": true
+      },
+      {
+        "name": "all LOD batches use Stage RegionGeometry; realm transitions preserve ownership and identity",
+        "passed": true
+      },
+      {
+        "name": "character detailed/reduced/glyph batches preserve all derived identities",
+        "passed": true
+      },
+      {
+        "name": "settlement HLOD remains a prototype, restores real houses and refuses mixed-region clusters",
+        "passed": true
+      },
+      {
+        "name": "600 real simulation days: six render modes produce identical full World SHA-256 and RNG counts",
+        "passed": true
+      }
+    ],
+    "legacyCli": {
+      "requested": 14,
+      "passed": 14,
+      "failed": 0,
+      "finalBoundsRechecks": {
+        "completedAt": "2026-10-03T15:16:32.632Z",
+        "results": [
+          {
+            "name": "M1",
+            "exitCode": 0,
+            "log": "final-bounds-m1.log"
+          },
+          {
+            "name": "Characters",
+            "exitCode": 0,
+            "log": "final-bounds-characters.log"
+          },
+          {
+            "name": "M2C + Pilot",
+            "exitCode": 0,
+            "log": "final-bounds-m2c.log"
+          }
+        ],
+        "reason": "InstancedMesh cached bounds invalidation was added after the full 14-suite pass"
+      }
+    },
+    "browserMatrix": {
+      "pass": true,
+      "cases": 15,
+      "errors": []
+    },
+    "lifecycle": {
+      "pass": true,
+      "frames": 600,
+      "resizeRestored": true,
+      "glErrors": []
+    },
+    "soak": {
+      "pass": true,
+      "frames": 6000,
+      "blocks": 20,
+      "resources": {
+        "baseline/no-lod/mortal": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "baseline/no-lod/upper": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "baseline/no-lod/nether": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "baseline/lod/mortal": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "baseline/lod/upper": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "baseline/lod/nether": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "pilot/no-lod/mortal": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "pilot/no-lod/upper": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "pilot/no-lod/nether": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "pilot/lod/mortal": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "pilot/lod/upper": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        },
+        "pilot/lod/nether": {
+          "geometries": 36,
+          "textures": 8,
+          "programs": 14
+        }
+      },
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "first": {
+          "available": true,
+          "afterForcedGC": true,
+          "jsHeapUsedBytes": 10953860,
+          "jsHeapTotalBytes": 16515072,
+          "domNodes": 1063,
+          "jsEventListeners": 79
+        },
+        "last": {
+          "available": true,
+          "afterForcedGC": true,
+          "jsHeapUsedBytes": 11262264,
+          "jsHeapTotalBytes": 13369344,
+          "domNodes": 1063,
+          "jsEventListeners": 79
+        },
+        "heapGrowthBytes": 308404,
+        "heapLimitBytes": 22080933,
+        "domNodeDelta": 0,
+        "domNodeLimitDelta": 306.3000000000002,
+        "listenerDelta": 0,
+        "listenerLimitDelta": 107.9,
+        "tolerance": "post-GC end-of-soak JS heap <= 1.25x first block + 8 MiB; DOM nodes <= first + 10% + 200; listeners <= first + 10% + 100 to allow framework/inspector counter fluctuation"
+      },
+      "browserErrors": []
+    },
+    "localBrowserSmoke": {
+      "generatedAt": "2026-10-03T15:08:56.099Z",
+      "sourceCommit": null,
+      "runId": null,
+      "node": "v24.11.1",
+      "platform": "win32",
+      "url": "http://127.0.0.1:4182/inkbox.html",
+      "preflight": [
+        {
+          "resource": "/inkbox.html",
+          "status": 200,
+          "contentType": "text/html; charset=utf-8"
+        },
+        {
+          "resource": "/src/inkbox/main.js",
+          "status": 200,
+          "contentType": "text/javascript; charset=utf-8"
+        },
+        {
+          "resource": "/vendor/three/build/three.module.js",
+          "status": 200,
+          "contentType": "text/javascript; charset=utf-8"
+        }
+      ],
+      "suites": [
+        {
+          "name": "canvas",
+          "script": "scripts/inkbox-playtest.mjs",
+          "args": [
+            "--shots=reports/ci/canvas",
+            "--url=http://127.0.0.1:4182/inkbox.html"
+          ],
+          "exitCode": 0,
+          "durationMs": 81145.2288
+        },
+        {
+          "name": "m2a",
+          "script": "scripts/inkbox-render3d-m2a-browser.mjs",
+          "args": [],
+          "exitCode": 0,
+          "durationMs": 46952.3288
+        },
+        {
+          "name": "m2b",
+          "script": "scripts/inkbox-render3d-m2b-browser.mjs",
+          "args": [],
+          "exitCode": 0,
+          "durationMs": 54410.60500000001
+        },
+        {
+          "name": "m2c",
+          "script": "scripts/inkbox-render3d-m2c-browser.mjs",
+          "args": [],
+          "exitCode": 0,
+          "durationMs": 77423.775
+        },
+        {
+          "name": "m2c2a",
+          "script": "scripts/inkbox-render3d-m2c2a-browser.mjs",
+          "args": [],
+          "exitCode": 0,
+          "durationMs": 118263.86950000003
+        }
+      ],
+      "status": "passed"
+    },
+    "build": {
+      "exitCode": 0,
+      "command": "npm run build",
+      "log": "reports/m2c2a/gates/build.log",
+      "package": "dist/zuotian-guan-jing-inkbox-1.0.0.zip"
+    }
+  },
+  "scope": "mortal small-village HLOD prototype; current assets only; controlled next-family pilot approved, mass expansion needs per-family and multiple-device budgets",
+  "visualReview": {
+    "reviewedAt": "2026-10-03T15:19:57.551Z",
+    "images": 12,
+    "decision": "Engineering prototype accepted; single-family controlled pilot; mass family production pending per-family and multiple-device budgets",
+    "details": "M2C2A_VISUAL_ACCEPTANCE.md"
+  }
+}

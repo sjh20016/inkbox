@@ -42,6 +42,9 @@ export const VENDOR_FILES = [
   'build/three.module.js',
   'build/three.core.js',
   'examples/jsm/controls/OrbitControls.js',
+  'examples/jsm/loaders/GLTFLoader.js',
+  'examples/jsm/utils/BufferGeometryUtils.js',
+  'examples/jsm/utils/SkeletonUtils.js',
 ];
 
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));

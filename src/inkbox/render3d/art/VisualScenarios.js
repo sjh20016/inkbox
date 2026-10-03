@@ -83,8 +83,13 @@ export async function applyVisibleCamera(host,name) {
     return {x:(v.x+1)*host.width/2,y:(1-v.y)*host.height/2,inFrame:Math.abs(v.x)<.88&&Math.abs(v.y)<.88&&v.z>-1&&v.z<1};
   };
   const ray=new T.Raycaster();
-  const blockers=[stage.terrain.mesh,stage.vegetation.mesh];
-  for(const group of [stage.entities.group,stage.settlements.group])group.traverse(o=>{if(o.isInstancedMesh&&o.visible&&o.count)blockers.push(o);});
+  const blockers=[stage.terrain.mesh];
+  const refreshBlockers=()=>{
+    blockers.length=0;blockers.push(stage.terrain.mesh);
+    for(const group of [stage.vegetation.group||stage.vegetation.mesh,stage.entities.group,stage.settlements.group])
+      group.traverse(o=>{if(o.isInstancedMesh&&o.visible&&o.count)blockers.push(o);});
+  };
+  refreshBlockers();
   const visibleObject=(mesh,x,y,lift)=>{
     const p=project(x,y,lift);if(!p.inFrame)return {...p,visible:false};
     ray.setFromCamera(new T.Vector2(p.x/host.width*2-1,1-p.y/host.height*2),host.cameraRig.camera);
@@ -94,7 +99,7 @@ export async function applyVisibleCamera(host,name) {
   for(const pair of pairs){const {entity,house,village,distance}=pair;
   const poi=name==='SETTLEMENT'?{x:(entity.x+house.x)/2,y:(entity.y+house.y)/2,source:'visible-house-cultivator-pair',entityId:entity.id,id:village.id,house,houses:village.houses.length,distance}:{x:entity.x,y:entity.y,source:'visible-real-cultivator',id:entity.id,kind:'cultivator',level:entity.level,nearestHouse:house,distanceToHouse:distance};
   for(const polar of [.65,.45,.28])for(const yaw of [.2,1.77,3.34,4.91]){
-    const view=applyCamera(host,name,{polar,yaw,poi});host.scene.updateMatrixWorld(true);host.cameraRig.camera.updateMatrixWorld(true);
+    const view=applyCamera(host,name,{polar,yaw,poi});host.art.update();refreshBlockers();host.scene.updateMatrixWorld(true);host.cameraRig.camera.updateMatrixWorld(true);
     const p=project(entity.x,entity.y,entity.lift+1.45),hit=p.inFrame?host.pick(p.x,p.y):null;
     ray.setFromCamera(new T.Vector2(p.x/host.width*2-1,1-p.y/host.height*2),host.cameraRig.camera);
     const front=ray.intersectObjects(blockers,false)[0];
@@ -111,7 +116,8 @@ export async function applyVisibleCamera(host,name) {
       const house=poi.house,houseMeshes=[];stage.settlements.group.traverse(o=>{if(o.isInstancedMesh)houseMeshes.push(o);});
       const houseProof=houseMeshes.map(mesh=>visibleObject(mesh,house.x+.5,house.y+.5,1.5)).find(v=>v.visible);
       const trees=[...stage.vegetation.trees].sort((a,b)=>Math.hypot(a.x-entity.x,a.y-entity.y)-Math.hypot(b.x-entity.x,b.y-entity.y)).slice(0,40);
-      const treeProof=trees.map(tree=>({...visibleObject(stage.vegetation.mesh,tree.x,tree.y,tree.size*.9),world:[tree.x,tree.y]})).find(v=>v.visible);
+      const treeMeshes=blockers.filter(mesh=>(stage.vegetation.lodMeshes||[stage.vegetation.mesh]).includes(mesh));
+      const treeProof=trees.flatMap(tree=>treeMeshes.map(mesh=>({...visibleObject(mesh,tree.x,tree.y,tree.size*.9),world:[tree.x,tree.y]}))).find(v=>v.visible);
       if(!houseProof||!treeProof)continue;
       proof.house=houseProof;proof.tree=treeProof;
     }
@@ -135,7 +141,7 @@ export async function measureRenderer(host, profile, { samples = 60 } = {}) {
   const visible=[...host.stages.values()].filter(s=>s.visible);
   return { profile,kind:'CPU-visible renderer.render() submission timing',samples, ...summarize(submission),rafFrameIntervals:summarize(intervals),
     calls:host.gpu.info.render.calls,triangles:host.gpu.info.render.triangles,
-    instances:visible.reduce((n,s)=>n+(s.entities?.stats.instances||0)+(s.vegetation?.mesh.count||0)+(s.settlements?.stats.buildings||0),0),
+    instances:visible.reduce((n,s)=>n+(s.entities?.stats.instances||0)+(s.vegetation?.stats.instances||0)+(s.settlements?.stats.buildings||0),0),
     rtResolution:null,dpr:host.gpu.getPixelRatio(),canvasResolution:[host.canvas.width,host.canvas.height] };
 }
 

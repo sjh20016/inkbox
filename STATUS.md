@@ -1,5 +1,9 @@
 # Project Status
 
+## 2026-10-03 · M2-C2A 实体 LOD 与密度预算
+
+已接入 Tree / Character / Building 三档真实几何、统一屏幕像素迟滞、可见对象优先预算和凡间聚落 HLOD 原型。现有 GLB 角色与施工前本地修改保留，模拟/世界生成没有改动。核心8组、最终浏览器15项和600+6000帧耐久通过；六模式600日完整World与RNG一致。Golden / Dense总面数减少53.45% /59.16%，总览draws保持12。详见 [实施报告](./M2C2A_LOD_REPORT.md)、[性能报告](./M2C2A_PERFORMANCE_REPORT.md)、[视觉验收](./M2C2A_VISUAL_ACCEPTANCE.md)。允许单家族受控试产，大量扩产仍需新家族及多设备预算。资产家族、群体动画、完整 HLOD 与 Trace Field 尚未扩产。下方 M2-C 及更早记录保留为当时事实。
+
 ## 2026-10-03 · M2-C 写意渲染基线
 
 M2-B 的视界工程已完成；M2-C 接入单一 ArtPass、只读高度/类型纹理、颜料地形、稀疏结构墨、共享民居/树/Mini 修士母版与开发调参。三界高程、Mask、拾取和模拟边界保持。实际门禁、Edge 图像、性能和后续范围由 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md) 与 [ROADMAP](./ROADMAP.md) 收口。

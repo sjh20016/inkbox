@@ -1,21 +1,24 @@
-# M2-C · 可扩展实体表现契约
+# M2-C / M2-C2A · 可扩展实体表现契约
 
 模拟实体不是 Object3D。World 是事实源，Render3D 的派生记录、颜色、LOD、实例槽和 GPU 资源不进入 World 或存档，不抽模拟随机流。
 
-| 类别 | 近景 | 中景 | 远景（后续） |
+| 类别 | LOD0 近景 | LOD1 中景 | LOD2 远景 |
 |---|---|---|---|
-| Character | Mini 3D；动画接口预留 | 同类合并几何 InstancedMesh | impostor / sprite / point |
-| Building | 墙、顶、门、基座 | 共享 geometry/material 的实例批次 | settlement HLOD / roof mass |
-| Tree | 树干 + 2–4 个实心树冠 | 共享低模实例 | cross-card / point / ink mass |
+| Character | 现有 GLB 模块 / procedural 母版 | 简化道袍、类别轮廓固定实例批次 | 闭合低面墨形；仍一对一映射身份 |
+| Building | 墙、顶、门、基座，80 tris | 合并墙顶，20 tris | 8-triangle roof mass；凡间小村 HLOD 原型 |
+| Tree | 树干 + 实心树冠，80 tris | 25-triangle 树冠轮廓 | 8-triangle 闭合 ink mass |
 
-本轮只生产一套 Base 修士、民居、树，不新增实体品种、动画系统或完整 HLOD。距离目前依据正交相机投影像素尺寸减少对比度、飞白与轮廓信息；这不等于几何 LOD 或可承诺无限实体规模。
+M2-C2A 增加真实几何 LOD 和密度预算，完整资产家族、动画系统与完整 HLOD 仍未实施。`lod/PresentationBudget.js` 统一投影像素阈值、迟滞和配额；ArtPass 传入当前 viewport / zoom / 垂直投影倍率。材质 fade 与几何降面分别生效，不承诺无限实体规模。
 
 ## 批处理与身份
 
 - Geometry 和 Material 按母版或语义类别共享；30 个同类对象不产生 30 个 draw calls。
 - EntityLayer 保持原来的类别批次；`mesh.userData.renderEntities[instanceId]` 是筛选后的拾取身份映射。
+- LOD0/1/2 的单体角色均可精确拾取；树各档不参与 picker。凡间 HLOD 点击返回 `kind=settlement` 和真实 `settlementId`，普通房屋沿用地形检视。划窗采样只 raycast 凡间地形，不吸附角色或聚落中心。
 - 房屋复用已有 `village.houses` / 聚落中心 / 宗门位置；不在画面中伪造道路、农田或洞府事实。
 - 植被继续由 `deriveVegetation` 派生，归属只走 Stage 的 `RegionGeometry`；高度只走该 Stage 的 `ElevationField`。
+- HLOD 只合并同村真实房屋。成员及整个表现包围范围必须位于 Region 同侧；跨界聚落恢复单屋批次，避免整村漏入另一界。上界/幽冥不新增虚构村落、植被或水体。
+- 预算只降低表现细节，不删 World 人口或房屋；配额拥挤时优先镜头内对象。禁用 LOD 的对照保持完整 LOD0。调试统计分别提供逻辑对象数、实际实例数、LOD 分布、三角形、overflow、capacity 与 HLOD 数量。
 - 同类实例容量不足必须暴露 overflow；后续扩容按块分配，不在逐帧中创建/释放对象。
 - 模型朝向、颜色、材质和实例槽是渲染状态，不得写回人物对象。关闭 ArtPass 恢复旧表现，重新打开复用已分配资源。
 

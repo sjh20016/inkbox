@@ -1,13 +1,15 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-> 事实核对：2026-10-03，M2-C 写意渲染基线。读序：README → 本文 → 当前任务涉及的契约 / 源码。
+> 事实核对：2026-10-03，M2-C2A 实体 LOD 与密度预算。读序：README → 本文 → 当前任务涉及的契约 / 源码。
 > 阶段看 ROADMAP，目录和模块责任看 ARCHITECTURE，历史查 STATUS；本地 MEMORY 只作索引。
 
 ## 0. 当前状态与范围
 
 M2-B 的完整 Layer Mask、共享 ElevationField / RegionGeometry、界缘、3D 划窗与拾取已完成。M2-C 在同一个 Host/Renderer/Camera、三个 Stage 上增加薄 ArtPass；不改变模拟、存档或视界定义。范围与证据见 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md)。
 
-3D 默认 `art=pilot`，`art=baseline/pigment/ink/low` 用于对照；`artdebug=1` 才出现调参面板。地形 GPU 纹理由既有 height/type dirty 更新；实体仍按原类别实例化，不与 World 对象一一对应。完整资产家族、动画、几何 LOD/HLOD 和 Gameplay G 留到后续授权。
+M2-C2A 接入三档真实几何 LOD、迟滞、密度预算与凡间小聚落 HLOD 原型；[实施与验收](./M2C2A_LOD_REPORT.md)、[性能](./M2C2A_PERFORMANCE_REPORT.md)、[视觉](./M2C2A_VISUAL_ACCEPTANCE.md) 是本轮证据入口。3D 默认 `art=pilot` 且 LOD 开启，`lod=off` 保留全 LOD0；`artdebug=1` 才出现调参面板。现有 GLB 近景角色保留。完整资产家族、动画、完整 HLOD、Trace Field 和 Gameplay G 留到后续授权。
+
+封板检查：C2A核心8组、旧CLI14项、浏览器矩阵15项、600+6000帧及本机五套Browser Smoke通过。下一步允许单家族受控试产，大量扩产仍需新家族和多设备预算；本地绿色结果不是远端Actions结果。
 
 用户允许实验建筑资产自由修改，并指定 `美术素材/配色参考` 为后续颜色参考；使用索引见 [参考资产索引](./美术素材/参考资产索引.md)。范式包用于研究，产品不依赖整套第三方素材。
 
@@ -57,14 +59,14 @@ Three 固定为 `0.186.1`：浏览器 importmap 读 `vendor/three/`，Node 测�
 
 | 门禁 | 命令 / 环境 |
 | --- | --- |
-| Fast Gate（push / PR / 手动） | core、view、presentation、render3d、render3d:m1、render3d:bridge、render3d:m2a、m2b、m2c、vendor、build |
+| Fast Gate（push / PR / 手动） | core、view、presentation、render3d、render3d:m1、render3d:bridge、render3d:m2a、m2b、m2c、m2c2a、vendor、build |
 | Heavy Gate（与 Fast 并行） | regression、three-realms、save-equivalence |
-| Browser Smoke（仅 workflow_dispatch） | Windows Edge；依次 `test:browser` + `test:render3d:m2a:browser` |
+| Browser Smoke（仅 workflow_dispatch） | Windows Edge；依次 Canvas + M2-A / M2-B / M2-C / M2-C2A |
 | Nightly（schedule / 手动） | `test:simulation` + `inkbox:longrun`；没有 `test:longrun` 入口 |
 
 命令与用途详见 [tests/README](./tests/README.md)。本地浏览器测试先起 4180；playtest 的 `--port` 是 CDP 端口，游戏地址用 `--url`。
 普通 CI 不运行浏览器和 800 年长测，不删测试、不把断言改警告、不加 `|| true`。
-M2-A 的本地证据在 `reports/release/render3d-m2a/`；CI 的 `inkbox-browser-smoke.mjs` 自管服务器与两套原测试的生命周期，分别记录退出码；重跑写入独立目录并上传 Actions artifact，不覆盖硬件基线。
+M2-A 的本地证据在 `reports/release/render3d-m2a/`；CI 的 `inkbox-browser-smoke.mjs` 自管服务器与五套测试的生命周期，分别记录退出码；重跑写入独立目录并上传 Actions artifact，不覆盖硬件基线。C2A 代表性证据在 `reports/release/render3d-m2c2a/`，完整本地采样在 `reports/m2c2a/`；soak 单独执行，不与性能采样并发。
 M2-C 最新 Edge 复验见 `reports/release/render3d-m2c/browser/`。旧 M2-A oracle 已补齐 M2-B 可见界缘及独立解码，原样本与退出门禁保留，不能通过隐藏界缘或跳过样本来消除偏差。
 旧阶段固定断言数与文件数只保留在对应报告；save-equivalence 的断言数量会随内容变化，不能当稳定指标。
 
@@ -75,7 +77,7 @@ Git 的源码、素材和开发记录范围大于发布包，具体归属见 ARC
 
 - `剧情文案素材/` 是活跃文案资产，已入 Git 且随包；`美术素材/` 的设计输入见参考索引，产品只加载已接入的代码母版，整套参考包不进运行包。
 - `scripts/_*.mjs` 是已入 Git 的历史一次性探针，保留参考，不在 npm / CI / build 门禁中。
-- `reports/release/render3d-m2a/` 的正式截图 / JSON 已入 Git 且随包；其他 reports 与 `*.log` 是本地输出。
+- `reports/release/render3d-m2a/`、`render3d-m2c/` 的正式证据随包；`render3d-m2c2a/` 只长期保存代表图及摘要，不放重复大矩阵。其他 reports 与 `*.log` 是本地 / Actions 输出。
 - `.workbuddy-ai/`、`.local-backups/`、node_modules、dist 不入 Git。备份不能作为源码或发布依赖。
 
 ## 7. 开发纪律

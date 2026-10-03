@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import { ElevationField } from '../terrain/ElevationField.js';
 import { deriveVegetation } from './deriveVegetation.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
-import { createTreePilot } from '../art/PilotAssets.js';
 import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
+import { createTreeLODBatches } from '../lod/TreeLODAssets.js';
+import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
 
 function pixelTree() {
   const data = new Uint8Array(16 * 24 * 4);
@@ -36,7 +37,24 @@ export class VegetationLayer {
     this.regionInside = true;
     this.pendingRegionRebuild = false;
     this.artProfile = null;
-    this.pilotGeometry = null; this.pilotMaterial = null;
+    this.lodEnabled = false;
+    this.artView = {};
+    this._viewPpu = NaN; this._viewVerticalPpu = NaN;
+    this._cameraMatrix = new Float64Array(16); this._cameraMatrix.fill(NaN);
+    this._projectPoint = new THREE.Vector3();
+    this._requestedLods = new Map(); this._visibleBudgetTrees = []; this._outsideBudgetTrees = [];
+    this._budgetCrowded = false;
+    this._lodByTree = new Map();
+    this.lodGeometries = createTreeLODBatches();
+    this.pilotGeometry = this.lodGeometries[0]; this.pilotMaterial = null;
+    this._nextLodByTree = new Map();
+    this._dummy = new THREE.Object3D();
+    this._batchCounts = [0, 0, 0]; this._lodCounts = [0, 0, 0];
+    this._budgetDemotions = 0;
+    this.stats = { trees: 0, instances: 0, triangles: 0, lod: [0, 0, 0],
+      lodCounts: { lod0: 0, lod1: 0, lod2: 0 }, lod0: 0, lod1: 0, lod2: 0,
+      budgetDemotions: 0, capacity: LOD_BUDGETS.categories.tree.capacity,
+      overflow: 0, capacityOverflow: 0 };
     this.texture = pixelTree();
     this.geometry = new THREE.PlaneGeometry(1, 1.5); this.geometry.translate(0, 0.75, 0);
     this.material = new THREE.MeshLambertMaterial({ map: this.texture, alphaTest: 0.5, side: THREE.DoubleSide });
@@ -44,24 +62,62 @@ export class VegetationLayer {
     this.mesh.renderOrder = RENDER_ORDER.vegetation;
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.mesh.frustumCulled = false;
+    this.group = new THREE.Group();
+    this.group.name = 'VegetationLayer';
+    this.group.add(this.mesh);
+    this.mesh.userData.lod = 0;
+    this.lodMeshes = [this.mesh, null, null];
+    for (let lod = 1; lod <= 2; lod++) {
+      const mesh = new THREE.InstancedMesh(this.lodGeometries[lod], this.material, 10000);
+      mesh.name = `VegetationLOD${lod}`;
+      mesh.userData.lod = lod;
+      mesh.renderOrder = RENDER_ORDER.vegetation;
+      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      mesh.frustumCulled = false;
+      mesh.visible = false;
+      this.group.add(mesh);
+      this.lodMeshes[lod] = mesh;
+    }
     this.update();
   }
 
   setArtProfile(profile) {
-    const changed = !!this.artProfile !== !!profile;
-    this.artProfile = profile || null;
-    if (profile && !this.pilotGeometry) {
-      this.pilotGeometry = createTreePilot();
-      this.pilotMaterial = createPilotMaterial(profile, 1.5);
-    }
+    const nextProfile = profile || null;
+    const changed = this.artProfile !== nextProfile;
+    this.artProfile = nextProfile;
+    if (profile && !this.pilotMaterial) this.pilotMaterial = createPilotMaterial(profile, 1.5);
     if (profile) updatePilotMaterial(this.pilotMaterial, profile);
     this.mesh.geometry = profile ? this.pilotGeometry : this.geometry;
     this.mesh.material = profile ? this.pilotMaterial : this.material;
+    for (let lod = 1; lod <= 2; lod++) this.lodMeshes[lod].material = profile ? this.pilotMaterial : this.material;
     this.mesh.boundingBox = null; this.mesh.boundingSphere = null;
-    if (changed) this.update();
+    if (changed) this._reassignAndUpload(true);
   }
 
-  setArtView(view) { if (this.pilotMaterial) setPilotView(this.pilotMaterial, view); }
+  setLODEnabled(enabled) {
+    const next = !!enabled;
+    if (next === this.lodEnabled) return;
+    this.lodEnabled = next;
+    this._reassignAndUpload(true);
+  }
+
+  setArtView(view = {}) {
+    this.artView = view || {};
+    if (this.pilotMaterial) setPilotView(this.pilotMaterial, this.artView);
+    const ppu = Number.isFinite(this.artView.pixelsPerUnit) ? this.artView.pixelsPerUnit : 1;
+    const verticalPpu = Number.isFinite(this.artView.verticalPixelsPerUnit) ? this.artView.verticalPixelsPerUnit : ppu;
+    const scaleChanged = ppu !== this._viewPpu || verticalPpu !== this._viewVerticalPpu;
+    const matrix = this.artView.camera?.matrixWorldInverse?.elements;
+    let cameraChanged = false;
+    if (matrix) for (let i = 0; i < 16; i++) {
+      if (matrix[i] !== this._cameraMatrix[i]) cameraChanged = true;
+      this._cameraMatrix[i] = matrix[i];
+    }
+    if (scaleChanged || (cameraChanged && this.artProfile && this.lodEnabled && this._budgetCrowded)) {
+      this._viewPpu = ppu; this._viewVerticalPpu = verticalPpu;
+      this._reassignAndUpload(false);
+    }
+  }
   /**
    * §19：区域判据只来自 `RegionGeometry`。
    * §22：这里**只登记**「需要重建」，真正的重建交给 `PlaneStage.update()` 的
@@ -81,24 +137,106 @@ export class VegetationLayer {
       ? all.filter(tree => this.regionGeometry.isInsideCell(tree.x, tree.y) === this.regionInside)
       : all;
     this.pendingRegionRebuild = false;
-    const dummy = new THREE.Object3D();
-    let j = 0;
+    this._reassignAndUpload(true);
+  }
+
+  _reassignAndUpload(forceUpload) {
+    if (!this.trees) return;
+    const previous = this._lodByTree, nextStates = this._nextLodByTree;
+    nextStates.clear(); this._lodCounts.fill(0); this._budgetDemotions = 0;
+    const requested = this._requestedLods; requested.clear();
+    const desiredCounts = [0, 0, 0], enabled = !!this.artProfile && this.lodEnabled;
     for (const tree of this.trees) {
+      const px = projectedPixels(1.5 * tree.size, this.artView, 0.8 * tree.size);
+      const desired = chooseLOD('tree', px, previous.get(tree.cell), enabled);
+      requested.set(tree.cell, desired); desiredCounts[desired]++;
+    }
+    const budget = LOD_BUDGETS.categories.tree;
+    this._budgetCrowded = enabled && (desiredCounts[0] > budget.lod0
+      || desiredCounts[1] + Math.max(0, desiredCounts[0] - budget.lod0) > budget.lod1);
+    let ordered = this.trees;
+    if (this._budgetCrowded && this.artView.camera) {
+      // Scarce near-detail slots belong to the visible forest first. Source
+      // ordering must not consume the budget in an off-screen map corner.
+      const visible = this._visibleBudgetTrees, outside = this._outsideBudgetTrees;
+      visible.length = outside.length = 0;
+      for (const tree of this.trees) {
+        const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
+        this._projectPoint.set(p.x, p.y + tree.size * .75, p.z).project(this.artView.camera);
+        const { x, y, z } = this._projectPoint;
+        (Math.abs(x) <= 1.1 && Math.abs(y) <= 1.1 && Math.abs(z) <= 1.1 ? visible : outside).push(tree);
+      }
+      // Linear, stable partition; stationary overview cameras do no projection
+      // work, and a crowded moving view does not allocate/sort N entry objects.
+      ordered = visible.concat(outside);
+    }
+    for (const tree of ordered) {
+      let lod = 0;
+      if (this.artProfile && this.lodEnabled) {
+        const desired = requested.get(tree.cell);
+        const budgetResult = budgetLOD('tree', desired, this._lodCounts);
+        lod = budgetResult.lod;
+        if (budgetResult.demoted) this._budgetDemotions++;
+      } else this._lodCounts[0]++;
+      nextStates.set(tree.cell, lod);
+    }
+    let changed = previous.size !== nextStates.size;
+    if (!changed) for (const [cell, lod] of nextStates) if (previous.get(cell) !== lod) { changed = true; break; }
+    this._lodByTree = nextStates; this._nextLodByTree = previous; this._nextLodByTree.clear();
+    if (forceUpload || changed) this._writeMatrices();
+    this._updateStats();
+  }
+
+  _writeMatrices() {
+    const dummy = this._dummy, counts = this._batchCounts;
+    counts.fill(0);
+    for (const mesh of this.lodMeshes) mesh.userData.renderTrees = [];
+    for (const tree of this.trees) {
+      const lod = this._lodByTree.get(tree.cell) ?? 0;
       const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
       dummy.position.set(p.x, p.y, p.z); dummy.scale.setScalar(tree.size);
-      // The opaque volume needs one real submission; baseline retains its cross cards.
-      for (let side = 0; side < (this.artProfile ? 1 : 2); side++) {
-        dummy.scale.setScalar(tree.size);
-        dummy.rotation.y = tree.rotation + side * Math.PI / 2;
-        dummy.updateMatrix(); this.mesh.setMatrixAt(j++, dummy.matrix);
+      const target = this.lodMeshes[lod];
+      if (lod === 0 && !this.artProfile) {
+        for (let side = 0; side < 2; side++) {
+          dummy.rotation.y = tree.rotation + side * Math.PI / 2;
+          dummy.updateMatrix(); target.setMatrixAt(counts[lod]++, dummy.matrix);
+          target.userData.renderTrees.push(tree);
+        }
+      } else {
+        dummy.rotation.y = tree.rotation;
+        dummy.updateMatrix(); target.setMatrixAt(counts[lod]++, dummy.matrix);
+        target.userData.renderTrees.push(tree);
       }
     }
-    this.mesh.count = j; this.mesh.instanceMatrix.needsUpdate = true;
-    const triangles = (this.mesh.geometry.index?.count ?? this.mesh.geometry.getAttribute('position').count) / 3;
-    this.stats = { trees: this.trees.length, instances: j, triangles: j * triangles };
+    for (let lod = 0; lod < 3; lod++) {
+      const mesh = this.lodMeshes[lod];
+      mesh.count = counts[lod]; mesh.instanceMatrix.needsUpdate = true;
+      mesh.boundingBox = null; mesh.boundingSphere = null;
+      mesh.visible = counts[lod] > 0;
+    }
+  }
+
+  _updateStats() {
+    const s = this.stats, lods = this._lodCounts, counts = this._batchCounts;
+    let instances = 0, triangles = 0;
+    for (let lod = 0; lod < 3; lod++) {
+      const mesh = this.lodMeshes[lod];
+      const vertexCount = mesh.geometry.index?.count ?? mesh.geometry.getAttribute('position').count;
+      triangles += counts[lod] * vertexCount / 3; instances += counts[lod];
+      s.lod[lod] = lods[lod];
+    }
+    const capacity = LOD_BUDGETS.categories.tree.capacity;
+    const overflow = Math.max(0, this.trees.length - capacity);
+    s.trees = this.trees.length; s.instances = instances; s.triangles = triangles;
+    s.lod0 = s.lod[0]; s.lod1 = s.lod[1]; s.lod2 = s.lod[2];
+    s.lodCounts.lod0 = s.lod[0]; s.lodCounts.lod1 = s.lod[1]; s.lodCounts.lod2 = s.lod[2];
+    s.budgetDemotions = this._budgetDemotions; s.capacity = capacity;
+    s.overflow = overflow; s.capacityOverflow = overflow;
   }
   dispose() {
     this.mesh.dispose(); this.geometry.dispose(); this.material.dispose(); this.texture.dispose();
-    this.pilotGeometry?.dispose(); this.pilotMaterial?.dispose();
+    this.pilotMaterial?.dispose();
+    for (let lod = 1; lod <= 2; lod++) this.lodMeshes[lod].dispose();
+    for (const geometry of this.lodGeometries) geometry.dispose();
   }
 }

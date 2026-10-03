@@ -1,5 +1,10 @@
 import * as THREE from 'three';
 
+function visiblySubmitted(object) {
+  for (let current = object; current; current = current.parent) if (!current.visible) return false;
+  return true;
+}
+
 // Raycast the geometry actually submitted to the GPU, including its mask index.
 // Depth wins at oblique angles; selecting an invisible plane behind a hill is wrong.
 export class PlanePicker {
@@ -23,16 +28,25 @@ export class PlanePicker {
       const objects = [stage.terrain.mesh];
       // Entity silhouettes are pickable too: a tall ghost must not inspect the
       // mortal terrain visible behind it. Instanced hits resolve via stage data.
-      if (stage.entities?.group.visible) stage.entities.group.traverse(object => {
-        if (object.isInstancedMesh && object.visible && object.count) objects.push(object);
+      if (!onlyPlane && stage.entities?.group.visible) stage.entities.group.traverse(object => {
+        if (object.isInstancedMesh && visiblySubmitted(object) && object.count) objects.push(object);
+      });
+      // A far village aggregate resolves to its real settlement, never to a
+      // fabricated house or character. Near/mid houses retain terrain picking.
+      if (!onlyPlane) stage.settlements?.group.traverse(object => {
+        if (object.isInstancedMesh && visiblySubmitted(object) && object.count
+          && object.userData.renderSettlements?.length) objects.push(object);
       });
       const hit = this.raycaster.intersectObjects(objects, false)[0];
       if (!hit || (nearest && nearest.distance <= hit.distance)) continue;
       const entity = hit.instanceId == null ? null : hit.object.userData.renderEntities?.[hit.instanceId];
-      const world = entity ? { x: entity.x, y: entity.y } : stage.coordinates.renderToWorld(hit.point.x, hit.point.z);
-      const cell = entity ? { x: Math.max(0, Math.min(stage.world.w - 1, Math.floor(entity.x))), y: Math.max(0, Math.min(stage.world.h - 1, Math.floor(entity.y))) }
+      const settlement = hit.instanceId == null ? null : hit.object.userData.renderSettlements?.[hit.instanceId];
+      const record = entity || settlement;
+      const world = record ? { x: record.x, y: record.y } : stage.coordinates.renderToWorld(hit.point.x, hit.point.z);
+      const cell = record ? { x: Math.max(0, Math.min(stage.world.w - 1, Math.floor(record.x))), y: Math.max(0, Math.min(stage.world.h - 1, Math.floor(record.y))) }
         : stage.coordinates.renderPointToCell(hit.point);
       nearest = { ...cell, plane: stage.plane, entityId: entity?.id,
+        settlementId: settlement?.settlementId, kind: entity ? 'entity' : settlement ? 'settlement' : 'terrain',
         point: hit.point, worldPoint: hit.point, world, stage, distance: hit.distance };
     }
     // M2-B B4（§62）：界缘断面也可以被命中——它同样是**提交给 GPU 的可见几何**，
