@@ -570,6 +570,186 @@
         "paper",
         "ink"
       ]
+    },
+    "env_ghost_0_lod0": {
+      "node": "env_ghost_0_lod0",
+      "triangles": 36,
+      "bounds": {
+        "min": [
+          -0.5234,
+          0,
+          -0.29098453567157134
+        ],
+        "max": [
+          0.4366,
+          1,
+          0.29098453567157134
+        ]
+      },
+      "uvSlots": [
+        0,
+        2,
+        7
+      ],
+      "semanticSlots": [
+        "paper",
+        "paperShade",
+        "stone"
+      ]
+    },
+    "env_ghost_0_lod1": {
+      "node": "env_ghost_0_lod1",
+      "triangles": 16,
+      "bounds": {
+        "min": [
+          -0.4525,
+          0,
+          -0.27999999999999997
+        ],
+        "max": [
+          0.34750000000000003,
+          1,
+          0.27999999999999997
+        ]
+      },
+      "uvSlots": [
+        0,
+        2,
+        7
+      ],
+      "semanticSlots": [
+        "paper",
+        "paperShade",
+        "stone"
+      ]
+    },
+    "env_ghost_shared_lod2": {
+      "node": "env_ghost_shared_lod2",
+      "triangles": 6,
+      "bounds": {
+        "min": [
+          -0.2420000000000002,
+          0,
+          -0.24248711305964277
+        ],
+        "max": [
+          0.35800000000000004,
+          1,
+          0.24248711305964285
+        ]
+      },
+      "uvSlots": [
+        0,
+        7
+      ],
+      "semanticSlots": [
+        "paper",
+        "stone"
+      ]
+    },
+    "env_ghost_1_lod0": {
+      "node": "env_ghost_1_lod0",
+      "triangles": 36,
+      "bounds": {
+        "min": [
+          -0.48,
+          0,
+          -0.29098453567157134
+        ],
+        "max": [
+          0.48,
+          1,
+          0.29098453567157134
+        ]
+      },
+      "uvSlots": [
+        0,
+        2,
+        7
+      ],
+      "semanticSlots": [
+        "paper",
+        "paperShade",
+        "stone"
+      ]
+    },
+    "env_ghost_1_lod1": {
+      "node": "env_ghost_1_lod1",
+      "triangles": 16,
+      "bounds": {
+        "min": [
+          -0.4,
+          0,
+          -0.27999999999999997
+        ],
+        "max": [
+          0.4,
+          1,
+          0.27999999999999997
+        ]
+      },
+      "uvSlots": [
+        0,
+        2,
+        7
+      ],
+      "semanticSlots": [
+        "paper",
+        "paperShade",
+        "stone"
+      ]
+    },
+    "env_ghost_2_lod0": {
+      "node": "env_ghost_2_lod0",
+      "triangles": 36,
+      "bounds": {
+        "min": [
+          -0.4366,
+          0,
+          -0.29098453567157134
+        ],
+        "max": [
+          0.5234,
+          1,
+          0.29098453567157134
+        ]
+      },
+      "uvSlots": [
+        0,
+        2,
+        7
+      ],
+      "semanticSlots": [
+        "paper",
+        "paperShade",
+        "stone"
+      ]
+    },
+    "env_ghost_2_lod1": {
+      "node": "env_ghost_2_lod1",
+      "triangles": 16,
+      "bounds": {
+        "min": [
+          -0.4075,
+          0,
+          -0.27999999999999997
+        ],
+        "max": [
+          0.4565,
+          1,
+          0.27999999999999997
+        ]
+      },
+      "uvSlots": [
+        0,
+        2,
+        7
+      ],
+      "semanticSlots": [
+        "paper",
+        "paperShade",
+        "stone"
+      ]
     }
   },
   "assets": {
@@ -632,6 +812,45 @@
       "hlod": "env_house_hall_hlod",
       "variant": "hall",
       "roofFamily": "gable"
+    },
+    "nether.ghost.0": {
+      "id": "nether.ghost.0",
+      "source": "authored ghost silhouette",
+      "realm": "nether",
+      "binding": "entities soulKind=ghost",
+      "pick": "entity",
+      "lods": [
+        "env_ghost_0_lod0",
+        "env_ghost_0_lod1",
+        "env_ghost_shared_lod2"
+      ],
+      "variant": 0
+    },
+    "nether.ghost.1": {
+      "id": "nether.ghost.1",
+      "source": "authored ghost silhouette",
+      "realm": "nether",
+      "binding": "entities soulKind=ghost",
+      "pick": "entity",
+      "lods": [
+        "env_ghost_1_lod0",
+        "env_ghost_1_lod1",
+        "env_ghost_shared_lod2"
+      ],
+      "variant": 1
+    },
+    "nether.ghost.2": {
+      "id": "nether.ghost.2",
+      "source": "authored ghost silhouette",
+      "realm": "nether",
+      "binding": "entities soulKind=ghost",
+      "pick": "entity",
+      "lods": [
+        "env_ghost_2_lod0",
+        "env_ghost_2_lod1",
+        "env_ghost_shared_lod2"
+      ],
+      "variant": 2
     }
   }
 }

@@ -35,6 +35,8 @@ import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/P
 import { CharacterBatch } from '../characters/CharacterBatch.js';
 import { createCharacterLODGeometries } from '../lod/CharacterLODAssets.js';
 import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
+import { EnvironmentBatch } from '../environment/EnvironmentBatch.js';
+import { GHOST_ASSET_IDS, ghostAssetFor, ordinaryNetherGhost } from './ghostFamily.js';
 
 /**
  * 实例容量。`LIMITS.maxEntities`（3000，凡间生灵上限）+ 余量覆盖 `world.wraiths`
@@ -92,6 +94,7 @@ export class EntityLayer {
     this.meshes = {};
     this.placeholderMeshes = {};
     this.characterBatch = null;
+    this.ghostBatch = null; this.productionAssetsEnabled = false;
     this.lodEnabled = false;
     this.artView = {};
     this._viewPpu = NaN; this._viewVerticalPpu = NaN;
@@ -248,6 +251,28 @@ export class EntityLayer {
     this.clock = Infinity;
   }
 
+  setEnvironmentAssets(library, material, enabled) {
+    const supported=library&&material&&this.world?.plane==='nether';
+    if (this.ghostBatch && (!supported||this.ghostBatch.library!==library||this.ghostBatch.material!==material)) {
+      this.ghostBatch.group.removeFromParent();this.ghostBatch.dispose();this.ghostBatch=null;
+    }
+    if (supported&&!this.ghostBatch) {
+      this.ghostBatch=new EnvironmentBatch(library,{material,capacity:CAPACITY,pickField:'renderEntities',assetIds:GHOST_ASSET_IDS});
+      for(const mesh of this.ghostBatch.meshes.values())mesh.renderOrder=RENDER_ORDER.entities;
+      this.group.add(this.ghostBatch.group);
+    }
+    const changed=this.productionAssetsEnabled!==!!enabled;
+    this.productionAssetsEnabled=!!enabled;
+    if (changed||supported) {this.lastDerived=null;this.clock=Infinity;}
+  }
+
+  useGhostFamily(item) { return this.productionAssetsEnabled&&this.ghostBatch&&ordinaryNetherGhost(this.world,item); }
+  ghostRecord(item,lod) {
+    const p=this.coordinates.worldToRender(item.x,item.y,0);
+    return {assetId:ghostAssetFor(this.world.seed,item.id),lod,source:item,
+      position:{x:p.x,y:this.elevation.at(item.x,item.y)+item.lift,z:p.z},scale:{x:1,y:2.2,z:1},rotationY:0};
+  }
+
   /**
    * @param {number} dt 真实秒
    * @param {object} world 凡间 world
@@ -325,9 +350,11 @@ export class EntityLayer {
     for (const meshes of Object.values(this.lodMeshes)) for (const mesh of meshes) register(mesh);
     const byClass = Object.fromEntries(ENTITY_CLASSES.map(cls => [cls, 0]));
     const characterRecords = [];
+    const ghostRecords = [];
     let instances = 0, overflow = 0;
     const lod = [0, 0, 0];
     for (const { cls, item, lod: level } of selection.entries) {
+      if (cls==='wraith'&&this.useGhostFamily(item)) {ghostRecords.push(this.ghostRecord(item,level));byClass[cls]++;instances++;lod[level]++;continue;}
       const ghost = !!this.characterBatch && cls === 'wraith' && item.appearance?.role === 'ghost';
       if (level === 0 && this.characterBatch && (cls === 'cultivator' || ghost)) {
         characterRecords.push(this.characterRecord(item));
@@ -367,6 +394,7 @@ export class EntityLayer {
       }
     }
     this._lodByEntity = selection.states;
+    this.ghostBatch?.write(ghostRecords);
     const capacityOverflow = Math.max(0, selection.entries.length - LOD_BUDGETS.categories.character.capacity);
     this.stats = { instances, byClass, lod, triangles: this.submittedTriangles(),
       overflow, capacityOverflow, capacity: LOD_BUDGETS.categories.character.capacity,
@@ -383,6 +411,7 @@ export class EntityLayer {
     let instances = 0; let overflow = 0;
     const byClass = {};
     const characterRecords = [];
+    const ghostRecords = [];
     for (const cls of ENTITY_CLASSES) {
       const mesh = this.placeholderMeshes[cls];
       const list = this.visibleList(derived, cls);
@@ -391,8 +420,9 @@ export class EntityLayer {
         byClass[cls] = 0;
         continue;
       }
-      const drawn = this.characterBatch && cls === 'wraith'
-        ? list.filter(item => !item.appearance || item.appearance.role !== 'ghost') : list;
+      const family=cls==='wraith'?list.filter(item=>this.useGhostFamily(item)):[];
+      for(const item of family)ghostRecords.push(this.ghostRecord(item,0));
+      const drawn = list.filter(item=>!this.useGhostFamily(item)&&!(this.characterBatch&&cls==='wraith'&&item.appearance?.role==='ghost'));
       if (this.characterBatch && cls === 'wraith') {
         for (const item of list) {
           if (item.appearance?.role === 'ghost') characterRecords.push(this.characterRecord(item));
@@ -419,8 +449,8 @@ export class EntityLayer {
       mesh.visible = n > 0;         // 空类别 ⇒ 连这次 draw call 都省掉
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-      byClass[cls] = n;
-      instances += n;
+      byClass[cls] = n+family.length;
+      instances += n+family.length;
     }
     if (this.characterBatch) {
       this.characterBatch.write(characterRecords);
@@ -432,6 +462,7 @@ export class EntityLayer {
         instances += 1;
       }
     }
+    this.ghostBatch?.write(ghostRecords);
     this.stats = { instances, byClass, lod: [instances, 0, 0], triangles: this.submittedTriangles(),
       overflow, capacityOverflow: Math.max(0, instances - LOD_BUDGETS.categories.character.capacity),
       capacity: LOD_BUDGETS.categories.character.capacity, budgetDemotions: 0 };
@@ -451,7 +482,7 @@ export class EntityLayer {
   characterRecord(item) {
     const p = this.coordinates.worldToRender(item.x, item.y, 0);
     return { id: item.id, role: item.appearance?.role || 'basic',
-      paletteIndex: item.appearance?.paletteIndex,
+      paletteIndex: this.productionAssetsEnabled&&this.world.plane==='nether'&&item.soulKind==='ghostCultivator'?4:item.appearance?.paletteIndex,
       x: p.x, y: this.elevation.at(item.x, item.y) + item.lift, z: p.z,
       source: item };
   }
@@ -489,6 +520,7 @@ export class EntityLayer {
     this.pilotGhostMaterial?.dispose();
     this.characterBatch?.dispose();
     this.characterBatch = null;
+    this.ghostBatch?.dispose(); this.ghostBatch = null;
     for (const meshes of Object.values(this.lodMeshes)) for (const mesh of meshes) {
       mesh.dispose(); mesh.userData.renderEntities = [];
     }

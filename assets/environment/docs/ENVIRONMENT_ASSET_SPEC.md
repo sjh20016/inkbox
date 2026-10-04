@@ -26,3 +26,11 @@ EntityAtlas.png is a 128×128 nearest index texture, with 8×8 cells storing slo
 The GLB has one shared glTF material, one external atlas URI, identity-transformed ASCII nodes and one primitive per module. Runtime validation compares manifest bounds, counts and semantic slots with decoded geometry.
 
 Fixed-capacity InstancedMesh batches borrow library geometry and one Stage material. World replacement and realm/style/production toggles reuse the library and atlas. The host loads once and releases the library after Stage buffers and materials. Production remains opt-in with ?renderer=3d&assets=on until full Pass1 acceptance.
+
+## Package 5 character reuse and ordinary Ghost Family
+
+Upper entities keep the existing body/rig and the role derived from real level, faction and dao.path. UpperStyle supplies mineral blue/green, ivory and sparse real role accents. Wandering state adds no wanderer outfit or sect token.
+
+Ghost cultivators keep body_base, hair_ghost, ghost_torn_hem and the existing soul_lamp prop. In production Nether presentation their cloth uses the cold grey-green slot. Only the actual actor lamp uses the sparse soul-flame red.
+
+Ordinary entities with soulKind=ghost in the Nether use three authored opaque tapered silhouettes, stable by seed/plane/entity ID. They have no face, rig, transparency, lamp or new role. LOD budgets are 36/16/6 triangles; all variants share the 6-triangle far geometry. Fixed InstancedMesh batches borrow the same environment atlas and Stage material and map directly to the original entities container. Mortal wraiths retain their previous presentation.

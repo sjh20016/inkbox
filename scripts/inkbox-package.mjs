@@ -170,6 +170,8 @@ const FILES = [
   'M2C2B0_VISUAL_ACCEPTANCE.md',
   'M2C2B0_READINESS.md',
   'M2C2B_SEMANTIC_ASSET_BINDING.md',
+  'scripts/inkbox-render3d-m2c2b-content.mjs',
+  'scripts/inkbox-render3d-m2c2b-content-browser.mjs',
   '美术素材/Inkbox_M2-C2A.1_M2-C2B0_三界视觉基线工程委托书_v1.md',
   '美术素材/三界视觉风格规划_美术方向文档_v1.md',
 ];
@@ -203,6 +205,7 @@ const RELEASE_SUMMARIES = [
   'reports/release/render3d-m2c2b-pass1/sample-summary.json',
   'reports/release/render3d-m2c2b-pass1/family-summary.json',
   'reports/release/render3d-m2c2b-pass1/hall-summary.json',
+  'reports/release/render3d-m2c2b-pass1/content-summary.json',
 ];
 
 function copyRelative(relative) {

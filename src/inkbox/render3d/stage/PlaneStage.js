@@ -86,8 +86,12 @@ export class PlaneStage {
         setEnvironmentMaterialView(this.environmentMaterial, this.environmentArtView);
       }
       this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
+      this.entities?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       previous?.dispose();
-    } else this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
+    } else {
+      this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
+      this.entities?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
+    }
   }
 
   setEnvironmentArtProfile(profile) {

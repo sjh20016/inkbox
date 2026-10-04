@@ -58,7 +58,9 @@
     "test:render3d:m2c2b0:soak": "node scripts/inkbox-render3d-m2c2b0-soak.mjs",
     "test:render3d:m2c2b0:perf": "node scripts/inkbox-realm-performance.mjs",
     "test:render3d:m2c2b:sample": "node scripts/inkbox-render3d-m2c2b-sample.mjs",
-    "test:render3d:m2c2b:sample:browser": "node scripts/inkbox-render3d-m2c2b-sample-browser.mjs"
+    "test:render3d:m2c2b:sample:browser": "node scripts/inkbox-render3d-m2c2b-sample-browser.mjs",
+    "test:render3d:m2c2b:content": "node scripts/inkbox-render3d-m2c2b-content.mjs",
+    "test:render3d:m2c2b:content:browser": "node scripts/inkbox-render3d-m2c2b-content-browser.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

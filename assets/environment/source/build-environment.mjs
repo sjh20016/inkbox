@@ -152,6 +152,23 @@ function tinyRoof(roof = 'gable', walls = false) {
   } else b.quad([-0.5,y,-depth/2],[0.5,y,-depth/2],[0.5,y,depth/2],[-0.5,y,depth/2],slot);
   return b.finish();
 }
+// Opaque tapered silhouettes, without a face, skeleton, lamp or invented role.
+function ghostSilhouette(variant, lod) {
+  const b=meshBuilder(), segments=lod===0?6:lod===1?4:3;
+  const levels=lod===0?[[.25,.28],[.62,.48],[.87,.30]]:lod===1?[[.35,.36],[.75,.40]]:[[.60,.4]];
+  const rings=levels.map(([y,r],row)=>Array.from({length:segments},(_,i)=>{
+    const angle=i*Math.PI*2/segments, taper=variant===1&&row===0?.72:variant===2&&row===0?1.2:1;
+    return [Math.cos(angle)*r*taper+(variant-1)*.07*y,y,Math.sin(angle)*r*.70];
+  }));
+  const slot=row=>row===levels.length-1?0:row%2?7:2;
+  for(let i=0;i<segments;i++){
+    const next=(i+1)%segments;
+    b.tri([0,0,0],rings[0][next],rings[0][i],7);
+    for(let row=0;row<rings.length-1;row++)b.quad(rings[row][next],rings[row][i],rings[row+1][i],rings[row+1][next],slot(row));
+    b.tri([(variant-1)*.07,1,0],rings.at(-1)[i],rings.at(-1)[next],0);
+  }
+  return b.finish();
+}
 function bounds(positions) {
   const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
   for(let i=0;i<positions.length;i+=3)for(let a=0;a<3;a++){min[a]=Math.min(min[a],positions[i+a]);max[a]=Math.max(max[a],positions[i+a]);}
@@ -192,6 +209,11 @@ function main() {
     assets[spec.id]={id:spec.id,source:path.basename(spec.file,'.glb'),realm:'mortal',binding:spec.binding||'current-struct-house',pick:'house',lods,hlod,variant:spec.variant,roofFamily:spec.roof};
     sources[spec.id]={file:spec.file,triangles:spec.triangles,sourceBounds:source.bounds,semanticRemap:spec.remap||{},normalization:{width:1/(source.bounds.max[0]-source.bounds.min[0]),height:1/(source.bounds.max[1]-source.bounds.min[1]),depth:1/(source.bounds.max[2]-source.bounds.min[2]),pivot:'center X/Z, min Y'}};
     fs.copyFileSync(path.join(root,spec.file),path.join(out,'source',path.basename(spec.file)));
+  }
+  for(let variant=0;variant<3;variant++) {
+    const id=`nether.ghost.${variant}`,lods=[0,1,2].map(lod=>lod===2?'env_ghost_shared_lod2':`env_ghost_${variant}_lod${lod}`);
+    for(let lod=0;lod<3;lod++)if(lod!==2||variant===0){const data=ghostSilhouette(lod===2?0:variant,lod);specs.push([lods[lod],data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]);}
+    assets[id]={id,source:'authored ghost silhouette',realm:'nether',binding:'entities soulKind=ghost',pick:'entity',lods,variant};
   }
   let binaryParts=[Buffer.alloc(0)],accessors=[],views=[],nodes=[],meshes=[],modules={};
   for(const [name,data,semantics] of specs){const m=addMesh(binaryParts,accessors,views,data,name,semantics);binaryParts=m.binaryParts;accessors=m.accessors;views=m.views;m.node.mesh=meshes.length;nodes.push(m.node);meshes.push(m.mesh);modules[name]={node:name,triangles:m.module.triangles,bounds:m.module.bounds,uvSlots:m.module.uvSlots,semanticSlots:semantics};}
