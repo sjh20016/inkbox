@@ -19,8 +19,10 @@ function run(script,env){return new Promise((resolve,reject)=>{const child=spawn
   child.once('error',reject);child.once('exit',code=>code===0?resolve():reject(new Error(`${script}: exit ${code}`)));});}
 try {
   fs.mkdirSync(output,{recursive:true});
-  if(!process.env.INKBOX_URL){server=spawn(process.execPath,['scripts/inkbox-server.mjs','--port',String(port)],{cwd:root,stdio:'ignore',windowsHide:true});
-    let ready=false;for(let i=0;i<80;i++){try{ready=(await fetch(`${base}/inkbox.html`)).ok;}catch{}if(ready)break;await sleep(150);}assert(ready,'server startup failed');}
+  if(!process.env.INKBOX_URL){let listening=false,serverError=null;server=spawn(process.execPath,['scripts/inkbox-server.mjs','--port',String(port)],{cwd:root,stdio:['ignore','pipe','pipe'],windowsHide:true});
+    server.stdout.on('data',data=>{if(data.toString().includes('http://127.0.0.1:'+port+'/'))listening=true;});server.on('error',error=>{serverError=error;});
+    let ready=false;for(let i=0;i<80;i++){if(serverError||server.exitCode!==null)throw serverError||new Error('owned server exited '+server.exitCode);
+      if(listening){try{ready=(await fetch(`${base}/inkbox.html`)).ok;}catch{}}if(ready)break;await sleep(150);}assert(ready,'owned server startup failed');}
   const suites=[['mortal','scripts/inkbox-realm-style-proof.mjs',7,{}],['nether','scripts/inkbox-realm-plane-proof.mjs',4,{INKBOX_PLANE:'nether'}],
     ['upper','scripts/inkbox-realm-plane-proof.mjs',5,{INKBOX_PLANE:'upper'}],['cross','scripts/inkbox-realm-cross-proof.mjs',8,{}]];
   for(const [name,script,expected,extra] of suites){const dir=path.join(output,name);assert(!fs.existsSync(dir),'matrix requires fresh child directories');

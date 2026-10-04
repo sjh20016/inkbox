@@ -390,7 +390,7 @@ check('600 日模拟 digest 在无 Stage、凡间 Stage、循环三界 Stage 下
   assert.equal(run('loop'), canvas, '循环切换三界 stage 必须保持模拟纯度');
 });
 
-const reportDir = path.join(root, 'reports', 'release', 'render3d-m2a');
+const reportDir = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(root, 'reports', 'release', 'render3d-m2a'));
 fs.mkdirSync(reportDir, { recursive: true });
 fs.writeFileSync(path.join(reportDir, 'm2a-results.json'), JSON.stringify({
   suite: 'Render3D M2-A',
@@ -401,4 +401,4 @@ fs.writeFileSync(path.join(reportDir, 'm2a-results.json'), JSON.stringify({
   simulation: { days: 600, comparedRuns: ['canvas-no-stage', 'render3d-mortal', 'render3d-plane-cycle'], digestEqual: true },
 }, null, 2) + '\n');
 fs.writeFileSync(path.join(reportDir, 'm2a.log'), `${checks.map(({ label }) => `PASS ${label}`).join('\n')}\n\n${passed} M2-A invariant groups passed.\n`);
-console.log(`\n${passed} M2-A invariant groups passed; report: reports/release/render3d-m2a/m2a-results.json`);
+console.log(`\n${passed} M2-A invariant groups passed; report: ${path.relative(root, path.join(reportDir, 'm2a-results.json'))}`);

@@ -336,4 +336,4 @@ fs.writeFileSync(path.join(reportDir, 'm2c-results.json'), JSON.stringify({
   simulation: { days: 600, comparedRuns: ['canvas-no-stage', 'render3d-art-disabled', 'render3d-art-profile-toggle'], digestEqual: true },
 }, null, 2) + '\n');
 fs.writeFileSync(path.join(reportDir, 'm2c.log'), `${checks.map(({ label }) => `PASS ${label}`).join('\n')}\n\n${passed} M2-C invariant groups passed.\n`);
-console.log(`\n${passed} M2-C invariant groups passed; report: reports/release/render3d-m2c/m2c-results.json`);
+console.log(`\n${passed} M2-C invariant groups passed; report: ${path.relative(root, path.join(reportDir, 'm2c-results.json'))}`);

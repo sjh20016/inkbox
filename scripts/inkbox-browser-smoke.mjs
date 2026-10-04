@@ -69,12 +69,12 @@ try {
   const env = { INKBOX_URL: url, INKBOX_REPORT_DIR: path.join(output, 'render3d-m2a') };
   if (await runSuite('canvas', 'scripts/inkbox-playtest.mjs', ['--shots=reports/ci/canvas', `--url=${url}`], env) !== 0) await diagnose('canvas');
   if (await runSuite('m2a', 'scripts/inkbox-render3d-m2a-browser.mjs', [], env) !== 0) await diagnose('m2a');
-  for (const name of ['m2b', 'm2c', 'm2c2a']) {
+  for (const name of ['m2b', 'm2c', 'm2c2a', 'm2c2b0']) {
     const suiteEnv = { ...env, INKBOX_REPORT_DIR: path.join(output, `render3d-${name}`),
       INKBOX_RELEASE_DIR: path.join(output, `render3d-${name}`, 'representative') };
     if (await runSuite(name, `scripts/inkbox-render3d-${name}-browser.mjs`, [], suiteEnv) !== 0) await diagnose(name);
   }
-  report.status = report.suites.length === 5 && report.suites.every(suite => suite.exitCode === 0) ? 'passed' : 'failed';
+  report.status = report.suites.length === 6 && report.suites.every(suite => suite.exitCode === 0) ? 'passed' : 'failed';
 } catch (error) {
   report.status = 'failed'; report.error = String(error); console.error(error);
 } finally {
