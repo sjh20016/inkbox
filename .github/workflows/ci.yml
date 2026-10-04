@@ -83,6 +83,9 @@ jobs:
       - name: Render3D M2-C2B0 三界风格与完整模拟纯度
         run: npm run test:render3d:m2c2b0
 
+      - name: Render3D M2-C2B 单屋实际 GLB 样板门禁
+        run: npm run test:render3d:m2c2b:sample
+
       - name: 构建发布包（自包含，clone 即可跑）
         run: npm run build
 

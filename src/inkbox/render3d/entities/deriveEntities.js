@@ -109,6 +109,7 @@ function deriveFromWorld(world, includeWraiths) {
     const color = entityColorOf(cls, level, faction, factionColorById);
     out[cls].push({
       id: e.id, x: e.x, y: e.y, level, faction,
+      identityContainer: 'entities', soulKind: e.soulKind || null,
       lift: entityLiftOf(cls, level),
       color,
       appearance: characterAppearanceOf(e, cls, color),
@@ -123,6 +124,7 @@ function deriveFromWorld(world, includeWraiths) {
     const color = entityColorOf('wraith', level, 0, factionColorById);
     out.wraith.push({
       id: g.id, x: g.x, y: g.y, level, faction: 0,
+      identityContainer: 'wraiths', soulKind: g.soulKind || null,
       lift: entityLiftOf('wraith', level),
       color,
       appearance: characterAppearanceOf(g, 'wraith', color),
@@ -154,6 +156,7 @@ export function sameEntities(a, b) {
       if (p.id !== q.id || p.x !== q.x || p.y !== q.y
         || p.level !== q.level || p.faction !== q.faction || p.color !== q.color
         || p.lift !== q.lift
+        || p.identityContainer !== q.identityContainer || p.soulKind !== q.soulKind
         || p.appearance?.role !== q.appearance?.role
         || p.appearance?.paletteIndex !== q.appearance?.paletteIndex) return false;
     }

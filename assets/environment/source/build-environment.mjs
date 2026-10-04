@@ -1,0 +1,188 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import zlib from 'node:zlib';
+import { fileURLToPath } from 'node:url';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const out = path.join(root, 'assets/environment');
+const input = path.join(root, '美术素材/实验建筑资产/建筑/bld_house.glb');
+const SLOT = Object.freeze({ paper: 0, ink: 4, wood: 9 });
+const semanticSlots = [
+  'paper','paperDeep','paperShade','mist','ink','inkMid','inkLight','stone','stoneDark','wood','woodDark','clay','cinnabar','rouge','gold','azurite','indigo','malachite','pineGreen','orchid','upperA','upperB','upperC','upperD','nether','netherMid','soulFlame','snow',
+];
+
+function crc32(bytes) {
+  let c = 0xffffffff;
+  for (const byte of bytes) { c ^= byte; for (let i = 0; i < 8; i++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1)); }
+  return (c ^ 0xffffffff) >>> 0;
+}
+function pngChunk(type, data) {
+  const name = Buffer.from(type), length = Buffer.alloc(4), crc = Buffer.alloc(4);
+  length.writeUInt32BE(data.length); crc.writeUInt32BE(crc32(Buffer.concat([name, data])));
+  return Buffer.concat([length, name, data, crc]);
+}
+function indexPng() {
+  const width = 128, height = 128, rows = Buffer.alloc((width * 4 + 1) * height);
+  for (let y = 0; y < height; y++) {
+    const row = y * (width * 4 + 1); rows[row] = 0;
+    for (let x = 0; x < width; x++) {
+      const slot = Math.min(7, Math.floor(x / 16)) + 8 * Math.min(7, Math.floor(y / 16));
+      const at = row + 1 + x * 4;
+      rows[at] = slot + 1; rows[at + 1] = 255; rows[at + 2] = 255; rows[at + 3] = 255;
+    }
+  }
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(width, 0); ihdr.writeUInt32BE(height, 4); ihdr[8] = 8; ihdr[9] = 6;
+  return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]), pngChunk('IHDR', ihdr), pngChunk('IDAT', zlib.deflateSync(rows, { level: 9 })), pngChunk('IEND', Buffer.alloc(0))]);
+}
+function align4(buffer) { const pad = (4 - buffer.length % 4) % 4; return pad ? Buffer.concat([buffer, Buffer.alloc(pad)]) : buffer; }
+function glb(json, binary) {
+  const jsonRaw = Buffer.from(JSON.stringify(json));
+  const jsonBytes = Buffer.concat([jsonRaw, Buffer.alloc((4 - jsonRaw.length % 4) % 4, 0x20)]);
+  const binBytes = align4(binary);
+  const total = 12 + 8 + jsonBytes.length + 8 + binBytes.length;
+  const head = Buffer.alloc(12); head.writeUInt32LE(0x46546c67, 0); head.writeUInt32LE(2, 4); head.writeUInt32LE(total, 8);
+  const jh = Buffer.alloc(8); jh.writeUInt32LE(jsonBytes.length, 0); jh.writeUInt32LE(0x4e4f534a, 4);
+  const bh = Buffer.alloc(8); bh.writeUInt32LE(binBytes.length, 0); bh.writeUInt32LE(0x004e4942, 4);
+  return Buffer.concat([head, jh, jsonBytes, bh, binBytes]);
+}
+function readSource() {
+  const bytes = fs.readFileSync(input);
+  if (bytes.readUInt32LE(0) !== 0x46546c67 || bytes.readUInt32LE(4) !== 2) throw new Error('Expected a glTF 2.0 GLB source');
+  let offset = 12, json, bin;
+  while (offset < bytes.length) {
+    const length = bytes.readUInt32LE(offset), kind = bytes.readUInt32LE(offset + 4), start = offset + 8;
+    if (kind === 0x4e4f534a) json = JSON.parse(bytes.toString('utf8', start, start + length));
+    if (kind === 0x004e4942) bin = bytes.subarray(start, start + length);
+    offset = start + length;
+  }
+  if (!json || !bin) throw new Error('Source GLB is missing JSON or BIN chunks');
+  if (json.nodes?.length !== 1 || json.nodes[0].mesh !== 0 || json.nodes[0].translation || json.nodes[0].rotation || json.nodes[0].scale) throw new Error('Source house node must have an identity transform');
+  const primitive = json.meshes?.[0]?.primitives?.[0];
+  if (!primitive || json.meshes[0].primitives.length !== 1 || primitive.mode != null && primitive.mode !== 4) throw new Error('Source must contain one triangle primitive');
+  const readAccessor = (index) => {
+    const a = json.accessors[index], v = json.bufferViews[a.bufferView];
+    if (!a || !v || v.byteStride) throw new Error('Unsupported source accessor layout');
+    const components = a.type === 'VEC3' ? 3 : a.type === 'VEC2' ? 2 : a.type === 'SCALAR' ? 1 : 0;
+    if (!components || a.componentType !== 5126 && !(a.componentType === 5123 && components === 1)) throw new Error('Unsupported source accessor type');
+    const width = a.componentType === 5126 ? 4 : 2, start = (v.byteOffset || 0) + (a.byteOffset || 0), out = [];
+    for (let i = 0; i < a.count * components; i++) out.push(a.componentType === 5126 ? bin.readFloatLE(start + i * width) : bin.readUInt16LE(start + i * width));
+    return { values: out, count: a.count, components };
+  };
+  const attrs = primitive.attributes;
+  if (!Number.isInteger(attrs.POSITION) || !Number.isInteger(attrs.NORMAL) || !Number.isInteger(attrs.TEXCOORD_0) || !Number.isInteger(primitive.indices)) throw new Error('Source requires POSITION/NORMAL/UV and indices');
+  const p = readAccessor(attrs.POSITION), n = readAccessor(attrs.NORMAL), uv = readAccessor(attrs.TEXCOORD_0), ix = readAccessor(primitive.indices);
+  if (ix.values.length / 3 !== 80 || p.count !== n.count || p.count !== uv.count) throw new Error('Expected authored bld_house source with exactly 80 triangles');
+  const bounds = { min: json.accessors[attrs.POSITION].min, max: json.accessors[attrs.POSITION].max };
+  if (Math.abs(bounds.min[1]) > 1e-6) throw new Error('Authored house ground pivot must start at Y=0');
+  uvSlotSet(uv.values);
+  return { p, n, uv, indices: ix.values, bounds };
+}
+function unitSource(source) {
+  const { min, max } = source.bounds, size = max.map((v, i) => v - min[i]);
+  if (size.some(v => !(v > 0))) throw new Error('Source bounds must have nonzero width, height and depth');
+  const positions = [], normals = [], uvs = [];
+  for (let face = 0; face < source.indices.length; face += 3) {
+    const ids = source.indices.slice(face, face + 3);
+    for (const id of ids) {
+      const x = source.p.values[id * 3], y = source.p.values[id * 3 + 1], z = source.p.values[id * 3 + 2];
+      positions.push((x - (min[0] + max[0]) / 2) / size[0], (y - min[1]) / size[1], (z - (min[2] + max[2]) / 2) / size[2]);
+      const normal = [source.n.values[id * 3] * size[0], source.n.values[id * 3 + 1] * size[1], source.n.values[id * 3 + 2] * size[2]];
+      const length = Math.hypot(...normal) || 1; normals.push(...normal.map(v => v / length));
+      uvs.push(source.uv.values[id * 2], source.uv.values[id * 2 + 1]);
+    }
+  }
+  return { positions, normals, uvs, indices: Array.from({ length: positions.length / 3 }, (_, index) => index) };
+}
+function meshBuilder() {
+  const positions = [], normals = [], uvs = [], indices = [];
+  const vertex = (p, slot, normal) => {
+    positions.push(...p); normals.push(...normal);
+    uvs.push((slot % 8 + 0.5) / 8, (Math.floor(slot / 8) + 0.5) / 8);
+    return positions.length / 3 - 1;
+  };
+  const tri = (a, b, c, slot) => {
+    const ux=b[0]-a[0], uy=b[1]-a[1], uz=b[2]-a[2], vx=c[0]-a[0], vy=c[1]-a[1], vz=c[2]-a[2];
+    let n=[uy*vz-uz*vy, uz*vx-ux*vz, ux*vy-uy*vx], l=Math.hypot(...n)||1; n=n.map(v=>v/l);
+    indices.push(vertex(a,slot,n),vertex(b,slot,n),vertex(c,slot,n));
+  };
+  const quad=(a,b,c,d,slot)=>{tri(a,b,c,slot);tri(a,c,d,slot);};
+  const box=(x0,y0,z0,x1,y1,z1,slot)=>{
+    quad([x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1],slot);
+    quad([x1,y0,z0],[x0,y0,z0],[x0,y1,z0],[x1,y1,z0],slot);
+    quad([x1,y0,z1],[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],slot);
+    quad([x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0],slot);
+    quad([x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[x0,y1,z0],slot);
+    quad([x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1],slot);
+  };
+  return { positions,normals,uvs,indices,vertex,tri,quad,box,finish(){return {positions,normals,uvs,indices};} };
+}
+function manualLod1() {
+  const b=meshBuilder(), wall=0.64, ridge=1, depth=0.91, half=0.5;
+  b.box(-half,0,-depth/2,half,wall,depth/2,SLOT.paper);
+  // The authored house ridge runs along X; the gable ends face X.
+  b.tri([-half,wall,-depth/2],[-half,wall,depth/2],[-half,ridge,0],SLOT.paper);
+  b.tri([half,wall,depth/2],[half,wall,-depth/2],[half,ridge,0],SLOT.paper);
+  // Two roof slopes run along the same X-axis ridge as the source house.
+  b.quad([-half,wall,-depth/2],[-half,ridge,0],[half,ridge,0],[half,wall,-depth/2],SLOT.ink);
+  b.quad([half,wall,depth/2],[half,ridge,0],[-half,ridge,0],[-half,wall,depth/2],SLOT.ink);
+  // A single warm timber eave beam, inset within the original unit footprint.
+  b.box(-half,wall-0.025,-depth/2+0.035,half,wall+0.025,-depth/2+0.085,SLOT.wood);
+  return b.finish();
+}
+function tinyRoof() {
+  const b=meshBuilder(), y=0, top=0.35, depth=0.88;
+  b.quad([-0.5,y,-depth/2],[-0.5,top,0],[0.5,top,0],[0.5,y,-depth/2],SLOT.ink);
+  b.quad([0.5,y,depth/2],[0.5,top,0],[-0.5,top,0],[-0.5,y,depth/2],SLOT.ink);
+  b.tri([-0.5,y,-depth/2],[-0.5,y,depth/2],[-0.5,top,0],SLOT.ink);
+  b.tri([0.5,y,depth/2],[0.5,y,-depth/2],[0.5,top,0],SLOT.ink);
+  b.quad([-0.5,y,-depth/2],[0.5,y,-depth/2],[0.5,y,depth/2],[-0.5,y,depth/2],SLOT.ink);
+  return b.finish();
+}
+function bounds(positions) {
+  const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
+  for(let i=0;i<positions.length;i+=3)for(let a=0;a<3;a++){min[a]=Math.min(min[a],positions[i+a]);max[a]=Math.max(max[a],positions[i+a]);}
+  return {min,max};
+}
+function uvSlotSet(uvs) {
+  const slots = new Set();
+  for (let i=0;i<uvs.length;i+=2) {
+    const x=uvs[i]*8-0.5,y=uvs[i+1]*8-0.5,xi=Math.round(x),yi=Math.round(y);
+    if(Math.abs(x-xi)>1e-4||Math.abs(y-yi)>1e-4||xi<0||xi>7||yi<0||yi>7) throw new Error('Authored UV must address the center of one 8x8 palette slot');
+    slots.add(yi*8+xi);
+  }
+  return [...slots].sort((a,b)=>a-b);
+}
+function addMesh(binaryParts, accessors, views, data, nodeName, slotSemantics) {
+  let binary=Buffer.concat(binaryParts); binary=align4(binary);
+  const attrs={};
+  for(const [key,values,components] of [['POSITION',data.positions,3],['NORMAL',data.normals,3],['TEXCOORD_0',data.uvs,2]]){
+    const start=binary.length, bytes=Buffer.alloc(values.length*4); values.forEach((v,i)=>bytes.writeFloatLE(v,i*4)); binary=Buffer.concat([binary,bytes]);
+    const view=views.length; views.push({buffer:0,byteOffset:start,byteLength:bytes.length,target:34962});
+    const accessor=accessors.length, b=bounds(data.positions);
+    accessors.push({bufferView:view,componentType:5126,count:values.length/components,type:`VEC${components}`,...(key==='POSITION'?b:{})});attrs[key]=accessor;
+  }
+  binary=align4(binary); const indexStart=binary.length, indexBytes=Buffer.alloc(data.indices.length*4); data.indices.forEach((v,i)=>indexBytes.writeUInt32LE(v,i*4)); binary=Buffer.concat([binary,indexBytes]);
+  const indexView=views.length;views.push({buffer:0,byteOffset:indexStart,byteLength:indexBytes.length,target:34963});
+  const indexAccessor=accessors.length;accessors.push({bufferView:indexView,componentType:5125,count:data.indices.length,type:'SCALAR',min:[0],max:[Math.max(...data.indices)]});
+  binaryParts=[binary];
+  const uvSlots=uvSlotSet(data.uvs);
+  return {binaryParts,accessors,views,node:{name:nodeName},mesh:{name:nodeName,primitives:[{attributes:attrs,indices:indexAccessor,material:0}]},module:{triangles:data.indices.length/3,bounds:bounds(data.positions),uvSlots,semanticSlots:slotSemantics}};
+}
+function main() {
+  fs.mkdirSync(path.join(out,'mesh'),{recursive:true});fs.mkdirSync(path.join(out,'data'),{recursive:true});fs.mkdirSync(path.join(out,'materials'),{recursive:true});
+  const source=readSource(), lod0=unitSource(source), lod1=manualLod1(), lod2=tinyRoof();
+  const sourceSlotIds=uvSlotSet(lod0.uvs);
+  const specs=[['env_house_base_lod0',lod0,sourceSlotIds.map(id=>semanticSlots[id])],['env_house_base_lod1',lod1,['paper','ink','wood']],['env_house_base_lod2',lod2,['ink']]];
+  let binaryParts=[Buffer.alloc(0)],accessors=[],views=[],nodes=[],meshes=[],modules={};
+  for(const [name,data,semantics] of specs){const m=addMesh(binaryParts,accessors,views,data,name,semantics);binaryParts=m.binaryParts;accessors=m.accessors;views=m.views;m.node.mesh=meshes.length;nodes.push(m.node);meshes.push(m.mesh);modules[name]={node:name,triangles:m.module.triangles,bounds:m.module.bounds,uvSlots:m.module.uvSlots,semanticSlots:semantics};}
+  const binary=binaryParts[0];
+  const gltf={asset:{version:'2.0',generator:'Inkbox environment sample builder'},scene:0,scenes:[{nodes:[0,1,2]}],nodes,meshes,materials:[{name:'environment_index_atlas',pbrMetallicRoughness:{baseColorTexture:{index:0},metallicFactor:0,roughnessFactor:1},doubleSided:false}],textures:[{sampler:0,source:0}],images:[{uri:'../materials/EntityAtlas.png',mimeType:'image/png',name:'EntityAtlas'}],samplers:[{magFilter:9728,minFilter:9728,wrapS:33071,wrapT:33071}],buffers:[{byteLength:binary.length}],bufferViews:views,accessors};
+  fs.writeFileSync(path.join(out,'mesh/environment_library.glb'),glb(gltf,binary));
+  fs.writeFileSync(path.join(out,'materials/EntityAtlas.png'),indexPng());
+  fs.writeFileSync(path.join(out,'data/palette_slots.json'),JSON.stringify({schema:'environment-palette-slots-v1',texture:'../materials/EntityAtlas.png',grid:{columns:8,rows:8,width:128,height:128,filter:'nearest',mipmaps:false,colorSpace:'none',redByte:'slot-index-plus-one'},slots:semanticSlots.map((semantic,index)=>({index,semantic}))},null,2)+'\n');
+  fs.copyFileSync(input,path.join(out,'source/bld_house.glb'));
+  const manifest={schema:'inkbox-environment-library-v1',asset:'mesh/environment_library.glb',atlas:'materials/EntityAtlas.png',paletteSlots:'data/palette_slots.json',coordinateSystem:{gltf:'Y-up, authored front -Z, ridge along X',pivot:'ground-centered',normalTransform:'inverse-transpose of independent width/height/depth scale, normalized',moduleTransform:'identity; normalized authored source geometry'},source:{file:'美术素材/实验建筑资产/建筑/bld_house.glb',triangles:80,sourceBounds:source.bounds,normalization:{width:1/ (source.bounds.max[0]-source.bounds.min[0]),height:1/(source.bounds.max[1]-source.bounds.min[1]),depth:1/(source.bounds.max[2]-source.bounds.min[2]),pivot:'center X/Z, min Y'}},modules,assets:{'mortal.house.base':{id:'mortal.house.base',source:'bld_house',realm:'mortal',binding:'current-struct-house',pick:'house',lods:['env_house_base_lod0','env_house_base_lod1','env_house_base_lod2'],variant:'base',rotationY:0}}};
+  fs.writeFileSync(path.join(out,'data/environment_manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+  console.log(JSON.stringify({asset:'mortal.house.base',modules:Object.fromEntries(Object.entries(modules).map(([k,v])=>[k,{triangles:v.triangles,bounds:v.bounds,uvSlots:v.uvSlots}])),atlas:'128x128 index PNG; 8x8 swatches; 28 semantic slots'},null,2));
+}
+main();

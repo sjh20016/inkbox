@@ -10,6 +10,8 @@ const ALLOWED_RELEASE_JSON = new Set([
   'reports/release/render3d-m2a/performance.json',
   'reports/release/render3d-m2c2a/acceptance-summary.json',
   'reports/release/render3d-m2c2a/tree-gate.json',
+  'reports/release/render3d-m2c2b-pass1/b0-summary.json',
+  'reports/release/render3d-m2c2b-pass1/sample-summary.json',
 ]);
 const problems = [];
 const checks = [];
@@ -111,6 +113,8 @@ function audit(packageRoot) {
   for (const file of normalized) {
     const lower = file.toLowerCase();
     if (/\.(?:blend|blend1)$/i.test(file)) fail(`source Blender file included: ${file}`);
+    if (/\.(?:obj|mtl)$/i.test(file)) fail(`authoring mesh included: ${file}`);
+    if (/^assets\/environment\/source\//i.test(file) || /^美术素材\/实验建筑资产\//.test(file)) fail(`environment source included: ${file}`);
     if (/(^|\/)preview(\/|$)/i.test(file)) fail(`preview directory included: ${file}`);
     if (/\.log$/i.test(file)) fail(`local log included: ${file}`);
     if (/(^|\/)reports(\/|$)/i.test(file)) {
@@ -132,6 +136,25 @@ function audit(packageRoot) {
     }
   }
   if (glbs.length) pass(`GLB files structurally loaded: ${glbs.length}`);
+
+  const environmentRoot = path.join(packageRoot, 'assets/environment');
+  const environmentManifest = path.join(environmentRoot, 'data/environment_manifest.json');
+  if (!fs.existsSync(environmentManifest)) fail('environment runtime manifest is missing');
+  else {
+    const manifest = JSON.parse(fs.readFileSync(environmentManifest, 'utf8'));
+    for (const key of ['asset', 'atlas', 'paletteSlots']) {
+      const target = path.resolve(environmentRoot, manifest[key] || '');
+      if (!target.startsWith(environmentRoot + path.sep) || !fs.existsSync(target)) fail(`environment manifest reference invalid: ${key}`);
+    }
+    const environmentGlbs = glbs.filter(file => file.startsWith('assets/environment/'));
+    if (environmentGlbs.length !== 1 || environmentGlbs[0] !== 'assets/environment/mesh/environment_library.glb') fail('environment must ship one shared runtime GLB');
+    for (const glb of environmentGlbs) {
+      const json = readGlb(path.join(packageRoot, glb));
+      if (json.materials?.length !== 1 || json.images?.length !== 1 || json.images[0].uri !== '../materials/EntityAtlas.png') fail('environment GLB shared material/atlas contract changed');
+      else if (!fs.existsSync(path.resolve(path.dirname(path.join(packageRoot, glb)), json.images[0].uri))) fail('environment GLB atlas is missing');
+    }
+    pass('environment runtime asset references and shared GLB/atlas checked');
+  }
 
   const manifestPath = path.join(packageRoot, 'assets/characters/cultivator/data/cultivator_manifest.json');
   const meshPath = path.join(packageRoot, 'assets/characters/cultivator/mesh/cultivator_library.glb');

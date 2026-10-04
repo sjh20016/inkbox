@@ -1,0 +1,235 @@
+{
+  "package": 2,
+  "pass": true,
+  "baselineCommit": "a8bf11d49bcf1da5d5518d11c7bbffbcb75bacc5",
+  "assets": {
+    "triangles": [
+      80,
+      30,
+      8
+    ],
+    "sourceSlots": [
+      0,
+      1,
+      2,
+      4,
+      5,
+      7,
+      8,
+      9,
+      10
+    ],
+    "glbSha256": "6d06e40d10b777eb5ac676800ee6502385c6cb3b4ae009fc902322dc6e9e484e",
+    "atlasSha256": "c16099ce5f44ef41506901a678b4ad6cf3642145ce384a9a52ee81f12ac0a548"
+  },
+  "nodeChecks": [
+    "shipped GLB, external PNG and semantic UV cells decode exactly",
+    "batches share decoded geometry, Stage material and atlas; moving instances resets raycast bounds",
+    "natural GOLDEN_A keeps 83 current houses and 5 real halls, without manufactured coordinates",
+    "all three house LODs and existing far aggregate retain ownership and toggle back to legacy",
+    "actual house geometry raycasts to its original house key and exact village",
+    "presentation profiles, realm switches and World replacement preserve full World and save",
+    "destroyed stale house records are excluded using current struct without writing World",
+    "invalid manifest and palette release each decoded geometry, material and atlas once",
+    "loader fetches each input once and does not double-dispose rejected decoded assets",
+    "one asynchronous library survives World/toggle changes and is released once, including late completion"
+  ],
+  "nodeCoverage": {
+    "recipe": "GOLDEN_A",
+    "day": 1440,
+    "candidates": 88,
+    "house": 83,
+    "hall": 5,
+    "excluded": 0
+  },
+  "nodePurity": {
+    "fullWorldAdvanceSha256": "343dede24c355cffb6d3a0dc23ef64f85840f21e59d2091884b9ba48248e35e2",
+    "saveSha256": "85a0fdb43d5d2a1dfe995eec26771f1e0656f986beb250e2f0bfe50af2cd1668",
+    "saveKeys": [
+      "app",
+      "artifactLog",
+      "artifacts",
+      "ascended",
+      "busanzi",
+      "chronicle",
+      "clanLog",
+      "clans",
+      "day",
+      "dead",
+      "deadLog",
+      "entities",
+      "factions",
+      "h",
+      "lastClanFoundDay",
+      "leylines",
+      "meta",
+      "milestones",
+      "nether",
+      "nextArtifactId",
+      "nextClanId",
+      "nextEntityId",
+      "nextFactionId",
+      "nextLeylineId",
+      "nextRiftId",
+      "nextSiteId",
+      "nextSoulId",
+      "nextVillageId",
+      "nextWarId",
+      "plane",
+      "possessionLog",
+      "riftLog",
+      "rifts",
+      "seed",
+      "sites",
+      "soulLog",
+      "souls",
+      "terrain",
+      "upper",
+      "v",
+      "villages",
+      "w",
+      "warLog",
+      "wars",
+      "watch",
+      "worldEvents",
+      "wraithLog",
+      "wraiths",
+      "year"
+    ],
+    "unchanged": true
+  },
+  "edge": {
+    "browser": {
+      "browser": "Edg/154.0.4258.53",
+      "debugPort": 9464,
+      "width": 1500,
+      "height": 940
+    },
+    "loads": {
+      "glb": 1,
+      "atlas": 1
+    },
+    "productLoop": {
+      "observedFrames": 120,
+      "updates": 120,
+      "renders": 120,
+      "updateMedianMs": 0.30000000074505806,
+      "updateP95Ms": 0.4000000022351742
+    },
+    "sharing": {
+      "digestBeforeReplacement": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "digestAfterReplacement": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "sameMaterial": true,
+      "sameLibrary": true,
+      "sameGeometries": true,
+      "sameAtlas": true,
+      "sharedStageMaterial": true
+    },
+    "cases": [
+      {
+        "lod": 0,
+        "node": "env_house_base_lod0",
+        "house": {
+          "houseKey": "house:1:66:109",
+          "settlementId": 1,
+          "x": 66,
+          "y": 109,
+          "structType": 1
+        },
+        "triangleCount": 80,
+        "production": {
+          "enabled": true,
+          "ready": true,
+          "instances": 83,
+          "triangles": 6640,
+          "drawCalls": 1
+        },
+        "fallback": {
+          "enabled": false,
+          "ready": true,
+          "instances": 0,
+          "triangles": 0,
+          "drawCalls": 0
+        },
+        "actualTriangles": [
+          257431,
+          257431
+        ],
+        "actualDrawCalls": [
+          15,
+          16
+        ],
+        "worldSha": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1",
+        "sameCamera": true,
+        "imageSha256": "02f4394790e8d8da67982862789e57bff8861e2019956b38cddeb74b114b2532",
+        "exactInputPick": true
+      },
+      {
+        "lod": 1,
+        "node": "env_house_base_lod1",
+        "house": {
+          "houseKey": "house:1:64:100",
+          "settlementId": 1,
+          "x": 64,
+          "y": 100,
+          "structType": 1
+        },
+        "triangleCount": 30,
+        "production": {
+          "enabled": true,
+          "ready": true,
+          "instances": 83,
+          "triangles": 2490,
+          "drawCalls": 1
+        },
+        "fallback": {
+          "enabled": false,
+          "ready": true,
+          "instances": 0,
+          "triangles": 0,
+          "drawCalls": 0
+        },
+        "actualTriangles": [
+          246795,
+          247625
+        ],
+        "actualDrawCalls": [
+          15,
+          16
+        ],
+        "worldSha": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1",
+        "sameCamera": true,
+        "imageSha256": "9f7073f4e3baeb133c2ec2396a0c70941976d059104a8aad69a39a92f777d68c",
+        "exactInputPick": true
+      }
+    ],
+    "glError": 0,
+    "allProgramsLinked": true,
+    "consoleErrors": [],
+    "runtimeErrors": []
+  },
+  "validation": [
+    "test:view 122",
+    "test:core 112 files / 346 imports / 13 events",
+    "test:render3d:m2b 70 groups",
+    "test:render3d:m2c2a 8 groups",
+    "test:render3d:m2c2a1:hlod 5 checks",
+    "test:render3d:m2c2b0 six 600-day modes, 11 RNG streams"
+  ],
+  "limitations": [
+    "Single base house only; production is opt-in until family acceptance",
+    "Existing procedural centers/capital anchors are retained without claiming HALL/gate identity",
+    "Clean clone result recorded after candidate commit"
+  ],
+  "generatedAt": "2026-10-04T13:37:14.228Z"
+}

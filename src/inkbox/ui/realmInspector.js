@@ -26,6 +26,7 @@
 
 import { realmLabel } from '../core/cultivation.js';
 import { ghostTierOf, GHOST_TIER_NAMES } from '../sim/netherLife.js';
+import { STRUCT } from '../core/config.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
 export const REALM_INSPECT_RADIUS = 4;
@@ -95,6 +96,68 @@ export function pickRealmSubject(realmWorld, plane, x, y, radius = REALM_INSPECT
   const person = nearest(realmWorld.entities);
   if (person) return { kind: 'person', plane, x, y, subject: person, world: realmWorld };
   return null;
+}
+
+/** A submitted 3D instance names one current World subject. Never choose a neighbour. */
+export function resolvePlaneSubject(world, plane, ref) {
+  if (!world || !['mortal', 'upper', 'nether'].includes(plane) || !ref) return null;
+  if (ref.kind === 'entity') {
+    if (ref.entityId == null) return null;
+    const container = ref.entityContainer || 'entities';
+    if (!['entities', 'wraiths'].includes(container) || (container === 'wraiths' && plane !== 'mortal')) return null;
+    const subject = world[container]?.find(e => e && e.id === ref.entityId);
+    if (!subject || !Number.isFinite(subject.x) || !Number.isFinite(subject.y)) return null;
+    const ghost = plane === 'nether' || container === 'wraiths' || subject.sp === 'ghost';
+    return { kind: ghost ? 'ghost' : 'person', plane, x: subject.x, y: subject.y, subject, world, container };
+  }
+  if (ref.kind === 'artifact') {
+    if (ref.artifactId == null) return null;
+    const subject = world.artifacts?.find(a => a && a.id === ref.artifactId);
+    if (!subject || !Number.isFinite(subject.x) || !Number.isFinite(subject.y)) return null;
+    return { kind: 'artifact', plane, x: subject.x, y: subject.y, subject, world };
+  }
+  if (plane !== 'mortal' || !['house', 'settlement'].includes(ref.kind)) return null;
+  const village = world.villages?.find(v => v && v.id === ref.settlementId);
+  if (!village) return null;
+  if (ref.kind === 'settlement')
+    return { kind: 'settlement', plane, x: village.x, y: village.y, subject: village, world };
+  const x = ref.houseX, y = ref.houseY;
+  if (!Number.isInteger(x) || !Number.isInteger(y) || !world.inside(x, y)
+    || ref.houseKey !== `house:${String(village.id)}:${x}:${y}`) return null;
+  const subject = village.houses?.find(h => h && h.x === x && h.y === y);
+  const structType = world.struct[world.idx(x, y)];
+  if (!subject || (structType !== STRUCT.HOUSE && structType !== STRUCT.HALL)) return null;
+  return { kind: 'house', plane, x, y, subject, village, structType, world };
+}
+
+/** Exact 3D inspection stays read-only, including mortal house and aggregate cards. */
+export function planeSubjectInspectRows(picked, ctx = {}) {
+  if (!picked) return null;
+  if (picked.plane !== 'mortal' && (picked.kind !== 'artifact' || picked.plane === 'nether'))
+    return realmInspectRows(picked, ctx);
+  const s = picked.subject, label = ctx.planeLabel || (picked.plane === 'mortal' ? '凡间' : '');
+  const head = `${label} · 格 (${Math.floor(picked.x)}, ${Math.floor(picked.y)})`;
+  if (picked.kind === 'ghost') return { ...realmInspectRows(picked, ctx), head };
+  let rows;
+  if (picked.kind === 'house') rows = [
+    ['建筑', picked.structType === STRUCT.HALL ? '宗祠' : '屋舍'],
+    ['聚落', picked.village.name || '无名聚落'], ['屋舍格', `${picked.x}, ${picked.y}`],
+  ];
+  else if (picked.kind === 'settlement') {
+    rows = [['聚落', s.name || '无名聚落'], ['等级', ['', '村落', '集镇', '城池', '王都'][s.level] || '—']];
+    if (Number.isFinite(s.pop)) rows.push(['人口', String(s.pop)]);
+    if (Number.isFinite(s.food)) rows.push(['存粮', String(Math.round(s.food))]);
+    rows.push(['势力', factionName(picked.world, s.faction) || '无']);
+  } else if (picked.kind === 'artifact') {
+    rows = [['名字', s.name || '无名之物']];
+    if (s.slot) rows.push(['形制', String(s.slot)]);
+    if (Number.isFinite(s.tier)) rows.push(['品阶', String(s.tier)]);
+  } else {
+    rows = [['名字', s.name || '无名'], ['境界', realmName(s.level)], ['势力', factionName(picked.world, s.faction) || '无']];
+    if (Number.isFinite(s.age)) rows.push(['年龄', `${Math.floor(s.age / 360)} 岁`]);
+    if (s.dao?.path?.name) rows.push(['道途', s.dao.path.name]);
+  }
+  return { head, rows };
 }
 
 /** 上界人物一行集。`arrivedLog` 里按 id 找他的来路快照（跨档可查、永不悬垂）。 */

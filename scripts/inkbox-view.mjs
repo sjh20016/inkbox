@@ -68,7 +68,7 @@ import {
 import { VIEW_CLICK_PX } from '../src/inkbox/ui/realmView.js';
 import { getRealmViewState } from '../src/inkbox/ui/realmViewState.js';
 import {
-  pickRealmSubject, realmInspectRows, REALM_INSPECT_RADIUS,
+  pickRealmSubject, realmInspectRows, REALM_INSPECT_RADIUS, resolvePlaneSubject, planeSubjectInspectRows,
 } from '../src/inkbox/ui/realmInspector.js';
 // D8-G：跨界「追迹」的**纯逻辑地基**（本工程包暂缓 UI，只钉纯函数）。
 //   · `sim/watch.js` 的 `netherGhostOf` / `resolveWatch` 只 import 纯函数、顶层不碰 DOM；
@@ -838,6 +838,35 @@ check('不带 technique 的物品 ⇒ 来源=自凡间跌入带来、携带功�
 
 // ⑥ 空命中 ⇒ realmInspectRows 返回 null（由调用方决定怎么发声）。
 check('realmInspectRows(null) === null（空卡交给调用方发声）', realmInspectRows(null, {}) === null);
+
+// Submitted geometry must inspect its exact identity, including collocated subjects.
+const exactUpper = { ...uw, entities: [...uw.entities, { ...uw.entities[0], id: 1000099, name: '同格另人' }] };
+const exactPerson = resolvePlaneSubject(exactUpper, 'upper', { kind: 'entity', entityId: 1000099 });
+check('3D exact-id：同格人物按 instance identity 命中，不能改挑近人',
+  exactPerson?.subject.name === '同格另人');
+check('3D exact-id：缺失人物不 fallback 附近生灵',
+  resolvePlaneSubject(exactUpper, 'upper', { kind: 'entity', entityId: -1 }) === null);
+const exactItem = resolvePlaneSubject(nw, 'nether', { kind: 'artifact', artifactId: 2 });
+check('3D exact-id：同格鬼/法宝按实际 artifact id 分离', exactItem?.subject.name === '凡人旧剑');
+check('3D exact-id：不存在法宝不 fallback 同格鬼',
+  resolvePlaneSubject(nw, 'nether', { kind: 'artifact', artifactId: -1 }) === null);
+const exactHouseWorld = { w: 8, h: 8, villages: [{ id: 17, name: '真实村', houses: [{ x: 2, y: 3, type: 1 }] }],
+  struct: new Uint8Array(64), inside: (x, y) => x >= 0 && y >= 0 && x < 8 && y < 8, idx: (x, y) => y * 8 + x };
+exactHouseWorld.struct[26] = 1;
+const houseRef = { kind: 'house', settlementId: 17, houseX: 2, houseY: 3, houseKey: 'house:17:2:3' };
+const exactHouse = resolvePlaneSubject(exactHouseWorld, 'mortal', houseRef);
+check('3D exact-id：原屋舍坐标、村落与当前 STRUCT 共同验证',
+  exactHouse?.village.name === '真实村' && planeSubjectInspectRows(exactHouse).rows[0][1] === '屋舍');
+check('3D exact-id：houseKey 不能伪造房屋所有者',
+  resolvePlaneSubject(exactHouseWorld, 'mortal', { ...houseRef, houseKey: 'house:18:2:3' }) === null);
+exactHouseWorld.struct[26] = 5;
+check('3D exact-id：旧 houses 记录残留时，已毁 STRUCT 不再可检视为屋舍',
+  resolvePlaneSubject(exactHouseWorld, 'mortal', houseRef) === null);
+const collidedContainers = { entities: [{ id: 2, x: 1, y: 1, name: '人' }], wraiths: [{ id: 2, x: 1, y: 1, name: '鬼影' }] };
+check('3D exact-id：凡间鬼影按真实容器区分重复编号',
+  resolvePlaneSubject(collidedContainers, 'mortal', { kind: 'entity', entityId: 2, entityContainer: 'wraiths' })?.subject.name === '鬼影');
+check('3D exact-id：跨界不误用凡间 wraiths 容器',
+  resolvePlaneSubject(collidedContainers, 'upper', { kind: 'entity', entityId: 2, entityContainer: 'wraiths' }) === null);
 
 // ⑦ 只读：两个函数跑完，两个世界的 JSON 逐字不变（零写、零 RNG）。
 const upSnap = JSON.stringify(uw);

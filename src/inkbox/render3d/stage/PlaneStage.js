@@ -10,10 +10,12 @@ import { SelectionMarker } from '../SelectionMarker.js';
 import { ElevationField } from '../terrain/ElevationField.js';
 import { RegionGeometry } from '../region/RegionGeometry.js';
 import { renderProfileFor } from './PlaneRenderProfile.js';
+import { createEnvironmentMaterial, setEnvironmentMaterialProfile, setEnvironmentMaterialView } from '../environment/EnvironmentMaterial.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
-  constructor({ plane, world, profile = renderProfileFor(plane), coordinates, characterLibrary = null } = {}) {
+  constructor({ plane, world, profile = renderProfileFor(plane), coordinates, characterLibrary = null,
+    environmentLibrary = null, productionAssets = false } = {}) {
     if (!world) throw new Error(`PlaneStage ${plane}: world is required`);
     this.plane = plane;
     this.profile = profile;
@@ -22,6 +24,8 @@ export class PlaneStage {
     this.visible = true;
     this.timings = {};
     this.characterLibrary = characterLibrary;
+    this.environmentLibrary = environmentLibrary;
+    this.productionAssetsEnabled = !!productionAssets;
     this.setWorld(world, coordinates);
   }
 
@@ -49,6 +53,7 @@ export class PlaneStage {
     if (this.entities) this.root.add(this.entities.group);
     this.settlements = p.settlements ? new SettlementLayer(world, this.coordinates, this.elevation) : null;
     if (this.settlements) this.root.add(this.settlements.group);
+    this.setEnvironmentAssets(this.environmentLibrary, this.productionAssetsEnabled);
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
     this.selectionMarker = p.selection
@@ -68,6 +73,31 @@ export class PlaneStage {
   setVisible(visible) {
     this.visible = !!visible;
     this.root.visible = this.visible;
+  }
+
+  setEnvironmentAssets(library, enabled = this.productionAssetsEnabled) {
+    this.productionAssetsEnabled = !!enabled;
+    if (library !== this.environmentLibrary || (library && !this.environmentMaterial)) {
+      const previous = this.environmentMaterial;
+      this.environmentLibrary = library;
+      this.environmentMaterial = library ? createEnvironmentMaterial(library, this.plane) : null;
+      if (this.environmentMaterial) {
+        setEnvironmentMaterialProfile(this.environmentMaterial, this.environmentArtProfile);
+        setEnvironmentMaterialView(this.environmentMaterial, this.environmentArtView);
+      }
+      this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
+      previous?.dispose();
+    } else this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
+  }
+
+  setEnvironmentArtProfile(profile) {
+    this.environmentArtProfile = profile;
+    if (this.environmentMaterial) setEnvironmentMaterialProfile(this.environmentMaterial, profile);
+  }
+
+  setEnvironmentArtView(view) {
+    this.environmentArtView = view;
+    if (this.environmentMaterial) setEnvironmentMaterialView(this.environmentMaterial, view);
   }
 
   /**
@@ -173,6 +203,7 @@ export class PlaneStage {
   releaseLayers() {
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
     this.entities?.dispose(); this.settlements?.dispose(); this.markers?.dispose();
+    this.environmentMaterial?.dispose(); this.environmentMaterial = null;
     this.selectionMarker?.dispose();
     this.root.clear();
     this.terrain = this.water = this.vegetation = this.entities = null;

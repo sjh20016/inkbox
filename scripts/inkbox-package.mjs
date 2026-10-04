@@ -104,6 +104,9 @@ const FILES = [
   'scripts/inkbox-render3d-m2c2b0.mjs',
   'scripts/inkbox-render3d-m2c2b0-browser.mjs',
   'scripts/inkbox-render3d-m2c2b0-soak.mjs',
+  'scripts/inkbox-environment-glb-reader.mjs',
+  'scripts/inkbox-render3d-m2c2b-sample.mjs',
+  'scripts/inkbox-render3d-m2c2b-sample-browser.mjs',
   'scripts/inkbox-realm-style-proof.mjs',
   'scripts/inkbox-realm-plane-proof.mjs',
   'scripts/inkbox-realm-cross-proof.mjs',
@@ -166,6 +169,7 @@ const FILES = [
   'M2C2B0_PERFORMANCE_REPORT.md',
   'M2C2B0_VISUAL_ACCEPTANCE.md',
   'M2C2B0_READINESS.md',
+  'M2C2B_SEMANTIC_ASSET_BINDING.md',
   '美术素材/Inkbox_M2-C2A.1_M2-C2B0_三界视觉基线工程委托书_v1.md',
   '美术素材/三界视觉风格规划_美术方向文档_v1.md',
 ];
@@ -186,11 +190,17 @@ const DIRECTORIES = [
   'assets/characters/cultivator/data',
   'assets/characters/cultivator/materials',
   'assets/characters/cultivator/docs',
+  'assets/environment/mesh',
+  'assets/environment/data',
+  'assets/environment/materials',
+  'assets/environment/docs',
 ];
 const RELEASE_SUMMARIES = [
   'reports/release/render3d-m2a/performance.json',
   'reports/release/render3d-m2c2a/acceptance-summary.json',
   'reports/release/render3d-m2c2a/tree-gate.json',
+  'reports/release/render3d-m2c2b-pass1/b0-summary.json',
+  'reports/release/render3d-m2c2b-pass1/sample-summary.json',
 ];
 
 function copyRelative(relative) {

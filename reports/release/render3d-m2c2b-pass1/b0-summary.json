@@ -1,0 +1,161 @@
+{
+  "package": 0,
+  "pass": true,
+  "frozenCommit": "a8bf11d49bcf1da5d5518d11c7bbffbcb75bacc5",
+  "originalBaseline": "508c27136db8e8fa551fbeac0bc6537efb889c2a",
+  "ci": {
+    "runId": 37192969664,
+    "attempt": 2,
+    "url": "https://github.com/sjh20016/inkbox/actions/runs/37192969664",
+    "fast": "success",
+    "heavy": "success",
+    "browser": "success",
+    "browserJobId": 111423643338
+  },
+  "nightly": {
+    "runId": 37193444527,
+    "conclusion": "success",
+    "smoke": true,
+    "longrunYears": 800
+  },
+  "artifact": {
+    "id": 11302284274,
+    "bytes": 121595099,
+    "digest": "sha256:2bdddc02ac8b828f57cc9c3b032a355f9c0c76de9cdff171bfbaf39c0cfe05b9",
+    "jsonVerification": "Selected ZIP members read through byte ranges and verified by uncompressed length and CRC32; full image archive remains in GitHub artifact."
+  },
+  "browserSuites": [
+    {
+      "name": "canvas",
+      "exitCode": 0,
+      "durationMs": 91866.5151
+    },
+    {
+      "name": "m2a",
+      "exitCode": 0,
+      "durationMs": 106968.22489999999
+    },
+    {
+      "name": "m2b",
+      "exitCode": 0,
+      "durationMs": 69651.8439
+    },
+    {
+      "name": "m2c",
+      "exitCode": 0,
+      "durationMs": 393624.2907
+    },
+    {
+      "name": "m2c2a",
+      "exitCode": 0,
+      "durationMs": 591415.8569999998
+    },
+    {
+      "name": "m2c2b0",
+      "exitCode": 0,
+      "durationMs": 1304388.8706999999
+    }
+  ],
+  "pairedMatrix": {
+    "pass": true,
+    "pairs": 24,
+    "pngs": 48,
+    "suites": [
+      {
+        "name": "mortal",
+        "pairs": 7,
+        "pass": true,
+        "digest": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      {
+        "name": "nether",
+        "pairs": 4,
+        "pass": true,
+        "digest": "c35d82a172f5bcbaa50ed66bcdf08b7f44989aa177a98243c1f52fccabfb6bb3"
+      },
+      {
+        "name": "upper",
+        "pairs": 5,
+        "pass": true,
+        "digest": "0c33425e03aec922b38def0b9bc3a2f283ed2638a1b07d5b4b4f7d3161aac53e"
+      },
+      {
+        "name": "cross",
+        "pairs": 8,
+        "pass": true,
+        "digest": "ff0774e044b43a95370044901624c13a129000ecd3e735e3d255c2ad14d8c3b0"
+      }
+    ]
+  },
+  "lifecycle": {
+    "frames": 600,
+    "actualCalls": {
+      "update": 600,
+      "render": 600
+    },
+    "worldUnchanged": true,
+    "resizeRestored": true
+  },
+  "soak": {
+    "frames": 6000,
+    "blocks": 20,
+    "resources": {
+      "geometries": 53,
+      "textures": 7,
+      "programs": 13
+    },
+    "cpuMemoryStability": {
+      "samplesChecked": 21,
+      "first": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 17202064,
+        "jsHeapTotalBytes": 18350080,
+        "domNodes": 1415,
+        "connectedDomNodes": 1251,
+        "jsEventListeners": 80
+      },
+      "last": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 17162308,
+        "jsHeapTotalBytes": 18612224,
+        "domNodes": 1419,
+        "connectedDomNodes": 1251,
+        "jsEventListeners": 80
+      },
+      "limits": {
+        "heapBytes": 29891188,
+        "domNodes": 1756.5000000000002,
+        "listeners": 188
+      },
+      "peakHeapBytes": 17571004,
+      "peakDomNodes": 1423,
+      "peakListeners": 80,
+      "heapGrowthBytes": -39756,
+      "domNodeDelta": 4,
+      "listenerDelta": 0
+    },
+    "diagnostics": {
+      "consoleErrors": [],
+      "runtimeErrors": []
+    },
+    "fullWorldDigest": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938"
+  },
+  "previousAttempt": {
+    "attempt": 1,
+    "conclusion": "failure",
+    "annotation": "Hosted runner lost communication with GitHub; underlying cause undetermined."
+  },
+  "semanticAudit": {
+    "experimentalAssets": 35,
+    "states": {
+      "P": 10,
+      "D": 6,
+      "L": 16,
+      "X": 3
+    },
+    "productionFamiliesPlanned": 4
+  },
+  "frozenAt": "2026-10-04T12:37:44.774Z"
+}

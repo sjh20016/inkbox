@@ -83,6 +83,31 @@ export const MortalStyleV1 = REALM_STYLES.mortal;
 export const NetherStyleV1 = REALM_STYLES.nether;
 export const UpperStyleV1 = REALM_STYLES.upper;
 
+// Environment UVs encode these semantic slots, never authored RGB authority.
+// Reuse the Stage palette so buildings, rocks and later ghost silhouettes agree.
+export const ENVIRONMENT_PALETTE_SLOTS = Object.freeze([
+  'paper', 'paperDeep', 'paperShade', 'mist', 'ink', 'inkMid', 'inkLight',
+  'stone', 'stoneDark', 'wood', 'woodDark', 'clay', 'cinnabar', 'rouge',
+  'gold', 'azurite', 'indigo', 'malachite', 'pineGreen', 'orchid',
+  'upperA', 'upperB', 'upperC', 'upperD', 'nether', 'netherMid', 'soulFlame', 'snow',
+]);
+
+export function realmEnvironmentPalette(style) {
+  if (typeof style === 'string') style = realmStyleFor(style);
+  if (!style?.building?.palette || !style?.entity?.atlas12) throw new Error('Environment palette requires a realm style');
+  const b = style.building.palette, p = style.pilotPalette, e = style.entity.atlas12;
+  return [
+    b.wall, p.warm, style.terrain.palette[11], style.atmosphere.color,
+    style.ink.color, b.roof, style.terrain.rock,
+    style.terrain.rock, style.terrain.palette[15], b.wood, style.terrain.palette[18],
+    b.earth, b.accent, style.entity.palette.accent, e[9],
+    style.terrain.palette[14], style.terrain.palette[0], style.vegetation.palette[0],
+    style.vegetation.palette[2], e[10],
+    style.terrain.palette[14], style.terrain.palette[13], style.terrain.palette[3],
+    style.paper.color, style.ink.color, style.terrain.palette[2], e[8], e[1],
+  ];
+}
+
 /** Semantic swatches share the same geometry, with colours owned by its layer. */
 export function realmPilotColor(style, category, swatch) {
   if (category === 'building') {

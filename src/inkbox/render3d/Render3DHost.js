@@ -16,6 +16,7 @@ import { RenderDebug } from './debug/RenderDebug.js';
 import { visibleRift } from './readers/riftViewModel.js';
 import { ArtPass } from './art/ArtPass.js';
 import { loadCharacterLibrary } from './characters/CharacterLibrary.js';
+import { loadEnvironmentAssetLibrary } from './environment/EnvironmentAssetLibrary.js';
 
 /**
  * M2-B B4（§56–§58）：与**当前窗口目标位面**一致的活跃裂缝。
@@ -59,6 +60,9 @@ export class Render3DHost {
     this.lodEnabled = !!options.lodEnabled;
     this.characterLibrary = options.characterLibrary || null;
     this.ownsCharacterLibrary = !options.characterLibrary;
+    this.environmentLibrary = options.environmentLibrary || null;
+    this.ownsEnvironmentLibrary = !options.environmentLibrary;
+    this.productionAssetsEnabled = !!options.productionAssets;
 
     this.setWorld(world);
     const load = options.loadCharacterLibrary || (typeof window !== 'undefined' && options.characters !== false
@@ -76,6 +80,26 @@ export class Render3DHost {
         if (!this.disposed) console.error('Cultivator character library failed to load', error);
       });
     }
+    const loadEnvironment = options.loadEnvironmentAssetLibrary
+      || (typeof window !== 'undefined' && options.environment !== false ? loadEnvironmentAssetLibrary : null);
+    if (!this.environmentLibrary && loadEnvironment) {
+      this.environmentLoadPromise = Promise.resolve().then(() => loadEnvironment()).then(library => {
+        if (this.disposed) { library.dispose(); return; }
+        this.environmentLibrary = library;
+        try {
+          for (const stage of this.stages.values()) stage.setEnvironmentAssets(library, this.productionAssetsEnabled);
+        } catch (error) {
+          for (const stage of this.stages.values()) stage.setEnvironmentAssets(null, false);
+          this.environmentLibrary = null;
+          if (this.ownsEnvironmentLibrary) library.dispose();
+          throw error;
+        }
+        return library;
+      }).catch(error => {
+        this.environmentLoadError = error;
+        if (!this.disposed) console.error('Environment asset library failed to load', error);
+      });
+    }
   }
   setWorld(world) {
     const next = snapshotWorldSet(world);
@@ -88,7 +112,8 @@ export class Render3DHost {
         if (!entry) return;
         const plane = PLANES[i];
         const stage = new PlaneStage({ plane, world: entry.world, profile: PLANE_RENDER_PROFILE[plane],
-          coordinates: this.coordinates, characterLibrary: this.characterLibrary });
+          coordinates: this.coordinates, characterLibrary: this.characterLibrary,
+          environmentLibrary: this.environmentLibrary, productionAssets: this.productionAssetsEnabled });
         this.stages.set(plane, stage); this.scene.add(stage.root);
         stage.fxProbe = new ThreeFxProbe({ plane, coordinates: this.coordinates, elevation: stage.elevation });
         stage.root.add(stage.fxProbe.root);
@@ -104,6 +129,12 @@ export class Render3DHost {
     this.debug.samples = []; this.applyView(); return true;
   }
   setArtProfile(profile) { return this.art.setProfile(profile); }
+  setProductionAssetsEnabled(enabled) {
+    this.productionAssetsEnabled = !!enabled;
+    for (const stage of this.stages.values()) stage.setEnvironmentAssets(this.environmentLibrary, this.productionAssetsEnabled);
+    this.art.update();
+    return this.productionAssetsEnabled;
+  }
   setLODEnabled(enabled) {
     this.lodEnabled = !!enabled;
     for (const stage of this.stages.values()) {
@@ -292,6 +323,8 @@ export class Render3DHost {
       boundaryTriangles: this.boundary?.stats.triangles || 0, boundaryVisible: !!this.boundary?.mesh.visible,
       boundaryRawGapMax: this.boundary?.stats.rawGapMax || 0, boundaryVisualDepthMax: this.boundary?.stats.visualDepthMax || 0,
       lodEnabled: this.lodEnabled, lod: this.getLODStats(),
+      productionAssetsEnabled: this.productionAssetsEnabled,
+      environmentAssetsReady: !!this.environmentLibrary && !this.environmentLibrary.disposed,
     });
   }
   resize(width, height) { this.width = width; this.height = height; this.gpu.setSize(width, height, false); this.cameraRig.resize(width, height); }
@@ -307,6 +340,8 @@ export class Render3DHost {
     this.art.dispose(); this.brushOverlay.dispose(); this.cameraRig.dispose(); this.gpu.dispose(); this.scene.clear();
     if (this.ownsCharacterLibrary) this.characterLibrary?.dispose();
     this.characterLibrary = null;
+    if (this.ownsEnvironmentLibrary) this.environmentLibrary?.dispose();
+    this.environmentLibrary = null;
 
     this.world = null; this.worldSet = null; this.presentation = null;
   }

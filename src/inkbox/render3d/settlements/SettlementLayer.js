@@ -32,6 +32,7 @@ import { createBuildingBodyPilot, createBuildingRoofPilot } from '../art/PilotAs
 import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
 import { createBuildingLODBatches, createSettlementClusterGeometry } from '../lod/BuildingLODAssets.js';
 import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
+import { EnvironmentBatch } from '../environment/EnvironmentBatch.js';
 
 /** 建筑实例容量：`maxVillages`(220) × 每村最多 19 屋 + 中心建筑 + 宗门（max 10）。 */
 const CAPACITY = 4608;
@@ -55,8 +56,10 @@ function levelScale(level) {
  *
  * @returns {{buildings:Array, villages:number, houses:number, centers:number, sects:number}}
  */
-export function deriveSettlements(world) {
-  const out = { buildings: [], villages: 0, houses: 0, centers: 0, sects: 0 };
+export function deriveSettlements(world, { productionAssets = false } = {}) {
+  const useProductionAssets = !!productionAssets && world?.plane === 'mortal';
+  const out = { buildings: [], villages: 0, houses: 0, centers: 0, sects: 0,
+    historicalCandidates: 0, currentHouses: 0, currentHalls: 0, excludedHouses: 0 };
   if (!world) return out;
 
   const villages = Array.isArray(world.villages) ? world.villages : [];
@@ -68,12 +71,25 @@ export function deriveSettlements(world) {
     const settlementId = Number.isFinite(v.id) ? v.id : `derived-village-${villageIndex}`;
     for (const h of houses) {
       if (!h || !Number.isFinite(h.x) || !Number.isFinite(h.y)) continue;
-      // 宗祠（`STRUCT.HALL`）比普通屋舍大一号——复用**已有**的 `h.type` 字段。
-      const s = scale * (h.type === STRUCT.HALL ? 1.6 : 1);
+      const houseX = Math.floor(h.x), houseY = Math.floor(h.y);
+      const inside = typeof world.inside !== 'function' || world.inside(houseX, houseY);
+      const cellIndex = inside && typeof world.idx === 'function' ? world.idx(houseX, houseY) : -1;
+      const structType = Number.isInteger(cellIndex) && cellIndex >= 0 ? world.struct?.[cellIndex] : undefined;
+      out.historicalCandidates++;
+      if (structType === STRUCT.HOUSE) out.currentHouses++;
+      else if (structType === STRUCT.HALL) out.currentHalls++;
+      else out.excludedHouses++;
+      if (useProductionAssets && structType !== STRUCT.HOUSE && structType !== STRUCT.HALL) continue;
+      // The legacy presentation keeps its build-time sizing. Production uses the live structure
+      // to decide which fallback still represents a true hall after damage or rebuilding.
+      const hall = useProductionAssets ? structType === STRUCT.HALL : h.type === STRUCT.HALL;
+      const s = scale * (hall ? 1.6 : 1);
+      const houseKey = `house:${String(settlementId)}:${houseX}:${houseY}`;
       out.buildings.push({
         x: h.x + 0.5, y: h.y + 0.5,
         w: 1.5 * s, h: 1.8 * s, d: 1.5 * s, roofH: 1.0 * s,
         body: HOUSE_BODY, roof: HOUSE_ROOF, settlementId, type: 'house', sourceIndex: out.buildings.length,
+        houseX, houseY, houseKey, buildType: h.type, structType,
       });
       out.houses += 1;
     }
@@ -109,13 +125,18 @@ export function deriveSettlements(world) {
 /** 精确比较（不用哈希，无碰撞风险）：这批建筑和上一批一样吗。 */
 export function sameSettlements(a, b) {
   if (!a || !b) return false;
+  for (const key of ['historicalCandidates', 'currentHouses', 'currentHalls', 'excludedHouses']) {
+    if (a[key] !== b[key]) return false;
+  }
   const x = a.buildings; const y = b.buildings;
   if (x.length !== y.length) return false;
   for (let i = 0; i < x.length; i += 1) {
     const p = x[i]; const q = y[i];
     if (p.x !== q.x || p.y !== q.y || p.w !== q.w || p.h !== q.h
       || p.d !== q.d || p.body !== q.body || p.roof !== q.roof
-      || p.settlementId !== q.settlementId || p.type !== q.type) return false;
+      || p.settlementId !== q.settlementId || p.type !== q.type
+      || p.houseX !== q.houseX || p.houseY !== q.houseY || p.houseKey !== q.houseKey
+      || p.buildType !== q.buildType || p.structType !== q.structType) return false;
   }
   return true;
 }
@@ -130,6 +151,8 @@ export class SettlementLayer {
     this.interval = 1 / 4;                  // 半静态：4 Hz
     this.clock = Infinity;
     this.lastDerived = null;
+    this.environmentLibrary = null; this.environmentMaterial = null; this.environmentBatch = null;
+    this.productionAssetsEnabled = false;
     this.colorCache = new Map();
     this.dummy = new THREE.Object3D();
     this.lodEnabled = false; this.artView = {};
@@ -151,7 +174,9 @@ export class SettlementLayer {
     this._renderBuildingLists = [[], [], []];
     this.stats = { buildings: 0, villages: 0, houses: 0, centers: 0, sects: 0,
       instances: 0, triangles: 0, lod: [0, 0, 0], hlod: 0, hlodClusters: 0, hlodTriangles: 0, overflow: 0,
-      capacity: CAPACITY, capacityOverflow: 0, budgetDemotions: 0 };
+      capacity: CAPACITY, capacityOverflow: 0, budgetDemotions: 0, productionAssets: false,
+      productionInstances: 0, productionTriangles: 0, productionDrawCalls: 0, productionOverflow: 0,
+      historicalCandidates: 0, currentHouses: 0, currentHalls: 0, excludedHouses: 0 };
 
     // 单位立方体，底面在 y=0（缩放后直接落地）。
     this.bodyGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -207,6 +232,36 @@ export class SettlementLayer {
       mesh.boundingBox = null; mesh.boundingSphere = null;
     }
     if (changed && this.lastDerived) this._reassignAndWrite(true);
+  }
+
+  /** Bind the Stage-owned palette and library while keeping their shared resources borrowed. */
+  setEnvironmentAssets(library, material, enabled = false) {
+    const nextLibrary = library || null, nextMaterial = material || null;
+    const resourcesChanged = nextLibrary !== this.environmentLibrary || nextMaterial !== this.environmentMaterial;
+    if (resourcesChanged && this.environmentBatch) {
+      this.group.remove(this.environmentBatch.group);
+      this.environmentBatch.dispose();
+      this.environmentBatch = null;
+    }
+    this.environmentLibrary = nextLibrary;
+    this.environmentMaterial = nextMaterial;
+    if (nextLibrary && nextMaterial && !this.environmentBatch) {
+      this.environmentBatch = new EnvironmentBatch(nextLibrary, {
+        material: nextMaterial, capacity: CAPACITY, pickField: 'renderBuildings',
+        assetIds: ['mortal.house.base'],
+      });
+      this.group.add(this.environmentBatch.group);
+      for (const mesh of this.environmentBatch.meshes.values()) mesh.renderOrder = RENDER_ORDER.settlements;
+    }
+    const nextEnabled = !!enabled && !!this.environmentBatch && !nextLibrary?.disposed;
+    const changed = resourcesChanged || nextEnabled !== this.productionAssetsEnabled;
+    this.productionAssetsEnabled = nextEnabled;
+    if (!nextEnabled && this.environmentBatch) this.environmentBatch.write([]);
+    if (changed && this.world) {
+      this.write(deriveSettlements(this.world, { productionAssets: nextEnabled }), this.world);
+    }
+    this.stats.productionAssets = nextEnabled;
+    return nextEnabled;
   }
 
   setLODEnabled(enabled) {
@@ -268,7 +323,7 @@ export class SettlementLayer {
     const force = !!options.heightChanged;
     if (!force && this.clock < this.interval) return false;
     this.clock = 0;
-    const derived = deriveSettlements(world);
+    const derived = deriveSettlements(world, { productionAssets: this.productionAssetsEnabled });
     if (!force && sameSettlements(derived, this.lastDerived)) return false;
     this.write(derived, world);
     return true;
@@ -480,12 +535,21 @@ export class SettlementLayer {
   _writeMatrices() {
     const counts = this._batchCounts, lists = this._renderBuildingLists;
     counts.fill(0); for (const list of lists) list.length = 0;
+    const productionRecords = [];
     this._hlodPickEntries.length = 0; this._hlodLegacyPickEntries.length = 0;
     const bodyCount = Math.min(this._selectedBuildings.length, CAPACITY);
     for (let i = 0; i < bodyCount; i++) {
       const b = this._selectedBuildings[i], lod = this._currentLods[i];
       if (lod === 3) continue;
       const p = this.coordinates.worldToRender(b.x, b.y, 0), ground = this.elevation.at(b.x, b.y);
+      const useProductionHouse = this.productionAssetsEnabled && this.world?.plane === 'mortal' && this.environmentBatch
+        && b.type === 'house' && b.structType === STRUCT.HOUSE && lod >= 0 && lod <= 2;
+      if (useProductionHouse) {
+        productionRecords.push({ assetId: 'mortal.house.base', lod,
+          position: { x: p.x, y: ground, z: p.z },
+          scale: { x: b.w, y: b.h + b.roofH, z: b.d }, rotationY: 0, source: b });
+        continue;
+      }
       this.dummy.rotation.set(0, 0, 0);
       if (lod === 0) {
         this.dummy.position.set(p.x, ground, p.z); this.dummy.scale.set(b.w, b.h, b.d); this.dummy.updateMatrix();
@@ -499,6 +563,7 @@ export class SettlementLayer {
         target.setMatrixAt(counts[slot]++, this.dummy.matrix); lists[lod].push(b);
       }
     }
+    if (this.environmentBatch) this.environmentBatch.write(this.productionAssetsEnabled ? productionRecords : []);
     for (const group of this._groups) {
       if (!group.useHlod || !group.selectedHouses.length) continue;
       if (this.hlodMode === 'legacy') {
@@ -537,6 +602,9 @@ export class SettlementLayer {
       instances += mesh.count; triangles += mesh.count * n / 3;
       if (i === 4 || i === 5) hlodTriangles += mesh.count * n / 3;
     }
+    const production = this.environmentBatch?.stats || { instances: 0, triangles: 0, drawCalls: 0, overflow: 0 };
+    instances += production.instances;
+    triangles += production.triangles;
     const hlod = this._groups.reduce((count, group) => count + (group.useHlod ? 1 : 0), 0);
     s.buildings = this._selectedBuildings.length; s.instances = instances; s.triangles = triangles; s.hlod = hlod;
     s.hlodClusters = this.hlodCluster.count; s.hlodTriangles = hlodTriangles;
@@ -545,6 +613,12 @@ export class SettlementLayer {
     s.capacity = CAPACITY; s.budgetDemotions = this._budgetDemotions;
     s.villages = this.lastDerived.villages; s.houses = this.lastDerived.houses;
     s.centers = this.lastDerived.centers; s.sects = this.lastDerived.sects;
+    s.productionAssets = this.productionAssetsEnabled;
+    s.productionInstances = production.instances; s.productionTriangles = production.triangles;
+    s.productionDrawCalls = production.drawCalls; s.productionOverflow = production.overflow;
+    s.historicalCandidates = this.lastDerived.historicalCandidates;
+    s.currentHouses = this.lastDerived.currentHouses; s.currentHalls = this.lastDerived.currentHalls;
+    s.excludedHouses = this.lastDerived.excludedHouses;
   }
 
   colorOf(hex) {
@@ -554,6 +628,7 @@ export class SettlementLayer {
   }
 
   dispose() {
+    this.environmentBatch?.dispose(); this.environmentBatch = null;
     this.setArtProfile(null);
     this.pilotBody?.dispose(); this.pilotRoof?.dispose(); this.pilotMaterial?.dispose();
     const meshes = [this.bodies, this.roofs, this.lod1, this.lod2, this.hlodLegacy, this.hlodCluster];

@@ -31,6 +31,7 @@ export class ArtPass {
     } : this.profile;
     stage.terrain?.setArtProfile(profile);
     stage.markers?.setArtProfile(profile);
+    stage.setEnvironmentArtProfile(profile);
     const pilot = profile?.pilots ? profile : null;
     for (const [category, layer] of [['entity', stage.entities], ['vegetation', stage.vegetation], ['building', stage.settlements]])
       layer?.setArtProfile(realmStyle ? { ...pilot, layerCategory: category,
@@ -82,6 +83,7 @@ export class ArtPass {
     for (const stage of this.host.stages.values()) {
       if (!stage.visible) continue;
       if (stage.terrain?.inkMaterial) stage.terrain.inkMaterial.uniforms.pixelsPerUnit.value = view.pixelsPerUnit;
+      stage.setEnvironmentArtView(view);
       for (const layer of [stage.entities, stage.vegetation, stage.settlements]) layer?.setArtView(view);
     }
   }

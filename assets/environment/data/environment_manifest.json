@@ -1,0 +1,138 @@
+{
+  "schema": "inkbox-environment-library-v1",
+  "asset": "mesh/environment_library.glb",
+  "atlas": "materials/EntityAtlas.png",
+  "paletteSlots": "data/palette_slots.json",
+  "coordinateSystem": {
+    "gltf": "Y-up, authored front -Z, ridge along X",
+    "pivot": "ground-centered",
+    "normalTransform": "inverse-transpose of independent width/height/depth scale, normalized",
+    "moduleTransform": "identity; normalized authored source geometry"
+  },
+  "source": {
+    "file": "美术素材/实验建筑资产/建筑/bld_house.glb",
+    "triangles": 80,
+    "sourceBounds": {
+      "min": [
+        -0.46000000834465027,
+        0,
+        -0.41999998688697815
+      ],
+      "max": [
+        0.46000000834465027,
+        0.8600000143051147,
+        0.41999998688697815
+      ]
+    },
+    "normalization": {
+      "width": 1.086956502021148,
+      "height": 1.1627906783327278,
+      "depth": 1.190476227644621,
+      "pivot": "center X/Z, min Y"
+    }
+  },
+  "modules": {
+    "env_house_base_lod0": {
+      "node": "env_house_base_lod0",
+      "triangles": 80,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.5,
+          1,
+          0.5
+        ]
+      },
+      "uvSlots": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10
+      ],
+      "semanticSlots": [
+        "paper",
+        "paperDeep",
+        "paperShade",
+        "ink",
+        "inkMid",
+        "stone",
+        "stoneDark",
+        "wood",
+        "woodDark"
+      ]
+    },
+    "env_house_base_lod1": {
+      "node": "env_house_base_lod1",
+      "triangles": 30,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.455
+        ],
+        "max": [
+          0.5,
+          1,
+          0.455
+        ]
+      },
+      "uvSlots": [
+        0,
+        4,
+        9
+      ],
+      "semanticSlots": [
+        "paper",
+        "ink",
+        "wood"
+      ]
+    },
+    "env_house_base_lod2": {
+      "node": "env_house_base_lod2",
+      "triangles": 8,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.44
+        ],
+        "max": [
+          0.5,
+          0.35,
+          0.44
+        ]
+      },
+      "uvSlots": [
+        4
+      ],
+      "semanticSlots": [
+        "ink"
+      ]
+    }
+  },
+  "assets": {
+    "mortal.house.base": {
+      "id": "mortal.house.base",
+      "source": "bld_house",
+      "realm": "mortal",
+      "binding": "current-struct-house",
+      "pick": "house",
+      "lods": [
+        "env_house_base_lod0",
+        "env_house_base_lod1",
+        "env_house_base_lod2"
+      ],
+      "variant": "base",
+      "rotationY": 0
+    }
+  }
+}

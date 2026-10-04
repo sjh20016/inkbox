@@ -31,22 +31,36 @@ export class PlanePicker {
       if (!onlyPlane && stage.entities?.group.visible) stage.entities.group.traverse(object => {
         if (object.isInstancedMesh && visiblySubmitted(object) && object.count) objects.push(object);
       });
-      // A far village aggregate resolves to its real settlement, never to a
-      // fabricated house or character. Near/mid houses retain terrain picking.
+      // Production houses resolve to original coordinates and the real village.
+      // A far aggregate retains settlement identity, without claiming a house.
       if (!onlyPlane) stage.settlements?.group.traverse(object => {
         if (object.isInstancedMesh && visiblySubmitted(object) && object.count
-          && object.userData.renderSettlements?.length) objects.push(object);
+          && (object.userData.renderSettlements?.length
+            || (stage.productionAssetsEnabled && stage.environmentLibrary && object.userData.renderBuildings?.length))) objects.push(object);
       });
+      if (!onlyPlane) stage.markers?.group.traverse(object => {
+        if (object.isInstancedMesh && visiblySubmitted(object) && object.count
+          && object.userData.renderArtifacts?.length) objects.push(object);
+      });
+      // A procedural center/capital still occludes geometry behind it. It carries
+      // no house identity, so inspect its visible coordinate instead of skipping it.
       const hit = this.raycaster.intersectObjects(objects, false)[0];
       if (!hit || (nearest && nearest.distance <= hit.distance)) continue;
       const entity = hit.instanceId == null ? null : hit.object.userData.renderEntities?.[hit.instanceId];
       const settlement = hit.instanceId == null ? null : hit.object.userData.renderSettlements?.[hit.instanceId];
-      const record = entity || settlement;
+      const buildingRecord = hit.instanceId == null ? null : hit.object.userData.renderBuildings?.[hit.instanceId];
+      const building = buildingRecord?.houseKey ? buildingRecord : null;
+      const artifact = hit.instanceId == null ? null : hit.object.userData.renderArtifacts?.[hit.instanceId];
+      const record = entity || settlement || building || artifact;
       const world = record ? { x: record.x, y: record.y } : stage.coordinates.renderToWorld(hit.point.x, hit.point.z);
       const cell = record ? { x: Math.max(0, Math.min(stage.world.w - 1, Math.floor(record.x))), y: Math.max(0, Math.min(stage.world.h - 1, Math.floor(record.y))) }
         : stage.coordinates.renderPointToCell(hit.point);
       nearest = { ...cell, plane: stage.plane, entityId: entity?.id,
-        settlementId: settlement?.settlementId, kind: entity ? 'entity' : settlement ? 'settlement' : 'terrain',
+        entityContainer: entity?.identityContainer,
+        settlementId: settlement?.settlementId ?? building?.settlementId,
+        houseKey: building?.houseKey, houseX: building?.houseX, houseY: building?.houseY,
+        artifactId: artifact?.id,
+        kind: entity ? 'entity' : settlement ? 'settlement' : building ? 'house' : artifact ? 'artifact' : 'terrain',
         point: hit.point, worldPoint: hit.point, world, stage, distance: hit.distance };
     }
     // M2-B B4（§62）：界缘断面也可以被命中——它同样是**提交给 GPU 的可见几何**，

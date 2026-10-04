@@ -120,7 +120,7 @@ import {
 import { getRealmViewState } from './ui/realmViewState.js';
 // 视界的**穿透检视**（D8-F）：点开窗里的东西看它是什么。**只读**——本模块只产出
 // 字符串行，不暴露任何改状态的接口（「D8 仍然是观察」是结构性的，见其头注释）。
-import { pickRealmSubject, realmInspectRows } from './ui/realmInspector.js';
+import { pickRealmSubject, realmInspectRows, resolvePlaneSubject, planeSubjectInspectRows } from './ui/realmInspector.js';
 // 跨界**追迹**（D8-G）：点一条「已入上界 / 已落幽冥」的记挂，算出他在哪一界、
 // 同坐标在哪，并摊出一条只针对他的「跨界来历」链。**纯逻辑、够不到 `openRifts`**
 // ——「引路，不代替玩家开门」因此是结构性的（见其头注释）。
@@ -1585,6 +1585,31 @@ class Sandbox {
    */
   inspectRealmAt(x, y) {
     return this.inspectPlaneAt(this.getRealmViewState().targetPlane, x, y);
+  }
+
+  /** Inspect the World identity carried by a submitted 3D instance. */
+  inspectPlaneSubject(planeId, ref) {
+    if (!['mortal', 'upper', 'nether'].includes(planeId)) return;
+    ref ||= {};
+    const world = planeId === 'mortal' ? this.world : this.world?.[planeId];
+    const picked = resolvePlaneSubject(world, planeId, ref);
+    const card = planeSubjectInspectRows(picked, {
+      day: this.world?.day || 0, watch: this.world?.watch,
+      arrivedLog: world?.arrivedLog, planeLabel: planeLabel(planeId),
+    });
+    const panel = $('inkInspect');
+    if (!panel) return;
+    const text = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const head = card?.head || `${planeLabel(planeId)} · 检视`;
+    const rows = card?.rows || [['此处', '所选对象已不在当前世界']];
+    panel.dataset.plane = planeId;
+    panel.dataset.subjectKind = ref.kind;
+    panel.dataset.subjectId = String(ref.entityId ?? ref.artifactId ?? ref.houseKey ?? ref.settlementId ?? '');
+    panel.innerHTML = `<div class="inspect-head">${text(head)}<button class="ink-x" id="inkInspectClose">×</button></div>`
+      + rows.map(([k, v]) => `<div class="inspect-row"><span>${text(k)}</span><b>${text(v)}</b></div>`).join('');
+    panel.classList.add('on');
+    $('inkInspectClose').addEventListener('click', () => panel.classList.remove('on'));
+    return picked;
   }
 
   /** Route a pick by its actual plane; cross-realm inspection never selects a mortal cell. */
