@@ -22,6 +22,8 @@ npm run build
 
 CPU 检查从实际 GLB accessor 和 PNG 像素解码，检查法线/面朝向、图集槽、资源共享、LOD/HLOD、实例移动后拾取、销毁旧屋记录、异步加载/晚到释放、World/advanceState/save 摘要。完整村落通常先进入 HLOD；真实局部视界阻止聚合时，残留屋舍使用单屋 LOD2。
 
+`6601273` 的远端 Fast/Heavy 暴露现有源码注释扫描器对正则字符组内引号的兼容问题：转义正则让其误读后续注释。检视转义已改为同义 `replaceAll` 链，未更改或放松原测试；完整 presentation 127 断言、three-realms、M0/M1/M2-A/M2-C 和 Edge 样板均重新通过。
+
 Edge 使用本机 154 / AMD Radeon 610M / ANGLE D3D11，1500×940 / DPR 1。LOD0 与 LOD1 均通过实际输入点击 GLB 表面，精确打开原始 houseKey 与 villageId 卡片；凡间划窗仍只拾地形。检视不会跳过前方的无 house 身份中心锚选择后面的屋舍。GLB 和 atlas 各请求一次，跨界、切换资产以及替换 World 仍共用同一 Library/geometry/atlas。实际产品 RAF 采样 120 帧；所有 LINK_STATUS 成功、GL error 为 0、控制台和运行异常为空。
 
 Edge 只读阶段完整 World+advanceState 摘要为 `0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1`，与封板 GOLDEN_A 一致。Node 场景与浏览器启动场景覆盖独立记录，不把两条启动路径的 house/hall 数量假定为相同。

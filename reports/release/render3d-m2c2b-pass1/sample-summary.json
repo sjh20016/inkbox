@@ -114,7 +114,7 @@
       "updates": 120,
       "renders": 120,
       "updateMedianMs": 0.30000000074505806,
-      "updateP95Ms": 0.4000000022351742
+      "updateP95Ms": 0.5
     },
     "sharing": {
       "digestBeforeReplacement": {
@@ -171,7 +171,7 @@
         ],
         "worldSha": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1",
         "sameCamera": true,
-        "imageSha256": "02f4394790e8d8da67982862789e57bff8861e2019956b38cddeb74b114b2532",
+        "imageSha256": "f5a1be1770af146c02c78f008af4a8021941e1c4f6993f1e65ff1d7d51fa421d",
         "exactInputPick": true
       },
       {
@@ -224,12 +224,37 @@
     "test:render3d:m2b 70 groups",
     "test:render3d:m2c2a 8 groups",
     "test:render3d:m2c2a1:hlod 5 checks",
-    "test:render3d:m2c2b0 six 600-day modes, 11 RNG streams"
+    "test:render3d:m2c2b0 six 600-day modes, 11 RNG streams",
+    "test:presentation 127",
+    "test:three-realms full suite",
+    "test:render3d M0 19 groups",
+    "test:render3d:m1 36",
+    "test:render3d:m2a 13 groups",
+    "test:render3d:m2c 9 groups + pilots"
   ],
   "limitations": [
     "Single base house only; production is opt-in until family acceptance",
-    "Existing procedural centers/capital anchors are retained without claiming HALL/gate identity",
-    "Clean clone result recorded after candidate commit"
+    "Existing procedural centers/capital anchors are retained without claiming HALL/gate identity"
   ],
-  "generatedAt": "2026-10-04T13:37:14.228Z"
+  "generatedAt": "2026-10-04T13:37:14.228Z",
+  "cleanClone": {
+    "commit": "6601273cb3ff2422673c78616d788f0bf7d50da2",
+    "npmCi": true,
+    "actualGLBChecks": 10,
+    "packageBuild": true,
+    "packageFiles": 273
+  },
+  "ciCompatibilityFix": {
+    "triggerCommit": "6601273cb3ff2422673c78616d788f0bf7d50da2",
+    "runs": [
+      37206470350,
+      37206470503
+    ],
+    "failures": [
+      "presentation comment scanner",
+      "three-realms comment scanner"
+    ],
+    "cause": "HTML escaping regexp quote characters confused existing comment scanner; equivalent replaceAll preserves safe escaping and original assertions"
+  },
+  "updatedAt": "2026-10-04T13:50:54.357Z"
 }

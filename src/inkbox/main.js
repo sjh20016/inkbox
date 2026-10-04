@@ -1599,7 +1599,8 @@ class Sandbox {
     });
     const panel = $('inkInspect');
     if (!panel) return;
-    const text = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const text = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
     const head = card?.head || `${planeLabel(planeId)} · 检视`;
     const rows = card?.rows || [['此处', '所选对象已不在当前世界']];
     panel.dataset.plane = planeId;
