@@ -51,6 +51,7 @@ export class VegetationLayer {
     this._dummy = new THREE.Object3D();
     this._batchCounts = [0, 0, 0]; this._lodCounts = [0, 0, 0];
     this._budgetDemotions = 0;
+    this.lodProbe = null;
     this.stats = { trees: 0, instances: 0, triangles: 0, lod: [0, 0, 0],
       lodCounts: { lod0: 0, lod1: 0, lod2: 0 }, lod0: 0, lod1: 0, lod2: 0,
       budgetDemotions: 0, capacity: LOD_BUDGETS.categories.tree.capacity,
@@ -140,21 +141,36 @@ export class VegetationLayer {
     this._reassignAndUpload(true);
   }
 
+  /** Enable opt-in CPU attribution for the forest LOD assignment path. */
+  setLODProbeEnabled(enabled = true) {
+    if (!enabled) { this.lodProbe = null; return null; }
+    this.lodProbe = {
+      calls: 0, matrixUploadCount: 0, matrixInstancesWritten: 0, matrixNeedsUpdateMarks: 0,
+      concatTemporaryArrays: 0, concatTemporaryElements: 0, concatTemporaryElementsAvoided: 0,
+      partitionElementsProcessed: 0, renderTreesArraysAllocated: 0, last: null,
+    };
+    return this.lodProbe;
+  }
+
   _reassignAndUpload(forceUpload) {
     if (!this.trees) return;
+    const probe = this.lodProbe, totalStart = probe ? performance.now() : 0;
     const previous = this._lodByTree, nextStates = this._nextLodByTree;
     nextStates.clear(); this._lodCounts.fill(0); this._budgetDemotions = 0;
     const requested = this._requestedLods; requested.clear();
     const desiredCounts = [0, 0, 0], enabled = !!this.artProfile && this.lodEnabled;
+    const desiredStart = probe ? performance.now() : 0;
     for (const tree of this.trees) {
       const px = projectedPixels(1.5 * tree.size, this.artView, 0.8 * tree.size);
       const desired = chooseLOD('tree', px, previous.get(tree.cell), enabled);
       requested.set(tree.cell, desired); desiredCounts[desired]++;
     }
+    const projectionChooseLoopMs = probe ? performance.now() - desiredStart : 0;
     const budget = LOD_BUDGETS.categories.tree;
     this._budgetCrowded = enabled && (desiredCounts[0] > budget.lod0
       || desiredCounts[1] + Math.max(0, desiredCounts[0] - budget.lod0) > budget.lod1);
-    let ordered = this.trees;
+    let partitioned = false;
+    const partitionStart = probe ? performance.now() : 0;
     if (this._budgetCrowded && this.artView.camera) {
       // Scarce near-detail slots belong to the visible forest first. Source
       // ordering must not consume the budget in an off-screen map corner.
@@ -168,27 +184,60 @@ export class VegetationLayer {
       }
       // Linear, stable partition; stationary overview cameras do no projection
       // work, and a crowded moving view does not allocate/sort N entry objects.
-      ordered = visible.concat(outside);
+      partitioned = true;
     }
-    for (const tree of ordered) {
-      let lod = 0;
-      if (this.artProfile && this.lodEnabled) {
-        const desired = requested.get(tree.cell);
-        const budgetResult = budgetLOD('tree', desired, this._lodCounts);
-        lod = budgetResult.lod;
-        if (budgetResult.demoted) this._budgetDemotions++;
-      } else this._lodCounts[0]++;
-      nextStates.set(tree.cell, lod);
+    const crowdedPartitionMs = probe ? performance.now() - partitionStart : 0;
+    const budgetStart = probe ? performance.now() : 0;
+    for (let pass = 0; pass < (partitioned ? 2 : 1); pass++) {
+      const ordered = partitioned ? (pass === 0 ? this._visibleBudgetTrees : this._outsideBudgetTrees) : this.trees;
+      for (const tree of ordered) {
+        let lod = 0;
+        if (this.artProfile && this.lodEnabled) {
+          const desired = requested.get(tree.cell);
+          const budgetResult = budgetLOD('tree', desired, this._lodCounts);
+          lod = budgetResult.lod;
+          if (budgetResult.demoted) this._budgetDemotions++;
+        } else this._lodCounts[0]++;
+        nextStates.set(tree.cell, lod);
+      }
     }
+    const budgetAssignMs = probe ? performance.now() - budgetStart : 0;
     let changed = previous.size !== nextStates.size;
     if (!changed) for (const [cell, lod] of nextStates) if (previous.get(cell) !== lod) { changed = true; break; }
     this._lodByTree = nextStates; this._nextLodByTree = previous; this._nextLodByTree.clear();
-    if (forceUpload || changed) this._writeMatrices();
+    let matrixUploadMs = 0, matrixInstancesWritten = 0, uploaded = false;
+    if (forceUpload || changed) {
+      const uploadStart = probe ? performance.now() : 0;
+      matrixInstancesWritten = this._writeMatrices(); uploaded = true;
+      if (probe) matrixUploadMs = performance.now() - uploadStart;
+    }
     this._updateStats();
+    if (probe) {
+      probe.calls++;
+      const partitionElementsProcessed = partitioned ? this._visibleBudgetTrees.length + this._outsideBudgetTrees.length : 0;
+      probe.partitionElementsProcessed += partitionElementsProcessed;
+      probe.concatTemporaryElementsAvoided += partitionElementsProcessed;
+      probe.renderTreesArraysAllocated += uploaded ? this.lodMeshes.length : 0;
+      if (uploaded) {
+        probe.matrixUploadCount++;
+        probe.matrixInstancesWritten += matrixInstancesWritten;
+        probe.matrixNeedsUpdateMarks += this.lodMeshes.length;
+      }
+      probe.last = {
+        treeCount: this.trees.length, enabled, forceUpload: !!forceUpload, changed, uploaded,
+        projectionChooseLoopMs, crowdedPartitionMs, budgetAssignMs, matrixUploadMs,
+        totalReassignMs: performance.now() - totalStart,
+        crowded: this._budgetCrowded, requestedLOD: [...desiredCounts], assignedLOD: [...this._lodCounts],
+        budgetDemotions: this._budgetDemotions, concatTemporaryArrays: 0, concatTemporaryElements: 0,
+        concatTemporaryElementsAvoided: partitionElementsProcessed, partitionElementsProcessed,
+        matrixInstancesWritten, matrixNeedsUpdateMarks: uploaded ? this.lodMeshes.length : 0,
+      };
+    }
   }
 
   _writeMatrices() {
     const dummy = this._dummy, counts = this._batchCounts;
+    let matrixInstancesWritten = 0;
     counts.fill(0);
     for (const mesh of this.lodMeshes) mesh.userData.renderTrees = [];
     for (const tree of this.trees) {
@@ -199,12 +248,12 @@ export class VegetationLayer {
       if (lod === 0 && !this.artProfile) {
         for (let side = 0; side < 2; side++) {
           dummy.rotation.y = tree.rotation + side * Math.PI / 2;
-          dummy.updateMatrix(); target.setMatrixAt(counts[lod]++, dummy.matrix);
+          dummy.updateMatrix(); target.setMatrixAt(counts[lod]++, dummy.matrix); matrixInstancesWritten++;
           target.userData.renderTrees.push(tree);
         }
       } else {
         dummy.rotation.y = tree.rotation;
-        dummy.updateMatrix(); target.setMatrixAt(counts[lod]++, dummy.matrix);
+        dummy.updateMatrix(); target.setMatrixAt(counts[lod]++, dummy.matrix); matrixInstancesWritten++;
         target.userData.renderTrees.push(tree);
       }
     }
@@ -214,6 +263,7 @@ export class VegetationLayer {
       mesh.boundingBox = null; mesh.boundingSphere = null;
       mesh.visible = counts[lod] > 0;
     }
+    return matrixInstancesWritten;
   }
 
   _updateStats() {
