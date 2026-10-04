@@ -39,7 +39,7 @@ export class Render3DAdapter {
     stage.append(this.canvas);
     const artParams = new URLSearchParams(globalThis.location?.search || '');
     const requestedArt = artParams.get('art');
-    const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'pilot';
+    const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'realm-style-v1';
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off' }); }
     catch (error) { this.canvas.remove(); throw error; }
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
