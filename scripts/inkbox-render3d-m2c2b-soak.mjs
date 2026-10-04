@@ -21,7 +21,14 @@ const report={startedAt:new Date().toISOString(),scenario:'NETHER_STYLE_A',sourc
   serverMode:process.env.INKBOX_URL?'controlled-existing-URL':'self-hosted',lifecycleFrames:600,soakFrames:6000,
   blockFrames:300,states:states.map(({key})=>key),blocks:[],pass:false};
 let server,browser;
-const page=(body,options)=>{const expression=`return (async()=>{${body}})();`;new vm.Script(`(()=>{${expression}})()`);return browser.js(expression,options);};
+// Warm resource operations use one finite transport deadline, including queries
+// that previously inherited Session's 30s default; all acceptance assertions stay.
+const page=async (body,{label='page evaluation',timeoutMs=120000}={})=>{
+  const expression=`return (async()=>{${body}})();`;new vm.Script(`(()=>{${expression}})()`);
+  report.activeOperation={phase:report.phase,label,timeoutMs,startedAt:new Date().toISOString()};
+  try{return await browser.js(expression,{timeoutMs});}
+  catch(error){throw new Error(`${report.phase||'setup'} / ${label}: ${error.message}`,{cause:error});}
+};
 function diagnostics(){return {consoleErrors:browser?.cdp.events.filter(e=>e.method==='Runtime.consoleAPICalled'&&e.params?.type==='error')
   .map(e=>e.params.args?.map(a=>a.value||a.description||'').join(' '))||[],runtimeErrors:browser?.errors()||[]};}
 async function startServer(){
@@ -156,12 +163,13 @@ async function warmAllStates(){
   for(const state of warmStates){
     const zooms=[];
     for(const zoom of [18,4,.5]){
-      const result=await page(`return window.__b6SetState(${JSON.stringify(state)},${zoom});`, { timeoutMs: 120000 });
-      const snapshot=await page(`return window.__b6Snapshot();`);
+      report.warmupProgress={completedStates:warm.length,totalStates:warmStates.length,key:state.key,zoom};
+      const result=await page(`return window.__b6SetState(${JSON.stringify(state)},${zoom});`, { label:`warm settle ${state.key} zoom ${zoom}` });
+      const snapshot=await page(`return window.__b6Snapshot();`,{label:`warm GPU snapshot ${state.key} zoom ${zoom}`});
       assert.equal(snapshot.glError,0,`${state.key} zoom ${zoom}: GL error`);
       let ghostProof=null;
       if(state.production&&zoom===18&&(state.view==='nether'||state.view==='nether-window')&&state.lod){
-        ghostProof=await page(`return window.__b6GhostProof();`);
+        ghostProof=await page(`return window.__b6GhostProof();`,{label:`warm ghost proof ${state.key}`});
         assert(ghostProof.matches.length>0,`${state.key}: real ghostCultivator did not enter a visible LOD0 GLB batch`);
         for(const match of ghostProof.matches){
           assert(match.libraryMaterial,`${state.key}: source library GLB material missing`);
@@ -173,11 +181,13 @@ async function warmAllStates(){
       zooms.push({zoom,warmFrames:result.warmFrames,resources:snapshot.resources,programs:snapshot.programs.length,ghostProof});
     }
     warm.push({key:state.key,zooms});
+    console.log(`warm ${warm.length}/${warmStates.length} ${state.key} ${zooms.map(z=>`${z.zoom}:${z.warmFrames}frames`).join(' ')}`);
   }
   const reference={};
   for(const state of states){
-    await page(`return window.__b6SetState(${JSON.stringify(state)},4);`, { timeoutMs: 120000 });
-    const snapshot=await page(`return window.__b6Snapshot();`);
+    report.warmupProgress={completedStates:warm.length,totalStates:warmStates.length,key:state.key,zoom:4,recordingReference:true};
+    await page(`return window.__b6SetState(${JSON.stringify(state)},4);`, { label:`reference settle ${state.key}` });
+    const snapshot=await page(`return window.__b6Snapshot();`,{label:`reference GPU snapshot ${state.key}`});
     assert.equal(snapshot.glError,0,`${state.key}: baseline GL error`);
     reference[state.key]={resources:snapshot.resources,materialRefs:snapshot.materialRefs};
   }
@@ -243,12 +253,15 @@ try{
   await browser.cdp.send('Network.enable');await browser.cdp.send('Page.navigate',{url:url.toString()});
   assert(await browser.waitFor('return !!window.inkbox?.render3d?.renderer?.stages?.size',{timeoutMs:60000}),
     `Render3D did not boot: ${browser.errors().join(' | ')}`);
+  report.phase='natural scenario';
   const prepared=await prepare();report.scenarioRecipe=prepared.scenario;report.setup=prepared.setup;
+  report.phase='install product call monitor';
   await installHarness();await browser.cdp.send('Performance.enable',{},30000);
+  report.phase='warm resources';
   report.warmup=await warmAllStates();
   report.warmup.worldDigest=await page(`return window.__b6.snapshotDigest(window.inkbox);`);
   assert.equal(report.warmup.worldDigest.value,report.setup.digestPure.value,'fully warmed production/decoration states changed full World/advanceState');
-  report.cpuMemoryBaseline=await cpuMemorySample();
+  report.phase='post-GC memory baseline';report.cpuMemoryBaseline=await cpuMemorySample();
   const first=report.cpuMemoryBaseline;
   const memoryLimits={heapBytes:first.jsHeapUsedBytes*1.25+8*1024*1024,
     domNodes:first.domNodes*1.10+200,listeners:first.jsEventListeners*1.10+100};
@@ -258,11 +271,12 @@ try{
     assert(sample.domNodes<=memoryLimits.domNodes,`${label}: DOM nodes exceeded fully warmed pre-lifecycle bound`);
     assert(sample.jsEventListeners<=memoryLimits.listeners,`${label}: DOM listeners exceeded fully warmed pre-lifecycle bound`);
   };
-  report.lifecycle=await lifecycle();
+  report.phase='600-frame lifecycle';report.lifecycle=await lifecycle();
   report.lifecycle.cpuMemory=await cpuMemorySample();checkMemory(report.lifecycle.cpuMemory,'600-frame lifecycle');
   assert(report.lifecycle.worldUnchanged&&report.lifecycle.resizeRestored,'600-frame lifecycle changed World or failed resize restore');
   assert.equal(report.lifecycle.worldDigestAfter.value,report.setup.digestPure.value,'lifecycle changed full World/advanceState');
   for(let block=0;block<20;block++){
+    report.phase=`6000-frame soak block ${block+1}/20`;
     const state=states[block],current=await soakBlock(block,state);
     current.cpuMemory=await cpuMemorySample();
     checkMemory(current.cpuMemory,state.key);
@@ -289,8 +303,8 @@ try{
   report.loads={environment:urls.filter(u=>new URL(u).pathname.endsWith('/environment_library.glb')).length,atlas:urls.filter(u=>new URL(u).pathname.endsWith('/EntityAtlas.png')).length,cultivator:urls.filter(u=>new URL(u).pathname.endsWith('/cultivator_library.glb')).length};
   assert.deepEqual(report.loads,{environment:1,atlas:1,cultivator:1});
   report.diagnostics=diagnostics();assert.deepEqual([...report.diagnostics.consoleErrors,...report.diagnostics.runtimeErrors],[],'browser errors');
-  report.pass=true;
-}catch(error){report.failure=error.stack||String(error);report.diagnostics=diagnostics();process.exitCode=1;console.error(report.failure);}
+  report.phase='complete';report.pass=true;
+}catch(error){report.failure=error.stack||String(error);report.failureOperation={...report.activeOperation};report.diagnostics=diagnostics();process.exitCode=1;console.error(report.failure);}
 finally{
   if(browser){try{report.productCallMonitor=await page(`return window.__b6RestoreCalls?.()||null;`);}catch{/* page may have failed */}}
   report.finishedAt=new Date().toISOString();fs.mkdirSync(output,{recursive:true});
