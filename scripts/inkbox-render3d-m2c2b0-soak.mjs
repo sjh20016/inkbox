@@ -40,8 +40,10 @@ async function cpuMemorySample(){
   const [performance,dom]=await Promise.all([browser.cdp.send('Performance.getMetrics',{},30000),browser.cdp.send('Memory.getDOMCounters',{},30000)]);
   const metrics=Object.fromEntries((performance.metrics||[]).map(m=>[m.name,m.value]));
   assert(Number.isFinite(metrics.JSHeapUsedSize)&&Number.isFinite(dom.nodes)&&Number.isFinite(dom.jsEventListeners),'CDP heap/DOM/listener metrics unavailable');
+  const connectedDomNodes=await browser.js(`let count=1;const walker=document.createTreeWalker(document,NodeFilter.SHOW_ALL);
+    while(walker.nextNode())count++;return count;`);
   return {available:true,afterForcedGC:true,jsHeapUsedBytes:metrics.JSHeapUsedSize,jsHeapTotalBytes:metrics.JSHeapTotalSize,
-    domNodes:dom.nodes,jsEventListeners:dom.jsEventListeners};
+    domNodes:dom.nodes,connectedDomNodes,jsEventListeners:dom.jsEventListeners};
 }
 async function prepare(){
   await page(`window.__b6=await import('./src/inkbox/render3d/art/VisualScenarios.js');return true;`);
@@ -246,6 +248,7 @@ try{
   const first=report.cpuMemoryBaseline;
   const memoryLimits={heapBytes:first.jsHeapUsedBytes*1.25+8*1024*1024,
     domNodes:first.domNodes*1.10+200,listeners:first.jsEventListeners*1.10+100};
+  report.memoryLimits=memoryLimits;
   const checkMemory=(sample,label)=>{
     assert(sample.jsHeapUsedBytes<=memoryLimits.heapBytes,`${label}: post-GC heap exceeded fully warmed pre-lifecycle bound`);
     assert(sample.domNodes<=memoryLimits.domNodes,`${label}: DOM nodes exceeded fully warmed pre-lifecycle bound`);

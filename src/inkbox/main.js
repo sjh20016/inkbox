@@ -138,6 +138,19 @@ import {
 
 const $ = (id) => document.getElementById(id);
 
+// 周期侧栏只在整段 markup 真正变化时替换 DOM；缓存只持有元素与字符串，
+// 不持有 World 或实体引用，换世界后首次渲染仍会按新内容更新。
+const periodicMarkup = new WeakMap();
+function setPeriodicMarkup(element, markup) {
+  if (!element || periodicMarkup.get(element) === markup) return;
+  element.innerHTML = markup;
+  periodicMarkup.set(element, markup);
+}
+
+function setTextIfChanged(element, text) {
+  if (element && element.textContent !== text) element.textContent = text;
+}
+
 /** 各阶境界的横条颜色，与小人身上的束带/灵光保持同一套色（按 `REALMS` 逐档对应） */
 const REALM_BAR = ['#a8b6bd', '#8fa7b8', '#c8a44e', '#8fb0d8', '#c98fd8', '#e8c860', '#b98cff'];
 
@@ -2181,31 +2194,29 @@ class Sandbox {
     const year = Math.floor(day / TIME.daysPerYear) + 1;
     const dayOfYear = (day % TIME.daysPerYear) + 1;
 
-    $('inkTimePill').textContent = `仙历 ${year} 年 · 第 ${dayOfYear} 日`;
-    $('inkSpeedPill').textContent = `${TIME.speeds[this.speedIndex].label}速 ×${TIME.speeds[this.speedIndex].mult}`;
-    $('inkFpsPill').textContent = `${this.fps.toFixed(0)} FPS`;
-    $('inkStatPeople').textContent = String(stats.entities);
+    setTextIfChanged($('inkTimePill'), `仙历 ${year} 年 · 第 ${dayOfYear} 日`);
+    setTextIfChanged($('inkSpeedPill'), `${TIME.speeds[this.speedIndex].label}速 ×${TIME.speeds[this.speedIndex].mult}`);
+    setTextIfChanged($('inkFpsPill'), `${this.fps.toFixed(0)} FPS`);
+    setTextIfChanged($('inkStatPeople'), String(stats.entities));
     // 凡间鬼影（D6-3 工程包 B）：**此刻**在凡间飘荡的鬼（自幽冥缝爬出来的）。
     // ⚠️ 口径只有 `wraithStats` 一份（`sim/wraiths.js`）——不在这里自己 filter
     //    `world.wraiths`（那是第二份真相，同幽冥那行 `netherGhostStats` 的理由）。
     // ⚠️ 与「生灵」**分开报**：鬼影不在 `world.entities` 里，`stats.entities`
     //    数不到它们；合成一格会让玩家以为「生灵 513」里包含鬼。
-    $('inkStatWraiths').textContent = String(wraithStats(world).alive);
-    $('inkStatVillages').textContent = String(stats.villages);
-    $('inkStatFactions').textContent = String(stats.factions);
-    $('inkStatLand').textContent = `${((stats.land / world.size) * 100).toFixed(0)}%`;
-    $('inkStatPeak').textContent = stats.peak.toFixed(2);
+    setTextIfChanged($('inkStatWraiths'), String(wraithStats(world).alive));
+    setTextIfChanged($('inkStatVillages'), String(stats.villages));
+    setTextIfChanged($('inkStatFactions'), String(stats.factions));
+    setTextIfChanged($('inkStatLand'), `${((stats.land / world.size) * 100).toFixed(0)}%`);
+    setTextIfChanged($('inkStatPeak'), stats.peak.toFixed(2));
 
     const factionList = $('inkFactionList');
-    factionList.innerHTML = '';
     const sorted = world.factions.slice().sort((a, b) => b.pop - a.pop).slice(0, 8);
-    sorted.forEach((f) => {
-      const row = document.createElement('div');
-      row.className = 'faction';
-      row.innerHTML = `<i style="background:${f.color}"></i><span>${f.name}</span>`
-        + `<b>${f.pop}</b><em>${f.followers || f.pop} 人 · ${f.villages.length} 村</em>`
-        + (f.war.size ? '<u>战</u>' : '');
-      row.addEventListener('click', () => {
+    if (factionList && !this.factionListBound) {
+      factionList.addEventListener('click', (ev) => {
+        const row = ev.target.closest('[data-faction-id]');
+        if (!row) return;
+        const f = this.world && this.world.factionById(Number(row.dataset.factionId));
+        if (!f) return;
         // 找宗门：镜头**滑**过去（0.85 秒），落点浮一个墨环。
         // 走 `focusOn` 而不是直接赋值——玩家一拖 / 一滚 / 按 H 就立刻接管（见 camera.js）。
         this.camera.focusOn(f.capitalX, f.capitalY, {
@@ -2217,31 +2228,45 @@ class Sandbox {
         this.focusedSectId = f.id;
         this.dirty = true;
       });
-      factionList.appendChild(row);
-    });
-    if (!sorted.length) {
-      factionList.innerHTML = '<div class="ink-empty">尚无聚落。用「生灵」撒下凡人，他们会自己结庐成村。</div>';
+      this.factionListBound = true;
+    }
+    if (factionList) {
+      const factionSignature = JSON.stringify(sorted.map((f) => [
+        f.id, f.color, f.name, f.pop, f.followers || f.pop,
+        f.villages.length, f.war.size,
+      ]));
+      if (this.factionRenderWorld !== world || this.factionRenderSignature !== factionSignature) {
+        const factionHtml = sorted.length
+          ? sorted.map((f) => `<div class="faction" data-faction-id="${f.id}">`
+            + `<i style="background:${f.color}"></i><span>${f.name}</span>`
+            + `<b>${f.pop}</b><em>${f.followers || f.pop} 人 · ${f.villages.length} 村</em>`
+            + (f.war.size ? '<u>战</u>' : '') + '</div>').join('')
+          : '<div class="ink-empty">尚无聚落。用「生灵」撒下凡人，他们会自己结庐成村。</div>';
+        factionList.innerHTML = factionHtml;
+        this.factionRenderWorld = world;
+        this.factionRenderSignature = factionSignature;
+      }
     }
 
     // ── 仙道 ──
     const cs = world.cultivationStats();
-    $('inkStatCultivators').textContent = String(cs.cultivators);
-    $('inkStatMortals').textContent = String(cs.mortals);
-    $('inkStatPeakCultivator').textContent = cs.peakName
+    setTextIfChanged($('inkStatCultivators'), String(cs.cultivators));
+    setTextIfChanged($('inkStatMortals'), String(cs.mortals));
+    setTextIfChanged($('inkStatPeakCultivator'), cs.peakName
       ? `${cs.peakName} · ${realmLabel(cs.highest)}`
-      : '尚无修士';
-    $('inkStatLeylines').textContent = String(world.leylines.length);
-    $('inkStatSites').textContent = String(world.sites.length);
-    $('inkStatAscended').textContent = String(world.ascended.length);
+      : '尚无修士');
+    setTextIfChanged($('inkStatLeylines'), String(world.leylines.length));
+    setTextIfChanged($('inkStatSites'), String(world.sites.length));
+    setTextIfChanged($('inkStatAscended'), String(world.ascended.length));
     // 法宝：显示「在手 + 地上」的总数，另加器灵数。
     // 只报总数看不出玩法活没活，所以器灵单独一个读数——
     // 器灵要「相伴 50 年」才出得来，它是「世界真的跑了很久」的直接证据。
     const as = artifactStats(world);
     const artifactEl = $('inkStatArtifacts');
     if (artifactEl) {
-      artifactEl.textContent = as.live
+      setTextIfChanged(artifactEl, as.live
         ? `${as.live}${as.spirits ? ` · 器灵 ${as.spirits}` : ''}`
-        : '0';
+        : '0');
     }
     // 世家：家数 · 最大世代。世家是这个世界里**唯一会断绝**的东西——
     // 宗门散了还会再立，村子荒了还能再开，而一族断了就是断了。
@@ -2249,9 +2274,9 @@ class Sandbox {
     const ks = clanStats(world);
     const clanEl = $('inkStatClans');
     if (clanEl) {
-      clanEl.textContent = ks.clans
+      setTextIfChanged(clanEl, ks.clans
         ? `${ks.clans}${ks.maxGen ? ` · 第${ks.maxGen}代` : ''}`
-        : '0';
+        : '0');
     }
     // 大战：进行中 · 累计灭门。报这两个而不是「累计打了几场」——
     // 「正在打」是玩家能看见的当下，「灭了几家」是政治层唯一不可逆的结局。
@@ -2260,9 +2285,9 @@ class Sandbox {
     const ws = warStats(world);
     const warEl = $('inkStatWars');
     if (warEl) {
-      warEl.textContent = ws.ongoing
+      setTextIfChanged(warEl, ws.ongoing
         ? `${ws.ongoing} 场`
-        : (ws.destroyed ? `灭 ${ws.destroyed}` : '0');
+        : (ws.destroyed ? `灭 ${ws.destroyed}` : '0'));
     }
 
     // 境界分布：**按境界表逐档**渲染（并集表：凡间六阶 + 上界大乘，见 INKBOX §九.14）。
@@ -2279,21 +2304,21 @@ class Sandbox {
       barsHtml += `<div class="dao-realm"><span>${REALMS[i].name}</span>`
         + `<i style="width:${pct}%;background:${REALM_BAR[i]}"></i><b>${n}</b></div>`;
     }
-    bars.innerHTML = barsHtml;
+    setPeriodicMarkup(bars, barsHtml);
   }
 
   refreshChronicle() {
     const list = $('inkChronicle');
     if (!list || !this.world) return;
     const items = this.world.chronicle.slice(-40).reverse();
-    list.innerHTML = items.length
+    setPeriodicMarkup(list, items.length
       ? items.map((c) => {
         // 卜算子的话单独标一下，免得读者分不清哪句是旁白、哪句是史实
         const cls = c.kind === 'busanzi' ? 'ink-log is-busanzi' : 'ink-log';
         const who = c.kind === 'busanzi' ? '卜算子' : `${Math.floor(c.day / 360) + 1} 年`;
         return `<div class="${cls}"><b>${who}</b>${c.text}</div>`;
       }).join('')
-      : '<div class="ink-empty">世界还很安静。</div>';
+      : '<div class="ink-empty">世界还很安静。</div>');
   }
 
   // ── 大事记（World.milestones，见 world/World.js 的 milestone()）──────
@@ -2331,9 +2356,9 @@ class Sandbox {
         return `<div class="ink-log"><b>仙历 ${year} 年</b>${m.text}</div>`;
       });
     const rows = [...activeRows, ...milestoneRows];
-    box.innerHTML = rows.length
+    setPeriodicMarkup(box, rows.length
       ? rows.join('')
-      : '<div class="ink-empty">还没有值得记的大事。快进一些年，或者亲手去改一改这个世界。</div>';
+      : '<div class="ink-empty">还没有值得记的大事。快进一些年，或者亲手去改一改这个世界。</div>');
   }
 
   // ── 值得关注的人物（见本文件顶部的 notablePeople）────────────────
@@ -2350,7 +2375,7 @@ class Sandbox {
     const world = this.world;
     if (!box || !world) return;
     const rows = notablePeople(world);
-    box.innerHTML = rows.length
+    setPeriodicMarkup(box, rows.length
       ? rows.map((r) => {
         const e = r.e;
         const tags = [realmLabel(e.level || 0)];
@@ -2366,7 +2391,7 @@ class Sandbox {
           + `${e.beast ? ` · 有灵兽${e.beast}` : ''}</div>`
           + '</div>';
       }).join('')
-      : '<div class="ink-empty">还没有觉醒的修士。用「生灵」撒下凡人，再快进几年。</div>';
+      : '<div class="ink-empty">还没有觉醒的修士。用「生灵」撒下凡人，再快进几年。</div>');
     // 事件委托（同史册）：面板每 2.5 秒重建 innerHTML，
     // 逐行挂监听会被下一次刷新全部丢掉——而且不报错，只是点了没反应。
     if (!this.notablesBound) {
@@ -2536,10 +2561,10 @@ class Sandbox {
     if (!box || !world) return;
     const rows = watchRows(world);
     const count = $('inkWatchCount');
-    if (count) count.textContent = String(rows.length);
+    setTextIfChanged(count, String(rows.length));
     const dot = $('inkWatchDot');
     if (dot) dot.style.display = watchHasNews(world) ? '' : 'none';
-    box.innerHTML = rows.length
+    setPeriodicMarkup(box, rows.length
       ? rows.map((r) => {
         const e = r.entry;
         const tags = [];
@@ -2554,7 +2579,7 @@ class Sandbox {
           + `<span class="notable-reason">★</span>${e.name}（${tags.join(' · ')}）`
           + `${extra}</div>`;
       }).join('')
-      : '<div class="ink-empty">还没有记挂任何人。点开一个人物卡，按「☆ 记挂此人」。</div>';
+      : '<div class="ink-empty">还没有记挂任何人。点开一个人物卡，按「☆ 记挂此人」。</div>');
     // 事件委托（同活人榜 / 史册）：面板每 2.5 秒重建 innerHTML，
     // 逐行挂监听会被下一次刷新全部丢掉——而且不报错，只是点了没反应。
     if (!this.watchBound) {
@@ -2622,7 +2647,7 @@ class Sandbox {
     const box = $('inkUpperLog');
     if (!upper) {
       if (meta) meta.textContent = '未生成';
-      if (box) box.innerHTML = '<div class="ink-empty">这一局没有上界。</div>';
+      setPeriodicMarkup(box, '<div class="ink-empty">这一局没有上界。</div>');
       return;
     }
     const pop = upper.popLog || {};
@@ -2657,8 +2682,8 @@ class Sandbox {
     for (const m of ms.slice(-UPPER_MILESTONE_LIMIT).reverse()) {
       rows.push(`<div class="ink-log"><b>仙历 ${Math.floor((m.day || 0) / 360) + 1} 年</b>${m.text}</div>`);
     }
-    box.innerHTML = rows.length ? rows.join('')
-      : '<div class="ink-empty">上界还只有开天时的那十几个人。凡间有人飞升之后，这里会记下他。</div>';
+    setPeriodicMarkup(box, rows.length ? rows.join('')
+      : '<div class="ink-empty">上界还只有开天时的那十几个人。凡间有人飞升之后，这里会记下他。</div>');
   }
 
   /** 幽冥那一块：魂路五路分布 / 魂池里排着谁 / 谁已经带着前世回来 */
@@ -2719,7 +2744,7 @@ class Sandbox {
     if (bars) {
       let max = 1;
       for (const k of SOUL_ROUTE_ORDER) max = Math.max(max, Number(log[k]) || 0);
-      bars.innerHTML = SOUL_ROUTE_ORDER.map((k) => {
+      setPeriodicMarkup(bars, SOUL_ROUTE_ORDER.map((k) => {
         const n = Number(log[k]) || 0;
         const pct = n ? Math.max(3, (n / max) * 100) : 0;
         // ⚠️ 「零的那几路压淡」走 `data-zero` 而**不是**多拼一个类名：
@@ -2732,7 +2757,7 @@ class Sandbox {
           + `<span>${ROUTE_LABEL[k] || k}</span>`
           + `<i style="width:${pct}%;background:${SOUL_ROUTE_COLOR[k] || '#7d776b'}"></i>`
           + `<b>${n}</b></div>`;
-      }).join('');
+      }).join(''));
     }
     if (!box) return;
     const rows = [];
@@ -2759,8 +2784,8 @@ class Sandbox {
         + `<div class="necro-epitaph">${PAST_LIFE_CHOICE[e.pastLife.choice] || '记忆尚未觉醒'}`
         + `${e.pastLife.conflict ? ' · 两世相争' : ''}</div></div>`);
     }
-    box.innerHTML = rows.length ? rows.join('')
-      : '<div class="ink-empty">魂池还是空的。这个世界的人死得还不够多——快进一些年。</div>';
+    setPeriodicMarkup(box, rows.length ? rows.join('')
+      : '<div class="ink-empty">魂池还是空的。这个世界的人死得还不够多——快进一些年。</div>');
   }
 
   // ── 史册（逝者名录，见 sim/necrology.js）─────────────────
@@ -2782,7 +2807,7 @@ class Sandbox {
     const st = necrologyStats(world);
     const count = $('inkNecroCount');
     if (count) count.textContent = `${st.count} / 累计 ${st.total}`;
-    box.innerHTML = rows.length
+    setPeriodicMarkup(box, rows.length
       ? rows.map((r) => {
         const year = Math.floor((r.died || 0) / 360);
         const tags = [realmOrMortal(r.level)];
@@ -2798,7 +2823,7 @@ class Sandbox {
           + (r.epitaph ? `<div class="necro-epitaph">「${r.epitaph}」</div>` : '')
           + '</div>';
       }).join('')
-      : '<div class="ink-empty">名录尚空——这个世界还没有人离世。</div>';
+      : '<div class="ink-empty">名录尚空——这个世界还没有人离世。</div>');
     // 点开某一条：用**事件委托**。面板每 2.5 秒重建一次 innerHTML，
     // 逐条挂监听会被下一次刷新全部丢掉（而且不会报错，只是点了没反应）。
     if (!this.necroBound) {
@@ -2895,9 +2920,9 @@ class Sandbox {
     }
     const lines = $('inkBusanziLines');
     if (lines) {
-      lines.innerHTML = recent
+      setPeriodicMarkup(lines, recent
         .map((c) => `<div class="busanzi-line">${c.text}</div>`)
-        .join('');
+        .join(''));
     }
     const tier = $('inkBusanziTier');
     if (tier) tier.textContent = busanziTierName(this.world);
