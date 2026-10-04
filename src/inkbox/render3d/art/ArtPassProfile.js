@@ -19,6 +19,8 @@ export const ART_PROFILES = Object.freeze({
   pigment: Object.freeze({ ...BASE, name: 'pigment', pilots: false, structuralInkStrength: 0, silhouetteInkStrength: 0 }),
   ink: Object.freeze({ ...BASE, name: 'ink', pilots: false }),
   pilot: BASE,
+  legacy: Object.freeze({ ...BASE, name: 'legacy' }),
+  'realm-style-v1': Object.freeze({ ...BASE, name: 'realm-style-v1', mode: 'realm-style-v1' }),
   low: Object.freeze({ ...BASE, name: 'low', paperGrainStrength: 0, dryBrushStrength: 0.25 }),
 });
 export function resolveArtProfile(value = 'pilot', base = BASE) {

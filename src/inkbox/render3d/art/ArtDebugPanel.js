@@ -9,6 +9,7 @@ export class ArtDebugPanel {
     el.style.cssText = 'position:absolute;right:12px;top:62px;z-index:5;background:#f5f2eaf0;border:1px solid #aaa18e;padding:8px;font:12px sans-serif;max-height:70%;overflow:auto;width:240px';
     const summary = document.createElement('summary'); summary.textContent = 'Art · 写意调试'; el.append(summary);
     const select = document.createElement('select'); select.setAttribute('aria-label', 'Art profile');
+    this.select = select;
     for (const name of Object.keys(ART_PROFILES)) select.add(new Option(name, name));
     select.value = host.art.profile.name;
     select.addEventListener('change', () => { host.setArtProfile(select.value); this.refresh(); }, { signal: this.abort.signal });
@@ -36,6 +37,14 @@ export class ArtDebugPanel {
     }, { signal: this.abort.signal });
     el.append(button); parent.append(el); this.refresh();
   }
-  refresh() { for (const [key,input] of this.inputs) input.value = this.host.art.profile[key]; }
+  refresh() {
+    const profile = this.host.art.profile;
+    this.select.value = profile.name;
+    const fixedRealmStyle = profile.mode === 'realm-style-v1';
+    for (const [key,input] of this.inputs) {
+      input.value = profile[key];
+      input.disabled = fixedRealmStyle;
+    }
+  }
   dispose() { this.abort.abort(); this.element.remove(); this.host = null; }
 }

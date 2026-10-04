@@ -19,6 +19,9 @@ uniform vec3 paperColor;
 uniform float pigmentDensity, pigmentSaturation, terrainBoundaryStrength;
 uniform float structuralInkStrength, silhouetteInkStrength, inkDensity;
 uniform float dryBrushStrength, distanceFade, paperGrainStrength, pixelsPerUnit;
+uniform float realmStyleEnabled, slopeRampStrength, realmContrast, paperExposure;
+uniform float feibaiStrength, atmosphereStrength, atmosphereLow, atmosphereHigh;
+uniform vec3 slopeRockColor, slopeSoilColor, terrainWaterColor, realmInkColor, atmosphereColor;
 varying vec3 vWorld;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7)) + seed) * 43758.5453); }
 float noise(vec2 p) {
@@ -48,9 +51,13 @@ void main() {
   float distant=mix(1.0,0.30,distanceFade*(1.0-nearDetail));
   float wash=noise(p*0.12+vec2(5.7,9.1));
   float water=1.0-step(3.5,id);
-  pigment=mix(pigment,vec3(0.30,0.43,0.46),water*0.22);
+  pigment=mix(pigment,terrainWaterColor,water*0.22);
   float rock=step(12.5,id)*(1.0-step(16.5,id));
   float forest=step(6.5,id)*(1.0-step(8.5,id));
+  if (realmStyleEnabled > 0.5) {
+    pigment=mix(pigment,slopeRockColor,rock*smoothstep(0.18,1.8,slope)*slopeRampStrength);
+    pigment=mix(pigment,slopeSoilColor,(1.0-rock)*(1.0-water)*smoothstep(0.55,2.2,slope)*slopeRampStrength*0.26);
+  }
   float coverage=mix(0.20,0.64,smoothstep(0.25,0.8,wash));
   coverage+=water*0.10+forest*0.12+rock*smoothstep(0.15,1.5,slope)*0.16;
   float density=clamp(pigmentDensity*coverage*distant,0.0,0.85);
@@ -59,13 +66,22 @@ void main() {
   float boundary=max(abs(id-typeAt(q+vec2(0.38,0))),abs(id-typeAt(q+vec2(0,0.38))));
   float edge=min(1.0,boundary)*terrainBoundaryStrength*0.16*distant;
   float sparse=smoothstep(1.0-inkDensity,1.13-inkDensity,noise(p*0.23+3.0));
-  float dry=mix(1.0,smoothstep(0.24,0.58,noise(p*2.1+9.0)),dryBrushStrength*nearDetail);
+  float dryNoise=noise(p*2.1+9.0);
+  float dry=mix(1.0,smoothstep(0.24,0.58,dryNoise),dryBrushStrength*nearDetail);
   float structure=max(max(ridge,valley),breakInk)*smoothstep(0.10,0.65,slope);
   float ink=structure*sparse*dry*structuralInkStrength*distant;
   vec3 normal=normalize(cross(dFdx(vWorld),dFdy(vWorld)));
   float facing=abs(dot(normal,normalize(cameraPosition-vWorld)));
   float silhouette=(1.0-smoothstep(0.04,0.26,facing))*silhouetteInkStrength*nearDetail;
-  color*=1.0-clamp(ink*0.72+edge+silhouette*0.4,0.0,0.82);
+  float inkAmount=clamp(ink*0.72+edge+silhouette*0.4,0.0,0.82);
+  if (realmStyleEnabled > 0.5) {
+    color=mix(color,realmInkColor,inkAmount);
+    float feibai=smoothstep(0.73,0.91,dryNoise)*feibaiStrength*ink*nearDetail;
+    color=mix(color,paperColor,feibai);
+    float valleyWash=1.0-smoothstep(atmosphereLow,atmosphereHigh,vWorld.y);
+    color=mix(color,atmosphereColor,valleyWash*atmosphereStrength);
+    color=clamp((color-vec3(0.5))*realmContrast+vec3(0.5),0.0,1.0)*paperExposure;
+  } else color*=1.0-inkAmount;
   // Weak paper stays on the image; all wash / dry brush above stay in world space.
   float grain=hash(floor(gl_FragCoord.xy))-0.5;
   color*=1.0+grain*paperGrainStrength;
@@ -76,16 +92,47 @@ void main() {
 
 export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
   constructor(data, profile) {
+    const basePalette = TERRAIN_INFO.map(t => new THREE.Color(`rgb(${t.color.join(',')})`));
     super({ vertexShader, fragmentShader, side: THREE.DoubleSide, uniforms: {
       heightTexture: { value: data.heightTexture }, typeTexture: { value: data.typeTexture },
       mapSize: { value: new THREE.Vector2(data.world.w, data.world.h) },
       seed: { value: (data.world.seed >>> 0) % 8191 },
-      palette: { value: TERRAIN_INFO.map(t => new THREE.Color(`rgb(${t.color.join(',')})`)) },
+      palette: { value: basePalette.map(color => color.clone()) },
       paperColor: { value: new THREE.Color(profile.paperColor) }, pixelsPerUnit: { value: 2 },
+      realmStyleEnabled: { value: 0 }, slopeRampStrength: { value: 0 }, realmContrast: { value: 1 }, paperExposure: { value: 1 },
+      feibaiStrength: { value: 0 }, atmosphereStrength: { value: 0 }, atmosphereLow: { value: -1 }, atmosphereHigh: { value: 1 },
+      slopeRockColor: { value: new THREE.Color('#808080') }, slopeSoilColor: { value: new THREE.Color('#808080') },
+      terrainWaterColor: { value: new THREE.Color().setRGB(0.30, 0.43, 0.46) },
+      realmInkColor: { value: new THREE.Color('#202020') }, atmosphereColor: { value: new THREE.Color('#ffffff') },
     } });
+    this.basePalette = basePalette;
     this.name = 'Inkbox:PigmentTerrain'; this.setProfile(profile);
   }
   setProfile(profile) {
+    const style = profile.realmStyle;
+    const u = this.uniforms;
+    u.realmStyleEnabled.value = style ? 1 : 0;
+    const palette = style?.terrain.palette;
+    for (let i = 0; i < 23; i++) {
+      if (palette) u.palette.value[i].set(palette[i]);
+      else u.palette.value[i].copy(this.basePalette[i]);
+    }
+    if (style) {
+      u.slopeRockColor.value.set(style.terrain.rock);
+      u.slopeSoilColor.value.set(style.terrain.soil);
+      u.slopeRampStrength.value = style.terrain.slopeStrength;
+      u.terrainWaterColor.value.set(style.water.color);
+      u.realmInkColor.value.set(style.ink.color);
+      u.feibaiStrength.value = style.ink.feibai;
+      u.realmContrast.value = style.contrast;
+      u.paperExposure.value = style.paper.exposure;
+      u.atmosphereColor.value.set(style.atmosphere.color);
+      u.atmosphereStrength.value = style.atmosphere.strength;
+      u.atmosphereLow.value = style.atmosphere.low;
+      u.atmosphereHigh.value = style.atmosphere.high;
+    } else {
+      u.terrainWaterColor.value.setRGB(0.30, 0.43, 0.46);
+    }
     this.uniforms.paperColor.value.set(profile.paperColor);
     for (const key of ['pigmentDensity','pigmentSaturation','terrainBoundaryStrength','structuralInkStrength',
       'silhouetteInkStrength','inkDensity','dryBrushStrength','distanceFade','paperGrainStrength']) {

@@ -212,6 +212,7 @@ export class Render3DHost {
     }
     this.realmPrototype.apply(this.realmViewState, this.activePlane);
     this.#applyBoundary();
+    this.art.syncStyleContext();
   }
   update(dt) {
     const start = performance.now(); this.applyView();
