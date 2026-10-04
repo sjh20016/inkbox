@@ -40,7 +40,8 @@ export const REALM_STYLES = freeze({
     water: { color: '#354C49', opacity: 0.48 },
     vegetation: { palette: ['#353A39','#566D69','#66594D'], tints5: ['#353A39','#242827','#566D69','#66594D','#8B8B84'], instanceTintWeight: 0.08 },
     building: { palette: { wall: '#8B8B84', roof: '#181A19', wood: '#353A39', earth: '#66594D', accent: '#8E302B' }, instanceTintWeight: 0.04 },
-    entity: { palette: { cloth: '#353A39', skin: '#D9D3C6', accent: '#C63A2E' }, atlas12: ['#D9D3C6','#D5D1C7','#8B8B84','#181A19','#566D69','#353A39','#66594D','#353A39','#566D69','#8B8B84','#66594D','#353A39'], instanceTintWeight: 0.09 },
+    // Slot 8 is the actual soul_lamp.lamp_glass; slot 7 stays grey for faction robes.
+    entity: { palette: { cloth: '#353A39', skin: '#D9D3C6', accent: '#C63A2E' }, atlas12: ['#D9D3C6','#D5D1C7','#8B8B84','#181A19','#566D69','#353A39','#66594D','#353A39','#C63A2E','#8B8B84','#66594D','#353A39'], instanceTintWeight: 0.09 },
     pilotPalette: { paper: '#D9D3C6', warm: '#8B8B84', ink: '#181A19', blue: '#566D69', wood: '#353A39', earth: '#66594D', red: '#8E302B', cyan: '#566D69', skin: '#D9D3C6' },
     boundary: { color: '#484D49', rift: '#8E302B' },
     pigment: { density: 0.77, saturation: 0.52, boundaryStrength: 0.22 },

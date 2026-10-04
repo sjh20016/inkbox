@@ -1,11 +1,12 @@
 // Debug-only evidence recipes. Only newWorld/advanceDays create simulation facts.
-import { deriveEntities } from '../entities/deriveEntities.js';
+import { deriveEntities, deriveNetherEntities } from '../entities/deriveEntities.js';
 import { mulberry32 } from '../../core/noise.js';
 import { createAdvanceState } from '../../sim/advance.js';
 export const VISUAL_SCENARIOS = Object.freeze({
   GOLDEN_A: { seed: 20260930, preset: 'small', days: 1440 },
   TERRAIN_STRESS: { seed: 20261003, preset: 'medium', days: 10 },
   DENSITY_A: { seed: 20260928, preset: 'medium', days: 1800 },
+  NETHER_STYLE_A: { seed: 20260923, preset: 'medium', days: 21600, stepDays: 3 },
 });
 export const CAMERA_RECIPES = Object.freeze({
   WORLD_OVERVIEW: { target: 'bounds', polar: 0.52, yaw: 0.15, zoom: 1.45 },
@@ -18,12 +19,41 @@ export const CAMERA_RECIPES = Object.freeze({
 export function applyScenario(sandbox, name = 'GOLDEN_A') {
   const spec = VISUAL_SCENARIOS[name];
   if (!spec) throw new Error(`Unknown visual scenario: ${name}`);
+  if (name === 'NETHER_STYLE_A') throw new Error('NETHER_STYLE_A uses applyScenarioAsync to yield during natural simulation');
   sandbox.rng=mulberry32(12345); sandbox.advanceState=createAdvanceState();
   sandbox.newWorld(spec.preset, spec.seed); sandbox.speedIndex = 0;
   for(let day=0;day<spec.days;day++) sandbox.advanceDays(1);
   sandbox.selection = null; sandbox.dirty = true;
   return { scenario: name, ...spec, worldDay: sandbox.world.day, mapSize: [sandbox.world.w, sandbox.world.h],rngRecipe:{sandbox:'mulberry32(12345) reset before newWorld; greetOnBoot consumes first draws',life:'newWorld seed ^ 0xa5a5a5a5',advanceState:'fresh createAdvanceState()',stepDays:1},
     coverage:{entities:sandbox.world.entities.length,cultivators:deriveEntities(sandbox.world).cultivator.length,villages:sandbox.world.villages.length,houses:sandbox.world.villages.reduce((n,v)=>n+(v.houses?.length||0),0)} };
+}
+/** Chunkable debug recipe; startStep=0 resets the same Sandbox path as applyScenario. */
+export async function applyScenarioAsync(sandbox, name = 'NETHER_STYLE_A', { startStep = 0, stepCount = null } = {}) {
+  if (name !== 'NETHER_STYLE_A') return applyScenario(sandbox, name);
+  const spec = VISUAL_SCENARIOS[name], totalSteps = spec.days / spec.stepDays;
+  if (!Number.isInteger(startStep) || startStep < 0 || startStep > totalSteps) throw new Error('Invalid scenario startStep');
+  const count = stepCount == null ? totalSteps - startStep : stepCount;
+  if (!Number.isInteger(count) || count < 0 || startStep + count > totalSteps) throw new Error('Invalid scenario stepCount');
+  if (startStep === 0) {
+    sandbox.rng = mulberry32(12345); sandbox.advanceState = createAdvanceState();
+    sandbox.newWorld(spec.preset, spec.seed); sandbox.speedIndex = 0;
+  } else if (sandbox.world?.seed !== spec.seed || sandbox.world.day !== startStep * spec.stepDays) {
+    throw new Error('NETHER_STYLE_A world or day changed between chunks');
+  }
+  for (let i = 0; i < count; i++) {
+    sandbox.advanceDays(spec.stepDays);
+    if ((startStep + i + 1) % 100 === 0) await new Promise(requestAnimationFrame);
+  }
+  sandbox.selection = null; sandbox.dirty = true;
+  const completedSteps = startStep + count, nether = sandbox.world.nether;
+  const derived = deriveNetherEntities(nether);
+  return { scenario: name, ...spec, completedSteps, totalSteps, complete: completedSteps === totalSteps,
+    worldDay: sandbox.world.day, mapSize: [sandbox.world.w, sandbox.world.h],
+    coverage: { mortalPopulation: sandbox.world.entities.length, netherEntities: nether?.entities?.length || 0,
+      netherDerived: derived.total, ghostCultivators: nether?.entities?.filter(e => e.soulKind === 'ghostCultivator').length || 0,
+      ghostAppearanceRoles: derived.wraith.filter(e => e.appearance?.role === 'ghost').length,
+      netherEntityKinds: Object.fromEntries(Object.entries(derived).filter(([key,value]) => Array.isArray(value)).map(([key,value]) => [key,value.length])) },
+    rngRecipe: { sandbox: 'mulberry32(12345) reset before newWorld', advanceState: 'fresh createAdvanceState()', stepDays: 3 } };
 }
 export async function snapshotDigest(sandbox) {
   const bytes=new TextEncoder().encode(JSON.stringify({world:sandbox.world,advanceState:sandbox.advanceState}));

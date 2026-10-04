@@ -30,6 +30,7 @@ export class ArtPass {
       distanceFade: realmStyle.pigment.distanceFade ?? this.profile.distanceFade,
     } : this.profile;
     stage.terrain?.setArtProfile(profile);
+    stage.markers?.setArtProfile(profile);
     const pilot = profile?.pilots ? profile : null;
     for (const [category, layer] of [['entity', stage.entities], ['vegetation', stage.vegetation], ['building', stage.settlements]])
       layer?.setArtProfile(realmStyle ? { ...pilot, layerCategory: category,

@@ -23,6 +23,7 @@
 // 这不是「复杂距离 LOD」，只是几条 `visible` 阈值——蓝图允许的最小规则。
 
 import * as THREE from 'three';
+import { realmStyleFor } from '../art/RealmStyleProfile.js';
 import { ElevationField } from '../terrain/ElevationField.js';
 import { INK } from '../../core/config.js';
 import { visibleRift } from '../readers/riftViewModel.js';
@@ -137,6 +138,7 @@ export class WorldMarkerLayer {
     this.lastDerived = null;
     this.zoom = 1;
     this.colorCache = new Map();
+    this.realmStyle = null;
     this.dummy = new THREE.Object3D();
     this.stats = { artifacts: 0, sites: 0, leylines: 0, rifts: 0, total: 0 };
 
@@ -182,6 +184,23 @@ export class WorldMarkerLayer {
   setZoom(zoom) {
     this.zoom = Number.isFinite(zoom) ? zoom : this.zoom;
     for (const { mesh, minZoom } of this.entries) mesh.visible = mesh.count > 0 && this.zoom >= minZoom;
+  }
+
+  /** Existing persistent rifts retain their World radius and visibility contract. */
+  setArtProfile(profile) {
+    const style = profile?.realmStyle || null;
+    if (style === this.realmStyle) return;
+    this.realmStyle = style;
+    const rifts = this.lastDerived?.rifts || [];
+    for (let i = 0; i < this.rifts.count; i++)
+      this.rifts.setColorAt(i, this.colorOf(this.riftColor(rifts[i]?.targetPlane)));
+    if (this.rifts.instanceColor) this.rifts.instanceColor.needsUpdate = true;
+  }
+
+  riftColor(targetPlane) {
+    const target = targetPlane === 'upper' ? 'upper' : 'nether';
+    return this.realmStyle ? realmStyleFor(target).boundary.rift
+      : target === 'upper' ? INK.azurite : '#4a4f5c';
   }
 
   update(dt, world, options = {}) {
@@ -239,8 +258,8 @@ export class WorldMarkerLayer {
       this.dummy.scale.set(r.radius, 1, r.radius);
       this.dummy.updateMatrix();
       riftMesh.setMatrixAt(i, this.dummy.matrix);
-      // 通往上界 / 幽冥的裂缝给不同冷色（既有语义：上界偏青、幽冥偏冷灰）。
-      riftMesh.setColorAt(i, this.colorOf(r.targetPlane === 'upper' ? INK.azurite : '#4a4f5c'));
+      // The real target plane owns its rift accent; no new rift is created here.
+      riftMesh.setColorAt(i, this.colorOf(this.riftColor(r.targetPlane)));
     }
     this.finish(riftMesh, nRift);
     stats.rifts = nRift;
