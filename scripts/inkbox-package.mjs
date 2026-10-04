@@ -175,6 +175,9 @@ const FILES = [
   'scripts/inkbox-render3d-m2c2b-decorations.mjs',
   'scripts/inkbox-render3d-m2c2b-decorations-browser.mjs',
   'scripts/inkbox-render3d-m2c2b-artifacts.mjs',
+  'scripts/inkbox-product-frame-timing.mjs',
+  'scripts/inkbox-render3d-m2c2b-matrix.mjs',
+  'scripts/inkbox-render3d-m2c2b-browser.mjs',
   '美术素材/Inkbox_M2-C2A.1_M2-C2B0_三界视觉基线工程委托书_v1.md',
   '美术素材/三界视觉风格规划_美术方向文档_v1.md',
 ];
@@ -211,6 +214,7 @@ const RELEASE_SUMMARIES = [
   'reports/release/render3d-m2c2b-pass1/content-summary.json',
   'reports/release/render3d-m2c2b-pass1/decorations-summary.json',
   'reports/release/render3d-m2c2b-pass1/artifacts-summary.json',
+  'reports/release/render3d-m2c2b-pass1/matrix-summary.json',
 ];
 
 function copyRelative(relative) {

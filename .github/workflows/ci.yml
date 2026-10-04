@@ -136,7 +136,7 @@ jobs:
     runs-on: windows-latest
     # Hosted Windows uses a software D3D11 renderer. Keep every case and the
     # 6000-frame soak, with a finite job deadline that covers their real frames.
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
 
@@ -155,6 +155,11 @@ jobs:
         run: npm run test:render3d:m2c2b0:soak
         env:
           INKBOX_REPORT_DIR: reports/ci/render3d-m2c2b0-soak
+
+      - name: C2B Pass1 正式建筑、角色、法宝、装饰及 21 视角 Edge 矩阵
+        run: npm run test:render3d:m2c2b:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/render3d-m2c2b-pass1
 
       - name: 保存浏览器复验证据（含失败时的可用输出）
         if: always()
