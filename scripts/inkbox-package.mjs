@@ -342,7 +342,8 @@ try {
   if (process.platform === 'win32') {
     const stageFromDist = path.relative(DIST, STAGE).replaceAll('\\', '/');
     const result = spawnSync('tar.exe', [
-      '-a', '-c', '-f', path.basename(OUTPUT_ZIP), '-C', stageFromDist, '.',
+      '-a', '-c', '--options', 'zip:hdrcharset=UTF-8',
+      '-f', path.basename(OUTPUT_ZIP), '-C', stageFromDist, '.',
     ], {
       cwd: DIST,
       encoding: 'utf8',
