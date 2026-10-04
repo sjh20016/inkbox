@@ -58,11 +58,15 @@ export class ArtPass {
     this.host.gpu.setClearColor(color);
   }
   styleBoundary(targetPlane = null) {
-    const material = this.host.boundary?.material;
+    const boundary = this.host.boundary;
+    const material = boundary?.material;
     if (!material) return;
     if (!this.saved.has(material)) this.saved.set(material, { color: material.color.clone() });
-    if (this.profile.enabled && this.profile.mode === 'realm-style-v1' && targetPlane)
-      material.color.set(realmStyleFor(targetPlane).boundary.color);
+    const realmStyle = this.profile.enabled && this.profile.mode === 'realm-style-v1' && targetPlane
+      ? realmStyleFor(targetPlane) : null;
+    boundary.setRealmStyle?.(realmStyle?.boundary ?? null);
+    if (realmStyle)
+      material.color.set('#ffffff');
     else if (this.profile.enabled) material.color.set('#b8b4aa');
     else material.color.copy(this.saved.get(material).color);
     // The entry point is here; no second skirt or realm geometry is introduced.

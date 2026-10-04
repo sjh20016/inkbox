@@ -65,6 +65,7 @@ export class RealmBoundaryLayer {
     this.edges = 0;
     this.position = new THREE.BufferAttribute(new Float32Array(0), 3).setUsage(THREE.DynamicDrawUsage);
     this.color = new THREE.BufferAttribute(new Float32Array(0), 3).setUsage(THREE.DynamicDrawUsage);
+    this.legacyColors = new Float32Array(0);
     this.geometry = new THREE.BufferGeometry();
     this.geometry.setAttribute('position', this.position);
     this.geometry.setAttribute('color', this.color);
@@ -78,6 +79,8 @@ export class RealmBoundaryLayer {
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
     this.key = null;
+    this.realmStyle = null;
+    this.realmPalette = { top: new THREE.Color(), base: new THREE.Color(), rift: new THREE.Color() };
     this.boundaryDirection = 'up';
     this.sign = 1;
     // 拾取与读数用的逐边数据（§62）
@@ -90,6 +93,50 @@ export class RealmBoundaryLayer {
   }
 
   setVisible(visible) { this.mesh.visible = !!visible; }
+
+  /** Apply profile-owned colours to the current boundary buffers; null restores legacy ink. */
+  setRealmStyle(style = null) {
+    if (this.realmStyle === style) return;
+    this.realmStyle = style;
+    if (style) {
+      if (style.top) this.realmPalette.top.set(style.top);
+      if (style.base) this.realmPalette.base.set(style.base);
+      if (style.rift) this.realmPalette.rift.set(style.rift);
+    }
+    this.#rewriteColors();
+  }
+
+  #rewriteColors() {
+    if (!this.edges) return;
+    const positions = this.position.array;
+    const colors = this.color.array;
+    const style = this.realmStyle;
+    const hasRamp = !!(style?.top && style?.base);
+    const top = new THREE.Color();
+    const base = new THREE.Color();
+    for (let edge = 0; edge < this.edges; edge += 1) {
+      const breach = this.edgeBreach[edge] === 1;
+      const edgeVertex = edge * 4;
+      for (let endpoint = 0; endpoint < 4; endpoint += 2) {
+        const topVertex = edgeVertex + endpoint, baseVertex = topVertex + 1;
+        const depth = Math.abs(positions[topVertex * 3 + 1] - positions[baseVertex * 3 + 1]);
+        if (breach) {
+          top.copy(style?.rift ? this.realmPalette.rift : RIFT_GLOW);
+          base.copy(top).multiplyScalar(0.72);
+        } else if (hasRamp) {
+          top.copy(this.realmPalette.top);
+          base.copy(this.realmPalette.base);
+        } else {
+          inkFor(this.sign, depth, true, top);
+          inkFor(this.sign, depth, false, base);
+        }
+        colors[topVertex * 3] = top.r; colors[topVertex * 3 + 1] = top.g; colors[topVertex * 3 + 2] = top.b;
+        colors[baseVertex * 3] = base.r; colors[baseVertex * 3 + 1] = base.g; colors[baseVertex * 3 + 2] = base.b;
+      }
+    }
+    if (!style) colors.set(this.legacyColors.subarray(0, this.vertices * 3));
+    this.color.needsUpdate = true;
+  }
 
   /** 缓存键：Region identity + 预设 + 目标位面 + 活跃裂缝签名（§85）。 */
   static keyFor({ region, mode, sign, targetPlane, riftSignature = '' }) {
@@ -108,6 +155,7 @@ export class RealmBoundaryLayer {
     if (this.position.count >= vertices) return;
     this.position = new THREE.BufferAttribute(new Float32Array(vertices * 3), 3).setUsage(THREE.DynamicDrawUsage);
     this.color = new THREE.BufferAttribute(new Float32Array(vertices * 3), 3).setUsage(THREE.DynamicDrawUsage);
+    this.legacyColors = new Float32Array(vertices * 3);
     this.geometry.setAttribute('position', this.position);
     this.geometry.setAttribute('color', this.color);
     this.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(edgeCount * 6), 1).setUsage(THREE.DynamicDrawUsage));
@@ -135,8 +183,8 @@ export class RealmBoundaryLayer {
     this.#ensureCapacity(edgeCount);
 
     const position = this.position.array;
-    const color = this.color.array;
     const index = this.geometry.index.array;
+    const legacyColors = this.legacyColors;
     const scratch = new THREE.Color();
     let v = 0;
     let t = 0;
@@ -170,19 +218,19 @@ export class RealmBoundaryLayer {
       const base = v;
       position[v * 3] = pa.x; position[v * 3 + 1] = topA; position[v * 3 + 2] = pa.z;
       (breach ? scratch.copy(RIFT_GLOW) : inkFor(sign, visualA, true, scratch));
-      color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
+      legacyColors[v * 3] = scratch.r; legacyColors[v * 3 + 1] = scratch.g; legacyColors[v * 3 + 2] = scratch.b;
       v += 1;
       position[v * 3] = pa.x; position[v * 3 + 1] = bottomA; position[v * 3 + 2] = pa.z;
       (breach ? scratch.copy(RIFT_GLOW).multiplyScalar(0.72) : inkFor(sign, visualA, false, scratch));
-      color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
+      legacyColors[v * 3] = scratch.r; legacyColors[v * 3 + 1] = scratch.g; legacyColors[v * 3 + 2] = scratch.b;
       v += 1;
       position[v * 3] = pb.x; position[v * 3 + 1] = topB; position[v * 3 + 2] = pb.z;
       (breach ? scratch.copy(RIFT_GLOW) : inkFor(sign, visualB, true, scratch));
-      color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
+      legacyColors[v * 3] = scratch.r; legacyColors[v * 3 + 1] = scratch.g; legacyColors[v * 3 + 2] = scratch.b;
       v += 1;
       position[v * 3] = pb.x; position[v * 3 + 1] = bottomB; position[v * 3 + 2] = pb.z;
       (breach ? scratch.copy(RIFT_GLOW).multiplyScalar(0.72) : inkFor(sign, visualB, false, scratch));
-      color[v * 3] = scratch.r; color[v * 3 + 1] = scratch.g; color[v * 3 + 2] = scratch.b;
+      legacyColors[v * 3] = scratch.r; legacyColors[v * 3 + 1] = scratch.g; legacyColors[v * 3 + 2] = scratch.b;
       v += 1;
 
       // ⚠️ 破口**不是**「把墙切断」：墙仍然连续（§33 的零缝隙对每一段都成立），
@@ -218,6 +266,7 @@ export class RealmBoundaryLayer {
     this.geometry.computeBoundingSphere();
     this.edges = edges;
     this.vertices = v;
+    this.#rewriteColors();
     this.stats = {
       edges,
       triangles: edges * 2,

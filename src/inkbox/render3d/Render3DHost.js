@@ -162,6 +162,13 @@ export class Render3DHost {
     const mortal = this.stages.get('mortal');
     const targetPlane = this.realmPrototype.open ? this.realmPrototype.targetPlane : null;
     const target = targetPlane ? this.stages.get(targetPlane) : null;
+    // Only the current window target may retain a Strata presentation profile.
+    // Closing a window or switching its target must also reset the previously
+    // visible Stage before it is later used as a standalone realm.
+    for (const stage of this.stages.values()) {
+      if (stage !== mortal && stage !== target && !stage.elevation.raw)
+        stage.setElevationProfile(RAW_BOUNDARY);
+    }
     if (!target || !mortal) {
       this.boundary.setVisible(false);
       this.boundaryKey = null;

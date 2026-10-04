@@ -1071,6 +1071,28 @@ check('T3 Shoulder：边缘 = R、K 格之外恢复 T、中间 smoothstep 单调
   host.dispose();
 });
 
+check('T3 closing or switching Strata windows restores non-target Stage RAW geometry', () => {
+  const world = makeWorld(); const before = JSON.stringify(world); const { host } = makeHost(world);
+  const region = regionOf(WINDOW, world);
+  const assertRaw = plane => {
+    const stage = host.stages.get(plane);
+    assert.equal(stage.elevation.raw, true, plane + ': RAW profile restored');
+    const positions = stage.terrain.geometry.attributes.position;
+    for (let i = 0; i < stage.world.size; i++)
+      assert.equal(positions.getY(i), Math.fround(stage.elevation.baseNode(i % stage.world.w, Math.floor(i / stage.world.w))), plane + ': actual terrain buffer restored');
+  };
+  try {
+    host.setBoundaryMode('strata'); openWindow(host, region, 'upper');
+    assert.equal(host.stages.get('upper').elevation.raw, false);
+    host.setRealmViewState({ open: false }); assertRaw('upper'); assertRaw('nether');
+    openWindow(host, region, 'upper'); openWindow(host, region, 'nether');
+    assertRaw('upper'); assert.equal(host.stages.get('nether').elevation.raw, false);
+    host.setRealmViewState({ open: false }); host.setActivePlane('upper'); assertRaw('upper'); assertRaw('nether');
+    host.setActivePlane('nether'); assertRaw('nether');
+    assert.equal(JSON.stringify(world), before, 'presentation lifecycle cannot modify World');
+  } finally { host.dispose(); }
+});
+
 // ══════════════════════════════════════════════════════════════════════════
 // T4 · 无缝界缘（§74）
 // ══════════════════════════════════════════════════════════════════════════
@@ -1588,7 +1610,7 @@ check('T10 600 日纯度：无 3D / 凡间 / 上界窗 / 幽冥窗 / 反复重�
 
 // ══════════════════════════════════════════════════════════════════════════
 
-const reportDir = path.join(root, 'reports', 'release', 'render3d-m2b');
+const reportDir = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(root, 'reports', 'release', 'render3d-m2b'));
 fs.mkdirSync(reportDir, { recursive: true });
 fs.writeFileSync(path.join(reportDir, 'm2b-results.json'), JSON.stringify({
   suite: 'Render3D M2-B',
@@ -1598,4 +1620,4 @@ fs.writeFileSync(path.join(reportDir, 'm2b-results.json'), JSON.stringify({
   checks,
 }, null, 2) + '\n');
 fs.writeFileSync(path.join(reportDir, 'm2b.log'), `${checks.map(({ label }) => `PASS ${label}`).join('\n')}\n\n${passed} M2-B invariant groups passed.\n`);
-console.log(`\n${passed} M2-B invariant groups passed; report: reports/release/render3d-m2b/m2b-results.json`);
+console.log(`\n${passed} M2-B invariant groups passed; report: ${path.relative(root, path.join(reportDir, 'm2b-results.json'))}`);
