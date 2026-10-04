@@ -8,7 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${process.env.INKBOX_PORT || 4192}`;
 const url = new URL(base);
 url.pathname = `${url.pathname.replace(/\/$/, '').replace(/\/inkbox\.html$/i, '')}/inkbox.html`;
-url.searchParams.set('renderer', '3d');
+url.searchParams.set('renderer', '3d'); url.searchParams.set('assets','off');
 const output = path.resolve(root, 'reports/m2c2a1/hlod');
 const page = body => browser.js(`return (async()=>{${body}})();`);
 let browser;

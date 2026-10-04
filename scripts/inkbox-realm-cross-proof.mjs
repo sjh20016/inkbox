@@ -12,7 +12,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${process.env.INKBOX_PORT || 4192}`;
 const url = new URL(base);
 url.pathname = `${url.pathname.replace(/\/$/, '').replace(/\/inkbox\.html$/i, '')}/inkbox.html`;
-url.searchParams.set('renderer', '3d'); url.searchParams.set('boundary', 'strata');
+url.searchParams.set('renderer', '3d'); url.searchParams.set('assets','off'); url.searchParams.set('boundary', 'strata');
 const output = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(root, 'reports/m2c2b0/b4-cross'));
 const profiles = ['legacy', 'realm-style-v1'];
 const samples = 120;

@@ -1,4 +1,4 @@
-// M2-C2B0: product-RAF-only 600-frame lifecycle and 6000-frame realm resource soak.
+// M2-C2B Pass1 shipping assets: product-RAF-only 600-frame lifecycle and 6000-frame realm resource soak.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -8,13 +8,14 @@ import { fileURLToPath } from 'node:url';
 import { launch, findEdge, sleep } from './cdp.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const port=Number(process.env.INKBOX_PORT||4192),base=process.env.INKBOX_URL||`http://127.0.0.1:${port}`;
+const port=Number(process.env.INKBOX_PORT||4231),base=process.env.INKBOX_URL||`http://127.0.0.1:${port}`;
 const url=new URL(base);
 url.pathname=`${url.pathname.replace(/\/$/,'').replace(/\/inkbox\.html$/i,'')}/inkbox.html`;
-url.searchParams.set('renderer','3d'); url.searchParams.set('assets','off');url.searchParams.set('boundary','strata');
-const output=path.resolve(process.env.INKBOX_REPORT_DIR||path.join(root,'reports/m2c2b0/soak'));
+url.searchParams.set('assets','on');url.searchParams.set('renderer','3d');url.searchParams.set('boundary','strata');
+const output=path.resolve(process.env.INKBOX_REPORT_DIR||path.join(root,'reports/m2c2b/pass1/soak'));
 const profiles=['legacy','realm-style-v1'],views=['mortal','upper','nether','upper-window','nether-window'];
-const states=profiles.flatMap(profile=>[false,true].flatMap(lod=>views.map(view=>({profile,lod,view,key:`${profile}/${lod?'lod':'no-lod'}/${view}`}))));
+const states=[false,true].flatMap(decorations=>[false,true].flatMap(lod=>views.map(view=>({profile:'realm-style-v1',production:true,decorations,lod,view,key:`production/${decorations?'decor':'no-decor'}/${lod?'lod':'no-lod'}/${view}`}))));
+const warmStates=[...states,...views.map(view=>({profile:'legacy',production:false,decorations:false,lod:true,view,key:'legacy/'+view}))];
 const report={startedAt:new Date().toISOString(),scenario:'NETHER_STYLE_A',sourceURL:url.toString(),
   gitCommit:(()=>{try{return execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();}catch{return null;}})(),
   serverMode:process.env.INKBOX_URL?'controlled-existing-URL':'self-hosted',lifecycleFrames:600,soakFrames:6000,
@@ -56,7 +57,7 @@ async function prepare(){
     for(let i=0;i<180&&r.world!==k.world;i++)await new Promise(requestAnimationFrame);
     if(r.world!==k.world||r.stages.get('upper')?.world!==k.world.upper||r.stages.get('nether')?.world!==k.world.nether)
       throw new Error('product RAF did not adopt natural World');
-    await r.characterLoadPromise;if(r.characterLoadError)throw r.characterLoadError;
+    await r.environmentLoadPromise;await r.characterLoadPromise;if(r.environmentLoadError||r.characterLoadError)throw r.environmentLoadError||r.characterLoadError;
     const ghost=k.world.nether.entities.find(e=>e.soulKind==='ghostCultivator');
     const upper=k.world.upper.entities.find(e=>Number.isFinite(e.x)&&Number.isFinite(e.y));
     if(!ghost||!upper)throw new Error('natural ghostCultivator or Upper entity missing');
@@ -95,9 +96,9 @@ async function installHarness(){
     host.update=function(dt){window.__b6ProductCalls.update++;return originalUpdate.call(this,dt);};
     host.render=function(){window.__b6ProductCalls.render++;return originalRender.call(this);};
     window.__b6RestoreCalls=()=>{host.update=originalUpdate;host.render=originalRender;return {...window.__b6ProductCalls};};
-    window.__b6SetState=async ({profile,lod,view},zoom=4)=>{
+    window.__b6SetState=async ({profile,lod,view,production=true,decorations=true},zoom=4)=>{
       const k=window.inkbox,r=k.render3d.renderer,windowView=view.endsWith('-window'),plane=windowView?view.slice(0,-7):view;
-      r.setArtProfile(profile);r.setLODEnabled(lod);
+      r.setArtProfile(profile);r.setProductionAssetsEnabled(production);r.setDecorationsEnabled(decorations);r.setLODEnabled(lod);
       if(windowView){
         r.setActivePlane('mortal');k.selectTool(plane==='upper'?'viewUpper':'viewNether');
         k.selection=window.__b6Selections[plane];r.setRealmViewState(k.getRealmViewState());
@@ -126,12 +127,13 @@ async function installHarness(){
       const r=window.inkbox.render3d.renderer,gl=r.gpu.getContext();
       const programs=r.gpu.info.programs.map(p=>({name:p.name||null,linked:p.program?gl.getProgramParameter(p.program,gl.LINK_STATUS):null}));
       if(!programs.length||programs.some(p=>p.linked!==true))throw new Error('shader LINK_STATUS false or unavailable');
-      const materialRefs=[...r.stages.values()].map(s=>({plane:s.plane,
+      const materialRefs=[...r.stages.values()].map(s=>({plane:s.plane,environment:s.environmentMaterial?.uuid,atlas:s.environmentMaterial?.uniforms.uEnvironmentAtlas.value?.uuid,ghost:s.entities?.ghostBatch?.material?.uuid,artifact:s.realmArtifacts?.batch?.material?.uuid,decoration:s.decorations?.batch?.material?.uuid,
         library:s.entities?.characterBatch?.library?.material?.uuid||null,
         realm:s.entities?.characterBatch?.realmMaterial?.uuid||null,
         active:[...new Set(Object.values(s.entities?.characterBatch?.meshes||{}).map(m=>m.material?.uuid||null))].sort()}));
-      return {resources:{...r.gpu.info.memory,programs:programs.length},materialRefs,programs,
-        lod:r.getLODStats(),triangles:r.gpu.info.render.triangles,drawCalls:r.gpu.info.render.calls,
+      const sceneMaterials=new Set();r.scene.traverse(m=>{if(m.material)for(const material of Array.isArray(m.material)?m.material:[m.material])sceneMaterials.add(material.uuid);});
+      return {resources:{...r.gpu.info.memory,programs:programs.length},sceneMaterialCount:sceneMaterials.size,environmentMaterialCount:new Set([...r.stages.values()].map(s=>s.environmentMaterial?.uuid).filter(Boolean)).size,materialRefs,programs,
+        productionAssets:r.productionAssetsEnabled,decorations:r.decorationsEnabled,realmContent:[...r.stages.values()].map(s=>({plane:s.plane,ghost:s.entities?.ghostBatch?.stats,decor:s.decorations?.stats,artifact:s.realmArtifacts?.stats})),lod:r.getLODStats(),triangles:r.gpu.info.render.triangles,drawCalls:r.gpu.info.render.calls,
         visiblePlanes:[...r.stages.values()].filter(s=>s.visible).map(s=>s.plane),glError:gl.getError()};
     };
     window.__b6GhostProof=()=>{
@@ -151,14 +153,14 @@ async function installHarness(){
 }
 async function warmAllStates(){
   const warm=[];
-  for(const state of states){
+  for(const state of warmStates){
     const zooms=[];
     for(const zoom of [18,4,.5]){
       const result=await page(`return window.__b6SetState(${JSON.stringify(state)},${zoom});`, { timeoutMs: 120000 });
       const snapshot=await page(`return window.__b6Snapshot();`);
       assert.equal(snapshot.glError,0,`${state.key} zoom ${zoom}: GL error`);
       let ghostProof=null;
-      if(zoom===18&&(state.view==='nether'||state.view==='nether-window')&&state.lod){
+      if(state.production&&zoom===18&&(state.view==='nether'||state.view==='nether-window')&&state.lod){
         ghostProof=await page(`return window.__b6GhostProof();`);
         assert(ghostProof.matches.length>0,`${state.key}: real ghostCultivator did not enter a visible LOD0 GLB batch`);
         for(const match of ghostProof.matches){
@@ -179,17 +181,18 @@ async function warmAllStates(){
     assert.equal(snapshot.glError,0,`${state.key}: baseline GL error`);
     reference[state.key]={resources:snapshot.resources,materialRefs:snapshot.materialRefs};
   }
-  return {warm,reference,explanation:'All 20 states fully warmed at legal zoom 18/4/0.5; then per-state resource/material references recorded after all shader variants exist.'};
+  return {warm,reference,explanation:'All 20 production decoration/LOD/view states plus five legacy views fully warmed at legal zoom 18/4/0.5; then per-state resource/material references recorded after all shader variants exist.'};
 }
 async function lifecycle(){
   return page(`
     const k=window.inkbox,r=k.render3d.renderer,gl=r.gpu.getContext(),states=${JSON.stringify(states)},before=await window.__b6.snapshotDigest(k);
     const originalSize=[r.width,r.height],checkpoints=[];let previous=null,raf=[],measuredCalls={update:0,render:0};
     for(let frame=0;frame<600;frame++){
-      if(frame%30===0)await window.__b6SetState(states[Math.floor(frame/30)],frame%90===0?18:4);
+      if(frame%30===0){const base=states[Math.floor(frame/30)],production=Math.floor(frame/30)%2===0;await window.__b6SetState({...base,production,profile:production?'realm-style-v1':'legacy'},frame%90===0?18:4);}
       if(frame===80||frame===300)r.resize(originalSize[0]-17,originalSize[1]-11);
       if(frame===100||frame===320)r.resize(...originalSize);
       r.cameraRig.rotate(.004);
+      const pan=.015*Math.sin(frame/20);r.cameraRig.camera.position.x+=pan;r.cameraRig.controls.target.x+=pan;r.cameraRig.controls.update();
       r.cameraRig.camera.zoom=[18,4,.5][Math.floor(frame/10)%3];r.cameraRig.camera.updateProjectionMatrix();
       const beforeCalls={...window.__b6ProductCalls};
       const t=await new Promise(requestAnimationFrame);if(previous!==null)raf.push(t-previous);previous=t;
@@ -236,14 +239,15 @@ try{
   fs.mkdirSync(output,{recursive:true});
   const executable=findEdge();assert(executable,'Microsoft Edge is required');
   server=await startServer();
-  browser=await launch({url:url.toString(),browser:executable,width:1500,height:940,gpu:true,timeoutMs:30000});
+  browser=await launch({url:'about:blank',browser:executable,width:1500,height:940,gpu:true,timeoutMs:30000});report.browser=browser.meta;
+  await browser.cdp.send('Network.enable');await browser.cdp.send('Page.navigate',{url:url.toString()});
   assert(await browser.waitFor('return !!window.inkbox?.render3d?.renderer?.stages?.size',{timeoutMs:60000}),
     `Render3D did not boot: ${browser.errors().join(' | ')}`);
   const prepared=await prepare();report.scenarioRecipe=prepared.scenario;report.setup=prepared.setup;
   await installHarness();await browser.cdp.send('Performance.enable',{},30000);
   report.warmup=await warmAllStates();
   report.warmup.worldDigest=await page(`return window.__b6.snapshotDigest(window.inkbox);`);
-  assert.equal(report.warmup.worldDigest.value,report.setup.digestPure.value,'20-state warmup changed full World/advanceState');
+  assert.equal(report.warmup.worldDigest.value,report.setup.digestPure.value,'fully warmed production/decoration states changed full World/advanceState');
   report.cpuMemoryBaseline=await cpuMemorySample();
   const first=report.cpuMemoryBaseline;
   const memoryLimits={heapBytes:first.jsHeapUsedBytes*1.25+8*1024*1024,
@@ -281,6 +285,9 @@ try{
     peakListeners:Math.max(...observed.map(s=>s.jsEventListeners)),
     heapGrowthBytes:last.jsHeapUsedBytes-first.jsHeapUsedBytes,
     domNodeDelta:last.domNodes-first.domNodes,listenerDelta:last.jsEventListeners-first.jsEventListeners};
+  const urls=browser.cdp.events.filter(e=>e.method==='Network.requestWillBeSent').map(e=>e.params.request.url);
+  report.loads={environment:urls.filter(u=>new URL(u).pathname.endsWith('/environment_library.glb')).length,atlas:urls.filter(u=>new URL(u).pathname.endsWith('/EntityAtlas.png')).length,cultivator:urls.filter(u=>new URL(u).pathname.endsWith('/cultivator_library.glb')).length};
+  assert.deepEqual(report.loads,{environment:1,atlas:1,cultivator:1});
   report.diagnostics=diagnostics();assert.deepEqual([...report.diagnostics.consoleErrors,...report.diagnostics.runtimeErrors],[],'browser errors');
   report.pass=true;
 }catch(error){report.failure=error.stack||String(error);report.diagnostics=diagnostics();process.exitCode=1;console.error(report.failure);}

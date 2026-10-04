@@ -11,7 +11,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${process.env.INKBOX_PORT || 4192}`;
 const url = new URL(base);
 url.pathname = `${url.pathname.replace(/\/$/, '').replace(/\/inkbox\.html$/i, '')}/inkbox.html`;
-url.searchParams.set('renderer', '3d');
+url.searchParams.set('renderer', '3d'); url.searchParams.set('assets','off');
 const plane = process.env.INKBOX_PLANE || 'nether';
 assert(['nether', 'upper'].includes(plane), `Unsupported INKBOX_PLANE: ${plane}`);
 const output = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(root, `reports/m2c2b0/${plane === 'upper' ? 'b3' : 'b2'}-proof`));

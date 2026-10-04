@@ -17,7 +17,7 @@ evidence.sourceHashes = Object.fromEntries(['src/inkbox/world/worldgen.js','src/
 function sourceFiles(directory){return fs.readdirSync(directory,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?sourceFiles(path.join(directory,entry.name)):entry.name.endsWith('.js')?[path.join(directory,entry.name)]:[]);}
 evidence.renderSourceHashes=Object.fromEntries(sourceFiles('src/inkbox/render3d').sort().map(file=>[file.replaceAll('\\','/'),createHash('sha256').update(fs.readFileSync(file)).digest('hex')]));
 evidence.renderSourceDigest=createHash('sha256').update(JSON.stringify(evidence.renderSourceHashes)).digest('hex');
-const session = await launch({ url: `${process.env.INKBOX_URL || 'http://127.0.0.1:4180/inkbox.html'}?renderer=3d`, browser: edge, width: 1500, height: 940, gpu: true });
+const session = await launch({ url: `${process.env.INKBOX_URL || 'http://127.0.0.1:4180/inkbox.html'}?renderer=3d&assets=off`, browser: edge, width: 1500, height: 940, gpu: true });
 const js = (expression, options) => session.js(`return (async()=>{${expression}})();`, options);
 try {
   if (!await session.waitFor('return !!window.inkbox?.render3d?.renderer?.stages?.size', { timeoutMs: 60000 })) {

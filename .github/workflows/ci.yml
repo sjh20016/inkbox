@@ -95,6 +95,9 @@ jobs:
       - name: Render3D M2-C2B 幽冥地面法宝实际资产与身份
         run: npm run test:render3d:m2c2b:artifacts
 
+      - name: Render3D M2-C2B 实际生产 GLB 九模式 600 日与 11 RNG
+        run: npm run test:render3d:m2c2b:purity
+
       - name: 构建发布包（自包含，clone 即可跑）
         run: npm run build
 
@@ -160,6 +163,11 @@ jobs:
         run: npm run test:render3d:m2c2b:browser
         env:
           INKBOX_REPORT_DIR: reports/ci/render3d-m2c2b-pass1
+
+      - name: C2B Pass1 600 lifecycle + 6000 actual frame Edge soak
+        run: npm run test:render3d:m2c2b:soak
+        env:
+          INKBOX_REPORT_DIR: reports/ci/render3d-m2c2b-pass1-soak
 
       - name: 保存浏览器复验证据（含失败时的可用输出）
         if: always()

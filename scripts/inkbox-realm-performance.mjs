@@ -13,7 +13,7 @@ const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(ROOT, 'repor
 const BASE_URL = process.env.INKBOX_URL || `http://127.0.0.1:${process.env.INKBOX_PORT || 4192}`;
 const APP_URL = new URL(BASE_URL);
 APP_URL.pathname = `${APP_URL.pathname.replace(/\/$/, '').replace(/\/inkbox\.html$/i, '')}/inkbox.html`;
-APP_URL.searchParams.set('renderer', '3d');
+APP_URL.searchParams.set('renderer', '3d'); APP_URL.searchParams.set('assets','off');
 const WIDTH = 1500, HEIGHT = 940, DPR = 1, SAMPLES = 120, WARMUP_RAFS = 12, STABLE_FRAMES = 6;
 const SCENARIOS = ['GOLDEN_A', 'DENSITY_A'];
 const PROFILES = ['legacy', 'realm-style-v1'];

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { launch, sleep, findBrowser } from './cdp.mjs';
 
 const BASE = process.env.INKBOX_URL || 'http://127.0.0.1:4180/inkbox.html';
-const URL = `${BASE}${BASE.includes('?') ? '&' : '?'}renderer=3d`;
+const URL = `${BASE}${BASE.includes('?') ? '&' : '?'}renderer=3d&assets=off`;
 const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || 'reports/release/render3d-m2a');
 const SEED = 20260929;
 const FRAME_COUNT = Number(process.env.INKBOX_M2A_FRAMES || 60);

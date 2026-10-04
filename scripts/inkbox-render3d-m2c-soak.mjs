@@ -25,7 +25,7 @@ function sourceHashes(directory) {
   return hashes;
 }
 result.renderSourceHashes = sourceHashes('src/inkbox/render3d');
-const session = await launch({ url: `${base}${base.includes('?') ? '&' : '?'}renderer=3d`, browser: edge, width: 1500, height: 940, gpu: true });
+const session = await launch({ url: `${base}${base.includes('?') ? '&' : '?'}renderer=3d&assets=off`, browser: edge, width: 1500, height: 940, gpu: true });
 const js = body => session.js(`return (async()=>{${body}})();`);
 try {
   if (!await session.waitFor('return !!window.inkbox?.render3d?.renderer?.stages?.size', { timeoutMs: 60000 })) throw new Error('Renderer not ready');

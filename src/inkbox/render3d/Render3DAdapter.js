@@ -41,7 +41,7 @@ export class Render3DAdapter {
     const requestedArt = artParams.get('art');
     const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'realm-style-v1';
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
-      productionAssets: artParams.get('assets') === 'on', decorations: artParams.get('decorations') !== 'off' }); }
+      productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off' }); }
     catch (error) { this.canvas.remove(); throw error; }
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
     Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });

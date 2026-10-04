@@ -13,7 +13,7 @@ function rendererPageURL(value) {
   const url = new URL(value);
   if (/\/inkbox\.html\/?$/i.test(url.pathname)) url.pathname = url.pathname.replace(/\/$/, '');
   else url.pathname = `${url.pathname.replace(/\/$/, '')}/inkbox.html`;
-  url.searchParams.set('renderer', '3d');
+  url.searchParams.set('renderer', '3d'); url.searchParams.set('assets','off');
   return url.toString();
 }
 const pageURL = rendererPageURL(base);

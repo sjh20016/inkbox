@@ -178,6 +178,8 @@ const FILES = [
   'scripts/inkbox-product-frame-timing.mjs',
   'scripts/inkbox-render3d-m2c2b-matrix.mjs',
   'scripts/inkbox-render3d-m2c2b-browser.mjs',
+  'scripts/inkbox-render3d-m2c2b-purity.mjs',
+  'scripts/inkbox-render3d-m2c2b-soak.mjs',
   '美术素材/Inkbox_M2-C2A.1_M2-C2B0_三界视觉基线工程委托书_v1.md',
   '美术素材/三界视觉风格规划_美术方向文档_v1.md',
 ];
