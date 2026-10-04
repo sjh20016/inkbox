@@ -60,3 +60,19 @@ export function createBuildingLODBatches() {
   return [coloredGeometry(lod1, 'Pilot:BuildingLOD1', [0, 0.5, 0]),
     coloredGeometry(lod2, 'Pilot:BuildingLOD2', [0, 0.35, 0])];
 }
+
+/** A compact 12-triangle village mass: four wall quads and two roof planes. */
+export function createSettlementClusterGeometry() {
+  const triangles = [];
+  const addQuad = (a, b, c, d, pigment) => {
+    triangles.push([a, b, c, pigment], [a, c, d, pigment]);
+  };
+  const x0 = -0.5, x1 = 0.5, y0 = 0, eave = 0.58, peak = 0.94, z0 = -0.5, z1 = 0.5;
+  addQuad([x0, y0, z0], [x1, y0, z0], [x1, eave, z0], [x0, eave, z0], 'earth');
+  addQuad([x1, y0, z1], [x0, y0, z1], [x0, eave, z1], [x1, eave, z1], 'earth');
+  addQuad([x0, y0, z1], [x0, y0, z0], [x0, eave, z0], [x0, eave, z1], 'paper');
+  addQuad([x1, y0, z0], [x1, y0, z1], [x1, eave, z1], [x1, eave, z0], 'paper');
+  addQuad([x0, eave, z0], [0, peak, z0], [0, peak, z1], [x0, eave, z1], 'ink');
+  addQuad([0, peak, z0], [x1, eave, z0], [x1, eave, z1], [0, peak, z1], 'ink');
+  return coloredGeometry(triangles, 'Pilot:SettlementCluster12', [0, 0.45, 0]);
+}

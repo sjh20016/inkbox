@@ -30,11 +30,12 @@ import { STRUCT, INK } from '../../core/config.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { createBuildingBodyPilot, createBuildingRoofPilot } from '../art/PilotAssets.js';
 import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
-import { createBuildingLODBatches } from '../lod/BuildingLODAssets.js';
+import { createBuildingLODBatches, createSettlementClusterGeometry } from '../lod/BuildingLODAssets.js';
 import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
 
 /** 建筑实例容量：`maxVillages`(220) × 每村最多 19 屋 + 中心建筑 + 宗门（max 10）。 */
 const CAPACITY = 4608;
+const HLOD_CLUSTER_CAPACITY = LOD_BUDGETS.categories.settlement.capacity * 4;
 
 /** 屋舍配色走水墨调色板（复用既有 `INK`，不新造一套）。 */
 const HOUSE_BODY = INK.inkMid;
@@ -133,8 +134,9 @@ export class SettlementLayer {
     this.dummy = new THREE.Object3D();
     this.lodEnabled = false; this.artView = {};
     this._viewPpu = NaN; this._viewVerticalPpu = NaN;
-    this._lodCounts = [0, 0, 0]; this._buildingBudgetCounts = [0, 0, 0]; this._batchCounts = [0, 0, 0, 0, 0]; this._settlementCounts = [0, 0, 0];
-    this._budgetDemotions = 0; this._hlodPickEntries = [];
+    this._lodCounts = [0, 0, 0]; this._buildingBudgetCounts = [0, 0, 0]; this._batchCounts = [0, 0, 0, 0, 0, 0]; this._settlementCounts = [0, 0, 0];
+    this._budgetDemotions = 0; this._hlodPickEntries = []; this._hlodLegacyPickEntries = [];
+    this.hlodMode = 'cluster';
     this._currentLods = new Int8Array(CAPACITY); this._nextLods = new Int8Array(CAPACITY);
     this._currentLods.fill(-1); this._nextLods.fill(-1);
     this._currentHlodBySettlement = new Map(); this._nextHlodBySettlement = new Map();
@@ -148,7 +150,7 @@ export class SettlementLayer {
     this._priorityPoint = new THREE.Vector3();
     this._renderBuildingLists = [[], [], []];
     this.stats = { buildings: 0, villages: 0, houses: 0, centers: 0, sects: 0,
-      instances: 0, triangles: 0, lod: [0, 0, 0], hlod: 0, overflow: 0,
+      instances: 0, triangles: 0, lod: [0, 0, 0], hlod: 0, hlodClusters: 0, hlodTriangles: 0, overflow: 0,
       capacity: CAPACITY, capacityOverflow: 0, budgetDemotions: 0 };
 
     // 单位立方体，底面在 y=0（缩放后直接落地）。
@@ -171,12 +173,17 @@ export class SettlementLayer {
     this.lod1.userData.renderBuildings = this._renderBuildingLists[1];
     this.lod2 = this.makeMesh(this.lodGeometries[1], 'Settlement:LOD2'); this.lod2.userData.lod = 2;
     this.lod2.userData.renderBuildings = this._renderBuildingLists[2];
-    this.hlod = this.makeMesh(this.lodGeometries[1], 'Settlement:HLOD', LOD_BUDGETS.categories.settlement.capacity);
-    this.hlod.userData.lod = 2; this.hlod.userData.hlod = true;
-    this.hlod.userData.renderSettlements = this._hlodPickEntries;
-    this._lodLegacyMaterials = [this.lod1.material, this.lod2.material, this.hlod.material];
-    for (const mesh of [this.lod1, this.lod2, this.hlod]) mesh.material.vertexColors = true;
-    this.lod1.visible = this.lod2.visible = this.hlod.visible = false;
+    this.hlodLegacy = this.makeMesh(this.lodGeometries[1], 'Settlement:HLODLegacy', LOD_BUDGETS.categories.settlement.capacity);
+    this.hlodLegacy.userData.lod = 2; this.hlodLegacy.userData.hlod = true;
+    this.hlodLegacy.userData.renderSettlements = this._hlodLegacyPickEntries;
+    this.hlodClusterGeometry = createSettlementClusterGeometry();
+    this.hlodCluster = this.makeMesh(this.hlodClusterGeometry, 'Settlement:HLODCluster', HLOD_CLUSTER_CAPACITY);
+    this.hlodCluster.userData.lod = 2; this.hlodCluster.userData.hlod = true;
+    this.hlodCluster.userData.renderSettlements = this._hlodPickEntries;
+    this.hlod = this.hlodCluster;
+    this._lodLegacyMaterials = [this.lod1.material, this.lod2.material, this.hlodLegacy.material, this.hlodCluster.material];
+    for (const mesh of [this.lod1, this.lod2, this.hlodLegacy, this.hlodCluster]) mesh.material.vertexColors = true;
+    this.lod1.visible = this.lod2.visible = this.hlodLegacy.visible = this.hlodCluster.visible = false;
     this.artProfile = null;
     this.pilotBody = null; this.pilotRoof = null; this.pilotMaterial = null;
     this.legacyMaterials = [this.bodies.material, this.roofs.material];
@@ -195,7 +202,7 @@ export class SettlementLayer {
     this.roofs.geometry = profile ? this.pilotRoof : this.roofGeometry;
     this.bodies.material = profile ? this.pilotMaterial : this.legacyMaterials[0];
     this.roofs.material = profile ? this.pilotMaterial : this.legacyMaterials[1];
-    for (const mesh of [this.bodies, this.roofs, this.lod1, this.lod2, this.hlod]) {
+    for (const mesh of [this.bodies, this.roofs, this.lod1, this.lod2, this.hlodLegacy, this.hlodCluster]) {
       if (mesh !== this.bodies && mesh !== this.roofs) mesh.material = profile ? this.pilotMaterial : this.legacyMaterials[0];
       mesh.boundingBox = null; mesh.boundingSphere = null;
     }
@@ -206,6 +213,14 @@ export class SettlementLayer {
     const next = !!enabled;
     if (next === this.lodEnabled) return;
     this.lodEnabled = next;
+    if (this.lastDerived) this._reassignAndWrite(true);
+  }
+
+  setHLODMode(mode = 'cluster') {
+    if (mode !== 'legacy' && mode !== 'cluster') throw new RangeError(`Unknown HLOD mode: ${mode}`);
+    if (mode === this.hlodMode) return;
+    this.hlodMode = mode;
+    this.hlod = mode === 'legacy' ? this.hlodLegacy : this.hlodCluster;
     if (this.lastDerived) this._reassignAndWrite(true);
   }
 
@@ -293,7 +308,7 @@ export class SettlementLayer {
       if (b.settlementId == null || (b.type !== 'house' && b.type !== 'center')) continue;
       let group = this._groupById.get(b.settlementId);
       if (!group) {
-        group = { id: b.settlementId, members: [], selectedHouses: [], memberIds: [],
+        group = { id: b.settlementId, members: [], selectedHouses: [], memberIds: [], clusters: [],
           minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity,
           maxHeight: 0, houseCount: 0, side: inside, mixed: false, useHlod: false,
           centerX: 0, centerY: 0, width: 0, depth: 0 };
@@ -314,6 +329,7 @@ export class SettlementLayer {
       if (group.houseCount) {
         group.centerX = (group.minX + group.maxX) / 2; group.centerY = (group.minY + group.maxY) / 2;
         group.width = Math.max(0.75, group.maxX - group.minX); group.depth = Math.max(0.75, group.maxY - group.minY);
+        group.clusters = this._makeHlodClusters(group);
         if (masked) {
           const x0 = Math.floor(group.minX), x1 = Math.floor(group.maxX);
           const y0 = Math.floor(group.minY), y1 = Math.floor(group.maxY);
@@ -323,6 +339,51 @@ export class SettlementLayer {
         }
       }
     }
+  }
+
+  _makeHlodClusters(group) {
+    const houses = group.members.filter(member => member.type === 'house');
+    if (!houses.length) return [];
+    const count = Math.min(4, Math.max(2, Math.ceil(houses.length / 3)), houses.length);
+    const alongX = group.width >= group.depth;
+    const sorted = [...houses].sort((a, b) => (alongX ? a.x - b.x : a.y - b.y)
+      || (alongX ? a.y - b.y : a.x - b.x) || a.sourceIndex - b.sourceIndex);
+    const clusters = [];
+    for (let index = 0; index < count; index++) {
+      const start = Math.floor(index * sorted.length / count);
+      const end = Math.floor((index + 1) * sorted.length / count);
+      const members = sorted.slice(start, end);
+      if (!members.length) continue;
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      let centerX = 0, centerY = 0;
+      for (const member of members) {
+        minX = Math.min(minX, member.x - member.w / 2); maxX = Math.max(maxX, member.x + member.w / 2);
+        minY = Math.min(minY, member.y - member.d / 2); maxY = Math.max(maxY, member.y + member.d / 2);
+        centerX += member.x; centerY += member.y;
+      }
+      centerX /= members.length; centerY /= members.length;
+      const representative = [...members].sort((a, b) =>
+        ((a.x - centerX) ** 2 + (a.y - centerY) ** 2) - ((b.x - centerX) ** 2 + (b.y - centerY) ** 2)
+        || a.sourceIndex - b.sourceIndex)[0];
+      const representativeHeight = members.reduce((height, member) => Math.max(height, member.h + member.roofH), 0);
+      const width = Math.max(representative.w * 0.72, (maxX - minX) * 0.72);
+      const depth = Math.max(representative.d * 0.72, (maxY - minY) * 0.72);
+      clusters.push({
+        id: `${String(group.id)}:${index}`, settlementId: group.id,
+        centerX, centerY, width, depth, height: Math.max(1, representativeHeight * 0.82),
+        groundX: representative.x, groundY: representative.y,
+        memberIds: members.map(member => member.sourceIndex),
+        buildingIds: members.map(member => member.sourceIndex),
+      });
+    }
+    for (const center of group.members.filter(member => member.type === 'center')) {
+      const nearest = clusters.reduce((best, cluster) =>
+        ((center.x - cluster.centerX) ** 2 + (center.y - cluster.centerY) ** 2)
+          < ((center.x - best.centerX) ** 2 + (center.y - best.centerY) ** 2) ? cluster : best, clusters[0]);
+      nearest.buildingIds.push(center.sourceIndex);
+      nearest.height = Math.max(nearest.height, Math.min(center.h + center.roofH, nearest.height * 1.2));
+    }
+    return clusters;
   }
 
   _reassignAndWrite(forceWrite) {
@@ -346,6 +407,14 @@ export class SettlementLayer {
         if (b._layerIndex < 0 || b._layerIndex >= count) continue;
         this._nextLods[b._layerIndex] = 3;
         this._lodCounts[2]++;
+      }
+      if (this.hlodMode === 'cluster') {
+        // A real village center belongs to the cluster identity; do not leave its oversized single roof mass over the roof groups.
+        for (const b of group.members) {
+          if (b.type !== 'center' || b._layerIndex < 0 || b._layerIndex >= count) continue;
+          this._nextLods[b._layerIndex] = 3;
+          this._lodCounts[2]++;
+        }
       }
     }
 
@@ -410,7 +479,8 @@ export class SettlementLayer {
 
   _writeMatrices() {
     const counts = this._batchCounts, lists = this._renderBuildingLists;
-    counts.fill(0); for (const list of lists) list.length = 0; this._hlodPickEntries.length = 0;
+    counts.fill(0); for (const list of lists) list.length = 0;
+    this._hlodPickEntries.length = 0; this._hlodLegacyPickEntries.length = 0;
     const bodyCount = Math.min(this._selectedBuildings.length, CAPACITY);
     for (let i = 0; i < bodyCount; i++) {
       const b = this._selectedBuildings[i], lod = this._currentLods[i];
@@ -431,14 +501,26 @@ export class SettlementLayer {
     }
     for (const group of this._groups) {
       if (!group.useHlod || !group.selectedHouses.length) continue;
-      const p = this.coordinates.worldToRender(group.centerX, group.centerY, 0), ground = this.elevation.at(group.centerX, group.centerY);
-      this.dummy.position.set(p.x, ground, p.z); this.dummy.scale.set(group.width, group.maxHeight, group.depth); this.dummy.rotation.set(0, 0, 0); this.dummy.updateMatrix();
-      this.hlod.setMatrixAt(counts[4], this.dummy.matrix);
-      this._hlodPickEntries[counts[4]] = { id: group.id, settlementId: group.id, x: group.centerX, y: group.centerY,
-        source: 'village-hlod', members: group.memberIds };
-      counts[4]++;
+      if (this.hlodMode === 'legacy') {
+        const p = this.coordinates.worldToRender(group.centerX, group.centerY, 0), ground = this.elevation.at(group.centerX, group.centerY);
+        this.dummy.position.set(p.x, ground, p.z); this.dummy.scale.set(group.width, group.maxHeight, group.depth); this.dummy.rotation.set(0, 0, 0); this.dummy.updateMatrix();
+        this.hlodLegacy.setMatrixAt(counts[4], this.dummy.matrix);
+        this._hlodLegacyPickEntries[counts[4]] = { id: group.id, settlementId: group.id, x: group.centerX, y: group.centerY,
+          source: 'village-hlod-legacy', members: group.memberIds };
+        counts[4]++;
+        continue;
+      }
+      for (const cluster of group.clusters) {
+        const p = this.coordinates.worldToRender(cluster.centerX, cluster.centerY, 0);
+        const ground = this.elevation.at(cluster.groundX, cluster.groundY);
+        this.dummy.position.set(p.x, ground, p.z); this.dummy.scale.set(cluster.width, cluster.height, cluster.depth); this.dummy.rotation.set(0, 0, 0); this.dummy.updateMatrix();
+        this.hlodCluster.setMatrixAt(counts[5], this.dummy.matrix);
+        this._hlodPickEntries[counts[5]] = { id: group.id, settlementId: group.id, x: cluster.centerX, y: cluster.centerY,
+          source: 'village-hlod-cluster', members: cluster.memberIds, buildings: cluster.buildingIds };
+        counts[5]++;
+      }
     }
-    const meshes = [this.bodies, this.roofs, this.lod1, this.lod2, this.hlod];
+    const meshes = [this.bodies, this.roofs, this.lod1, this.lod2, this.hlodLegacy, this.hlodCluster];
     for (let i = 0; i < meshes.length; i++) {
       const mesh = meshes[i]; mesh.count = counts[i]; mesh.visible = counts[i] > 0;
       mesh.boundingBox = null; mesh.boundingSphere = null;
@@ -448,14 +530,16 @@ export class SettlementLayer {
   }
 
   _updateStats() {
-    const s = this.stats, meshes = [this.bodies, this.roofs, this.lod1, this.lod2, this.hlod];
-    let instances = 0, triangles = 0, hlod = 0;
+    const s = this.stats, meshes = [this.bodies, this.roofs, this.lod1, this.lod2, this.hlodLegacy, this.hlodCluster];
+    let instances = 0, triangles = 0, hlodTriangles = 0;
     for (let i = 0; i < meshes.length; i++) {
       const mesh = meshes[i], n = mesh.geometry.index?.count ?? mesh.geometry.getAttribute('position').count;
       instances += mesh.count; triangles += mesh.count * n / 3;
-      if (i === 4) hlod = mesh.count;
+      if (i === 4 || i === 5) hlodTriangles += mesh.count * n / 3;
     }
+    const hlod = this._groups.reduce((count, group) => count + (group.useHlod ? 1 : 0), 0);
     s.buildings = this._selectedBuildings.length; s.instances = instances; s.triangles = triangles; s.hlod = hlod;
+    s.hlodClusters = this.hlodCluster.count; s.hlodTriangles = hlodTriangles;
     s.lod[0] = this._lodCounts[0]; s.lod[1] = this._lodCounts[1]; s.lod[2] = this._lodCounts[2];
     s.overflow = Math.max(0, s.buildings - CAPACITY); s.capacityOverflow = s.overflow;
     s.capacity = CAPACITY; s.budgetDemotions = this._budgetDemotions;
@@ -472,10 +556,11 @@ export class SettlementLayer {
   dispose() {
     this.setArtProfile(null);
     this.pilotBody?.dispose(); this.pilotRoof?.dispose(); this.pilotMaterial?.dispose();
-    const meshes = [this.bodies, this.roofs, this.lod1, this.lod2, this.hlod];
+    const meshes = [this.bodies, this.roofs, this.lod1, this.lod2, this.hlodLegacy, this.hlodCluster];
     for (const mesh of meshes) mesh.dispose();
     for (const material of new Set([...meshes.map(mesh => mesh.material), ...this._lodLegacyMaterials])) material.dispose();
     for (const geometry of this.lodGeometries) geometry.dispose();
+    this.hlodClusterGeometry.dispose();
     this.bodyGeometry.dispose();
     this.roofGeometry.dispose();
     this.group.clear();
