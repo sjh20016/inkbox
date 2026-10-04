@@ -1,0 +1,1872 @@
+{
+  "package": 3,
+  "scope": "HOUSE base/small/courtyard and real-member HLOD; HALL remains fallback",
+  "pass": true,
+  "generatedAt": "2026-10-04T14:19:40.685Z",
+  "modules": {
+    "env_house_base_lod0": 80,
+    "env_house_base_lod1": 30,
+    "env_house_base_lod2": 8,
+    "env_house_base_hlod": 14,
+    "env_house_small_lod0": 128,
+    "env_house_small_lod1": 30,
+    "env_house_small_lod2": 8,
+    "env_house_small_hlod": 14,
+    "env_house_courtyard_lod0": 188,
+    "env_house_courtyard_lod1": 30,
+    "env_house_courtyard_lod2": 8,
+    "env_house_courtyard_hlod": 14
+  },
+  "node": {
+    "checks": [
+      {
+        "name": "shipped GLB, external PNG and semantic UV cells decode exactly",
+        "passed": true
+      },
+      {
+        "name": "batches share decoded geometry, Stage material and atlas; moving instances resets raycast bounds",
+        "passed": true
+      },
+      {
+        "name": "natural GOLDEN_A keeps 83 current houses and 5 real halls, without manufactured coordinates",
+        "passed": true
+      },
+      {
+        "name": "village row families and roof axis survive level changes, removal, order and camera changes",
+        "passed": true
+      },
+      {
+        "name": "all three house LODs and existing far aggregate retain ownership and toggle back to legacy",
+        "passed": true
+      },
+      {
+        "name": "actual house geometry raycasts to its original house key and exact village",
+        "passed": true
+      },
+      {
+        "name": "presentation profiles, realm switches and World replacement preserve full World and save",
+        "passed": true
+      },
+      {
+        "name": "destroyed stale house records are excluded using current struct without writing World",
+        "passed": true
+      },
+      {
+        "name": "invalid manifest and palette release each decoded geometry, material and atlas once",
+        "passed": true
+      },
+      {
+        "name": "loader fetches each input once and does not double-dispose rejected decoded assets",
+        "passed": true
+      },
+      {
+        "name": "one asynchronous library survives World/toggle changes and is released once, including late completion",
+        "passed": true
+      }
+    ],
+    "purity": {
+      "fullWorldAdvanceSha256": "343dede24c355cffb6d3a0dc23ef64f85840f21e59d2091884b9ba48248e35e2",
+      "saveSha256": "85a0fdb43d5d2a1dfe995eec26771f1e0656f986beb250e2f0bfe50af2cd1668",
+      "saveKeys": [
+        "app",
+        "artifactLog",
+        "artifacts",
+        "ascended",
+        "busanzi",
+        "chronicle",
+        "clanLog",
+        "clans",
+        "day",
+        "dead",
+        "deadLog",
+        "entities",
+        "factions",
+        "h",
+        "lastClanFoundDay",
+        "leylines",
+        "meta",
+        "milestones",
+        "nether",
+        "nextArtifactId",
+        "nextClanId",
+        "nextEntityId",
+        "nextFactionId",
+        "nextLeylineId",
+        "nextRiftId",
+        "nextSiteId",
+        "nextSoulId",
+        "nextVillageId",
+        "nextWarId",
+        "plane",
+        "possessionLog",
+        "riftLog",
+        "rifts",
+        "seed",
+        "sites",
+        "soulLog",
+        "souls",
+        "terrain",
+        "upper",
+        "v",
+        "villages",
+        "w",
+        "warLog",
+        "wars",
+        "watch",
+        "worldEvents",
+        "wraithLog",
+        "wraiths",
+        "year"
+      ],
+      "unchanged": true
+    },
+    "lodCoverage": [
+      [
+        83,
+        0,
+        0
+      ],
+      [
+        83,
+        0,
+        0
+      ],
+      [
+        0,
+        83,
+        0
+      ]
+    ]
+  },
+  "edge": {
+    "browser": {
+      "browser": "Edg/154.0.4258.53",
+      "debugPort": 9580,
+      "width": 1500,
+      "height": 940
+    },
+    "loads": {
+      "glb": 1,
+      "atlas": 1
+    },
+    "sharing": {
+      "digestBeforeReplacement": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "digestAfterReplacement": {
+        "algorithm": "SHA-256",
+        "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+        "bytes": 16226515,
+        "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+      },
+      "sameMaterial": true,
+      "sameLibrary": true,
+      "sameGeometries": true,
+      "sameAtlas": true,
+      "sharedStageMaterial": true
+    },
+    "productLoop": {
+      "observedFrames": 120,
+      "updates": 120,
+      "renders": 120,
+      "updateMedianMs": 0.3999999985098839,
+      "updateP95Ms": 0.5
+    },
+    "cases": [
+      {
+        "assetId": "mortal.house.base",
+        "lod": 0,
+        "node": "env_house_base_lod0",
+        "identityKind": "house",
+        "identityKey": "house:1:64:100",
+        "source": {
+          "houseKey": "house:1:64:100",
+          "settlementId": 1,
+          "x": 64,
+          "y": 100,
+          "structType": 1
+        },
+        "submittedDepthProof": {
+          "mesh": "env_house_base_lod0",
+          "instanceId": 0,
+          "distance": 430.7504936408837,
+          "opaqueBlockerCount": 13
+        },
+        "on": {
+          "name": "mortal.house.base LOD0 production",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 260551,
+            "drawCalls": 18,
+            "memory": {
+              "geometries": 28,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": true,
+            "ready": true,
+            "instances": 83,
+            "triangles": 9760,
+            "drawCalls": 3
+          },
+          "camera": {
+            "position": [
+              94.56013832667571,
+              275.86592897610024,
+              346.7559327036022
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 18
+          }
+        },
+        "off": {
+          "name": "LOD0 fallback",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 257431,
+            "drawCalls": 15,
+            "memory": {
+              "geometries": 28,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": false,
+            "ready": true,
+            "instances": 0,
+            "triangles": 0,
+            "drawCalls": 0
+          },
+          "camera": {
+            "position": [
+              94.56013832667571,
+              275.86592897610024,
+              346.7559327036022
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 18
+          }
+        },
+        "stats": {
+          "buildings": 94,
+          "villages": 6,
+          "houses": 89,
+          "centers": 5,
+          "sects": 0,
+          "instances": 105,
+          "triangles": 10640,
+          "lod": [
+            94,
+            0,
+            0
+          ],
+          "hlod": 0,
+          "hlodClusters": 0,
+          "hlodTriangles": 0,
+          "overflow": 0,
+          "capacity": 4608,
+          "capacityOverflow": 0,
+          "budgetDemotions": 0,
+          "productionAssets": true,
+          "productionInstances": 83,
+          "productionTriangles": 9760,
+          "productionDrawCalls": 3,
+          "productionOverflow": 0,
+          "historicalCandidates": 89,
+          "currentHouses": 83,
+          "currentHalls": 6,
+          "excludedHouses": 0
+        },
+        "imageSha256": "7efe69c5781b5b6432c21cddc2ba6bcfb46ca9e31190b20f5dcbaacda3c14fec"
+      },
+      {
+        "assetId": "mortal.house.base",
+        "lod": 1,
+        "node": "env_house_base_lod1",
+        "identityKind": "house",
+        "identityKey": "house:1:64:100",
+        "source": {
+          "houseKey": "house:1:64:100",
+          "settlementId": 1,
+          "x": 64,
+          "y": 100,
+          "structType": 1
+        },
+        "submittedDepthProof": {
+          "mesh": "env_house_base_lod1",
+          "instanceId": 0,
+          "distance": 425.90013588123117,
+          "opaqueBlockerCount": 13
+        },
+        "on": {
+          "name": "mortal.house.base LOD1 production",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 247325,
+            "drawCalls": 18,
+            "memory": {
+              "geometries": 35,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": true,
+            "ready": true,
+            "instances": 83,
+            "triangles": 2490,
+            "drawCalls": 3
+          },
+          "camera": {
+            "position": [
+              288.2503594338353,
+              275.86592897610024,
+              -33.79879973131639
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 4
+          }
+        },
+        "off": {
+          "name": "LOD1 fallback",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 246795,
+            "drawCalls": 15,
+            "memory": {
+              "geometries": 35,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": false,
+            "ready": true,
+            "instances": 0,
+            "triangles": 0,
+            "drawCalls": 0
+          },
+          "camera": {
+            "position": [
+              288.2503594338353,
+              275.86592897610024,
+              -33.79879973131639
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 4
+          }
+        },
+        "stats": {
+          "buildings": 94,
+          "villages": 6,
+          "houses": 89,
+          "centers": 5,
+          "sects": 0,
+          "instances": 99,
+          "triangles": 3010,
+          "lod": [
+            5,
+            89,
+            0
+          ],
+          "hlod": 0,
+          "hlodClusters": 0,
+          "hlodTriangles": 0,
+          "overflow": 0,
+          "capacity": 4608,
+          "capacityOverflow": 0,
+          "budgetDemotions": 0,
+          "productionAssets": true,
+          "productionInstances": 83,
+          "productionTriangles": 2490,
+          "productionDrawCalls": 3,
+          "productionOverflow": 0,
+          "historicalCandidates": 89,
+          "currentHouses": 83,
+          "currentHalls": 6,
+          "excludedHouses": 0
+        },
+        "imageSha256": "5c3df4c4862edd1fa4abcacfc0cfde034d66ee9aedac6143c6f689d7e08ba2d1"
+      },
+      {
+        "assetId": "mortal.house.small",
+        "lod": 0,
+        "node": "env_house_small_lod0",
+        "identityKind": "house",
+        "identityKey": "house:1:66:109",
+        "source": {
+          "houseKey": "house:1:66:109",
+          "settlementId": 1,
+          "x": 66,
+          "y": 109,
+          "structType": 1
+        },
+        "submittedDepthProof": {
+          "mesh": "env_house_small_lod0",
+          "instanceId": 0,
+          "distance": 426.80480999551935,
+          "opaqueBlockerCount": 13
+        },
+        "on": {
+          "name": "mortal.house.small LOD0 production",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 260551,
+            "drawCalls": 18,
+            "memory": {
+              "geometries": 35,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": true,
+            "ready": true,
+            "instances": 83,
+            "triangles": 9760,
+            "drawCalls": 3
+          },
+          "camera": {
+            "position": [
+              94.56013832667571,
+              275.86592897610024,
+              346.7559327036022
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 18
+          }
+        },
+        "off": {
+          "name": "LOD0 fallback",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 257431,
+            "drawCalls": 15,
+            "memory": {
+              "geometries": 35,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": false,
+            "ready": true,
+            "instances": 0,
+            "triangles": 0,
+            "drawCalls": 0
+          },
+          "camera": {
+            "position": [
+              94.56013832667571,
+              275.86592897610024,
+              346.7559327036022
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 18
+          }
+        },
+        "stats": {
+          "buildings": 94,
+          "villages": 6,
+          "houses": 89,
+          "centers": 5,
+          "sects": 0,
+          "instances": 105,
+          "triangles": 10640,
+          "lod": [
+            94,
+            0,
+            0
+          ],
+          "hlod": 0,
+          "hlodClusters": 0,
+          "hlodTriangles": 0,
+          "overflow": 0,
+          "capacity": 4608,
+          "capacityOverflow": 0,
+          "budgetDemotions": 0,
+          "productionAssets": true,
+          "productionInstances": 83,
+          "productionTriangles": 9760,
+          "productionDrawCalls": 3,
+          "productionOverflow": 0,
+          "historicalCandidates": 89,
+          "currentHouses": 83,
+          "currentHalls": 6,
+          "excludedHouses": 0
+        },
+        "imageSha256": "d542f4b6fd1fbfc61158af7d0f5822edb1c4964958542ead7b5e69c2414f422d"
+      },
+      {
+        "assetId": "mortal.house.small",
+        "lod": 1,
+        "node": "env_house_small_lod1",
+        "identityKind": "house",
+        "identityKey": "house:1:66:109",
+        "source": {
+          "houseKey": "house:1:66:109",
+          "settlementId": 1,
+          "x": 66,
+          "y": 109,
+          "structType": 1
+        },
+        "submittedDepthProof": {
+          "mesh": "env_house_small_lod1",
+          "instanceId": 0,
+          "distance": 426.90905392862805,
+          "opaqueBlockerCount": 13
+        },
+        "on": {
+          "name": "mortal.house.small LOD1 production",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 249417,
+            "drawCalls": 18,
+            "memory": {
+              "geometries": 35,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": true,
+            "ready": true,
+            "instances": 83,
+            "triangles": 4222,
+            "drawCalls": 4
+          },
+          "camera": {
+            "position": [
+              94.56013832667571,
+              275.86592897610024,
+              346.7559327036022
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 6
+          }
+        },
+        "off": {
+          "name": "LOD1 fallback",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 248415,
+            "drawCalls": 15,
+            "memory": {
+              "geometries": 35,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": false,
+            "ready": true,
+            "instances": 0,
+            "triangles": 0,
+            "drawCalls": 0
+          },
+          "camera": {
+            "position": [
+              94.56013832667571,
+              275.86592897610024,
+              346.7559327036022
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 6
+          }
+        },
+        "stats": {
+          "buildings": 94,
+          "villages": 6,
+          "houses": 89,
+          "centers": 5,
+          "sects": 0,
+          "instances": 105,
+          "triangles": 5102,
+          "lod": [
+            37,
+            57,
+            0
+          ],
+          "hlod": 0,
+          "hlodClusters": 0,
+          "hlodTriangles": 0,
+          "overflow": 0,
+          "capacity": 4608,
+          "capacityOverflow": 0,
+          "budgetDemotions": 0,
+          "productionAssets": true,
+          "productionInstances": 83,
+          "productionTriangles": 4222,
+          "productionDrawCalls": 4,
+          "productionOverflow": 0,
+          "historicalCandidates": 89,
+          "currentHouses": 83,
+          "currentHalls": 6,
+          "excludedHouses": 0
+        },
+        "imageSha256": "04e509771abcbf9571daccab59b922dc568ba6099c969376bce3bd2387482b6a"
+      },
+      {
+        "assetId": "mortal.house.courtyard",
+        "lod": 0,
+        "node": "env_house_courtyard_lod0",
+        "identityKind": "house",
+        "identityKey": "house:1:68:105",
+        "source": {
+          "houseKey": "house:1:68:105",
+          "settlementId": 1,
+          "x": 68,
+          "y": 105,
+          "structType": 1
+        },
+        "submittedDepthProof": {
+          "mesh": "env_house_courtyard_lod0",
+          "instanceId": 0,
+          "distance": 426.07545685149137,
+          "opaqueBlockerCount": 13
+        },
+        "on": {
+          "name": "mortal.house.courtyard LOD0 production",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 260551,
+            "drawCalls": 18,
+            "memory": {
+              "geometries": 35,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": true,
+            "ready": true,
+            "instances": 83,
+            "triangles": 9760,
+            "drawCalls": 3
+          },
+          "camera": {
+            "position": [
+              94.56013832667571,
+              275.86592897610024,
+              346.7559327036022
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 18
+          }
+        },
+        "off": {
+          "name": "LOD0 fallback",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 257431,
+            "drawCalls": 15,
+            "memory": {
+              "geometries": 35,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": false,
+            "ready": true,
+            "instances": 0,
+            "triangles": 0,
+            "drawCalls": 0
+          },
+          "camera": {
+            "position": [
+              94.56013832667571,
+              275.86592897610024,
+              346.7559327036022
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 18
+          }
+        },
+        "stats": {
+          "buildings": 94,
+          "villages": 6,
+          "houses": 89,
+          "centers": 5,
+          "sects": 0,
+          "instances": 105,
+          "triangles": 10640,
+          "lod": [
+            94,
+            0,
+            0
+          ],
+          "hlod": 0,
+          "hlodClusters": 0,
+          "hlodTriangles": 0,
+          "overflow": 0,
+          "capacity": 4608,
+          "capacityOverflow": 0,
+          "budgetDemotions": 0,
+          "productionAssets": true,
+          "productionInstances": 83,
+          "productionTriangles": 9760,
+          "productionDrawCalls": 3,
+          "productionOverflow": 0,
+          "historicalCandidates": 89,
+          "currentHouses": 83,
+          "currentHalls": 6,
+          "excludedHouses": 0
+        },
+        "imageSha256": "0402722bc9aa3eebbfe0d93b13676f51141cf457aedf00fead4b01fc0f292805"
+      },
+      {
+        "assetId": "mortal.house.courtyard",
+        "lod": 1,
+        "node": "env_house_courtyard_lod1",
+        "identityKind": "house",
+        "identityKey": "house:1:68:105",
+        "source": {
+          "houseKey": "house:1:68:105",
+          "settlementId": 1,
+          "x": 68,
+          "y": 105,
+          "structType": 1
+        },
+        "submittedDepthProof": {
+          "mesh": "env_house_courtyard_lod1",
+          "instanceId": 0,
+          "distance": 425.1871623009291,
+          "opaqueBlockerCount": 13
+        },
+        "on": {
+          "name": "mortal.house.courtyard LOD1 production",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 247325,
+            "drawCalls": 18,
+            "memory": {
+              "geometries": 35,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": true,
+            "ready": true,
+            "instances": 83,
+            "triangles": 2490,
+            "drawCalls": 3
+          },
+          "camera": {
+            "position": [
+              288.2503594338353,
+              275.86592897610024,
+              -33.79879973131639
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 4
+          }
+        },
+        "off": {
+          "name": "LOD1 fallback",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 246795,
+            "drawCalls": 15,
+            "memory": {
+              "geometries": 35,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": false,
+            "ready": true,
+            "instances": 0,
+            "triangles": 0,
+            "drawCalls": 0
+          },
+          "camera": {
+            "position": [
+              288.2503594338353,
+              275.86592897610024,
+              -33.79879973131639
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 4
+          }
+        },
+        "stats": {
+          "buildings": 94,
+          "villages": 6,
+          "houses": 89,
+          "centers": 5,
+          "sects": 0,
+          "instances": 99,
+          "triangles": 3010,
+          "lod": [
+            5,
+            89,
+            0
+          ],
+          "hlod": 0,
+          "hlodClusters": 0,
+          "hlodTriangles": 0,
+          "overflow": 0,
+          "capacity": 4608,
+          "capacityOverflow": 0,
+          "budgetDemotions": 0,
+          "productionAssets": true,
+          "productionInstances": 83,
+          "productionTriangles": 2490,
+          "productionDrawCalls": 3,
+          "productionOverflow": 0,
+          "historicalCandidates": 89,
+          "currentHouses": 83,
+          "currentHalls": 6,
+          "excludedHouses": 0
+        },
+        "imageSha256": "104234783f3fd8e7533da5b4e1ef2a89095616a1788e00c3c82c892f8359f053"
+      },
+      {
+        "assetId": "mortal.house.base",
+        "lod": 3,
+        "node": "env_house_base_hlod",
+        "identityKind": "settlement",
+        "identityKey": "1",
+        "source": {
+          "settlementId": 1
+        },
+        "submittedDepthProof": {
+          "mesh": "env_house_base_hlod",
+          "instanceId": 0,
+          "distance": 428.38037287305457,
+          "opaqueBlockerCount": 9
+        },
+        "on": {
+          "name": "mortal.house.base LOD3 production",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 129164,
+            "drawCalls": 12,
+            "memory": {
+              "geometries": 36,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": true,
+            "ready": true,
+            "instances": 22,
+            "triangles": 308,
+            "drawCalls": 3
+          },
+          "camera": {
+            "position": [
+              -2.571278859085197,
+              375.0531842321002,
+              252.75930508532716
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 0.5
+          }
+        },
+        "off": {
+          "name": "LOD3 fallback",
+          "digest": {
+            "algorithm": "SHA-256",
+            "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+            "bytes": 16226515,
+            "value": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1"
+          },
+          "renderer": {
+            "triangles": 129120,
+            "drawCalls": 10,
+            "memory": {
+              "geometries": 37,
+              "textures": 4
+            },
+            "glError": 0,
+            "programs": [
+              {
+                "id": 5,
+                "linked": true
+              },
+              {
+                "id": 6,
+                "linked": true
+              },
+              {
+                "id": 7,
+                "linked": true
+              },
+              {
+                "id": 8,
+                "linked": true
+              },
+              {
+                "id": 9,
+                "linked": true
+              },
+              {
+                "id": 10,
+                "linked": true
+              },
+              {
+                "id": 11,
+                "linked": true
+              },
+              {
+                "id": 12,
+                "linked": true
+              },
+              {
+                "id": 13,
+                "linked": true
+              },
+              {
+                "id": 14,
+                "linked": true
+              },
+              {
+                "id": 15,
+                "linked": true
+              },
+              {
+                "id": 16,
+                "linked": true
+              }
+            ],
+            "vendor": "Google Inc. (AMD)",
+            "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          },
+          "world": {
+            "day": 1440,
+            "houses": 83,
+            "halls": 6
+          },
+          "assets": {
+            "enabled": false,
+            "ready": true,
+            "instances": 0,
+            "triangles": 0,
+            "drawCalls": 0
+          },
+          "camera": {
+            "position": [
+              -2.571278859085197,
+              375.0531842321002,
+              252.75930508532716
+            ],
+            "target": [
+              -34.50000000000001,
+              1.8909369707107546,
+              41.5
+            ],
+            "zoom": 0.5
+          }
+        },
+        "stats": {
+          "buildings": 94,
+          "villages": 6,
+          "houses": 89,
+          "centers": 5,
+          "sects": 0,
+          "instances": 22,
+          "triangles": 308,
+          "lod": [
+            0,
+            0,
+            94
+          ],
+          "hlod": 6,
+          "hlodClusters": 22,
+          "hlodTriangles": 308,
+          "overflow": 0,
+          "capacity": 4608,
+          "capacityOverflow": 0,
+          "budgetDemotions": 0,
+          "productionAssets": true,
+          "productionInstances": 22,
+          "productionTriangles": 308,
+          "productionDrawCalls": 3,
+          "productionOverflow": 0,
+          "historicalCandidates": 89,
+          "currentHouses": 83,
+          "currentHalls": 6,
+          "excludedHouses": 0
+        },
+        "imageSha256": "64dbd984579aef51890797671be2c717322b1be697661de3d09de1b1380dcdb3"
+      }
+    ],
+    "errors": []
+  },
+  "regression": {
+    "m1": 36,
+    "m2b": 70,
+    "m2c2a": 8,
+    "hlod": 5
+  },
+  "evidence": "Full Edge images/JSON are ignored under reports/m2c2b/pass1/family/edge-final. Final Pass1 performance and soak remain pending."
+}
