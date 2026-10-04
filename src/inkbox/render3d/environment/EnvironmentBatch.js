@@ -4,7 +4,7 @@ const LOD_COUNT = 3;
 
 /** Fixed-capacity instancing over shared EnvironmentAssetLibrary geometry. */
 export class EnvironmentBatch {
-  constructor(library, { material, capacity, pickField = 'renderBuildings', assetIds = ['mortal.house.base'] } = {}) {
+  constructor(library, { material, capacity, pickField = 'renderBuildings', assetIds = ['mortal.house.base'], includeHLOD = false } = {}) {
     if (!library || library.disposed) throw new Error('EnvironmentBatch requires a live asset library');
     if (!material?.isMaterial) throw new Error('EnvironmentBatch requires the Stage-owned shared material');
     if (!Number.isInteger(capacity) || capacity < 1) throw new Error('EnvironmentBatch capacity must be a positive integer');
@@ -13,6 +13,7 @@ export class EnvironmentBatch {
     this.material = material;
     this.capacity = capacity;
     this.pickField = pickField;
+    this.includeHLOD = !!includeHLOD;
     this.assetIds = [...new Set(assetIds)];
     this.group = new THREE.Group();
     this.group.name = 'environment_instance_batch';
@@ -22,7 +23,7 @@ export class EnvironmentBatch {
     const nodeAssets = new Map();
     for (const assetId of this.assetIds) {
       const asset = library.assetInfo(assetId);
-      for (const nodeName of asset.lods) {
+      for (const nodeName of [...asset.lods, ...(includeHLOD && asset.hlod ? [asset.hlod] : [])]) {
         const owners = nodeAssets.get(nodeName) || [];
         owners.push(assetId);
         nodeAssets.set(nodeName, owners);
@@ -44,6 +45,10 @@ export class EnvironmentBatch {
       mesh.userData[this.pickField] = [];
       mesh.userData.environmentAssetIds = owners;
       mesh.userData.lod = this.library.assetInfo(owners[0]).lods.indexOf(nodeName);
+      if (mesh.userData.lod < 0) {
+        mesh.userData.lod = 3;
+        mesh.userData.renderSettlements = mesh.userData[this.pickField];
+      }
       this.meshes.set(nodeName, mesh);
       this.group.add(mesh);
     }
@@ -68,8 +73,8 @@ export class EnvironmentBatch {
     for (const record of records) {
       const asset = this.library.assetInfo(record.assetId);
       const lod = Number(record.lod);
-      if (!Number.isInteger(lod) || lod < 0 || lod >= LOD_COUNT) throw new Error(`Invalid environment LOD ${record.lod}`);
-      const nodeName = asset.lods[lod];
+      if (!Number.isInteger(lod) || lod < 0 || lod >= LOD_COUNT && !(lod === 3 && this.includeHLOD && asset.hlod)) throw new Error(`Invalid environment LOD ${record.lod}`);
+      const nodeName = lod === 3 ? asset.hlod : asset.lods[lod];
       const mesh = this.meshes.get(nodeName);
       if (!mesh) throw new Error(`EnvironmentBatch was not configured for ${record.assetId}`);
       const index = counts.get(nodeName);
@@ -90,7 +95,7 @@ export class EnvironmentBatch {
       this._sourceByNode.set(nodeName, sources);
     }
     const lod = [0, 0, 0];
-    let instances = 0, triangles = 0, drawCalls = 0;
+    let instances = 0, triangles = 0, drawCalls = 0, hlod = 0;
     for (const [nodeName, mesh] of this.meshes) {
       const count = counts.get(nodeName) || 0;
       mesh.count = count;
@@ -103,12 +108,13 @@ export class EnvironmentBatch {
       instances += count;
       triangles += count * module.triangles;
       drawCalls++;
+      if (mesh.userData.lod === 3) hlod += count;
       for (const assetId of mesh.userData.environmentAssetIds) {
         const lodIndex = this.library.assetInfo(assetId).lods.indexOf(nodeName);
         if (lodIndex >= 0) { lod[lodIndex] += count; break; }
       }
     }
-    this._stats = { instances, triangles, drawCalls, overflow, lod };
+    this._stats = { instances, triangles, drawCalls, overflow, lod, ...(this.includeHLOD ? { hlod } : {}) };
     return this.stats;
   }
 

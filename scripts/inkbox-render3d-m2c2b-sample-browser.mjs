@@ -11,26 +11,35 @@ import { waitForIdlePresentation } from './inkbox-browser-steady-view.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(ROOT, 'reports/m2c2b/pass1/sample/edge'));
 const port = Number(process.env.INKBOX_PORT || 4226), base = process.env.INKBOX_URL || `http://127.0.0.1:${port}`;
+const familyMatrix = process.env.INKBOX_FAMILY_MATRIX === '1';
+const assetIds = familyMatrix ? ['mortal.house.base','mortal.house.small','mortal.house.courtyard'] : ['mortal.house.base'];
 const report = { suite: 'M2-C2B single-house Edge gate', generatedAt: new Date().toISOString(), pass: false,
   source: 'actual product RAF; submitted GLB triangle centroids; real input click; no forced picker or LOD results', cases: [] };
 let browser, server;
 const page = (body, options) => browser.js(`return (async()=>{${body}})();`, options);
 const frames = count => page(`for(let i=0;i<${count};i++)await new Promise(requestAnimationFrame);return true;`);
 
-async function findHouse(lod) {
+async function findHouse(lod, assetId) {
   return page(`
     const k=window.inkbox,r=k.render3d.renderer,a=window.__sample.scenarios,T=window.__sample.THREE;
     const stage=r.stages.get('mortal'),layer=stage.settlements;
     const villages=[...k.world.villages].filter(v=>v.houses?.some(h=>k.world.struct[k.world.idx(h.x,h.y)]===1));
-    const poses=${JSON.stringify(lod === 0 ? [[18,.88,.4],[18,.72,1.8],[18,1.04,3.5]] : [[6,.88,.4],[4,.88,1.8],[5,1.04,3.5]])};
+    const poses=${JSON.stringify(lod === 3 ? [[.5,.52,.15],[.5,.52,1.8],[.65,.52,3.5]] : lod === 0 ? [[18,.88,.4],[18,.72,1.8],[18,1.04,3.5],[18,.36,4.6]] : [[6,.88,.4],[4,.88,1.8],[5,1.04,3.5],[6,.36,4.6]])};
     for(const v of villages)for(const [zoom,polar,yaw] of poses){
       const pose=a.applyCamera(r,'SETTLEMENT',{poi:{x:v.x,y:v.y,id:v.id,source:'real-village'},zoom,polar,yaw});
       for(let i=0;i<6;i++)await new Promise(requestAnimationFrame);
       r.scene.updateMatrixWorld(true);r.cameraRig.camera.updateMatrixWorld(true);
-      const mesh=layer.environmentBatch.meshes.get('env_house_base_lod'+${lod});
+      const asset=r.environmentLibrary.assetInfo(${JSON.stringify(assetId)});
+      const mesh=layer.environmentBatch.meshes.get(${lod}===3?asset.hlod:asset.lods[${lod}]);
       if(!mesh.visible||!mesh.count)continue;
       const p=mesh.geometry.attributes.position,ix=mesh.geometry.index,im=new T.Matrix4(),combined=new T.Matrix4(),center=new T.Vector3();
       const rect=k.render3d.canvas.getBoundingClientRect();
+      const ray=new T.Raycaster(),blockers=[];
+      r.scene.traverse(o=>{
+        if(!o.isMesh||o.renderOrder>5||o.isInstancedMesh&&!o.count||o.material?.transparent)return;
+        for(let parent=o;parent;parent=parent.parent)if(!parent.visible)return;
+        blockers.push(o);
+      });
       for(let instance=0;instance<mesh.count;instance++){
         const source=mesh.userData.renderBuildings[instance];if(source.settlementId!==v.id)continue;
         mesh.getMatrixAt(instance,im);combined.multiplyMatrices(mesh.matrixWorld,im);
@@ -40,10 +49,15 @@ async function findHouse(lod) {
           const ndc=center.clone().project(r.cameraRig.camera);
           if(Math.abs(ndc.x)>.84||Math.abs(ndc.y)>.84||ndc.z< -1||ndc.z>1)continue;
           const pixel=[(ndc.x+1)*r.width/2,(1-ndc.y)*r.height/2],hit=r.pick(...pixel);
-          if(hit?.kind!=='house'||hit.houseKey!==source.houseKey)continue;
-          return {lod:${lod},node:mesh.name,geometry:mesh.geometry.uuid,material:mesh.material.uuid,source:{houseKey:source.houseKey,
+          if(hit?.kind!==${JSON.stringify(lod === 3 ? 'settlement' : 'house')}||(${lod}===3?hit.settlementId!==source.settlementId:hit.houseKey!==source.houseKey))continue;
+          ray.setFromCamera(new T.Vector2(ndc.x,ndc.y),r.cameraRig.camera);
+          const submittedHit=ray.intersectObjects(blockers,false)[0];
+          if(submittedHit?.object!==mesh||submittedHit.instanceId!==instance)continue;
+          return {lod:${lod},assetId:${JSON.stringify(assetId)},identityKind:${JSON.stringify(lod === 3 ? 'settlement' : 'house')},
+            identityKey:${lod}===3?String(source.settlementId):source.houseKey,node:mesh.name,geometry:mesh.geometry.uuid,material:mesh.material.uuid,source:{houseKey:source.houseKey,
             settlementId:source.settlementId,x:source.houseX,y:source.houseY,structType:source.structType},
             pixel,client:[rect.left+pixel[0]/r.width*rect.width,rect.top+pixel[1]/r.height*rect.height],pose,
+            submittedDepthProof:{mesh:submittedHit.object.name,instanceId:submittedHit.instanceId,distance:submittedHit.distance,opaqueBlockerCount:blockers.length},
             instances:mesh.count,triangleCount:ix.count/3,stats:{...layer.stats,lod:[...layer.stats.lod]},
             instanceScale:new T.Vector3().setFromMatrixScale(im).toArray()};
         }
@@ -105,16 +119,20 @@ try {
     return {scenario,digest:await window.__sample.scenarios.snapshotDigest(k),modules:[...r.environmentLibrary.modules.values()].map(m=>({node:m.node.name,triangles:m.triangles}))};
   `, { timeoutMs: 180000 });
   report.idlePresentation = await page(`return (${waitForIdlePresentation.toString()})(window.inkbox.render3d.renderer);`);
-  for (const lod of [0,1]) {
-    const found = await findHouse(lod); console.log(`Found actual LOD${lod}: ${found.source.houseKey}`);
+  const cases = assetIds.flatMap(assetId=>[0,1].map(lod=>({assetId,lod})));
+  if (familyMatrix) cases.push({assetId:'mortal.house.base',lod:3});
+  for (const {lod,assetId} of cases) {
+    const found = await findHouse(lod,assetId); console.log(`Found actual ${assetId} LOD${lod}: ${found.identityKey}`);
     await page('window.__sample.lastInspect=null;window.__sample.coordinateFallback=false;return true;');
     await browser.click(...found.client); await frames(3);
     const inspected = await page(`const p=document.getElementById('inkInspect');return {ref:window.__sample.lastInspect,
       fallback:!!window.__sample.coordinateFallback,panel:{on:p.classList.contains('on'),plane:p.dataset.plane,kind:p.dataset.subjectKind,id:p.dataset.subjectId,text:p.innerText}};`);
-    assert.equal(inspected.ref?.plane, 'mortal'); assert.equal(inspected.ref?.ref.houseKey, found.source.houseKey);
+    assert.equal(inspected.ref?.plane, 'mortal'); assert.equal(inspected.ref?.ref.kind,found.identityKind);
+    if(lod!==3) assert.equal(inspected.ref?.ref.houseKey, found.source.houseKey);
     assert.equal(inspected.ref?.ref.settlementId, found.source.settlementId); assert.equal(inspected.fallback, false);
-    assert.equal(inspected.panel.kind, 'house'); assert.equal(inspected.panel.id, found.source.houseKey); assert(inspected.panel.on);
-    const on = await snapshot(`LOD${lod} production`); const screenshot = path.join(OUT, `sample-lod${lod}.png`);
+    assert.equal(inspected.panel.kind,found.identityKind); assert.equal(inspected.panel.id,found.identityKey); assert(inspected.panel.on);
+    const on = await snapshot(`${assetId} LOD${lod} production`);
+    const screenshot = path.join(OUT, familyMatrix ? `${assetId.split('.').at(-1)}-lod${lod}.png` : `sample-lod${lod}.png`);
     await browser.screenshot(screenshot);
     await page('document.getElementById("inkInspectClose")?.click();window.inkbox.render3d.renderer.setProductionAssetsEnabled(false);return true;'); await frames(6);
     const off = await snapshot(`LOD${lod} fallback`);
@@ -162,7 +180,7 @@ try {
   }
   report.consoleErrors = browser.cdp.events.filter(e=>e.method==='Runtime.consoleAPICalled'&&e.params.type==='error').map(e=>e.params.args.map(a=>a.value||a.description).join(' '));
   report.runtimeErrors = browser.errors(); assert.deepEqual(report.consoleErrors, []); assert.deepEqual(report.runtimeErrors, []);
-  report.pass = true; console.log('PASS Edge single-house: real LOD0/1 clicks, one GLB/atlas, actual RAF, shared resources, unchanged full World');
+  report.pass = true; console.log(`PASS Edge ${familyMatrix?'house/hut/manor matrix':'single-house'}: visible submitted surfaces, real clicks, one GLB/atlas, actual RAF, shared resources, unchanged full World`);
 } catch (error) { report.failure = error.stack; process.exitCode = 1; console.error(error.stack); }
 finally {
   if (browser) {

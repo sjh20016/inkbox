@@ -24,6 +24,7 @@ import { applyScenario } from '../src/inkbox/render3d/art/VisualScenarios.js';
 import { serializeWorld } from '../src/inkbox/io/save.js';
 import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
 import { normalizeRegion } from '../src/inkbox/ui/tools.js';
+import { houseFamilyFor } from '../src/inkbox/render3d/settlements/houseFamily.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(ROOT, 'reports/m2c2b/pass1/sample'));
@@ -73,6 +74,7 @@ function disposedCounts(decoded) {
   for (const geometry of geometries) geometry.addEventListener('dispose', () => result.geometry++);
   for (const material of materials) material.addEventListener('dispose', () => result.material++);
   for (const texture of textures) texture.addEventListener('dispose', () => result.texture++);
+  Object.defineProperty(result, 'expected', { value: { geometry: geometries.size, material: materials.size, texture: textures.size } });
   return result;
 }
 
@@ -80,8 +82,12 @@ try {
   const library = readEnvironmentLibrary(ROOT);
   try {
     await check('shipped GLB, external PNG and semantic UV cells decode exactly', () => {
-      assert.equal(library.modules.size, 3);
-      assert.deepEqual([...library.modules.values()].map(m => m.triangles), [80,30,8]);
+      assert(library.modules.size >= 12);
+      for (const [id,lod0] of [['mortal.house.base',80],['mortal.house.small',128],['mortal.house.courtyard',188]]) {
+        assert.deepEqual(library.assetInfo(id).lods.map(n=>library.modules.get(n).triangles), [lod0,30,8]);
+        assert.equal(library.modules.get(library.assetInfo(id).hlod).triangles, 14);
+      }
+      assert(library.modules.get('env_house_courtyard_lod0').uvSlots.every(s => ![12,13,14].includes(s)), 'unowned red/gold wealth symbols were remapped');
       assert.deepEqual(library.modules.get('env_house_base_lod0').uvSlots, [0,1,2,4,5,7,8,9,10]);
       assert.deepEqual(library.geometryFor('mortal.house.base').boundingBox.min.toArray(), [-.5,0,-.5]);
       assert.deepEqual(library.geometryFor('mortal.house.base').boundingBox.max.toArray(), [.5,1,.5]);
@@ -137,6 +143,19 @@ try {
       }
       report.naturalCoverage = { recipe: 'GOLDEN_A', day: world.day, candidates: 88, house: 83, hall: 5, excluded: 0 };
     });
+    await check('village row families and roof axis survive level changes, removal, order and camera changes', () => {
+      const before = sha(world), data = deriveSettlements(world,{productionAssets:true});
+      const counts = {};
+      for (const b of data.buildings.filter(b=>b.structType===STRUCT.HOUSE)) {
+        const v=world.villages.find(v=>v.id===b.settlementId), original=houseFamilyFor(world.seed,v,b.houseX,b.houseY);
+        const changed=houseFamilyFor(world.seed,{...v,level:1,houses:[],pop:99999},b.houseX,b.houseY);
+        assert.deepEqual(changed,original); assert.equal(original.assetId,b.productionAssetId);
+        assert.equal(Math.abs(Math.sin(original.rotationY))>.5, Math.abs(Math.sin(houseFamilyFor(world.seed,v,v.x+10,v.y+10).rotationY))>.5);
+        counts[b.productionAssetId]=(counts[b.productionAssetId]||0)+1;
+      }
+      assert.deepEqual(Object.keys(counts).sort(), ['mortal.house.base','mortal.house.courtyard','mortal.house.small']);
+      assert.equal(sha(world),before); report.houseFamilies=counts;
+    });
     const host = hostFor(world, { environmentLibrary: library });
     try {
       await check('all three house LODs and existing far aggregate retain ownership and toggle back to legacy', () => {
@@ -158,8 +177,15 @@ try {
         assert(partial[2] > 0, `partial window must use single roofs: ${JSON.stringify(partial)}`);
         report.partialWindowLOD = partial;
         host.setRealmViewState({ open: false, targetPlane: null, region: null }); host.update(.3);
-        view(host, .1); assert(layer.stats.hlodClusters > 0); assert.equal(layer.environmentBatch.stats.instances, 0);
+        view(host, .1); assert(layer.stats.hlodClusters > 0);
+        assert(layer.environmentBatch.stats.hlod > 0); assert.deepEqual(layer.environmentBatch.stats.lod,[0,0,0]);
         assert(layer._hlodPickEntries.every(row => row.buildings.length && row.settlementId != null));
+        assert.equal(layer.hlodCluster.count,0,'production aggregates replace the old dark cluster');
+        for (const group of layer._groups.filter(g=>g.useHlod)) {
+          assert(group.clusters.length>=2&&group.clusters.length<=4);
+          const seen=new Set(group.clusters.flatMap(c=>c.memberIds));
+          assert.equal(seen.size,group.houseCount,'all true house members belong to an aggregate');
+        }
         host.setProductionAssetsEnabled(false); host.setLODEnabled(false); assert.equal(layer.environmentBatch.stats.instances, 0); assert(layer.bodies.count >= 88);
         host.setProductionAssetsEnabled(true); assert.equal(layer.environmentBatch.stats.instances, 83);
         report.lodCoverage = observed;
@@ -178,14 +204,28 @@ try {
         const terrainOnly = host.pickPlane((ndc.x + 1) * host.width / 2, (1 - ndc.y) * host.height / 2, 'mortal');
         assert.equal(terrainOnly.kind, 'terrain');
         report.pick = { houseKey: hit.houseKey, settlementId: hit.settlementId, originalXY: [hit.houseX,hit.houseY] };
-        const center = layer._selectedBuildings.find(b => b.type === 'center');
-        assert(center, 'natural fixture has a procedural center to check occlusion');
-        const at = stage.coordinates.worldToRender(center.x, center.y, stage.elevation.at(center.x,center.y));
-        const centerTarget = new THREE.Vector3(at.x,at.y+center.h,at.z);
-        camera.position.copy(centerTarget).add(new THREE.Vector3(0,30,.1)); camera.lookAt(centerTarget); camera.updateMatrixWorld(true);
-        const centerNdc = centerTarget.clone().project(camera);
-        const occluderHit = host.pick((centerNdc.x+1)*host.width/2,(1-centerNdc.y)*host.height/2);
-        assert.equal(occluderHit.kind, 'terrain', 'a visible procedural anchor must occlude houses behind it');
+        // Choose a genuinely visible center surface. Its center may lie underneath
+        // a taller real house; a fixed center ray would then test the wrong object.
+        let checkedSurfaces = 0;
+        const objects = [stage.terrain.mesh];
+        layer.group.traverse(m=>{if(m.isInstancedMesh&&m.visible&&m.count)objects.push(m);});
+        const ray = new THREE.Raycaster(); host.scene.updateMatrixWorld(true);
+        for (const center of layer._selectedBuildings.filter(b => b.type === 'center')) {
+          const at = stage.coordinates.worldToRender(center.x, center.y, stage.elevation.at(center.x,center.y));
+          for (const dx of [-.4,0,.4]) for (const dz of [-.4,0,.4]) {
+            const target = new THREE.Vector3(at.x+dx*center.w,at.y+center.h,at.z+dz*center.d);
+            camera.position.copy(target).add(new THREE.Vector3(0,30,.1)); camera.lookAt(target); camera.updateMatrixWorld(true);
+            const ndc = target.clone().project(camera); ray.setFromCamera(new THREE.Vector2(ndc.x,ndc.y),camera);
+            const first = ray.intersectObjects(objects,false)[0];
+            const closest = first?.object.userData.renderBuildings?.[first.instanceId];
+            if (!closest) continue;
+            const picked = host.pick((ndc.x+1)*host.width/2,(1-ndc.y)*host.height/2);
+            assert.equal(picked.kind, closest.houseKey ? 'house' : 'terrain', 'closest submitted surface controls identity');
+            if (closest.houseKey) assert.equal(picked.houseKey,closest.houseKey,'a taller real house hides the smaller center proxy');
+            checkedSurfaces++;
+          }
+        }
+        assert(checkedSurfaces>0,'natural center rays encounter submitted geometry');
       });
       await check('presentation profiles, realm switches and World replacement preserve full World and save', () => {
         for (const plane of ['upper','nether','mortal']) { host.setActivePlane(plane); host.setArtProfile('legacy'); host.update(.3);
@@ -212,7 +252,7 @@ try {
       d => { d.manifest.assets['mortal.house.base'].lods[1] = 'missing'; }]) {
       const decoded = decodeEnvironmentGLTF(ROOT), counts = disposedCounts(decoded); mutate(decoded);
       assert.throws(() => new EnvironmentAssetLibrary(decoded.gltf, decoded.manifest, decoded.paletteSlots));
-      assert.deepEqual(counts, { geometry: 3, material: 1, texture: 1 });
+      assert.deepEqual(counts, counts.expected);
     }
   });
   await check('loader fetches each input once and does not double-dispose rejected decoded assets', async () => {
@@ -223,7 +263,7 @@ try {
         arrayBuffer: async () => decoded.bytes.buffer.slice(decoded.bytes.byteOffset, decoded.bytes.byteOffset + decoded.bytes.byteLength) }; },
       loader: { parse(bytes, base, resolve) { assert.equal(base, 'https://test.invalid/mesh/'); assert.equal(bytes.byteLength, decoded.bytes.length); resolve(decoded.gltf); } },
     }));
-    assert.equal(fetched.length, 3); assert.equal(new Set(fetched).size, 3); assert.deepEqual(counts, { geometry: 3, material: 1, texture: 1 });
+    assert.equal(fetched.length, 3); assert.equal(new Set(fetched).size, 3); assert.deepEqual(counts, counts.expected);
   });
   await check('one asynchronous library survives World/toggle changes and is released once, including late completion', async () => {
     for (const late of [false,true]) {

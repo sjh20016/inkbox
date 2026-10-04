@@ -33,6 +33,7 @@ import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/P
 import { createBuildingLODBatches, createSettlementClusterGeometry } from '../lod/BuildingLODAssets.js';
 import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
 import { EnvironmentBatch } from '../environment/EnvironmentBatch.js';
+import { houseFamilyFor, MORTAL_HOUSE_ASSET_IDS } from './houseFamily.js';
 
 /** 建筑实例容量：`maxVillages`(220) × 每村最多 19 屋 + 中心建筑 + 宗门（max 10）。 */
 const CAPACITY = 4608;
@@ -85,18 +86,22 @@ export function deriveSettlements(world, { productionAssets = false } = {}) {
       const hall = useProductionAssets ? structType === STRUCT.HALL : h.type === STRUCT.HALL;
       const s = scale * (hall ? 1.6 : 1);
       const houseKey = `house:${String(settlementId)}:${houseX}:${houseY}`;
+      const family = useProductionAssets && structType === STRUCT.HOUSE
+        ? houseFamilyFor(world.seed, v, houseX, houseY) : null;
       out.buildings.push({
         x: h.x + 0.5, y: h.y + 0.5,
-        w: 1.5 * s, h: 1.8 * s, d: 1.5 * s, roofH: 1.0 * s,
+        w: 1.5 * s * (family?.width ?? 1), h: 1.8 * s * (family?.height ?? 1),
+        d: 1.5 * s * (family?.depth ?? 1), roofH: 1.0 * s * (family?.height ?? 1),
         body: HOUSE_BODY, roof: HOUSE_ROOF, settlementId, type: 'house', sourceIndex: out.buildings.length,
         houseX, houseY, houseKey, buildType: h.type, structType,
+        productionAssetId: family?.assetId, roofFamily: family?.roofFamily, rotationY: family?.rotationY ?? 0,
       });
       out.houses += 1;
     }
     // 中心建筑：等级 ≥ 2 的聚落在自己的中心格加一座明显更高的楼——
     // 这是「村落 / 集镇 / 城池 / 王都」体量差异最直观的读法（**派生量，不是新规则**）。
     if ((Number(v.level) || 1) >= 2) {
-      const s = scale * 1.9;
+      const s = scale * 1.9 * (useProductionAssets ? .4 : 1);
       out.buildings.push({
         x: v.x + 0.5, y: v.y + 0.5,
         w: 2.2 * s, h: 2.6 * s, d: 2.2 * s, roofH: 1.6 * s,
@@ -137,6 +142,7 @@ export function sameSettlements(a, b) {
       || p.settlementId !== q.settlementId || p.type !== q.type
       || p.houseX !== q.houseX || p.houseY !== q.houseY || p.houseKey !== q.houseKey
       || p.buildType !== q.buildType || p.structType !== q.structType) return false;
+    if (p.productionAssetId !== q.productionAssetId || p.rotationY !== q.rotationY || p.roofFamily !== q.roofFamily) return false;
   }
   return true;
 }
@@ -248,7 +254,7 @@ export class SettlementLayer {
     if (nextLibrary && nextMaterial && !this.environmentBatch) {
       this.environmentBatch = new EnvironmentBatch(nextLibrary, {
         material: nextMaterial, capacity: CAPACITY, pickField: 'renderBuildings',
-        assetIds: ['mortal.house.base'],
+        assetIds: MORTAL_HOUSE_ASSET_IDS, includeHLOD: true,
       });
       this.group.add(this.environmentBatch.group);
       for (const mesh of this.environmentBatch.meshes.values()) mesh.renderOrder = RENDER_ORDER.settlements;
@@ -427,6 +433,8 @@ export class SettlementLayer {
         id: `${String(group.id)}:${index}`, settlementId: group.id,
         centerX, centerY, width, depth, height: Math.max(1, representativeHeight * 0.82),
         groundX: representative.x, groundY: representative.y,
+        productionAssetId: representative.productionAssetId || 'mortal.house.base',
+        rotationY: representative.rotationY || 0, roofFamily: representative.roofFamily || 'gable',
         memberIds: members.map(member => member.sourceIndex),
         buildingIds: members.map(member => member.sourceIndex),
       });
@@ -545,9 +553,9 @@ export class SettlementLayer {
       const useProductionHouse = this.productionAssetsEnabled && this.world?.plane === 'mortal' && this.environmentBatch
         && b.type === 'house' && b.structType === STRUCT.HOUSE && lod >= 0 && lod <= 2;
       if (useProductionHouse) {
-        productionRecords.push({ assetId: 'mortal.house.base', lod,
+        productionRecords.push({ assetId: b.productionAssetId, lod,
           position: { x: p.x, y: ground, z: p.z },
-          scale: { x: b.w, y: b.h + b.roofH, z: b.d }, rotationY: 0, source: b });
+          scale: { x: b.w, y: b.h + b.roofH, z: b.d }, rotationY: b.rotationY, source: b });
         continue;
       }
       this.dummy.rotation.set(0, 0, 0);
@@ -563,9 +571,23 @@ export class SettlementLayer {
         target.setMatrixAt(counts[slot]++, this.dummy.matrix); lists[lod].push(b);
       }
     }
-    if (this.environmentBatch) this.environmentBatch.write(this.productionAssetsEnabled ? productionRecords : []);
     for (const group of this._groups) {
       if (!group.useHlod || !group.selectedHouses.length) continue;
+      if (this.productionAssetsEnabled && this.environmentBatch && this.hlodMode === 'cluster') {
+        for (const cluster of group.clusters) {
+          const p = this.coordinates.worldToRender(cluster.centerX, cluster.centerY, 0);
+          const quarter = Math.abs(Math.sin(cluster.rotationY)) > .5;
+          const source = { id: group.id, settlementId: group.id, x: cluster.centerX, y: cluster.centerY,
+            source: 'village-production-hlod', members: cluster.memberIds, buildings: cluster.buildingIds,
+            roofFamily: cluster.roofFamily };
+          this._hlodPickEntries.push(source);
+          productionRecords.push({ assetId: cluster.productionAssetId, lod: 3, source,
+            position: { x: p.x, y: this.elevation.at(cluster.groundX,cluster.groundY), z: p.z },
+            scale: { x: quarter ? cluster.depth : cluster.width, y: cluster.height, z: quarter ? cluster.width : cluster.depth },
+            rotationY: cluster.rotationY });
+        }
+        continue;
+      }
       if (this.hlodMode === 'legacy') {
         const p = this.coordinates.worldToRender(group.centerX, group.centerY, 0), ground = this.elevation.at(group.centerX, group.centerY);
         this.dummy.position.set(p.x, ground, p.z); this.dummy.scale.set(group.width, group.maxHeight, group.depth); this.dummy.rotation.set(0, 0, 0); this.dummy.updateMatrix();
@@ -585,6 +607,7 @@ export class SettlementLayer {
         counts[5]++;
       }
     }
+    if (this.environmentBatch) this.environmentBatch.write(this.productionAssetsEnabled ? productionRecords : []);
     const meshes = [this.bodies, this.roofs, this.lod1, this.lod2, this.hlodLegacy, this.hlodCluster];
     for (let i = 0; i < meshes.length; i++) {
       const mesh = meshes[i]; mesh.count = counts[i]; mesh.visible = counts[i] > 0;
@@ -607,7 +630,9 @@ export class SettlementLayer {
     triangles += production.triangles;
     const hlod = this._groups.reduce((count, group) => count + (group.useHlod ? 1 : 0), 0);
     s.buildings = this._selectedBuildings.length; s.instances = instances; s.triangles = triangles; s.hlod = hlod;
-    s.hlodClusters = this.hlodCluster.count; s.hlodTriangles = hlodTriangles;
+    s.hlodClusters = this.hlodCluster.count + (production.hlod || 0);
+    s.hlodTriangles = hlodTriangles + [...(this.environmentBatch?.meshes.values() || [])]
+      .filter(m => m.userData.lod === 3).reduce((n,m) => n+m.count*(m.geometry.index?.count||0)/3,0);
     s.lod[0] = this._lodCounts[0]; s.lod[1] = this._lodCounts[1]; s.lod[2] = this._lodCounts[2];
     s.overflow = Math.max(0, s.buildings - CAPACITY); s.capacityOverflow = s.overflow;
     s.capacity = CAPACITY; s.budgetDemotions = this._budgetDemotions;

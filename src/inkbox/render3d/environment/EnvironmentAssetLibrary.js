@@ -109,7 +109,8 @@ export class EnvironmentAssetLibrary {
       if (!atlas) throw new Error('Environment atlas texture was not decoded');
       for (const [assetId, asset] of Object.entries(this.assets)) {
         if (asset.id !== assetId || !Array.isArray(asset.lods) || asset.lods.length !== 3
-            || asset.lods.some(nodeName => !this.modules.has(nodeName))) throw new Error(`Environment asset ${assetId} must reference three loaded LOD modules`);
+            || asset.lods.some(nodeName => !this.modules.has(nodeName))
+            || asset.hlod != null && !this.modules.has(asset.hlod)) throw new Error(`Environment asset ${assetId} must reference three loaded LOD modules and its optional aggregate`);
       }
       atlas.magFilter = THREE.NearestFilter;
       atlas.minFilter = THREE.NearestFilter;
@@ -130,7 +131,7 @@ export class EnvironmentAssetLibrary {
     const asset = this.assetInfo(assetId);
     const nodeName = typeof lod === 'string' ? lod : asset.lods[lod];
     const module = this.modules.get(nodeName);
-    if (!module || !asset.lods.includes(nodeName)) throw new Error(`Unknown environment LOD ${String(lod)} for ${assetId}`);
+    if (!module || !asset.lods.includes(nodeName) && asset.hlod !== nodeName) throw new Error(`Unknown environment LOD ${String(lod)} for ${assetId}`);
     return module.geometry;
   }
 

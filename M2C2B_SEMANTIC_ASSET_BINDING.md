@@ -2,7 +2,7 @@
 
 审计依据：原始 main @ 508c271 的 World/derive 语义；当前本地与远端 main 均为 a8bf11d。期间修改 CI、Edge 验收探针与侧栏无变化内容的 DOM 复用；World、模拟与 3D 资产运行代码未变。本地 Edge 600-frame lifecycle / 6000-frame soak、24 组配对 / 48 张截图矩阵及干净 clone 构建已通过。远端 a8bf11d 的 Fast / Heavy 和当前 HEAD 的 Nightly 已通过。手动 CI 37192969664 attempt 1 的 Browser runner 与 GitHub 失联，矩阵结果和 soak 未完成；检查注释已保存，现仅重跑失败的 Browser job，attempt 2 的 Fast / Heavy / Browser、六套 Edge 矩阵及 600/6000 帧资源耐久全部通过，artifact JSON 已核对，Package 0 已封板于 a8bf11d。用户已授权本委托书范围内已完成本地验收、可查看差异的提交推送 origin/main 并运行 CI。所有模型均来自项目原创实验资产。P 只表示已有可合法绑定的事实，不表示本轮全部投产。正式接线顺序仍服从委托书。
 
-接入状态：本审计落盘时，新环境资产尚未进入 runtime 或玩家 package。表中的“计划进入”分别表示 runtime 候选和 package 候选，两者都必须通过后续技术样本与完整验收门禁。既有角色库保留原运行包，L 模块仍禁止根据移动状态或 realm 自动激活。
+接入进度：Package 2 单屋样本已经进入 runtime / package 并通过 clean clone；Package 3 三件套已经通过 11 项实际 GLB 检查、七组 Edge 配对和 M1 / M2B / C2A / HLOD 回归。当前默认仍关闭，后续角色、装饰、三界矩阵和完整耐久门禁尚未完成。原始审计落盘时，新环境资产尚未进入 runtime 或玩家 package。表中的“计划进入”分别表示 runtime 候选和 package 候选，两者都必须通过后续技术样本与完整验收门禁。既有角色库保留原运行包，L 模块仍禁止根据移动状态或 realm 自动激活。
 
 P=Production-safe；D=Decorative-only；L=Style Lab；X=本轮禁止正式接入。小屋/院落按 B2 明确授权，仅作为同一个真实 HOUSE 的轮廓，不增加家庭阶层、用途或独立附属屋舍。
 

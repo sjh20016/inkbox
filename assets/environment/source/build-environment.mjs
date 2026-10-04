@@ -5,8 +5,12 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const out = path.join(root, 'assets/environment');
-const input = path.join(root, '美术素材/实验建筑资产/建筑/bld_house.glb');
-const SLOT = Object.freeze({ paper: 0, ink: 4, wood: 9 });
+const sourceSpecs = [
+  { id: 'mortal.house.base', name: 'house_base', file: '美术素材/实验建筑资产/建筑/bld_house.glb', triangles: 80, variant: 'base', roof: 'gable' },
+  { id: 'mortal.house.small', name: 'house_small', file: '美术素材/实验建筑资产/宗门宅院/bld_hut.glb', triangles: 128, variant: 'small', roof: 'thatch' },
+  { id: 'mortal.house.courtyard', name: 'house_courtyard', file: '美术素材/实验建筑资产/宗门宅院/bld_manor.glb', triangles: 188, variant: 'courtyard', roof: 'hip', remap: {12:9,13:10,14:9} },
+];
+const SLOT = Object.freeze({ paper: 0, ink: 4, wood: 9, clay: 11 });
 const semanticSlots = [
   'paper','paperDeep','paperShade','mist','ink','inkMid','inkLight','stone','stoneDark','wood','woodDark','clay','cinnabar','rouge','gold','azurite','indigo','malachite','pineGreen','orchid','upperA','upperB','upperC','upperD','nether','netherMid','soulFlame','snow',
 ];
@@ -45,8 +49,8 @@ function glb(json, binary) {
   const bh = Buffer.alloc(8); bh.writeUInt32LE(binBytes.length, 0); bh.writeUInt32LE(0x004e4942, 4);
   return Buffer.concat([head, jh, jsonBytes, bh, binBytes]);
 }
-function readSource() {
-  const bytes = fs.readFileSync(input);
+function readSource(spec) {
+  const bytes = fs.readFileSync(path.join(root, spec.file));
   if (bytes.readUInt32LE(0) !== 0x46546c67 || bytes.readUInt32LE(4) !== 2) throw new Error('Expected a glTF 2.0 GLB source');
   let offset = 12, json, bin;
   while (offset < bytes.length) {
@@ -71,13 +75,13 @@ function readSource() {
   const attrs = primitive.attributes;
   if (!Number.isInteger(attrs.POSITION) || !Number.isInteger(attrs.NORMAL) || !Number.isInteger(attrs.TEXCOORD_0) || !Number.isInteger(primitive.indices)) throw new Error('Source requires POSITION/NORMAL/UV and indices');
   const p = readAccessor(attrs.POSITION), n = readAccessor(attrs.NORMAL), uv = readAccessor(attrs.TEXCOORD_0), ix = readAccessor(primitive.indices);
-  if (ix.values.length / 3 !== 80 || p.count !== n.count || p.count !== uv.count) throw new Error('Expected authored bld_house source with exactly 80 triangles');
+  if (ix.values.length / 3 !== spec.triangles || p.count !== n.count || p.count !== uv.count) throw new Error(`Unexpected authored ${spec.name} triangle or attribute count`);
   const bounds = { min: json.accessors[attrs.POSITION].min, max: json.accessors[attrs.POSITION].max };
   if (Math.abs(bounds.min[1]) > 1e-6) throw new Error('Authored house ground pivot must start at Y=0');
   uvSlotSet(uv.values);
   return { p, n, uv, indices: ix.values, bounds };
 }
-function unitSource(source) {
+function unitSource(source, remap = {}) {
   const { min, max } = source.bounds, size = max.map((v, i) => v - min[i]);
   if (size.some(v => !(v > 0))) throw new Error('Source bounds must have nonzero width, height and depth');
   const positions = [], normals = [], uvs = [];
@@ -88,7 +92,9 @@ function unitSource(source) {
       positions.push((x - (min[0] + max[0]) / 2) / size[0], (y - min[1]) / size[1], (z - (min[2] + max[2]) / 2) / size[2]);
       const normal = [source.n.values[id * 3] * size[0], source.n.values[id * 3 + 1] * size[1], source.n.values[id * 3 + 2] * size[2]];
       const length = Math.hypot(...normal) || 1; normals.push(...normal.map(v => v / length));
-      uvs.push(source.uv.values[id * 2], source.uv.values[id * 2 + 1]);
+      const u = source.uv.values[id * 2], v = source.uv.values[id * 2 + 1];
+      const slot = Math.round(v*8-.5)*8 + Math.round(u*8-.5), mapped = remap[slot];
+      uvs.push(mapped == null ? u : (mapped%8+.5)/8, mapped == null ? v : (Math.floor(mapped/8)+.5)/8);
     }
   }
   return { positions, normals, uvs, indices: Array.from({ length: positions.length / 3 }, (_, index) => index) };
@@ -116,26 +122,33 @@ function meshBuilder() {
   };
   return { positions,normals,uvs,indices,vertex,tri,quad,box,finish(){return {positions,normals,uvs,indices};} };
 }
-function manualLod1() {
+function manualLod1(roof = 'gable') {
   const b=meshBuilder(), wall=0.64, ridge=1, depth=0.91, half=0.5;
   b.box(-half,0,-depth/2,half,wall,depth/2,SLOT.paper);
-  // The authored house ridge runs along X; the gable ends face X.
-  b.tri([-half,wall,-depth/2],[-half,wall,depth/2],[-half,ridge,0],SLOT.paper);
-  b.tri([half,wall,depth/2],[half,wall,-depth/2],[half,ridge,0],SLOT.paper);
-  // Two roof slopes run along the same X-axis ridge as the source house.
-  b.quad([-half,wall,-depth/2],[-half,ridge,0],[half,ridge,0],[half,wall,-depth/2],SLOT.ink);
-  b.quad([half,wall,depth/2],[half,ridge,0],[-half,ridge,0],[-half,wall,depth/2],SLOT.ink);
+  const roofSlot = roof === 'thatch' ? SLOT.clay : SLOT.ink;
+  const rx = roof === 'hip' ? .30 : half;
+  b.tri([-half,wall,-depth/2],[-half,wall,depth/2],[-rx,ridge,0],roof === 'hip' ? roofSlot : SLOT.paper);
+  b.tri([half,wall,depth/2],[half,wall,-depth/2],[rx,ridge,0],roof === 'hip' ? roofSlot : SLOT.paper);
+  b.quad([-half,wall,-depth/2],[-rx,ridge,0],[rx,ridge,0],[half,wall,-depth/2],roofSlot);
+  b.quad([half,wall,depth/2],[rx,ridge,0],[-rx,ridge,0],[-half,wall,depth/2],roofSlot);
   // A single warm timber eave beam, inset within the original unit footprint.
   b.box(-half,wall-0.025,-depth/2+0.035,half,wall+0.025,-depth/2+0.085,SLOT.wood);
   return b.finish();
 }
-function tinyRoof() {
+function tinyRoof(roof = 'gable', walls = false) {
   const b=meshBuilder(), y=0, top=0.35, depth=0.88;
-  b.quad([-0.5,y,-depth/2],[-0.5,top,0],[0.5,top,0],[0.5,y,-depth/2],SLOT.ink);
-  b.quad([0.5,y,depth/2],[0.5,top,0],[-0.5,top,0],[-0.5,y,depth/2],SLOT.ink);
-  b.tri([-0.5,y,-depth/2],[-0.5,y,depth/2],[-0.5,top,0],SLOT.ink);
-  b.tri([0.5,y,depth/2],[0.5,y,-depth/2],[0.5,top,0],SLOT.ink);
-  b.quad([-0.5,y,-depth/2],[0.5,y,-depth/2],[0.5,y,depth/2],[-0.5,y,depth/2],SLOT.ink);
+  const slot = roof === 'thatch' ? SLOT.clay : SLOT.ink, rx = roof === 'hip' ? .30 : .5;
+  const floor = walls ? .58 : y, peak = walls ? .94 : top;
+  b.quad([-0.5,floor,-depth/2],[-rx,peak,0],[rx,peak,0],[0.5,floor,-depth/2],slot);
+  b.quad([0.5,floor,depth/2],[rx,peak,0],[-rx,peak,0],[-0.5,floor,depth/2],slot);
+  b.tri([-0.5,floor,-depth/2],[-0.5,floor,depth/2],[-rx,peak,0],slot);
+  b.tri([0.5,floor,depth/2],[0.5,floor,-depth/2],[rx,peak,0],slot);
+  if (walls) {
+    b.quad([-.5,0,depth/2],[.5,0,depth/2],[.5,floor,depth/2],[-.5,floor,depth/2],SLOT.paper);
+    b.quad([.5,0,-depth/2],[-.5,0,-depth/2],[-.5,floor,-depth/2],[.5,floor,-depth/2],SLOT.paper);
+    b.quad([.5,0,depth/2],[.5,0,-depth/2],[.5,floor,-depth/2],[.5,floor,depth/2],SLOT.paper);
+    b.quad([-.5,0,-depth/2],[-.5,0,depth/2],[-.5,floor,depth/2],[-.5,floor,-depth/2],SLOT.paper);
+  } else b.quad([-0.5,y,-depth/2],[0.5,y,-depth/2],[0.5,y,depth/2],[-0.5,y,depth/2],slot);
   return b.finish();
 }
 function bounds(positions) {
@@ -170,19 +183,24 @@ function addMesh(binaryParts, accessors, views, data, nodeName, slotSemantics) {
 }
 function main() {
   fs.mkdirSync(path.join(out,'mesh'),{recursive:true});fs.mkdirSync(path.join(out,'data'),{recursive:true});fs.mkdirSync(path.join(out,'materials'),{recursive:true});
-  const source=readSource(), lod0=unitSource(source), lod1=manualLod1(), lod2=tinyRoof();
-  const sourceSlotIds=uvSlotSet(lod0.uvs);
-  const specs=[['env_house_base_lod0',lod0,sourceSlotIds.map(id=>semanticSlots[id])],['env_house_base_lod1',lod1,['paper','ink','wood']],['env_house_base_lod2',lod2,['ink']]];
+  const specs=[], assets={}, sources={};
+  for (const spec of sourceSpecs) {
+    const source=readSource(spec), geometries=[unitSource(source,spec.remap),manualLod1(spec.roof),tinyRoof(spec.roof),tinyRoof(spec.roof,true)];
+    const lods=[0,1,2].map(lod=>`env_${spec.name}_lod${lod}`), hlod=`env_${spec.name}_hlod`;
+    for (let lod=0;lod<4;lod++) { const data=geometries[lod];specs.push([lod<3?lods[lod]:hlod,data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]); }
+    assets[spec.id]={id:spec.id,source:path.basename(spec.file,'.glb'),realm:'mortal',binding:'current-struct-house',pick:'house',lods,hlod,variant:spec.variant,roofFamily:spec.roof};
+    sources[spec.id]={file:spec.file,triangles:spec.triangles,sourceBounds:source.bounds,semanticRemap:spec.remap||{},normalization:{width:1/(source.bounds.max[0]-source.bounds.min[0]),height:1/(source.bounds.max[1]-source.bounds.min[1]),depth:1/(source.bounds.max[2]-source.bounds.min[2]),pivot:'center X/Z, min Y'}};
+    fs.copyFileSync(path.join(root,spec.file),path.join(out,'source',path.basename(spec.file)));
+  }
   let binaryParts=[Buffer.alloc(0)],accessors=[],views=[],nodes=[],meshes=[],modules={};
   for(const [name,data,semantics] of specs){const m=addMesh(binaryParts,accessors,views,data,name,semantics);binaryParts=m.binaryParts;accessors=m.accessors;views=m.views;m.node.mesh=meshes.length;nodes.push(m.node);meshes.push(m.mesh);modules[name]={node:name,triangles:m.module.triangles,bounds:m.module.bounds,uvSlots:m.module.uvSlots,semanticSlots:semantics};}
   const binary=binaryParts[0];
-  const gltf={asset:{version:'2.0',generator:'Inkbox environment sample builder'},scene:0,scenes:[{nodes:[0,1,2]}],nodes,meshes,materials:[{name:'environment_index_atlas',pbrMetallicRoughness:{baseColorTexture:{index:0},metallicFactor:0,roughnessFactor:1},doubleSided:false}],textures:[{sampler:0,source:0}],images:[{uri:'../materials/EntityAtlas.png',mimeType:'image/png',name:'EntityAtlas'}],samplers:[{magFilter:9728,minFilter:9728,wrapS:33071,wrapT:33071}],buffers:[{byteLength:binary.length}],bufferViews:views,accessors};
+  const gltf={asset:{version:'2.0',generator:'Inkbox environment family builder'},scene:0,scenes:[{nodes:nodes.map((_,i)=>i)}],nodes,meshes,materials:[{name:'environment_index_atlas',pbrMetallicRoughness:{baseColorTexture:{index:0},metallicFactor:0,roughnessFactor:1},doubleSided:false}],textures:[{sampler:0,source:0}],images:[{uri:'../materials/EntityAtlas.png',mimeType:'image/png',name:'EntityAtlas'}],samplers:[{magFilter:9728,minFilter:9728,wrapS:33071,wrapT:33071}],buffers:[{byteLength:binary.length}],bufferViews:views,accessors};
   fs.writeFileSync(path.join(out,'mesh/environment_library.glb'),glb(gltf,binary));
   fs.writeFileSync(path.join(out,'materials/EntityAtlas.png'),indexPng());
   fs.writeFileSync(path.join(out,'data/palette_slots.json'),JSON.stringify({schema:'environment-palette-slots-v1',texture:'../materials/EntityAtlas.png',grid:{columns:8,rows:8,width:128,height:128,filter:'nearest',mipmaps:false,colorSpace:'none',redByte:'slot-index-plus-one'},slots:semanticSlots.map((semantic,index)=>({index,semantic}))},null,2)+'\n');
-  fs.copyFileSync(input,path.join(out,'source/bld_house.glb'));
-  const manifest={schema:'inkbox-environment-library-v1',asset:'mesh/environment_library.glb',atlas:'materials/EntityAtlas.png',paletteSlots:'data/palette_slots.json',coordinateSystem:{gltf:'Y-up, authored front -Z, ridge along X',pivot:'ground-centered',normalTransform:'inverse-transpose of independent width/height/depth scale, normalized',moduleTransform:'identity; normalized authored source geometry'},source:{file:'美术素材/实验建筑资产/建筑/bld_house.glb',triangles:80,sourceBounds:source.bounds,normalization:{width:1/ (source.bounds.max[0]-source.bounds.min[0]),height:1/(source.bounds.max[1]-source.bounds.min[1]),depth:1/(source.bounds.max[2]-source.bounds.min[2]),pivot:'center X/Z, min Y'}},modules,assets:{'mortal.house.base':{id:'mortal.house.base',source:'bld_house',realm:'mortal',binding:'current-struct-house',pick:'house',lods:['env_house_base_lod0','env_house_base_lod1','env_house_base_lod2'],variant:'base',rotationY:0}}};
+  const manifest={schema:'inkbox-environment-library-v1',asset:'mesh/environment_library.glb',atlas:'materials/EntityAtlas.png',paletteSlots:'data/palette_slots.json',coordinateSystem:{gltf:'Y-up, authored front -Z, ridge along X',pivot:'ground-centered',normalTransform:'inverse-transpose of independent width/height/depth scale, normalized',moduleTransform:'identity; normalized authored source geometry'},source:sources['mortal.house.base'],sources,modules,assets};
   fs.writeFileSync(path.join(out,'data/environment_manifest.json'),JSON.stringify(manifest,null,2)+'\n');
-  console.log(JSON.stringify({asset:'mortal.house.base',modules:Object.fromEntries(Object.entries(modules).map(([k,v])=>[k,{triangles:v.triangles,bounds:v.bounds,uvSlots:v.uvSlots}])),atlas:'128x128 index PNG; 8x8 swatches; 28 semantic slots'},null,2));
+  console.log(JSON.stringify({assets:Object.keys(assets),modules:Object.fromEntries(Object.entries(modules).map(([k,v])=>[k,{triangles:v.triangles,bounds:v.bounds,uvSlots:v.uvSlots}])),atlas:'128x128 index PNG; 8x8 swatches; 28 semantic slots'},null,2));
 }
 main();

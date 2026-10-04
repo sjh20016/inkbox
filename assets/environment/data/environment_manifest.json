@@ -24,11 +24,87 @@
         0.41999998688697815
       ]
     },
+    "semanticRemap": {},
     "normalization": {
       "width": 1.086956502021148,
       "height": 1.1627906783327278,
       "depth": 1.190476227644621,
       "pivot": "center X/Z, min Y"
+    }
+  },
+  "sources": {
+    "mortal.house.base": {
+      "file": "美术素材/实验建筑资产/建筑/bld_house.glb",
+      "triangles": 80,
+      "sourceBounds": {
+        "min": [
+          -0.46000000834465027,
+          0,
+          -0.41999998688697815
+        ],
+        "max": [
+          0.46000000834465027,
+          0.8600000143051147,
+          0.41999998688697815
+        ]
+      },
+      "semanticRemap": {},
+      "normalization": {
+        "width": 1.086956502021148,
+        "height": 1.1627906783327278,
+        "depth": 1.190476227644621,
+        "pivot": "center X/Z, min Y"
+      }
+    },
+    "mortal.house.small": {
+      "file": "美术素材/实验建筑资产/宗门宅院/bld_hut.glb",
+      "triangles": 128,
+      "sourceBounds": {
+        "min": [
+          -0.4000000059604645,
+          0,
+          -0.36000001430511475
+        ],
+        "max": [
+          0.4399999976158142,
+          0.7599999904632568,
+          0.36000001430511475
+        ]
+      },
+      "semanticRemap": {},
+      "normalization": {
+        "width": 1.1904761854077683,
+        "height": 1.3157894901951928,
+        "depth": 1.3888888336994052,
+        "pivot": "center X/Z, min Y"
+      }
+    },
+    "mortal.house.courtyard": {
+      "file": "美术素材/实验建筑资产/宗门宅院/bld_manor.glb",
+      "triangles": 188,
+      "sourceBounds": {
+        "min": [
+          -0.6000000238418579,
+          0,
+          -0.6299999952316284
+        ],
+        "max": [
+          0.6000000238418579,
+          0.8799999952316284,
+          0.6000000238418579
+        ]
+      },
+      "semanticRemap": {
+        "12": 9,
+        "13": 10,
+        "14": 9
+      },
+      "normalization": {
+        "width": 0.8333333002196431,
+        "height": 1.136363642521141,
+        "depth": 0.8130081174740657,
+        "pivot": "center X/Z, min Y"
+      }
     }
   },
   "modules": {
@@ -117,6 +193,248 @@
       "semanticSlots": [
         "ink"
       ]
+    },
+    "env_house_base_hlod": {
+      "node": "env_house_base_hlod",
+      "triangles": 14,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.44
+        ],
+        "max": [
+          0.5,
+          0.94,
+          0.44
+        ]
+      },
+      "uvSlots": [
+        0,
+        4
+      ],
+      "semanticSlots": [
+        "paper",
+        "ink"
+      ]
+    },
+    "env_house_small_lod0": {
+      "node": "env_house_small_lod0",
+      "triangles": 128,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.5,
+          1,
+          0.5
+        ]
+      },
+      "uvSlots": [
+        1,
+        2,
+        4,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "semanticSlots": [
+        "paperDeep",
+        "paperShade",
+        "ink",
+        "stone",
+        "stoneDark",
+        "wood",
+        "woodDark",
+        "clay"
+      ]
+    },
+    "env_house_small_lod1": {
+      "node": "env_house_small_lod1",
+      "triangles": 30,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.455
+        ],
+        "max": [
+          0.5,
+          1,
+          0.455
+        ]
+      },
+      "uvSlots": [
+        0,
+        9,
+        11
+      ],
+      "semanticSlots": [
+        "paper",
+        "wood",
+        "clay"
+      ]
+    },
+    "env_house_small_lod2": {
+      "node": "env_house_small_lod2",
+      "triangles": 8,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.44
+        ],
+        "max": [
+          0.5,
+          0.35,
+          0.44
+        ]
+      },
+      "uvSlots": [
+        11
+      ],
+      "semanticSlots": [
+        "clay"
+      ]
+    },
+    "env_house_small_hlod": {
+      "node": "env_house_small_hlod",
+      "triangles": 14,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.44
+        ],
+        "max": [
+          0.5,
+          0.94,
+          0.44
+        ]
+      },
+      "uvSlots": [
+        0,
+        11
+      ],
+      "semanticSlots": [
+        "paper",
+        "clay"
+      ]
+    },
+    "env_house_courtyard_lod0": {
+      "node": "env_house_courtyard_lod0",
+      "triangles": 188,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.5,
+          1,
+          0.5
+        ]
+      },
+      "uvSlots": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10
+      ],
+      "semanticSlots": [
+        "paper",
+        "paperDeep",
+        "paperShade",
+        "ink",
+        "inkMid",
+        "stone",
+        "stoneDark",
+        "wood",
+        "woodDark"
+      ]
+    },
+    "env_house_courtyard_lod1": {
+      "node": "env_house_courtyard_lod1",
+      "triangles": 30,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.455
+        ],
+        "max": [
+          0.5,
+          1,
+          0.455
+        ]
+      },
+      "uvSlots": [
+        0,
+        4,
+        9
+      ],
+      "semanticSlots": [
+        "paper",
+        "ink",
+        "wood"
+      ]
+    },
+    "env_house_courtyard_lod2": {
+      "node": "env_house_courtyard_lod2",
+      "triangles": 8,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.44
+        ],
+        "max": [
+          0.5,
+          0.35,
+          0.44
+        ]
+      },
+      "uvSlots": [
+        4
+      ],
+      "semanticSlots": [
+        "ink"
+      ]
+    },
+    "env_house_courtyard_hlod": {
+      "node": "env_house_courtyard_hlod",
+      "triangles": 14,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.44
+        ],
+        "max": [
+          0.5,
+          0.94,
+          0.44
+        ]
+      },
+      "uvSlots": [
+        0,
+        4
+      ],
+      "semanticSlots": [
+        "paper",
+        "ink"
+      ]
     }
   },
   "assets": {
@@ -131,8 +449,39 @@
         "env_house_base_lod1",
         "env_house_base_lod2"
       ],
+      "hlod": "env_house_base_hlod",
       "variant": "base",
-      "rotationY": 0
+      "roofFamily": "gable"
+    },
+    "mortal.house.small": {
+      "id": "mortal.house.small",
+      "source": "bld_hut",
+      "realm": "mortal",
+      "binding": "current-struct-house",
+      "pick": "house",
+      "lods": [
+        "env_house_small_lod0",
+        "env_house_small_lod1",
+        "env_house_small_lod2"
+      ],
+      "hlod": "env_house_small_hlod",
+      "variant": "small",
+      "roofFamily": "thatch"
+    },
+    "mortal.house.courtyard": {
+      "id": "mortal.house.courtyard",
+      "source": "bld_manor",
+      "realm": "mortal",
+      "binding": "current-struct-house",
+      "pick": "house",
+      "lods": [
+        "env_house_courtyard_lod0",
+        "env_house_courtyard_lod1",
+        "env_house_courtyard_lod2"
+      ],
+      "hlod": "env_house_courtyard_hlod",
+      "variant": "courtyard",
+      "roofFamily": "hip"
     }
   }
 }
