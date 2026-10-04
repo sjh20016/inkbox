@@ -68,6 +68,7 @@ const FILES = [
   'scripts/inkbox-save-equiv.mjs',
   'scripts/inkbox-playtest.mjs',
   'scripts/inkbox-browser-smoke.mjs',
+  'scripts/inkbox-browser-steady-view.mjs',
   'scripts/inkbox-smoke.mjs',
   'scripts/inkbox-longrun.mjs',
   'scripts/inkbox-three-realms.mjs',

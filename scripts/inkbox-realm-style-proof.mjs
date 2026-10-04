@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launch, findEdge } from './cdp.mjs';
+import { waitForIdlePresentation } from './inkbox-browser-steady-view.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${process.env.INKBOX_PORT || 4192}`;
@@ -146,6 +147,7 @@ async function configureAndWait(profile, view) {
     const r=window.inkbox.render3d.renderer,a=window.__realmStyleProof;
     r.setArtProfile(${JSON.stringify(profile)});r.setLODEnabled(true);
     const recipe=a.applyCamera(r,'WORLD_OVERVIEW',{poi:${JSON.stringify(view.poi)},yaw:${view.yaw},polar:${view.polar},zoom:${view.zoom}});
+    const fxSettling=await (${waitForIdlePresentation.toString()})(r);
     let signature=null,stable=0,warmFrames=0;
     for(;warmFrames<120&&stable<6;warmFrames++){
       await new Promise(requestAnimationFrame);
@@ -188,7 +190,7 @@ async function configureAndWait(profile, view) {
     const programs=r.gpu.info.programs.map(p=>({name:p.name||null,linked:p.program?gl.getProgramParameter(p.program,gl.LINK_STATUS):null,runnable:p.diagnostics?.runnable??p.runnable??null,
       log:p.diagnostics?.programLog||p.diagnostics?.vertexShader?.log||p.diagnostics?.fragmentShader?.log||null}));
     if(!programs.length||programs.some(p=>p.linked!==true))throw new Error('WebGL LINK_STATUS failed or unavailable');
-    return {profile:r.art.profile.name,pose:{actual,expected,poseDelta},worldAdopted:r.world===window.inkbox.world&&stage.world===window.inkbox.world,
+    return {profile:r.art.profile.name,fxSettling,pose:{actual,expected,poseDelta},worldAdopted:r.world===window.inkbox.world&&stage.world===window.inkbox.world,
       cameraRecipe:recipe.recipe,poi:recipe.poi,targetHouseLod,targetHouseSourceIndex:targetHouse?.sourceIndex??null,
       settlementStats:{...settlements.stats,lod:[...settlements.stats.lod]},targetSettlementEntries:entryList.filter(e=>e.settlementId===${JSON.stringify(view.poi.settlementId)}).length,
       visiblePlanes:[...r.stages.values()].filter(s=>s.visible).map(s=>s.plane),glRenderer:gl.getParameter(gl.RENDERER),
@@ -231,7 +233,7 @@ async function captureCase(view, profile) {
   const filename = `${view.name}-${profile}.png`;
   await browser.screenshot(path.join(output, filename));
   return { name:view.name,profile,file:path.relative(root,path.join(output,filename)).replaceAll(path.sep,'/'),
-    poi:view.poi,recipe:configured.cameraRecipe,pose:configured.pose,visibility:view.visibility||null,
+    poi:view.poi,recipe:configured.cameraRecipe,pose:configured.pose,fxSettling:configured.fxSettling,visibility:view.visibility||null,
     cameraSelection:view.cameraSelection||null,
     settlement:{targetHouseLod:configured.targetHouseLod,targetHouseSourceIndex:configured.targetHouseSourceIndex,
       targetEntries:configured.targetSettlementEntries,stats:configured.settlementStats},

@@ -6,6 +6,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import { launch, findEdge } from './cdp.mjs';
+import { waitForIdlePresentation } from './inkbox-browser-steady-view.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${process.env.INKBOX_PORT || 4192}`;
@@ -122,7 +123,8 @@ async function configure(view,targetPlane,profile) {
     r.setRealmViewState(k.getRealmViewState());
     const camera=a.applyCamera(r,'WORLD_OVERVIEW',{poi:${JSON.stringify(view.poi)},yaw:${view.yaw},polar:${view.polar},zoom:${view.zoom}});
     for(let i=0;i<8;i++)await new Promise(requestAnimationFrame);
-    let previous='',stable=0,warmFrames=8;
+    const fxSettling=await (${waitForIdlePresentation.toString()})(r);
+    let previous='',stable=0,warmFrames=8+fxSettling.frames;
     for(let i=0;i<120&&stable<6;i++){
       await new Promise(requestAnimationFrame);warmFrames++;
       const signature=JSON.stringify({triangles:r.gpu.info.render.triangles,draws:r.gpu.info.render.calls,lod:r.getLODStats(),
@@ -141,7 +143,7 @@ async function configure(view,targetPlane,profile) {
     const pose={position:r.cameraRig.camera.position.toArray(),target:r.cameraRig.controls.target.toArray(),zoom:r.cameraRig.camera.zoom,
       matrixWorld:r.cameraRig.camera.matrixWorld.toArray()};
     if(Math.abs(pose.zoom-camera.zoom)>1e-6)throw new Error('camera zoom drift');
-    return {pose,recipe:camera.recipe,warmFrames,visiblePlanes:[...r.stages.values()].filter(s=>s.visible).map(s=>s.plane),
+    return {pose,recipe:camera.recipe,warmFrames,fxSettling,visiblePlanes:[...r.stages.values()].filter(s=>s.visible).map(s=>s.plane),
       targetStyle:target.entities.artProfile?.realmStyle?.plane||null,targetTerrainStyle:u.realmStyleEnabled.value,
       fogIsNull:r.scene.fog===null,programs,boundary:{...r.boundary.stats,visible:r.boundary.mesh.visible,mode:r.boundaryMode},
       targetEntities:target.entities?{...target.entities.stats,lod:[...target.entities.stats.lod]}:null,
@@ -305,7 +307,7 @@ async function capture(view,targetPlane,profile) {
   assert.deepEqual(sample.visiblePlanes.sort(),['mortal',targetPlane].sort(),'cross realm visibility mismatch');
   const file=`${view.name}-${targetPlane}-${profile}.png`;
   await browser.screenshot(path.join(output,file));
-  return {profile,file,poi:view.poi,camera:configured.pose,recipe:configured.recipe,warmFrames:configured.warmFrames,
+  return {profile,file,poi:view.poi,camera:configured.pose,recipe:configured.recipe,warmFrames:configured.warmFrames,fxSettling:configured.fxSettling,
     renderer:{...sample,programs:configured.programs,fogIsNull:configured.fogIsNull,boundary:sample.boundary,
       targetStyle:configured.targetStyle,targetTerrainStyle:configured.targetTerrainStyle,
       entityStats:configured.targetEntities,vegetationStats:configured.targetVegetation,settlementStats:configured.targetSettlements}};

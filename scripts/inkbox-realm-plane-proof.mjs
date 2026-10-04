@@ -5,6 +5,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import { launch, findEdge } from './cdp.mjs';
+import { waitForIdlePresentation } from './inkbox-browser-steady-view.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${process.env.INKBOX_PORT || 4192}`;
@@ -228,8 +229,9 @@ async function configure(view, profile, targetPlane = 'nether') {
     r.setArtProfile(${JSON.stringify(profile)});r.setLODEnabled(true);
     const camera=a.applyCamera(r,'WORLD_OVERVIEW',{poi:${JSON.stringify(view.poi)},yaw:${view.yaw},polar:${view.polar},zoom:${view.zoom}});
     for(let i=0;i<5;i++)await new Promise(requestAnimationFrame);
-    let warmFrames=5;
-    if(${JSON.stringify(targetPlane === 'upper')}){
+    const fxSettling=await (${waitForIdlePresentation.toString()})(r);
+    let warmFrames=5+fxSettling.frames;
+    {
       let last='',stable=0;
       for(let i=0;i<120&&stable<6;i++){
         await new Promise(requestAnimationFrame);warmFrames++;
@@ -239,7 +241,7 @@ async function configure(view, profile, targetPlane = 'nether') {
             entity:s.entities._viewPpu,tree:s.vegetation?._viewPpu,building:s.settlements?._viewPpu}))});
         stable=signature===last?stable+1:0;last=signature;
       }
-      if(stable<6)throw new Error('Upper camera PPU/LOD/draws failed to settle on product RAF');
+      if(stable<6)throw new Error('${targetPlane} camera PPU/LOD/draws failed to settle on product RAF');
     }
     const actual={position:r.cameraRig.camera.position.toArray(),target:r.cameraRig.controls.target.toArray(),zoom:r.cameraRig.camera.zoom,
       matrixWorld:r.cameraRig.camera.matrixWorld.toArray()};
@@ -253,7 +255,7 @@ async function configure(view, profile, targetPlane = 'nether') {
       linked:p.program?gl.getProgramParameter(p.program,gl.LINK_STATUS):null,
       log:p.diagnostics?.programLog||p.diagnostics?.vertexShader?.log||p.diagnostics?.fragmentShader?.log||null}));
     if(programs.some(p=>p.linked===false)||!programs.some(p=>p.linked===true))throw new Error('WebGL program link status failed or unavailable');
-    return {camera:actual,recipe:camera.recipe,warmFrames,profile:r.art.profile.name,visiblePlanes:[...r.stages.values()].filter(v=>v.visible).map(v=>v.plane),
+    return {camera:actual,recipe:camera.recipe,warmFrames,fxSettling,profile:r.art.profile.name,visiblePlanes:[...r.stages.values()].filter(v=>v.visible).map(v=>v.plane),
       stageStyle:s.entities.artProfile?.realmStyle?.plane||null,terrainStyleEnabled:u.realmStyleEnabled.value,
       fogIsNull:r.scene.fog===null,programs,boundaryColor:r.boundary.material.color.getHexString(),
       entityStats:{...s.entities.stats,lod:[...s.entities.stats.lod]}};
@@ -270,10 +272,20 @@ async function sampleProductLoop(label) {
     finally{state.active=false;r.update=update;r.render=render;}
     const summary=a=>{const x=a.slice(-${samples}).sort((p,q)=>p-q);if(x.length<${samples})throw new Error('missing product RAF samples');
       return {medianMs:x[Math.floor(x.length*.5)],p95Ms:x[Math.floor(x.length*.95)],maxMs:x.at(-1),samples:x.length};};
+    if(Math.abs(state.updateCalls-(${samples}+1))>1||Math.abs(state.renderCalls-(${samples}+1))>1)
+      throw new Error('product update/render calls drifted from RAF sample window');
+    const transientFx=[...r.stages.values()].filter(s=>s.visible).map(s=>{
+      const mesh=s.fxProbe?.mesh,g=mesh?.geometry;
+      const geometryTriangles=g?(g.index?.count??g.attributes.position.count)/3:0;
+      const doublePass=mesh?.material.transparent&&mesh.material.side===2&&!mesh.material.forceSinglePass;
+      return {plane:s.plane,count:mesh?.count||0,geometryTriangles,passes:doublePass?2:1,
+        submittedTriangles:(mesh?.count||0)*geometryTriangles*(doublePass?2:1),
+        items:(window.inkbox.stage?.snapshotPlane?.(s.plane)?.items||[]).map(x=>({kind:x.kind,age:x.age,ttl:x.ttl}))};
+    });
     const gl=r.gpu.getContext();return {case:${JSON.stringify(label)},cpuUpdate:summary(state.update),cpuRender:summary(state.render),raf:summary(state.raf),
       productCalls:{update:state.updateCalls,render:state.renderCalls},
       triangles:r.gpu.info.render.triangles,drawCalls:r.gpu.info.render.calls,glError:gl.getError(),
-      visiblePlanes:[...r.stages.values()].filter(s=>s.visible).map(s=>s.plane),lodStats:r.getLODStats()};
+      visiblePlanes:[...r.stages.values()].filter(s=>s.visible).map(s=>s.plane),lodStats:r.getLODStats(),transientFx};
   `, { timeoutMs: 180000 });
 }
 
@@ -283,7 +295,7 @@ async function capture(view, profile, targetPlane = 'nether') {
   assert.equal(sample.glError,0,`${view.name}/${profile}: GL error`);
   const file=`${view.name}-${profile}.png`;
   await browser.screenshot(path.join(output,file));
-  return {profile,file,poi:view.poi,camera:configured.camera,recipe:configured.recipe,warmFrames:configured.warmFrames,visibility:view.visibility||null,
+  return {profile,file,poi:view.poi,camera:configured.camera,recipe:configured.recipe,warmFrames:configured.warmFrames,fxSettling:configured.fxSettling,visibility:view.visibility||null,
     renderer:{...sample,stageStyle:configured.stageStyle,terrainStyleEnabled:configured.terrainStyleEnabled,
       fogIsNull:configured.fogIsNull,boundaryColor:configured.boundaryColor,entityStats:configured.entityStats,programs:configured.programs}};
 }
@@ -311,11 +323,9 @@ try {
     }
     const legacy=await capture(view,'legacy',plane),v1=await capture(view,'realm-style-v1',plane);
     assert.deepEqual(legacy.camera,v1.camera,`${view.name}: paired camera drift`);
-    if(plane==='upper'){
-      assert.equal(legacy.renderer.triangles,v1.renderer.triangles,`${view.name}: paired triangle count drift`);
-      assert.equal(legacy.renderer.drawCalls,v1.renderer.drawCalls,`${view.name}: paired draw count drift`);
-      assert.deepEqual(legacy.renderer.lodStats,v1.renderer.lodStats,`${view.name}: paired LOD drift`);
-    }
+    assert.equal(legacy.renderer.triangles,v1.renderer.triangles,`${view.name}: paired triangle count drift`);
+    assert.equal(legacy.renderer.drawCalls,v1.renderer.drawCalls,`${view.name}: paired draw count drift`);
+    assert.deepEqual(legacy.renderer.lodStats,v1.renderer.lodStats,`${view.name}: paired LOD drift`);
     evidence.cases.push({name:view.name,kind:view.kind,poi:view.poi,legacy,v1,sameCameraPose:true});
   }
   evidence.finalDigest=await page(`return window.__planeProof.snapshotDigest(window.inkbox);`);
