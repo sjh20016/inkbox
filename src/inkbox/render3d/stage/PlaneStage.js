@@ -12,6 +12,7 @@ import { RegionGeometry } from '../region/RegionGeometry.js';
 import { renderProfileFor } from './PlaneRenderProfile.js';
 import { createEnvironmentMaterial, setEnvironmentMaterialProfile, setEnvironmentMaterialView } from '../environment/EnvironmentMaterial.js';
 import { RealmDecorationLayer } from '../environment/RealmDecorationLayer.js';
+import { RealmArtifactLayer } from '../markers/RealmArtifactLayer.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
@@ -57,6 +58,8 @@ export class PlaneStage {
     if (this.settlements) this.root.add(this.settlements.group);
     this.decorations = this.plane==='upper'||this.plane==='nether'?new RealmDecorationLayer(world,this.coordinates,this.elevation):null;
     if(this.decorations)this.root.add(this.decorations.group);
+    this.realmArtifacts=this.plane==='nether'?new RealmArtifactLayer(world,this.coordinates,this.elevation):null;
+    if(this.realmArtifacts)this.root.add(this.realmArtifacts.group);
     this.setEnvironmentAssets(this.environmentLibrary, this.productionAssetsEnabled);
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
@@ -92,11 +95,13 @@ export class PlaneStage {
       this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.entities?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.decorations?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled&&this.decorationsEnabled);
+      this.realmArtifacts?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled);
       previous?.dispose();
     } else {
       this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.entities?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.decorations?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled&&this.decorationsEnabled);
+      this.realmArtifacts?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled);
     }
   }
 
@@ -109,6 +114,7 @@ export class PlaneStage {
     this.environmentArtView = view;
     if (this.environmentMaterial) setEnvironmentMaterialView(this.environmentMaterial, view);
     this.decorations?.setArtView(view);
+    this.realmArtifacts?.setArtView(view);
   }
 
   /**
@@ -132,6 +138,7 @@ export class PlaneStage {
     if (this.vegetation) this.vegetationPending = true;
     if (this.selectionMarker) this.selectionMarker.needsPlace = true;
     this.decorations?.invalidateGround();
+    if(this.realmArtifacts)this.realmArtifacts.clock=Infinity;
     return true;
   }
 
@@ -161,6 +168,7 @@ export class PlaneStage {
     this.markers?.setRegionGeometry(this.regionGeometry, this.regionInside);
     this.entities?.setRegionGeometry(this.regionGeometry, this.regionInside);
     this.decorations?.setRegionGeometry(this.regionGeometry,this.regionInside);
+    this.realmArtifacts?.setRegionGeometry(this.regionGeometry,this.regionInside);
   }
 
   markTerrainDirty(region) {
@@ -201,7 +209,8 @@ export class PlaneStage {
     const t5 = performance.now();
     this.markers?.update(dt, this.world, options);
     this.markers?.setZoom(zoom);
-    this.decorations?.update({terrainChanged:heightChanged||!!typeRegion});
+    this.decorations?.update({layoutChanged:heightChanged||!!typeRegion});
+    this.realmArtifacts?.update(dt,{heightChanged});
     this.selectionMarker?.update(this.world, heightChanged);
     const t6 = performance.now();
     this.timings = {
@@ -218,6 +227,7 @@ export class PlaneStage {
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
     this.entities?.dispose(); this.settlements?.dispose(); this.markers?.dispose();
     this.decorations?.dispose();this.decorations=null;
+    this.realmArtifacts?.dispose();this.realmArtifacts=null;
     this.environmentMaterial?.dispose(); this.environmentMaterial = null;
     this.selectionMarker?.dispose();
     this.root.clear();

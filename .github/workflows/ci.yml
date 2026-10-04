@@ -92,6 +92,9 @@ jobs:
       - name: Render3D M2-C2B 自然装饰与完整占地区域归属
         run: npm run test:render3d:m2c2b:decorations
 
+      - name: Render3D M2-C2B 幽冥地面法宝实际资产与身份
+        run: npm run test:render3d:m2c2b:artifacts
+
       - name: 构建发布包（自包含，clone 即可跑）
         run: npm run build
 

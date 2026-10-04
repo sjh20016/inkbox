@@ -1160,6 +1160,86 @@
         "upperA",
         "upperB"
       ]
+    },
+    "env_nether_artifact_lod0": {
+      "node": "env_nether_artifact_lod0",
+      "triangles": 20,
+      "bounds": {
+        "min": [
+          -0.4,
+          0,
+          -0.35
+        ],
+        "max": [
+          0.48,
+          1,
+          0.35
+        ]
+      },
+      "uvSlots": [
+        0,
+        7,
+        8,
+        11
+      ],
+      "semanticSlots": [
+        "paper",
+        "stone",
+        "stoneDark",
+        "clay"
+      ]
+    },
+    "env_nether_artifact_lod1": {
+      "node": "env_nether_artifact_lod1",
+      "triangles": 8,
+      "bounds": {
+        "min": [
+          -0.4,
+          0,
+          -0.35
+        ],
+        "max": [
+          0.4,
+          1,
+          0.35
+        ]
+      },
+      "uvSlots": [
+        0,
+        7,
+        8
+      ],
+      "semanticSlots": [
+        "paper",
+        "stone",
+        "stoneDark"
+      ]
+    },
+    "env_nether_artifact_lod2": {
+      "node": "env_nether_artifact_lod2",
+      "triangles": 4,
+      "bounds": {
+        "min": [
+          -0.4,
+          0,
+          -0.3
+        ],
+        "max": [
+          0.4,
+          1,
+          0.4
+        ]
+      },
+      "uvSlots": [
+        0,
+        7,
+        8
+      ],
+      "semanticSlots": [
+        "paper",
+        "stone",
+        "stoneDark"
+      ]
     }
   },
   "assets": {
@@ -1326,6 +1406,19 @@
         "env_natural_slab_lod2"
       ],
       "revision": "Asymmetric rough rings and inclined facets replace authored plinths, altar steps, clean columns and slab crossbeams; no walkable or site semantics"
+    },
+    "nether.artifact.ground": {
+      "id": "nether.artifact.ground",
+      "source": "neutral ground artifact silhouette",
+      "realm": "nether",
+      "binding": "actual world.artifacts",
+      "pick": "artifact",
+      "lods": [
+        "env_nether_artifact_lod0",
+        "env_nether_artifact_lod1",
+        "env_nether_artifact_lod2"
+      ],
+      "revision": "No lamp, soul flame, civilization, weapon or subtype is inferred from a generic ground item"
     }
   }
 }

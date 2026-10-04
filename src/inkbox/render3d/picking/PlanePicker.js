@@ -42,6 +42,9 @@ export class PlanePicker {
         if (object.isInstancedMesh && visiblySubmitted(object) && object.count
           && object.userData.renderArtifacts?.length) objects.push(object);
       });
+      if (!onlyPlane) stage.realmArtifacts?.group.traverse(object => {
+        if(object.isInstancedMesh&&visiblySubmitted(object)&&object.count&&object.userData.renderArtifacts?.length)objects.push(object);
+      });
       // A procedural center/capital still occludes geometry behind it. It carries
       // no house identity, so inspect its visible coordinate instead of skipping it.
       const hit = this.raycaster.intersectObjects(objects, false)[0];

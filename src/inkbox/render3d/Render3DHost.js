@@ -139,7 +139,7 @@ export class Render3DHost {
   setLODEnabled(enabled) {
     this.lodEnabled = !!enabled;
     for (const stage of this.stages.values()) {
-      for (const layer of [stage.vegetation, stage.entities, stage.settlements, stage.decorations]) layer?.setLODEnabled?.(this.lodEnabled);
+      for (const layer of [stage.vegetation, stage.entities, stage.settlements, stage.decorations, stage.realmArtifacts]) layer?.setLODEnabled?.(this.lodEnabled);
     }
     this.art.update();
     return this.lodEnabled;

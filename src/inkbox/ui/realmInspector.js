@@ -27,6 +27,7 @@
 import { realmLabel } from '../core/cultivation.js';
 import { ghostTierOf, GHOST_TIER_NAMES } from '../sim/netherLife.js';
 import { STRUCT } from '../core/config.js';
+import { EQUIP_TIERS,EQUIP_QUALITIES } from '../core/lore.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
 export const REALM_INSPECT_RADIUS = 4;
@@ -221,6 +222,9 @@ function ghostRows(picked, ctx) {
 function artifactRows(picked) {
   const a = picked.subject;
   const rows = [['名字', a.name || '无名之物']];
+  if(a.slot)rows.push(['形制',String(a.slot)]);
+  if(Number.isFinite(a.tier))rows.push(['品阶',EQUIP_TIERS[a.tier]?.name||String(a.tier)]);
+  if(Number.isFinite(a.quality))rows.push(['品质',EQUIP_QUALITIES[a.quality]||String(a.quality)]);
   rows.push(['携带功法', (a.technique && a.technique.name) ? a.technique.name : '无']);
   rows.push(['来源', a.technique ? '幽冥自生' : '自凡间跌入带来']);
   return rows;

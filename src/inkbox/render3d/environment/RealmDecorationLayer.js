@@ -73,7 +73,7 @@ export class RealmDecorationLayer {
     if(matrix)for(let i=0;i<16;i++){if(!Number.isFinite(this._matrix[i])||Math.abs(this._matrix[i]-matrix[i])>1e-10)changed=true;this._matrix[i]=matrix[i];}
     if(changed||this.dirty)this.write();
   }
-  update({terrainChanged=false}={}){if(terrainChanged){this.layout=deriveRealmDecorations(this.world);this.invalidateGround();}if(this.dirty)this.write();}
+  update({layoutChanged=false}={}){if(layoutChanged){this.layout=deriveRealmDecorations(this.world);this.invalidateGround();}if(this.dirty)this.write();}
   write(){
     if(!this.batch)return;
     const records=[];let maskRejected=0,screenRejected=0,detail=0,demoted=0;

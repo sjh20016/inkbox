@@ -18,37 +18,45 @@ async function snapshot(){return page(`
  return {digest:await window.__content.v.snapshotDigest(k),triangles:r.gpu.info.render.triangles,drawCalls:r.gpu.info.render.calls,
  memory:{...r.gpu.info.memory},glError:gl.getError(),links:r.gpu.info.programs.map(p=>gl.getProgramParameter(p.program,gl.LINK_STATUS)),
  camera:{position:r.cameraRig.camera.position.toArray(),target:r.cameraRig.controls.target.toArray(),zoom:r.cameraRig.camera.zoom},
- stages:[...r.stages.values()].filter(s=>s.visible).map(s=>({plane:s.plane,entities:s.entities.stats,ghosts:s.entities.ghostBatch?.stats,
+ stages:[...r.stages.values()].filter(s=>s.visible).map(s=>({plane:s.plane,entities:s.entities.stats,ghosts:s.entities.ghostBatch?.stats,artifacts:s.realmArtifacts?.stats,decorations:s.decorations?.stats,
  ghostMaterial:s.entities.ghostBatch?{transparent:s.entities.ghostBatch.material.transparent,depthWrite:s.entities.ghostBatch.material.depthWrite}:null}))};`);}
 async function findActor(spec){return page(`
  const k=window.inkbox,r=k.render3d.renderer,T=window.__content.T,v=window.__content.v,spec=${JSON.stringify(spec)};
- r.setActivePlane(spec.plane);r.setLODEnabled(true);r.setProductionAssetsEnabled(true);
+ k.selectTool('inspect');k.selection=null;r.setRealmViewState(k.getRealmViewState());r.setActivePlane(spec.plane);r.setLODEnabled(true);r.setProductionAssetsEnabled(true);
  const stage=r.stages.get(spec.plane),world=stage.world;
- const candidates=world.entities.filter(e=>spec.kind==='cultivator'?e.level>0:spec.kind==='ghostCultivator'?e.soulKind==='ghostCultivator':e.soulKind==='ghost');
- const zooms=spec.lod===0?[24,18,32]:spec.lod===1?[6,9,4]:[.75,1,1.4];
+ let candidates=spec.kind==='artifact'?world.artifacts:world.entities.filter(e=>spec.kind==='cultivator'?e.level>0:spec.kind==='ghostCultivator'?e.soulKind==='ghostCultivator':e.soulKind==='ghost');
+ if(spec.window){const p=candidates[0];if(!p)throw new Error('no real artifact for window');r.setActivePlane('mortal');k.selectTool('viewNether');
+  const x0=Math.max(1,Math.floor(p.x-24)),y0=Math.max(1,Math.floor(p.y-24)),x1=Math.min(k.world.w-2,Math.ceil(p.x+24)),y1=Math.min(k.world.h-2,Math.ceil(p.y+24));
+  k.commitSelection([[x0,y0],[x1,y0],[x1,y1],[x0,y1]]);for(let i=0;i<6;i++)await new Promise(requestAnimationFrame);
+  if(!r.realmPrototype.open||r.realmPrototype.targetPlane!=='nether')throw new Error('normal Nether window failed');
+  candidates=candidates.filter(e=>stage.regionGeometry.isInsideCell(e.x,e.y));
+ }
+ const digestAfterSetup=await v.snapshotDigest(k);
+ const zooms=spec.lod===0?(spec.kind==='artifact'?[32,24,40]:[24,18,32]):spec.lod===1?[6,9,4]:[.75,1,1.4];
  for(const actor of candidates)for(const zoom of zooms)for(const yaw of [.2,1.8,3.5]){
   const pose=v.applyCamera(r,'ENTITY_CLOSE',{poi:{x:actor.x,y:actor.y,id:actor.id,source:'real-'+spec.kind},polar:.9,yaw,zoom});
   for(let i=0;i<5;i++)await new Promise(requestAnimationFrame);
   r.scene.updateMatrixWorld(true);r.cameraRig.camera.updateMatrixWorld(true);
-  const meshes=[];stage.entities.group.traverse(m=>{if(m.isInstancedMesh&&m.count&&m.visible&&m.userData.lod===spec.lod)meshes.push(m);});
+  const meshes=[];(spec.kind==='artifact'?stage.realmArtifacts.group:stage.entities.group).traverse(m=>{if(m.isInstancedMesh&&m.count&&m.visible&&m.userData.lod===spec.lod)meshes.push(m);});
   const blockers=[];r.scene.traverse(m=>{if(!m.isMesh||m.renderOrder>5||m.isInstancedMesh&&!m.count||m.material?.transparent)return;
     for(let p=m;p;p=p.parent)if(!p.visible)return;blockers.push(m);});
   const ray=new T.Raycaster(),rect=k.render3d.canvas.getBoundingClientRect(),matrix=new T.Matrix4(),combined=new T.Matrix4(),point=new T.Vector3();
   for(const mesh of meshes){
    if(spec.variant!=null&&!mesh.userData.environmentAssetIds?.includes('nether.ghost.'+spec.variant))continue;
-   const p=mesh.geometry.attributes.position,ix=mesh.geometry.index,records=mesh.userData.renderEntities||[];
+   const p=mesh.geometry.attributes.position,ix=mesh.geometry.index,records=mesh.userData.renderEntities||mesh.userData.renderArtifacts||[];
    for(let instance=0;instance<mesh.count;instance++){
-    const source=records[instance];if(source?.id!==actor.id||source.identityContainer!=='entities')continue;
+    const source=records[instance];if(source?.id!==actor.id||spec.kind!=='artifact'&&source.identityContainer!=='entities')continue;
     mesh.getMatrixAt(instance,matrix);combined.multiplyMatrices(mesh.matrixWorld,matrix);
     for(let face=0;face<(ix?.count||p.count);face+=3){
      point.set(0,0,0);for(let j=0;j<3;j++)point.add(new T.Vector3().fromBufferAttribute(p,ix?ix.getX(face+j):face+j));
      point.multiplyScalar(1/3).applyMatrix4(combined).project(r.cameraRig.camera);
      const x=(point.x+1)*r.width/2,y=(1-point.y)*r.height/2;
      if(point.z< -1||point.z>1||x<12||y<12||x>r.width-12||y>r.height-12)continue;
-     const hit=r.pick(x,y);if(hit?.plane!==spec.plane||hit.kind!=='entity'||hit.entityId!==actor.id)continue;
+     const hit=r.pick(x,y);if(hit?.plane!==spec.plane||hit.kind!==(spec.kind==='artifact'?'artifact':'entity')||(spec.kind==='artifact'?hit.artifactId:hit.entityId)!==actor.id)continue;
      ray.setFromCamera(new T.Vector2(point.x,point.y),r.cameraRig.camera);const first=ray.intersectObjects(blockers,false)[0];
      if(first?.object!==mesh||first.instanceId!==instance)continue;
-     return {spec,id:actor.id,soulKind:actor.soulKind||null,role:source.appearance?.role||null,node:mesh.name,lod:mesh.userData.lod,
+     return {spec,id:actor.id,soulKind:actor.soulKind||null,role:source.appearance?.role||null,node:mesh.name,lod:mesh.userData.lod,digestAfterSetup,
+       artifactFacts:spec.kind==='artifact'?{id:actor.id,x:actor.x,y:actor.y,name:actor.name,slot:actor.slot,tier:actor.tier,quality:actor.quality}:null,
        triangleCount:(ix?.count||p.count)/3,pose,pixel:[x,y],client:[rect.left+x*rect.width/r.width,rect.top+y*rect.height/r.height],
        depth:{mesh:mesh.name,instanceId:instance,distance:first.distance},material:{transparent:mesh.material.transparent,depthWrite:mesh.material.depthWrite},
        actorSoulLamp:spec.kind==='ghostCultivator'&&spec.lod===0?stage.entities.characterBatch.meshes.soul_lamp.userData.renderEntities.some(e=>e.id===actor.id):null};
@@ -80,19 +88,22 @@ try{
   return {digest:await window.__content.v.snapshotDigest(k),upper:k.world.upper.entities.length,nether:k.world.nether.entities.length,
   characterBody:r.characterLibrary.roles.basic.body,ghostBody:r.characterLibrary.roles.ghost.body,characterModules:r.characterLibrary.modules.size};`);
  assert.equal(report.prepared.characterBody,report.prepared.ghostBody);
- const specs=[...[0,1].map(lod=>({plane:'upper',kind:'cultivator',lod})),...[0,1].map(lod=>({plane:'nether',kind:'ghostCultivator',lod})),
+ const specs=process.env.INKBOX_ARTIFACT_MATRIX==='1'?[{plane:'nether',kind:'ghost',lod:0},{plane:'nether',kind:'ghostCultivator',lod:0},
+  {plane:'nether',kind:'artifact',lod:0},{plane:'nether',kind:'artifact',lod:1},{plane:'nether',kind:'artifact',lod:0,window:true}]
+  :[...[0,1].map(lod=>({plane:'upper',kind:'cultivator',lod})),...[0,1].map(lod=>({plane:'nether',kind:'ghostCultivator',lod})),
   ...[0,1,2].map(variant=>({plane:'nether',kind:'ghost',variant,lod:0})),{plane:'nether',kind:'ghost',lod:1},{plane:'nether',kind:'ghost',lod:2}];
  for(const spec of specs){
   const found=await findActor(spec);console.log('Found '+found.node+' id '+found.id);
   await page('window.__content.hit=null;window.__content.fallback=false;return true;');await browser.click(...found.client);await frames(3);
   const inspected=await page(`const p=document.getElementById('inkInspect');return {hit:window.__content.hit,fallback:!!window.__content.fallback,panel:{on:p.classList.contains('on'),kind:p.dataset.subjectKind,id:p.dataset.subjectId,plane:p.dataset.plane}};`);
-  assert.equal(inspected.hit?.plane,spec.plane);assert.equal(inspected.hit?.ref.entityId,found.id);assert.equal(inspected.hit?.ref.entityContainer,'entities');assert.equal(inspected.fallback,false);
-  assert(inspected.panel.on);assert.equal(inspected.panel.kind,'entity');assert.equal(inspected.panel.id,String(found.id));
+  assert.equal(inspected.hit?.plane,spec.plane);assert.equal(inspected.hit?.ref[spec.kind==='artifact'?'artifactId':'entityId'],found.id);
+  if(spec.kind!=='artifact')assert.equal(inspected.hit?.ref.entityContainer,'entities');assert.equal(inspected.fallback,false);
+  assert(inspected.panel.on);assert.equal(inspected.panel.kind,spec.kind==='artifact'?'artifact':'entity');assert.equal(inspected.panel.id,String(found.id));
   if(spec.kind==='ghost'){assert.equal(found.material.transparent,false);assert(found.material.depthWrite);}
   if(spec.kind==='ghostCultivator'&&spec.lod===0)assert(found.actorSoulLamp);
-  const on=await snapshot();const file=path.join(OUT,`${spec.plane}-${spec.kind}-${spec.variant??'any'}-lod${spec.lod}.png`);await browser.screenshot(file);
+  const on=await snapshot();const file=path.join(OUT,`${spec.plane}-${spec.kind}-${spec.variant??'any'}-lod${spec.lod}${spec.window?'-window':''}.png`);await browser.screenshot(file);
   await page('document.getElementById("inkInspectClose")?.click();window.inkbox.render3d.renderer.setProductionAssetsEnabled(false);return true;');await frames(6);
-  const off=await snapshot();assert.equal(on.digest.value,off.digest.value);assert.equal(on.digest.value,report.prepared.digest.value);
+  const off=await snapshot();assert.equal(on.digest.value,off.digest.value);assert.equal(on.digest.value,found.digestAfterSetup.value);
   const cameraError=Math.max(...on.camera.position.map((x,i)=>Math.abs(x-off.camera.position[i])),...on.camera.target.map((x,i)=>Math.abs(x-off.camera.target[i])));
   assert(cameraError<=1e-10,'paired camera moved beyond floating-point roundoff');assert.equal(on.camera.zoom,off.camera.zoom);
   for(const row of [on,off]){assert.equal(row.glError,0);assert(row.links.length&&row.links.every(Boolean));}

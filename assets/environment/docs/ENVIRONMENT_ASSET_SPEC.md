@@ -44,3 +44,9 @@ RealmDecorationLayer belongs to the existing Upper/Nether Stage. Its layout read
 Every quad touched by the conservative rotated footprint must belong to the Stage RegionGeometry. Center-only admission is forbidden. The base is buried at the minimum of the same ElevationField's center and four rotated corner samples; it creates no new terrain elevation. Ground results and unchanged camera views are cached. No simulation RNG, World field, save data or picker identity.
 
 Upper cloud/negative space uses the existing terrain shader's low-valley wash and Stage-local mineral palette. No separate cloud plane was introduced. Natural props use the same atlas and Stage material as the shipping library. Toggle independently with host.setDecorationsEnabled(false) or ?decorations=off.
+
+## Package 7 ground artifacts
+
+Nether ground artifacts use only actual world.artifacts IDs, coordinates, names, slots, tiers and qualities. A neutral faceted marker with earth chips uses 20/8/4 triangles, and never implies the item's named weapon shape or a soul lamp. The fixed-capacity (256) batch shares the Stage Environment material and atlas. PlanePicker returns the exact artifact ID; missing IDs do not resolve to a nearby substitute. The readonly inspector displays the original item facts. No simulation or save changes.
+
+Generated ghost, mineral and artifact caps now face outward, verified at upper and lower extrema in the actual GLB. Nine natural actor Edge cases, seven decoration pairs and five ground-artifact cases passed after the correction.

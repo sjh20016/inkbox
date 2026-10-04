@@ -103,6 +103,12 @@ try {
           a.fromBufferAttribute(p, ix.getX(i)); b.fromBufferAttribute(p, ix.getX(i + 1)); c.fromBufferAttribute(p, ix.getX(i + 2));
           normal.subVectors(b, a).cross(c.sub(a)).normalize();
           assert(normal.dot(new THREE.Vector3().fromBufferAttribute(n, ix.getX(i))) > .99, `${module.node.name} winding/normal mismatch`);
+          if(/^env_(?:ghost|natural|nether_artifact)/.test(module.node.name)) {
+            const vertices=[a.clone(),b.clone(),new THREE.Vector3().fromBufferAttribute(p,ix.getX(i+2))];
+            if(vertices.some(v=>Math.abs(v.y-1)<1e-6))assert(normal.y>0,`${module.node.name} top cap faces outward`);
+            if(vertices.some(v=>Math.abs(v.x)+Math.abs(v.y)+Math.abs(v.z)<1e-6)||vertices.every(v=>Math.abs(v.y)<1e-6))
+              assert(normal.y<0,`${module.node.name} bottom cap faces outward`);
+          }
         }
       }
       report.assets = { triangles: [80,30,8], sourceSlots: [0,1,2,4,5,7,8,9,10],

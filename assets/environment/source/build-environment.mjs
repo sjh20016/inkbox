@@ -163,9 +163,9 @@ function ghostSilhouette(variant, lod) {
   const slot=row=>row===levels.length-1?0:row%2?7:2;
   for(let i=0;i<segments;i++){
     const next=(i+1)%segments;
-    b.tri([0,0,0],rings[0][next],rings[0][i],7);
+    b.tri([0,0,0],rings[0][i],rings[0][next],7);
     for(let row=0;row<rings.length-1;row++)b.quad(rings[row][next],rings[row][i],rings[row+1][i],rings[row+1][next],slot(row));
-    b.tri([(variant-1)*.07,1,0],rings.at(-1)[i],rings.at(-1)[next],0);
+    b.tri([(variant-1)*.07,1,0],rings.at(-1)[next],rings.at(-1)[i],0);
   }
   return b.finish();
 }
@@ -179,9 +179,19 @@ function naturalStone(kind,lod) {
     return [Math.cos(a)*r*rough+offset*y,y+(y===0?0:.025*Math.sin(i*2.2)),Math.sin(a)*r*rough*.85-.04*y];
   }));
   for(let i=0;i<n;i++){
-    const next=(i+1)%n;b.tri([0,0,0],rings[0][next],rings[0][i],8);
+    const next=(i+1)%n;b.tri([0,0,0],rings[0][i],rings[0][next],8);
     for(let row=0;row<rings.length-1;row++)b.quad(rings[row][next],rings[row][i],rings[row+1][i],rings[row+1][next],i%3===0?8:7);
-    b.tri([offset,1,-.04],rings.at(-1)[i],rings.at(-1)[next],i%2?20:21);
+    b.tri([offset,1,-.04],rings.at(-1)[next],rings.at(-1)[i],i%2?20:21);
+  }
+  return b.finish();
+}
+function groundArtifact(lod) {
+  const b=meshBuilder();
+  if(lod===2){const a=[0,1,0],c=[-.4,0,-.3],d=[.4,0,-.3],e=[0,0,.4];b.tri(a,d,c,0);b.tri(a,e,d,7);b.tri(a,c,e,0);b.tri(c,d,e,8);}
+  else {
+    const ring=[[.4,.35,0],[0,.35,.35],[-.4,.35,0],[0,.35,-.35]];
+    for(let i=0;i<4;i++){const next=(i+1)%4;b.tri([0,1,0],ring[next],ring[i],i%2?0:7);b.tri([0,0,0],ring[i],ring[next],8);}
+    if(lod===0)b.box(.30,0,.12,.48,.14,.28,11);
   }
   return b.finish();
 }
@@ -236,6 +246,11 @@ function main() {
     for(let lod=0;lod<3;lod++){const data=naturalStone(kind,lod);specs.push([lods[lod],data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]);}
     assets[id]={id,source:`terr_${kind} natural revision`,realm:kind==='terrace'||kind==='slab'?'upper':'upper/nether',binding:'height/slope/type presentation only',pick:'none',lods,
       revision:'Asymmetric rough rings and inclined facets replace authored plinths, altar steps, clean columns and slab crossbeams; no walkable or site semantics'};
+  }
+  {const id='nether.artifact.ground',lods=[0,1,2].map(lod=>`env_nether_artifact_lod${lod}`);
+    for(let lod=0;lod<3;lod++){const data=groundArtifact(lod);specs.push([lods[lod],data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]);}
+    assets[id]={id,source:'neutral ground artifact silhouette',realm:'nether',binding:'actual world.artifacts',pick:'artifact',lods,
+      revision:'No lamp, soul flame, civilization, weapon or subtype is inferred from a generic ground item'};
   }
   let binaryParts=[Buffer.alloc(0)],accessors=[],views=[],nodes=[],meshes=[],modules={};
   for(const [name,data,semantics] of specs){const m=addMesh(binaryParts,accessors,views,data,name,semantics);binaryParts=m.binaryParts;accessors=m.accessors;views=m.views;m.node.mesh=meshes.length;nodes.push(m.node);meshes.push(m.mesh);modules[name]={node:name,triangles:m.module.triangles,bounds:m.module.bounds,uvSlots:m.module.uvSlots,semanticSlots:semantics};}
