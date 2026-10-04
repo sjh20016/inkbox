@@ -1,0 +1,762 @@
+{
+  "phase": "B4",
+  "accepted": true,
+  "humanReview": "Root inspected Upper overview/near/oblique and Nether overview/oblique: coherent mineral/ink window, natural outside structures, continuous restrained boundary and real local breach.",
+  "scenario": {
+    "scenario": "NETHER_STYLE_A",
+    "seed": 20260923,
+    "preset": "medium",
+    "days": 21600,
+    "stepDays": 3,
+    "completedSteps": 7200,
+    "totalSteps": 7200,
+    "complete": true,
+    "worldDay": 21600,
+    "mapSize": [
+      288,
+      180
+    ],
+    "coverage": {
+      "mortalPopulation": 1400,
+      "netherEntities": 121,
+      "netherDerived": 121,
+      "ghostCultivators": 1,
+      "ghostAppearanceRoles": 1,
+      "netherEntityKinds": {
+        "human": 0,
+        "cultivator": 0,
+        "beast": 0,
+        "spirit": 0,
+        "wraith": 121
+      }
+    },
+    "rngRecipe": {
+      "sandbox": "mulberry32(12345) reset before newWorld",
+      "advanceState": "fresh createAdvanceState()",
+      "stepDays": 3
+    }
+  },
+  "coverage": {
+    "worldDay": 23760,
+    "mortalEntities": 1398,
+    "netherEntities": 122,
+    "upperEntities": 13,
+    "upperRifts": 4,
+    "netherRifts": 4
+  },
+  "setup": [
+    {
+      "plane": "upper",
+      "phase": "normal-ui-open",
+      "day": 21600,
+      "region": {
+        "x0": 63,
+        "y0": 39,
+        "x1": 225,
+        "y1": 141,
+        "area": 16524
+      },
+      "newRifts": [
+        {
+          "id": 1,
+          "x": 225,
+          "y": 57,
+          "age": 0,
+          "strength": 7
+        },
+        {
+          "id": 2,
+          "x": 63,
+          "y": 85,
+          "age": 0,
+          "strength": 7
+        },
+        {
+          "id": 3,
+          "x": 100,
+          "y": 141,
+          "age": 0,
+          "strength": 7
+        },
+        {
+          "id": 4,
+          "x": 63,
+          "y": 101,
+          "age": 0,
+          "strength": 7
+        }
+      ],
+      "riftCount": 4
+    },
+    {
+      "plane": "upper",
+      "phase": "natural-growth",
+      "day": 22680,
+      "advancedDays": 1080
+    },
+    {
+      "plane": "nether",
+      "phase": "normal-ui-open",
+      "day": 22680,
+      "region": {
+        "x0": 63,
+        "y0": 39,
+        "x1": 225,
+        "y1": 141,
+        "area": 16524
+      },
+      "newRifts": [
+        {
+          "id": 5,
+          "x": 216,
+          "y": 141,
+          "age": 0,
+          "strength": 7
+        },
+        {
+          "id": 6,
+          "x": 77,
+          "y": 141,
+          "age": 0,
+          "strength": 7
+        },
+        {
+          "id": 7,
+          "x": 107,
+          "y": 141,
+          "age": 0,
+          "strength": 7
+        },
+        {
+          "id": 8,
+          "x": 168,
+          "y": 39,
+          "age": 0,
+          "strength": 7
+        }
+      ],
+      "riftCount": 8
+    },
+    {
+      "plane": "nether",
+      "phase": "natural-growth",
+      "day": 23760,
+      "advancedDays": 1080
+    }
+  ],
+  "pureDigestBefore": {
+    "algorithm": "SHA-256",
+    "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+    "bytes": 44348814,
+    "value": "ff0774e044b43a95370044901624c13a129000ecd3e735e3d255c2ad14d8c3b0"
+  },
+  "pureDigestAfter": {
+    "algorithm": "SHA-256",
+    "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+    "bytes": 44348814,
+    "value": "ff0774e044b43a95370044901624c13a129000ecd3e735e3d255c2ad14d8c3b0"
+  },
+  "worldUnchanged": true,
+  "errors": {
+    "console": [],
+    "runtime": []
+  },
+  "diagnostics": {
+    "upper": {
+      "ownership": {
+        "entity": {
+          "mortal": {
+            "total": 889,
+            "inside": 0,
+            "outside": 889,
+            "mismatches": 0
+          },
+          "target": {
+            "total": 6,
+            "inside": 6,
+            "outside": 0,
+            "mismatches": 0
+          }
+        },
+        "trees": {
+          "mortal": {
+            "total": 2687,
+            "inside": 0,
+            "outside": 2687
+          },
+          "target": {
+            "total": 0,
+            "inside": 0,
+            "outside": 0
+          }
+        },
+        "buildings": {
+          "mortal": {
+            "total": 617,
+            "inside": 0,
+            "outside": 617
+          },
+          "target": {
+            "total": 0,
+            "inside": 0,
+            "outside": 0
+          }
+        },
+        "mismatches": {
+          "trees": 0,
+          "entities": 0,
+          "buildings": 0,
+          "hlodMembers": 0
+        }
+      },
+      "boundary": {
+        "edges": 528,
+        "breachEdges": 40,
+        "riftCount": 4,
+        "positiveRadiusRifts": [
+          {
+            "id": 1,
+            "x": 225,
+            "y": 57,
+            "age": 2160,
+            "strength": 7,
+            "radius": 4.62047119977627
+          },
+          {
+            "id": 2,
+            "x": 63,
+            "y": 85,
+            "age": 2160,
+            "strength": 7,
+            "radius": 4.62047119977627
+          },
+          {
+            "id": 3,
+            "x": 100,
+            "y": 141,
+            "age": 2160,
+            "strength": 7,
+            "radius": 4.62047119977627
+          },
+          {
+            "id": 4,
+            "x": 63,
+            "y": 101,
+            "age": 2160,
+            "strength": 7,
+            "radius": 4.62047119977627
+          }
+        ],
+        "intersectionCount": 40
+      },
+      "seam": {
+        "comparisons": 6336,
+        "mismatches": 0,
+        "examples": []
+      },
+      "nearPick": {
+        "targetPlane": "upper",
+        "counts": {
+          "mortal": 133,
+          "upper": 119,
+          "nether": 0,
+          "boundary": 14,
+          "miss": 14
+        },
+        "depthComparisons": 266,
+        "depthMismatches": 0,
+        "entityIdentityChecks": 6,
+        "identityMismatches": 0,
+        "settlementHits": 0,
+        "examples": []
+      },
+      "farPick": {
+        "targetPlane": "upper",
+        "counts": {
+          "mortal": 17,
+          "upper": 8,
+          "nether": 0,
+          "boundary": 2,
+          "miss": 253
+        },
+        "depthComparisons": 27,
+        "depthMismatches": 0,
+        "entityIdentityChecks": 1,
+        "identityMismatches": 0,
+        "settlementHits": 1,
+        "examples": []
+      },
+      "farHLOD": {
+        "clusters": 88,
+        "visibleClusters": 88,
+        "memberReferences": 440,
+        "membersChecked": 858,
+        "memberMismatches": 0
+      }
+    },
+    "nether": {
+      "ownership": {
+        "entity": {
+          "mortal": {
+            "total": 889,
+            "inside": 0,
+            "outside": 889,
+            "mismatches": 0
+          },
+          "target": {
+            "total": 57,
+            "inside": 57,
+            "outside": 0,
+            "mismatches": 0
+          }
+        },
+        "trees": {
+          "mortal": {
+            "total": 2687,
+            "inside": 0,
+            "outside": 2687
+          },
+          "target": {
+            "total": 0,
+            "inside": 0,
+            "outside": 0
+          }
+        },
+        "buildings": {
+          "mortal": {
+            "total": 617,
+            "inside": 0,
+            "outside": 617
+          },
+          "target": {
+            "total": 0,
+            "inside": 0,
+            "outside": 0
+          }
+        },
+        "mismatches": {
+          "trees": 0,
+          "entities": 0,
+          "buildings": 0,
+          "hlodMembers": 0
+        }
+      },
+      "boundary": {
+        "edges": 528,
+        "breachEdges": 40,
+        "riftCount": 4,
+        "positiveRadiusRifts": [
+          {
+            "id": 5,
+            "x": 216,
+            "y": 141,
+            "age": 1080,
+            "strength": 7,
+            "radius": 4.424843911799904
+          },
+          {
+            "id": 6,
+            "x": 77,
+            "y": 141,
+            "age": 1080,
+            "strength": 7,
+            "radius": 4.424843911799904
+          },
+          {
+            "id": 7,
+            "x": 107,
+            "y": 141,
+            "age": 1080,
+            "strength": 7,
+            "radius": 4.424843911799904
+          },
+          {
+            "id": 8,
+            "x": 168,
+            "y": 39,
+            "age": 1080,
+            "strength": 7,
+            "radius": 4.424843911799904
+          }
+        ],
+        "intersectionCount": 40
+      },
+      "seam": {
+        "comparisons": 6336,
+        "mismatches": 0,
+        "examples": []
+      },
+      "nearPick": {
+        "targetPlane": "nether",
+        "counts": {
+          "mortal": 67,
+          "upper": 0,
+          "nether": 175,
+          "boundary": 0,
+          "miss": 38
+        },
+        "depthComparisons": 242,
+        "depthMismatches": 0,
+        "entityIdentityChecks": 1,
+        "identityMismatches": 0,
+        "settlementHits": 0,
+        "examples": []
+      },
+      "farPick": {
+        "targetPlane": "nether",
+        "counts": {
+          "mortal": 17,
+          "upper": 0,
+          "nether": 10,
+          "boundary": 0,
+          "miss": 253
+        },
+        "depthComparisons": 27,
+        "depthMismatches": 0,
+        "entityIdentityChecks": 2,
+        "identityMismatches": 0,
+        "settlementHits": 2,
+        "examples": []
+      },
+      "farHLOD": {
+        "clusters": 88,
+        "visibleClusters": 88,
+        "memberReferences": 440,
+        "membersChecked": 858,
+        "memberMismatches": 0
+      }
+    }
+  },
+  "cases": [
+    {
+      "name": "cross-upper-overview",
+      "plane": "upper",
+      "poi": {
+        "x": 144,
+        "y": 90,
+        "source": "committed Region centre"
+      },
+      "sameCamera": true,
+      "sameLOD": true,
+      "legacy": {
+        "triangles": 218537,
+        "drawCalls": 20,
+        "cpuUpdate": {
+          "medianMs": 0.6000000238418579,
+          "p95Ms": 1.5,
+          "maxMs": 1.699999988079071,
+          "samples": 120
+        }
+      },
+      "v1": {
+        "triangles": 218537,
+        "drawCalls": 20,
+        "cpuUpdate": {
+          "medianMs": 0.699999988079071,
+          "p95Ms": 1.699999988079071,
+          "maxMs": 2.300000011920929,
+          "samples": 120
+        },
+        "productCalls": {
+          "update": 121,
+          "render": 121,
+          "rafCallbacks": 121
+        },
+        "allShadersLinked": true,
+        "fogIsNull": true,
+        "glError": 0
+      }
+    },
+    {
+      "name": "cross-upper-breach-near",
+      "plane": "upper",
+      "poi": {
+        "x": 225,
+        "y": 52.5,
+        "source": "midpoint of current boundary edge intersecting a natural grown Rift",
+        "riftId": 1,
+        "age": 2160,
+        "radius": 4.62047119977627
+      },
+      "sameCamera": true,
+      "sameLOD": true,
+      "legacy": {
+        "triangles": 280571,
+        "drawCalls": 21,
+        "cpuUpdate": {
+          "medianMs": 0.699999988079071,
+          "p95Ms": 1.7999999523162842,
+          "maxMs": 2.099999964237213,
+          "samples": 120
+        }
+      },
+      "v1": {
+        "triangles": 280571,
+        "drawCalls": 21,
+        "cpuUpdate": {
+          "medianMs": 0.6000000238418579,
+          "p95Ms": 1.699999988079071,
+          "maxMs": 2.199999988079071,
+          "samples": 120
+        },
+        "productCalls": {
+          "update": 121,
+          "render": 121,
+          "rafCallbacks": 121
+        },
+        "allShadersLinked": true,
+        "fogIsNull": true,
+        "glError": 0
+      }
+    },
+    {
+      "name": "cross-upper-breach-far",
+      "plane": "upper",
+      "poi": {
+        "x": 225,
+        "y": 52.5,
+        "source": "same real breached boundary edge",
+        "riftId": 1,
+        "age": 2160,
+        "radius": 4.62047119977627
+      },
+      "sameCamera": true,
+      "sameLOD": true,
+      "legacy": {
+        "triangles": 208568,
+        "drawCalls": 16,
+        "cpuUpdate": {
+          "medianMs": 0.699999988079071,
+          "p95Ms": 1.5999999642372131,
+          "maxMs": 1.9000000357627869,
+          "samples": 120
+        }
+      },
+      "v1": {
+        "triangles": 208568,
+        "drawCalls": 16,
+        "cpuUpdate": {
+          "medianMs": 0.7000000476837158,
+          "p95Ms": 1.5999999642372131,
+          "maxMs": 2.5,
+          "samples": 120
+        },
+        "productCalls": {
+          "update": 121,
+          "render": 121,
+          "rafCallbacks": 121
+        },
+        "allShadersLinked": true,
+        "fogIsNull": true,
+        "glError": 0
+      }
+    },
+    {
+      "name": "cross-upper-breach-oblique",
+      "plane": "upper",
+      "poi": {
+        "x": 225,
+        "y": 52.5,
+        "source": "same real breached boundary edge; oblique depth/ownership diagnostic",
+        "riftId": 1,
+        "age": 2160,
+        "radius": 4.62047119977627
+      },
+      "sameCamera": true,
+      "sameLOD": true,
+      "legacy": {
+        "triangles": 280571,
+        "drawCalls": 21,
+        "cpuUpdate": {
+          "medianMs": 0.699999988079071,
+          "p95Ms": 1.699999988079071,
+          "maxMs": 1.800000011920929,
+          "samples": 120
+        }
+      },
+      "v1": {
+        "triangles": 280571,
+        "drawCalls": 21,
+        "cpuUpdate": {
+          "medianMs": 0.6000000238418579,
+          "p95Ms": 1.699999988079071,
+          "maxMs": 2.100000023841858,
+          "samples": 120
+        },
+        "productCalls": {
+          "update": 121,
+          "render": 121,
+          "rafCallbacks": 121
+        },
+        "allShadersLinked": true,
+        "fogIsNull": true,
+        "glError": 0
+      }
+    },
+    {
+      "name": "cross-nether-overview",
+      "plane": "nether",
+      "poi": {
+        "x": 144,
+        "y": 90,
+        "source": "committed Region centre"
+      },
+      "sameCamera": true,
+      "sameLOD": true,
+      "legacy": {
+        "triangles": 227412,
+        "drawCalls": 19,
+        "cpuUpdate": {
+          "medianMs": 0.699999988079071,
+          "p95Ms": 1.600000023841858,
+          "maxMs": 2.199999988079071,
+          "samples": 120
+        }
+      },
+      "v1": {
+        "triangles": 227412,
+        "drawCalls": 19,
+        "cpuUpdate": {
+          "medianMs": 0.6000000238418579,
+          "p95Ms": 1.5,
+          "maxMs": 2.100000023841858,
+          "samples": 120
+        },
+        "productCalls": {
+          "update": 121,
+          "render": 121,
+          "rafCallbacks": 121
+        },
+        "allShadersLinked": true,
+        "fogIsNull": true,
+        "glError": 0
+      }
+    },
+    {
+      "name": "cross-nether-breach-near",
+      "plane": "nether",
+      "poi": {
+        "x": 163.5,
+        "y": 39,
+        "source": "midpoint of current boundary edge intersecting a natural grown Rift",
+        "riftId": 8,
+        "age": 1080,
+        "radius": 4.424843911799904
+      },
+      "sameCamera": true,
+      "sameLOD": true,
+      "legacy": {
+        "triangles": 280795,
+        "drawCalls": 21,
+        "cpuUpdate": {
+          "medianMs": 0.6000000238418579,
+          "p95Ms": 1.600000023841858,
+          "maxMs": 1.899999976158142,
+          "samples": 120
+        }
+      },
+      "v1": {
+        "triangles": 280795,
+        "drawCalls": 21,
+        "cpuUpdate": {
+          "medianMs": 0.6000000238418579,
+          "p95Ms": 1.699999988079071,
+          "maxMs": 2.300000011920929,
+          "samples": 120
+        },
+        "productCalls": {
+          "update": 121,
+          "render": 121,
+          "rafCallbacks": 121
+        },
+        "allShadersLinked": true,
+        "fogIsNull": true,
+        "glError": 0
+      }
+    },
+    {
+      "name": "cross-nether-breach-far",
+      "plane": "nether",
+      "poi": {
+        "x": 163.5,
+        "y": 39,
+        "source": "same real breached boundary edge",
+        "riftId": 8,
+        "age": 1080,
+        "radius": 4.424843911799904
+      },
+      "sameCamera": true,
+      "sameLOD": true,
+      "legacy": {
+        "triangles": 208708,
+        "drawCalls": 16,
+        "cpuUpdate": {
+          "medianMs": 0.6000000238418579,
+          "p95Ms": 1.399999976158142,
+          "maxMs": 2,
+          "samples": 120
+        }
+      },
+      "v1": {
+        "triangles": 208708,
+        "drawCalls": 16,
+        "cpuUpdate": {
+          "medianMs": 0.699999988079071,
+          "p95Ms": 1.5,
+          "maxMs": 1.7999999523162842,
+          "samples": 120
+        },
+        "productCalls": {
+          "update": 121,
+          "render": 121,
+          "rafCallbacks": 121
+        },
+        "allShadersLinked": true,
+        "fogIsNull": true,
+        "glError": 0
+      }
+    },
+    {
+      "name": "cross-nether-breach-oblique",
+      "plane": "nether",
+      "poi": {
+        "x": 163.5,
+        "y": 39,
+        "source": "same real breached boundary edge; oblique depth/ownership diagnostic",
+        "riftId": 8,
+        "age": 1080,
+        "radius": 4.424843911799904
+      },
+      "sameCamera": true,
+      "sameLOD": true,
+      "legacy": {
+        "triangles": 280795,
+        "drawCalls": 21,
+        "cpuUpdate": {
+          "medianMs": 0.699999988079071,
+          "p95Ms": 1.899999976158142,
+          "maxMs": 3.199999988079071,
+          "samples": 120
+        }
+      },
+      "v1": {
+        "triangles": 280795,
+        "drawCalls": 21,
+        "cpuUpdate": {
+          "medianMs": 0.800000011920929,
+          "p95Ms": 2.199999988079071,
+          "maxMs": 3.400000035762787,
+          "samples": 120
+        },
+        "productCalls": {
+          "update": 121,
+          "render": 121,
+          "rafCallbacks": 121
+        },
+        "allShadersLinked": true,
+        "fogIsNull": true,
+        "glError": 0
+      }
+    }
+  ]
+}
