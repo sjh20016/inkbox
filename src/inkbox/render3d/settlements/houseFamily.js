@@ -1,7 +1,7 @@
 import { hashString } from '../../core/noise.js';
 
 export const MORTAL_HOUSE_ASSET_IDS = Object.freeze([
-  'mortal.house.base', 'mortal.house.small', 'mortal.house.courtyard',
+  'mortal.house.base', 'mortal.house.small', 'mortal.house.courtyard', 'mortal.house.hall',
 ]);
 const SIZES = Object.freeze({
   base: Object.freeze({ width: 1, height: 1, depth: 1, roof: 'gable' }),

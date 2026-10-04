@@ -12,7 +12,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(ROOT, 'reports/m2c2b/pass1/sample/edge'));
 const port = Number(process.env.INKBOX_PORT || 4226), base = process.env.INKBOX_URL || `http://127.0.0.1:${port}`;
 const familyMatrix = process.env.INKBOX_FAMILY_MATRIX === '1';
-const assetIds = familyMatrix ? ['mortal.house.base','mortal.house.small','mortal.house.courtyard'] : ['mortal.house.base'];
+const assetIds = process.env.INKBOX_HALL_MATRIX === '1' ? ['mortal.house.hall']
+  : familyMatrix ? ['mortal.house.base','mortal.house.small','mortal.house.courtyard'] : ['mortal.house.base'];
 const report = { suite: 'M2-C2B single-house Edge gate', generatedAt: new Date().toISOString(), pass: false,
   source: 'actual product RAF; submitted GLB triangle centroids; real input click; no forced picker or LOD results', cases: [] };
 let browser, server;

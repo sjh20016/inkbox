@@ -86,8 +86,8 @@ export function deriveSettlements(world, { productionAssets = false } = {}) {
       const hall = useProductionAssets ? structType === STRUCT.HALL : h.type === STRUCT.HALL;
       const s = scale * (hall ? 1.6 : 1);
       const houseKey = `house:${String(settlementId)}:${houseX}:${houseY}`;
-      const family = useProductionAssets && structType === STRUCT.HOUSE
-        ? houseFamilyFor(world.seed, v, houseX, houseY) : null;
+      let family = useProductionAssets ? houseFamilyFor(world.seed, v, houseX, houseY) : null;
+      if (family && hall) family = { ...family, assetId: 'mortal.house.hall', roofFamily: 'gable', width: 1, height: 1, depth: 1 };
       out.buildings.push({
         x: h.x + 0.5, y: h.y + 0.5,
         w: 1.5 * s * (family?.width ?? 1), h: 1.8 * s * (family?.height ?? 1),
@@ -551,7 +551,7 @@ export class SettlementLayer {
       if (lod === 3) continue;
       const p = this.coordinates.worldToRender(b.x, b.y, 0), ground = this.elevation.at(b.x, b.y);
       const useProductionHouse = this.productionAssetsEnabled && this.world?.plane === 'mortal' && this.environmentBatch
-        && b.type === 'house' && b.structType === STRUCT.HOUSE && lod >= 0 && lod <= 2;
+        && b.type === 'house' && (b.structType === STRUCT.HOUSE || b.structType === STRUCT.HALL) && lod >= 0 && lod <= 2;
       if (useProductionHouse) {
         productionRecords.push({ assetId: b.productionAssetId, lod,
           position: { x: p.x, y: ground, z: p.z },

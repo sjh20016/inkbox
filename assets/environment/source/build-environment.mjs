@@ -9,6 +9,7 @@ const sourceSpecs = [
   { id: 'mortal.house.base', name: 'house_base', file: '美术素材/实验建筑资产/建筑/bld_house.glb', triangles: 80, variant: 'base', roof: 'gable' },
   { id: 'mortal.house.small', name: 'house_small', file: '美术素材/实验建筑资产/宗门宅院/bld_hut.glb', triangles: 128, variant: 'small', roof: 'thatch' },
   { id: 'mortal.house.courtyard', name: 'house_courtyard', file: '美术素材/实验建筑资产/宗门宅院/bld_manor.glb', triangles: 188, variant: 'courtyard', roof: 'hip', remap: {12:9,13:10,14:9} },
+  { id: 'mortal.house.hall', name: 'house_hall', file: '美术素材/实验建筑资产/建筑/bld_hall.glb', triangles: 116, variant: 'hall', roof: 'gable', binding: 'current-struct-hall', remap: {12:9,13:10,14:9} },
 ];
 const SLOT = Object.freeze({ paper: 0, ink: 4, wood: 9, clay: 11 });
 const semanticSlots = [
@@ -188,7 +189,7 @@ function main() {
     const source=readSource(spec), geometries=[unitSource(source,spec.remap),manualLod1(spec.roof),tinyRoof(spec.roof),tinyRoof(spec.roof,true)];
     const lods=[0,1,2].map(lod=>`env_${spec.name}_lod${lod}`), hlod=`env_${spec.name}_hlod`;
     for (let lod=0;lod<4;lod++) { const data=geometries[lod];specs.push([lod<3?lods[lod]:hlod,data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]); }
-    assets[spec.id]={id:spec.id,source:path.basename(spec.file,'.glb'),realm:'mortal',binding:'current-struct-house',pick:'house',lods,hlod,variant:spec.variant,roofFamily:spec.roof};
+    assets[spec.id]={id:spec.id,source:path.basename(spec.file,'.glb'),realm:'mortal',binding:spec.binding||'current-struct-house',pick:'house',lods,hlod,variant:spec.variant,roofFamily:spec.roof};
     sources[spec.id]={file:spec.file,triangles:spec.triangles,sourceBounds:source.bounds,semanticRemap:spec.remap||{},normalization:{width:1/(source.bounds.max[0]-source.bounds.min[0]),height:1/(source.bounds.max[1]-source.bounds.min[1]),depth:1/(source.bounds.max[2]-source.bounds.min[2]),pivot:'center X/Z, min Y'}};
     fs.copyFileSync(path.join(root,spec.file),path.join(out,'source',path.basename(spec.file)));
   }

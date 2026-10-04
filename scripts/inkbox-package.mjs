@@ -202,6 +202,7 @@ const RELEASE_SUMMARIES = [
   'reports/release/render3d-m2c2b-pass1/b0-summary.json',
   'reports/release/render3d-m2c2b-pass1/sample-summary.json',
   'reports/release/render3d-m2c2b-pass1/family-summary.json',
+  'reports/release/render3d-m2c2b-pass1/hall-summary.json',
 ];
 
 function copyRelative(relative) {

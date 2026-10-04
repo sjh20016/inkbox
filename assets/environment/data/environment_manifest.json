@@ -105,6 +105,33 @@
         "depth": 0.8130081174740657,
         "pivot": "center X/Z, min Y"
       }
+    },
+    "mortal.house.hall": {
+      "file": "美术素材/实验建筑资产/建筑/bld_hall.glb",
+      "triangles": 116,
+      "sourceBounds": {
+        "min": [
+          -0.6600000262260437,
+          0,
+          -0.6399999856948853
+        ],
+        "max": [
+          0.6600000262260437,
+          1,
+          0.5799999833106995
+        ]
+      },
+      "semanticRemap": {
+        "12": 9,
+        "13": 10,
+        "14": 9
+      },
+      "normalization": {
+        "width": 0.7575757274724029,
+        "height": 1,
+        "depth": 0.8196721519715239,
+        "pivot": "center X/Z, min Y"
+      }
     }
   },
   "modules": {
@@ -435,6 +462,114 @@
         "paper",
         "ink"
       ]
+    },
+    "env_house_hall_lod0": {
+      "node": "env_house_hall_lod0",
+      "triangles": 116,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.5,
+          1,
+          0.5
+        ]
+      },
+      "uvSlots": [
+        0,
+        1,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10
+      ],
+      "semanticSlots": [
+        "paper",
+        "paperDeep",
+        "ink",
+        "inkMid",
+        "stone",
+        "stoneDark",
+        "wood",
+        "woodDark"
+      ]
+    },
+    "env_house_hall_lod1": {
+      "node": "env_house_hall_lod1",
+      "triangles": 30,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.455
+        ],
+        "max": [
+          0.5,
+          1,
+          0.455
+        ]
+      },
+      "uvSlots": [
+        0,
+        4,
+        9
+      ],
+      "semanticSlots": [
+        "paper",
+        "ink",
+        "wood"
+      ]
+    },
+    "env_house_hall_lod2": {
+      "node": "env_house_hall_lod2",
+      "triangles": 8,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.44
+        ],
+        "max": [
+          0.5,
+          0.35,
+          0.44
+        ]
+      },
+      "uvSlots": [
+        4
+      ],
+      "semanticSlots": [
+        "ink"
+      ]
+    },
+    "env_house_hall_hlod": {
+      "node": "env_house_hall_hlod",
+      "triangles": 14,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.44
+        ],
+        "max": [
+          0.5,
+          0.94,
+          0.44
+        ]
+      },
+      "uvSlots": [
+        0,
+        4
+      ],
+      "semanticSlots": [
+        "paper",
+        "ink"
+      ]
     }
   },
   "assets": {
@@ -482,6 +617,21 @@
       "hlod": "env_house_courtyard_hlod",
       "variant": "courtyard",
       "roofFamily": "hip"
+    },
+    "mortal.house.hall": {
+      "id": "mortal.house.hall",
+      "source": "bld_hall",
+      "realm": "mortal",
+      "binding": "current-struct-hall",
+      "pick": "house",
+      "lods": [
+        "env_house_hall_lod0",
+        "env_house_hall_lod1",
+        "env_house_hall_lod2"
+      ],
+      "hlod": "env_house_hall_hlod",
+      "variant": "hall",
+      "roofFamily": "gable"
     }
   }
 }

@@ -83,7 +83,7 @@ try {
   try {
     await check('shipped GLB, external PNG and semantic UV cells decode exactly', () => {
       assert(library.modules.size >= 12);
-      for (const [id,lod0] of [['mortal.house.base',80],['mortal.house.small',128],['mortal.house.courtyard',188]]) {
+      for (const [id,lod0] of [['mortal.house.base',80],['mortal.house.small',128],['mortal.house.courtyard',188],['mortal.house.hall',116]]) {
         assert.deepEqual(library.assetInfo(id).lods.map(n=>library.modules.get(n).triangles), [lod0,30,8]);
         assert.equal(library.modules.get(library.assetInfo(id).hlod).triangles, 14);
       }
@@ -160,9 +160,9 @@ try {
     try {
       await check('all three house LODs and existing far aggregate retain ownership and toggle back to legacy', () => {
         const layer = host.stages.get('mortal').settlements;
-        host.setLODEnabled(false); assert.equal(layer.environmentBatch.stats.instances, 83); assert.deepEqual(layer.environmentBatch.stats.lod, [83,0,0]);
-        assert(layer.bodies.count >= 5, 'real halls keep fallback');
-        assert(layer._renderBuildingLists[0].every(b => b.type !== 'house' || b.structType === STRUCT.HALL));
+        host.setLODEnabled(false); assert.equal(layer.environmentBatch.stats.instances, 88); assert.deepEqual(layer.environmentBatch.stats.lod, [88,0,0]);
+        assert.equal(layer.environmentBatch.meshes.get('env_house_hall_lod0').count,5,'only current real halls use hall geometry');
+        assert(layer._renderBuildingLists[0].every(b => b.type !== 'house'),'no real houses or halls duplicate fallback geometry');
         host.setLODEnabled(true);
         const observed = [];
         for (const ppu of [60,15,3]) { view(host, ppu); observed.push(layer.environmentBatch.stats.lod); }
@@ -187,7 +187,7 @@ try {
           assert.equal(seen.size,group.houseCount,'all true house members belong to an aggregate');
         }
         host.setProductionAssetsEnabled(false); host.setLODEnabled(false); assert.equal(layer.environmentBatch.stats.instances, 0); assert(layer.bodies.count >= 88);
-        host.setProductionAssetsEnabled(true); assert.equal(layer.environmentBatch.stats.instances, 83);
+        host.setProductionAssetsEnabled(true); assert.equal(layer.environmentBatch.stats.instances, 88);
         report.lodCoverage = observed;
       });
       await check('actual house geometry raycasts to its original house key and exact village', () => {
