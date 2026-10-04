@@ -135,7 +135,13 @@ async function configureAndWait(profile, view) {
     const r=window.inkbox.render3d.renderer,a=window.__realmStyleProof;
     r.setArtProfile(${JSON.stringify(profile)});r.setLODEnabled(true);
     const recipe=a.applyCamera(r,'WORLD_OVERVIEW',{poi:${JSON.stringify(view.poi)},yaw:${view.yaw},polar:${view.polar},zoom:${view.zoom}});
-    for(let i=0;i<5;i++)await new Promise(requestAnimationFrame);
+    let signature=null,stable=0,warmFrames=0;
+    for(;warmFrames<120&&stable<6;warmFrames++){
+      await new Promise(requestAnimationFrame);
+      const next=JSON.stringify([r.cameraRig.pixelsPerUnit,r.gpu.info.render.triangles,r.gpu.info.render.calls,r.getLODStats()]);
+      stable=next===signature?stable+1:0;signature=next;
+    }
+    if(stable<6)throw new Error('camera/LOD did not settle before capture');
     const camera=r.cameraRig.camera,actual={position:camera.position.toArray(),target:r.cameraRig.controls.target.toArray(),zoom:camera.zoom,
       matrixWorld:camera.matrixWorld.toArray(),projectionMatrix:camera.projectionMatrix.toArray()};
     const expected={position:recipe.position,target:recipe.target,zoom:recipe.zoom};
@@ -168,9 +174,9 @@ async function configureAndWait(profile, view) {
       for(const category of ['vegetation','entities','settlements'])if(item[category]&&(item[category].plane!==item.plane||item[category].enabled!==1))
         throw new Error(item.plane+' '+category+' realm-style uniform/profile plane mismatch: '+JSON.stringify(item[category]));
     }
-    const programs=r.gpu.info.programs.map(p=>({name:p.name||null,runnable:p.diagnostics?.runnable??p.runnable??null,
+    const programs=r.gpu.info.programs.map(p=>({name:p.name||null,linked:p.program?gl.getProgramParameter(p.program,gl.LINK_STATUS):null,runnable:p.diagnostics?.runnable??p.runnable??null,
       log:p.diagnostics?.programLog||p.diagnostics?.vertexShader?.log||p.diagnostics?.fragmentShader?.log||null}));
-    if(programs.some(p=>p.runnable===false))throw new Error('Non-runnable WebGL program: '+JSON.stringify(programs.filter(p=>p.runnable===false)));
+    if(!programs.length||programs.some(p=>p.linked!==true))throw new Error('WebGL LINK_STATUS failed or unavailable');
     return {profile:r.art.profile.name,pose:{actual,expected,poseDelta},worldAdopted:r.world===window.inkbox.world&&stage.world===window.inkbox.world,
       cameraRecipe:recipe.recipe,poi:recipe.poi,targetHouseLod,targetHouseSourceIndex:targetHouse?.sourceIndex??null,
       settlementStats:{...settlements.stats,lod:[...settlements.stats.lod]},targetSettlementEntries:entryList.filter(e=>e.settlementId===${JSON.stringify(view.poi.settlementId)}).length,
@@ -184,19 +190,20 @@ async function configureAndWait(profile, view) {
 
 async function sampleProductLoop(label) {
   return page(`
-    const r=window.inkbox.render3d.renderer, state={update:[],render:[],raf:[],active:true};
+    const r=window.inkbox.render3d.renderer, state={update:[],render:[],raf:[],active:true,updateCalls:0,renderCalls:0};
     const originalUpdate=r.update,originalRender=r.render;
-    r.update=function(dt){const t=performance.now();try{return originalUpdate.call(this,dt);}finally{if(state.active)state.update.push(performance.now()-t);}};
-    r.render=function(){const t=performance.now();try{return originalRender.call(this);}finally{if(state.active)state.render.push(performance.now()-t);}};
+    r.update=function(dt){const t=performance.now();try{return originalUpdate.call(this,dt);}finally{if(state.active){state.updateCalls++;state.update.push(performance.now()-t);}}};
+    r.render=function(){const t=performance.now();try{return originalRender.call(this);}finally{if(state.active){state.renderCalls++;state.render.push(performance.now()-t);}}};
     try{let previous=null;for(let i=0;i<${SAMPLES}+1;i++){const ts=await new Promise(requestAnimationFrame);if(previous!==null)state.raf.push(ts-previous);previous=ts;}}
     finally{state.active=false;r.update=originalUpdate;r.render=originalRender;}
+    if(Math.abs(state.updateCalls-(${SAMPLES}+1))>1||Math.abs(state.renderCalls-(${SAMPLES}+1))>1)throw new Error('not one product update/render per RAF');
     const summarize=a=>{const x=a.slice(-${SAMPLES}).sort((p,q)=>p-q);if(x.length<${SAMPLES})throw new Error('too few product loop samples '+x.length);
       return {samples:x.length,meanMs:x.reduce((s,v)=>s+v,0)/x.length,medianMs:x[Math.floor(x.length*.5)],p95Ms:x[Math.floor(x.length*.95)],maxMs:x.at(-1)};};
     const visible=[...r.stages.values()].filter(s=>s.visible),layerStats={};
     for(const s of visible)layerStats[s.plane]={trees:s.vegetation?.stats||null,characters:s.entities?.stats||null,buildings:s.settlements?.stats||null};
     const gpu=r.gpu,gl=gpu.getContext();
     return {case:${JSON.stringify(label)},kind:'product-loop-only; wrapper instrumentation; no probe update/render calls',
-      cpuUpdate:summarize(state.update),cpuRender:summarize(state.render),raf:summarize(state.raf),
+      productCalls:{update:state.updateCalls,render:state.renderCalls,rafCallbacks:${SAMPLES}+1},cpuUpdate:summarize(state.update),cpuRender:summarize(state.render),raf:summarize(state.raf),
       drawCalls:gpu.info.render.calls,triangles:gpu.info.render.triangles,layerStats,
       canvasResolution:[gpu.domElement.width,gpu.domElement.height],cssResolution:[gpu.domElement.clientWidth,gpu.domElement.clientHeight],dpr:gpu.getPixelRatio(),
       gpuTimeMs:null,gpuTimingReason:'not measured; CPU/rAF only (extension support reported separately)',
@@ -238,6 +245,14 @@ try {
     evidence.cases.push({name:view.name,poi:view.poi,recipe:pair[0].recipe,pairedCameraMatrix:pair[0].pose.actual.matrixWorld,
       legacy:pair[0],v1:pair[1],sameCameraPose:true});
   }
+  evidence.resize=await page(`const r=window.inkbox.render3d.renderer,canvas=r.gpu.domElement;
+    const before=[canvas.width,canvas.height],size=[r.width,r.height];r.resize(900,600);for(let i=0;i<3;i++)await new Promise(requestAnimationFrame);
+    const during=[canvas.width,canvas.height];r.resize(...size);for(let i=0;i<6;i++)await new Promise(requestAnimationFrame);
+    const restored=[canvas.width,canvas.height];return {before,during,restored,glError:r.gpu.getContext().getError()};`);
+  assert.equal(evidence.resize.glError,0,'resize GL error');
+  assert.deepEqual(evidence.resize.restored,evidence.resize.before,'resize restore mismatch');
+  assert.notDeepEqual(evidence.resize.during,evidence.resize.before,'resize did not change canvas');
+  assert(evidence.resize.during[0]>0&&evidence.resize.during[1]>0,'resize lost canvas');
   evidence.finalWorldDigest=await page(`return window.__realmStyleProof.snapshotDigest(window.inkbox);`);
   evidence.worldUnchanged=evidence.initialWorldDigest.value===evidence.finalWorldDigest.value;
   assert(evidence.worldUnchanged,'visual/performance proof changed whole-world digest');
