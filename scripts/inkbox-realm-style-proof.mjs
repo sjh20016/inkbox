@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { launch, findBrowser } from './cdp.mjs';
+import { launch, findEdge } from './cdp.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${process.env.INKBOX_PORT || 4192}`;
@@ -14,7 +14,7 @@ url.searchParams.set('renderer', '3d');
 const output = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(root, 'reports/m2c2b0/b1-proof-final'));
 const SAMPLES = 120;
 const PROFILES = ['legacy', 'realm-style-v1'];
-const page = body => browser.js(`return (async()=>{${body}})();`);
+const page = (body, options) => browser.js(`return (async()=>{${body}})();`, options);
 let browser;
 const evidence = {
   generatedAt: new Date().toISOString(), world: 'GOLDEN_A', source: url.toString(),
@@ -46,7 +46,7 @@ async function prepare() {
     if(r.world!==k.world||r.stages.get('mortal')?.world!==k.world)throw new Error('GOLDEN_A world adoption drifted');
     return {scenario,digest:await window.__realmStyleProof.snapshotDigest(k),size:[k.world.w,k.world.h],
       houses:k.world.villages.reduce((n,v)=>n+(v.houses?.length||0),0),villages:k.world.villages.length};
-  `);
+  `, { timeoutMs: 180000 });
 }
 
 async function selectViews() {
@@ -61,10 +61,21 @@ async function selectViews() {
     if(!entity.visibilityProof?.visible)throw new Error('character camera has no visible real cultivator proof');
     const settlementPoi={x:settlement.poi.x,y:settlement.poi.y,id:settlement.poi.id,settlementId:settlement.poi.id,
       source:settlement.poi.source,entityId:settlement.poi.entityId,house:settlement.poi.house};
+    // A fixed .65 zoom puts this real village at 23.83 px on the local canvas,
+    // almost exactly at the 24 px HLOD entry band. Derive a far camera with
+    // viewport margin; the same real village and member checks still apply.
+    const {LOD_BUDGETS,projectedPixels}=await import('./src/inkbox/render3d/lod/PresentationBudget.js');
+    a.applyCamera(r,'WORLD_OVERVIEW',{poi:settlementPoi,yaw:settlement.recipe.yaw,polar:settlement.recipe.polar,zoom:.65});
+    for(let i=0;i<4;i++)await new Promise(requestAnimationFrame);
+    const group=r.stages.get('mortal').settlements._groupById.get(settlementPoi.settlementId);
+    if(!group||group.houseCount<=1)throw new Error('selected real settlement cannot form a multi-house HLOD');
+    const footprint=projectedPixels(group.maxHeight,r.stages.get('mortal').settlements.artView,Math.max(group.width,group.depth));
+    const farZoom=Math.max(r.cameraRig.controls.minZoom,Math.min(.65,.65*LOD_BUDGETS.thresholds.settlement.enterLod2*.8/footprint));
     const settlementViews=[
       {name:'settlement-near',kind:'settlement',poi:settlementPoi,yaw:settlement.recipe.yaw,polar:settlement.recipe.polar,zoom:9,lod:0,visibility:settlement.visibilityProof},
       {name:'settlement-mid',kind:'settlement',poi:settlementPoi,yaw:settlement.recipe.yaw,polar:settlement.recipe.polar,zoom:6,lod:1,visibility:settlement.visibilityProof},
-      {name:'settlement-far-hlod',kind:'settlement',poi:settlementPoi,yaw:settlement.recipe.yaw,polar:settlement.recipe.polar,zoom:.65,lod:2,visibility:settlement.visibilityProof},
+      {name:'settlement-far-hlod',kind:'settlement',poi:settlementPoi,yaw:settlement.recipe.yaw,polar:settlement.recipe.polar,zoom:farZoom,lod:2,visibility:settlement.visibilityProof,
+        cameraSelection:{source:'real settlement projected footprint',referenceZoom:.65,referencePixels:footprint,targetPixels:LOD_BUDGETS.thresholds.settlement.enterLod2*.8}},
     ];
     const character={name:'character',kind:'character',poi:{x:entity.poi.x,y:entity.poi.y,id:entity.poi.id,source:entity.poi.source,entityId:entity.poi.id},
       yaw:entity.recipe.yaw,polar:entity.recipe.polar,zoom:entity.recipe.zoom,visibility:entity.visibilityProof};
@@ -127,7 +138,7 @@ async function selectViews() {
       }
     if(!forest)throw new Error('No raycast-visible tree found in GOLDEN_A dense forest tiles');
     return {views:[overview,...settlementViews,wateredge,forest,character],settlement:{poi:settlement.poi,visibility:settlement.visibilityProof},character:{poi:entity.poi,visibility:entity.visibilityProof},wetCandidates:wet.length,forestSource:{trees:trees.length,densestTileCount:counts[tiles[0]],tileSize:tile}};
-  `);
+  `, { timeoutMs: 180000 });
 }
 
 async function configureAndWait(profile, view) {
@@ -183,7 +194,7 @@ async function configureAndWait(profile, view) {
       visiblePlanes:[...r.stages.values()].filter(s=>s.visible).map(s=>s.plane),glRenderer:gl.getParameter(gl.RENDERER),
       fogIsNull:r.scene.fog===null,styleUniforms,programs,
       timerQueryAvailable:!!(gl.getExtension('EXT_disjoint_timer_query_webgl2')||gl.getExtension('EXT_disjoint_timer_query'))};
-  `);
+  `, { timeoutMs: 120000 });
   assert(result.worldAdopted, `${view.name}: scenario host/stage adoption drift`);
   return result;
 }
@@ -209,7 +220,7 @@ async function sampleProductLoop(label) {
       gpuTimeMs:null,gpuTimingReason:'not measured; CPU/rAF only (extension support reported separately)',
       timerQueryAvailable:!!(gl.getExtension('EXT_disjoint_timer_query_webgl2')||gl.getExtension('EXT_disjoint_timer_query')),
       glError:gl.getError()};
-  `);
+  `, { timeoutMs: 180000 });
 }
 
 async function captureCase(view, profile) {
@@ -221,6 +232,7 @@ async function captureCase(view, profile) {
   await browser.screenshot(path.join(output, filename));
   return { name:view.name,profile,file:path.relative(root,path.join(output,filename)).replaceAll(path.sep,'/'),
     poi:view.poi,recipe:configured.cameraRecipe,pose:configured.pose,visibility:view.visibility||null,
+    cameraSelection:view.cameraSelection||null,
     settlement:{targetHouseLod:configured.targetHouseLod,targetHouseSourceIndex:configured.targetHouseSourceIndex,
       targetEntries:configured.targetSettlementEntries,stats:configured.settlementStats},
     renderer:{...sample,glRenderer:configured.glRenderer,timerQueryAvailable:configured.timerQueryAvailable,
@@ -229,7 +241,8 @@ async function captureCase(view, profile) {
 
 try {
   fs.mkdirSync(output,{recursive:true});
-  browser=await launch({url:url.toString(),browser:findBrowser(),width:1500,height:940,gpu:true,timeoutMs:30000});
+  const edge=findEdge();assert(edge,'Microsoft Edge is required');
+  browser=await launch({url:url.toString(),browser:edge,width:1500,height:940,gpu:true,timeoutMs:30000});
   assert(await browser.waitFor('return !!window.inkbox?.render3d?.renderer?.stages?.size',{timeoutMs:60000}),
     `Render3D failed to boot: ${browser.errors().join(' | ')}`);
   const setup=await prepare();evidence.scenario=setup.scenario;evidence.initialWorldDigest=setup.digest;

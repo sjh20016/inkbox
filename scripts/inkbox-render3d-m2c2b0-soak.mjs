@@ -5,7 +5,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { spawn, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { launch, findBrowser, sleep } from './cdp.mjs';
+import { launch, findEdge, sleep } from './cdp.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const port=Number(process.env.INKBOX_PORT||4192),base=process.env.INKBOX_URL||`http://127.0.0.1:${port}`;
@@ -20,7 +20,7 @@ const report={startedAt:new Date().toISOString(),scenario:'NETHER_STYLE_A',sourc
   serverMode:process.env.INKBOX_URL?'controlled-existing-URL':'self-hosted',lifecycleFrames:600,soakFrames:6000,
   blockFrames:300,states:states.map(({key})=>key),blocks:[],pass:false};
 let server,browser;
-const page=body=>{const expression=`return (async()=>{${body}})();`;new vm.Script(`(()=>{${expression}})()`);return browser.js(expression);};
+const page=(body,options)=>{const expression=`return (async()=>{${body}})();`;new vm.Script(`(()=>{${expression}})()`);return browser.js(expression,options);};
 function diagnostics(){return {consoleErrors:browser?.cdp.events.filter(e=>e.method==='Runtime.consoleAPICalled'&&e.params?.type==='error')
   .map(e=>e.params.args?.map(a=>a.value||a.description||'').join(' '))||[],runtimeErrors:browser?.errors()||[]};}
 async function startServer(){
@@ -47,7 +47,7 @@ async function prepare(){
   await page(`window.__b6=await import('./src/inkbox/render3d/art/VisualScenarios.js');return true;`);
   let scenario;
   for(let startStep=0;startStep<7200;startStep+=900)
-    scenario=await page(`return window.__b6.applyScenarioAsync(window.inkbox,'NETHER_STYLE_A',{startStep:${startStep},stepCount:900});`);
+    scenario=await page(`return window.__b6.applyScenarioAsync(window.inkbox,'NETHER_STYLE_A',{startStep:${startStep},stepCount:900});`, { timeoutMs: 180000 });
   assert(scenario.complete&&scenario.worldDay===21600&&scenario.coverage.ghostCultivators>0,'natural Nether fixture incomplete');
   const setup=await page(`
     const k=window.inkbox,r=k.render3d.renderer;
@@ -79,7 +79,7 @@ async function prepare(){
     return {digestBefore,actions,digestPure:await window.__b6.snapshotDigest(k),worldDay:k.world.day,
       mortalEntities:k.world.entities.length,upperEntities:k.world.upper.entities.length,netherEntities:k.world.nether.entities.length,
       ghost:{id:ghost.id,x:ghost.x,y:ghost.y,soulKind:ghost.soulKind},upper:{id:upper.id,x:upper.x,y:upper.y}};
-  `);
+  `, { timeoutMs: 180000 });
   assert.equal(setup.upperEntities,12,'natural fixture did not contain 12 Upper entities');
   assert.equal(setup.digestPure.value,setup.actions.at(-1).digestAfter.value,'pure close changed World');
   return {scenario,setup};
@@ -152,7 +152,7 @@ async function warmAllStates(){
   for(const state of states){
     const zooms=[];
     for(const zoom of [18,4,.5]){
-      const result=await page(`return window.__b6SetState(${JSON.stringify(state)},${zoom});`);
+      const result=await page(`return window.__b6SetState(${JSON.stringify(state)},${zoom});`, { timeoutMs: 120000 });
       const snapshot=await page(`return window.__b6Snapshot();`);
       assert.equal(snapshot.glError,0,`${state.key} zoom ${zoom}: GL error`);
       let ghostProof=null;
@@ -172,7 +172,7 @@ async function warmAllStates(){
   }
   const reference={};
   for(const state of states){
-    await page(`return window.__b6SetState(${JSON.stringify(state)},4);`);
+    await page(`return window.__b6SetState(${JSON.stringify(state)},4);`, { timeoutMs: 120000 });
     const snapshot=await page(`return window.__b6Snapshot();`);
     assert.equal(snapshot.glError,0,`${state.key}: baseline GL error`);
     reference[state.key]={resources:snapshot.resources,materialRefs:snapshot.materialRefs};
@@ -204,7 +204,7 @@ async function lifecycle(){
     return {frames:600,worldDigestBefore:before,worldDigestAfter:after,worldUnchanged:before.value===after.value,
       resizeRestored:r.width===originalSize[0]&&r.height===originalSize[1],checkpoints,actualCalls,
       raf:{samples:raf.length,medianMs:sorted[Math.floor(sorted.length*.5)],p95Ms:sorted[Math.floor(sorted.length*.95)]}};
-  `);
+  `, { timeoutMs: 300000 });
 }
 async function soakBlock(block,state){
   return page(`
@@ -227,12 +227,12 @@ async function soakBlock(block,state){
     return {block:${block},key:state.key,state,frames:300,actualCalls,segments,warmFrames:[warm.warmFrames,finalWarm.warmFrames],
       worldDigest:await window.__b6.snapshotDigest(k),snapshot,
       raf:{samples:raf.length,medianMs:sorted[Math.floor(sorted.length*.5)],p95Ms:sorted[Math.floor(sorted.length*.95)]}};
-  `);
+  `, { timeoutMs: 180000 });
 }
 
 try{
   fs.mkdirSync(output,{recursive:true});
-  const executable=findBrowser();assert(executable,'Microsoft Edge or Chrome is required');
+  const executable=findEdge();assert(executable,'Microsoft Edge is required');
   server=await startServer();
   browser=await launch({url:url.toString(),browser:executable,width:1500,height:940,gpu:true,timeoutMs:30000});
   assert(await browser.waitFor('return !!window.inkbox?.render3d?.renderer?.stages?.size',{timeoutMs:60000}),

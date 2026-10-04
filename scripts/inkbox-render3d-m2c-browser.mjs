@@ -18,7 +18,7 @@ function sourceFiles(directory){return fs.readdirSync(directory,{withFileTypes:t
 evidence.renderSourceHashes=Object.fromEntries(sourceFiles('src/inkbox/render3d').sort().map(file=>[file.replaceAll('\\','/'),createHash('sha256').update(fs.readFileSync(file)).digest('hex')]));
 evidence.renderSourceDigest=createHash('sha256').update(JSON.stringify(evidence.renderSourceHashes)).digest('hex');
 const session = await launch({ url: `${process.env.INKBOX_URL || 'http://127.0.0.1:4180/inkbox.html'}?renderer=3d`, browser: edge, width: 1500, height: 940, gpu: true });
-const js = expression => session.js(`return (async()=>{${expression}})();`);
+const js = (expression, options) => session.js(`return (async()=>{${expression}})();`, options);
 try {
   if (!await session.waitFor('return !!window.inkbox?.render3d?.renderer?.stages?.size', { timeoutMs: 60000 })) {
     evidence.errors=session.errors();await session.screenshot(path.join(OUT,'failure-startup.png'));
@@ -49,8 +49,8 @@ try {
       if (name==='01_mortal_overview') evidence.performance.push(await js(`return window.__m2cHarness.measureRenderer(window.inkbox.render3d.renderer,'${profile}');`));
     }
   }
-  if(!baseline&&!probeOnly) evidence.lifecycle=await js(`return window.__m2cHarness.validateCameraAndLifecycle(window.inkbox);`);
-  if(!baseline) evidence.renderTargetProbe=await js(`return window.__m2cHarness.probeRenderTargets(window.inkbox.render3d.renderer);`);
+  if(!baseline&&!probeOnly) evidence.lifecycle=await js(`return window.__m2cHarness.validateCameraAndLifecycle(window.inkbox);`, { timeoutMs: 180000 });
+  if(!baseline) evidence.renderTargetProbe=await js(`return window.__m2cHarness.probeRenderTargets(window.inkbox.render3d.renderer);`, { timeoutMs: 120000 });
   evidence.errors=[...session.errors(),...session.cdp.events.filter(e=>e.method==='Runtime.consoleAPICalled'&&e.params.type==='error').map(e=>e.params.args.map(a=>a.value||a.description||'').join(' '))];
 } catch(error) {
   evidence.failure=String(error.stack||error);

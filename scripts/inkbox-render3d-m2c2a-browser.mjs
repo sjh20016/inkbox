@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { launch, findBrowser, sleep } from './cdp.mjs';
+import { launch, findEdge, sleep } from './cdp.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const basePort = Number(process.env.INKBOX_PORT || 4191);
@@ -24,7 +24,7 @@ const samples = Math.max(120, Math.min(180, Number(process.env.INKBOX_SAMPLES ||
 const evidence = { generatedAt: new Date().toISOString(), samplesPerPass: samples, cases: [], errors: [], pass: false };
 let server, browser;
 
-const page = body => browser.js(`return (async()=>{${body}})();`);
+const page = (body, options) => browser.js(`return (async()=>{${body}})();`, options);
 const shaFile = filename => createHash('sha256').update(fs.readFileSync(filename)).digest('hex');
 const jsFiles = [
   'src/inkbox/render3d/Render3DHost.js', 'src/inkbox/render3d/stage/PlaneStage.js',
@@ -142,7 +142,7 @@ async function collectSample(label, scenario, poi, region) {
       raf:summarize(frameTimes),layerUpdate:summarize(updates),renderSubmitCpu:summarize(submits),drawCalls:r.gpu.info.render.calls,triangles:r.gpu.info.render.triangles,
       categoryTriangles,categoryInstances,logicalCounts,instances:Object.values(categoryInstances).reduce((sum,count)=>sum+count,0),layerStats,
       visiblePlanes:visible.map(s=>s.plane),regionAudit,resources:{...r.gpu.info.memory,programs:r.gpu.info.programs.length},programStatus:r.gpu.info.programs.map(p=>({name:p.name||null,runnable:p.diagnostics?.runnable??p.runnable??null})),gpu:debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),glError:gl.getError(),viewport:[innerWidth,innerHeight],dpr:r.gpu.getPixelRatio()};
-  `);
+  `, { timeoutMs: 180000 });
 }
 async function worldDigest() { return page('return window.__m2c2a.snapshotDigest(window.inkbox);'); }
 async function verifyIdentity() {
@@ -151,14 +151,14 @@ async function verifyIdentity() {
     const preferred=await window.__m2c2a.applyVisibleCamera(r,'ENTITY_MEDIUM');
     const candidates=deriveEntities(k.world).cultivator.map(entity=>{let pair=null;for(const village of k.world.villages||[])for(const house of village.houses||[]){const distance=Math.hypot(entity.x-house.x,entity.y-house.y);if(!pair||distance<pair.distance)pair={house,distance};}return {entity,pair};}).filter(value=>value.pair&&value.pair.distance>=5&&value.pair.distance<=20).sort((a,b)=>Math.abs(a.pair.distance-10)-Math.abs(b.pair.distance-10)||a.entity.id-b.entity.id);
     const preferredIndex=candidates.findIndex(value=>value.entity.id===preferred.poi?.id);if(preferredIndex>0)candidates.unshift(...candidates.splice(preferredIndex,1));return {preferredCamera:preferred.recipe,candidates:candidates.slice(0,10).map(value=>({entity:value.entity,pair:value.pair,preferred:value.entity.id===preferred.poi?.id}))};
-  `);
+  `, { timeoutMs: 180000 });
   await page(`window.__verifyRenderedEntityLOD=async function(id,wantedLod,preferredCamera,diagnosticOnly){
     const T=await import('three'),k=window.inkbox,r=k.render3d.renderer,stage=r.stages.get('mortal'),ray=new T.Raycaster(),entity=stage.entities.lastDerived.cultivator.find(value=>value.id===id),ancestorsVisible=o=>{for(let p=o;p;p=p.parent)if(!p.visible)return false;return true;};if(!entity)throw new Error('deriveEntities record absent: '+id);
     const surfaceHit=(mesh,instance)=>{const g=mesh.geometry,p=g.attributes.position,index=g.index,triangles=Math.floor((index?.count??p.count)/3),samples=Math.min(4,triangles),im=new T.Matrix4(),wm=new T.Matrix4(),points=[];mesh.getMatrixAt(instance,im);wm.multiplyMatrices(mesh.matrixWorld,im);for(let sample=0;sample<samples;sample++){const triangle=samples===triangles?sample:Math.floor(sample*(triangles-1)/Math.max(1,samples-1)),ids=index?[index.getX(triangle*3),index.getX(triangle*3+1),index.getX(triangle*3+2)]:[triangle*3,triangle*3+1,triangle*3+2],point=new T.Vector3().fromBufferAttribute(p,ids[0]).add(new T.Vector3().fromBufferAttribute(p,ids[1])).add(new T.Vector3().fromBufferAttribute(p,ids[2])).multiplyScalar(1/3).applyMatrix4(wm),projected=point.clone().project(r.cameraRig.camera);if(Math.abs(projected.x)>.94||Math.abs(projected.y)>.94||projected.z< -1||projected.z>1)continue;const pixel=[(projected.x+1)*r.width/2,(1-projected.y)*r.height/2];ray.setFromCamera(new T.Vector2(projected.x,projected.y),r.cameraRig.camera);const boundBefore=mesh.boundingSphere?{center:mesh.boundingSphere.center.toArray(),radius:mesh.boundingSphere.radius}:null,self=ray.intersectObject(mesh,false).find(hit=>hit.instanceId===instance);let repairedSelf=null,repairedFirst=null,repairedPick=null;if(diagnosticOnly&&!self){mesh.boundingSphere=null;repairedSelf=ray.intersectObject(mesh,false).find(hit=>hit.instanceId===instance)||null;if(repairedSelf){repairedFirst=ray.intersectObjects(r.scene.children,true).find(hit=>ancestorsVisible(hit.object))||null;repairedPick=r.pick(...pixel)||null;}}const first=self?ray.intersectObjects(r.scene.children,true).find(hit=>ancestorsVisible(hit.object)):null,pick=r.pick(...pixel),candidate={triangle,pixel,worldPoint:point.toArray(),boundBefore,selfInstance:self?.instanceId??null,frontObject:first?.object?.name||null,frontInstance:first?.instanceId??null,pick:pick?{entityId:pick.entityId,plane:pick.plane,kind:pick.kind}:null,repairedBoundRadius:mesh.boundingSphere?.radius??null,repairedSelfInstance:repairedSelf?.instanceId??null,repairedFrontObject:repairedFirst?.object?.name||null,repairedFrontInstance:repairedFirst?.instanceId??null,repairedPick:repairedPick?{entityId:repairedPick.entityId,plane:repairedPick.plane,kind:repairedPick.kind}:null};points.push(candidate);if((first?.object===mesh&&first.instanceId===instance&&pick?.entityId===id)||(repairedFirst?.object===mesh&&repairedFirst.instanceId===instance&&repairedPick?.entityId===id))return {matched:candidate,points};}return {matched:null,points};};
     const zooms=diagnosticOnly?(wantedLod===0?[18,14]:[10,8,6,4]):(wantedLod===0?[18,14,10]:[10,8,6,4,2,1,.5]),yaws=diagnosticOnly?[preferredCamera?.yaw,.2].filter(Number.isFinite):[preferredCamera?.yaw,.2,3.34].filter(Number.isFinite),polars=diagnosticOnly?[preferredCamera?.polar].filter(Number.isFinite):[preferredCamera?.polar,.65].filter(Number.isFinite),attempts=[];
     for(const zoom of [...new Set(zooms)])for(const yaw of [...new Set(yaws)])for(const polar of [...new Set(polars)]){window.__m2c2a.applyCamera(r,'ENTITY_MEDIUM',{poi:{x:entity.x,y:entity.y,id,source:'deriveEntities real cultivator near house'},polar,yaw,zoom});await new Promise(requestAnimationFrame);r.update(1/60);r.render();r.scene.updateMatrixWorld(true);r.cameraRig.camera.updateMatrixWorld(true);const owners=[];stage.entities.group.traverse(mesh=>{if(!mesh.isInstancedMesh||mesh.userData.lod!==wantedLod||!mesh.visible||!ancestorsVisible(mesh))return;for(let i=0;i<(mesh.userData.renderEntities||[]).length;i++)if(mesh.userData.renderEntities[i]?.id===id)owners.push({mesh,index:i});});const samples=[];for(const owner of owners){const result=surfaceHit(owner.mesh,owner.index);samples.push({mesh:owner.mesh.name,instance:owner.index,...result});if(result.matched)return {ok:true,id,wantedLod,pickedEntityId:id,mesh:owner.mesh.name,instance:owner.index,zoom,yaw,polar,surface:result.matched,counts:[...stage.entities.stats.lod]};}attempts.push({zoom,yaw,polar,owners:owners.map(owner=>({mesh:owner.mesh.name,instance:owner.index})),samples,counts:[...stage.entities.stats.lod]});}return {ok:false,id,wantedLod,attempts};
-  };return true;`);
-  const diagnosticOnly=process.env.INKBOX_IDENTITY_ONLY==='1',failures=[],candidateLimit=diagnosticOnly?1:10;for(const candidate of setup.candidates.slice(0,candidateLimit)){const levels=[];for(const lod of [0,1]){const result=await page(`return window.__verifyRenderedEntityLOD(${candidate.entity.id},${lod},${JSON.stringify(setup.preferredCamera)},${diagnosticOnly});`);if(!result.ok){failures.push({id:candidate.entity.id,distanceToHouse:candidate.pair.distance,failedLOD:lod,attempts:result.attempts});break;}levels.push(result);}if(levels.length===2)return {entityId:candidate.entity.id,x:candidate.entity.x,y:candidate.entity.y,kind:'cultivator',level:candidate.entity.level,nearestHouse:candidate.pair.house,distanceToHouse:candidate.pair.distance,source:'deriveEntities cultivator 5-20 cells from real house; all visible GLB modules and Host.pick confirmed at LOD0/1',preferredByApplyVisibleCamera:candidate.preferred,levels};}
+  };return true;`, { timeoutMs: 180000 });
+  const diagnosticOnly=process.env.INKBOX_IDENTITY_ONLY==='1',failures=[],candidateLimit=diagnosticOnly?1:10;for(const candidate of setup.candidates.slice(0,candidateLimit)){const levels=[];for(const lod of [0,1]){const result=await page(`return window.__verifyRenderedEntityLOD(${candidate.entity.id},${lod},${JSON.stringify(setup.preferredCamera)},${diagnosticOnly});`, { timeoutMs: 180000 });if(!result.ok){failures.push({id:candidate.entity.id,distanceToHouse:candidate.pair.distance,failedLOD:lod,attempts:result.attempts});break;}levels.push(result);}if(levels.length===2)return {entityId:candidate.entity.id,x:candidate.entity.x,y:candidate.entity.y,kind:'cultivator',level:candidate.entity.level,nearestHouse:candidate.pair.house,distanceToHouse:candidate.pair.distance,source:'deriveEntities cultivator 5-20 cells from real house; all visible GLB modules and Host.pick confirmed at LOD0/1',preferredByApplyVisibleCamera:candidate.preferred,levels};}
   throw new Error('No nearby cultivator passed real GLB foreground and Host.pick at LOD0+LOD1: '+JSON.stringify(failures));
 }
 async function visibleL0TreePoi() {
@@ -201,7 +201,7 @@ async function visibleL0TreePoi() {
       }
     }
     throw new Error('No actual visible LOD0 tree instance found in the densest deriveVegetation raster cells');
-  `);
+  `, { timeoutMs: 180000 });
 }
 async function capturePoiTriplet(verifiedCharacter) {
   await prepareScenario('GOLDEN_A');
@@ -261,7 +261,7 @@ async function capturePoiTriplet(verifiedCharacter) {
         });
         const layer=${JSON.stringify(kind)}==='tree'?stage.vegetation:${JSON.stringify(kind)}==='character'?stage.entities:stage.settlements;
         return {zoom:${zoom},matches,layerStats:layer.stats,lodTotals:r.getLODStats?.()||null};
-      `);
+      `, { timeoutMs: 180000 });
       const match=result.matches.find(item=>item.visible);
       if(match?.lod===wantedLod){chosen={...result,match,wantedLod};break;}
     }
@@ -277,7 +277,7 @@ async function capturePoiTriplet(verifiedCharacter) {
 
 try {
   fs.mkdirSync(output, { recursive: true }); fs.mkdirSync(release, { recursive: true });
-  const executable = findBrowser(); assert(executable, 'Microsoft Edge or Chrome is required');
+  const executable = findEdge(); assert(executable, 'Microsoft Edge is required');
   server = startServer(); if (server) await waitServer();
   browser = await launch({ url: pageURL, browser: executable, width: 1500, height: 940, gpu: true, timeoutMs: 30000 });
   assert(await browser.waitFor('return !!window.inkbox?.render3d?.renderer?.stages?.size', { timeoutMs: 60000 }), `Render3D failed to boot: ${browser.errors().join(' | ')}`);

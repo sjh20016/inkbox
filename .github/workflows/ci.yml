@@ -122,7 +122,9 @@ jobs:
     name: Browser Smoke（手动）
     if: github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
-    timeout-minutes: 30
+    # Hosted Windows uses a software D3D11 renderer. Keep every case and the
+    # 6000-frame soak, with a finite job deadline that covers their real frames.
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 

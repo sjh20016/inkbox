@@ -31,6 +31,14 @@ export function findBrowser(candidates = DEFAULT_CANDIDATES) {
   });
 }
 
+export function findEdge() {
+  return findBrowser([
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+    process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+  ].filter(Boolean));
+}
+
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Every launch owns an isolated temporary profile. Stop only that process tree.
@@ -115,7 +123,8 @@ class Cdp {
     ws.addEventListener('message', (event) => {
       const message = JSON.parse(event.data);
       if (message.id && this.pending.has(message.id)) {
-        const { resolve, reject } = this.pending.get(message.id);
+        const { resolve, reject, timer } = this.pending.get(message.id);
+        clearTimeout(timer);
         this.pending.delete(message.id);
         if (message.error) reject(new Error(JSON.stringify(message.error)));
         else resolve(message.result);
@@ -123,21 +132,37 @@ class Cdp {
       }
       this.events.push(message);
     });
+    ws.addEventListener('close', () => this.rejectPending(new Error('CDP connection closed')));
+    ws.addEventListener('error', () => this.rejectPending(new Error('CDP connection error')));
   }
 
   send(method, params = {}, timeoutMs = 30000) {
     this.id += 1;
     const id = this.id;
     return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
-      this.ws.send(JSON.stringify({ id, method, params }));
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         if (this.pending.has(id)) {
           this.pending.delete(id);
           reject(new Error(`CDP 超时: ${method}`));
         }
       }, timeoutMs);
+      this.pending.set(id, { resolve, reject, timer });
+      try {
+        this.ws.send(JSON.stringify({ id, method, params }));
+      } catch (error) {
+        clearTimeout(timer);
+        this.pending.delete(id);
+        reject(error);
+      }
     });
+  }
+
+  rejectPending(error) {
+    for (const { reject, timer } of this.pending.values()) {
+      clearTimeout(timer);
+      reject(error);
+    }
+    this.pending.clear();
   }
 }
 
@@ -150,12 +175,12 @@ export class Session {
   }
 
   /** 在页面里跑一段脚本并把结果取回。表达式会被包成立即执行函数，用 return 返回。 */
-  async js(expression) {
+  async js(expression, { timeoutMs = 30000 } = {}) {
     const result = await this.cdp.send('Runtime.evaluate', {
       expression: `(() => { ${expression} })()`,
       returnByValue: true,
       awaitPromise: true,
-    });
+    }, timeoutMs);
     if (result.exceptionDetails) {
       const detail = result.exceptionDetails.exception?.description || result.exceptionDetails.text;
       throw new Error(`页面内脚本抛错: ${detail}`);
@@ -265,6 +290,7 @@ export class Session {
     if (this.cdp.ws.readyState === 1) {
       try { await this.cdp.send('Browser.close', {}, 2000); } catch { /* fallback below */ }
     }
+    this.cdp.rejectPending(new Error('CDP session closed'));
     try { this.cdp.ws.close(); } catch { /* ignore */ }
     stopOwnedBrowser(this.child);
     await sleep(400);

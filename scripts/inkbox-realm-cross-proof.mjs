@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
-import { launch, findBrowser } from './cdp.mjs';
+import { launch, findEdge } from './cdp.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${process.env.INKBOX_PORT || 4192}`;
@@ -16,10 +16,10 @@ const output = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(root, 're
 const profiles = ['legacy', 'realm-style-v1'];
 const samples = 120;
 let browser;
-const page = body => {
+const page = (body, options) => {
   const expression = `return (async()=>{${body}})();`;
   new vm.Script(`(()=>{${expression}})()`);
-  return browser.js(expression);
+  return browser.js(expression, options);
 };
 const evidence = {
   generatedAt: new Date().toISOString(), scenario: 'NETHER_STYLE_A', source: url.toString(), profiles,
@@ -37,7 +37,7 @@ async function prepareScenario() {
   await page(`window.__crossProof=await import('./src/inkbox/render3d/art/VisualScenarios.js');return true;`);
   let scenario;
   for (let startStep = 0; startStep < 7200; startStep += 900) {
-    scenario = await page(`const k=window.inkbox;return window.__crossProof.applyScenarioAsync(k,'NETHER_STYLE_A',{startStep:${startStep},stepCount:900});`);
+    scenario = await page(`const k=window.inkbox;return window.__crossProof.applyScenarioAsync(k,'NETHER_STYLE_A',{startStep:${startStep},stepCount:900});`, { timeoutMs: 180000 });
   }
   assert(scenario.complete && scenario.worldDay === 21600, 'natural 60-year scenario incomplete');
   return scenario;
@@ -65,7 +65,7 @@ async function openAndGrow(targetPlane) {
       .map(x=>({id:x.id,x:x.x,y:x.y,age:x.age||0,strength:x.strength}));
     return {before,worldDay:w.day,region:{x0:state.region.x0,y0:state.region.y0,x1:state.region.x1,y1:state.region.y1,area:state.region.area},
       selectionArea:k.selection?.area??null,newAgeZeroRifts:newRifts,riftCount:k.world.rifts.length,state};
-  `);
+  `, { timeoutMs: 180000 });
   assert(opened.newAgeZeroRifts.length > 0, `${targetPlane} normal UI commit did not create an age-zero Rift`);
   evidence.setup.push({targetPlane,phase:'normal-ui-open',worldDay:opened.worldDay,region:opened.region,
     selectionArea:opened.selectionArea,newAgeZeroRifts:opened.newAgeZeroRifts,riftCount:opened.riftCount,
@@ -81,7 +81,7 @@ async function openAndGrow(targetPlane) {
     }
     const kRifts=k.world.rifts.filter(r=>r.targetPlane===${JSON.stringify(targetPlane)});
     return {worldDay:k.world.day,advancedDays:1080,rifts:kRifts.map(r=>({id:r.id,x:r.x,y:r.y,age:r.age||0,strength:r.strength})),checkpoints};
-  `);
+  `, { timeoutMs: 180000 });
   const grownNew = grown.rifts.filter(r => opened.newAgeZeroRifts.some(n => n.id === r.id));
   assert(grownNew.some(r => r.age >= 1080), `${targetPlane} newly opened Rift did not naturally age to 1080 days`);
   evidence.setup.push({targetPlane,phase:'natural-growth',worldDay:grown.worldDay,advancedDays:grown.advancedDays,
@@ -147,7 +147,7 @@ async function configure(view,targetPlane,profile) {
       targetEntities:target.entities?{...target.entities.stats,lod:[...target.entities.stats.lod]}:null,
       targetVegetation:target.vegetation?{...target.vegetation.stats,lod:[...target.vegetation.stats.lod]}:null,
       targetSettlements:target.settlements?{...target.settlements.stats,lod:[...target.settlements.stats.lod]}:null};
-  `);
+  `, { timeoutMs: 120000 });
 }
 
 async function sampleProductLoop(label) {
@@ -166,7 +166,7 @@ async function sampleProductLoop(label) {
     const gl=r.gpu.getContext();return {case:${JSON.stringify(label)},cpuUpdate:summary(state.update),cpuRender:summary(state.render),raf:summary(state.raf),
       productCalls:{update:state.updateCalls,render:state.renderCalls,rafCallbacks:expectedCalls},triangles:r.gpu.info.render.triangles,drawCalls:r.gpu.info.render.calls,
       glError:gl.getError(),visiblePlanes:[...r.stages.values()].filter(s=>s.visible).map(s=>s.plane),lodStats:r.getLODStats(),boundary:{...r.boundary.stats}};
-  `);
+  `, { timeoutMs: 180000 });
 }
 
 async function ownershipAndSeam(targetPlane) {
@@ -313,7 +313,8 @@ async function capture(view,targetPlane,profile) {
 
 try {
   fs.mkdirSync(output,{recursive:true});
-  browser=await launch({url:url.toString(),browser:findBrowser(),width:1500,height:940,gpu:true,timeoutMs:30000});
+  const edge=findEdge();assert(edge,'Microsoft Edge is required');
+  browser=await launch({url:url.toString(),browser:edge,width:1500,height:940,gpu:true,timeoutMs:30000});
   assert(await browser.waitFor('return !!window.inkbox?.render3d?.renderer?.stages?.size',{timeoutMs:60000}),
     `Render3D failed to boot: ${browser.errors().join(' | ')}`);
   const scenario=await prepareScenario();evidence.scenarioRecipe=scenario;

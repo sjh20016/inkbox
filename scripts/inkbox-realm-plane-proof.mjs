@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
-import { launch, findBrowser } from './cdp.mjs';
+import { launch, findEdge } from './cdp.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${process.env.INKBOX_PORT || 4192}`;
@@ -17,10 +17,10 @@ const output = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(root, `re
 const profiles = ['legacy', 'realm-style-v1'];
 const samples = 60;
 let browser;
-const page = body => {
+const page = (body, options) => {
   const expression = `return (async()=>{${body}})();`;
   new vm.Script(`(()=>{${expression}})()`); // Compile every inline page script before CDP.
-  return browser.js(expression);
+  return browser.js(expression, options);
 };
 const evidence = { generatedAt: new Date().toISOString(), scenario: plane === 'upper' ? 'GOLDEN_A' : 'NETHER_STYLE_A', plane, source: url.toString(),
   profiles, samplesPerCase: samples, cases: [],
@@ -36,7 +36,7 @@ async function prepare() {
   let scenario;
   for (let startStep = 0; startStep < 7200; startStep += 900) {
     scenario = await page(`const k=window.inkbox;return window.__planeProof.applyScenarioAsync(k,'NETHER_STYLE_A',
-      {startStep:${startStep},stepCount:900});`);
+      {startStep:${startStep},stepCount:900});`, { timeoutMs: 180000 });
   }
   assert(scenario.complete && scenario.worldDay >= 21600, 'natural 60-year advance incomplete');
   const setup = await page(`
@@ -49,13 +49,13 @@ async function prepare() {
     return {digest:await window.__planeProof.snapshotDigest(k),netherRaw:k.world.nether.entities.length,
       soulKinds:k.world.nether.entities.reduce((o,e)=>(o[e.soulKind||'unknown']=(o[e.soulKind||'unknown']||0)+1,o),{}),
       sourceIds:k.world.nether.entities.slice(0,8).map(e=>({id:e.id,sp:e.sp,soulKind:e.soulKind}))};
-  `);
+  `, { timeoutMs: 180000 });
   return { scenario, setup };
 }
 
 async function prepareUpper() {
   await page(`window.__planeProof=await import('./src/inkbox/render3d/art/VisualScenarios.js');return true;`);
-  const scenario = await page(`return window.__planeProof.applyScenario(window.inkbox,'GOLDEN_A');`);
+  const scenario = await page(`return window.__planeProof.applyScenario(window.inkbox,'GOLDEN_A');`, { timeoutMs: 180000 });
   assert.equal(scenario.worldDay, 1440, 'GOLDEN_A natural advance incomplete');
   const setup = await page(`
     const k=window.inkbox,r=k.render3d.renderer;
@@ -69,7 +69,7 @@ async function prepareUpper() {
     return {digest:await window.__planeProof.snapshotDigest(k),upperRaw:k.world.upper.entities.length,
       upperDerived:derived.total,upperClasses:Object.fromEntries(['human','cultivator','beast','spirit','wraith'].map(c=>[c,derived[c].length])),
       sourceIds:k.world.upper.entities.map(e=>({id:e.id,sp:e.sp,level:e.level,x:e.x,y:e.y}))};
-  `);
+  `, { timeoutMs: 180000 });
   assert(setup.upperRaw > 0 && setup.upperDerived > 0, 'GOLDEN_A has no real Upper entities');
   return { scenario, setup };
 }
@@ -133,7 +133,7 @@ async function chooseViews(start = 0, count = 8) {
     return {found:true,views:[overview,cliff,entityView,windowView],candidateEntities:allSource.length,searchEntities:source.length,
       ghostCultivators:preferred.length,
       selectedEntity:entityView.poi,visibility:entityView.visibility,highTerrainCell:high};
-  `);
+  `, { timeoutMs: 180000 });
 }
 
 async function chooseUpperViews() {
@@ -197,7 +197,7 @@ async function chooseUpperViews() {
     return {found:true,views:[overview,cliffView,entityView,cloud,windowView],candidateEntities:candidates.length,
       cultivators:derived.cultivator.length,selectedEntity:entityView.poi,visibility:entityView.visibility,
       terrain:{highestCell:high,highestHeight:w.height[high],cliffCell:cliff,cliffGradient:cliffSlope,lowestCell:low,lowestHeight:w.height[low]}};
-  `);
+  `, { timeoutMs: 180000 });
 }
 
 async function openRealWindow(view, targetPlane = 'nether') {
@@ -257,7 +257,7 @@ async function configure(view, profile, targetPlane = 'nether') {
       stageStyle:s.entities.artProfile?.realmStyle?.plane||null,terrainStyleEnabled:u.realmStyleEnabled.value,
       fogIsNull:r.scene.fog===null,programs,boundaryColor:r.boundary.material.color.getHexString(),
       entityStats:{...s.entities.stats,lod:[...s.entities.stats.lod]}};
-  `);
+  `, { timeoutMs: 120000 });
 }
 
 async function sampleProductLoop(label) {
@@ -274,7 +274,7 @@ async function sampleProductLoop(label) {
       productCalls:{update:state.updateCalls,render:state.renderCalls},
       triangles:r.gpu.info.render.triangles,drawCalls:r.gpu.info.render.calls,glError:gl.getError(),
       visiblePlanes:[...r.stages.values()].filter(s=>s.visible).map(s=>s.plane),lodStats:r.getLODStats()};
-  `);
+  `, { timeoutMs: 180000 });
 }
 
 async function capture(view, profile, targetPlane = 'nether') {
@@ -290,7 +290,8 @@ async function capture(view, profile, targetPlane = 'nether') {
 
 try {
   fs.mkdirSync(output,{recursive:true});
-  browser=await launch({url:url.toString(),browser:findBrowser(),width:1500,height:940,gpu:true,timeoutMs:30000});
+  const edge=findEdge();assert(edge,'Microsoft Edge is required');
+  browser=await launch({url:url.toString(),browser:edge,width:1500,height:940,gpu:true,timeoutMs:30000});
   assert(await browser.waitFor('return !!window.inkbox?.render3d?.renderer?.stages?.size',{timeoutMs:60000}),
     `Render3D failed to boot: ${browser.errors().join(' | ')}`);
   const setup=plane==='upper'?await prepareUpper():await prepare();
