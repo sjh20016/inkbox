@@ -1,0 +1,24 @@
+{
+  "baselineCommit": "a8bf11d49bcf1da5d5518d11c7bbffbcb75bacc5",
+  "runtimeCandidate": "7e400a4ea4561aaa4f8e8103b73852d7a419da3e",
+  "baseline": {
+    "label": "baseline",
+    "files": 258,
+    "directoryBytes": 7520162,
+    "zipBytes": 2404862,
+    "zipSha256": "6806097dde2eac44f265caff393cff427f45e0b511295c8c4b60bce596a789ce"
+  },
+  "final": {
+    "label": "final",
+    "files": 300,
+    "directoryBytes": 8173610,
+    "zipBytes": 2563065,
+    "zipSha256": "191593fc691264ac4e9fde05c548c8a0c23523509cd69e336ff6fc8487f360b7"
+  },
+  "delta": {
+    "files": 42,
+    "directoryBytes": 653448,
+    "zipBytes": 158203
+  },
+  "method": "Measured built player package after all closeout docs; this measurement JSON is developer evidence excluded from the package, avoiding self-reference; golden images excluded too"
+}
