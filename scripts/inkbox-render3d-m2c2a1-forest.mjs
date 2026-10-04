@@ -25,6 +25,7 @@ const report = {
     world: 'DENSITY_A real World is generated once; its full World + advanceState SHA-256 is checked before and after.',
     synthetic: '5k and 10k fixed-grid records replace only VegetationLayer.trees. They are presentation probe inputs, not World vegetation facts; every cell key is unique.',
     timing: 'Assignment phases use opt-in VegetationLayer.lodProbe. matrixUploadMs is CPU setMatrixAt/writeMatrices time; needsUpdate marks are counted, GPU transfer time is not measured.',
+    frameLoop: 'Observe the existing product RAF update/render once per frame; no extra probe update/render. Camera changes are processed on the following product frame. Historical double-render stress timings remain labelled in the A3 report.',
   },
 };
 let browser;
@@ -47,6 +48,8 @@ try {
   report.worldSetup = await page(`
     const k=window.inkbox,r=k.render3d.renderer,a=window.__a3,spec=a.applyScenario(k,'DENSITY_A');
     await r.characterLoadPromise;
+    for(let i=0;i<90&&r.world!==k.world;i++)await new Promise(requestAnimationFrame);
+    if(r.world!==k.world)throw new Error('DENSITY_A was not adopted by the product host');
     const {deriveVegetation}=await import('./src/inkbox/render3d/vegetation/deriveVegetation.js');
     const trees=deriveVegetation(k.world),tile=16,cols=Math.ceil(k.world.w/tile),rows=Math.ceil(k.world.h/tile),counts=new Uint32Array(cols*rows);
     for(const t of trees)counts[Math.floor(t.y/tile)*cols+Math.floor(t.x/tile)]++;
@@ -55,7 +58,7 @@ try {
     const poi={x:(x0+x1-1)/2,y:(y0+y1-1)/2,bounds:[x0,y0,x1,y1],trees:counts[best],totalTrees:trees.length,tiles:counts.length,meanTreesPerTile:trees.length/counts.length};
     window.__a3DENSITYTrees=trees;window.__a3ForestPoi=poi;
     r.setArtProfile('pilot');r.setLODEnabled(true);a.applyCamera(r,'WORLD_OVERVIEW',{poi,zoom:9});
-    for(let i=0;i<10;i++){await new Promise(requestAnimationFrame);r.update(1/60);r.render();}
+    for(let i=0;i<10;i++)await new Promise(requestAnimationFrame);
     return {spec,poi,worldDigest:await a.snapshotDigest(k)};
   `);
 
@@ -72,7 +75,7 @@ try {
     if(cells.size!==5000||trees.some(t=>!Number.isInteger(t.cell)))throw new Error('Real DENSITY_A subset must retain unique numeric World cell IDs');
     layer.setLODProbeEnabled(false);layer.trees=trees;layer._lodByTree.clear();layer._nextLodByTree.clear();r.setArtProfile('pilot');r.setLODEnabled(true);
     window.__a3.applyCamera(r,'WORLD_OVERVIEW',{poi:window.__a3ForestPoi,zoom:9});
-    for(let i=0;i<10;i++){await new Promise(requestAnimationFrame);r.update(1/60);r.render();}
+    for(let i=0;i<10;i++)await new Promise(requestAnimationFrame);
     return {treeCount:trees.length,uniqueNumericCells:cells.size,sizeRange:[Math.min(...trees.map(t=>t.size)),Math.max(...trees.map(t=>t.size))],cameraPoi:window.__a3ForestPoi,fixture:'first 5,000 deriveVegetation records from real DENSITY_A; layer-local subset only'};
   `);
   report.realDENSITY5k = {};
@@ -96,7 +99,7 @@ try {
           rigTarget.set(baseX+dx,rigTarget.y,baseZ+dz);r.cameraRig.camera.position.x+=dx;r.cameraRig.camera.position.z+=dz;
           r.cameraRig.controls.update();r.cameraRig.camera.zoom=9+.35*Math.sin(i/(${frames}-1)*Math.PI*4);r.cameraRig.camera.updateProjectionMatrix();r.cameraRig.camera.updateMatrixWorld(true);
         ` : ''}
-        const start=performance.now();r.update(1/60);const elapsed=performance.now()-start;updates.push(r.updateMs||elapsed);r.render();
+        updates.push(r.updateMs||0);
         const lodSum=layer.stats.lod.reduce((sum,count)=>sum+count,0);
         if(layer.trees.length!==5000||lodSum!==5000)throw new Error('Real DENSITY_A sample left the 5,000-tree fixture');
         if(layer.lodProbe.calls>lastCall){assignment.push({...layer.lodProbe.last});lastCall=layer.lodProbe.calls;}
@@ -121,7 +124,7 @@ try {
       const unique=new Set(trees.map(t=>t.cell));if(unique.size!==${count})throw new Error('Synthetic tree cells collide');
       layer.setLODProbeEnabled(false);layer.trees=trees;layer._lodByTree.clear();layer._nextLodByTree.clear();
       r.setArtProfile('pilot');r.setLODEnabled(true);window.__a3.applyCamera(r,'WORLD_OVERVIEW',{poi:{x:(w.w-1)/2,y:(w.h-1)/2,source:'A3 synthetic grid'},zoom:18});
-      for(let i=0;i<8;i++){await new Promise(requestAnimationFrame);r.update(1/60);r.render();}
+      for(let i=0;i<8;i++)await new Promise(requestAnimationFrame);
       return {count:${count},uniqueCells:unique.size,fixture:'fixed uniform grid; renderer layer only',synthetic:true};
     `);
     const scenario = { treeCount: count, fixture: result, modes: {} };
@@ -152,7 +155,7 @@ try {
     for (const mode of ['static', 'rotate-pan-zoom']) {
       await page(`
         const r=window.inkbox.render3d.renderer,w=window.inkbox.world;window.__a3.applyCamera(r,'WORLD_OVERVIEW',{poi:{x:(w.w-1)/2,y:(w.h-1)/2,source:'A3 mode reset'},zoom:18});
-        const layer=r.stages.get('mortal').vegetation;layer.setLODProbeEnabled(true);for(let i=0;i<8;i++){await new Promise(requestAnimationFrame);r.update(1/60);r.render();}return true;
+        const layer=r.stages.get('mortal').vegetation;layer.setLODProbeEnabled(true);for(let i=0;i<8;i++)await new Promise(requestAnimationFrame);return true;
       `);
       scenario.modes[mode] = await page(`
         const r=window.inkbox.render3d.renderer,layer=r.stages.get('mortal').vegetation,raf=[],updates=[],assignment=[];let previous=null,lastCall=layer.lodProbe.calls;
@@ -165,7 +168,7 @@ try {
             rigTarget.set(baseX+dx,rigTarget.y,baseZ+dz);r.cameraRig.camera.position.x+=dx;r.cameraRig.camera.position.z+=dz;
             r.cameraRig.controls.update();r.cameraRig.camera.zoom=17.65+.35*(1-Math.cos(i/(${frames}-1)*Math.PI*4))/2;r.cameraRig.camera.updateProjectionMatrix();r.cameraRig.camera.updateMatrixWorld(true);
           ` : ''}
-          const start=performance.now();r.update(1/60);const elapsed=performance.now()-start;updates.push(r.updateMs||elapsed);r.render();
+          updates.push(r.updateMs||0);
           if(layer.lodProbe.calls>lastCall){assignment.push({...layer.lodProbe.last});lastCall=layer.lodProbe.calls;}
         }
         const summarize=values=>{const v=[...values].sort((a,b)=>a-b);return {samples:values.length,medianMs:v[Math.floor(v.length*.5)],p95Ms:v[Math.floor(v.length*.95)],meanMs:values.reduce((a,b)=>a+b,0)/values.length};};

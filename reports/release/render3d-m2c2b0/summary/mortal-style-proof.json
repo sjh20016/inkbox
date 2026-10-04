@@ -27,8 +27,8 @@
       "name": "overview",
       "sameCameraPose": true,
       "legacy": {
-        "case": "overview/legacy",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 179874,
+        "drawCalls": 12,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.28166666875282925,
@@ -36,7 +36,7 @@
           "p95Ms": 0.5,
           "maxMs": 0.7000000476837158
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.3574999978144964,
           "medianMs": 0.30000001192092896,
@@ -50,190 +50,36 @@
           "p95Ms": 16.59999999999991,
           "maxMs": 33.40000000000009
         },
-        "drawCalls": 12,
-        "triangles": 179874,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 76166,
-              "lod": [
-                0,
-                2894,
-                477
-              ],
-              "lodCounts": {
-                "lod0": 0,
-                "lod1": 2894,
-                "lod2": 477
-              },
-              "lod0": 0,
-              "lod1": 2894,
-              "lod2": 477,
-              "budgetDemotions": 0,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                3371,
-                0,
-                0,
-                0,
-                0
-              ],
-              "variantMode": false
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                0,
-                33,
-                86
-              ],
-              "triangles": 964,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 94,
-              "triangles": 884,
-              "lod": [
-                0,
-                11,
-                83
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": {
-              "plane": null,
-              "enabled": 0
-            },
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": {
-              "plane": null,
-              "enabled": 0
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          0,
+          2894,
+          477
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          3371,
+          0,
+          0,
+          0,
+          0
+        ],
+        "buildingsLOD": [
+          0,
+          11,
+          83
+        ],
+        "hlodClusters": 0
       },
       "v1": {
-        "case": "overview/realm-style-v1",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 179874,
+        "drawCalls": 12,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.3300000021855036,
@@ -241,7 +87,7 @@
           "p95Ms": 0.5,
           "maxMs": 0.800000011920929
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.40250000009934106,
           "medianMs": 0.3999999761581421,
@@ -255,194 +101,40 @@
           "p95Ms": 16.699999999999818,
           "maxMs": 16.799999999999272
         },
-        "drawCalls": 12,
-        "triangles": 179874,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 76166,
-              "lod": [
-                0,
-                2894,
-                477
-              ],
-              "lodCounts": {
-                "lod0": 0,
-                "lod1": 2894,
-                "lod2": 477
-              },
-              "lod0": 0,
-              "lod1": 2894,
-              "lod2": 477,
-              "budgetDemotions": 0,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                680,
-                640,
-                668,
-                692,
-                691
-              ],
-              "variantMode": true
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                0,
-                33,
-                86
-              ],
-              "triangles": 964,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 94,
-              "triangles": 884,
-              "lod": [
-                0,
-                11,
-                83
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": "mortal",
-            "terrainEnabled": 1,
-            "vegetation": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "entities": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "settlements": {
-              "plane": "mortal",
-              "enabled": 1
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": "upper",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "upper",
-              "enabled": 1
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": "nether",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "nether",
-              "enabled": 1
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          0,
+          2894,
+          477
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          680,
+          640,
+          668,
+          692,
+          691
+        ],
+        "buildingsLOD": [
+          0,
+          11,
+          83
+        ],
+        "hlodClusters": 0
       }
     },
     {
       "name": "settlement-near",
       "sameCameraPose": true,
       "legacy": {
-        "case": "settlement-near/legacy",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 256819,
+        "drawCalls": 14,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.27833332965771357,
@@ -450,7 +142,7 @@
           "p95Ms": 0.40000003576278687,
           "maxMs": 0.5
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.41083333641290665,
           "medianMs": 0.40000003576278687,
@@ -464,190 +156,36 @@
           "p95Ms": 11.300000000000182,
           "maxMs": 22.199999999999818
         },
-        "drawCalls": 14,
-        "triangles": 256819,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 140595,
-              "lod": [
-                1024,
-                2347,
-                0
-              ],
-              "lodCounts": {
-                "lod0": 1024,
-                "lod1": 2347,
-                "lod2": 0
-              },
-              "lod0": 1024,
-              "lod1": 2347,
-              "lod2": 0,
-              "budgetDemotions": 2347,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                3371,
-                0,
-                0,
-                0,
-                0
-              ],
-              "variantMode": false
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                47,
-                72,
-                0
-              ],
-              "triangles": 7084,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 184,
-              "triangles": 7280,
-              "lod": [
-                90,
-                4,
-                0
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": {
-              "plane": null,
-              "enabled": 0
-            },
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": {
-              "plane": null,
-              "enabled": 0
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          1024,
+          2347,
+          0
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          3371,
+          0,
+          0,
+          0,
+          0
+        ],
+        "buildingsLOD": [
+          90,
+          4,
+          0
+        ],
+        "hlodClusters": 0
       },
       "v1": {
-        "case": "settlement-near/realm-style-v1",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 256819,
+        "drawCalls": 14,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.3291666661699613,
@@ -655,7 +193,7 @@
           "p95Ms": 0.5999999642372131,
           "maxMs": 0.699999988079071
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.5008333340287209,
           "medianMs": 0.5,
@@ -669,199 +207,40 @@
           "p95Ms": 16.600000000000364,
           "maxMs": 27.800000000000182
         },
-        "drawCalls": 14,
-        "triangles": 256819,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 140595,
-              "lod": [
-                1024,
-                2347,
-                0
-              ],
-              "lodCounts": {
-                "lod0": 1024,
-                "lod1": 2347,
-                "lod2": 0
-              },
-              "lod0": 1024,
-              "lod1": 2347,
-              "lod2": 0,
-              "budgetDemotions": 2347,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                680,
-                640,
-                668,
-                692,
-                691
-              ],
-              "variantMode": true
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                47,
-                72,
-                0
-              ],
-              "triangles": 7084,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 184,
-              "triangles": 7280,
-              "lod": [
-                90,
-                4,
-                0
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": "mortal",
-            "terrainEnabled": 1,
-            "vegetation": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "entities": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "settlements": {
-              "plane": "mortal",
-              "enabled": 1
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": "upper",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "upper",
-              "enabled": 1
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": "nether",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "nether",
-              "enabled": 1
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          1024,
+          2347,
+          0
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          680,
+          640,
+          668,
+          692,
+          691
+        ],
+        "buildingsLOD": [
+          90,
+          4,
+          0
+        ],
+        "hlodClusters": 0
       }
     },
     {
       "name": "settlement-mid",
       "sameCameraPose": true,
       "legacy": {
-        "case": "settlement-mid/legacy",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 246699,
+        "drawCalls": 13,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.24499999831120173,
@@ -869,7 +248,7 @@
           "p95Ms": 0.40000003576278687,
           "maxMs": 0.5
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.3325000007947286,
           "medianMs": 0.30000001192092896,
@@ -883,195 +262,36 @@
           "p95Ms": 11.200000000000728,
           "maxMs": 16.700000000000728
         },
-        "drawCalls": 13,
-        "triangles": 246699,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 140595,
-              "lod": [
-                1024,
-                2347,
-                0
-              ],
-              "lodCounts": {
-                "lod0": 1024,
-                "lod1": 2347,
-                "lod2": 0
-              },
-              "lod0": 1024,
-              "lod1": 2347,
-              "lod2": 0,
-              "budgetDemotions": 1189,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                3371,
-                0,
-                0,
-                0,
-                0
-              ],
-              "variantMode": false
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                33,
-                86,
-                0
-              ],
-              "triangles": 1764,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 104,
-              "triangles": 2480,
-              "lod": [
-                10,
-                84,
-                0
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": {
-              "plane": null,
-              "enabled": 0
-            },
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": {
-              "plane": null,
-              "enabled": 0
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          1024,
+          2347,
+          0
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          3371,
+          0,
+          0,
+          0,
+          0
+        ],
+        "buildingsLOD": [
+          10,
+          84,
+          0
+        ],
+        "hlodClusters": 0
       },
       "v1": {
-        "case": "settlement-mid/realm-style-v1",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 246699,
+        "drawCalls": 13,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.23583333442608514,
@@ -1079,7 +299,7 @@
           "p95Ms": 0.3999999761581421,
           "maxMs": 0.5
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.30666666676600773,
           "medianMs": 0.30000001192092896,
@@ -1093,199 +313,40 @@
           "p95Ms": 16.700000000000728,
           "maxMs": 22.299999999999272
         },
-        "drawCalls": 13,
-        "triangles": 246699,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 140595,
-              "lod": [
-                1024,
-                2347,
-                0
-              ],
-              "lodCounts": {
-                "lod0": 1024,
-                "lod1": 2347,
-                "lod2": 0
-              },
-              "lod0": 1024,
-              "lod1": 2347,
-              "lod2": 0,
-              "budgetDemotions": 1189,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                680,
-                640,
-                668,
-                692,
-                691
-              ],
-              "variantMode": true
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                33,
-                86,
-                0
-              ],
-              "triangles": 1764,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 104,
-              "triangles": 2480,
-              "lod": [
-                10,
-                84,
-                0
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": "mortal",
-            "terrainEnabled": 1,
-            "vegetation": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "entities": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "settlements": {
-              "plane": "mortal",
-              "enabled": 1
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": "upper",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "upper",
-              "enabled": 1
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": "nether",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "nether",
-              "enabled": 1
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          1024,
+          2347,
+          0
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          680,
+          640,
+          668,
+          692,
+          691
+        ],
+        "buildingsLOD": [
+          10,
+          84,
+          0
+        ],
+        "hlodClusters": 0
       }
     },
     {
       "name": "settlement-far-hlod",
       "sameCameraPose": true,
       "legacy": {
-        "case": "settlement-far-hlod/legacy",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 129024,
+        "drawCalls": 8,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.19916666845480602,
@@ -1293,7 +354,7 @@
           "p95Ms": 0.30000001192092896,
           "maxMs": 0.5
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.22499999652306238,
           "medianMs": 0.19999998807907104,
@@ -1307,195 +368,36 @@
           "p95Ms": 5.699999999998909,
           "maxMs": 6.399999999999636
         },
-        "drawCalls": 8,
-        "triangles": 129024,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 26968,
-              "lod": [
-                0,
-                0,
-                3371
-              ],
-              "lodCounts": {
-                "lod0": 0,
-                "lod1": 0,
-                "lod2": 3371
-              },
-              "lod0": 0,
-              "lod1": 0,
-              "lod2": 3371,
-              "budgetDemotions": 0,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                3371,
-                0,
-                0,
-                0,
-                0
-              ],
-              "variantMode": false
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                0,
-                0,
-                119
-              ],
-              "triangles": 700,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 22,
-              "triangles": 264,
-              "lod": [
-                0,
-                0,
-                94
-              ],
-              "hlod": 6,
-              "hlodClusters": 22,
-              "hlodTriangles": 264,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": {
-              "plane": null,
-              "enabled": 0
-            },
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": {
-              "plane": null,
-              "enabled": 0
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          0,
+          0,
+          3371
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          3371,
+          0,
+          0,
+          0,
+          0
+        ],
+        "buildingsLOD": [
+          0,
+          0,
+          94
+        ],
+        "hlodClusters": 22
       },
       "v1": {
-        "case": "settlement-far-hlod/realm-style-v1",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 129024,
+        "drawCalls": 8,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.20749999930461246,
@@ -1503,7 +405,7 @@
           "p95Ms": 0.30000001192092896,
           "maxMs": 0.5
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.20833333532015483,
           "medianMs": 0.19999998807907104,
@@ -1517,199 +419,40 @@
           "p95Ms": 5.700000000000728,
           "maxMs": 6.199999999998909
         },
-        "drawCalls": 8,
-        "triangles": 129024,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 26968,
-              "lod": [
-                0,
-                0,
-                3371
-              ],
-              "lodCounts": {
-                "lod0": 0,
-                "lod1": 0,
-                "lod2": 3371
-              },
-              "lod0": 0,
-              "lod1": 0,
-              "lod2": 3371,
-              "budgetDemotions": 0,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                680,
-                640,
-                668,
-                692,
-                691
-              ],
-              "variantMode": true
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                0,
-                0,
-                119
-              ],
-              "triangles": 700,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 22,
-              "triangles": 264,
-              "lod": [
-                0,
-                0,
-                94
-              ],
-              "hlod": 6,
-              "hlodClusters": 22,
-              "hlodTriangles": 264,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": "mortal",
-            "terrainEnabled": 1,
-            "vegetation": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "entities": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "settlements": {
-              "plane": "mortal",
-              "enabled": 1
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": "upper",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "upper",
-              "enabled": 1
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": "nether",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "nether",
-              "enabled": 1
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          0,
+          0,
+          3371
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          680,
+          640,
+          668,
+          692,
+          691
+        ],
+        "buildingsLOD": [
+          0,
+          0,
+          94
+        ],
+        "hlodClusters": 22
       }
     },
     {
       "name": "wateredge",
       "sameCameraPose": true,
       "legacy": {
-        "case": "wateredge/legacy",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 236799,
+        "drawCalls": 13,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.21083333144585292,
@@ -1717,7 +460,7 @@
           "p95Ms": 0.3999999761581421,
           "maxMs": 0.5
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.28333333830038704,
           "medianMs": 0.30000001192092896,
@@ -1731,195 +474,36 @@
           "p95Ms": 11.200000000000728,
           "maxMs": 16.700000000000728
         },
-        "drawCalls": 13,
-        "triangles": 236799,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 130695,
-              "lod": [
-                844,
-                2527,
-                0
-              ],
-              "lodCounts": {
-                "lod0": 844,
-                "lod1": 2527,
-                "lod2": 0
-              },
-              "lod0": 844,
-              "lod1": 2527,
-              "lod2": 0,
-              "budgetDemotions": 0,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                3371,
-                0,
-                0,
-                0,
-                0
-              ],
-              "variantMode": false
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                0,
-                119,
-                0
-              ],
-              "triangles": 1764,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 104,
-              "triangles": 2480,
-              "lod": [
-                10,
-                84,
-                0
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": {
-              "plane": null,
-              "enabled": 0
-            },
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": {
-              "plane": null,
-              "enabled": 0
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          844,
+          2527,
+          0
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          3371,
+          0,
+          0,
+          0,
+          0
+        ],
+        "buildingsLOD": [
+          10,
+          84,
+          0
+        ],
+        "hlodClusters": 0
       },
       "v1": {
-        "case": "wateredge/realm-style-v1",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 236799,
+        "drawCalls": 13,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.27666666358709335,
@@ -1927,7 +511,7 @@
           "p95Ms": 0.5,
           "maxMs": 0.5999999642372131
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.3708333392937978,
           "medianMs": 0.3999999761581421,
@@ -1941,199 +525,40 @@
           "p95Ms": 16.700000000000728,
           "maxMs": 16.80000000000109
         },
-        "drawCalls": 13,
-        "triangles": 236799,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 130695,
-              "lod": [
-                844,
-                2527,
-                0
-              ],
-              "lodCounts": {
-                "lod0": 844,
-                "lod1": 2527,
-                "lod2": 0
-              },
-              "lod0": 844,
-              "lod1": 2527,
-              "lod2": 0,
-              "budgetDemotions": 0,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                680,
-                640,
-                668,
-                692,
-                691
-              ],
-              "variantMode": true
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                0,
-                119,
-                0
-              ],
-              "triangles": 1764,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 104,
-              "triangles": 2480,
-              "lod": [
-                10,
-                84,
-                0
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": "mortal",
-            "terrainEnabled": 1,
-            "vegetation": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "entities": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "settlements": {
-              "plane": "mortal",
-              "enabled": 1
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": "upper",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "upper",
-              "enabled": 1
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": "nether",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "nether",
-              "enabled": 1
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          844,
+          2527,
+          0
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          680,
+          640,
+          668,
+          692,
+          691
+        ],
+        "buildingsLOD": [
+          10,
+          84,
+          0
+        ],
+        "hlodClusters": 0
       }
     },
     {
       "name": "forest",
       "sameCameraPose": true,
       "legacy": {
-        "case": "forest/legacy",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 246699,
+        "drawCalls": 13,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.3158333361148834,
@@ -2141,7 +566,7 @@
           "p95Ms": 0.5,
           "maxMs": 0.699999988079071
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.40833332935969036,
           "medianMs": 0.3999999761581421,
@@ -2155,195 +580,36 @@
           "p95Ms": 11.599999999998545,
           "maxMs": 22.200000000000728
         },
-        "drawCalls": 13,
-        "triangles": 246699,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 140595,
-              "lod": [
-                1024,
-                2347,
-                0
-              ],
-              "lodCounts": {
-                "lod0": 1024,
-                "lod1": 2347,
-                "lod2": 0
-              },
-              "lod0": 1024,
-              "lod1": 2347,
-              "lod2": 0,
-              "budgetDemotions": 1808,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                3371,
-                0,
-                0,
-                0,
-                0
-              ],
-              "variantMode": false
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                33,
-                86,
-                0
-              ],
-              "triangles": 1764,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 104,
-              "triangles": 2480,
-              "lod": [
-                10,
-                84,
-                0
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": {
-              "plane": null,
-              "enabled": 0
-            },
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": {
-              "plane": null,
-              "enabled": 0
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          1024,
+          2347,
+          0
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          3371,
+          0,
+          0,
+          0,
+          0
+        ],
+        "buildingsLOD": [
+          10,
+          84,
+          0
+        ],
+        "hlodClusters": 0
       },
       "v1": {
-        "case": "forest/realm-style-v1",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 246699,
+        "drawCalls": 13,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.21916667222976685,
@@ -2351,7 +617,7 @@
           "p95Ms": 0.40000003576278687,
           "maxMs": 0.5
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.2950000002980232,
           "medianMs": 0.30000001192092896,
@@ -2365,199 +631,40 @@
           "p95Ms": 11.200000000000728,
           "maxMs": 22.299999999999272
         },
-        "drawCalls": 13,
-        "triangles": 246699,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 140595,
-              "lod": [
-                1024,
-                2347,
-                0
-              ],
-              "lodCounts": {
-                "lod0": 1024,
-                "lod1": 2347,
-                "lod2": 0
-              },
-              "lod0": 1024,
-              "lod1": 2347,
-              "lod2": 0,
-              "budgetDemotions": 1808,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                680,
-                640,
-                668,
-                692,
-                691
-              ],
-              "variantMode": true
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                33,
-                86,
-                0
-              ],
-              "triangles": 1764,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 104,
-              "triangles": 2480,
-              "lod": [
-                10,
-                84,
-                0
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": "mortal",
-            "terrainEnabled": 1,
-            "vegetation": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "entities": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "settlements": {
-              "plane": "mortal",
-              "enabled": 1
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": "upper",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "upper",
-              "enabled": 1
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": "nether",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "nether",
-              "enabled": 1
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          1024,
+          2347,
+          0
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          680,
+          640,
+          668,
+          692,
+          691
+        ],
+        "buildingsLOD": [
+          10,
+          84,
+          0
+        ],
+        "hlodClusters": 0
       }
     },
     {
       "name": "character",
       "sameCameraPose": true,
       "legacy": {
-        "case": "character/legacy",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 256819,
+        "drawCalls": 14,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.22583332806825637,
@@ -2565,7 +672,7 @@
           "p95Ms": 0.3999999761581421,
           "maxMs": 0.5
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.2966666693488757,
           "medianMs": 0.30000001192092896,
@@ -2579,195 +686,36 @@
           "p95Ms": 11.200000000000728,
           "maxMs": 16.799999999999272
         },
-        "drawCalls": 14,
-        "triangles": 256819,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 140595,
-              "lod": [
-                1024,
-                2347,
-                0
-              ],
-              "lodCounts": {
-                "lod0": 1024,
-                "lod1": 2347,
-                "lod2": 0
-              },
-              "lod0": 1024,
-              "lod1": 2347,
-              "lod2": 0,
-              "budgetDemotions": 2347,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                3371,
-                0,
-                0,
-                0,
-                0
-              ],
-              "variantMode": false
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                47,
-                72,
-                0
-              ],
-              "triangles": 7084,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 184,
-              "triangles": 7280,
-              "lod": [
-                90,
-                4,
-                0
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": {
-              "plane": null,
-              "enabled": 0
-            },
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": {
-              "plane": null,
-              "enabled": 0
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": null,
-            "terrainEnabled": 0,
-            "vegetation": null,
-            "entities": {
-              "plane": null,
-              "enabled": 0
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          1024,
+          2347,
+          0
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          3371,
+          0,
+          0,
+          0,
+          0
+        ],
+        "buildingsLOD": [
+          90,
+          4,
+          0
+        ],
+        "hlodClusters": 0
       },
       "v1": {
-        "case": "character/realm-style-v1",
-        "kind": "product-loop-only; wrapper instrumentation; no probe update/render calls",
+        "triangles": 256819,
+        "drawCalls": 14,
         "cpuUpdate": {
           "samples": 120,
           "meanMs": 0.28083333124717075,
@@ -2775,7 +723,7 @@
           "p95Ms": 0.5,
           "maxMs": 0.5999999642372131
         },
-        "cpuRender": {
+        "cpuSubmission": {
           "samples": 120,
           "meanMs": 0.36000000188748044,
           "medianMs": 0.3999999761581421,
@@ -2789,191 +737,32 @@
           "p95Ms": 16.700000000000728,
           "maxMs": 17.30000000000291
         },
-        "drawCalls": 14,
-        "triangles": 256819,
-        "layerStats": {
-          "mortal": {
-            "trees": {
-              "trees": 3371,
-              "instances": 3371,
-              "triangles": 140595,
-              "lod": [
-                1024,
-                2347,
-                0
-              ],
-              "lodCounts": {
-                "lod0": 1024,
-                "lod1": 2347,
-                "lod2": 0
-              },
-              "lod0": 1024,
-              "lod1": 2347,
-              "lod2": 0,
-              "budgetDemotions": 2347,
-              "capacity": 10000,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "variantCounts": [
-                680,
-                640,
-                668,
-                692,
-                691
-              ],
-              "variantMode": true
-            },
-            "characters": {
-              "instances": 119,
-              "byClass": {
-                "human": 69,
-                "cultivator": 14,
-                "beast": 33,
-                "spirit": 3,
-                "wraith": 0
-              },
-              "lod": [
-                47,
-                72,
-                0
-              ],
-              "triangles": 7084,
-              "overflow": 0,
-              "capacityOverflow": 0,
-              "capacity": 3256,
-              "budgetDemotions": 0
-            },
-            "buildings": {
-              "buildings": 94,
-              "villages": 6,
-              "houses": 89,
-              "centers": 5,
-              "sects": 0,
-              "instances": 184,
-              "triangles": 7280,
-              "lod": [
-                90,
-                4,
-                0
-              ],
-              "hlod": 0,
-              "hlodClusters": 0,
-              "hlodTriangles": 0,
-              "overflow": 0,
-              "capacity": 4608,
-              "capacityOverflow": 0,
-              "budgetDemotions": 0
-            }
-          }
-        },
         "canvasResolution": [
           1086,
           797
         ],
-        "cssResolution": [
-          1086,
-          798
-        ],
         "dpr": 1,
         "gpuTimeMs": null,
-        "gpuTimingReason": "not measured; CPU/rAF only (extension support reported separately)",
-        "timerQueryAvailable": true,
         "glError": 0,
-        "glRenderer": "WebKit WebGL",
         "fogIsNull": true,
-        "styleUniforms": [
-          {
-            "plane": "mortal",
-            "expectedRealmStylePlane": "mortal",
-            "terrainEnabled": 1,
-            "vegetation": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "entities": {
-              "plane": "mortal",
-              "enabled": 1
-            },
-            "settlements": {
-              "plane": "mortal",
-              "enabled": 1
-            }
-          },
-          {
-            "plane": "upper",
-            "expectedRealmStylePlane": "upper",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "upper",
-              "enabled": 1
-            },
-            "settlements": null
-          },
-          {
-            "plane": "nether",
-            "expectedRealmStylePlane": "nether",
-            "terrainEnabled": 1,
-            "vegetation": null,
-            "entities": {
-              "plane": "nether",
-              "enabled": 1
-            },
-            "settlements": null
-          }
+        "treesLOD": [
+          1024,
+          2347,
+          0
         ],
-        "programs": [
-          {
-            "name": "Inkbox:PigmentTerrain",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "Pilot:SharedPalette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_shared_palette",
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": null,
-            "runnable": null,
-            "log": null
-          },
-          {
-            "name": "cultivator_stage_realm_palette",
-            "runnable": null,
-            "log": null
-          }
-        ]
+        "treeVariants": [
+          680,
+          640,
+          668,
+          692,
+          691
+        ],
+        "buildingsLOD": [
+          90,
+          4,
+          0
+        ],
+        "hlodClusters": 0
       }
     }
   ]
