@@ -111,9 +111,15 @@ async function collectSample(label, scenario, poi, region) {
   return page(`
     const r=window.inkbox.render3d.renderer,visible=[...r.stages.values()].filter(s=>s.visible);
     const summarize=a=>{const v=[...a].sort((x,y)=>x-y);return {samples:a.length,medianMs:v[Math.floor(v.length*.5)],p95Ms:v[Math.floor(v.length*.95)],meanMs:a.reduce((x,y)=>x+y,0)/a.length};};
-    const frameTimes=[],updates=[];let prev=null;
-    for(let i=0;i<${samples}+1;i++){const ts=await new Promise(requestAnimationFrame);if(prev!==null){frameTimes.push(ts-prev);updates.push(r.updateMs||0);}prev=ts;}
-    const submits=[];for(let i=0;i<${samples}+5;i++){const t=performance.now();r.render();const dt=performance.now()-t;if(i>=5)submits.push(dt);}
+    const frameTimes=[],updates=[],submits=[],originalUpdate=r.update,originalRender=r.render;
+    let updateCalls=0,renderCalls=0;
+    r.update=function(dt){const t=performance.now();try{return originalUpdate.call(this,dt);}finally{updateCalls++;updates.push(performance.now()-t);}};
+    r.render=function(){const t=performance.now();try{return originalRender.call(this);}finally{renderCalls++;submits.push(performance.now()-t);}};
+    try{let prev=null;for(let i=0;i<${samples}+1;i++){const ts=await new Promise(requestAnimationFrame);if(prev!==null)frameTimes.push(ts-prev);prev=ts;}}
+    finally{r.update=originalUpdate;r.render=originalRender;}
+    if(Math.abs(updateCalls-(${samples}+1))>1||Math.abs(renderCalls-(${samples}+1))>1)throw new Error('not one product update/render per RAF');
+    if(updates.length<${samples}||submits.length<${samples})throw new Error('too few product loop samples');
+    updates.splice(0,updates.length-${samples});submits.splice(0,submits.length-${samples});
     const tris=m=>{const g=m.geometry;if(!g)return 0;const n=g.index?.count??g.attributes.position?.count??0;let count=Math.min(n,g.drawRange?.count??n);if(Array.isArray(m.material)&&g.groups?.length)count=g.groups.reduce((s,x)=>s+Math.min(x.count,Math.max(0,n-x.start)),0);return Math.floor(count/3)*(m.isInstancedMesh?m.count:1);};
     const category=(root)=>{let total=0;if(root)root.traverse(o=>{if(!o.isMesh||!o.visible)return;for(let p=o.parent;p;p=p.parent)if(!p.visible)return;total+=tris(o);});return total;};
     const layerStats={},regionAudit=[],categoryInstances={trees:0,characters:0,buildings:0},logicalCounts={trees:0,characters:0,buildings:0};let categoryTriangles={trees:0,characters:0,buildings:0};
@@ -139,6 +145,7 @@ async function collectSample(label, scenario, poi, region) {
     }
     const gl=r.gpu.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');
     return {case:${JSON.stringify(label)},scenario:${JSON.stringify(scenario)},poi:${JSON.stringify(poi)},region:${JSON.stringify(region)},profile:r.art.profile,lodEnabled:r.lodEnabled,
+      sampling:'product-loop-only; wrappers forward once; no probe update/render calls',productCalls:{update:updateCalls,render:renderCalls,rafCallbacks:${samples}+1},
       raf:summarize(frameTimes),layerUpdate:summarize(updates),renderSubmitCpu:summarize(submits),drawCalls:r.gpu.info.render.calls,triangles:r.gpu.info.render.triangles,
       categoryTriangles,categoryInstances,logicalCounts,instances:Object.values(categoryInstances).reduce((sum,count)=>sum+count,0),layerStats,
       visiblePlanes:visible.map(s=>s.plane),regionAudit,resources:{...r.gpu.info.memory,programs:r.gpu.info.programs.length},programStatus:r.gpu.info.programs.map(p=>({name:p.name||null,runnable:p.diagnostics?.runnable??p.runnable??null})),gpu:debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),glError:gl.getError(),viewport:[innerWidth,innerHeight],dpr:r.gpu.getPixelRatio()};

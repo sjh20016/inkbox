@@ -269,10 +269,19 @@ export class Session {
   }
 
   // ── 输出 ──────────────────────────────────────────────
-  async screenshot(outPath) {
-    const result = await this.cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+  async screenshot(outPath, { timeoutMs = 120000 } = {}) {
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new Error('Screenshot timeoutMs must be positive and finite');
+    const started = performance.now();
+    console.log(`Screenshot start: ${path.basename(outPath)} (deadline ${timeoutMs}ms)`);
+    let result;
+    try {
+      result = await this.cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, timeoutMs);
+    } catch (error) {
+      throw new Error(`Screenshot ${path.basename(outPath)} failed after ${Math.round(performance.now() - started)}ms: ${error.message}`, { cause: error });
+    }
     fs.mkdirSync(path.dirname(path.resolve(outPath)), { recursive: true });
     fs.writeFileSync(path.resolve(outPath), Buffer.from(result.data, 'base64'));
+    console.log(`Screenshot saved: ${path.basename(outPath)} (${Math.round(performance.now() - started)}ms)`);
     return path.resolve(outPath);
   }
 
