@@ -8,7 +8,14 @@ reports/*
 !reports/archive/
 !reports/archive/**
 !reports/release/
-!reports/release/**
+# New release evidence is opt-in: compact summaries and selected golden images only.
+# Existing tracked release evidence remains tracked and is not rewritten by ignore rules.
+reports/release/**
+!reports/release/**/
+!reports/release/**/summary/
+!reports/release/**/summary/**
+!reports/release/**/golden/
+!reports/release/**/golden/**
 run/
 *.log
 *.zip

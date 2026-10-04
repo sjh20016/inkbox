@@ -59,7 +59,7 @@ Strata 下窗口被明确抬起（幽冥压下），四周出现连续断面。�
 
 3D 模式从 `assets/characters/cultivator/mesh/cultivator_library.glb` 加载原创低模修士。身体、发型与身份道具共享实例批次；职业和宗门色只是只读视觉投影。
 
-启动服务器后，打开 [`cultivator-lab.html`](./cultivator-lab.html) 可查看六种组合、6/20/50 人固定尺度与300人压力场景。源工程、模块配置、调色图、实测截图和报告均在 [`assets/characters/cultivator`](./assets/characters/cultivator/docs/COMPLETION_REPORT.md)。继续生产前阅读 [`CHARACTER_SPEC.md`](./assets/characters/cultivator/docs/CHARACTER_SPEC.md)，并使用 `source/cultivator_master.blend`。
+启动服务器后，打开 [`cultivator-lab.html`](./cultivator-lab.html) 可查看六种组合、6/20/50 人固定尺度与300人压力场景。源工程、模块配置、调色图、实测截图和报告均在 [`assets/characters/cultivator`](./assets/characters/cultivator/docs/CHARACTER_SPEC.md)。继续生产前阅读 [`CHARACTER_SPEC.md`](./assets/characters/cultivator/docs/CHARACTER_SPEC.md)，并使用 `source/cultivator_master.blend`。
 
 ```bash
 npm run test:characters          # GLB真实结构、预算、共享和组合纪律

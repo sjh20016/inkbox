@@ -59,6 +59,7 @@ const FILES = [
   '.github/workflows/nightly.yml',
   'scripts/inkbox-server.mjs',
   'scripts/inkbox-package.mjs',
+  'scripts/inkbox-package-audit.mjs',
   'scripts/inkbox-import-check.mjs',
   'scripts/inkbox-core-check.mjs',
   'scripts/inkbox-startup-check.mjs',
@@ -143,6 +144,10 @@ const FILES = [
   'D8视界 2.0 · 穿透式跨界观察早期规划完成至F部分.md',
   'Inkbox M0 · 立体沙盘迁移技术原型.md',
   'tests/README.md',
+  'M2C2A1_PACKAGE_REPORT.md',
+  'M2C2A1_BASELINE.md',
+  '美术素材/Inkbox_M2-C2A.1_M2-C2B0_三界视觉基线工程委托书_v1.md',
+  '美术素材/三界视觉风格规划_美术方向文档_v1.md',
 ];
 // ⚠️ Three.js 运行时走**仓库内的 `vendor/three/`**（M1.1D D6），不再从 `node_modules/`
 //    里硬塞文件——那是**包的安装产物**，不是源码，而且会被 `.gitignore` 静默挡住。
@@ -153,13 +158,83 @@ const FILES = [
 //    `HANDOFF.md` §4 列为**有约束力**的文档（UI 禁令 / 考古定名不得擅改 / 机制缺口→停走设计流程），
 //    且 `core/lore.js`、`sim/reincarnation.js`、`world/World.js`、`scripts/inkbox-smoke.mjs`
 //    共 5 处注释引用它的行号作为**定名出处** ⇒ 不入包则接手者读不到规则、代码注释悬空。
-const DIRECTORIES = ['src/inkbox', 'vendor/three', '剧情文案素材', 'reports/release/render3d-m2a', 'reports/release/render3d-m2c', 'reports/release/render3d-m2c2a', 'assets/characters/cultivator'];
+const DIRECTORIES = [
+  'src/inkbox',
+  'vendor/three',
+  '剧情文案素材',
+  'assets/characters/cultivator/mesh',
+  'assets/characters/cultivator/data',
+  'assets/characters/cultivator/materials',
+  'assets/characters/cultivator/docs',
+];
+const RELEASE_SUMMARIES = [
+  'reports/release/render3d-m2a/performance.json',
+  'reports/release/render3d-m2c2a/acceptance-summary.json',
+  'reports/release/render3d-m2c2a/tree-gate.json',
+];
 
 function copyRelative(relative) {
   const from = path.join(ROOT, relative);
   if (!fs.existsSync(from)) throw new Error(`打包文件不存在：${relative}`);
   const to = path.join(STAGE, relative);
   copyPath(from, to);
+}
+
+function rewritePackageDocumentation() {
+  const excluded = new Map();
+  const markdownFiles = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) markdownFiles.push(full);
+    }
+  };
+  walk(STAGE);
+
+  for (const file of markdownFiles) {
+    let content = fs.readFileSync(file, 'utf8');
+    content = content.replace(/(!?)\[([^\]]*)\]\(\s*(<[^>]+>|[^\s)]+)(?:\s+[^)]*)?\s*\)/g,
+      (whole, imagePrefix, label, rawTarget) => {
+        const target = rawTarget.startsWith('<') && rawTarget.endsWith('>')
+          ? rawTarget.slice(1, -1) : rawTarget;
+        if (/^(?:[a-z][a-z\d+.-]*:|#|\/\/)/i.test(target)) return whole;
+        const pathname = target.split(/[?#]/, 1)[0];
+        if (!pathname) return whole;
+        let decoded = pathname;
+        try { decoded = decodeURIComponent(pathname); } catch { /* Keep literal path for diagnostics. */ }
+        const resolved = path.resolve(path.dirname(file), decoded);
+        if (resolved === STAGE || resolved.startsWith(`${STAGE}${path.sep}`)) {
+          if (fs.existsSync(resolved)) return whole;
+        }
+        const relativeSource = path.relative(STAGE, file).replaceAll('\\', '/');
+        const key = `${relativeSource} → ${decoded}`;
+        excluded.set(key, { source: relativeSource, target: decoded, label: label || decoded });
+        return `开发资料，运行包不附带：${label || decoded}（\`${decoded}\`）`;
+      });
+    fs.writeFileSync(file, content);
+  }
+
+  // This link was present in the source README before its destination was corrected.
+  // Retain an explicit trail in the package even after the README points to CHARACTER_SPEC.
+  excluded.set('README.md → assets/characters/cultivator/docs/COMPLETION_REPORT.md', {
+    source: 'README.md',
+    target: 'assets/characters/cultivator/docs/COMPLETION_REPORT.md',
+    label: 'COMPLETION_REPORT.md（源工作区历史链接；当前README已改为CHARACTER_SPEC.md）',
+  });
+
+  const rows = [...excluded.values()].sort((a, b) => `${a.source} ${a.target}`.localeCompare(`${b.source} ${b.target}`));
+  const lines = [
+    '# 开发资料清单',
+    '',
+    '以下资料只用于开发、制作或历史记录，运行包不附带。正文中的对应引用已在打包时替换为明确说明。',
+    '',
+    '| 引用文档 | 开发资料路径 |',
+    '| --- | --- |',
+    ...rows.map(row => `| \`${row.source}\` | \`${row.target}\` |`),
+    '',
+  ];
+  fs.writeFileSync(path.join(STAGE, '开发资料清单.md'), lines.join('\n'));
 }
 
 function copyPath(from, to) {
@@ -176,17 +251,73 @@ function copyPath(from, to) {
   }
 }
 
+function countFiles(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).reduce((sum, entry) => {
+    const full = path.join(dir, entry.name);
+    return sum + (entry.isDirectory() ? countFiles(full) : entry.isFile() ? 1 : 0);
+  }, 0);
+}
+
+function removeOutputDirectory() {
+  const absoluteDist = path.resolve(DIST);
+  const absoluteOutput = path.resolve(OUTPUT_DIR);
+  if (!absoluteOutput.startsWith(`${absoluteDist}${path.sep}`)) {
+    throw new Error(`拒绝清理发布目录范围外路径：${OUTPUT_DIR}`);
+  }
+  fs.rmSync(absoluteOutput, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  if (fs.existsSync(absoluteOutput) && process.platform === 'win32') {
+    const script = [
+      "$target = [System.IO.Path]::GetFullPath($env:INKBOX_PACKAGE_OUTPUT)",
+      "$dist = [System.IO.Path]::GetFullPath($env:INKBOX_PACKAGE_DIST) + [System.IO.Path]::DirectorySeparatorChar",
+      'if (-not $target.StartsWith($dist, [System.StringComparison]::OrdinalIgnoreCase)) { throw "Refusing to remove outside dist: $target" }',
+      'Remove-Item -LiteralPath $target -Recurse -Force -ErrorAction Stop',
+    ].join('; ');
+    const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
+      encoding: 'utf8',
+      windowsHide: true,
+      env: { ...process.env, INKBOX_PACKAGE_OUTPUT: absoluteOutput, INKBOX_PACKAGE_DIST: absoluteDist },
+    });
+    if (result.status !== 0) throw new Error(result.error?.message || result.stderr || '无法清理旧发布目录');
+  }
+  if (fs.existsSync(absoluteOutput)) throw new Error(`旧发布目录未能移除：${absoluteOutput}`);
+}
+
 try {
   for (const relative of FILES) copyRelative(relative);
   for (const relative of DIRECTORIES) copyRelative(relative);
+  for (const relative of RELEASE_SUMMARIES) copyRelative(relative);
 
-  const packageJson = JSON.parse(fs.readFileSync(path.join(STAGE, 'package.json'), 'utf8'));
+  // Source production acceptance needs the editable Blender master; the runtime package
+  // intentionally contains only mesh/data/materials. Keep the full check in the repo.
+  const packageJsonPath = path.join(STAGE, 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  packageJson.scripts['test:characters'] = `${packageJson.scripts['test:characters']} --runtime-only`;
+  fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
+  rewritePackageDocumentation();
+
   if (packageJson.version !== APP.version || packageJson.scripts?.build !== 'node scripts/inkbox-package.mjs') {
     throw new Error('打包包身份或 build 脚本与 Inkbox 主线不一致');
   }
 
-  fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
+  const audit = spawnSync(process.execPath, ['scripts/inkbox-package-audit.mjs', STAGE], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    windowsHide: true,
+  });
+  if (audit.status !== 0) throw new Error(audit.error?.message || audit.stderr || audit.stdout || 'Inkbox package audit failed');
+  if (audit.stdout) process.stdout.write(audit.stdout);
+
+  removeOutputDirectory();
   copyPath(STAGE, OUTPUT_DIR);
+
+  const outputAudit = spawnSync(process.execPath, ['scripts/inkbox-package-audit.mjs', OUTPUT_DIR], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    windowsHide: true,
+  });
+  if (outputAudit.status !== 0) throw new Error(outputAudit.error?.message || outputAudit.stderr || outputAudit.stdout || 'Copied package audit failed');
+  if (outputAudit.stdout) process.stdout.write(outputAudit.stdout);
+
   fs.rmSync(OUTPUT_ZIP, { force: true });
 
   if (process.platform === 'win32') {
@@ -204,13 +335,7 @@ try {
     if (result.status !== 0) throw new Error(result.error?.message || result.stderr || result.stdout || 'zip 打包失败');
   }
 
-  const fileCount = FILES.length + DIRECTORIES.reduce((n, relative) => {
-    const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).reduce((sum, entry) => {
-      const full = path.join(dir, entry.name);
-      return sum + (entry.isDirectory() ? walk(full) : 1);
-    }, 0);
-    return n + walk(path.join(STAGE, relative));
-  }, 0);
+  const fileCount = countFiles(STAGE);
   console.log(`Inkbox package built · v${APP.version} · ${fileCount} files`);
   console.log(path.relative(ROOT, OUTPUT_DIR).replaceAll('\\', '/'));
   console.log(path.relative(ROOT, OUTPUT_ZIP).replaceAll('\\', '/'));

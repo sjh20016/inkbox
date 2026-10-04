@@ -9,6 +9,7 @@ import { CharacterBatch } from '../src/inkbox/render3d/characters/CharacterBatch
 import * as THREE from 'three';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../assets/characters/cultivator');
+const runtimeOnly = process.argv.includes('--runtime-only');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'data/cultivator_manifest.json'), 'utf8'));
 const binary = fs.readFileSync(path.join(root, 'mesh/cultivator_library.glb'));
 assert.equal(binary.toString('ascii', 0, 4), 'glTF');
@@ -70,7 +71,9 @@ for (const animation of gltf.animations) {
   assert(animation.channels.some(channel => joints.includes(channel.target.node)), 'Animations address the shared skeleton');
   assert(animation.samplers.some(sampler => gltf.accessors[sampler.input].count > 1), 'Animations contain multiple keyframes');
 }
-assert(fs.statSync(path.join(root, 'source/cultivator_master.blend')).size > 10000, 'Editable master scene');
+if (!runtimeOnly) {
+  assert(fs.statSync(path.join(root, 'source/cultivator_master.blend')).size > 10000, 'Editable master scene');
+}
 
 // Use real exported metadata with synthetic geometry to check runtime sharing and capacities without a DOM.
 const scene = new THREE.Group();
@@ -106,4 +109,4 @@ const result = { generatedAt: new Date().toISOString(), pass: true, glbBytes: bi
   baseTriangles: basicCount, modules: moduleTriangles, sharedMeshCount: Object.keys(moduleTriangles).length,
   materialCount: gltf.materials.length, textureCount: gltf.textures.length, bones: joints.map(i => gltf.nodes[i].name), animations: names };
 fs.writeFileSync(path.join(root, 'data/structural_validation.json'), JSON.stringify(result, null, 2));
-console.log(JSON.stringify(result, null, 2));
+console.log(JSON.stringify({ ...result, sourceMasterChecked: !runtimeOnly }, null, 2));
