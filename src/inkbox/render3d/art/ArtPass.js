@@ -27,12 +27,13 @@ export class ArtPass {
       terrainBoundaryStrength: realmStyle.pigment.boundaryStrength,
       structuralInkStrength: realmStyle.ink.structure, silhouetteInkStrength: realmStyle.ink.silhouette,
       inkDensity: realmStyle.ink.density, dryBrushStrength: realmStyle.ink.dryBrush,
+      distanceFade: realmStyle.pigment.distanceFade ?? this.profile.distanceFade,
     } : this.profile;
     stage.terrain?.setArtProfile(profile);
     const pilot = profile?.pilots ? profile : null;
-    stage.entities?.setArtProfile(realmStyle ? { ...pilot, layerCategory: 'entity' } : pilot);
-    stage.vegetation?.setArtProfile(realmStyle ? { ...pilot, layerCategory: 'vegetation' } : pilot);
-    stage.settlements?.setArtProfile(realmStyle ? { ...pilot, layerCategory: 'building' } : pilot);
+    for (const [category, layer] of [['entity', stage.entities], ['vegetation', stage.vegetation], ['building', stage.settlements]])
+      layer?.setArtProfile(realmStyle ? { ...pilot, layerCategory: category,
+        distanceFade: realmStyle[category].distanceFade ?? pilot.distanceFade } : pilot);
     if (stage.water) {
       const material = stage.water.material;
       if (!this.saved.has(material)) this.saved.set(material, { color: material.color.clone(), opacity: material.opacity });

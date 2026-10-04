@@ -75,7 +75,7 @@ function regionFor(world, points = [[12, 10], [40, 10], [40, 32], [12, 32]]) {
 check('ArtPassProfile: known presets are immutable, custom values clamp, and profile resolution is pure', () => {
   const world = makeWorld(901, { w: 17, h: 13 });
   const before = snapshot(world);
-  assert.deepEqual(Object.keys(ART_PROFILES).sort(), ['baseline', 'ink', 'low', 'pigment', 'pilot']);
+  assert.deepEqual(Object.keys(ART_PROFILES).sort(), ['baseline', 'ink', 'legacy', 'low', 'pigment', 'pilot', 'realm-style-v1']);
   assert(Object.isFrozen(ART_PROFILES) && Object.values(ART_PROFILES).every(Object.isFrozen));
   const input = { pigmentDensity: -7, paperGrainStrength: 2, distanceFade: 0.31, paperColor: '#abcdef', enabled: true };
   const resolved = resolveArtProfile(input);
@@ -329,7 +329,7 @@ check('600-day simulation digest stays identical with art disabled, enabled, tun
   assert.equal(run('toggle'), baseline, 'all profile changes, masks and texture updates remain presentation-only');
 });
 
-const reportDir = path.join(root, 'reports', 'release', 'render3d-m2c');
+const reportDir = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(root, 'reports', 'release', 'render3d-m2c'));
 fs.mkdirSync(reportDir, { recursive: true });
 fs.writeFileSync(path.join(reportDir, 'm2c-results.json'), JSON.stringify({
   suite: 'Render3D M2-C contract and integration', status: 'passed', passed, failed: 0, checks,

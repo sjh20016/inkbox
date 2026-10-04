@@ -152,6 +152,7 @@ export class EntityLayer {
   setArtProfile(profile) {
     const changed = this.artProfile !== (profile || null);
     this.artProfile = profile || null;
+    this.characterBatch?.setArtProfile(profile);
     if (profile && !this.pilotGeometry) {
       this.pilotGeometry = createCultivatorPilot();
       this.pilotMaterial = createPilotMaterial(profile, 2.9);

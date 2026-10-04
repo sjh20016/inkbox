@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { ElevationField } from '../terrain/ElevationField.js';
 import { deriveVegetation } from './deriveVegetation.js';
+import { TREE_VARIANT_SCALES, treeVariantIndex } from './treeVariation.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
 import { createTreeLODBatches } from '../lod/TreeLODAssets.js';
@@ -49,6 +50,9 @@ export class VegetationLayer {
     this.pilotGeometry = this.lodGeometries[0]; this.pilotMaterial = null;
     this._nextLodByTree = new Map();
     this._dummy = new THREE.Object3D();
+    this._variantTints = Array.from({ length: 5 }, () => new THREE.Color('#ffffff'));
+    this._whiteTint = new THREE.Color('#ffffff');
+    this._variantCounts = [0, 0, 0, 0, 0];
     this._batchCounts = [0, 0, 0]; this._lodCounts = [0, 0, 0];
     this._budgetDemotions = 0;
     this.lodProbe = null;
@@ -86,6 +90,8 @@ export class VegetationLayer {
     const nextProfile = profile || null;
     const changed = this.artProfile !== nextProfile;
     this.artProfile = nextProfile;
+    const tints = profile?.realmStyle?.vegetation?.tints5;
+    for (let i = 0; i < 5; i++) this._variantTints[i].set(tints?.[i] || '#ffffff');
     if (profile && !this.pilotMaterial) this.pilotMaterial = createPilotMaterial(profile, 1.5);
     if (profile) updatePilotMaterial(this.pilotMaterial, profile);
     this.mesh.geometry = profile ? this.pilotGeometry : this.geometry;
@@ -237,6 +243,8 @@ export class VegetationLayer {
 
   _writeMatrices() {
     const dummy = this._dummy, counts = this._batchCounts;
+    const varied = this.artProfile?.realmStyle?.plane === 'mortal';
+    this._variantCounts.fill(0);
     let matrixInstancesWritten = 0;
     counts.fill(0);
     for (const mesh of this.lodMeshes) mesh.userData.renderTrees = [];
@@ -244,22 +252,30 @@ export class VegetationLayer {
       const lod = this._lodByTree.get(tree.cell) ?? 0;
       const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
       dummy.position.set(p.x, p.y, p.z); dummy.scale.setScalar(tree.size);
+      const variant = varied ? treeVariantIndex(this.world.seed, tree.cell) : 0;
+      this._variantCounts[variant]++;
+      if (varied) {
+        const scale = TREE_VARIANT_SCALES[variant];
+        dummy.scale.set(tree.size * scale[0], tree.size * scale[1], tree.size * scale[2]);
+      }
+      const tint = varied ? this._variantTints[variant] : this._whiteTint;
       const target = this.lodMeshes[lod];
       if (lod === 0 && !this.artProfile) {
         for (let side = 0; side < 2; side++) {
           dummy.rotation.y = tree.rotation + side * Math.PI / 2;
-          dummy.updateMatrix(); target.setMatrixAt(counts[lod]++, dummy.matrix); matrixInstancesWritten++;
+          dummy.updateMatrix(); target.setColorAt(counts[lod], tint); target.setMatrixAt(counts[lod]++, dummy.matrix); matrixInstancesWritten++;
           target.userData.renderTrees.push(tree);
         }
       } else {
         dummy.rotation.y = tree.rotation;
-        dummy.updateMatrix(); target.setMatrixAt(counts[lod]++, dummy.matrix); matrixInstancesWritten++;
+        dummy.updateMatrix(); target.setColorAt(counts[lod], tint); target.setMatrixAt(counts[lod]++, dummy.matrix); matrixInstancesWritten++;
         target.userData.renderTrees.push(tree);
       }
     }
     for (let lod = 0; lod < 3; lod++) {
       const mesh = this.lodMeshes[lod];
       mesh.count = counts[lod]; mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       mesh.boundingBox = null; mesh.boundingSphere = null;
       mesh.visible = counts[lod] > 0;
     }
@@ -278,6 +294,8 @@ export class VegetationLayer {
     const capacity = LOD_BUDGETS.categories.tree.capacity;
     const overflow = Math.max(0, this.trees.length - capacity);
     s.trees = this.trees.length; s.instances = instances; s.triangles = triangles;
+    s.variantCounts = this._variantCounts;
+    s.variantMode = this.artProfile?.realmStyle?.plane === 'mortal';
     s.lod0 = s.lod[0]; s.lod1 = s.lod[1]; s.lod2 = s.lod[2];
     s.lodCounts.lod0 = s.lod[0]; s.lodCounts.lod1 = s.lod[1]; s.lodCounts.lod2 = s.lod[2];
     s.budgetDemotions = this._budgetDemotions; s.capacity = capacity;
