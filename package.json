@@ -50,7 +50,9 @@
     "test:render3d:m2c2a": "node scripts/inkbox-render3d-m2c2a.mjs",
     "test:render3d:m2c2a:browser": "node scripts/inkbox-render3d-m2c2a-browser.mjs",
     "test:render3d:m2c2a:soak": "node scripts/inkbox-render3d-m2c2a-soak.mjs",
-    "test:package": "node scripts/inkbox-package-audit.mjs"
+    "test:package": "node scripts/inkbox-package-audit.mjs",
+    "test:render3d:m2c2a1:hlod": "node scripts/inkbox-render3d-m2c2a1-hlod.mjs",
+    "test:render3d:m2c2a1:forest": "node scripts/inkbox-render3d-m2c2a1-forest.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

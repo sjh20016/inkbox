@@ -18,7 +18,9 @@ import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
 import { normalizeRegion } from '../src/inkbox/ui/tools.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const reportPath = path.join(root, 'M2C2A1_HLOD_REPORT.md');
+const output = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(root, 'reports/m2c2a1/hlod-core'));
+fs.mkdirSync(output, { recursive: true });
+const reportPath = path.join(output, 'hlod-checks.md');
 const results = [];
 const digest = world => createHash('sha256').update(JSON.stringify(world)).digest('hex');
 function check(name, fn) { fn(); results.push(name); console.log(`PASS ${name}`); }
