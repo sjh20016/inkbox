@@ -11,11 +11,12 @@ import { ElevationField } from '../terrain/ElevationField.js';
 import { RegionGeometry } from '../region/RegionGeometry.js';
 import { renderProfileFor } from './PlaneRenderProfile.js';
 import { createEnvironmentMaterial, setEnvironmentMaterialProfile, setEnvironmentMaterialView } from '../environment/EnvironmentMaterial.js';
+import { RealmDecorationLayer } from '../environment/RealmDecorationLayer.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
   constructor({ plane, world, profile = renderProfileFor(plane), coordinates, characterLibrary = null,
-    environmentLibrary = null, productionAssets = false } = {}) {
+    environmentLibrary = null, productionAssets = false, decorations = true } = {}) {
     if (!world) throw new Error(`PlaneStage ${plane}: world is required`);
     this.plane = plane;
     this.profile = profile;
@@ -26,6 +27,7 @@ export class PlaneStage {
     this.characterLibrary = characterLibrary;
     this.environmentLibrary = environmentLibrary;
     this.productionAssetsEnabled = !!productionAssets;
+    this.decorationsEnabled = !!decorations;
     this.setWorld(world, coordinates);
   }
 
@@ -53,6 +55,8 @@ export class PlaneStage {
     if (this.entities) this.root.add(this.entities.group);
     this.settlements = p.settlements ? new SettlementLayer(world, this.coordinates, this.elevation) : null;
     if (this.settlements) this.root.add(this.settlements.group);
+    this.decorations = this.plane==='upper'||this.plane==='nether'?new RealmDecorationLayer(world,this.coordinates,this.elevation):null;
+    if(this.decorations)this.root.add(this.decorations.group);
     this.setEnvironmentAssets(this.environmentLibrary, this.productionAssetsEnabled);
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
@@ -87,10 +91,12 @@ export class PlaneStage {
       }
       this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.entities?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
+      this.decorations?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled&&this.decorationsEnabled);
       previous?.dispose();
     } else {
       this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.entities?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
+      this.decorations?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled&&this.decorationsEnabled);
     }
   }
 
@@ -102,6 +108,7 @@ export class PlaneStage {
   setEnvironmentArtView(view) {
     this.environmentArtView = view;
     if (this.environmentMaterial) setEnvironmentMaterialView(this.environmentMaterial, view);
+    this.decorations?.setArtView(view);
   }
 
   /**
@@ -124,6 +131,7 @@ export class PlaneStage {
     if (this.markers) { this.markers.lastDerived = null; this.markers.clock = Infinity; }
     if (this.vegetation) this.vegetationPending = true;
     if (this.selectionMarker) this.selectionMarker.needsPlace = true;
+    this.decorations?.invalidateGround();
     return true;
   }
 
@@ -152,6 +160,7 @@ export class PlaneStage {
     this.settlements?.setRegionGeometry(this.regionGeometry, this.regionInside);
     this.markers?.setRegionGeometry(this.regionGeometry, this.regionInside);
     this.entities?.setRegionGeometry(this.regionGeometry, this.regionInside);
+    this.decorations?.setRegionGeometry(this.regionGeometry,this.regionInside);
   }
 
   markTerrainDirty(region) {
@@ -192,6 +201,7 @@ export class PlaneStage {
     const t5 = performance.now();
     this.markers?.update(dt, this.world, options);
     this.markers?.setZoom(zoom);
+    this.decorations?.update({terrainChanged:heightChanged||!!typeRegion});
     this.selectionMarker?.update(this.world, heightChanged);
     const t6 = performance.now();
     this.timings = {
@@ -207,6 +217,7 @@ export class PlaneStage {
   releaseLayers() {
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
     this.entities?.dispose(); this.settlements?.dispose(); this.markers?.dispose();
+    this.decorations?.dispose();this.decorations=null;
     this.environmentMaterial?.dispose(); this.environmentMaterial = null;
     this.selectionMarker?.dispose();
     this.root.clear();

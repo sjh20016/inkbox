@@ -60,7 +60,9 @@
     "test:render3d:m2c2b:sample": "node scripts/inkbox-render3d-m2c2b-sample.mjs",
     "test:render3d:m2c2b:sample:browser": "node scripts/inkbox-render3d-m2c2b-sample-browser.mjs",
     "test:render3d:m2c2b:content": "node scripts/inkbox-render3d-m2c2b-content.mjs",
-    "test:render3d:m2c2b:content:browser": "node scripts/inkbox-render3d-m2c2b-content-browser.mjs"
+    "test:render3d:m2c2b:content:browser": "node scripts/inkbox-render3d-m2c2b-content-browser.mjs",
+    "test:render3d:m2c2b:decorations": "node scripts/inkbox-render3d-m2c2b-decorations.mjs",
+    "test:render3d:m2c2b:decorations:browser": "node scripts/inkbox-render3d-m2c2b-decorations-browser.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

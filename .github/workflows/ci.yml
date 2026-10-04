@@ -89,6 +89,9 @@ jobs:
       - name: Render3D M2-C2B 真实身份与不透明幽冥家族
         run: npm run test:render3d:m2c2b:content
 
+      - name: Render3D M2-C2B 自然装饰与完整占地区域归属
+        run: npm run test:render3d:m2c2b:decorations
+
       - name: 构建发布包（自包含，clone 即可跑）
         run: npm run build
 

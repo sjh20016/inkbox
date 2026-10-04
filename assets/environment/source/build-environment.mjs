@@ -169,6 +169,22 @@ function ghostSilhouette(variant, lod) {
   }
   return b.finish();
 }
+function naturalStone(kind,lod) {
+  const b=meshBuilder(),n=lod===0?7:lod===1?5:3;
+  const profiles={rock:[[0,.36],[.4,.47],[.85,.24]],cliff:[[0,.43],[.62,.47],[.93,.32]],pillar:[[0,.43],[.52,.27],[.92,.33]],terrace:[[0,.46],[.7,.42],[.89,.26]],slab:[[0,.44],[.74,.38],[.91,.20]]};
+  const profile=profiles[kind],levels=lod===0?profile:lod===1?[profile[0],profile[2]]:[profile[1]];
+  const offset={rock:.07,cliff:-.05,pillar:.03,terrace:.09,slab:.12}[kind];
+  const rings=levels.map(([y,r],row)=>Array.from({length:n},(_,i)=>{
+    const a=i*Math.PI*2/n,rough=.82+.15*Math.sin(i*2.7+row*.8+kind.length);
+    return [Math.cos(a)*r*rough+offset*y,y+(y===0?0:.025*Math.sin(i*2.2)),Math.sin(a)*r*rough*.85-.04*y];
+  }));
+  for(let i=0;i<n;i++){
+    const next=(i+1)%n;b.tri([0,0,0],rings[0][next],rings[0][i],8);
+    for(let row=0;row<rings.length-1;row++)b.quad(rings[row][next],rings[row][i],rings[row+1][i],rings[row+1][next],i%3===0?8:7);
+    b.tri([offset,1,-.04],rings.at(-1)[i],rings.at(-1)[next],i%2?20:21);
+  }
+  return b.finish();
+}
 function bounds(positions) {
   const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
   for(let i=0;i<positions.length;i+=3)for(let a=0;a<3;a++){min[a]=Math.min(min[a],positions[i+a]);max[a]=Math.max(max[a],positions[i+a]);}
@@ -214,6 +230,12 @@ function main() {
     const id=`nether.ghost.${variant}`,lods=[0,1,2].map(lod=>lod===2?'env_ghost_shared_lod2':`env_ghost_${variant}_lod${lod}`);
     for(let lod=0;lod<3;lod++)if(lod!==2||variant===0){const data=ghostSilhouette(lod===2?0:variant,lod);specs.push([lods[lod],data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]);}
     assets[id]={id,source:'authored ghost silhouette',realm:'nether',binding:'entities soulKind=ghost',pick:'entity',lods,variant};
+  }
+  for(const kind of ['rock','cliff','pillar','terrace','slab']) {
+    const id=`environment.${kind}`,lods=[0,1,2].map(lod=>`env_natural_${kind}_lod${lod}`);
+    for(let lod=0;lod<3;lod++){const data=naturalStone(kind,lod);specs.push([lods[lod],data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]);}
+    assets[id]={id,source:`terr_${kind} natural revision`,realm:kind==='terrace'||kind==='slab'?'upper':'upper/nether',binding:'height/slope/type presentation only',pick:'none',lods,
+      revision:'Asymmetric rough rings and inclined facets replace authored plinths, altar steps, clean columns and slab crossbeams; no walkable or site semantics'};
   }
   let binaryParts=[Buffer.alloc(0)],accessors=[],views=[],nodes=[],meshes=[],modules={};
   for(const [name,data,semantics] of specs){const m=addMesh(binaryParts,accessors,views,data,name,semantics);binaryParts=m.binaryParts;accessors=m.accessors;views=m.views;m.node.mesh=meshes.length;nodes.push(m.node);meshes.push(m.mesh);modules[name]={node:name,triangles:m.module.triangles,bounds:m.module.bounds,uvSlots:m.module.uvSlots,semanticSlots:semantics};}

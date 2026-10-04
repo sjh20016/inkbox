@@ -63,6 +63,7 @@ export class Render3DHost {
     this.environmentLibrary = options.environmentLibrary || null;
     this.ownsEnvironmentLibrary = !options.environmentLibrary;
     this.productionAssetsEnabled = !!options.productionAssets;
+    this.decorationsEnabled = options.decorations !== false;
 
     this.setWorld(world);
     const load = options.loadCharacterLibrary || (typeof window !== 'undefined' && options.characters !== false
@@ -113,7 +114,7 @@ export class Render3DHost {
         const plane = PLANES[i];
         const stage = new PlaneStage({ plane, world: entry.world, profile: PLANE_RENDER_PROFILE[plane],
           coordinates: this.coordinates, characterLibrary: this.characterLibrary,
-          environmentLibrary: this.environmentLibrary, productionAssets: this.productionAssetsEnabled });
+          environmentLibrary: this.environmentLibrary, productionAssets: this.productionAssetsEnabled, decorations: this.decorationsEnabled });
         this.stages.set(plane, stage); this.scene.add(stage.root);
         stage.fxProbe = new ThreeFxProbe({ plane, coordinates: this.coordinates, elevation: stage.elevation });
         stage.root.add(stage.fxProbe.root);
@@ -138,10 +139,16 @@ export class Render3DHost {
   setLODEnabled(enabled) {
     this.lodEnabled = !!enabled;
     for (const stage of this.stages.values()) {
-      for (const layer of [stage.vegetation, stage.entities, stage.settlements]) layer?.setLODEnabled?.(this.lodEnabled);
+      for (const layer of [stage.vegetation, stage.entities, stage.settlements, stage.decorations]) layer?.setLODEnabled?.(this.lodEnabled);
     }
     this.art.update();
     return this.lodEnabled;
+  }
+  setDecorationsEnabled(enabled) {
+    this.decorationsEnabled=!!enabled;
+    for(const stage of this.stages.values()){stage.decorationsEnabled=this.decorationsEnabled;
+      stage.decorations?.setEnvironmentAssets(this.environmentLibrary,stage.environmentMaterial,this.productionAssetsEnabled&&this.decorationsEnabled);}
+    this.art.update();return this.decorationsEnabled;
   }
   getLODStats() {
     const result = {};

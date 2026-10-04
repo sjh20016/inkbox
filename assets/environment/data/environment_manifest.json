@@ -750,6 +750,416 @@
         "paperShade",
         "stone"
       ]
+    },
+    "env_natural_rock_lod0": {
+      "node": "env_natural_rock_lod0",
+      "triangles": 42,
+      "bounds": {
+        "min": [
+          -0.34003402305572145,
+          0,
+          -0.31131853915435026
+        ],
+        "max": [
+          0.34317039507707325,
+          1,
+          0.2840666482420784
+        ]
+      },
+      "uvSlots": [
+        7,
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_rock_lod1": {
+      "node": "env_natural_rock_lod1",
+      "triangles": 20,
+      "bounds": {
+        "min": [
+          -0.23990417871215475,
+          0,
+          -0.27304905803964324
+        ],
+        "max": [
+          0.25433266525337184,
+          1,
+          0.2563122146889711
+        ]
+      },
+      "uvSlots": [
+        7,
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_rock_lod2": {
+      "node": "env_natural_rock_lod2",
+      "triangles": 6,
+      "bounds": {
+        "min": [
+          -0.17897095970173496,
+          0,
+          -0.30098702168458724
+        ],
+        "max": [
+          0.36004542408079104,
+          1,
+          0.2887115852104914
+        ]
+      },
+      "uvSlots": [
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_cliff_lod0": {
+      "node": "env_natural_cliff_lod0",
+      "triangles": 42,
+      "bounds": {
+        "min": [
+          -0.4399736708073688,
+          0,
+          -0.3696117915229846
+        ],
+        "max": [
+          0.32164554635133014,
+          1,
+          0.27667946886642253
+        ]
+      },
+      "uvSlots": [
+        7,
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_cliff_lod1": {
+      "node": "env_natural_cliff_lod1",
+      "triangles": 20,
+      "bounds": {
+        "min": [
+          -0.31180215932103444,
+          0,
+          -0.2802489715212947
+        ],
+        "max": [
+          0.29074938428422753,
+          1,
+          0.3365658939185189
+        ]
+      },
+      "uvSlots": [
+        7,
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_cliff_lod2": {
+      "node": "env_natural_cliff_lod2",
+      "triangles": 6,
+      "bounds": {
+        "min": [
+          -0.2585329302441641,
+          0,
+          -0.2655399058029547
+        ],
+        "max": [
+          0.2867958386362487,
+          1,
+          0.31018380624123004
+        ]
+      },
+      "uvSlots": [
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_pillar_lod0": {
+      "node": "env_natural_pillar_lod0",
+      "triangles": 42,
+      "bounds": {
+        "min": [
+          -0.3757539816612512,
+          0,
+          -0.32456200660992396
+        ],
+        "max": [
+          0.34611202376555855,
+          1,
+          0.26274016770191694
+        ]
+      },
+      "uvSlots": [
+        7,
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_pillar_lod1": {
+      "node": "env_natural_pillar_lod1",
+      "triangles": 20,
+      "bounds": {
+        "min": [
+          -0.3374049511563466,
+          0,
+          -0.23876191801922966
+        ],
+        "max": [
+          0.33457770036616924,
+          1,
+          0.31960947363821146
+        ]
+      },
+      "uvSlots": [
+        7,
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_pillar_lod2": {
+      "node": "env_natural_pillar_lod2",
+      "triangles": 6,
+      "bounds": {
+        "min": [
+          -0.10852512690916416,
+          0,
+          -0.15636944878861622
+        ],
+        "max": [
+          0.2256836723229435,
+          1,
+          0.1619423723572162
+        ]
+      },
+      "uvSlots": [
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_terrace_lod0": {
+      "node": "env_natural_terrace_lod0",
+      "triangles": 42,
+      "bounds": {
+        "min": [
+          -0.375354968166273,
+          0,
+          -0.3695796384052635
+        ],
+        "max": [
+          0.47030823075860007,
+          1,
+          0.30311221960220636
+        ]
+      },
+      "uvSlots": [
+        7,
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_terrace_lod1": {
+      "node": "env_natural_terrace_lod1",
+      "triangles": 20,
+      "bounds": {
+        "min": [
+          -0.3370466605317506,
+          0,
+          -0.25655566691290077
+        ],
+        "max": [
+          0.4225320753115964,
+          1,
+          0.28976907799205515
+        ]
+      },
+      "uvSlots": [
+        7,
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_terrace_lod2": {
+      "node": "env_natural_terrace_lod2",
+      "triangles": 6,
+      "bounds": {
+        "min": [
+          -0.10398346847337839,
+          0,
+          -0.27384027370697184
+        ],
+        "max": [
+          0.44879015571928366,
+          1,
+          0.21291719819076227
+        ]
+      },
+      "uvSlots": [
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_slab_lod0": {
+      "node": "env_natural_slab_lod0",
+      "triangles": 42,
+      "bounds": {
+        "min": [
+          -0.37194214534167486,
+          0,
+          -0.28257229507709286
+        ],
+        "max": [
+          0.34361861729635707,
+          1,
+          0.3003459457466996
+        ]
+      },
+      "uvSlots": [
+        7,
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_slab_lod1": {
+      "node": "env_natural_slab_lod1",
+      "triangles": 20,
+      "bounds": {
+        "min": [
+          -0.29321621842596696,
+          0,
+          -0.3337266264928973
+        ],
+        "max": [
+          0.3108510353096767,
+          1,
+          0.3132704846198536
+        ]
+      },
+      "uvSlots": [
+        7,
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
+    },
+    "env_natural_slab_lod2": {
+      "node": "env_natural_slab_lod2",
+      "triangles": 6,
+      "bounds": {
+        "min": [
+          -0.07853822273757297,
+          0,
+          -0.2600150388088152
+        ],
+        "max": [
+          0.3572622577674481,
+          1,
+          0.21676255825529095
+        ]
+      },
+      "uvSlots": [
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
     }
   },
   "assets": {
@@ -851,6 +1261,71 @@
         "env_ghost_shared_lod2"
       ],
       "variant": 2
+    },
+    "environment.rock": {
+      "id": "environment.rock",
+      "source": "terr_rock natural revision",
+      "realm": "upper/nether",
+      "binding": "height/slope/type presentation only",
+      "pick": "none",
+      "lods": [
+        "env_natural_rock_lod0",
+        "env_natural_rock_lod1",
+        "env_natural_rock_lod2"
+      ],
+      "revision": "Asymmetric rough rings and inclined facets replace authored plinths, altar steps, clean columns and slab crossbeams; no walkable or site semantics"
+    },
+    "environment.cliff": {
+      "id": "environment.cliff",
+      "source": "terr_cliff natural revision",
+      "realm": "upper/nether",
+      "binding": "height/slope/type presentation only",
+      "pick": "none",
+      "lods": [
+        "env_natural_cliff_lod0",
+        "env_natural_cliff_lod1",
+        "env_natural_cliff_lod2"
+      ],
+      "revision": "Asymmetric rough rings and inclined facets replace authored plinths, altar steps, clean columns and slab crossbeams; no walkable or site semantics"
+    },
+    "environment.pillar": {
+      "id": "environment.pillar",
+      "source": "terr_pillar natural revision",
+      "realm": "upper/nether",
+      "binding": "height/slope/type presentation only",
+      "pick": "none",
+      "lods": [
+        "env_natural_pillar_lod0",
+        "env_natural_pillar_lod1",
+        "env_natural_pillar_lod2"
+      ],
+      "revision": "Asymmetric rough rings and inclined facets replace authored plinths, altar steps, clean columns and slab crossbeams; no walkable or site semantics"
+    },
+    "environment.terrace": {
+      "id": "environment.terrace",
+      "source": "terr_terrace natural revision",
+      "realm": "upper",
+      "binding": "height/slope/type presentation only",
+      "pick": "none",
+      "lods": [
+        "env_natural_terrace_lod0",
+        "env_natural_terrace_lod1",
+        "env_natural_terrace_lod2"
+      ],
+      "revision": "Asymmetric rough rings and inclined facets replace authored plinths, altar steps, clean columns and slab crossbeams; no walkable or site semantics"
+    },
+    "environment.slab": {
+      "id": "environment.slab",
+      "source": "terr_slab natural revision",
+      "realm": "upper",
+      "binding": "height/slope/type presentation only",
+      "pick": "none",
+      "lods": [
+        "env_natural_slab_lod0",
+        "env_natural_slab_lod1",
+        "env_natural_slab_lod2"
+      ],
+      "revision": "Asymmetric rough rings and inclined facets replace authored plinths, altar steps, clean columns and slab crossbeams; no walkable or site semantics"
     }
   }
 }

@@ -15,6 +15,7 @@ const ALLOWED_RELEASE_JSON = new Set([
   'reports/release/render3d-m2c2b-pass1/family-summary.json',
   'reports/release/render3d-m2c2b-pass1/hall-summary.json',
   'reports/release/render3d-m2c2b-pass1/content-summary.json',
+  'reports/release/render3d-m2c2b-pass1/decorations-summary.json',
 ]);
 const problems = [];
 const checks = [];

@@ -34,3 +34,13 @@ Upper entities keep the existing body/rig and the role derived from real level, 
 Ghost cultivators keep body_base, hair_ghost, ghost_torn_hem and the existing soul_lamp prop. In production Nether presentation their cloth uses the cold grey-green slot. Only the actual actor lamp uses the sparse soul-flame red.
 
 Ordinary entities with soulKind=ghost in the Nether use three authored opaque tapered silhouettes, stable by seed/plane/entity ID. They have no face, rig, transparency, lamp or new role. LOD budgets are 36/16/6 triangles; all variants share the 6-triangle far geometry. Fixed InstancedMesh batches borrow the same environment atlas and Stage material and map directly to the original entities container. Mortal wraiths retain their previous presentation.
+
+## Package 6 natural terrain decorations
+
+Five natural revisions replace the source rock plinths, clean columns, symmetrical altar steps and slab crossbeams with asymmetric inclined stone facets. Budgets: 42/20/6 triangles. No site, altar, building, floating island, cloud ground or collision semantics.
+
+RealmDecorationLayer belongs to the existing Upper/Nether Stage. Its layout reads only raw height, slope, terrain type, plane and seed. One candidate per 8-cell Upper or 10-cell Nether block; stable hash selects the actual cell and size. Upper capacity/screen/detail limits are 256/160/64; Nether 192/96/40. Props under four projected pixels disappear. Camera changes only affect LOD, frustum and screen submission, never regenerate layout.
+
+Every quad touched by the conservative rotated footprint must belong to the Stage RegionGeometry. Center-only admission is forbidden. The base is buried at the minimum of the same ElevationField's center and four rotated corner samples; it creates no new terrain elevation. Ground results and unchanged camera views are cached. No simulation RNG, World field, save data or picker identity.
+
+Upper cloud/negative space uses the existing terrain shader's low-valley wash and Stage-local mineral palette. No separate cloud plane was introduced. Natural props use the same atlas and Stage material as the shipping library. Toggle independently with host.setDecorationsEnabled(false) or ?decorations=off.
