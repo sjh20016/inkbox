@@ -53,10 +53,10 @@ export const REALM_STYLES = freeze({
   upper: {
     name: 'UpperStyleV1',
     plane: 'upper',
-    paper: { color: '#E4D6B7', background: '#E4D6B7', exposure: 1.02 },
+    paper: { color: '#E8DEC8', background: '#E8DEC8', exposure: 1.02 },
     terrain: {
-      palette: ['#466F80','#557D91','#65939A','#92B3AC','#D8C69C','#A6B18B','#B2AE7D','#6F9877','#557E6A','#C8AE7C','#D2B681','#E4D6B7','#8E9B7A','#708A7B','#557D91','#46392E','#E4D6B7','#B89B55','#A66E49','#B08B67','#A55B45','#9B7959','#C8AE7C'],
-      rock: '#557D91', soil: '#A66E49', slopeStrength: 0.44,
+      palette: ['#386786','#426F97','#4A878D','#90B3A3','#D5BD85','#B1A370','#B8A66A','#3E8069','#3B6856','#BFA16C','#C6AB72','#E8DCC4','#879B78','#578E7C','#3C648C','#855A40','#E8DCC4','#B89B55','#A66E49','#B08B67','#A55B45','#9B7959','#C8AE7C'],
+      rock: '#3C648C', soil: '#A66E49', slopeStrength: 0.44,
     },
     water: { color: '#557D91', opacity: 0.42 },
     vegetation: { palette: ['#6F9877','#557E6A','#B89B55'], tints5: ['#6F9877','#557E6A','#65A39A','#B89B55','#8E9B7A'], instanceTintWeight: 0.10 },
@@ -64,11 +64,11 @@ export const REALM_STYLES = freeze({
     entity: { palette: { cloth: '#557D91', skin: '#E4D6B7', accent: '#B73F32' }, atlas12: ['#D6BE9D','#E4D6B7','#C8AE7C','#46392E','#557D91','#6F9877','#A66E49','#B73F32','#65A39A','#B89B55','#A55B45','#6F9877'], instanceTintWeight: 0.15 },
     pilotPalette: { paper: '#E4D6B7', warm: '#C8AE7C', ink: '#46392E', blue: '#557D91', wood: '#A66E49', earth: '#C8AE7C', red: '#B73F32', cyan: '#6F9877', skin: '#D6BE9D' },
     boundary: { color: '#9D9275', rift: '#557D91' },
-    pigment: { density: 0.71, saturation: 0.64, boundaryStrength: 0.19 },
+    pigment: { density: 0.71, saturation: 0.84, boundaryStrength: 0.19, colorLayer: 0.90 },
     ink: { structure: 0.68, silhouette: 0.23, density: 0.46, dryBrush: 0.41, feibai: 0.24, color: '#46392E' },
     contrast: 1.09,
     // Low valley wash is attached to upper terrain. It is not an independent cloud surface.
-    atmosphere: { color: '#E4D6B7', strength: 0.18, low: -6, high: 19, near: 65, far: 180 },
+    atmosphere: { color: '#ECE5D6', strength: 0.18, low: 14, high: 40, near: 65, far: 180 },
     accentLimit: 0.08,
   },
 });

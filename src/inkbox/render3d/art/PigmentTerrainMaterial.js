@@ -20,6 +20,7 @@ uniform float pigmentDensity, pigmentSaturation, terrainBoundaryStrength;
 uniform float structuralInkStrength, silhouetteInkStrength, inkDensity;
 uniform float dryBrushStrength, distanceFade, paperGrainStrength, pixelsPerUnit;
 uniform float realmStyleEnabled, slopeRampStrength, realmContrast, paperExposure;
+uniform float colorLayerStrength;
 uniform float feibaiStrength, atmosphereStrength, atmosphereLow, atmosphereHigh;
 uniform vec3 slopeRockColor, slopeSoilColor, terrainWaterColor, realmInkColor, atmosphereColor;
 varying vec3 vWorld;
@@ -63,6 +64,12 @@ void main() {
   float density=clamp(pigmentDensity*coverage*distant,0.0,0.85);
   // Absorption rather than a LUT: unpainted areas stay at the chosen paper value.
   vec3 color=paperColor*exp(-density*(vec3(1.0)-pigment)*2.9);
+  if (realmStyleEnabled > 0.5 && colorLayerStrength > 0.0) {
+    // A mineral colour layer follows existing terrain pigment coverage. It adds
+    // no topology, texture tap or noise pass; unpainted valleys retain the paper.
+    float colorCoverage=clamp((coverage-0.12)*1.45,0.0,0.85);
+    color=mix(color,pigment,colorLayerStrength*colorCoverage);
+  }
   float boundary=max(abs(id-typeAt(q+vec2(0.38,0))),abs(id-typeAt(q+vec2(0,0.38))));
   float edge=min(1.0,boundary)*terrainBoundaryStrength*0.16*distant;
   float sparse=smoothstep(1.0-inkDensity,1.13-inkDensity,noise(p*0.23+3.0));
@@ -100,6 +107,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       palette: { value: basePalette.map(color => color.clone()) },
       paperColor: { value: new THREE.Color(profile.paperColor) }, pixelsPerUnit: { value: 2 },
       realmStyleEnabled: { value: 0 }, slopeRampStrength: { value: 0 }, realmContrast: { value: 1 }, paperExposure: { value: 1 },
+      colorLayerStrength: { value: 0 },
       feibaiStrength: { value: 0 }, atmosphereStrength: { value: 0 }, atmosphereLow: { value: -1 }, atmosphereHigh: { value: 1 },
       slopeRockColor: { value: new THREE.Color('#808080') }, slopeSoilColor: { value: new THREE.Color('#808080') },
       terrainWaterColor: { value: new THREE.Color().setRGB(0.30, 0.43, 0.46) },
@@ -112,6 +120,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
     const style = profile.realmStyle;
     const u = this.uniforms;
     u.realmStyleEnabled.value = style ? 1 : 0;
+    u.colorLayerStrength.value = style?.pigment.colorLayer || 0;
     const palette = style?.terrain.palette;
     for (let i = 0; i < 23; i++) {
       if (palette) u.palette.value[i].set(palette[i]);
