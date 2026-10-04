@@ -11,14 +11,14 @@
   "final": {
     "label": "final",
     "files": 300,
-    "directoryBytes": 8173610,
-    "zipBytes": 2563065,
-    "zipSha256": "191593fc691264ac4e9fde05c548c8a0c23523509cd69e336ff6fc8487f360b7"
+    "directoryBytes": 8175787,
+    "zipBytes": 2563944,
+    "zipSha256": "9344a15c68f6ff88f12bb72a782329c7ae3347da65930f2ff1a88abb8b8036f0"
   },
   "delta": {
     "files": 42,
-    "directoryBytes": 653448,
-    "zipBytes": 158203
+    "directoryBytes": 655625,
+    "zipBytes": 159082
   },
   "method": "Measured built player package after all closeout docs; this measurement JSON is developer evidence excluded from the package, avoiding self-reference; golden images excluded too"
 }
