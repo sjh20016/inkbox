@@ -148,11 +148,63 @@
     "pass": true
   },
   "packaging": {
-    "status": "pending"
+    "status": "passed",
+    "source": "reports/m2c2b0/final-gates",
+    "original": {
+      "files": 458,
+      "bytes": 105000189,
+      "zipBytes": 89745002
+    },
+    "authoritativeSnapshot": {
+      "commit": "60624ba3a6ff3ba71c0ff7e151325896703637fd",
+      "files": 257,
+      "bytes": 7510992,
+      "zipBytes": 2400877,
+      "zipSha256": "73f418a793f3ee7c72f011d65052279d506e0a4ca630d692e69c8459f3b60e13"
+    },
+    "excluded": [
+      ".blend/.blend1 source",
+      "preview",
+      "full release/browser PNG matrices",
+      "local reports and logs",
+      "third-party reference packs"
+    ]
   },
   "cleanClone": {
-    "status": "pending"
+    "status": "passed",
+    "path": ".local-backups/clean-clone-60624ba",
+    "commit": "60624ba3a6ff3ba71c0ff7e151325896703637fd",
+    "commands": [
+      {
+        "command": "npm ci --cache .local-backups/npm-cache",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run build",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run test:package",
+        "exitCode": 0
+      },
+      {
+        "command": "dist node scripts/inkbox-characters-check.mjs --runtime-only",
+        "exitCode": 0
+      }
+    ],
+    "runtimeGLB": {
+      "bytes": 145188,
+      "meshes": 12,
+      "materials": 1,
+      "textures": 1,
+      "animations": [
+        "idle",
+        "walk"
+      ]
+    },
+    "gitStatusClean": true
   },
-  "readyForControlledFirstFamily": false,
-  "remoteCI": "not dispatched; local only"
+  "readyForControlledFirstFamily": true,
+  "remoteCI": "not dispatched; local only",
+  "completedAt": "2026-10-04T03:07:54.482Z"
 }

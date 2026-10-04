@@ -18,7 +18,7 @@
 | M2-C | 写意地形 S1/S2、三个实例母版、视觉场景与性能证据 | 已接入；范围/局限见 [工程报告](./M2C_EXPRESSIVE_INK_REPORT.md) |
 | M2-C2A | 三档实体 LOD、密度预算、身份/Region/纯度验证 | 工程封板；凡间 HLOD 仅原型，验收见 [报告](./M2C2A_LOD_REPORT.md) |
 | M2-C2A.1 | 包瘦身、真实房屋 HLOD、密林产品帧测量 | 已通过，见 [封板报告](./M2C2A1_CLOSEOUT_REPORT.md) |
-| M2-C2B0 | stage-local 三界视觉、全部随机流纯度与资源耐久 | B5/B6 已通过；终验见 [READINESS](./M2C2B0_READINESS.md) |
+| M2-C2B0 | stage-local 三界视觉、全部随机流纯度与资源耐久 | 已完成并终验通过；见 [READINESS](./M2C2B0_READINESS.md) |
 | M2-C2B | 第一套正式资产家族受控试产 | 未生产；就绪条件见 [READINESS](./M2C2B0_READINESS.md) |
 | M2-C2 后续 | 群体动画、完整 HLOD、Trace Field、三界视觉深化 | 未实施 |
 | Gameplay G · 镇 / 泄 | 模拟派生封印量影响幽冥裂缝 | 未开始；**未授权** |

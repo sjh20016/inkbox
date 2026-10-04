@@ -1,6 +1,6 @@
 # M2-C2B0 就绪条件与终验
 
-2026-10-04：C2A.1、三界视觉、600 日纯度与资源耐久已验收；最终 Fast 核心与 Heavy 门禁均通过；发布包与冻结提交的 clean clone 结果由 [终验摘要](./reports/release/render3d-m2c2b0/summary/final-gates.json) 记录。该摘要的 readyForControlledFirstFamily=true 且全部门禁通过时，本阶段完成、具备第一套正式资产家族受控试产条件。
+2026-10-04：C2A.1、三界视觉、600 日纯度与资源耐久已验收；最终 Fast 核心、Heavy、发布包与冻结提交的 clean clone 检查均通过，本阶段完成，具备第一套正式资产家族受控试产条件。精确提交、包字节数与命令结果由 [终验摘要](./reports/release/render3d-m2c2b0/summary/final-gates.json) 记录；正式资产家族尚未生产。
 
 | 门禁 | 证据与当前结果 |
 | --- | --- |
@@ -11,7 +11,7 @@
 | 生命周期与资源 | [耐久摘要](./reports/release/render3d-m2c2b0/summary/lifecycle-soak.json)；600+6000 受测帧，53 geometry / 7 texture / 13 program，21 次 GC 峰值有界 |
 | 默认风格 | 新浏览器启动 v1、legacy 切换/恢复、暂停后 World 稳定与 GL=0，通过 |
 | 最终 Fast/Heavy | 本地全通过（Fast 核心13套含复用的新CLI，Heavy3套），完整日志在 `reports/m2c2b0/final-gates/` |
-| 发布包/最终提交 clean clone | 最终冻结提交执行 npm ci、build、package audit、runtime GLB；实际状态/字节数/提交见终验摘要 |
+| 发布包/最终提交 clean clone | 冻结提交 clean clone 的 npm ci、build、package audit、runtime GLB 均通过；后续仅文档终验记录另封提交，精确快照见摘要 |
 
 下一阶段范围限一套正式资产家族的受控试产：先确定唯一已有 World 语义的家族，接入共享 atlas/material 与实例批次，再检查比例、锚点、真实 identity、LOD/HLOD、同屏信息量和目标设备预算。本轮没有开始家族扩产，也不自动授权 Gameplay G 或新的世界语义。
 
