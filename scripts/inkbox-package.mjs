@@ -160,6 +160,11 @@ const FILES = [
   'M2C2A1_HLOD_REPORT.md',
   'M2C2A1_FOREST_REPORT.md',
   'M2C2A1_CLOSEOUT_REPORT.md',
+  'REALM_STYLE_PROFILE_SPEC.md',
+  'M2C2B0_VISUAL_REPORT.md',
+  'M2C2B0_PERFORMANCE_REPORT.md',
+  'M2C2B0_VISUAL_ACCEPTANCE.md',
+  'M2C2B0_READINESS.md',
   '美术素材/Inkbox_M2-C2A.1_M2-C2B0_三界视觉基线工程委托书_v1.md',
   '美术素材/三界视觉风格规划_美术方向文档_v1.md',
 ];

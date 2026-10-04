@@ -1,7 +1,7 @@
 # ROADMAP · 坐天观井 Inkbox
 
 > 当前阶段和下一轮方向的唯一短表。接手看 HANDOFF，目录 / 模块看 ARCHITECTURE，未完事项看 BACKLOG，历史看 STATUS。
-> 更新：2026-10-03，M2-C2A 实体 LOD 与密度预算。阶段完成不等于下一阶段已获施工授权。
+> 更新：2026-10-04，C2A.1 / C2B0 三界视觉基线。阶段完成不等于下一阶段已获施工授权。
 
 ## 阶段表
 
@@ -17,7 +17,9 @@
 | M2-B | 完整视界与界缘：ElevationField / RegionGeometry / 完整 Layer Mask / RealmBoundary + Strata / 3D 划窗 / Rift Breach / FX | **已完成**，见 [工程报告](./Render3D%20M2-B%20工程报告.md) |
 | M2-C | 写意地形 S1/S2、三个实例母版、视觉场景与性能证据 | 已接入；范围/局限见 [工程报告](./M2C_EXPRESSIVE_INK_REPORT.md) |
 | M2-C2A | 三档实体 LOD、密度预算、身份/Region/纯度验证 | 工程封板；凡间 HLOD 仅原型，验收见 [报告](./M2C2A_LOD_REPORT.md) |
-| M2-C2B | 修仙资产家族生产 | 下一阶段候选，未施工；扩产条件见 [性能报告](./M2C2A_PERFORMANCE_REPORT.md) |
+| M2-C2A.1 | 包瘦身、真实房屋 HLOD、密林产品帧测量 | 已通过，见 [封板报告](./M2C2A1_CLOSEOUT_REPORT.md) |
+| M2-C2B0 | stage-local 三界视觉、全部随机流纯度与资源耐久 | B5/B6 已通过；终验见 [READINESS](./M2C2B0_READINESS.md) |
+| M2-C2B | 第一套正式资产家族受控试产 | 未生产；就绪条件见 [READINESS](./M2C2B0_READINESS.md) |
 | M2-C2 后续 | 群体动画、完整 HLOD、Trace Field、三界视觉深化 | 未实施 |
 | Gameplay G · 镇 / 泄 | 模拟派生封印量影响幽冥裂缝 | 未开始；**未授权** |
 
@@ -37,7 +39,7 @@ main 是唯一活跃主线；旧 checkpoint 只用于定位历史。根目录运
 - 界缘零缝隙是**构造保证**：墙上端与目标地形顶点读同一个 `elevation.node()`，
   测试用 float32 逐顶点比对钉死。
 - Rift 仍是 **World 的持久对象**；界缘只读取交叠结果做破口，**不持有** `world.rifts`。
-- 自动化：`npm run test:render3d:m2b`（69 组，含 T0–T10）·
+- 自动化：`npm run test:render3d:m2b`（70 组，含 T0–T10 及关窗恢复 Raw 回归）·
   浏览器证据：`npm run test:render3d:m2b:browser` → `reports/release/render3d-m2b/`。
 
 **M2-B 未做的**：目标位面只补了 terrain + entities + 只读选择反馈——上界 / 幽冥的

@@ -14,6 +14,7 @@ CI 定义在 [ci.yml](../.github/workflows/ci.yml) / [nightly.yml](../.github/wo
 | `test:render3d:m2a` | Host / Stage 生命周期、Mask / pick、写守卫、单消费者、Slab、600 日三路等价 | Fast |
 | `test:render3d:m2b` / `test:render3d:m2c` | 完整视界界缘 / ArtPass 与实例母版 | Fast |
 | `test:render3d:m2c2a` | 屏幕LOD/迟滞/密度预算/身份/真实HLOD/Region/600日六模式纯度 | Fast |
+| `test:render3d:m2c2b0` | 三界 Profile/HLOD/五变体纯度，600 日六模式完整状态/存档/全部 11 RNG | Fast |
 | `test:vendor` | Three npm / vendor 版本、许可证、字节一致性；检查 LF 策略 | Fast |
 | `npm run build` | 按显式清单生成自包含目录与 ZIP | Fast |
 | `test:regression` | 干预 / 灾祸 / 存读档 | Heavy |
@@ -45,7 +46,7 @@ M2-A 本地记录为 view 113、M2-A 13 组、160 点拾取零错误；历史计
 ## GitHub 浏览器复验
 
 Actions → Inkbox CI → Run workflow，选择 main。
-Windows job 用 `scripts/inkbox-browser-smoke.mjs` 在同一宿主内启动 / 维持 / 释放服务器，顺序执行 Canvas、M2-A、M2-B、M2-C、M2-C2A 原测试脚本，分别记录退出码；失败也继续收集其余结果。
+Windows job 用 `scripts/inkbox-browser-smoke.mjs` 在同一宿主内启动 / 维持 / 释放服务器，顺序执行 Canvas、M2-A、M2-B、M2-C、M2-C2A、M2-C2B0 测试脚本，随后独立跑 C2B0 soak，分别记录退出码；失败也继续收集其余结果。
 HTTP 资源先探测，启动失败补存页面 / 网络诊断。输出到 reports/ci 的独立目录，通过 artifact 保存截图、JSON 和日志，成功 / 失败均保留可用证据。
 这套远端功能复验不会改 reports/release 的已发布文件，也不把 runner 软件光栅读数当成本机 Intel UHD 730 性能基线。
 
@@ -77,3 +78,15 @@ scripts/_*.mjs 是已入 Git 的 D8 / M1 一次性研究探针，不进 npm 门�
 `npm run test:render3d:m2c2a:soak`：600帧生命周期 +6000帧连续旋转/缩放、Art/LOD/两界切换、资源与World指纹；不要和性能矩阵并发。C2A脚本可自管服务器，也接受 `INKBOX_URL` 根地址或完整 inkbox.html 地址；`INKBOX_REPORT_DIR` 改本地输出目录，`INKBOX_RELEASE_DIR` 可改代表截图目录。
 
 默认完整产物在 `reports/m2c2a/`，Git仅保存 `reports/release/render3d-m2c2a/` 的代表图片与摘要。正式解释见 [LOD报告](../M2C2A_LOD_REPORT.md)、[性能报告](../M2C2A_PERFORMANCE_REPORT.md)、[视觉验收](../M2C2A_VISUAL_ACCEPTANCE.md)。CPU renderer submission 不称GPU时间；未执行timer query时写GPU time unavailable。
+
+## M2-C2B0 三界门禁
+
+`npm run test:render3d:m2c2b0`：3 个核心组 + 6×600 日、full World + advanceState SHA、存档 SHA/49 字段、11 条持久 RNG。六个 WeakMap 流在所有快照之后取八签定位偏移，偏移含开缝 fixture；诊断取签后不再推进。自然短期样本的零消费与零幽冥人口如实记录，浏览器另用自然 21600 日真实鬼修。
+
+`npm run test:render3d:m2c2b0:browser`：自管本地服务器和串行 Edge，Mortal 7 / Nether 4 / Upper 5 / Cross 8 对，共48张新PNG；实际 LINK_STATUS、GL、错误、拾取/Region、HLOD、resize与诊断颜色统计。可用 INKBOX_URL 复用明确受控服务器；输出目录须为空，避免混入旧证据。
+
+`npm run test:render3d:m2c2b0:soak`：20 状态全暖后基线、600 lifecycle 与6000产品RAF，真实鬼修 GLB 的legacy/v1材质、每30帧GPU资源、21次强制GC的heap/DOM/listener峰值、full World摘要。缺失CDP内存数据直接失败。
+
+`npm run test:render3d:m2c2b0:perf`：先起服务器，再用 INKBOX_URL 指向它；固定GOLDEN_A/DENSITY_A和真实密林镜头，包装产品单次 update/render，异步GPU timer有界/剔除disjoint，不以rAF或CPU提交代替GPU时间。与其他GPU测量串行。
+
+新门禁/性能完整输出在忽略目录 reports/m2c2b0；Git仅保留 release/render3d-m2c2b0 的golden/summary，CI大图上传 reports/ci artifact。当前报告只说明本地结果；未push或触发远端Actions。

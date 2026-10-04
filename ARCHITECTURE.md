@@ -1,6 +1,6 @@
 # ARCHITECTURE · 工作区与模块地图
 
-事实核对：2026-10-03，Render3D M2-C2A。当前阶段以 [ROADMAP](./ROADMAP.md) 为准；历史实现范围以各阶段报告为准。
+事实核对：2026-10-04，Render3D M2-C2A.1 / M2-C2B0。当前阶段以 [ROADMAP](./ROADMAP.md) 为准；历史实现范围以各阶段报告为准。
 
 ## 1. 工作区归属
 
@@ -16,10 +16,11 @@
 | `scripts/_*.mjs` | D8 / M1 历史一次性研究探针 | 是 | 否 |
 | `.github/workflows/`、`tests/README.md` | 门禁与测试说明 | 是 | 是 |
 | `剧情文案素材/` | 活跃文案资产；00 册为接线约束 | 是 | 是 |
-| `美术素材/` | 范式/配色/Sonnet/实验建筑设计参考；运行使用代码母版与有限色板 | 使用的设计资料 | 否 |
-| `reports/release/render3d-m2a/` | 已发布的正式 M2-A 截图与 JSON | 是（日志除外） | 是 |
-| `reports/release/render3d-m2c/` | M2-C 正式证据 | 是（日志除外） | 是 |
-| `reports/release/render3d-m2c2a/` | 代表 baseline/no-LOD/LOD、关键POI、摘要 | 小集合；完整矩阵走 artifact | 是 |
+| `美术素材/` | 美术方向与生产参考；运行使用代码母版与有限色板 | 使用的设计资料 | 仅白名单方向文档/索引/委托书 |
+| `reports/release/render3d-m2a/` | 历史正式 M2-A 证据 | 保留历史 | 仅 performance.json |
+| `reports/release/render3d-m2c/` | 历史 M2-C 证据 | 保留历史 | 否 |
+| `reports/release/render3d-m2c2a/` | C2A 代表图片与摘要 | 小集合；完整矩阵走 artifact | 仅 acceptance-summary.json / tree-gate.json |
+| `reports/release/render3d-m2c2b0/` | 三界 summary 与 8 张代表 golden | 小集合 | 否 |
 | 其他 `reports/` 输出 | 本机探针、日志、发布核验；CI 证据由 Actions artifact 保存 | 否 | 否 |
 | `.workbuddy-ai/memory/` | 本地交接索引；历史记录压缩归档 | 否 | 否 |
 | `.local-backups/` | 经校验的原工程 / Git 历史 / 清理备份 | 否 | 否 |
@@ -97,3 +98,11 @@ HANDOFF 是短入口，STATUS 与阶段报告是历史；历史数据带阶段�
 
 后续提交围绕可验收的变更拆分：架构、Mask、边界、Layer 与必要测试各自成包，文档可独立提交。
 checkpoint `render3d-m2a` 指向 `f274def`；cleanup 另加提交，不重写这个聚合提交。
+
+## 三界表现单源与运行资产
+
+`art/RealmStyleProfile.js` 为深冻结的三界颜色/材质单源，ArtPass 按 Stage.plane 派发至 terrain、water、trees、buildings、entities、角色 atlas、真实 Rift marker 与界缘；同屏背景按凡界留白，目标界只改所属材料。没有全屏 LUT 或 Scene Fog。上界/幽冥仅接入已有 terrain/entities/只读选择/FX，层不存在时不补假生态。
+
+`vegetation/treeVariation.js` 只用 seed/cell 稳定 hash 产生五种既有树轮廓和颜色；`SettlementLayer` 的远景簇持有真实房屋成员，区域跨界簇不合并。界缘切换/关闭恢复非当前目标界 Raw 派生高程。详见 [Profile 规格](./REALM_STYLE_PROFILE_SPEC.md)。
+
+角色运行包仅收录 mesh/data/materials/docs。编辑源和 preview 不入 dist；完整本地/Actions 截图与日志也不入包。打包阶段把指向排除资料的文档链接改为明确的“开发资料，运行包不附带”，源码文档保留原链接。

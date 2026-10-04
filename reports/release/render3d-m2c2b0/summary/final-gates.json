@@ -1,0 +1,158 @@
+{
+  "phase": "B7-final",
+  "fastCore": {
+    "group": "fast",
+    "completedAt": "2026-10-04T02:56:02.570Z",
+    "suites": [
+      {
+        "group": "fast",
+        "command": "test:vendor",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:32.496Z",
+        "durationMs": 8330,
+        "log": "reports/m2c2b0/final-gates/fast-test-vendor.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:core",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:40.835Z",
+        "durationMs": 3188,
+        "log": "reports/m2c2b0/final-gates/fast-test-core.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:view",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:44.024Z",
+        "durationMs": 1698,
+        "log": "reports/m2c2b0/final-gates/fast-test-view.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:presentation",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:45.722Z",
+        "durationMs": 1203,
+        "log": "reports/m2c2b0/final-gates/fast-test-presentation.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:render3d",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:46.926Z",
+        "durationMs": 2087,
+        "log": "reports/m2c2b0/final-gates/fast-test-render3d.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:render3d:m1",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:49.013Z",
+        "durationMs": 1394,
+        "log": "reports/m2c2b0/final-gates/fast-test-render3d-m1.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:render3d:bridge",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:50.408Z",
+        "durationMs": 1400,
+        "log": "reports/m2c2b0/final-gates/fast-test-render3d-bridge.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:render3d:m2a",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:51.809Z",
+        "durationMs": 1648,
+        "log": "reports/m2c2b0/final-gates/fast-test-render3d-m2a.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:render3d:m2b",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:53.458Z",
+        "durationMs": 2330,
+        "log": "reports/m2c2b0/final-gates/fast-test-render3d-m2b.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:render3d:m2c",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:55.788Z",
+        "durationMs": 1429,
+        "log": "reports/m2c2b0/final-gates/fast-test-render3d-m2c.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:render3d:m2c2a",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:57.219Z",
+        "durationMs": 3825,
+        "log": "reports/m2c2b0/final-gates/fast-test-render3d-m2c2a.log"
+      },
+      {
+        "group": "fast",
+        "command": "test:render3d:m2c2b0",
+        "status": "reused-worker-evidence",
+        "exitCode": 0,
+        "sourceSha256": "D8768121EE092B9BE095D95EFBEE98EBC76FB9102CF23E180454E8A1C5DA3E97",
+        "checks": 3,
+        "modeCount": 6,
+        "daysEach": 600,
+        "fullSha": "d5f6099af6c462cf3dfed5948cee63c0827192b3359f5640910598d015583e45",
+        "saveSha": "fd3fcca3d72b222d343b174974460970b2b8b5d0510f328fe475617ec1086bbe",
+        "evidence": "reports/m2c2b0/core/m2c2b0-results.json"
+      },
+      {
+        "group": "fast",
+        "command": "test:render3d:m2c2a1:hlod",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:56:01.049Z",
+        "durationMs": 1521,
+        "log": "reports/m2c2b0/final-gates/fast-test-render3d-m2c2a1-hlod.log"
+      }
+    ],
+    "pass": true
+  },
+  "heavy": {
+    "group": "heavy",
+    "completedAt": "2026-10-04T03:00:28.764Z",
+    "suites": [
+      {
+        "group": "heavy",
+        "command": "test:regression",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:32.496Z",
+        "durationMs": 8616,
+        "log": "reports/m2c2b0/final-gates/heavy-test-regression.log"
+      },
+      {
+        "group": "heavy",
+        "command": "test:three-realms",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:55:41.121Z",
+        "durationMs": 151274,
+        "log": "reports/m2c2b0/final-gates/heavy-test-three-realms.log"
+      },
+      {
+        "group": "heavy",
+        "command": "test:save-equivalence",
+        "exitCode": 0,
+        "startedAt": "2026-10-04T02:58:12.395Z",
+        "durationMs": 136368,
+        "log": "reports/m2c2b0/final-gates/heavy-test-save-equivalence.log"
+      }
+    ],
+    "pass": true
+  },
+  "packaging": {
+    "status": "pending"
+  },
+  "cleanClone": {
+    "status": "pending"
+  },
+  "readyForControlledFirstFamily": false,
+  "remoteCI": "not dispatched; local only"
+}

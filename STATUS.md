@@ -1,5 +1,9 @@
 # Project Status
 
+## 2026-10-04 · C2A.1 / C2B0 三界视觉基线
+
+运行包瘦身、2–4 屋顶簇 HLOD、真实产品 RAF 密林测量已封板。三界由 stage-local 深冻结 Profile 派发，3D 默认 v1、legacy 可切换；24 对/48 张新截图、真实裂缝破口/拾取/Region、600 日六模式完整 World 与 11 RNG，以及 600+6000 帧/21 次 GC 峰值门禁通过。资源数保持 53 geometry / 7 texture / 13 program；未改模拟、生成器或存档。终验与第一家族受控试产条件见 [READINESS](./M2C2B0_READINESS.md)。下文保留旧阶段事实。
+
 ## 2026-10-03 · M2-C2A 实体 LOD 与密度预算
 
 已接入 Tree / Character / Building 三档真实几何、统一屏幕像素迟滞、可见对象优先预算和凡间聚落 HLOD 原型。现有 GLB 角色与施工前本地修改保留，模拟/世界生成没有改动。核心8组、最终浏览器15项和600+6000帧耐久通过；六模式600日完整World与RNG一致。Golden / Dense总面数减少53.45% /59.16%，总览draws保持12。详见 [实施报告](./M2C2A_LOD_REPORT.md)、[性能报告](./M2C2A_PERFORMANCE_REPORT.md)、[视觉验收](./M2C2A_VISUAL_ACCEPTANCE.md)。允许单家族受控试产，大量扩产仍需新家族及多设备预算。资产家族、群体动画、完整 HLOD 与 Trace Field 尚未扩产。下方 M2-C 及更早记录保留为当时事实。

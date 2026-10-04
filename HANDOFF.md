@@ -1,13 +1,15 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-> 事实核对：2026-10-03，M2-C2A 实体 LOD 与密度预算。读序：README → 本文 → 当前任务涉及的契约 / 源码。
+> 事实核对：2026-10-04，M2-C2A.1 / M2-C2B0 三界视觉基线。读序：README → 本文 → 当前任务涉及的契约 / 源码。
 > 阶段看 ROADMAP，目录和模块责任看 ARCHITECTURE，历史查 STATUS；本地 MEMORY 只作索引。
 
 ## 0. 当前状态与范围
 
+C2A.1 包清单、真实聚落 HLOD 与密林测量已封板；C2B0 的 24 对截图、600 日全部 11 RNG、600+6000 帧及 21 次 GC 峰值门禁已通过。单源是 [RealmStyleProfile](./src/inkbox/render3d/art/RealmStyleProfile.js)，以 stage.plane 选色。文档入口：[视觉](./M2C2B0_VISUAL_REPORT.md)、[性能](./M2C2B0_PERFORMANCE_REPORT.md)、[终验与就绪条件](./M2C2B0_READINESS.md)。本轮不生产正式资产家族，不新增上界浮空岛或幽冥生态语义。
+
 M2-B 的完整 Layer Mask、共享 ElevationField / RegionGeometry、界缘、3D 划窗与拾取已完成。M2-C 在同一个 Host/Renderer/Camera、三个 Stage 上增加薄 ArtPass；不改变模拟、存档或视界定义。范围与证据见 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md)。
 
-M2-C2A 接入三档真实几何 LOD、迟滞、密度预算与凡间小聚落 HLOD 原型；[实施与验收](./M2C2A_LOD_REPORT.md)、[性能](./M2C2A_PERFORMANCE_REPORT.md)、[视觉](./M2C2A_VISUAL_ACCEPTANCE.md) 是本轮证据入口。3D 默认 `art=pilot` 且 LOD 开启，`lod=off` 保留全 LOD0；`artdebug=1` 才出现调参面板。现有 GLB 近景角色保留。完整资产家族、动画、完整 HLOD、Trace Field 和 Gameplay G 留到后续授权。
+M2-C2A 接入三档真实几何 LOD、迟滞、密度预算与凡间小聚落 HLOD 原型；[实施与验收](./M2C2A_LOD_REPORT.md)、[性能](./M2C2A_PERFORMANCE_REPORT.md)、[视觉](./M2C2A_VISUAL_ACCEPTANCE.md) 保存 C2A 当时证据。3D 默认 `art=realm-style-v1` 且 LOD 开启；`art=legacy` 保留旧 pilot 对照，`lod=off` 保留全 LOD0；`artdebug=1` 才出现调参面板。现有 GLB 近景角色保留。完整资产家族、动画、完整 HLOD、Trace Field 和 Gameplay G 留到后续授权。
 
 封板检查：C2A核心8组、旧CLI14项、浏览器矩阵15项、600+6000帧及本机五套Browser Smoke通过。下一步允许单家族受控试产，大量扩产仍需新家族和多设备预算；本地绿色结果不是远端Actions结果。
 
@@ -59,14 +61,14 @@ Three 固定为 `0.186.1`：浏览器 importmap 读 `vendor/three/`，Node 测�
 
 | 门禁 | 命令 / 环境 |
 | --- | --- |
-| Fast Gate（push / PR / 手动） | core、view、presentation、render3d、render3d:m1、render3d:bridge、render3d:m2a、m2b、m2c、m2c2a、vendor、build |
+| Fast Gate（push / PR / 手动） | core、view、presentation、render3d、render3d:m1、render3d:bridge、render3d:m2a、m2b、m2c、m2c2a、m2c2b0、vendor、build |
 | Heavy Gate（与 Fast 并行） | regression、three-realms、save-equivalence |
-| Browser Smoke（仅 workflow_dispatch） | Windows Edge；依次 Canvas + M2-A / M2-B / M2-C / M2-C2A |
+| Browser Smoke（仅 workflow_dispatch） | Windows Edge；依次 Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0；另跑 C2B0 soak |
 | Nightly（schedule / 手动） | `test:simulation` + `inkbox:longrun`；没有 `test:longrun` 入口 |
 
 命令与用途详见 [tests/README](./tests/README.md)。本地浏览器测试先起 4180；playtest 的 `--port` 是 CDP 端口，游戏地址用 `--url`。
 普通 CI 不运行浏览器和 800 年长测，不删测试、不把断言改警告、不加 `|| true`。
-M2-A 的本地证据在 `reports/release/render3d-m2a/`；CI 的 `inkbox-browser-smoke.mjs` 自管服务器与五套测试的生命周期，分别记录退出码；重跑写入独立目录并上传 Actions artifact，不覆盖硬件基线。C2A 代表性证据在 `reports/release/render3d-m2c2a/`，完整本地采样在 `reports/m2c2a/`；soak 单独执行，不与性能采样并发。
+M2-A 的本地证据在 `reports/release/render3d-m2a/`；CI 的 `inkbox-browser-smoke.mjs` 自管服务器与六套测试的生命周期，分别记录退出码；重跑写入独立目录并上传 Actions artifact，不覆盖硬件基线。C2A 代表性证据在 `reports/release/render3d-m2c2a/`，完整本地采样在 `reports/m2c2a/`；soak 单独执行，不与性能采样并发。
 M2-C 最新 Edge 复验见 `reports/release/render3d-m2c/browser/`。旧 M2-A oracle 已补齐 M2-B 可见界缘及独立解码，原样本与退出门禁保留，不能通过隐藏界缘或跳过样本来消除偏差。
 旧阶段固定断言数与文件数只保留在对应报告；save-equivalence 的断言数量会随内容变化，不能当稳定指标。
 
@@ -87,3 +89,5 @@ Git 的源码、素材和开发记录范围大于发布包，具体归属见 ARC
 测试造世界走真实工厂；聚焦成功不等于目标未被山体遮挡，浏览器断言须等状态就绪。
 Windows 出现 `spawnSync EBUSY` 时按当次环境故障诊断并申请所需执行权限，不能宣称自动构建已通过或长期要求手工补 ZIP。
 提交按可验证的变更拆分，源码与必要测试一起提交，文档可独立提交；不要把一轮所有资产 / 架构 / 测试压成一个提交。
+
+C2B0 完整证据在忽略目录 `reports/m2c2b0/`；Git 只留 `reports/release/render3d-m2c2b0/summary/` 与 8 张代表 golden。GC/资源耐久与性能计时串行运行。运行包只包含精确白名单，源 `.blend` / `.blend1`、preview 与完整 release evidence 留在开发工作区。

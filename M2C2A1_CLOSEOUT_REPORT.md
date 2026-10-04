@@ -15,3 +15,5 @@ A4 展开包为 242 files / 7,278,416 bytes，ZIP 2,326,059 bytes。新增检查
 A4 浏览器矩阵 15 项通过，console/runtime/GL/shader 均无错误，完整 World + advanceState digest 保持一致；凡界 overview、建筑近景、人物中景及两个跨界窗口的代表图已人工查看。GOLDEN_A / DENSITY_A pilot-lod overview 恢复 A0 的相同负载：179,874 / 282,411 triangles，各 12 draws。实体 LOD0/LOD1 的真实 ID 拾取与 Region 归属通过。全量证据位于忽略目录 `reports/m2c2a1/a4-core/`、`reports/m2c2a1/a4-browser/`。
 
 C2A.1 封板通过，停止进一步重构 LOD，进入三界 Profile 阶段。用户追加的约 200k triangles 性能压力另以真实产品单次绘制诊断：原森林压力脚本同时保留产品 RAF 和额外手动绘制，其 rAF 不等于常规帧率。额外原 C2A CPU 补采虽 World digest 相同，但 LOD 初态不同导致面数不一致，因此只留诊断，不作为同负载前后结论；已完成固定相机和 LOD 进入顺序补采，原 C2A GOLDEN_A / DENSITY_A 分别精确复现 179,874 / 282,411 triangles、12 draws；更新 CPU 与有效 GPU timer 结果见 Forest 报告。原密林 414,037 triangles 的 GPU 中位数约 8.0ms，噪声 hash 替换无稳定收益，因此保留生产材质。
+
+2026-10-04 后续：B0–B6 的三界视觉、全部随机流与资源耐久已通过；旧 M2B 新增关闭/切界 Raw 恢复回归后为70组。C2A.1 不再继续扩大 LOD 重构。当前运行包与 clean clone 终验以 [READINESS](./M2C2B0_READINESS.md) 和其终验摘要为准，A1/A4 数字保留为对应历史阶段快照。

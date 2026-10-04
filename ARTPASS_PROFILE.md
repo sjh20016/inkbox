@@ -1,6 +1,8 @@
 # M2-C · ArtPass Profile
 
-运行入口：`inkbox.html?renderer=3d&art=pilot`。`art=baseline` 回到原 M2-B 材质；`art=pigment` 为 S1；`art=ink` 为 S1+S2；`art=pilot` 增加三类母版；`art=low` 降低纸纹与飞白。正式默认界面不添加调参面板。
+2026-10-04：正式3D默认已改为 `realm-style-v1`，以 Stage.plane 读取 [三界单源](./REALM_STYLE_PROFILE_SPEC.md)；`art=legacy` 保留旧 pilot。下表记录仍保留的历史通用调参，v1 的三界固定参数不可用这些滑条覆盖。
+
+历史运行入口：`inkbox.html?renderer=3d&art=pilot`。`art=baseline` 回到原 M2-B 材质；`art=pigment` 为 S1；`art=ink` 为 S1+S2；`art=pilot` 增加三类母版；`art=low` 降低纸纹与飞白。正式默认界面不添加调参面板。
 
 开发调参：加 `&artdebug=1`，展开「Art · 写意调试」，可实时修改并导出 JSON。参数定义唯一来源为 `src/inkbox/render3d/art/ArtPassProfile.js`。数字是艺术判断的起点，不是图像指标的优化目标。
 
