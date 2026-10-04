@@ -23,4 +23,8 @@
 | dist 运行门禁 | — | core、Render3D M1 / M2-B / M2-C / M2-C2A、characters runtime-only 均通过 |
 | 包内再次 build | — | `npm run build` 从运行包目录执行成功，staging 与复制输出复审通过 |
 
-dist 依赖通过 `npm ci --ignore-scripts` 安装；测试输出指向工作区 `reports/m2c2a1/package-tests/`。完整 clean-clone build 将在本轮其余阶段提交合并后由主代理执行；本报告记录的 build / audit 是当前工作区结果。
+dist 依赖通过 `npm ci --ignore-scripts` 安装；测试输出指向工作区 `reports/m2c2a1/package-tests/`。
+
+## 干净克隆证明
+
+提交 `79008b9a2d25296869053800f726231ecf64f760` 以 `git clone --no-hardlinks --no-checkout` 克隆到 `.local-backups/clean-clone-79008b9/`，再 detached checkout 到该提交；没有复制未提交的 A2 文件。`npm ci --ignore-scripts`、`npm run build`、`npm run test:package` 均退出 0，staging 和最终输出审计均通过，包内 236 个文件。实际 dist 目录的 `npm run test:characters` 也退出 0：GLB 145,188 bytes，12 个 mesh、1 个共享材质、1 个纹理、Idle / Walk 动画；`sourceMasterChecked:false` 明确表示仅验证运行资产。A1 停止条件已满足，B7 仍将针对最终提交重做干净克隆构建。
