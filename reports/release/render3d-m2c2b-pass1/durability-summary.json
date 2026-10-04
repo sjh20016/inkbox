@@ -1,0 +1,247 @@
+{
+  "package": 9,
+  "pass": true,
+  "purity": {
+    "modes": [
+      "no-render",
+      "legacy",
+      "realm-style-v1",
+      "production",
+      "production-upper-window",
+      "production-nether-window",
+      "toggle-cycle",
+      "decoration-off",
+      "decoration-on"
+    ],
+    "days": 600,
+    "baseline": {
+      "mode": "no-render",
+      "days": 600,
+      "riftFixture": {
+        "upper": {
+          "opened": 1,
+          "refused": false,
+          "reason": null
+        },
+        "nether": {
+          "opened": 1,
+          "refused": false,
+          "reason": null
+        }
+      },
+      "worldSha": "609ac866b8c60d5931ec1d3ae04c84d00f37224e0c31e3726acfaec09489c7fd",
+      "advanceStateSha": "18dc072cca13f3c141d9c35aadf6e16a6355d941f984dae58f63100f592ae558",
+      "fullSha": "d5f6099af6c462cf3dfed5948cee63c0827192b3359f5640910598d015583e45",
+      "saveSha": "fd3fcca3d72b222d343b174974460970b2b8b5d0510f328fe475617ec1086bbe",
+      "saveKeys": [
+        "app",
+        "artifactLog",
+        "artifacts",
+        "ascended",
+        "busanzi",
+        "chronicle",
+        "clanLog",
+        "clans",
+        "day",
+        "dead",
+        "deadLog",
+        "entities",
+        "factions",
+        "h",
+        "lastClanFoundDay",
+        "leylines",
+        "meta",
+        "milestones",
+        "nether",
+        "nextArtifactId",
+        "nextClanId",
+        "nextEntityId",
+        "nextFactionId",
+        "nextLeylineId",
+        "nextRiftId",
+        "nextSiteId",
+        "nextSoulId",
+        "nextVillageId",
+        "nextWarId",
+        "plane",
+        "possessionLog",
+        "riftLog",
+        "rifts",
+        "seed",
+        "sites",
+        "soulLog",
+        "souls",
+        "terrain",
+        "upper",
+        "v",
+        "villages",
+        "w",
+        "warLog",
+        "wars",
+        "watch",
+        "worldEvents",
+        "wraithLog",
+        "wraiths",
+        "year"
+      ],
+      "populations": {
+        "mortal": 93,
+        "upper": 12,
+        "nether": 0,
+        "wraiths": 0
+      },
+      "rng": {
+        "directCounts": {
+          "life": 169051,
+          "advance": 0,
+          "war": 0,
+          "upper": 1001,
+          "upperSpatial": 12827
+        },
+        "hiddenPositions": {
+          "mercy": 0,
+          "rift": 158,
+          "netherRift": 20,
+          "netherItem": 20,
+          "netherPossess": 20,
+          "mortalHaunt": 20
+        },
+        "directTotal": 182879,
+        "hiddenTotal": 238
+      }
+    },
+    "allEqual": true,
+    "actualShippingGLB": true
+  },
+  "lifecycle": {
+    "frames": 600,
+    "actualCalls": {
+      "update": 600,
+      "render": 600
+    },
+    "worldUnchanged": true,
+    "resizeRestored": true
+  },
+  "soak": {
+    "frames": 6000,
+    "blocks": 20,
+    "states": [
+      "production/no-decor/no-lod/mortal",
+      "production/no-decor/no-lod/upper",
+      "production/no-decor/no-lod/nether",
+      "production/no-decor/no-lod/upper-window",
+      "production/no-decor/no-lod/nether-window",
+      "production/no-decor/lod/mortal",
+      "production/no-decor/lod/upper",
+      "production/no-decor/lod/nether",
+      "production/no-decor/lod/upper-window",
+      "production/no-decor/lod/nether-window",
+      "production/decor/no-lod/mortal",
+      "production/decor/no-lod/upper",
+      "production/decor/no-lod/nether",
+      "production/decor/no-lod/upper-window",
+      "production/decor/no-lod/nether-window",
+      "production/decor/lod/mortal",
+      "production/decor/lod/upper",
+      "production/decor/lod/nether",
+      "production/decor/lod/upper-window",
+      "production/decor/lod/nether-window"
+    ],
+    "resources": {
+      "geometries": 94,
+      "textures": 8,
+      "programs": 14
+    },
+    "resourceRanges": {
+      "geometries": [
+        94,
+        94
+      ],
+      "textures": [
+        8,
+        8
+      ],
+      "programs": [
+        14,
+        14
+      ]
+    },
+    "actualCalls": {
+      "update": 6000,
+      "render": 6000
+    },
+    "memory": {
+      "samplesChecked": 21,
+      "first": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 18336688,
+        "jsHeapTotalBytes": 21479424,
+        "domNodes": 1415,
+        "connectedDomNodes": 1251,
+        "jsEventListeners": 80
+      },
+      "last": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 18470768,
+        "jsHeapTotalBytes": 20168704,
+        "domNodes": 1415,
+        "connectedDomNodes": 1251,
+        "jsEventListeners": 80
+      },
+      "limits": {
+        "heapBytes": 31309468,
+        "domNodes": 1756.5000000000002,
+        "listeners": 188
+      },
+      "peakHeapBytes": 18553232,
+      "peakDomNodes": 1416,
+      "peakListeners": 80,
+      "heapGrowthBytes": 134080,
+      "domNodeDelta": 0,
+      "listenerDelta": 0
+    },
+    "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+    "sceneMaterials": 37,
+    "environmentMaterials": 3,
+    "loads": {
+      "environment": 1,
+      "atlas": 1,
+      "cultivator": 1
+    },
+    "diagnostics": {
+      "consoleErrors": [],
+      "runtimeErrors": []
+    }
+  },
+  "defaultEdge": {
+    "pass": true,
+    "defaultProduction": true,
+    "explicitOff": false
+  },
+  "cleanClone": {
+    "commit": "7e400a4ea4561aaa4f8e8103b73852d7a419da3e",
+    "install": "npm ci --ignore-scripts",
+    "build": true,
+    "actualGLBChecks": 11,
+    "nineModePurity": true,
+    "packageAudit": true,
+    "files": 293
+  },
+  "baselinePackage": {
+    "label": "baseline",
+    "files": 258,
+    "directoryBytes": 7520162,
+    "zipBytes": 2404862,
+    "zipSha256": "6806097dde2eac44f265caff393cff427f45e0b511295c8c4b60bce596a789ce"
+  },
+  "candidatePackage": {
+    "label": "candidate",
+    "files": 293,
+    "directoryBytes": 8297843,
+    "zipBytes": 2554587,
+    "zipSha256": "812c2d2ebc897f4d07040c201a5d153884095ded58e25b2e29d95efdd7ffbfa1"
+  },
+  "remaining": "Package 10 documentation and latest remote CI acceptance"
+}

@@ -1,5 +1,7 @@
 # ROADMAP · 坐天观井 Inkbox
 
+2026-10-05：M2-C2B Pass1 首批正式资产已接线并完成本地验收。3D默认开启四种凡界建筑family、真实上界角色、三种普通ghost、真实鬼修/法宝与地形自然装饰；assets=off保留旧几何对照。21对Edge矩阵、9模式600日/11 RNG、600+6000实际帧与干净克隆通过，远端最新CI待收口。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+
 > 当前阶段和下一轮方向的唯一短表。接手看 HANDOFF，目录 / 模块看 ARCHITECTURE，未完事项看 BACKLOG，历史看 STATUS。
 > 更新：2026-10-04，C2A.1 / C2B0 三界视觉基线。阶段完成不等于下一阶段已获施工授权。
 
@@ -7,6 +9,7 @@
 
 | 阶段 | 内容 | 状态 |
 | --- | --- | --- |
+| M2-C2B Pass1 | 四种建筑、角色/鬼魂/法宝、自然装饰、完整矩阵与耐久 | 本地验收完成；最新远端CI待收口 |
 | D6-2 / D6-3 | 三界最低生态 A–F / 跨界生态 A–E | 已完成 |
 | D7 | 观察与表现层 A–G | 已封板 |
 | D8 | 视界 2.0 A–F | 已完成；D8-G 追迹 UI 暂缓，逻辑地基保留 |

@@ -1,10 +1,10 @@
 # Environment asset library
 
-Packages 3–4 ship three house visual families and one real hall family for a current STRUCT.HOUSE: mortal.house.base, mortal.house.small and mortal.house.courtyard. All retain the real village and original house coordinates. Courtyard is a roof silhouette; neutral timber replaces source cinnabar and gold. It implies no new wealth class, household or site.
+Packages 3–4 ship three visual families for current STRUCT.HOUSE and a separate family for current STRUCT.HALL: mortal.house.base, mortal.house.small and mortal.house.courtyard. All retain the real village and original house coordinates. Courtyard is a roof silhouette; neutral timber replaces source cinnabar and gold. It implies no new wealth class, household or site.
 
 ## Source and LODs
 
-Run node assets/environment/source/build-environment.mjs to rebuild the one runtime GLB, index atlas and manifest. Source inputs are the project's authored bld_house, bld_hut and bld_manor GLBs. Development source and preview files stay out of the player package.
+Run node assets/environment/source/build-environment.mjs to rebuild the one runtime GLB, index atlas and manifest. Source inputs are the project's authored bld_house, bld_hut, bld_manor and bld_hall GLBs. Development source and preview files stay out of the player package.
 
 | Family | LOD0 | LOD1 | LOD2 | HLOD cluster | Roof |
 | --- | ---: | ---: | ---: | ---: | --- |

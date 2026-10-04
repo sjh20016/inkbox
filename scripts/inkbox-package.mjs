@@ -170,6 +170,11 @@ const FILES = [
   'M2C2B0_VISUAL_ACCEPTANCE.md',
   'M2C2B0_READINESS.md',
   'M2C2B_SEMANTIC_ASSET_BINDING.md',
+  'M2C2B_ASSET_PRODUCTION_REPORT.md',
+  'M2C2B_REALM_CONTENT_REPORT.md',
+  'M2C2B_PERFORMANCE_REPORT.md',
+  'M2C2B_VISUAL_ACCEPTANCE.md',
+  'M2C2B_READINESS.md',
   'scripts/inkbox-render3d-m2c2b-content.mjs',
   'scripts/inkbox-render3d-m2c2b-content-browser.mjs',
   'scripts/inkbox-render3d-m2c2b-decorations.mjs',
@@ -217,6 +222,8 @@ const RELEASE_SUMMARIES = [
   'reports/release/render3d-m2c2b-pass1/decorations-summary.json',
   'reports/release/render3d-m2c2b-pass1/artifacts-summary.json',
   'reports/release/render3d-m2c2b-pass1/matrix-summary.json',
+  'reports/release/render3d-m2c2b-pass1/durability-summary.json',
+  'reports/release/render3d-m2c2b-pass1/acceptance-summary.json',
 ];
 
 function copyRelative(relative) {

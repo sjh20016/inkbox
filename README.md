@@ -1,5 +1,7 @@
 # 坐天观井 · Inkbox 1.0.0
 
+2026-10-05：M2-C2B Pass1 首批正式资产已接线并完成本地验收。3D默认开启四种凡界建筑family、真实上界角色、三种普通ghost、真实鬼修/法宝与地形自然装饰；assets=off保留旧几何对照。21对Edge矩阵、9模式600日/11 RNG、600+6000实际帧与干净克隆通过，远端最新CI待收口。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+
 当前唯一活跃主线是 `src/inkbox`：一张会自行演化的水墨山河，玩家可以改地形、施神力、观察众生修行与灾祸结果。
 
 2026-10-04：M2-C2A.1 与三界视觉基线已接入。3D 默认 `realm-style-v1`：凡界淡彩与暖白墙、幽冥焦墨骨白、上界石青石绿与赭色；`&art=legacy` 可回到原 pilot 对照。聚落远景由真实房屋派生 2–4 个屋顶簇；运行包排除源 `.blend`、preview 和全量视觉证据。交付入口为 [三界验收](./M2C2B0_VISUAL_ACCEPTANCE.md)、[性能报告](./M2C2B0_PERFORMANCE_REPORT.md) 与 [下一阶段条件](./M2C2B0_READINESS.md)。

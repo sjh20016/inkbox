@@ -1,5 +1,7 @@
 # Project Status
 
+2026-10-05：M2-C2B Pass1 首批正式资产已接线并完成本地验收。3D默认开启四种凡界建筑family、真实上界角色、三种普通ghost、真实鬼修/法宝与地形自然装饰；assets=off保留旧几何对照。21对Edge矩阵、9模式600日/11 RNG、600+6000实际帧与干净克隆通过，远端最新CI待收口。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+
 ## 2026-10-04 · C2A.1 / C2B0 三界视觉基线
 
 运行包瘦身、2–4 屋顶簇 HLOD、真实产品 RAF 密林测量已封板。三界由 stage-local 深冻结 Profile 派发，3D 默认 v1、legacy 可切换；24 对/48 张新截图、真实裂缝破口/拾取/Region、600 日六模式完整 World 与 11 RNG，以及 600+6000 帧/21 次 GC 峰值门禁通过。资源数保持 53 geometry / 7 texture / 13 program；未改模拟、生成器或存档。终验与第一家族受控试产条件见 [READINESS](./M2C2B0_READINESS.md)。下文保留旧阶段事实。

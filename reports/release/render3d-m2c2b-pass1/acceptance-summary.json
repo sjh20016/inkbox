@@ -1,0 +1,136 @@
+{
+  "package": 10,
+  "localPass": true,
+  "remoteLatest": "pending",
+  "runtimeCandidate": "7e400a4ea4561aaa4f8e8103b73852d7a419da3e",
+  "baselineCommit": "a8bf11d49bcf1da5d5518d11c7bbffbcb75bacc5",
+  "assets": {
+    "ids": 13,
+    "geometryNodes": 41,
+    "environmentGLBBytes": 168364,
+    "atlases": 2,
+    "environmentStageMaterials": 3
+  },
+  "matrixCases": 21,
+  "purityModes": 9,
+  "days": 600,
+  "rngStreams": 11,
+  "lifecycleFrames": 600,
+  "soakFrames": 6000,
+  "resources": {
+    "geometries": 94,
+    "textures": 8,
+    "programs": 14
+  },
+  "cleanClone": {
+    "commit": "7e400a4ea4561aaa4f8e8103b73852d7a419da3e",
+    "install": "npm ci --ignore-scripts",
+    "build": true,
+    "actualGLBChecks": 11,
+    "nineModePurity": true,
+    "packageAudit": true,
+    "files": 293
+  },
+  "goldenImages": [
+    {
+      "name": "mortal-overview",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/mortal-overview.png",
+      "source": "reports/m2c2b/pass1/matrix-complete/01-mortal-overview.png",
+      "bytes": 836916,
+      "sha256": "10603d3775a3e84040d96ccae4d031d855c1dec3779c0ed55ba274c0d27710cf"
+    },
+    {
+      "name": "mortal-near",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/mortal-near.png",
+      "source": "reports/m2c2b/pass1/matrix-complete/03-mortal-near.png",
+      "bytes": 789090,
+      "sha256": "f1bcbeeb6a50f4ff222ac45706c8563e9e990a8e7aa1641343e4d3f5a8d310c7"
+    },
+    {
+      "name": "mortal-hlod",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/mortal-hlod.png",
+      "source": "reports/m2c2b/pass1/matrix-complete/05-mortal-hlod-far.png",
+      "bytes": 406304,
+      "sha256": "7ddc3d7cb246b089fd990b6f0d9d6fd7c9f86ec5e480dd45eb30decd1702c0c8"
+    },
+    {
+      "name": "mortal-cross",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/mortal-cross.png",
+      "source": "reports/m2c2b/pass1/matrix-complete/18-nether-cross-nether-large.png",
+      "bytes": 895437,
+      "sha256": "925151fa556ecbc102a679fdc107572b0f93393d9649d5bf3917a2cadc98d9c7"
+    },
+    {
+      "name": "upper-overview",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/upper-overview.png",
+      "source": "reports/m2c2b/pass1/matrix-complete/07-upper-overview.png",
+      "bytes": 865102,
+      "sha256": "eabf1df293b224b3a933fae495c9ef9055ee1c4cf35f013450741ef91fd2d33c"
+    },
+    {
+      "name": "upper-highland",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/upper-highland.png",
+      "source": "reports/m2c2b/pass1/matrix-complete/08-upper-highland-close.png",
+      "bytes": 1036209,
+      "sha256": "e56d48caeb255174d2ab1f762ff97382e342a74d293adf0d6e5f2a542eff2ffe"
+    },
+    {
+      "name": "upper-entity",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/upper-entity.png",
+      "source": "reports/m2c2b/pass1/content/edge-capfix/upper-cultivator-any-lod0.png",
+      "bytes": 1029382,
+      "sha256": "0036d98b2ea4089de07b1aa948e81f95578b9e45c314b7b1207b442dc113e619"
+    },
+    {
+      "name": "upper-cross",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/upper-cross.png",
+      "source": "reports/m2c2b/pass1/matrix-complete/17-upper-cross-upper-large.png",
+      "bytes": 853848,
+      "sha256": "30fb63db641a10ef638dff9bb2c158e8db4a9d7dd581b539f6c1249cf2ebb6e9"
+    },
+    {
+      "name": "nether-overview",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/nether-overview.png",
+      "source": "reports/m2c2b/pass1/matrix-complete/12-nether-overview.png",
+      "bytes": 987917,
+      "sha256": "23457ecea062746f95c541bc97122ed6a9b9ba7593ffe2694476f4f2704aed2b"
+    },
+    {
+      "name": "nether-ghost-cultivator",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/nether-ghost-cultivator.png",
+      "source": "reports/m2c2b/pass1/content/edge-capfix/nether-ghostCultivator-any-lod0.png",
+      "bytes": 1055696,
+      "sha256": "abb3b8646d9ec232cead4df9ad8cfd1942c57c65bc7ff798024e61a81df6efd3"
+    },
+    {
+      "name": "nether-artifact",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/nether-artifact.png",
+      "source": "reports/m2c2b/pass1/artifacts/edge/nether-artifact-any-lod0-window.png",
+      "bytes": 683273,
+      "sha256": "0dc66fac2acac48c2295394b10f440fa659b8a4557e65a9d6e59dbe6fbb0d9fc"
+    },
+    {
+      "name": "nether-cross",
+      "file": "reports/release/render3d-m2c2b-pass1/golden/nether-cross.png",
+      "source": "reports/m2c2b/pass1/matrix-complete/19-nether-breach-near.png",
+      "bytes": 1109906,
+      "sha256": "61664ed1da8812d73e844229781df06cd7df8cd1f48208f13aa5aca74f97f85f"
+    }
+  ],
+  "goldenBytes": 10549080,
+  "baselinePackage": {
+    "label": "baseline",
+    "files": 258,
+    "directoryBytes": 7520162,
+    "zipBytes": 2404862,
+    "zipSha256": "6806097dde2eac44f265caff393cff427f45e0b511295c8c4b60bce596a789ce"
+  },
+  "candidatePackage": {
+    "label": "candidate",
+    "files": 293,
+    "directoryBytes": 8297843,
+    "zipBytes": 2554587,
+    "zipSha256": "812c2d2ebc897f4d07040c201a5d153884095ded58e25b2e29d95efdd7ffbfa1"
+  },
+  "readiness": "controlled second-family trial after current CI all green and per-family/device gates"
+}

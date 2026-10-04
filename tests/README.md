@@ -1,5 +1,11 @@
 # Inkbox 测试与验证入口
 
+## M2-C2B Pass1
+
+实际GLB/atlas：test:render3d:m2c2b:sample（11）；角色/ghost：content（5）；装饰：decorations（7）；法宝：artifacts（4）；实际GLB九模式600日：purity。
+
+Edge串行browser包含HOUSE三件套、真实HALL、角色9项、法宝5项、装饰7对及matrix的21对视角。soak另跑600实际生命周期与6000实际帧，检查GPU、GC heap、DOM、listener、GL/LINK与单次加载。旧C2A/C2B0探针显式assets=off，所有原断言保留；新矩阵明确assets=on。CI Fast运行CPU门禁，手动Browser运行全部原基线和新增生产套件/soak，完整证据只进artifact。
+
 普通 push / PR 运行 Fast / Heavy Gate；浏览器只手动运行，长测属于 Nightly。`npm test` 只代表核心检查通过，不代表全部门禁通过。
 CI 定义在 [ci.yml](../.github/workflows/ci.yml) / [nightly.yml](../.github/workflows/nightly.yml)。Node CI 为 24；本地 CDP 浏览器测试需 Node 22+。
 
