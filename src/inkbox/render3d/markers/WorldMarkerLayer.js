@@ -28,6 +28,7 @@ import { ElevationField } from '../terrain/ElevationField.js';
 import { INK } from '../../core/config.js';
 import { visibleRift } from '../readers/riftViewModel.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
+import { SiteGeographyLayer } from './SiteGeographyLayer.js';
 
 /** 四类地点（与 `sim/sites.js` 写入的 `kind` 字面量一一对应，顺序即渲染顺序契约）。 */
 export const SITE_KINDS = Object.freeze(['secret', 'cave', 'formation', 'ruin']);
@@ -70,7 +71,7 @@ function siteGeometry(kind) {
  *   每条 `{ id, x, y, ... }`；`rifts` 额外带 `radius`（**来自 `riftRadiusAt`**）。
  */
 export function deriveMarkers(world) {
-  const out = { artifacts: [], sites: { secret: [], cave: [], formation: [], ruin: [] }, leylines: [], rifts: [], total: 0 };
+  const out = { artifacts: [], sites: { secret: [], cave: [], formation: [], ruin: [] }, unknownSites: [], leylines: [], rifts: [], total: 0 };
   if (!world) return out;
 
   // ── 无主法宝：`world.artifacts` 本身就是「在地面、无主」的那一批 ──
@@ -86,8 +87,8 @@ export function deriveMarkers(world) {
   for (const s of sites) {
     if (!s || !Number.isFinite(s.x) || !Number.isFinite(s.y)) continue;
     const bucket = out.sites[s.kind];
-    if (!bucket) continue;
-    bucket.push({ id: s.id, x: s.x, y: s.y });
+    if (!bucket) { out.unknownSites.push({ id:s.id, x:s.x, y:s.y, kind:s.kind }); continue; }
+    bucket.push({ id: s.id, x: s.x, y: s.y, kind: s.kind, age:s.age, visits:s.visits });
     out.total += 1;
   }
 
@@ -117,18 +118,20 @@ function sameList(a, b) {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i += 1) {
     const p = a[i]; const q = b[i];
-    if (p.id !== q.id || p.x !== q.x || p.y !== q.y || p.radius !== q.radius) return false;
+    if (p.id !== q.id || p.x !== q.x || p.y !== q.y || p.radius !== q.radius
+      || p.kind !== q.kind || p.age !== q.age || p.visits !== q.visits || p.strength !== q.strength || p.targetPlane !== q.targetPlane) return false;
   }
   return true;
 }
 function sameMarkers(a, b) {
   if (!a || !b) return false;
-  if (!sameList(a.artifacts, b.artifacts) || !sameList(a.leylines, b.leylines) || !sameList(a.rifts, b.rifts)) return false;
+  if (!sameList(a.artifacts, b.artifacts) || !sameList(a.leylines, b.leylines) || !sameList(a.rifts, b.rifts) || !sameList(a.unknownSites,b.unknownSites)) return false;
   return SITE_KINDS.every((k) => sameList(a.sites[k], b.sites[k]));
 }
 
 export class WorldMarkerLayer {
   constructor(world, coordinates, elevation = new ElevationField(world)) {
+    this.world = world;
     this.coordinates = coordinates;
     this.elevation = elevation;
     this.regionGeometry = null;
@@ -150,6 +153,9 @@ export class WorldMarkerLayer {
     this.artifacts = this.makeMesh(new THREE.OctahedronGeometry(0.34, 0), ARTIFACT_CAP, MARKER_MIN_ZOOM, 'Marker:artifact');
     this.siteMeshes = {};
     for (const kind of SITE_KINDS) this.siteMeshes[kind] = this.makeMesh(siteGeometry(kind), SITE_CAP, SITE_MIN_ZOOM, `Marker:site:${kind}`);
+    this.unknownSites = this.makeMesh(siteGeometry('ruin'), SITE_CAP, SITE_MIN_ZOOM, 'Marker:site:unknown');
+    this.siteGeography = new SiteGeographyLayer(world, coordinates, elevation);
+    this.group.add(this.siteGeography.group);
     this.leylines = this.makeMesh(this.leylineGeometry(), LEYLINE_CAP, LEYLINE_MIN_ZOOM, 'Marker:leyline');
     this.rifts = this.makeMesh(this.riftGeometry(), RIFT_CAP, 0, 'Marker:rift');
   }
@@ -158,6 +164,24 @@ export class WorldMarkerLayer {
     const g = new THREE.TorusGeometry(0.85, 0.09, 4, 16);
     g.rotateX(-Math.PI / 2);
     return g;                                // 浮在地表上方（位置里加高度）
+  }
+
+  setEnvironmentAssets(library, material, enabled) {
+    this.siteGeography.setEnvironmentAssets(library, material, enabled);
+    this.lastDerived = null; this.clock = Infinity;
+  }
+  setGeographyFeatures(features = {}) {
+    this.siteGeography.setEnabled(!!features.sites);
+    this.lastDerived = null; this.clock = Infinity;
+  }
+  setArtView(view) {
+    const changed = this.siteGeography.view.pixelsPerUnit !== view?.pixelsPerUnit || this.siteGeography.view.verticalPixelsPerUnit !== view?.verticalPixelsPerUnit;
+    this.siteGeography.setArtView(view);
+    if (changed && this.lastDerived) this.write(this.lastDerived, this.world);
+  }
+  setLODEnabled(enabled) {
+    this.siteGeography.setLODEnabled(enabled);
+    if (this.lastDerived) this.write(this.lastDerived, this.world);
   }
 
   riftGeometry() {
@@ -219,6 +243,7 @@ export class WorldMarkerLayer {
     if (this.regionGeometry === geometry && this.regionInside === !!inside) return;
     this.regionGeometry = geometry || null;
     this.regionInside = !!inside;
+    this.siteGeography.setRegionGeometry(this.regionGeometry, this.regionInside);
     this.lastDerived = null;
     this.clock = Infinity;
   }
@@ -233,6 +258,8 @@ export class WorldMarkerLayer {
   }
 
   write(derived, world) {
+    this.world = world;
+    this.siteGeography.update(derived);
     const stats = { artifacts: 0, sites: 0, leylines: 0, rifts: 0, total: 0 };
 
     // ── 法宝：贴地浮一点点的冷金小点 ──
@@ -240,8 +267,14 @@ export class WorldMarkerLayer {
 
     // ── 地点：四种符号 ──
     for (const kind of SITE_KINDS) {
-      stats.sites += this.fill(this.siteMeshes[kind], this.regionFilter(derived.sites[kind]), world, 0, () => SITE_COLOR[kind]);
+      const fallback = this.regionFilter(derived.sites[kind]).filter(item => !this.siteGeography.renderedIds.has(item.id));
+      this.siteMeshes[kind].userData.renderSites = fallback.slice(0,SITE_CAP);
+      stats.sites += this.fill(this.siteMeshes[kind], fallback, world, 0, () => SITE_COLOR[kind]);
     }
+    const unknown = this.regionFilter(derived.unknownSites || []);
+    this.unknownSites.userData.renderSites = unknown.slice(0,SITE_CAP);
+    stats.sites += this.fill(this.unknownSites,unknown,world,0,()=> '#8e8778');
+    stats.sites += this.siteGeography.stats.instances;
 
     // ── 灵脉：悬浮环 ──
     stats.leylines = this.fill(this.leylines, this.regionFilter(derived.leylines), world, 1.7, () => INK.orchid);
@@ -301,6 +334,7 @@ export class WorldMarkerLayer {
   }
 
   dispose() {
+    this.siteGeography.dispose();
     for (const { mesh } of this.entries) {
       mesh.geometry.dispose();
       mesh.material.dispose();

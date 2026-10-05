@@ -1240,6 +1240,82 @@
         "stone",
         "stoneDark"
       ]
+    },
+    "env_site_cave_lod0": {
+      "node": "env_site_cave_lod0",
+      "triangles": 84,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.5,
+          1,
+          0.5
+        ]
+      },
+      "uvSlots": [
+        4,
+        7,
+        8
+      ],
+      "semanticSlots": [
+        "ink",
+        "stone",
+        "stoneDark"
+      ]
+    },
+    "env_site_cave_lod1": {
+      "node": "env_site_cave_lod1",
+      "triangles": 36,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.45
+        ],
+        "max": [
+          0.5,
+          1,
+          0.4
+        ]
+      },
+      "uvSlots": [
+        7,
+        8
+      ],
+      "semanticSlots": [
+        "stone",
+        "stoneDark"
+      ]
+    },
+    "env_site_shared_lod2": {
+      "node": "env_site_shared_lod2",
+      "triangles": 6,
+      "bounds": {
+        "min": [
+          -0.2585329302441641,
+          0,
+          -0.2655399058029547
+        ],
+        "max": [
+          0.2867958386362487,
+          1,
+          0.31018380624123004
+        ]
+      },
+      "uvSlots": [
+        8,
+        20,
+        21
+      ],
+      "semanticSlots": [
+        "stoneDark",
+        "upperA",
+        "upperB"
+      ]
     }
   },
   "assets": {
@@ -1419,6 +1495,24 @@
         "env_nether_artifact_lod2"
       ],
       "revision": "No lamp, soul flame, civilization, weapon or subtype is inferred from a generic ground item"
+    },
+    "mortal.site.cave": {
+      "id": "mortal.site.cave",
+      "source": "closed cliff entrance pilot",
+      "realm": "mortal",
+      "binding": "actual world.sites kind=cave",
+      "pick": "site",
+      "lods": [
+        "env_site_cave_lod0",
+        "env_site_cave_lod1",
+        "env_site_shared_lod2"
+      ],
+      "footprint": {
+        "width": 3.6,
+        "depth": 2.6,
+        "height": 2.8
+      },
+      "revision": "One recognizer; recessed ink entrance, no invented inhabitant or cave mechanism"
     }
   }
 }

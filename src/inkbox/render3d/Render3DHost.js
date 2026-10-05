@@ -17,6 +17,7 @@ import { visibleRift } from './readers/riftViewModel.js';
 import { ArtPass } from './art/ArtPass.js';
 import { loadCharacterLibrary } from './characters/CharacterLibrary.js';
 import { loadEnvironmentAssetLibrary } from './environment/EnvironmentAssetLibrary.js';
+import { GEOGRAPHY_FEATURES, geographyFeatures } from './stage/GeographyFeatures.js';
 
 /**
  * M2-B B4（§56–§58）：与**当前窗口目标位面**一致的活跃裂缝。
@@ -64,6 +65,7 @@ export class Render3DHost {
     this.ownsEnvironmentLibrary = !options.environmentLibrary;
     this.productionAssetsEnabled = !!options.productionAssets;
     this.decorationsEnabled = options.decorations !== false;
+    this.geographyFeatures = geographyFeatures(options.geography);
 
     this.setWorld(world);
     const load = options.loadCharacterLibrary || (typeof window !== 'undefined' && options.characters !== false
@@ -114,7 +116,8 @@ export class Render3DHost {
         const plane = PLANES[i];
         const stage = new PlaneStage({ plane, world: entry.world, profile: PLANE_RENDER_PROFILE[plane],
           coordinates: this.coordinates, characterLibrary: this.characterLibrary,
-          environmentLibrary: this.environmentLibrary, productionAssets: this.productionAssetsEnabled, decorations: this.decorationsEnabled });
+          environmentLibrary: this.environmentLibrary, productionAssets: this.productionAssetsEnabled,
+          decorations: this.decorationsEnabled, geography: this.geographyFeatures });
         this.stages.set(plane, stage); this.scene.add(stage.root);
         stage.fxProbe = new ThreeFxProbe({ plane, coordinates: this.coordinates, elevation: stage.elevation });
         stage.root.add(stage.fxProbe.root);
@@ -130,6 +133,19 @@ export class Render3DHost {
     this.debug.samples = []; this.applyView(); return true;
   }
   setArtProfile(profile) { return this.art.setProfile(profile); }
+  setGeographyEnabled(enabled) {
+    this.geographyFeatures = geographyFeatures(!!enabled);
+    for (const stage of this.stages.values()) stage.setGeographyFeatures(this.geographyFeatures);
+    this.art.update();
+    return this.geographyFeatures;
+  }
+  setGeographyFeature(name, enabled) {
+    if (!GEOGRAPHY_FEATURES.includes(name)) throw new Error(`Unknown geography feature ${name}`);
+    this.geographyFeatures = geographyFeatures({ ...this.geographyFeatures, [name]: !!enabled });
+    for (const stage of this.stages.values()) stage.setGeographyFeatures(this.geographyFeatures);
+    this.art.update();
+    return this.geographyFeatures;
+  }
   setProductionAssetsEnabled(enabled) {
     this.productionAssetsEnabled = !!enabled;
     for (const stage of this.stages.values()) stage.setEnvironmentAssets(this.environmentLibrary, this.productionAssetsEnabled);
@@ -139,7 +155,7 @@ export class Render3DHost {
   setLODEnabled(enabled) {
     this.lodEnabled = !!enabled;
     for (const stage of this.stages.values()) {
-      for (const layer of [stage.vegetation, stage.entities, stage.settlements, stage.decorations, stage.realmArtifacts]) layer?.setLODEnabled?.(this.lodEnabled);
+      for (const layer of [stage.vegetation, stage.entities, stage.settlements, stage.decorations, stage.realmArtifacts, stage.markers]) layer?.setLODEnabled?.(this.lodEnabled);
     }
     this.art.update();
     return this.lodEnabled;
@@ -332,7 +348,20 @@ export class Render3DHost {
       lodEnabled: this.lodEnabled, lod: this.getLODStats(),
       productionAssetsEnabled: this.productionAssetsEnabled,
       environmentAssetsReady: !!this.environmentLibrary && !this.environmentLibrary.disposed,
+      geography: this.getGeographyStats(),
     });
+  }
+  getGeographyStats() {
+    const stages = {};
+    for (const [plane, stage] of this.stages) stages[plane] = {
+      visible: stage.visible,
+      site: { ...stage.markers?.siteGeography?.stats },
+      leyline: { ...stage.markers?.leylineGeography?.stats },
+      field: { ...stage.scalarField?.stats },
+      decoration: { ...stage.decorations?.stats },
+      fx: { ...stage.fxProbe?.stats },
+    };
+    return { features: { ...this.geographyFeatures }, stages };
   }
   resize(width, height) { this.width = width; this.height = height; this.gpu.setSize(width, height, false); this.cameraRig.resize(width, height); }
   releaseWorld() {

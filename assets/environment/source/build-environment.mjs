@@ -195,6 +195,21 @@ function groundArtifact(lod) {
   }
   return b.finish();
 }
+// Closed stone blocks form a recessed entrance; no new cave topology or gameplay.
+function caveSite(lod) {
+  if (lod === 2) return naturalStone('cliff', 2);
+  const b = meshBuilder();
+  b.box(-.5,0,-.45,-.18,.78,.40,8);
+  b.box(.18,0,-.45,.5,.88,.40,7);
+  b.box(-.5,.68,-.45,.5,1,.40,7);
+  if (lod === 0) {
+    b.box(-.40,0,-.50,.40,.14,.50,8);
+    b.box(-.46,.20,-.48,-.30,.88,.46,7);
+    b.box(.28,.08,-.48,.46,.76,.48,8);
+    b.box(-.18,.14,.28,.18,.68,.40,4);
+  }
+  return b.finish();
+}
 function bounds(positions) {
   const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
   for(let i=0;i<positions.length;i+=3)for(let a=0;a<3;a++){min[a]=Math.min(min[a],positions[i+a]);max[a]=Math.max(max[a],positions[i+a]);}
@@ -251,6 +266,11 @@ function main() {
     for(let lod=0;lod<3;lod++){const data=groundArtifact(lod);specs.push([lods[lod],data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]);}
     assets[id]={id,source:'neutral ground artifact silhouette',realm:'nether',binding:'actual world.artifacts',pick:'artifact',lods,
       revision:'No lamp, soul flame, civilization, weapon or subtype is inferred from a generic ground item'};
+  }
+  {const id='mortal.site.cave',lods=['env_site_cave_lod0','env_site_cave_lod1','env_site_shared_lod2'];
+    for(let lod=0;lod<3;lod++){const data=caveSite(lod);specs.push([lods[lod],data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]);}
+    assets[id]={id,source:'closed cliff entrance pilot',realm:'mortal',binding:'actual world.sites kind=cave',pick:'site',lods,
+      footprint:{width:3.6,depth:2.6,height:2.8},revision:'One recognizer; recessed ink entrance, no invented inhabitant or cave mechanism'};
   }
   let binaryParts=[Buffer.alloc(0)],accessors=[],views=[],nodes=[],meshes=[],modules={};
   for(const [name,data,semantics] of specs){const m=addMesh(binaryParts,accessors,views,data,name,semantics);binaryParts=m.binaryParts;accessors=m.accessors;views=m.views;m.node.mesh=meshes.length;nodes.push(m.node);meshes.push(m.mesh);modules[name]={node:name,triangles:m.module.triangles,bounds:m.module.bounds,uvSlots:m.module.uvSlots,semanticSlots:semantics};}

@@ -13,11 +13,12 @@ import { renderProfileFor } from './PlaneRenderProfile.js';
 import { createEnvironmentMaterial, setEnvironmentMaterialProfile, setEnvironmentMaterialView } from '../environment/EnvironmentMaterial.js';
 import { RealmDecorationLayer } from '../environment/RealmDecorationLayer.js';
 import { RealmArtifactLayer } from '../markers/RealmArtifactLayer.js';
+import { geographyFeatures } from './GeographyFeatures.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
   constructor({ plane, world, profile = renderProfileFor(plane), coordinates, characterLibrary = null,
-    environmentLibrary = null, productionAssets = false, decorations = true } = {}) {
+    environmentLibrary = null, productionAssets = false, decorations = true, geography = false } = {}) {
     if (!world) throw new Error(`PlaneStage ${plane}: world is required`);
     this.plane = plane;
     this.profile = profile;
@@ -29,6 +30,7 @@ export class PlaneStage {
     this.environmentLibrary = environmentLibrary;
     this.productionAssetsEnabled = !!productionAssets;
     this.decorationsEnabled = !!decorations;
+    this.geographyFeatures = geographyFeatures(geography);
     this.setWorld(world, coordinates);
   }
 
@@ -60,9 +62,10 @@ export class PlaneStage {
     if(this.decorations)this.root.add(this.decorations.group);
     this.realmArtifacts=this.plane==='nether'?new RealmArtifactLayer(world,this.coordinates,this.elevation):null;
     if(this.realmArtifacts)this.root.add(this.realmArtifacts.group);
-    this.setEnvironmentAssets(this.environmentLibrary, this.productionAssetsEnabled);
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
+    this.markers?.setGeographyFeatures?.(this.geographyFeatures);
+    this.setEnvironmentAssets(this.environmentLibrary, this.productionAssetsEnabled);
     this.selectionMarker = p.selection
       ? new SelectionMarker(this.coordinates, this.elevation, { readonly: !!p.selectionReadonly, tint: p.selectionTint })
       : null;
@@ -96,12 +99,14 @@ export class PlaneStage {
       this.entities?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.decorations?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled&&this.decorationsEnabled);
       this.realmArtifacts?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled);
+      this.markers?.setEnvironmentAssets?.(library, this.environmentMaterial, this.productionAssetsEnabled);
       previous?.dispose();
     } else {
       this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.entities?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.decorations?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled&&this.decorationsEnabled);
       this.realmArtifacts?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled);
+      this.markers?.setEnvironmentAssets?.(library, this.environmentMaterial, this.productionAssetsEnabled);
     }
   }
 
@@ -110,11 +115,17 @@ export class PlaneStage {
     if (this.environmentMaterial) setEnvironmentMaterialProfile(this.environmentMaterial, profile);
   }
 
+  setGeographyFeatures(features) {
+    this.geographyFeatures = geographyFeatures(features);
+    this.markers?.setGeographyFeatures?.(this.geographyFeatures);
+  }
+
   setEnvironmentArtView(view) {
     this.environmentArtView = view;
     if (this.environmentMaterial) setEnvironmentMaterialView(this.environmentMaterial, view);
     this.decorations?.setArtView(view);
     this.realmArtifacts?.setArtView(view);
+    this.markers?.setArtView?.(view);
   }
 
   /**
@@ -207,7 +218,7 @@ export class PlaneStage {
     const t4 = performance.now();
     this.settlements?.update(dt, this.world, options);
     const t5 = performance.now();
-    this.markers?.update(dt, this.world, options);
+    this.markers?.update(dt, this.world, { heightChanged: heightChanged || !!typeRegion });
     this.markers?.setZoom(zoom);
     this.decorations?.update({layoutChanged:heightChanged||!!typeRegion});
     this.realmArtifacts?.update(dt,{heightChanged});

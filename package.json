@@ -68,7 +68,9 @@
     "test:render3d:m2c2b:browser": "node scripts/inkbox-render3d-m2c2b-browser.mjs",
     "test:render3d:m2c2b:purity": "node scripts/inkbox-render3d-m2c2b-purity.mjs",
     "test:render3d:m2c2b:soak": "node scripts/inkbox-render3d-m2c2b-soak.mjs",
-    "test:render3d:m2c2b1": "node scripts/inkbox-render3d-m2c2b1.mjs"
+    "test:render3d:m2c2b1": "node scripts/inkbox-render3d-m2c2b1.mjs",
+    "test:render3d:m2c2c:sites": "node scripts/inkbox-render3d-m2c2c-sites.mjs",
+    "test:render3d:m2c2c:pilot:browser": "node scripts/inkbox-render3d-m2c2c-pilot-browser.mjs"
   },
   "dependencies": {
     "three": "0.186.1"
