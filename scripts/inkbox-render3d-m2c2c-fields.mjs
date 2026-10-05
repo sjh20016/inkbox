@@ -80,6 +80,25 @@ try{
     assert.equal(field.texture,texture);assert.equal(stage.terrain.inkMaterial,material);assert.equal(material.fragmentShader,source);
     assert.equal(sha(world),before);
   });
+  check('invisible Stage freezes cache work and resumes on the bounded visible cadence',()=>{
+    host.setRealmViewState({open:false});host.setActivePlane('upper');host.update(.3);
+    const field=host.stages.get('upper').scalarField,texture=field.texture,scans=field.stats.scans,uploads=field.stats.uploads;
+    host.setActivePlane('mortal');for(let i=0;i<120;i++)host.update(1/60);
+    assert.equal(field.stats.scans,scans);assert.equal(field.stats.uploads,uploads);
+    host.setActivePlane('upper');host.update(.3);
+    assert.equal(field.stats.scans,scans+1);assert.equal(field.stats.uploads,uploads);assert.equal(field.texture,texture);
+  });
+  check('actual baseline art-off disables scalar work and restores the same cache on enable',()=>{
+    host.setActivePlane('nether');host.update(.3);
+    const stage=host.stages.get('nether'),field=stage.scalarField,texture=field.texture;
+    host.setArtProfile('baseline');const scans=field.stats.scans,uploads=field.stats.uploads;
+    assert.equal(field.enabled,false);assert.equal(stage.terrain.inkMaterial.uniforms.fieldMode.value,0);
+    for(let i=0;i<120;i++)host.update(1/60);
+    assert.equal(field.stats.scans,scans);assert.equal(field.stats.uploads,uploads);
+    host.setArtProfile('realm-style-v1');host.update(.3);
+    assert(field.enabled);assert.equal(field.texture,texture);assert.equal(stage.terrain.inkMaterial.uniforms.fieldMode.value,2);
+    assert.equal(sha(world),before);
+  });
   check('World replacement disposes each owned scalar texture once',()=>{
     const fields=[...host.stages.values()].map(s=>s.scalarField).filter(f=>f?.texture);let disposals=0;
     for(const f of fields)f.texture.addEventListener('dispose',()=>disposals++);

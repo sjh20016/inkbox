@@ -70,6 +70,7 @@
     "test:render3d:m2c2b:soak": "node scripts/inkbox-render3d-m2c2b-soak.mjs",
     "test:render3d:m2c2b1": "node scripts/inkbox-render3d-m2c2b1.mjs",
     "test:render3d:m2c2c:sites": "node scripts/inkbox-render3d-m2c2c-sites.mjs",
+    "test:render3d:m2c2c": "node scripts/inkbox-render3d-m2c2c.mjs",
     "test:render3d:m2c2c:leylines": "node scripts/inkbox-render3d-m2c2c-leylines.mjs",
     "test:render3d:m2c2c:fields": "node scripts/inkbox-render3d-m2c2c-fields.mjs",
     "test:render3d:m2c2c:rifts": "node scripts/inkbox-render3d-m2c2c-rifts.mjs",
