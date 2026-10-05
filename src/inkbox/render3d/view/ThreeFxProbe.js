@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
+import { RiftNarrativeFx, isRiftNarrativeItem } from './RiftNarrativeFx.js';
 
 const MAX_MARKERS = 32;
 const PLANE_COLOR = Object.freeze({ mortal: 0xa8493c, upper: 0xd6b664, nether: 0x7776a9 });
@@ -33,18 +34,25 @@ export class ThreeFxProbe {
     this.mesh.renderOrder = RENDER_ORDER.fx;
     this.root.add(this.mesh);
     this.transform = new THREE.Object3D();
+    this.narrative = new RiftNarrativeFx({ plane, coordinates, elevation });
+    this.root.add(this.narrative.mesh);
+    this.stats = { ...this.narrative.stats, debugActive: 0 };
   }
 
-  update(presentation, world) {
+  update(presentation, world, { enabled = false, region = null, inside = true } = {}) {
     // PresentationStage owns the event queue. This probe only reads its snapshot.
     const items = presentation?.snapshotPlane?.(this.plane)?.items ?? [];
+    if (enabled) this.narrative.update(items, world, region, inside);
+    else this.narrative.clear();
     if (!world || !this.coordinates || !this.elevation || !Array.isArray(items)) {
       this.mesh.count = 0;
+      this.stats = { ...this.narrative.stats, debugActive: 0 };
       return;
     }
     let count = 0;
     for (const item of items) {
       if (count >= MAX_MARKERS) break;
+      if (enabled && isRiftNarrativeItem(item)) continue;
       if (!Number.isFinite(item.x) || !Number.isFinite(item.y)) continue;
       const point = this.coordinates.worldToRender(item.x, item.y,
         this.elevation.at(item.x, item.y) + 0.2);
@@ -55,10 +63,15 @@ export class ThreeFxProbe {
       this.mesh.setMatrixAt(count++, this.transform.matrix);
     }
     this.mesh.count = count;
-    this.mesh.instanceMatrix.needsUpdate = true;
+    this.mesh.visible = count > 0;
+    if (count) this.mesh.instanceMatrix.needsUpdate = true;
+    this.stats = { ...this.narrative.stats, debugActive: count };
   }
 
   dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.narrative.dispose();
     this.mesh.dispose();
     this.geometry.dispose();
     this.material.dispose();

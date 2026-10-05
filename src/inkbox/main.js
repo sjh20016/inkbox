@@ -1605,7 +1605,7 @@ class Sandbox {
     const rows = card?.rows || [['此处', '所选对象已不在当前世界']];
     panel.dataset.plane = planeId;
     panel.dataset.subjectKind = ref.kind;
-    panel.dataset.subjectId = String(ref.entityId ?? ref.artifactId ?? ref.siteId ?? ref.leylineId ?? ref.houseKey ?? ref.settlementId ?? '');
+    panel.dataset.subjectId = String(ref.entityId ?? ref.artifactId ?? ref.siteId ?? ref.leylineId ?? ref.riftId ?? ref.houseKey ?? ref.settlementId ?? '');
     panel.innerHTML = `<div class="inspect-head">${text(head)}<button class="ink-x" id="inkInspectClose">×</button></div>`
       + rows.map(([k, v]) => `<div class="inspect-row"><span>${text(k)}</span><b>${text(v)}</b></div>`).join('');
     panel.classList.add('on');

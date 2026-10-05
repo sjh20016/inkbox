@@ -28,6 +28,7 @@ import { realmLabel } from '../core/cultivation.js';
 import { ghostTierOf, GHOST_TIER_NAMES } from '../sim/netherLife.js';
 import { STRUCT } from '../core/config.js';
 import { EQUIP_TIERS,EQUIP_QUALITIES } from '../core/lore.js';
+import { visibleRift } from '../render3d/readers/riftViewModel.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
 export const REALM_INSPECT_RADIUS = 4;
@@ -102,6 +103,12 @@ export function pickRealmSubject(realmWorld, plane, x, y, radius = REALM_INSPECT
 /** A submitted 3D instance names one current World subject. Never choose a neighbour. */
 export function resolvePlaneSubject(world, plane, ref) {
   if (!world || !['mortal', 'upper', 'nether'].includes(plane) || !ref) return null;
+  if(ref.kind==='rift'){
+    if(plane!=='mortal'||ref.riftId==null)return null;
+    const subject=world.rifts?.find(r=>r&&r.id===ref.riftId);
+    if(!subject||!Number.isFinite(subject.x)||!Number.isFinite(subject.y)||!visibleRift(subject))return null;
+    return {kind:'rift',plane,x:subject.x,y:subject.y,subject,world};
+  }
   if (ref.kind === 'site' || ref.kind === 'leyline') {
     const id = ref.kind === 'site' ? ref.siteId : ref.leylineId;
     if(id == null) return null;
@@ -141,13 +148,18 @@ export function resolvePlaneSubject(world, plane, ref) {
 /** Exact 3D inspection stays read-only, including mortal house and aggregate cards. */
 export function planeSubjectInspectRows(picked, ctx = {}) {
   if (!picked) return null;
-  if (!['site','leyline'].includes(picked.kind) && picked.plane !== 'mortal' && (picked.kind !== 'artifact' || picked.plane === 'nether'))
+  if (!['site','leyline','rift'].includes(picked.kind) && picked.plane !== 'mortal' && (picked.kind !== 'artifact' || picked.plane === 'nether'))
     return realmInspectRows(picked, ctx);
   const s = picked.subject, label = ctx.planeLabel || (picked.plane === 'mortal' ? '凡间' : '');
   const head = `${label} · 格 (${Math.floor(picked.x)}, ${Math.floor(picked.y)})`;
   if (picked.kind === 'ghost') return { ...realmInspectRows(picked, ctx), head };
   let rows;
-  if (picked.kind === 'site') {
+  if(picked.kind==='rift'){
+    rows=[['裂隙',String(s.id)],['通向',s.targetPlane==='upper'?'上界':s.targetPlane==='nether'?'幽冥':String(s.targetPlane||'未知')]];
+    if(Number.isFinite(s.age))rows.push(['存续',`${Math.floor(s.age)} 日`]);
+    const radius=visibleRift(s)?.radius;if(Number.isFinite(radius))rows.push(['可见半径',radius.toFixed(2)]);
+    if(Number.isFinite(s.openedDay))rows.push(['开启日',String(s.openedDay)]);
+  }else if (picked.kind === 'site') {
     rows = [['地点', s.name || '无名地点'], ['类型', {secret:'秘境',cave:'洞府',formation:'阵法',ruin:'遗迹'}[s.kind] || String(s.kind || '未知')]];
     if(Number.isFinite(s.age)) rows.push(['存续', `${Math.floor(s.age/360)} 年`]);
     if(Number.isFinite(s.visits)) rows.push(['访问', String(s.visits)]);

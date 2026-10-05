@@ -100,13 +100,13 @@ export class Render3DAdapter {
       }
       this.selectedBoundary = null;
       this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y, kind: hit.kind, settlementId: hit.settlementId,
-        entityId: hit.entityId, artifactId: hit.artifactId, siteId: hit.siteId, leylineId: hit.leylineId,
+        entityId: hit.entityId, artifactId: hit.artifactId, siteId: hit.siteId, leylineId: hit.leylineId, riftId: hit.riftId,
         entityContainer: hit.entityContainer,
         houseKey: hit.houseKey, houseX: hit.houseX, houseY: hit.houseY };
       // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
       this.renderer.setSelection(hit.x, hit.y, hit.plane);
       if (this.mode === 'inspect') {
-        if (['entity', 'house', 'settlement', 'artifact', 'site', 'leyline'].includes(hit.kind))
+        if (['entity', 'house', 'settlement', 'artifact', 'site', 'leyline', 'rift'].includes(hit.kind))
           sandbox.inspectPlaneSubject(hit.plane, this.selectedCell);
         else sandbox.inspectPlaneAt(hit.plane, hit.x, hit.y);
         return;

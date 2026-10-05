@@ -30,6 +30,7 @@ import { visibleRift } from '../readers/riftViewModel.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { SiteGeographyLayer } from './SiteGeographyLayer.js';
 import { LeylineGeographyLayer } from './LeylineGeographyLayer.js';
+import { RiftWoundLayer } from './RiftWoundLayer.js';
 
 /** 四类地点（与 `sim/sites.js` 写入的 `kind` 字面量一一对应，顺序即渲染顺序契约）。 */
 export const SITE_KINDS = Object.freeze(['secret', 'cave', 'formation', 'ruin']);
@@ -107,7 +108,7 @@ export function deriveMarkers(world) {
     if (!r || !Number.isFinite(r.x) || !Number.isFinite(r.y)) continue;
     const view = visibleRift(r);
     if (!view) continue;
-    out.rifts.push({ id: r.id, x: r.x, y: r.y, ...view });
+    out.rifts.push({ id: r.id, x: r.x, y: r.y, age:r.age, ...view });
     out.total += 1;
   }
   return out;
@@ -159,6 +160,8 @@ export class WorldMarkerLayer {
     this.group.add(this.siteGeography.group);
     this.leylineGeography = new LeylineGeographyLayer(world, coordinates, elevation);
     this.group.add(this.leylineGeography.group);
+    this.riftWounds = new RiftWoundLayer(world, coordinates, elevation);
+    this.group.add(this.riftWounds.group);
     this.leylines = this.makeMesh(this.leylineGeometry(), LEYLINE_CAP, LEYLINE_MIN_ZOOM, 'Marker:leyline');
     this.rifts = this.makeMesh(this.riftGeometry(), RIFT_CAP, 0, 'Marker:rift');
   }
@@ -172,11 +175,13 @@ export class WorldMarkerLayer {
   setEnvironmentAssets(library, material, enabled) {
     this.siteGeography.setEnvironmentAssets(library, material, enabled);
     this.leylineGeography.setEnvironmentAssets(library, material, enabled);
+    this.riftWounds.setProductionEnabled(enabled);
     this.lastDerived = null; this.clock = Infinity;
   }
   setGeographyFeatures(features = {}) {
     this.siteGeography.setEnabled(!!features.sites);
     this.leylineGeography.setEnabled(!!features.leylines);
+    this.riftWounds.setEnabled(!!features.rifts);
     this.lastDerived = null; this.clock = Infinity;
   }
   setArtView(view) {
@@ -222,7 +227,7 @@ export class WorldMarkerLayer {
     const style = profile?.realmStyle || null;
     if (style === this.realmStyle) return;
     this.realmStyle = style;
-    const rifts = this.lastDerived?.rifts || [];
+    const rifts = (this.lastDerived?.rifts || []).filter(r=>!this.riftWounds.renderedIds.has(r.id));
     for (let i = 0; i < this.rifts.count; i++)
       this.rifts.setColorAt(i, this.colorOf(this.riftColor(rifts[i]?.targetPlane)));
     if (this.rifts.instanceColor) this.rifts.instanceColor.needsUpdate = true;
@@ -269,6 +274,7 @@ export class WorldMarkerLayer {
     this.world = world;
     this.siteGeography.update(derived);
     this.leylineGeography.update(derived.leylines);
+    this.riftWounds.update(derived.rifts);
     const stats = { artifacts: 0, sites: 0, leylines: 0, rifts: 0, total: 0 };
 
     // ── 法宝：贴地浮一点点的冷金小点 ──
@@ -293,9 +299,10 @@ export class WorldMarkerLayer {
     // ── 裂缝：贴地圆环，半径现算 ──（**故意不过滤**，见 `regionFilter` 注释）
     const riftMesh = this.rifts;
     const cap = riftMesh.instanceMatrix.count;
-    const nRift = Math.min(derived.rifts.length, cap);
+    const riftFallback = derived.rifts.filter(r=>!this.riftWounds.renderedIds.has(r.id));
+    const nRift = Math.min(riftFallback.length, cap);
     for (let i = 0; i < nRift; i += 1) {
-      const r = derived.rifts[i];
+      const r = riftFallback[i];
       const p = this.coordinates.worldToRender(r.x, r.y, 0);
       this.dummy.position.set(p.x, this.elevation.at(r.x, r.y) + 0.3, p.z);
       this.dummy.rotation.set(0, 0, 0);
@@ -306,7 +313,7 @@ export class WorldMarkerLayer {
       riftMesh.setColorAt(i, this.colorOf(this.riftColor(r.targetPlane)));
     }
     this.finish(riftMesh, nRift);
-    stats.rifts = nRift;
+    stats.rifts = nRift + this.riftWounds.renderedIds.size;
     stats.total = stats.artifacts + stats.sites + stats.leylines + stats.rifts;
 
     this.lastDerived = derived;
@@ -347,6 +354,7 @@ export class WorldMarkerLayer {
   dispose() {
     this.siteGeography.dispose();
     this.leylineGeography.dispose();
+    this.riftWounds.dispose();
     for (const { mesh } of this.entries) {
       mesh.geometry.dispose();
       mesh.material.dispose();

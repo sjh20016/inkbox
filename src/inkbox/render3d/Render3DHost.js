@@ -286,7 +286,10 @@ export class Render3DHost {
       // §65：depart 画在源 Stage、arrive 画在目标 Stage。**不再因为开窗就整层关掉**
       // ——stage.root.visible 已经负责「这一界这帧画不画」，这里不需要再加一条。
       stage.fxProbe.root.visible = true;
-      stage.fxProbe.update(this.presentation, stage.world);
+      stage.fxProbe.update(this.presentation, stage.world, {
+        enabled: stage.productionAssetsEnabled && stage.geographyFeatures.riftFx,
+        region: stage.regionGeometry, inside: stage.regionInside,
+      });
     }
     // §85：地形高度真的变过（雕刻 / 水文 / 生态）⇒ 界缘断面必须跟着重建。
     // 只把缓存键置空，下一帧走同一条重建路径——不在渲染循环里重建几何。
@@ -357,6 +360,7 @@ export class Render3DHost {
       visible: stage.visible,
       site: { ...stage.markers?.siteGeography?.stats },
       leyline: { ...stage.markers?.leylineGeography?.stats },
+      rift: { ...stage.markers?.riftWounds?.stats },
       field: { ...stage.scalarField?.stats },
       decoration: { ...stage.decorations?.stats },
       fx: { ...stage.fxProbe?.stats },

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { visibleRift } from '../readers/riftViewModel.js';
 
 function visiblySubmitted(object) {
   for (let current = object; current; current = current.parent) if (!current.visible) return false;
@@ -40,7 +41,7 @@ export class PlanePicker {
       });
       if (!onlyPlane) stage.markers?.group.traverse(object => {
         if (object.isInstancedMesh && visiblySubmitted(object) && object.count
-          && (object.userData.renderArtifacts?.length || object.userData.renderSites?.length || object.userData.renderLeylines?.length)) objects.push(object);
+          && (object.userData.renderArtifacts?.length || object.userData.renderSites?.length || object.userData.renderLeylines?.length || object.userData.renderRifts?.length)) objects.push(object);
       });
       if (!onlyPlane) stage.realmArtifacts?.group.traverse(object => {
         if(object.isInstancedMesh&&visiblySubmitted(object)&&object.count&&object.userData.renderArtifacts?.length)objects.push(object);
@@ -57,9 +58,9 @@ export class PlanePicker {
       // no house identity, so inspect its visible coordinate instead of skipping it.
       const hit = this.raycaster.intersectObjects(objects, false).find(candidate => {
         if(candidate.instanceId == null) return true;
-        for(const [field,collection] of [['renderSites','sites'],['renderLeylines','leylines']]) {
+        for(const [field,collection] of [['renderSites','sites'],['renderLeylines','leylines'],['renderRifts','rifts']]) {
           const record = candidate.object.userData[field]?.[candidate.instanceId];
-          if(record && !stage.world[collection]?.some(item => item && item.id === record.id && item.x === record.x && item.y === record.y)) return false;
+          if(record && !stage.world[collection]?.some(item => item && item.id === record.id && item.x === record.x && item.y === record.y && (field!=='renderRifts'||visibleRift(item)))) return false;
         }
         return true;
       });
@@ -71,7 +72,8 @@ export class PlanePicker {
       const artifact = hit.instanceId == null ? null : hit.object.userData.renderArtifacts?.[hit.instanceId];
       const site = hit.instanceId == null ? null : hit.object.userData.renderSites?.[hit.instanceId];
       const leyline = hit.instanceId == null ? null : hit.object.userData.renderLeylines?.[hit.instanceId];
-      const record = entity || settlement || building || artifact || site || leyline;
+      const rift = hit.instanceId == null ? null : hit.object.userData.renderRifts?.[hit.instanceId];
+      const record = entity || settlement || building || artifact || site || leyline || rift;
       const world = record ? { x: record.x, y: record.y } : stage.coordinates.renderToWorld(hit.point.x, hit.point.z);
       const cell = record ? { x: Math.max(0, Math.min(stage.world.w - 1, Math.floor(record.x))), y: Math.max(0, Math.min(stage.world.h - 1, Math.floor(record.y))) }
         : stage.coordinates.renderPointToCell(hit.point);
@@ -80,8 +82,8 @@ export class PlanePicker {
         settlementId: settlement?.settlementId ?? building?.settlementId,
         houseKey: building?.houseKey, houseX: building?.houseX, houseY: building?.houseY,
         artifactId: artifact?.id,
-        siteId: site?.id, leylineId: leyline?.id,
-        kind: entity ? 'entity' : settlement ? 'settlement' : building ? 'house' : artifact ? 'artifact' : site ? 'site' : leyline ? 'leyline' : 'terrain',
+        siteId: site?.id, leylineId: leyline?.id, riftId:rift?.id,
+        kind: entity ? 'entity' : settlement ? 'settlement' : building ? 'house' : artifact ? 'artifact' : site ? 'site' : leyline ? 'leyline' : rift ? 'rift' : 'terrain',
         point: hit.point, worldPoint: hit.point, world, stage, distance: hit.distance };
     }
     // M2-B B4（§62）：界缘断面也可以被命中——它同样是**提交给 GPU 的可见几何**，
