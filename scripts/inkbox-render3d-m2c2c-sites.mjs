@@ -13,6 +13,8 @@ import { resolvePlaneSubject, planeSubjectInspectRows } from '../src/inkbox/ui/r
 import { deriveMarkers } from '../src/inkbox/render3d/markers/WorldMarkerLayer.js';
 import { readEnvironmentLibrary } from './inkbox-environment-glb-reader.mjs';
 import { EnvironmentBatch } from '../src/inkbox/render3d/environment/EnvironmentBatch.js';
+import { deserializeWorld } from '../src/inkbox/io/save.js';
+import { makeTestHost } from './inkbox-c2c-test-utils.mjs';
 import { stepSites, SITE_LIFESPAN_YEARS } from '../src/inkbox/sim/sites.js';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -122,6 +124,7 @@ try{
       }
     }
     const formation=assets[2];assert.deepEqual(formation.compositeParts.map(parts=>parts?.length||1),[8,4,1]);assert.equal(formation.lods[0],formation.lods[1]);
+    assert.deepEqual(formation.compositeParts[1],formation.compositeParts[0].filter((_,i)=>i%2===0),'reduced stones are exact cardinal subset, preserving local width and height');
     assert.deepEqual(formation.footprint,{width:4.2,depth:4.2,height:1.1});
     report.assets=Object.fromEntries(assets.map(a=>[a.id,{lods:a.lods,triangles:a.lods.map((n,lod)=>library.modules.get(n).triangles*(a.compositeParts?.[lod]?.length||1))}]));
   });
@@ -160,6 +163,33 @@ try{
       }
       assert.equal(sha(slope),before);
     }finally{probeHost.dispose();}
+    const naturalPath=process.env.INKBOX_SITE_NATURAL_SAVE||path.join(ROOT,'reports/local/m2c2c/pilot/full-sites-natural-save.json');
+    report.naturalFormation={available:fs.existsSync(naturalPath),checks:[]};
+    if(process.env.INKBOX_SITE_NATURAL_SAVE)assert(report.naturalFormation.available,'explicit natural save must exist');
+    if(report.naturalFormation.available){
+      const saved=JSON.parse(fs.readFileSync(naturalPath,'utf8')),natural=deserializeWorld(saved.world||saved);
+      assert.equal(natural.seed,226);assert.equal(natural.day,72000);const target=natural.sites.find(s=>s.id===105);
+      assert.equal(target.kind,'formation');assert.equal(target.x,90);assert.equal(target.y,101);
+      const before=sha(natural),naturalHost=makeTestHost(natural,{environmentLibrary:library,geography:{sites:true}});naturalHost.update(.3);
+      try{
+        const stage=naturalHost.stages.get('mortal'),layer=stage.markers.siteGeography;
+        for(const [ppu,lod,count] of [[30,0,8],[5,1,4],[1,2,1]]){
+          view(naturalHost,ppu);assert(layer.renderedIds.has(105),`natural Formation105 must admit LOD${lod}`);
+          let parts=0,minTopClearance=Infinity;
+          for(const mesh of layer.batch.meshes.values())for(let i=0;i<mesh.count;i++)if(mesh.userData.renderSites[i]?.id===105){
+            parts++;assert.deepEqual(mesh.userData.renderSites[i],{id:105,x:90,y:101,kind:'formation'});
+            const matrix=new THREE.Matrix4();mesh.getMatrixAt(i,matrix);const pos=mesh.geometry.attributes.position;
+            let top=-Infinity;for(let j=0;j<pos.count;j++)top=Math.max(top,pos.getY(j));
+            for(let j=0;j<pos.count;j++)if(pos.getY(j)===top){
+              const v=new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix),cell=stage.coordinates.renderToWorld(v.x,v.z),clearance=v.y-stage.elevation.at(cell.x,cell.y);
+              assert(clearance>0,`natural Formation105 actual GLB top clears local terrain in LOD${lod}`);minTopClearance=Math.min(minTopClearance,clearance);
+            }
+          }
+          assert.equal(parts,count);report.naturalFormation.checks.push({lod,parts,minTopClearance});
+        }
+        assert.equal(sha(natural),before);report.naturalFormation.worldSHA=before;
+      }finally{naturalHost.dispose();}
+    }
   });
   check('each family and unknown fallback preserve current id under Region and removal',()=>{
     full.addSite({kind:'unknown-kind',x:8,y:20,name:'未知真实地点'});fullMarkers.update(.3,full);assert.equal(fullMarkers.unknownSites.count,1);assert.equal(fullLayer.stats.fallback,1);

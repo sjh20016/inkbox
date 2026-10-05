@@ -226,8 +226,8 @@ function formationStone() {
   return b.finish();
 }
 function formationParts(lod) {
-  const n=lod===0?8:4,r=lod===0?.075:.12;
-  return Array.from({length:n},(_,i)=>{const a=i*Math.PI*2/n;return {x:Math.cos(a)*.37,z:Math.sin(a)*.37,width:r*2,depth:r*2,height:i%2===0?1:.72};});
+  const detailed=Array.from({length:8},(_,i)=>{const a=i*Math.PI/4;return {x:Math.cos(a)*.37,z:Math.sin(a)*.37,width:.15,depth:.15,height:i%2===0?1:.72};});
+  return lod===0?detailed:detailed.filter((_,i)=>i%2===0);
 }
 function ruinSite(lod) {
   const b=meshBuilder();

@@ -15,8 +15,10 @@ Secret, Cave and Ruin are closed single-instance recognizers. Formation LOD0/1
 uses one closed 12-triangle `env_site_formation_stone` GLB module, shared by eight
 or four presentation parts; its authored normalized offsets, widths and heights
 are recorded in `compositeParts`. The radius remains .37 of the parent width;
-part widths remain .15/.24 of it and alternating heights remain 1/.72 of the
-parent height. The old low perimeter is omitted because its spanning faces buried
+LOD0 part widths remain .15 of it and alternating heights remain 1/.72 of the
+parent height. LOD1 is the exact LOD0 cardinal subset (indices 0/2/4/6), retaining
+width .15 and height 1.0; it never widens stones or reduces their height during
+the LOD transition. The old low perimeter is omitted because its spanning faces buried
 on slopes. Secret and Cave share the reduced entrance silhouette; all four share
 `env_site_shared_lod2`. Seven unique Site nodes use four detailed draws, three
 reduced draws, or one far draw. Four kinds on flat land submit 11/7/4 physical
@@ -63,3 +65,9 @@ cleared terrain and all 48 old perimeter triangles were buried. The repaired
 actual GLB eight parts expose 66/96 stone centroids and every top corner, with
 minimum top clearance .190881 world units. This CPU evidence does not account
 for tree/entity occlusion; the normal-camera GPU gate remains separate.
+The natural save additionally admits all three actual LODs with 8/4/1 parts and
+minimum actual top clearances .190881/.391959/.176532. The Site gate checks this
+save when present at `reports/local/m2c2c/pilot/full-sites-natural-save.json`, or
+at an explicit `INKBOX_SITE_NATURAL_SAVE` path (a missing explicit path fails).
+Without that external cache, the report honestly marks natural coverage unavailable;
+the always-run gate still validates the exact cardinal subset and sloped GLB tops.
