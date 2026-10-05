@@ -1,6 +1,6 @@
 # Environment asset library
 
-Packages 3–4 ship three visual families for current STRUCT.HOUSE and a separate family for current STRUCT.HALL: mortal.house.base, mortal.house.small and mortal.house.courtyard. All retain the real village and original house coordinates. Courtyard is a roof silhouette; neutral timber replaces source cinnabar and gold. It implies no new wealth class, household or site.
+M2-C2B Packages 3–4 ship three visual families for current STRUCT.HOUSE and a separate family for current STRUCT.HALL: mortal.house.base, mortal.house.small and mortal.house.courtyard. All retain the real village and original house coordinates. Courtyard is a roof silhouette; neutral timber replaces source cinnabar and gold. It implies no new wealth class, household or site.
 
 ## Source and LODs
 
@@ -25,7 +25,7 @@ EntityAtlas.png is a 128×128 nearest index texture, with 8×8 cells storing slo
 
 The GLB has one shared glTF material, one external atlas URI, identity-transformed ASCII nodes and one primitive per module. Runtime validation compares manifest bounds, counts and semantic slots with decoded geometry.
 
-Fixed-capacity InstancedMesh batches borrow library geometry and one Stage material. World replacement and realm/style/production toggles reuse the library and atlas. The host loads once and releases the library after Stage buffers and materials. Production remains opt-in with ?renderer=3d&assets=on until full Pass1 acceptance.
+Fixed-capacity InstancedMesh batches borrow library geometry and one Stage material. World replacement and realm/style/production toggles reuse the library and atlas. The host loads once and releases the library after Stage buffers and materials. The accepted M2-C2B production path is default in Render3D; ?assets=off restores the diagnostic fallback.
 
 ## Package 5 character reuse and ordinary Ghost Family
 
@@ -50,3 +50,13 @@ Upper cloud/negative space uses the existing terrain shader's low-valley wash an
 Nether ground artifacts use only actual world.artifacts IDs, coordinates, names, slots, tiers and qualities. A neutral faceted marker with earth chips uses 20/8/4 triangles, and never implies the item's named weapon shape or a soul lamp. The fixed-capacity (256) batch shares the Stage Environment material and atlas. PlanePicker returns the exact artifact ID; missing IDs do not resolve to a nearby substitute. The readonly inspector displays the original item facts. No simulation or save changes.
 
 Generated ghost, mineral and artifact caps now face outward, verified at upper and lower extrema in the actual GLB. Nine natural actor Edge cases, seven decoration pairs and five ground-artifact cases passed after the correction.
+
+## M2-C2C Package 4: four real Site recognizers
+
+The current library adds `mortal.site.secret/cave/formation/ruin`, binding only
+the four existing World kinds. See [Site production families](M2C2C_SITE_FAMILIES.md)
+for geometry counts, shared modules, footprint, grounding and identity contracts.
+The Site extension uses eight unique nodes: four detailed, three reduced, and
+one shared far node. It does not multiply three LOD geometries for every kind.
+The accepted cave pilot and four-family CPU gates have separate evidence;
+this asset index does not claim completion of the whole C2C browser matrix.

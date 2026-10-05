@@ -5,7 +5,7 @@ import { projectedPixels, chooseLOD, budgetLOD } from '../lod/PresentationBudget
 import { TERRAIN_INFO } from '../../core/config.js';
 
 const CAPACITY = 256;
-const SITE_ASSETS = Object.freeze({ cave: 'mortal.site.cave' });
+const SITE_ASSETS = Object.freeze({ secret:'mortal.site.secret', cave:'mortal.site.cave', formation:'mortal.site.formation', ruin:'mortal.site.ruin' });
 
 /** Receives the marker layer's single derivation. Owns only fixed instance buffers. */
 export class SiteGeographyLayer {
@@ -38,7 +38,7 @@ export class SiteGeographyLayer {
   update(derived) { this.derived = derived; this.write(); }
   write() {
     const records = [], counts = [0,0,0], active = new Set();
-    this.renderedIds.clear(); let siteCount = 0, maskRejected = 0, overflow = 0, demoted = 0;
+    this.renderedIds.clear(); let siteCount = 0, maskRejected = 0, groundRejected = 0, overflow = 0, demoted = 0;
     for (const [kind, items] of Object.entries(this.derived?.sites || {})) for (const item of items) {
       active.add(item.id);
       if (!centerOwned(this.regionGeometry, this.regionInside, item)) continue;
@@ -50,6 +50,9 @@ export class SiteGeographyLayer {
       if (!decorationFootprintOwned(this.world, this.regionGeometry, this.regionInside, footprint) || !terrainSuitable(this.world, footprint)) { maskRejected++; continue; }
       if (records.length >= CAPACITY) { overflow++; continue; }
       const ground = decorationGround(this.elevation, footprint);
+      // A recognizer completely below its authoritative cell cannot replace a
+      // truthful marker. Keep min-corner grounding; never lift or move the Site.
+      if (this.elevation.at(item.x,item.y) >= ground + shape.height) { groundRejected++; continue; }
       const p = this.coordinates.worldToRender(item.x, item.y, ground);
       const desired = chooseLOD('site', projectedPixels(shape.height, this.view, shape.width), this.lods.get(item.id), this.lodEnabled);
       const budget = this.lodEnabled ? budgetLOD('site', desired, counts) : { lod: 0, demoted: false };
@@ -58,10 +61,11 @@ export class SiteGeographyLayer {
       records.push({ assetId, lod: budget.lod, position: { x:p.x, y:ground, z:p.z }, scale: { x:shape.width, y:shape.height, z:shape.depth }, rotationY:0,
         source: { id:item.id, x:item.x, y:item.y, kind } });
     }
+    for (const item of this.derived?.unknownSites || []) if (centerOwned(this.regionGeometry, this.regionInside, item)) siteCount++;
     for (const id of this.lods.keys()) if (!active.has(id)) this.lods.delete(id);
     this.batch?.write(records);
     this.stats = { ...(this.batch?.stats || { instances:0,triangles:0,drawCalls:0,lod:[0,0,0],overflow:0 }), capacity:CAPACITY,
-      siteCount, fallback:siteCount-records.length, maskRejected, demoted, overflow:overflow+(this.batch?.stats.overflow || 0) };
+      siteCount, fallback:siteCount-records.length, maskRejected, groundRejected, demoted, overflow:overflow+(this.batch?.stats.overflow || 0) };
   }
   dispose() { this.batch?.dispose(); this.batch=null; this.group.clear(); this.derived=null; this.renderedIds.clear(); this.lods.clear(); }
 }

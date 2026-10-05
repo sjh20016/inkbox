@@ -12,10 +12,11 @@ import { PlanePicker } from '../src/inkbox/render3d/picking/PlanePicker.js';
 import { resolvePlaneSubject, planeSubjectInspectRows } from '../src/inkbox/ui/realmInspector.js';
 import { deriveMarkers } from '../src/inkbox/render3d/markers/WorldMarkerLayer.js';
 import { readEnvironmentLibrary } from './inkbox-environment-glb-reader.mjs';
+import { stepSites, SITE_LIFESPAN_YEARS } from '../src/inkbox/sim/sites.js';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const OUT=path.resolve(process.env.INKBOX_REPORT_DIR || path.join(ROOT,'reports/local/m2c2c/sites'));
-const report={suite:'M2-C2C cave pilot actual-GLB CPU gate',checks:[],pass:false,browser:false};
+const report={suite:'M2-C2C four Site families actual-GLB CPU gate',checks:[],pass:false,browser:false};
 const sha=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const check=(name,fn)=>{fn();report.checks.push({name,passed:true});console.log(`PASS ${name}`);};
 function fixture(){const world=new World(32,24,411);world.plane='mortal';world.height.fill(.55);world.type.fill(TERRAIN.GRASS);
@@ -29,6 +30,8 @@ function hostFor(world,library){const camera=new THREE.OrthographicCamera(-20,20
 function view(host,ppu){host.stages.get('mortal').setEnvironmentArtView({pixelsPerUnit:ppu,verticalPixelsPerUnit:ppu,camera:host.cameraRig.camera});}
 function visibleRecord(host){const layer=host.stages.get('mortal').markers.siteGeography;
   for(const mesh of layer.batch?.meshes.values() || [])if(mesh.count)return {mesh,record:mesh.userData.renderSites[0]};return null;}
+function fullFixture(){const world=new World(64,40,411);world.height.fill(.55);world.type.fill(TERRAIN.GRASS);
+  for(const [n,kind] of ['secret','cave','formation','ruin'].entries())world.addSite({kind,x:12+n*12,y:20,name:`真实${kind}字段`,age:0,visits:0});return world;}
 const library=readEnvironmentLibrary(ROOT);let host;
 try{
   check('shipped cave asset has 84/36/6 triangles and closed normalized components',()=>{
@@ -101,6 +104,64 @@ try{
     const oldBatch=markers.siteGeography.batch;host.setWorld(fixture());host.update(.3);
     assert.equal(oldBatch.disposed,true);assert.equal(geometryDisposals,0);assert.equal(materialDisposals,1);assert.equal(library.disposed,false);
     host.dispose();host=null;assert.equal(geometryDisposals,0);assert.equal(library.disposed,false);
+  });
+  check('all four shipped families have distinct LOD0 and official shared LOD1/LOD2 modules',()=>{
+    const assets=['secret','cave','formation','ruin'].map(kind=>library.assetInfo(`mortal.site.${kind}`));
+    assert.equal(new Set(assets.map(a=>a.lods[0])).size,4);assert.equal(new Set(assets.map(a=>a.lods[1])).size,3);assert.equal(new Set(assets.map(a=>a.lods[2])).size,1);
+    assert.equal(library.geometryFor('mortal.site.secret',1),library.geometryFor('mortal.site.cave',1));
+    for(const a of assets){assert.equal(a.pick,'site');assert(a.footprint.width>=2&&a.footprint.width<=6&&a.footprint.depth>=2&&a.footprint.depth<=6);
+      const triangles=a.lods.map(node=>library.modules.get(node).triangles);assert(triangles[0]>=60&&triangles[0]<=220&&triangles[1]>=20&&triangles[1]<=60&&triangles[2]>=6&&triangles[2]<=16);
+      assert.equal(library.geometryFor(a.id,2),library.geometryFor('mortal.site.cave',2));
+      for(const node of a.lods){const {geometry,bounds}=library.modules.get(node);assert.equal(bounds.min[1],0);
+        assert(bounds.min[0]>=-.50001&&bounds.max[0]<=.50001&&bounds.min[2]>=-.50001&&bounds.max[2]<=.50001);
+        const edges=new Map(),p=geometry.attributes.position,ix=geometry.index;
+        const key=i=>[p.getX(i),p.getY(i),p.getZ(i)].map(v=>v.toFixed(6)).join(',');
+        for(let i=0;i<ix.count;i+=3)for(let j=0;j<3;j++){const k=[key(ix.getX(i+j)),key(ix.getX(i+(j+1)%3))].sort().join('|');edges.set(k,(edges.get(k)||0)+1);}
+        assert([...edges.values()].every(n=>n%2===0),'every Site recognizer has closed components');
+      }
+    }
+    report.assets=Object.fromEntries(assets.map(a=>[a.id,{lods:a.lods,triangles:a.lods.map(n=>library.modules.get(n).triangles)}]));
+  });
+  const full=fullFixture(),fullBefore=sha(full);host=hostFor(full,library);const fullMarkers=host.stages.get('mortal').markers,fullLayer=fullMarkers.siteGeography;
+  check('four true identities share eight fixed nodes; far LOD uses one draw for all kinds',()=>{
+    assert.equal(fullLayer.batch.meshes.size,8);view(host,30);assert.equal(fullLayer.stats.instances,4);assert.equal(fullLayer.stats.drawCalls,4);assert.equal(fullLayer.stats.triangles,384);
+    for(const s of full.sites){assert.equal(fullMarkers.siteMeshes[s.kind].count,0);assert.equal(resolvePlaneSubject(full,'mortal',{kind:'site',siteId:s.id}).subject,s);}
+    view(host,5);assert.equal(fullLayer.stats.instances,4);assert.equal(fullLayer.stats.drawCalls,3);assert.deepEqual(fullLayer.stats.lod,[0,4,0]);
+    view(host,1);assert.equal(fullLayer.stats.instances,4);assert.equal(fullLayer.stats.drawCalls,1);assert.equal(fullLayer.stats.triangles,24);assert.deepEqual(fullLayer.stats.lod,[0,0,4]);
+    assert.equal(sha(full),fullBefore);report.batches={fixedNodes:8,capacity:256,detailDraws:4,reducedDraws:3,farDraws:1,farTriangles:24};
+  });
+  check('each family and unknown fallback preserve current id under Region and removal',()=>{
+    full.addSite({kind:'unknown-kind',x:8,y:20,name:'未知真实地点'});fullMarkers.update(.3,full);assert.equal(fullMarkers.unknownSites.count,1);assert.equal(fullLayer.stats.fallback,1);
+    assert.equal(deriveMarkers(full).sites['unknown-kind'],undefined);assert.equal(deriveMarkers(full).unknownSites.length,1);
+    const region={x0:0,y0:0,x1:18,y1:39,contains:(x,y)=>x>=0&&x<18&&y>=0&&y<39};
+    fullMarkers.setRegionGeometry(new RegionGeometry(full,region),true);fullMarkers.update(.3,full);
+    assert.equal(fullLayer.stats.instances,1);assert.equal(fullLayer.renderedIds.has(full.sites[0].id),true);
+    fullMarkers.setRegionGeometry(null);fullMarkers.update(.3,full);
+    for(const site of [...full.sites]){full.removeSite(site);fullMarkers.update(.3,full);assert.equal(resolvePlaneSubject(full,'mortal',{kind:'site',siteId:site.id}),null);assert.equal(fullLayer.renderedIds.has(site.id),false);}
+    assert.equal(fullLayer.stats.instances,0);assert.equal(fullMarkers.unknownSites.count,0);
+  });
+  check('actual secret second-visit exhaustion removes production instance and stale identity',()=>{
+    const secret=full.addSite({kind:'secret',x:24,y:20,name:'探尽测试',visits:1});
+    full.entities.push({id:42,name:'测试修士',x:24,y:20,level:3,hp:100,maxHp:100,exp:0,fortune:50,mind:50,heartDemon:0,techniques:[]});
+    fullMarkers.update(.3,full);assert.equal(fullLayer.stats.instances,1);
+    stepSites(full,1,()=>0);assert.equal(secret.visits,2);assert(!full.sites.includes(secret));
+    assert(resolvePlaneSubject(full,'mortal',{kind:'site',siteId:secret.id})===null);fullMarkers.update(.3,full);assert.equal(fullLayer.stats.instances,0);
+  });
+  check('all four actual lifespan closures clear geometry; capacity is fixed with honest overflow fallback',()=>{
+    full.entities=[];
+    for(const [i,kind] of ['secret','cave','formation','ruin'].entries())full.addSite({kind,x:12+i*12,y:20,name:kind,age:SITE_LIFESPAN_YEARS[kind]*360});
+    fullMarkers.update(.3,full);assert.equal(fullLayer.stats.instances,4);stepSites(full,1,()=>1);fullMarkers.update(.3,full);assert.equal(fullLayer.stats.instances,0);
+    for(let i=0;i<300;i++)full.addSite({kind:'secret',x:24,y:20,name:String(i)});
+    const sourceSHA=sha(full);view(host,30);fullMarkers.update(.3,full);
+    assert.equal(fullLayer.stats.instances,256);assert.equal(fullLayer.stats.overflow,44);assert.equal(fullLayer.stats.fallback,44);assert.equal(fullMarkers.siteMeshes.secret.count,44);
+    assert.deepEqual(fullLayer.stats.lod,[64,160,32]);assert.equal(sha(full),sourceSHA);assert.equal(fullLayer.batch.meshes.size,8);
+  });
+  check('fully buried short recognizer retains honest marker without lifting terrain or Site',()=>{
+    full.sites=[];const formation=full.addSite({kind:'formation',x:24,y:20,name:'坡上古阵'});
+    full.height.fill(.55);full.height[20*full.w+24]=.65;
+    const before=sha(full);fullMarkers.update(.3,full,{heightChanged:true});
+    assert.equal(fullLayer.stats.instances,0);assert.equal(fullLayer.stats.groundRejected,1);assert.equal(fullMarkers.siteMeshes.formation.count,1);
+    assert.equal(resolvePlaneSubject(full,'mortal',{kind:'site',siteId:formation.id}).subject,formation);assert.equal(sha(full),before);
   });
   report.pass=true;
 }catch(error){report.error=error.stack;console.error(error);process.exitCode=1;}
