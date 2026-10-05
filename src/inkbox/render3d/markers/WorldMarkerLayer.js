@@ -289,7 +289,7 @@ export class WorldMarkerLayer {
     const unknown = this.regionFilter(derived.unknownSites || []);
     this.unknownSites.userData.renderSites = unknown.slice(0,SITE_CAP);
     stats.sites += this.fill(this.unknownSites,unknown,world,0,()=> '#8e8778');
-    stats.sites += this.siteGeography.stats.instances;
+    stats.sites += this.siteGeography.stats.renderedSiteCount || 0;
 
     // ── 灵脉：悬浮环 ──
     const leylineFallback = this.regionFilter(derived.leylines).filter(item=>!this.leylineGeography.renderedIds.has(item.id));

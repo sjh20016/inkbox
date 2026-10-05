@@ -12,6 +12,7 @@ import { PlanePicker } from '../src/inkbox/render3d/picking/PlanePicker.js';
 import { resolvePlaneSubject, planeSubjectInspectRows } from '../src/inkbox/ui/realmInspector.js';
 import { deriveMarkers } from '../src/inkbox/render3d/markers/WorldMarkerLayer.js';
 import { readEnvironmentLibrary } from './inkbox-environment-glb-reader.mjs';
+import { EnvironmentBatch } from '../src/inkbox/render3d/environment/EnvironmentBatch.js';
 import { stepSites, SITE_LIFESPAN_YEARS } from '../src/inkbox/sim/sites.js';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -110,7 +111,7 @@ try{
     assert.equal(new Set(assets.map(a=>a.lods[0])).size,4);assert.equal(new Set(assets.map(a=>a.lods[1])).size,3);assert.equal(new Set(assets.map(a=>a.lods[2])).size,1);
     assert.equal(library.geometryFor('mortal.site.secret',1),library.geometryFor('mortal.site.cave',1));
     for(const a of assets){assert.equal(a.pick,'site');assert(a.footprint.width>=2&&a.footprint.width<=6&&a.footprint.depth>=2&&a.footprint.depth<=6);
-      const triangles=a.lods.map(node=>library.modules.get(node).triangles);assert(triangles[0]>=60&&triangles[0]<=220&&triangles[1]>=20&&triangles[1]<=60&&triangles[2]>=6&&triangles[2]<=16);
+      const triangles=a.lods.map((node,lod)=>library.modules.get(node).triangles*(a.compositeParts?.[lod]?.length||1));assert(triangles[0]>=60&&triangles[0]<=220&&triangles[1]>=20&&triangles[1]<=60&&triangles[2]>=6&&triangles[2]<=16);
       assert.equal(library.geometryFor(a.id,2),library.geometryFor('mortal.site.cave',2));
       for(const node of a.lods){const {geometry,bounds}=library.modules.get(node);assert.equal(bounds.min[1],0);
         assert(bounds.min[0]>=-.50001&&bounds.max[0]<=.50001&&bounds.min[2]>=-.50001&&bounds.max[2]<=.50001);
@@ -120,15 +121,45 @@ try{
         assert([...edges.values()].every(n=>n%2===0),'every Site recognizer has closed components');
       }
     }
-    report.assets=Object.fromEntries(assets.map(a=>[a.id,{lods:a.lods,triangles:a.lods.map(n=>library.modules.get(n).triangles)}]));
+    const formation=assets[2];assert.deepEqual(formation.compositeParts.map(parts=>parts?.length||1),[8,4,1]);assert.equal(formation.lods[0],formation.lods[1]);
+    assert.deepEqual(formation.footprint,{width:4.2,depth:4.2,height:1.1});
+    report.assets=Object.fromEntries(assets.map(a=>[a.id,{lods:a.lods,triangles:a.lods.map((n,lod)=>library.modules.get(n).triangles*(a.compositeParts?.[lod]?.length||1))}]));
   });
   const full=fullFixture(),fullBefore=sha(full);host=hostFor(full,library);const fullMarkers=host.stages.get('mortal').markers,fullLayer=fullMarkers.siteGeography;
-  check('four true identities share eight fixed nodes; far LOD uses one draw for all kinds',()=>{
-    assert.equal(fullLayer.batch.meshes.size,8);view(host,30);assert.equal(fullLayer.stats.instances,4);assert.equal(fullLayer.stats.drawCalls,4);assert.equal(fullLayer.stats.triangles,384);
+  check('four true identities share seven fixed nodes; local Formation parts preserve identity and far shared draw',()=>{
+    assert.equal(fullLayer.batch.meshes.size,7);view(host,30);assert.equal(fullLayer.stats.instances,11);assert.equal(fullLayer.stats.renderedSiteCount,4);assert.equal(fullLayer.stats.drawCalls,4);assert.equal(fullLayer.stats.triangles,336);
+    assert.equal(fullMarkers.stats.sites,4,'marker Site totals count identities, not eleven presentation parts');
     for(const s of full.sites){assert.equal(fullMarkers.siteMeshes[s.kind].count,0);assert.equal(resolvePlaneSubject(full,'mortal',{kind:'site',siteId:s.id}).subject,s);}
-    view(host,5);assert.equal(fullLayer.stats.instances,4);assert.equal(fullLayer.stats.drawCalls,3);assert.deepEqual(fullLayer.stats.lod,[0,4,0]);
+    const formation=full.sites.find(s=>s.kind==='formation'),asset=library.assetInfo('mortal.site.formation'),mesh=fullLayer.batch.meshes.get(asset.lods[0]);
+    assert.equal(mesh.instanceMatrix.count,2048);assert.equal(mesh.count,8);assert(mesh.userData.renderSites.every(s=>s.id===formation.id&&s.x===formation.x&&s.y===formation.y));
+    const mixed=new EnvironmentBatch(library,{material:host.stages.get('mortal').environmentMaterial,capacity:4,nodeCapacities:{[asset.lods[0]]:8},assetIds:[asset.id]});
+    try{
+      mixed.write(Array.from({length:5},(_,i)=>({assetId:asset.id,lod:i<2?0:1,position:{x:i,y:0,z:0},scale:{x:1,y:1,z:1}})));
+      assert.deepEqual(mixed.stats.lod,[2,3,0]);assert.equal(mixed.stats.instances,5);assert.equal(mixed.stats.overflow,0);assert.equal(mixed.stats.drawCalls,1);
+      assert.equal(mixed.meshes.get(asset.lods[0]).userData.lod,null);assert.deepEqual(mixed.meshes.get(asset.lods[0]).userData.lods,[0,1]);
+    }finally{mixed.dispose();}
+    for(const [node,m] of fullLayer.batch.meshes)if(node!==asset.lods[0])assert.equal(m.instanceMatrix.count,256);
+    view(host,5);assert.equal(fullLayer.stats.instances,7);assert.equal(fullLayer.stats.drawCalls,3);assert.deepEqual(fullLayer.stats.lod,[0,4,0]);assert.deepEqual(fullLayer.stats.instanceLOD,[0,7,0]);
     view(host,1);assert.equal(fullLayer.stats.instances,4);assert.equal(fullLayer.stats.drawCalls,1);assert.equal(fullLayer.stats.triangles,24);assert.deepEqual(fullLayer.stats.lod,[0,0,4]);
-    assert.equal(sha(full),fullBefore);report.batches={fixedNodes:8,capacity:256,detailDraws:4,reducedDraws:3,farDraws:1,farTriangles:24};
+    assert.equal(sha(full),fullBefore);report.batches={fixedNodes:7,siteCapacity:256,formationPartCapacity:2048,totalAllocatedSlots:3584,detailDraws:4,reducedDraws:3,farDraws:1,farTriangles:24};
+    const slope=new World(32,24,9);slope.type.fill(TERRAIN.GRASS);
+    for(let y=0;y<slope.h;y++)for(let x=0;x<slope.w;x++)slope.height[y*slope.w+x]=.55+x*.006+y*.004;
+    const current=slope.addSite({kind:'formation',x:16,y:12,name:'真实斜坡阵点'}),before=sha(slope),probeHost=hostFor(slope,library);
+    try{
+      const probeStage=probeHost.stages.get('mortal'),probeLayer=probeStage.markers.siteGeography;
+      for(const [ppu,lod,parts] of [[30,0,8],[5,1,4]]){
+        view(probeHost,ppu);const stones=probeLayer.batch.meshes.get(asset.lods[lod]);assert.equal(stones.count,parts);assert.equal(probeLayer.stats.renderedSiteCount,1);assert.equal(probeLayer.stats.fallback,0);
+        for(let n=0;n<stones.count;n++){
+          assert.deepEqual(stones.userData.renderSites[n],{id:current.id,x:16,y:12,kind:'formation'});
+          const matrix=new THREE.Matrix4();stones.getMatrixAt(n,matrix);
+          for(const x of [-.5,.5])for(const z of [-.5,.5]){
+            const top=new THREE.Vector3(x,1,z).applyMatrix4(matrix),cell=probeStage.coordinates.renderToWorld(top.x,top.z);
+            assert(top.y>probeStage.elevation.at(cell.x,cell.y),'every actual GLB stone top corner clears its local terrain');
+          }
+        }
+      }
+      assert.equal(sha(slope),before);
+    }finally{probeHost.dispose();}
   });
   check('each family and unknown fallback preserve current id under Region and removal',()=>{
     full.addSite({kind:'unknown-kind',x:8,y:20,name:'未知真实地点'});fullMarkers.update(.3,full);assert.equal(fullMarkers.unknownSites.count,1);assert.equal(fullLayer.stats.fallback,1);
@@ -150,15 +181,19 @@ try{
   check('all four actual lifespan closures clear geometry; capacity is fixed with honest overflow fallback',()=>{
     full.entities=[];
     for(const [i,kind] of ['secret','cave','formation','ruin'].entries())full.addSite({kind,x:12+i*12,y:20,name:kind,age:SITE_LIFESPAN_YEARS[kind]*360});
-    fullMarkers.update(.3,full);assert.equal(fullLayer.stats.instances,4);stepSites(full,1,()=>1);fullMarkers.update(.3,full);assert.equal(fullLayer.stats.instances,0);
+    fullMarkers.update(.3,full);assert.equal(fullLayer.stats.renderedSiteCount,4);stepSites(full,1,()=>1);fullMarkers.update(.3,full);assert.equal(fullLayer.stats.instances,0);
     for(let i=0;i<300;i++)full.addSite({kind:'secret',x:24,y:20,name:String(i)});
     const sourceSHA=sha(full);view(host,30);fullMarkers.update(.3,full);
     assert.equal(fullLayer.stats.instances,256);assert.equal(fullLayer.stats.overflow,44);assert.equal(fullLayer.stats.fallback,44);assert.equal(fullMarkers.siteMeshes.secret.count,44);
-    assert.deepEqual(fullLayer.stats.lod,[64,160,32]);assert.equal(sha(full),sourceSHA);assert.equal(fullLayer.batch.meshes.size,8);
+    assert.deepEqual(fullLayer.stats.lod,[64,160,32]);assert.equal(sha(full),sourceSHA);assert.equal(fullLayer.batch.meshes.size,7);
+    full.sites=[];for(let i=0;i<300;i++)full.addSite({kind:'formation',x:24,y:20,name:String(i)});
+    fullMarkers.update(.3,full);assert.equal(fullLayer.stats.instances,1184);assert.equal(fullLayer.stats.renderedSiteCount,256);assert.equal(fullLayer.stats.fallback,44);assert.equal(fullLayer.stats.overflow,44);
+    fullLayer.setLODEnabled(false);fullMarkers.update(.3,full);assert.equal(fullLayer.stats.instances,2048);assert.equal(fullLayer.stats.renderedSiteCount,256);assert.equal(fullLayer.stats.fallback,44);
+    fullLayer.setLODEnabled(true);
   });
   check('fully buried short recognizer retains honest marker without lifting terrain or Site',()=>{
     full.sites=[];const formation=full.addSite({kind:'formation',x:24,y:20,name:'坡上古阵'});
-    full.height.fill(.55);full.height[20*full.w+24]=.65;
+    full.height.fill(.55);full.height[20*full.w+26]=.75;view(host,30);
     const before=sha(full);fullMarkers.update(.3,full,{heightChanged:true});
     assert.equal(fullLayer.stats.instances,0);assert.equal(fullLayer.stats.groundRejected,1);assert.equal(fullMarkers.siteMeshes.formation.count,1);
     assert.equal(resolvePlaneSubject(full,'mortal',{kind:'site',siteId:formation.id}).subject,formation);assert.equal(sha(full),before);

@@ -221,19 +221,13 @@ function secretSite() {
   b.box(.32,.1,-.4,.43,.66,.42,7);
   return b.finish();
 }
-function formationSite(lod) {
-  const b=meshBuilder(),n=lod===0?8:4;
-  for(let i=0;i<n;i++){
-    const a=i*Math.PI*2/n,x=Math.cos(a)*.37,z=Math.sin(a)*.37,r=lod===0?.075:.12;
-    b.box(x-r,0,z-r,x+r,i%2===0?1:.72,z+r,i%2===0?14:7);
-  }
-  if(lod===0){
-    b.box(-.35,0,-.37,.35,.10,-.32,8);
-    b.box(-.35,0,.32,.35,.10,.37,8);
-    b.box(-.37,0,-.32,-.32,.10,.32,8);
-    b.box(.32,0,-.32,.37,.10,.32,8);
-  }
+function formationStone() {
+  const b=meshBuilder();b.box(-.5,0,-.5,.5,1,.5,14);
   return b.finish();
+}
+function formationParts(lod) {
+  const n=lod===0?8:4,r=lod===0?.075:.12;
+  return Array.from({length:n},(_,i)=>{const a=i*Math.PI*2/n;return {x:Math.cos(a)*.37,z:Math.sin(a)*.37,width:r*2,depth:r*2,height:i%2===0?1:.72};});
 }
 function ruinSite(lod) {
   const b=meshBuilder();
@@ -322,12 +316,13 @@ function main() {
       footprint:{width:3.6,depth:2.6,height:2.8},revision:'One recognizer; recessed ink entrance, no invented inhabitant or cave mechanism'};
   }
   for(const kind of ['secret','formation','ruin']){
-    const id=`mortal.site.${kind}`,lods=[`env_site_${kind}_lod0`,kind==='secret'?'env_site_cave_lod1':`env_site_${kind}_lod1`,'env_site_shared_lod2'];
-    const geometries=kind==='secret'?[secretSite()]:[kind==='formation'?formationSite(0):ruinSite(0),kind==='formation'?formationSite(1):ruinSite(1)];
+    const id=`mortal.site.${kind}`,lods=kind==='formation'?['env_site_formation_stone','env_site_formation_stone','env_site_shared_lod2']:[`env_site_${kind}_lod0`,kind==='secret'?'env_site_cave_lod1':`env_site_${kind}_lod1`,'env_site_shared_lod2'];
+    const geometries=kind==='secret'?[secretSite()]:kind==='formation'?[formationStone()]:[ruinSite(0),ruinSite(1)];
     for(let lod=0;lod<geometries.length;lod++){const data=geometries[lod];specs.push([lods[lod],data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]);}
     assets[id]={id,source:`closed ${kind} site recognizer`,realm:'mortal',binding:`actual world.sites kind=${kind}`,pick:'site',lods,
       footprint:kind==='formation'?{width:4.2,depth:4.2,height:1.1}:kind==='secret'?{width:3.2,depth:2.6,height:3.2}:{width:3.8,depth:3.2,height:2.8},
-      revision:kind==='secret'?'Unified unexplained entrance; does not infer subtype':kind==='formation'?'Low stone perimeter and eight actual-family array points':'Broken wall and columns; no reconstructed civilization'};
+      ...(kind==='formation'?{compositeParts:[formationParts(0),formationParts(1),null]}:{}),
+      revision:kind==='secret'?'Unified unexplained entrance; does not infer subtype':kind==='formation'?'Eight/four shared stone array points, each grounded locally within the complete parent footprint':'Broken wall and columns; no reconstructed civilization'};
   }
   {const id='mortal.leyline.vein',lods=[0,1,2].map(lod=>`env_leyline_vein_lod${lod}`);
     for(let lod=0;lod<3;lod++){const data=leylineVein(lod);specs.push([lods[lod],data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]);}

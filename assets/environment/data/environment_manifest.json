@@ -1343,53 +1343,25 @@
         "indigo"
       ]
     },
-    "env_site_formation_lod0": {
-      "node": "env_site_formation_lod0",
-      "triangles": 144,
+    "env_site_formation_stone": {
+      "node": "env_site_formation_stone",
+      "triangles": 12,
       "bounds": {
         "min": [
-          -0.445,
+          -0.5,
           0,
-          -0.445
+          -0.5
         ],
         "max": [
-          0.445,
+          0.5,
           1,
-          0.445
+          0.5
         ]
       },
       "uvSlots": [
-        7,
-        8,
         14
       ],
       "semanticSlots": [
-        "stone",
-        "stoneDark",
-        "gold"
-      ]
-    },
-    "env_site_formation_lod1": {
-      "node": "env_site_formation_lod1",
-      "triangles": 48,
-      "bounds": {
-        "min": [
-          -0.49,
-          0,
-          -0.49
-        ],
-        "max": [
-          0.49,
-          1,
-          0.49
-        ]
-      },
-      "uvSlots": [
-        7,
-        14
-      ],
-      "semanticSlots": [
-        "stone",
         "gold"
       ]
     },
@@ -1735,8 +1707,8 @@
       "binding": "actual world.sites kind=formation",
       "pick": "site",
       "lods": [
-        "env_site_formation_lod0",
-        "env_site_formation_lod1",
+        "env_site_formation_stone",
+        "env_site_formation_stone",
         "env_site_shared_lod2"
       ],
       "footprint": {
@@ -1744,7 +1716,98 @@
         "depth": 4.2,
         "height": 1.1
       },
-      "revision": "Low stone perimeter and eight actual-family array points"
+      "compositeParts": [
+        [
+          {
+            "x": 0.37,
+            "z": 0,
+            "width": 0.15,
+            "depth": 0.15,
+            "height": 1
+          },
+          {
+            "x": 0.2616295090390226,
+            "z": 0.26162950903902255,
+            "width": 0.15,
+            "depth": 0.15,
+            "height": 0.72
+          },
+          {
+            "x": 2.2655965784226033e-17,
+            "z": 0.37,
+            "width": 0.15,
+            "depth": 0.15,
+            "height": 1
+          },
+          {
+            "x": -0.26162950903902255,
+            "z": 0.2616295090390226,
+            "width": 0.15,
+            "depth": 0.15,
+            "height": 0.72
+          },
+          {
+            "x": -0.37,
+            "z": 4.531193156845207e-17,
+            "width": 0.15,
+            "depth": 0.15,
+            "height": 1
+          },
+          {
+            "x": -0.26162950903902266,
+            "z": -0.26162950903902255,
+            "width": 0.15,
+            "depth": 0.15,
+            "height": 0.72
+          },
+          {
+            "x": -6.79678973526781e-17,
+            "z": -0.37,
+            "width": 0.15,
+            "depth": 0.15,
+            "height": 1
+          },
+          {
+            "x": 0.2616295090390225,
+            "z": -0.26162950903902266,
+            "width": 0.15,
+            "depth": 0.15,
+            "height": 0.72
+          }
+        ],
+        [
+          {
+            "x": 0.37,
+            "z": 0,
+            "width": 0.24,
+            "depth": 0.24,
+            "height": 1
+          },
+          {
+            "x": 2.2655965784226033e-17,
+            "z": 0.37,
+            "width": 0.24,
+            "depth": 0.24,
+            "height": 0.72
+          },
+          {
+            "x": -0.37,
+            "z": 4.531193156845207e-17,
+            "width": 0.24,
+            "depth": 0.24,
+            "height": 1
+          },
+          {
+            "x": -6.79678973526781e-17,
+            "z": -0.37,
+            "width": 0.24,
+            "depth": 0.24,
+            "height": 0.72
+          }
+        ],
+        null
+      ],
+      "revision": "Eight/four shared stone array points, each grounded locally within the complete parent footprint"
     },
     "mortal.site.ruin": {
       "id": "mortal.site.ruin",

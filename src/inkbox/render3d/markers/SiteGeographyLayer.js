@@ -5,6 +5,7 @@ import { projectedPixels, chooseLOD, budgetLOD } from '../lod/PresentationBudget
 import { TERRAIN_INFO } from '../../core/config.js';
 
 const CAPACITY = 256;
+const FORMATION_PART_CAPACITY = CAPACITY * 8;
 const SITE_ASSETS = Object.freeze({ secret:'mortal.site.secret', cave:'mortal.site.cave', formation:'mortal.site.formation', ruin:'mortal.site.ruin' });
 
 /** Receives the marker layer's single derivation. Owns only fixed instance buffers. */
@@ -23,7 +24,9 @@ export class SiteGeographyLayer {
     }
     const ids = worldAssets(this.world, library);
     if (enabled && library && material && ids.length && !this.batch) {
-      this.batch = new EnvironmentBatch(library, { material, capacity: CAPACITY, assetIds: ids, pickField: 'renderSites' });
+      const formation=ids.includes(SITE_ASSETS.formation)?library.assetInfo(SITE_ASSETS.formation):null;
+      const nodeCapacities=formation?.compositeParts ? {[formation.lods[0]]:FORMATION_PART_CAPACITY} : {};
+      this.batch = new EnvironmentBatch(library, { material, capacity: CAPACITY, nodeCapacities, assetIds: ids, pickField: 'renderSites' });
       this.group.add(this.batch.group);
     }
     this.productionEnabled = !!enabled; this.write();
@@ -37,7 +40,7 @@ export class SiteGeographyLayer {
   }
   update(derived) { this.derived = derived; this.write(); }
   write() {
-    const records = [], counts = [0,0,0], active = new Set();
+    const records = [], counts = [0,0,0], instanceLOD = [0,0,0], nodeCounts = new Map(), active = new Set();
     this.renderedIds.clear(); let siteCount = 0, maskRejected = 0, groundRejected = 0, overflow = 0, demoted = 0;
     for (const [kind, items] of Object.entries(this.derived?.sites || {})) for (const item of items) {
       active.add(item.id);
@@ -45,29 +48,48 @@ export class SiteGeographyLayer {
       siteCount++;
       const assetId = SITE_ASSETS[kind];
       if (!this.enabled || !this.productionEnabled || !this.batch || !assetId || !this.batch.assetIds.includes(assetId)) continue;
-      const shape = this.batch.library.assetInfo(assetId).footprint;
+      const asset = this.batch.library.assetInfo(assetId),shape = asset.footprint;
       const footprint = { x: item.x, y: item.y, width: shape.width, depth: shape.depth, h: shape.height, rotationY: 0 };
       if (!decorationFootprintOwned(this.world, this.regionGeometry, this.regionInside, footprint) || !terrainSuitable(this.world, footprint)) { maskRejected++; continue; }
-      if (records.length >= CAPACITY) { overflow++; continue; }
-      const ground = decorationGround(this.elevation, footprint);
-      // A recognizer completely below its authoritative cell cannot replace a
-      // truthful marker. Keep min-corner grounding; never lift or move the Site.
-      if (this.elevation.at(item.x,item.y) >= ground + shape.height) { groundRejected++; continue; }
-      const p = this.coordinates.worldToRender(item.x, item.y, ground);
+      if (this.renderedIds.size >= CAPACITY) { overflow++; continue; }
       const desired = chooseLOD('site', projectedPixels(shape.height, this.view, shape.width), this.lods.get(item.id), this.lodEnabled);
-      const budget = this.lodEnabled ? budgetLOD('site', desired, counts) : { lod: 0, demoted: false };
+      const nextCounts=[...counts],budget = this.lodEnabled ? budgetLOD('site', desired, nextCounts) : { lod: 0, demoted: false };
+      if(!this.lodEnabled)nextCounts[0]++;
+      const group = siteRecords(this.elevation,this.coordinates,asset,footprint,item,kind,budget.lod);
+      if(!group){groundRejected++;continue;}
+      const node=asset.lods[budget.lod],used=nodeCounts.get(node)||0;
+      // Reserve an entire Site group before submitting any presentation part.
+      if(used+group.length>this.batch.capacityForNode(node)){overflow++;continue;}
+      nodeCounts.set(node,used+group.length);counts.splice(0,3,...nextCounts);instanceLOD[budget.lod]+=group.length;
       if (budget.demoted) demoted++;
       this.lods.set(item.id, budget.lod); this.renderedIds.add(item.id);
-      records.push({ assetId, lod: budget.lod, position: { x:p.x, y:ground, z:p.z }, scale: { x:shape.width, y:shape.height, z:shape.depth }, rotationY:0,
-        source: { id:item.id, x:item.x, y:item.y, kind } });
+      records.push(...group);
     }
     for (const item of this.derived?.unknownSites || []) if (centerOwned(this.regionGeometry, this.regionInside, item)) siteCount++;
     for (const id of this.lods.keys()) if (!active.has(id)) this.lods.delete(id);
     this.batch?.write(records);
     this.stats = { ...(this.batch?.stats || { instances:0,triangles:0,drawCalls:0,lod:[0,0,0],overflow:0 }), capacity:CAPACITY,
-      siteCount, fallback:siteCount-records.length, maskRejected, groundRejected, demoted, overflow:overflow+(this.batch?.stats.overflow || 0) };
+      lod:counts,instanceLOD,renderedSiteCount:this.renderedIds.size,formationPartCapacity:FORMATION_PART_CAPACITY,
+      physicalCapacity:this.batch?[...this.batch.meshes.values()].reduce((n,m)=>n+m.instanceMatrix.count,0):0,
+      siteCount, fallback:siteCount-this.renderedIds.size, maskRejected, groundRejected, demoted, overflow:overflow+(this.batch?.stats.overflow || 0) };
   }
   dispose() { this.batch?.dispose(); this.batch=null; this.group.clear(); this.derived=null; this.renderedIds.clear(); this.lods.clear(); }
+}
+function siteRecords(elevation,coordinates,asset,footprint,item,kind,lod) {
+  const parts=kind==='formation'?asset.compositeParts?.[lod]:null;
+  const footprints=parts?parts.map(p=>({x:item.x+p.x*footprint.width,y:item.y+p.z*footprint.depth,width:p.width*footprint.width,depth:p.depth*footprint.depth,h:p.height*footprint.h,rotationY:0})):[footprint];
+  const records=[];
+  for(const part of footprints){
+    const ground=decorationGround(elevation,part);
+    // Whole recognizers retain the existing center guard. Every composite
+    // stone must clear all its sampled top corners, or the entire Site falls back.
+    const heights=[elevation.at(part.x,part.y)];
+    if(parts)for(const dx of [-part.width/2,part.width/2])for(const dy of [-part.depth/2,part.depth/2])heights.push(elevation.at(part.x+dx,part.y+dy));
+    if(Math.max(...heights)>=ground+part.h)return null;
+    const p=coordinates.worldToRender(part.x,part.y,ground);
+    records.push({assetId:asset.id,lod,position:{x:p.x,y:ground,z:p.z},scale:{x:part.width,y:part.h,z:part.depth},rotationY:0,source:{id:item.id,x:item.x,y:item.y,kind}});
+  }
+  return records;
 }
 function worldAssets(world, library) {
   if (world?.plane !== 'mortal' || !library || library.disposed) return [];
