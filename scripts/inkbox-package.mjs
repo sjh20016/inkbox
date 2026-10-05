@@ -123,6 +123,8 @@ const FILES = [
   'VISUAL_SCENARIO_SPEC.md',
   'ARTPASS_PROFILE.md',
   'ENTITY_PRESENTATION_CONTRACT.md',
+  'ASSET_PRODUCTION_SPEC.md',
+  'scripts/inkbox-render3d-m2c2b1.mjs',
   'PERFORMANCE_REPORT.md',
   'VISUAL_ACCEPTANCE.md',
   '美术素材/参考资产索引.md',

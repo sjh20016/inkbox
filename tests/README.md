@@ -1,5 +1,9 @@
 # Inkbox 测试与验证入口
 
+## M2-C2B.1 生产契约
+
+`npm run test:render3d:m2c2b1` 验证实际 GLB 共享 node 的单批次与身份、装饰/法宝迟滞兼容，以及 C2C 的 Golden/summary 证据上限。长期规则见 [ASSET_PRODUCTION_SPEC](../ASSET_PRODUCTION_SPEC.md)。当前阶段 Browser 验收与历史全回归分层保留，旧 Node 门禁不删减。
+
 ## M2-C2B Pass1
 
 M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板。Push [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。实际GLB/atlas：test:render3d:m2c2b:sample（11）；角色/ghost：content（5）；装饰：decorations（7）；法宝：artifacts（4）；实际GLB九模式600日：purity。

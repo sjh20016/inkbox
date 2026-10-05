@@ -36,7 +36,7 @@ export class RealmArtifactLayer {
     if(this.enabled)for(const source of this.lastDerived||[]){
       if(this.regionGeometry&&!this.regionGeometry.allInside&&this.regionGeometry.isInsideCell(source.x,source.y)!==this.regionInside)continue;
       const width=.8+bounded(source.tier,3)*.06,height=.9+bounded(source.quality,4)*.035;
-      const lod=chooseLOD('tree',projectedPixels(height,this.view,width),this._lod.get(source.id),this.lodEnabled);this._lod.set(source.id,lod);
+      const lod=chooseLOD('artifact',projectedPixels(height,this.view,width),this._lod.get(source.id),this.lodEnabled);this._lod.set(source.id,lod);
       const p=this.coordinates.worldToRender(source.x,source.y,this.elevation.at(source.x,source.y));
       records.push({assetId:'nether.artifact.ground',lod,source,position:p,scale:{x:width,y:height,z:width},rotationY:0});
     }

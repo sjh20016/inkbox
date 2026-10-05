@@ -4,11 +4,17 @@ export const LOD_BUDGETS = Object.freeze({
   thresholds: Object.freeze({ tree: Object.freeze({ enterLod0: 28, leaveLod0: 24, enterLod2: 5, leaveLod2: 7 }),
     character: Object.freeze({ enterLod0: 44, leaveLod0: 38, enterLod2: 7, leaveLod2: 9 }),
     building: Object.freeze({ enterLod0: 52, leaveLod0: 44, enterLod2: 9, leaveLod2: 12 }),
-    settlement: Object.freeze({ enterLod0: 60, leaveLod0: 50, enterLod2: 24, leaveLod2: 32 }) }),
+    settlement: Object.freeze({ enterLod0: 60, leaveLod0: 50, enterLod2: 24, leaveLod2: 32 }),
+    decoration: Object.freeze({ enterLod0: 28, leaveLod0: 24, enterLod2: 5, leaveLod2: 7 }),
+    artifact: Object.freeze({ enterLod0: 28, leaveLod0: 24, enterLod2: 5, leaveLod2: 7 }),
+    site: Object.freeze({ enterLod0: 52, leaveLod0: 44, enterLod2: 9, leaveLod2: 12 }) }),
   categories: Object.freeze({ tree: Object.freeze({ capacity: 10000, lod0: 1024, lod1: 5000 }),
     character: Object.freeze({ capacity: 3256, lod0: 256, lod1: 1200 }),
     building: Object.freeze({ capacity: 4608, lod0: 512, lod1: 2048 }),
-    settlement: Object.freeze({ capacity: 512, lod0: 96, lod1: 256 }) }),
+    settlement: Object.freeze({ capacity: 512, lod0: 96, lod1: 256 }),
+    decoration: Object.freeze({ capacity: 256, lod0: 64, lod1: 160 }),
+    artifact: Object.freeze({ capacity: 256, lod0: 256, lod1: 256 }),
+    site: Object.freeze({ capacity: 256, lod0: 64, lod1: 160 }) }),
 });
 
 const categoryKey = c => String(c || 'tree').toLowerCase().replace(/s$/, '');

@@ -5,6 +5,8 @@
 > 历史基线：2026-10-04，M2-C2A.1 / M2-C2B0 三界视觉阶段。读序：README → 本文 → 当前任务涉及的契约 / 源码。
 > 阶段看 ROADMAP，目录和模块责任看 ARCHITECTURE，历史查 STATUS；本地 MEMORY 只作索引。
 
+长期正式资产规则：[ASSET_PRODUCTION_SPEC](./ASSET_PRODUCTION_SPEC.md)。新增阶段区分正常 Golden、极端 Proof 和完整矩阵；Git 每阶段最多 8 张代表 PNG，完整浏览器证据保留在本机或 Actions artifact。
+
 ## 0. 当前状态与范围
 
 C2A.1 包清单、真实聚落 HLOD 与密林测量已封板；C2B0 的 24 对截图、600 日全部 11 RNG、600+6000 帧及 21 次 GC 峰值门禁已通过。单源是 [RealmStyleProfile](./src/inkbox/render3d/art/RealmStyleProfile.js)，以 stage.plane 选色。文档入口：[视觉](./M2C2B0_VISUAL_REPORT.md)、[性能](./M2C2B0_PERFORMANCE_REPORT.md)、[终验与就绪条件](./M2C2B0_READINESS.md)。该段只记录 C2B0 当时事实；C2B Pass 1 随后建立了第一代正式资产生产体系。
