@@ -127,6 +127,7 @@ const FILES = [
   'M2C2C_WORLD_SEMANTIC_MAP.md',
   'scripts/inkbox-render3d-m2c2b1.mjs',
   'scripts/inkbox-render3d-m2c2c-sites.mjs',
+  'scripts/inkbox-render3d-m2c2c-leylines.mjs',
   'scripts/inkbox-render3d-m2c2c-pilot-browser.mjs',
   'scripts/inkbox-c2c-browser-fixtures.mjs',
   'PERFORMANCE_REPORT.md',

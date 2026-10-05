@@ -60,3 +60,12 @@ The Site extension uses eight unique nodes: four detailed, three reduced, and
 one shared far node. It does not multiply three LOD geometries for every kind.
 The accepted cave pilot and four-family CPU gates have separate evidence;
 this asset index does not claim completion of the whole C2C browser matrix.
+
+## M2-C2C Package 5: real leyline terrain patches
+
+`mortal.leyline.vein` adds three shared-stage modules with 36/12/4 triangles.
+Read [Leyline geography](M2C2C_LEYLINE_GEOGRAPHY.md) for real strength/radius
+mapping, per-patch terrain tangents, conservative Region, current identity,
+fixed capacity and natural CPU coverage. The existing index atlas stays unchanged.
+EnvironmentBatch accepts an optional finite unit quaternion for these terrain
+patches; old rotationY-only instance matrices retain their exact original values.

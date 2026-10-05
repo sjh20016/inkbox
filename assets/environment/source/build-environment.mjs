@@ -248,6 +248,17 @@ function ruinSite(lod) {
   }
   return b.finish();
 }
+function leylineVein(lod) {
+  const b=meshBuilder();
+  if(lod===2){
+    const a=[-.5,0,-.5],c=[.5,0,-.5],d=[0,0,.5],top=[0,1,0];
+    b.tri(a,c,d,8);b.tri(a,top,c,4);b.tri(c,top,d,7);b.tri(d,top,a,4);
+  }else{
+    b.box(-.5,0,lod===0?-.15:-.35,.5,lod===0?.55:1,lod===0?.15:.35,4);
+    if(lod===0){b.box(-.38,0,-.5,-.20,1,-.14,7);b.box(.20,0,.14,.38,.80,.5,7);}
+  }
+  return b.finish();
+}
 function bounds(positions) {
   const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
   for(let i=0;i<positions.length;i+=3)for(let a=0;a<3;a++){min[a]=Math.min(min[a],positions[i+a]);max[a]=Math.max(max[a],positions[i+a]);}
@@ -317,6 +328,11 @@ function main() {
     assets[id]={id,source:`closed ${kind} site recognizer`,realm:'mortal',binding:`actual world.sites kind=${kind}`,pick:'site',lods,
       footprint:kind==='formation'?{width:4.2,depth:4.2,height:1.1}:kind==='secret'?{width:3.2,depth:2.6,height:3.2}:{width:3.8,depth:3.2,height:2.8},
       revision:kind==='secret'?'Unified unexplained entrance; does not infer subtype':kind==='formation'?'Low stone perimeter and eight actual-family array points':'Broken wall and columns; no reconstructed civilization'};
+  }
+  {const id='mortal.leyline.vein',lods=[0,1,2].map(lod=>`env_leyline_vein_lod${lod}`);
+    for(let lod=0;lod<3;lod++){const data=leylineVein(lod);specs.push([lods[lod],data,uvSlotSet(data.uvs).map(id=>semanticSlots[id])]);}
+    assets[id]={id,source:'short terrain mineral vein',realm:'mortal',binding:'actual world.leylines id/x/y/radius/strength',pick:'leyline',lods,
+      revision:'Terrain-attached short ink/mineral patches; strength changes continuity and size, never hue, qi or ownership'};
   }
   let binaryParts=[Buffer.alloc(0)],accessors=[],views=[],nodes=[],meshes=[],modules={};
   for(const [name,data,semantics] of specs){const m=addMesh(binaryParts,accessors,views,data,name,semantics);binaryParts=m.binaryParts;accessors=m.accessors;views=m.views;m.node.mesh=meshes.length;nodes.push(m.node);meshes.push(m.mesh);modules[name]={node:name,triangles:m.module.triangles,bounds:m.module.bounds,uvSlots:m.module.uvSlots,semanticSlots:semantics};}

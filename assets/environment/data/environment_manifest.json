@@ -1440,6 +1440,78 @@
         "stone",
         "stoneDark"
       ]
+    },
+    "env_leyline_vein_lod0": {
+      "node": "env_leyline_vein_lod0",
+      "triangles": 36,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.5,
+          1,
+          0.5
+        ]
+      },
+      "uvSlots": [
+        4,
+        7
+      ],
+      "semanticSlots": [
+        "ink",
+        "stone"
+      ]
+    },
+    "env_leyline_vein_lod1": {
+      "node": "env_leyline_vein_lod1",
+      "triangles": 12,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.35
+        ],
+        "max": [
+          0.5,
+          1,
+          0.35
+        ]
+      },
+      "uvSlots": [
+        4
+      ],
+      "semanticSlots": [
+        "ink"
+      ]
+    },
+    "env_leyline_vein_lod2": {
+      "node": "env_leyline_vein_lod2",
+      "triangles": 4,
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.5,
+          1,
+          0.5
+        ]
+      },
+      "uvSlots": [
+        4,
+        7,
+        8
+      ],
+      "semanticSlots": [
+        "ink",
+        "stone",
+        "stoneDark"
+      ]
     }
   },
   "assets": {
@@ -1691,6 +1763,19 @@
         "height": 2.8
       },
       "revision": "Broken wall and columns; no reconstructed civilization"
+    },
+    "mortal.leyline.vein": {
+      "id": "mortal.leyline.vein",
+      "source": "short terrain mineral vein",
+      "realm": "mortal",
+      "binding": "actual world.leylines id/x/y/radius/strength",
+      "pick": "leyline",
+      "lods": [
+        "env_leyline_vein_lod0",
+        "env_leyline_vein_lod1",
+        "env_leyline_vein_lod2"
+      ],
+      "revision": "Terrain-attached short ink/mineral patches; strength changes continuity and size, never hue, qi or ownership"
     }
   }
 }

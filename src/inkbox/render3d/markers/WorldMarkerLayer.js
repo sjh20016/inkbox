@@ -29,6 +29,7 @@ import { INK } from '../../core/config.js';
 import { visibleRift } from '../readers/riftViewModel.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { SiteGeographyLayer } from './SiteGeographyLayer.js';
+import { LeylineGeographyLayer } from './LeylineGeographyLayer.js';
 
 /** 四类地点（与 `sim/sites.js` 写入的 `kind` 字面量一一对应，顺序即渲染顺序契约）。 */
 export const SITE_KINDS = Object.freeze(['secret', 'cave', 'formation', 'ruin']);
@@ -96,7 +97,7 @@ export function deriveMarkers(world) {
   const leylines = Array.isArray(world.leylines) ? world.leylines : [];
   for (const l of leylines) {
     if (!l || !Number.isFinite(l.x) || !Number.isFinite(l.y)) continue;
-    out.leylines.push({ id: l.id, x: l.x, y: l.y, strength: l.strength });
+    out.leylines.push({ id: l.id, x: l.x, y: l.y, strength: l.strength, radius:l.radius });
     out.total += 1;
   }
 
@@ -156,6 +157,8 @@ export class WorldMarkerLayer {
     this.unknownSites = this.makeMesh(siteGeometry('ruin'), SITE_CAP, SITE_MIN_ZOOM, 'Marker:site:unknown');
     this.siteGeography = new SiteGeographyLayer(world, coordinates, elevation);
     this.group.add(this.siteGeography.group);
+    this.leylineGeography = new LeylineGeographyLayer(world, coordinates, elevation);
+    this.group.add(this.leylineGeography.group);
     this.leylines = this.makeMesh(this.leylineGeometry(), LEYLINE_CAP, LEYLINE_MIN_ZOOM, 'Marker:leyline');
     this.rifts = this.makeMesh(this.riftGeometry(), RIFT_CAP, 0, 'Marker:rift');
   }
@@ -168,19 +171,23 @@ export class WorldMarkerLayer {
 
   setEnvironmentAssets(library, material, enabled) {
     this.siteGeography.setEnvironmentAssets(library, material, enabled);
+    this.leylineGeography.setEnvironmentAssets(library, material, enabled);
     this.lastDerived = null; this.clock = Infinity;
   }
   setGeographyFeatures(features = {}) {
     this.siteGeography.setEnabled(!!features.sites);
+    this.leylineGeography.setEnabled(!!features.leylines);
     this.lastDerived = null; this.clock = Infinity;
   }
   setArtView(view) {
     const changed = this.siteGeography.view.pixelsPerUnit !== view?.pixelsPerUnit || this.siteGeography.view.verticalPixelsPerUnit !== view?.verticalPixelsPerUnit;
     this.siteGeography.setArtView(view);
+    this.leylineGeography.setArtView(view);
     if (changed && this.lastDerived) this.write(this.lastDerived, this.world);
   }
   setLODEnabled(enabled) {
     this.siteGeography.setLODEnabled(enabled);
+    this.leylineGeography.setLODEnabled(enabled);
     if (this.lastDerived) this.write(this.lastDerived, this.world);
   }
 
@@ -244,6 +251,7 @@ export class WorldMarkerLayer {
     this.regionGeometry = geometry || null;
     this.regionInside = !!inside;
     this.siteGeography.setRegionGeometry(this.regionGeometry, this.regionInside);
+    this.leylineGeography.setRegionGeometry(this.regionGeometry, this.regionInside);
     this.lastDerived = null;
     this.clock = Infinity;
   }
@@ -260,6 +268,7 @@ export class WorldMarkerLayer {
   write(derived, world) {
     this.world = world;
     this.siteGeography.update(derived);
+    this.leylineGeography.update(derived.leylines);
     const stats = { artifacts: 0, sites: 0, leylines: 0, rifts: 0, total: 0 };
 
     // ── 法宝：贴地浮一点点的冷金小点 ──
@@ -277,7 +286,9 @@ export class WorldMarkerLayer {
     stats.sites += this.siteGeography.stats.instances;
 
     // ── 灵脉：悬浮环 ──
-    stats.leylines = this.fill(this.leylines, this.regionFilter(derived.leylines), world, 1.7, () => INK.orchid);
+    const leylineFallback = this.regionFilter(derived.leylines).filter(item=>!this.leylineGeography.renderedIds.has(item.id));
+    this.leylines.userData.renderLeylines=leylineFallback.slice(0,LEYLINE_CAP);
+    stats.leylines = this.fill(this.leylines, leylineFallback, world, 1.7, () => INK.orchid)+this.leylineGeography.renderedIds.size;
 
     // ── 裂缝：贴地圆环，半径现算 ──（**故意不过滤**，见 `regionFilter` 注释）
     const riftMesh = this.rifts;
@@ -335,6 +346,7 @@ export class WorldMarkerLayer {
 
   dispose() {
     this.siteGeography.dispose();
+    this.leylineGeography.dispose();
     for (const { mesh } of this.entries) {
       mesh.geometry.dispose();
       mesh.material.dispose();
