@@ -46,7 +46,8 @@ export class PlaneStage {
     // M2-B §6：每个 Stage 持有一份高程单源（默认 RAW ⇒ 与 M2-A 逐位一致）。
     this.elevation = new ElevationField(world, p.elevation);
     this.terrain = p.terrain ? new TerrainMesh(world, this.coordinates, this.elevation) : null;
-    this.scalarField=this.plane==='nether'?new ScalarFieldTexture(world,'veg',2):null;
+    this.scalarField=this.plane==='upper'?new ScalarFieldTexture(world,'qi',1)
+      :this.plane==='nether'?new ScalarFieldTexture(world,'veg',2):null;
     this.syncScalarField();
     if (this.terrain) {
       if (p.terrainTint) this.terrain.material.color.set(p.terrainTint);
@@ -125,7 +126,8 @@ export class PlaneStage {
     this.syncScalarField();
   }
   syncScalarField(){
-    const enabled=this.productionAssetsEnabled&&this.plane==='nether'&&this.geographyFeatures.netherYin;
+    const enabled=this.productionAssetsEnabled&&(this.plane==='upper'?this.geographyFeatures.upperQi
+      :this.plane==='nether'&&this.geographyFeatures.netherYin);
     this.terrain?.setScalarField(this.scalarField,enabled);
   }
 

@@ -16,6 +16,7 @@ uniform sampler2D typeTexture;
 uniform sampler2D fieldTexture;
 uniform float fieldMode;
 uniform vec3 fieldInkColor, fieldColdColor;
+uniform vec3 fieldMineralBlue, fieldMineralGreen, fieldMineralGold;
 uniform vec2 mapSize;
 uniform float seed;
 uniform vec3 palette[23];
@@ -90,6 +91,8 @@ void main() {
   float facing=abs(dot(normal,normalize(cameraPosition-vWorld)));
   float silhouette=(1.0-smoothstep(0.04,0.26,facing))*silhouetteInkStrength*nearDetail;
   float inkAmount=clamp(ink*0.72+edge+silhouette*0.4,0.0,0.82);
+  float clearQi=fieldMode>0.5&&fieldMode<1.5?smoothstep(0.42,0.97,scalar):0.0;
+  inkAmount*=1.0-clearQi*0.35;
   if (realmStyleEnabled > 0.5) {
     color=mix(color,realmInkColor,inkAmount);
     float feibai=smoothstep(0.73,0.91,dryNoise)*feibaiStrength*ink*nearDetail;
@@ -106,6 +109,13 @@ void main() {
     color=mix(color,coldInk,yin*(0.50-water*0.25));
     float bone=smoothstep(0.81,0.94,dryNoise)*yin*(0.02+rock*0.07);
     color=mix(color,paperColor,bone);
+  }else if(fieldMode>0.5){
+    float land=1.0-water;
+    float clean=clearQi*land*(0.18+0.10*(1.0-smoothstep(0.5,2.2,slope)));
+    color=mix(color,paperColor,clean);
+    vec3 mineral=mix(fieldMineralGreen,fieldMineralBlue,rock);
+    color=mix(color,mineral,clearQi*land*(0.07+0.15*rock));
+    color=mix(color,fieldMineralGold,clearQi*ridge*land*0.07);
   }
   // Weak paper stays on the image; all wash / dry brush above stay in world space.
   float grain=hash(floor(gl_FragCoord.xy))-0.5;
@@ -123,6 +133,9 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       fieldTexture: { value: data.typeTexture },fieldMode:{value:0},
       fieldInkColor:{value:new THREE.Color(realmStyleFor('nether').ink.color)},
       fieldColdColor:{value:new THREE.Color(realmStyleFor('nether').pilotPalette.blue)},
+      fieldMineralBlue:{value:new THREE.Color(realmStyleFor('upper').terrain.rock)},
+      fieldMineralGreen:{value:new THREE.Color(realmStyleFor('upper').terrain.palette[13])},
+      fieldMineralGold:{value:new THREE.Color(realmStyleFor('upper').pilotPalette.warm)},
       mapSize: { value: new THREE.Vector2(data.world.w, data.world.h) },
       seed: { value: (data.world.seed >>> 0) % 8191 },
       palette: { value: basePalette.map(color => color.clone()) },
