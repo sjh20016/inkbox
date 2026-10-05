@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { TERRAIN_INFO } from '../../core/config.js';
+import { realmStyleFor } from './RealmStyleProfile.js';
 
 const vertexShader = `
 varying vec3 vWorld;
@@ -12,6 +13,9 @@ void main() {
 const fragmentShader = `
 uniform sampler2D heightTexture;
 uniform sampler2D typeTexture;
+uniform sampler2D fieldTexture;
+uniform float fieldMode;
+uniform vec3 fieldInkColor, fieldColdColor;
 uniform vec2 mapSize;
 uniform float seed;
 uniform vec3 palette[23];
@@ -32,6 +36,7 @@ float noise(vec2 p) {
 vec2 uvAt(vec2 p) { return (clamp(floor(p+0.5),vec2(0),mapSize-1.0)+0.5)/mapSize; }
 float hAt(vec2 p) { return texture2D(heightTexture,uvAt(p)).g; }
 float typeAt(vec2 p) { return floor(texture2D(typeTexture,uvAt(p)).r*255.0+0.5); }
+float fieldAt(vec2 p) { return texture2D(fieldTexture,(clamp(p,vec2(0),mapSize-1.0)+0.5)/mapSize).r; }
 void main() {
   vec2 p=vWorld.xz+(mapSize-1.0)*0.5;
   vec2 warp=vec2(noise(p*0.19),noise(p*0.19+17.3))-0.5;
@@ -52,6 +57,10 @@ void main() {
   float distant=mix(1.0,0.30,distanceFade*(1.0-nearDetail));
   float wash=noise(p*0.12+vec2(5.7,9.1));
   float water=1.0-step(3.5,id);
+  // The scalar comes from this Stage's World. Large masses stay attached to
+  // actual river/type/height structure; ghosts do not drive persistent layout.
+  float scalar=0.0;
+  if(fieldMode>0.5)scalar=fieldAt(p)*0.6+fieldAt(p+vec2(3,0))*0.2+fieldAt(p+vec2(0,3))*0.2;
   pigment=mix(pigment,terrainWaterColor,water*0.22);
   float rock=step(12.5,id)*(1.0-step(16.5,id));
   float forest=step(6.5,id)*(1.0-step(8.5,id));
@@ -89,6 +98,15 @@ void main() {
     color=mix(color,atmosphereColor,valleyWash*atmosphereStrength);
     color=clamp((color-vec3(0.5))*realmContrast+vec3(0.5),0.0,1.0)*paperExposure;
   } else color*=1.0-inkAmount;
+  if(fieldMode>1.5){
+    float yin=smoothstep(0.35,0.90,scalar);
+    float empty=(1.0-smoothstep(0.18,0.58,scalar))*(1.0-water);
+    color=mix(color,paperColor,empty*0.46);
+    vec3 coldInk=mix(fieldColdColor,fieldInkColor,0.42+0.18*rock);
+    color=mix(color,coldInk,yin*(0.50-water*0.25));
+    float bone=smoothstep(0.81,0.94,dryNoise)*yin*(0.02+rock*0.07);
+    color=mix(color,paperColor,bone);
+  }
   // Weak paper stays on the image; all wash / dry brush above stay in world space.
   float grain=hash(floor(gl_FragCoord.xy))-0.5;
   color*=1.0+grain*paperGrainStrength;
@@ -102,6 +120,9 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
     const basePalette = TERRAIN_INFO.map(t => new THREE.Color(`rgb(${t.color.join(',')})`));
     super({ vertexShader, fragmentShader, side: THREE.DoubleSide, uniforms: {
       heightTexture: { value: data.heightTexture }, typeTexture: { value: data.typeTexture },
+      fieldTexture: { value: data.typeTexture },fieldMode:{value:0},
+      fieldInkColor:{value:new THREE.Color(realmStyleFor('nether').ink.color)},
+      fieldColdColor:{value:new THREE.Color(realmStyleFor('nether').pilotPalette.blue)},
       mapSize: { value: new THREE.Vector2(data.world.w, data.world.h) },
       seed: { value: (data.world.seed >>> 0) % 8191 },
       palette: { value: basePalette.map(color => color.clone()) },

@@ -14,6 +14,7 @@ import { createEnvironmentMaterial, setEnvironmentMaterialProfile, setEnvironmen
 import { RealmDecorationLayer } from '../environment/RealmDecorationLayer.js';
 import { RealmArtifactLayer } from '../markers/RealmArtifactLayer.js';
 import { geographyFeatures } from './GeographyFeatures.js';
+import { ScalarFieldTexture } from '../art/ScalarFieldTexture.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
@@ -45,6 +46,8 @@ export class PlaneStage {
     // M2-B §6：每个 Stage 持有一份高程单源（默认 RAW ⇒ 与 M2-A 逐位一致）。
     this.elevation = new ElevationField(world, p.elevation);
     this.terrain = p.terrain ? new TerrainMesh(world, this.coordinates, this.elevation) : null;
+    this.scalarField=this.plane==='nether'?new ScalarFieldTexture(world,'veg',2):null;
+    this.syncScalarField();
     if (this.terrain) {
       if (p.terrainTint) this.terrain.material.color.set(p.terrainTint);
       this.root.add(this.terrain.mesh);
@@ -87,6 +90,7 @@ export class PlaneStage {
 
   setEnvironmentAssets(library, enabled = this.productionAssetsEnabled) {
     this.productionAssetsEnabled = !!enabled;
+    this.syncScalarField();
     if (library !== this.environmentLibrary || (library && !this.environmentMaterial)) {
       const previous = this.environmentMaterial;
       this.environmentLibrary = library;
@@ -118,6 +122,11 @@ export class PlaneStage {
   setGeographyFeatures(features) {
     this.geographyFeatures = geographyFeatures(features);
     this.markers?.setGeographyFeatures?.(this.geographyFeatures);
+    this.syncScalarField();
+  }
+  syncScalarField(){
+    const enabled=this.productionAssetsEnabled&&this.plane==='nether'&&this.geographyFeatures.netherYin;
+    this.terrain?.setScalarField(this.scalarField,enabled);
   }
 
   setEnvironmentArtView(view) {
@@ -201,6 +210,7 @@ export class PlaneStage {
     const heightChanged = heightRegion !== null;
 
     const t0 = performance.now();
+    this.terrain?.updateScalarField(dt);
     if (heightRegion) this.terrain?.update(heightRegion, { height: true, type: false });
     if (typeRegion) this.terrain?.update(typeRegion, { height: false, type: true });
     const t1 = performance.now();
@@ -236,6 +246,7 @@ export class PlaneStage {
 
   releaseLayers() {
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
+    this.scalarField?.dispose();this.scalarField=null;
     this.entities?.dispose(); this.settlements?.dispose(); this.markers?.dispose();
     this.decorations?.dispose();this.decorations=null;
     this.realmArtifacts?.dispose();this.realmArtifacts=null;
