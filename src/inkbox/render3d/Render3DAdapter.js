@@ -41,7 +41,8 @@ export class Render3DAdapter {
     const requestedArt = artParams.get('art');
     const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'realm-style-v1';
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
-      productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off' }); }
+      productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off',
+      geography: artParams.get('geography') !== 'off' && artParams.get('assets') !== 'off' }); }
     catch (error) { this.canvas.remove(); throw error; }
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
     Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
@@ -99,13 +100,13 @@ export class Render3DAdapter {
       }
       this.selectedBoundary = null;
       this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y, kind: hit.kind, settlementId: hit.settlementId,
-        entityId: hit.entityId, artifactId: hit.artifactId,
+        entityId: hit.entityId, artifactId: hit.artifactId, siteId: hit.siteId, leylineId: hit.leylineId,
         entityContainer: hit.entityContainer,
         houseKey: hit.houseKey, houseX: hit.houseX, houseY: hit.houseY };
       // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
       this.renderer.setSelection(hit.x, hit.y, hit.plane);
       if (this.mode === 'inspect') {
-        if (['entity', 'house', 'settlement', 'artifact'].includes(hit.kind))
+        if (['entity', 'house', 'settlement', 'artifact', 'site', 'leyline'].includes(hit.kind))
           sandbox.inspectPlaneSubject(hit.plane, this.selectedCell);
         else sandbox.inspectPlaneAt(hit.plane, hit.x, hit.y);
         return;

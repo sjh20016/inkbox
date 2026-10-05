@@ -1,19 +1,21 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-2026-10-05：M2-C2B Pass1 首批正式资产已接线并完成本地验收。3D默认开启四种凡界建筑family、真实上界角色、三种普通ghost、真实鬼修/法宝与地形自然装饰；assets=off保留旧几何对照。21对Edge矩阵、9模式600日/11 RNG、600+6000实际帧与干净克隆通过，远端最新CI待收口。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+2026-10-05 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。下一阶段是已授权的 **M2-C2C Meaningful Geography**；范围限于呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
 
-> 事实核对：2026-10-04，M2-C2A.1 / M2-C2B0 三界视觉基线。读序：README → 本文 → 当前任务涉及的契约 / 源码。
+> 历史基线：2026-10-04，M2-C2A.1 / M2-C2B0 三界视觉阶段。读序：README → 本文 → 当前任务涉及的契约 / 源码。
 > 阶段看 ROADMAP，目录和模块责任看 ARCHITECTURE，历史查 STATUS；本地 MEMORY 只作索引。
+
+长期正式资产规则：[ASSET_PRODUCTION_SPEC](./ASSET_PRODUCTION_SPEC.md)。新增阶段区分正常 Golden、极端 Proof 和完整矩阵；Git 每阶段最多 8 张代表 PNG，完整浏览器证据保留在本机或 Actions artifact。
 
 ## 0. 当前状态与范围
 
-C2A.1 包清单、真实聚落 HLOD 与密林测量已封板；C2B0 的 24 对截图、600 日全部 11 RNG、600+6000 帧及 21 次 GC 峰值门禁已通过。单源是 [RealmStyleProfile](./src/inkbox/render3d/art/RealmStyleProfile.js)，以 stage.plane 选色。文档入口：[视觉](./M2C2B0_VISUAL_REPORT.md)、[性能](./M2C2B0_PERFORMANCE_REPORT.md)、[终验与就绪条件](./M2C2B0_READINESS.md)。该段为C2B0历史范围；当前Pass1已有正式家族，不新增浮空岛或幽冥生态语义。
+C2A.1 包清单、真实聚落 HLOD 与密林测量已封板；C2B0 的 24 对截图、600 日全部 11 RNG、600+6000 帧及 21 次 GC 峰值门禁已通过。单源是 [RealmStyleProfile](./src/inkbox/render3d/art/RealmStyleProfile.js)，以 stage.plane 选色。文档入口：[视觉](./M2C2B0_VISUAL_REPORT.md)、[性能](./M2C2B0_PERFORMANCE_REPORT.md)、[终验与就绪条件](./M2C2B0_READINESS.md)。该段只记录 C2B0 当时事实；C2B Pass 1 随后建立了第一代正式资产生产体系。
 
 M2-B 的完整 Layer Mask、共享 ElevationField / RegionGeometry、界缘、3D 划窗与拾取已完成。M2-C 在同一个 Host/Renderer/Camera、三个 Stage 上增加薄 ArtPass；不改变模拟、存档或视界定义。范围与证据见 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md)。
 
 M2-C2A 接入三档真实几何 LOD、迟滞、密度预算与凡间小聚落 HLOD 原型；[实施与验收](./M2C2A_LOD_REPORT.md)、[性能](./M2C2A_PERFORMANCE_REPORT.md)、[视觉](./M2C2A_VISUAL_ACCEPTANCE.md) 保存 C2A 当时证据。3D 默认 `art=realm-style-v1` 且 LOD 开启；`art=legacy` 保留旧 pilot 对照，`lod=off` 保留全 LOD0；`artdebug=1` 才出现调参面板。现有 GLB 近景角色保留。后续资产扩产、完整群体动画、Trace Field 和 Gameplay G 留到后续授权。
 
-封板检查：C2A核心8组、旧CLI14项、浏览器矩阵15项、600+6000帧及本机五套Browser Smoke通过。下一步允许单家族受控试产，大量扩产仍需新家族和多设备预算；本地绿色结果不是远端Actions结果。
+历史封板检查：C2A核心8组、旧CLI14项、浏览器矩阵15项、600+6000帧及本机五套Browser Smoke通过。其后 C2B Pass 1 已通过远端封板；详细 Actions 证据见本文顶部与 [M2-C2B 就绪报告](./M2C2B_READINESS.md)。
 
 用户允许实验建筑资产自由修改，并指定 `美术素材/配色参考` 为后续颜色参考；使用索引见 [参考资产索引](./美术素材/参考资产索引.md)。范式包用于研究，产品不依赖整套第三方素材。
 
@@ -23,8 +25,9 @@ M2-C2A 接入三档真实几何 LOD、迟滞、密度预算与凡间小聚落 HL
 - 版本：Inkbox `1.0.0`（`package.json` 与 `core/config.js`）。`main` 是唯一活跃主线，工作分支从 main 建立。
 - 本工作区直接关联 `sjh20016/inkbox` 的 origin；无需把 dist 复制到另一个“发布工作区”。
 - `render3d-m0` / `render3d-m2a` 是历史 checkpoint，不从旧快照继续新功能，不重写已发布历史。
-- D6-2 / D6-3、D7 A–G、D8 A–F、M0 / M1 / M1.1D / M2-A 已完成。
+- D6-2 / D6-3、D7 A–G、D8 A–F、M0 / M1 / M1.1D / M2-A / M2-B / M2-C / M2-C2A / M2-C2A.1 / M2-C2B0 / M2-C2B Pass 1 已完成。
   D8-G 只有 `realmTrace` / `netherGhostOf` 逻辑地基，追迹 UI 仍暂缓。
+- 当前阶段为 M2-C2C Meaningful Geography；按委托书呈现已有 World 事实，不新增世界语义之外的上界文明、幽冥城市或浮空岛拓扑。
 
 ## 2. 启动与依赖
 
@@ -65,7 +68,7 @@ Three 固定为 `0.186.1`：浏览器 importmap 读 `vendor/three/`，Node 测�
 | --- | --- |
 | Fast Gate（push / PR / 手动） | core、view、presentation、render3d、render3d:m1、render3d:bridge、render3d:m2a、m2b、m2c、m2c2a、m2c2b0、vendor、build |
 | Heavy Gate（与 Fast 并行） | regression、three-realms、save-equivalence |
-| Browser Smoke（仅 workflow_dispatch） | Windows Edge；依次 Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0；另跑 C2B0 soak |
+| Browser Smoke（仅 workflow_dispatch） | Windows Edge wrapper 顺序跑 Canvas 至 M2-C2B0；后续独立 steps 分别跑 C2B0 soak、C2B Pass 1 Browser 矩阵与 C2B Pass 1 soak |
 | Nightly（schedule / 手动） | `test:simulation` + `inkbox:longrun`；没有 `test:longrun` 入口 |
 
 命令与用途详见 [tests/README](./tests/README.md)。本地浏览器测试先起 4180；playtest 的 `--port` 是 CDP 端口，游戏地址用 `--url`。

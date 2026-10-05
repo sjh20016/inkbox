@@ -1,15 +1,15 @@
 # ROADMAP · 坐天观井 Inkbox
 
-2026-10-05：M2-C2B Pass1 首批正式资产已接线并完成本地验收。3D默认开启四种凡界建筑family、真实上界角色、三种普通ghost、真实鬼修/法宝与地形自然装饰；assets=off保留旧几何对照。21对Edge矩阵、9模式600日/11 RNG、600+6000实际帧与干净克隆通过，远端最新CI待收口。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+2026-10-05 当前真相：M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。当前阶段为已授权的 M2-C2C Meaningful Geography。
 
 > 当前阶段和下一轮方向的唯一短表。接手看 HANDOFF，目录 / 模块看 ARCHITECTURE，未完事项看 BACKLOG，历史看 STATUS。
-> 更新：2026-10-04，C2A.1 / C2B0 三界视觉基线。阶段完成不等于下一阶段已获施工授权。
+> 更新：2026-10-05。历史阶段完成情况与当前门禁证据以 STATUS 和阶段报告为准。
 
 ## 阶段表
 
 | 阶段 | 内容 | 状态 |
 | --- | --- | --- |
-| M2-C2B Pass1 | 四种建筑、角色/鬼魂/法宝、自然装饰、完整矩阵与耐久 | 本地验收完成；最新远端CI待收口 |
+| M2-C2B Pass 1 | 四种建筑、角色 / 鬼魂 / 法宝、自然装饰、完整矩阵与耐久 | **远端封板完成**；第一代正式资产生产体系成立 |
 | D6-2 / D6-3 | 三界最低生态 A–F / 跨界生态 A–E | 已完成 |
 | D7 | 观察与表现层 A–G | 已封板 |
 | D8 | 视界 2.0 A–F | 已完成；D8-G 追迹 UI 暂缓，逻辑地基保留 |
@@ -22,14 +22,15 @@
 | M2-C2A | 三档实体 LOD、密度预算、身份/Region/纯度验证 | 工程封板；凡间 HLOD 仅原型，验收见 [报告](./M2C2A_LOD_REPORT.md) |
 | M2-C2A.1 | 包瘦身、真实房屋 HLOD、密林产品帧测量 | 已通过，见 [封板报告](./M2C2A1_CLOSEOUT_REPORT.md) |
 | M2-C2B0 | stage-local 三界视觉、全部随机流纯度与资源耐久 | 已完成并终验通过；见 [READINESS](./M2C2B0_READINESS.md) |
-| M2-C2B | 第一套正式资产家族受控试产 | 未生产；就绪条件见 [READINESS](./M2C2B0_READINESS.md) |
-| M2-C2 后续 | 群体动画、完整 HLOD、Trace Field、三界视觉深化 | 未实施 |
+| M2-C2B | 第一代正式资产生产 | **已完成**，见 [Pass 1 就绪报告](./M2C2B_READINESS.md) |
+| M2-C2C Meaningful Geography | 呈现已有 Site、Leyline、Upper qi、Nether yin 与 Rift 语义 | **当前已授权阶段**；未宣称完成 |
+| 后续候选 | 群体动画、完整 HLOD、Trace Field、Gameplay G | 候选；Gameplay G 未授权 |
 | Gameplay G · 镇 / 泄 | 模拟派生封印量影响幽冥裂缝 | 未开始；**未授权** |
 
 M2-A 成果与局限见 [工程报告](./Render3D%20M2-A%20架构原型工程报告.md)。Host / Stage 已交付，不能按旧 BACKLOG 或历史记忆重造。
 main 是唯一活跃主线；旧 checkpoint 只用于定位历史。根目录运行 / 测试 / 打包，不另同步一个发布工作区。
 
-## M2-B 交付与边界
+## M2-B 历史交付记录
 
 五包：**B0** 表现基础统一（ElevationField / RegionGeometry / 3D sculpt 派生量审计）·
 **B1** 完整 Region Mask（窗外凡间不再变秃）· **B2** RealmBoundary + Raw/Strata ·
@@ -45,15 +46,11 @@ main 是唯一活跃主线；旧 checkpoint 只用于定位历史。根目录运
 - 自动化：`npm run test:render3d:m2b`（70 组，含 T0–T10 及关窗恢复 Raw 回归）·
   浏览器证据：`npm run test:render3d:m2b:browser` → `reports/release/render3d-m2b/`。
 
-**M2-B 未做的**：目标位面只补了 terrain + entities + 只读选择反馈——上界 / 幽冥的
-`veg` / `water` / `artifacts` 因为**没有可靠语义而刻意留空**（委托书 §27）。
-Strata 抬起的窗口会遮挡身后凡间，缓解方向随 Art Pass 一起定。
+M2-B 交付了完整 Layer Mask、界缘、正式划窗、Rift breach 与检视反馈。该阶段当时未接入的三界生产资产和自然表现，后续分别在 C2B Pass 1 与当前 C2C 范围处理；M2-B 报告中的限制描述仅代表当时基线。
 
-## 下一轮候选（均未授权）
+## 当前 M2-C2C 范围
 
-M2-C2B 与 Gameplay G（模拟派生封印量 → 裂缝阈值调制）需要确定新一轮施工范围。
-用户已允许实验建筑素材调整、参考配色包；这不自动授权新增世界玩法。Gameplay G 若立项，必须重新审计随机流——
-上界裂缝存在条件式第二次 RNG 消费，**不得假设「只调概率阈值就一定不改变 RNG 流位置」**。
+按 `Inkbox_M2-C2B1_M2-C2C_Meaningful_Geography_工程开发委托书_v1.md`，本阶段只把已有 World 事实呈现为空间地景：凡界 Site / Leyline、上界 `qi`、幽冥 `veg` 与既有 Rift / presentation events。不得扩展 World 语义之外的上界文明、幽冥城市或浮空岛拓扑，也不得为视觉新增玩法或模拟字段。Gameplay G（封印量影响裂缝）仍未授权，若另行立项需审计随机流。
 
 ## 验收证据的范围
 
@@ -66,6 +63,7 @@ M2-C2B 与 Gameplay G（模拟派生封印量 → 裂缝阈值调制）需要确
 - [M2-A CI 36651925371](https://github.com/sjh20016/inkbox/actions/runs/36651925371)：f274def 的 Fast / Heavy Gate 成功；该次 push 的 Browser Smoke 按设计 skipped。
 - [Nightly 36636327689](https://github.com/sjh20016/inkbox/actions/runs/36636327689)：schedule 实跑成功，源码 b9f9f12；它不构成 f274def 的 Nightly 证明。
 - cleanup 远端复验已通过：[手动 CI 36670107531](https://github.com/sjh20016/inkbox/actions/runs/36670107531) 的 Fast / Heavy / Browser 全绿，源码 727f36a；具体统计与 artifact 身份只在 STATUS 记录。本地硬件基线不会被 runner 软件光栅读数替换。
+- M2-C2B Pass 1 当前主线远端证据：Push [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438)，均 success。
 
 ⚠️ **性能读数不可跨机器比较**：M2-A 基线是 Intel UHD 730，M2-B 证据采自
 AMD Radeon 610M（真实硬件，非软件光栅）。驻留、可见、实际更新成本看各阶段工程报告。

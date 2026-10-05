@@ -13,11 +13,13 @@ import { renderProfileFor } from './PlaneRenderProfile.js';
 import { createEnvironmentMaterial, setEnvironmentMaterialProfile, setEnvironmentMaterialView } from '../environment/EnvironmentMaterial.js';
 import { RealmDecorationLayer } from '../environment/RealmDecorationLayer.js';
 import { RealmArtifactLayer } from '../markers/RealmArtifactLayer.js';
+import { geographyFeatures } from './GeographyFeatures.js';
+import { ScalarFieldTexture } from '../art/ScalarFieldTexture.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
   constructor({ plane, world, profile = renderProfileFor(plane), coordinates, characterLibrary = null,
-    environmentLibrary = null, productionAssets = false, decorations = true } = {}) {
+    environmentLibrary = null, productionAssets = false, decorations = true, geography = false } = {}) {
     if (!world) throw new Error(`PlaneStage ${plane}: world is required`);
     this.plane = plane;
     this.profile = profile;
@@ -29,6 +31,7 @@ export class PlaneStage {
     this.environmentLibrary = environmentLibrary;
     this.productionAssetsEnabled = !!productionAssets;
     this.decorationsEnabled = !!decorations;
+    this.geographyFeatures = geographyFeatures(geography);
     this.setWorld(world, coordinates);
   }
 
@@ -43,6 +46,8 @@ export class PlaneStage {
     // M2-B §6：每个 Stage 持有一份高程单源（默认 RAW ⇒ 与 M2-A 逐位一致）。
     this.elevation = new ElevationField(world, p.elevation);
     this.terrain = p.terrain ? new TerrainMesh(world, this.coordinates, this.elevation) : null;
+    this.scalarField=this.plane==='nether'?new ScalarFieldTexture(world,'veg',2):null;
+    this.syncScalarField();
     if (this.terrain) {
       if (p.terrainTint) this.terrain.material.color.set(p.terrainTint);
       this.root.add(this.terrain.mesh);
@@ -60,9 +65,10 @@ export class PlaneStage {
     if(this.decorations)this.root.add(this.decorations.group);
     this.realmArtifacts=this.plane==='nether'?new RealmArtifactLayer(world,this.coordinates,this.elevation):null;
     if(this.realmArtifacts)this.root.add(this.realmArtifacts.group);
-    this.setEnvironmentAssets(this.environmentLibrary, this.productionAssetsEnabled);
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
+    this.markers?.setGeographyFeatures?.(this.geographyFeatures);
+    this.setEnvironmentAssets(this.environmentLibrary, this.productionAssetsEnabled);
     this.selectionMarker = p.selection
       ? new SelectionMarker(this.coordinates, this.elevation, { readonly: !!p.selectionReadonly, tint: p.selectionTint })
       : null;
@@ -84,6 +90,7 @@ export class PlaneStage {
 
   setEnvironmentAssets(library, enabled = this.productionAssetsEnabled) {
     this.productionAssetsEnabled = !!enabled;
+    this.syncScalarField();
     if (library !== this.environmentLibrary || (library && !this.environmentMaterial)) {
       const previous = this.environmentMaterial;
       this.environmentLibrary = library;
@@ -96,12 +103,14 @@ export class PlaneStage {
       this.entities?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.decorations?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled&&this.decorationsEnabled);
       this.realmArtifacts?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled);
+      this.markers?.setEnvironmentAssets?.(library, this.environmentMaterial, this.productionAssetsEnabled);
       previous?.dispose();
     } else {
       this.settlements?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.entities?.setEnvironmentAssets(library, this.environmentMaterial, this.productionAssetsEnabled);
       this.decorations?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled&&this.decorationsEnabled);
       this.realmArtifacts?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled);
+      this.markers?.setEnvironmentAssets?.(library, this.environmentMaterial, this.productionAssetsEnabled);
     }
   }
 
@@ -110,11 +119,22 @@ export class PlaneStage {
     if (this.environmentMaterial) setEnvironmentMaterialProfile(this.environmentMaterial, profile);
   }
 
+  setGeographyFeatures(features) {
+    this.geographyFeatures = geographyFeatures(features);
+    this.markers?.setGeographyFeatures?.(this.geographyFeatures);
+    this.syncScalarField();
+  }
+  syncScalarField(){
+    const enabled=this.productionAssetsEnabled&&this.plane==='nether'&&this.geographyFeatures.netherYin;
+    this.terrain?.setScalarField(this.scalarField,enabled);
+  }
+
   setEnvironmentArtView(view) {
     this.environmentArtView = view;
     if (this.environmentMaterial) setEnvironmentMaterialView(this.environmentMaterial, view);
     this.decorations?.setArtView(view);
     this.realmArtifacts?.setArtView(view);
+    this.markers?.setArtView?.(view);
   }
 
   /**
@@ -190,6 +210,7 @@ export class PlaneStage {
     const heightChanged = heightRegion !== null;
 
     const t0 = performance.now();
+    this.terrain?.updateScalarField(dt);
     if (heightRegion) this.terrain?.update(heightRegion, { height: true, type: false });
     if (typeRegion) this.terrain?.update(typeRegion, { height: false, type: true });
     const t1 = performance.now();
@@ -207,7 +228,7 @@ export class PlaneStage {
     const t4 = performance.now();
     this.settlements?.update(dt, this.world, options);
     const t5 = performance.now();
-    this.markers?.update(dt, this.world, options);
+    this.markers?.update(dt, this.world, { heightChanged: heightChanged || !!typeRegion });
     this.markers?.setZoom(zoom);
     this.decorations?.update({layoutChanged:heightChanged||!!typeRegion});
     this.realmArtifacts?.update(dt,{heightChanged});
@@ -225,6 +246,7 @@ export class PlaneStage {
 
   releaseLayers() {
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
+    this.scalarField?.dispose();this.scalarField=null;
     this.entities?.dispose(); this.settlements?.dispose(); this.markers?.dispose();
     this.decorations?.dispose();this.decorations=null;
     this.realmArtifacts?.dispose();this.realmArtifacts=null;

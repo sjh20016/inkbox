@@ -86,7 +86,7 @@ export class RealmDecorationLayer {
       if(this.view.camera){this._point.set(p.x,ground+source.h/2,p.z).project(this.view.camera);
         if(Math.abs(this._point.x)>1.15||Math.abs(this._point.y)>1.15||Math.abs(this._point.z)>1.1){screenRejected++;continue;}}
       if(records.length>=this.budget.screen){screenRejected++;continue;}
-      let lod=chooseLOD('tree',pixels,this._lod.get(source.cell),this.lodEnabled);
+      let lod=chooseLOD('decoration',pixels,this._lod.get(source.cell),this.lodEnabled);
       if(lod===0&&detail>=this.budget.detail){lod=1;demoted++;}else if(lod===0)detail++;
       this._lod.set(source.cell,lod);
       records.push({assetId:source.assetId,lod,position:{x:p.x,y:ground,z:p.z},scale:{x:source.width,y:source.h,z:source.depth},rotationY:source.rotationY,source});

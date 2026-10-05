@@ -1,5 +1,7 @@
 # M2-C2B 三界内容 Pass1
 
+M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板。Push [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。本报告记录 Pass 1 已接入的三界表现内容，不表示 M2-C2C 已完成。
+
 ## 凡界
 
 HOUSE三种正式轮廓加真实HALL，共四种建筑family。暖白墙、黛瓦、温木和小屋浅赭顶由Stage色槽派发；院落/宗祠的源红金被中性木色替换，不制造阶层与宗门身份。运行自然GOLDEN_A有83 HOUSE与6 HALL；独立CPU配方为83与5，两种Sandbox初始化配方不同，不混作同一世界。

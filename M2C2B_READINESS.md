@@ -1,6 +1,6 @@
 # M2-C2B Pass1 就绪与20项答复
 
-2026-10-05。本地Packages 0–10的运行实现、资产与交付验收完成。运行候选 7e400a4 已在干净克隆安装/构建/实际GLB/九模式纯度/包审计通过。报告生成时最新main的远端Fast/Heavy/Browser尚在复验；此文件记录本地封板证据，远端最终结果以同提交的GitHub Actions为准。
+2026-10-05。M2-C2B Pass 1 的 Packages 0–10 已在当前主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。运行候选 `7e400a4` 的干净克隆安装 / 构建 / 实际 GLB / 九模式纯度 / 包审计通过；同一主线的 Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。
 
 3D默认production assets开启；assets=off回到旧几何，art=legacy切旧配色，decorations=off仅关闭自然装饰，lod=off保留近档。历史基线探针显式assets=off，正式生产矩阵显式on；原断言和场景完整保留。
 
@@ -25,7 +25,7 @@
 17. 九模式600日World/advanceState/save SHA、save key set与11 RNG完全一致。完整SHA d5f6099af6c462cf3dfed5948cee63c0827192b3359f5640910598d015583e45。5直接流182879次，6隐藏流定位238次。
 18. 6000实际帧GPU资源94/8/14不变，600生命周期实际update/render各600；GC heap峰值18553232 bytes，DOM与监听器首尾差0，GL/LINK与浏览器错误0。
 19. 冻结a8基线：258 files / 7520162 bytes，ZIP 2404862 bytes。运行候选（未加最终报告）293 files / 8297843 bytes，ZIP 2554587 bytes；增加777681 / 149725 bytes。最终封板包精确增量见 [最终包度量](./reports/release/render3d-m2c2b-pass1/package-final-summary.json)，该开发证据与代表图都不进ZIP。
-20. 本地数据允许第二批资产按“单一已有语义家族＋独立预算＋多设备复验”受控试产；仍须最新main远端CI全绿。不授权直接批量接入宗门地点、异兽、浮空岛或鬼城；这些还需World语义和新委托。
+20. Pass 1 建立了第一代正式资产生产体系。下一阶段为已授权的 M2-C2C Meaningful Geography，先表现已有 World 语义；本轮不授权扩展 World 语义之外的上界文明、幽冥城市或浮空岛拓扑。新增资产按独立语义审计、预算与设备复验执行。
 
 ## 证据入口
 

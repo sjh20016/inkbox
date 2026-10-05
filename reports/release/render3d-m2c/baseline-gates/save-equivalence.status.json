@@ -1,7 +1,0 @@
-{
-  "name": "save-equivalence",
-  "command": "npm run test:save-equivalence",
-  "exitCode": 0,
-  "log": "save-equivalence.log",
-  "capturedSummary": "> zuotian-guan-jing-inkbox@1.0.0 test:save-equivalence\n  ✓ 夺舍累计账本五字段一致（含 D 包的 crossPlane / haunted） — {\"succeeded\":7,\"failed\":0,\"suspected\":0,\"crossPlane\":0,\"haunted\":0}\n  ✓ 夺舍累计账本没丢（五键，含 D 包 crossPlane / haunted） — {\"succeeded\":3,\"failed\":1,\"suspected\":2,\"crossPlane\":4,\"haunted\":5}\n  ✓ v5 老档读回来：possessionLog 五字段全零（含 D 包 crossPlane / haunted） — {\"succeeded\":0,\"failed\":0,\"suspected\":0,\"crossPlane\":0,\"haunted\":0}"
-}

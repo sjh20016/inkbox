@@ -123,6 +123,15 @@ const FILES = [
   'VISUAL_SCENARIO_SPEC.md',
   'ARTPASS_PROFILE.md',
   'ENTITY_PRESENTATION_CONTRACT.md',
+  'ASSET_PRODUCTION_SPEC.md',
+  'M2C2C_WORLD_SEMANTIC_MAP.md',
+  'scripts/inkbox-render3d-m2c2b1.mjs',
+  'scripts/inkbox-render3d-m2c2c-sites.mjs',
+  'scripts/inkbox-render3d-m2c2c-leylines.mjs',
+  'scripts/inkbox-render3d-m2c2c-fields.mjs',
+  'scripts/inkbox-c2c-test-utils.mjs',
+  'scripts/inkbox-render3d-m2c2c-pilot-browser.mjs',
+  'scripts/inkbox-c2c-browser-fixtures.mjs',
   'PERFORMANCE_REPORT.md',
   'VISUAL_ACCEPTANCE.md',
   '美术素材/参考资产索引.md',
@@ -227,7 +236,13 @@ const RELEASE_SUMMARIES = [
 ];
 
 function copyRelative(relative) {
-  const from = path.join(ROOT, relative);
+  let from = path.join(ROOT, relative);
+  // The editable checkout may archive historical root documents. Preserve the
+  // package's established document paths so historical links still resolve.
+  if (!fs.existsSync(from) && !relative.includes('/') && relative.endsWith('.md')) {
+    const archived = path.join(ROOT, '历史委托书', relative);
+    if (fs.existsSync(archived)) from = archived;
+  }
   if (!fs.existsSync(from)) throw new Error(`打包文件不存在：${relative}`);
   const to = path.join(STAGE, relative);
   copyPath(from, to);

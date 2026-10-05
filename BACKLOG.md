@@ -3,7 +3,7 @@
 > **本文件只放「还没做」的事。已完成的功能不许留在这里。**
 > 分区：**P0 阻塞** · **P1 当前工程** · **P2 后续体验** · **ICEBOX 暂停研究**。
 > 每条给一个稳定编号 `#N`；**源码注释引用编号即可**（已关闭的旧编号见文末表）。
-> 核对：2026-09-30，M2-A final cleanup。当前阶段去哪 → [`ROADMAP.md`](./ROADMAP.md)；历史 → `STATUS.md`。
+> 核对：2026-10-05，M2-C2B Pass 1 远端封板。当前阶段去哪 → [`ROADMAP.md`](./ROADMAP.md)；历史 → `STATUS.md`。
 
 ## P0 阻塞
 
@@ -15,7 +15,7 @@
 
 > 上一轮 P1 `#1`–`#7`（**Render3D M1.1D「Development Hardening」**）**已全部完成**——
 > 落点见文末「已关闭编号」表；过程与数据见 `Render3D M1.1D 工程报告.md`。
-> **Render3D M2-A 已完成并封板，M2-B 未开始。** Host / 三界 Stage / 世界空间 Mask 原型已经交付，不能重复立项；本轮仅做 final cleanup（见 `ROADMAP.md`）。
+> Render3D M2-A 至 M2-C2B Pass 1 均已完成。当前阶段为 M2-C2C Meaningful Geography，具体范围见 [`ROADMAP.md`](./ROADMAP.md)。
 
 ## P2 后续体验
 
@@ -49,7 +49,6 @@
 
 - `#22` **D8-G「跨界追迹」UI**：纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）
   已保存并由 `test:view` V9 钉住，**UI 未做**；本阶段不扩建 Canvas 版 D8-G。
-- `#23` **完整三界视觉层 / 正式 3D 视界**：M2-A 的 Host、三界 Stage 和 Terrain + Entities Mask 已完成；M2-B 的格网边界侧壁、完整 Layer Mask、正式检视反馈 / Three FX 和后续 Art Pass 未完成。仅记录下一轮设计倾向，不在 cleanup 施工。
 - `#24` 复杂视界特效 · 多视界同开 · 全图永久另一界模式。
 - `#25` 幽冥宗门 / 鬼城 / 幽冥战争 · 上界大型政治经济系统 · 第四世界 · 新种族 · 寻路 / A\*。
 - `#26` 跨界战争 / 幽冥入侵。
@@ -76,6 +75,7 @@
 | `#6` | Three.js vendor 治理（运行时迁出 `node_modules`） | **已完成**：`vendor/three/**` + `npm run test:vendor` |
 | `#7` | 收尾文档与工程报告 | **已完成**：`Render3D M1.1D 工程报告.md` |
 | `#21` | 旧环境中 spawnSync EBUSY、需手工补 ZIP | **不作为当前产品待办**：2026-09-30 自动构建 / ZIP 已实测成功；若再出现，按当次执行权限或环境故障诊断，不伪报 build 通过 |
+| `#23` | 完整三界视觉层 / 正式 3D 视界 | **已完成**：M2-B 完成完整 Layer Mask、界缘、检视与 FX；后续 Art Pass 与三界视觉底座见 M2-C / C2B0 报告 |
 | `#12` | 幽冥 `stepNether` 没接进推进循环 ⇒ 幽冥实体只增不减 | **已修**：统一入口 `sim/advance.js` |
 | `#13` | 「游戏日驱动」时钟被各测试各自手抄一份 ⇒ 迟早与真实游戏脱节 | **已修**：`advanceWorld(world, days, deps)` 是唯一定义处 |
 | `⑭` | 右栏区太多、太长 | **未修**：现为 `#14`（P2-b） |
@@ -91,5 +91,5 @@
   表现层（`render/fxLayer.js` / `render/overlayLayer.js` / `render/relationGraph.js`）**不写世界、不抽 RNG、不进存档**——
   删掉 `fxLayer.js`，模拟结果逐字不变。
 - 「记挂」（D7-E）是**玩家的观察者状态**（`world.watch`），不进三界人口守恒、不影响 AI、不给数值 buff。
-- **Render3D M0 / M1 / M1.1D / M2-A 已完成**；M2-B 和 D8-G UI 未开始。
+- **Render3D M0 / M1 / M1.1D / M2-A / M2-B / M2-C / M2-C2A / C2A.1 / C2B0 / C2B Pass 1 已完成**；D8-G UI 仍暂缓。
 - M1.1D 的性能是软件光栅相对数据；M2-A 基线来自 Intel UHD 730 / ANGLE D3D11。Mask 当前隐藏多种 Layer，不能拿它的较低三角数证明完整视界更快。

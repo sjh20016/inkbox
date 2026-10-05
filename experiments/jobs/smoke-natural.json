@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "experiment": "smoke-natural",
+  "profile": "natural",
+  "preset": "medium",
+  "seeds": [20260914],
+  "years": 10,
+  "stepDays": 3,
+  "snapshotDays": 360,
+  "probeDays": 30,
+  "viewPolicy": "closed"
+}

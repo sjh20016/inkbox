@@ -1,8 +1,8 @@
 # ARCHITECTURE · 工作区与模块地图
 
-2026-10-05：M2-C2B Pass1 首批正式资产已接线并完成本地验收。3D默认开启四种凡界建筑family、真实上界角色、三种普通ghost、真实鬼修/法宝与地形自然装饰；assets=off保留旧几何对照。21对Edge矩阵、9模式600日/11 RNG、600+6000实际帧与干净克隆通过，远端最新CI待收口。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+2026-10-05 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。当前下一阶段为 M2-C2C Meaningful Geography；只呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。详见 [ROADMAP](./ROADMAP.md)。
 
-事实核对：2026-10-04，Render3D M2-C2A.1 / M2-C2B0。当前阶段以 [ROADMAP](./ROADMAP.md) 为准；历史实现范围以各阶段报告为准。
+历史基线：2026-10-04，Render3D M2-C2A.1 / M2-C2B0。当前阶段以 [ROADMAP](./ROADMAP.md) 为准；历史实现范围以各阶段报告为准。
 
 ## 1. 工作区归属
 

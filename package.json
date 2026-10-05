@@ -45,6 +45,9 @@
     "inkbox:presentation": "node scripts/inkbox-presentation.mjs",
     "inkbox:view": "node scripts/inkbox-view.mjs",
     "inkbox:longrun": "node scripts/inkbox-longrun.mjs",
+    "inkbox:experiment": "node scripts/inkbox-experiment.mjs",
+    "inkbox:health": "node scripts/inkbox-experiment.mjs --job=experiments/jobs/baseline-natural.json",
+    "test:experiment": "node scripts/inkbox-experiment-selftest.mjs",
     "inkbox:play": "node scripts/inkbox-playtest.mjs",
     "inkbox:package": "node scripts/inkbox-package.mjs",
     "test:render3d:m2c2a": "node scripts/inkbox-render3d-m2c2a.mjs",
@@ -67,7 +70,12 @@
     "test:render3d:m2c2b:matrix": "node scripts/inkbox-render3d-m2c2b-matrix.mjs",
     "test:render3d:m2c2b:browser": "node scripts/inkbox-render3d-m2c2b-browser.mjs",
     "test:render3d:m2c2b:purity": "node scripts/inkbox-render3d-m2c2b-purity.mjs",
-    "test:render3d:m2c2b:soak": "node scripts/inkbox-render3d-m2c2b-soak.mjs"
+    "test:render3d:m2c2b:soak": "node scripts/inkbox-render3d-m2c2b-soak.mjs",
+    "test:render3d:m2c2b1": "node scripts/inkbox-render3d-m2c2b1.mjs",
+    "test:render3d:m2c2c:sites": "node scripts/inkbox-render3d-m2c2c-sites.mjs",
+    "test:render3d:m2c2c:leylines": "node scripts/inkbox-render3d-m2c2c-leylines.mjs",
+    "test:render3d:m2c2c:fields": "node scripts/inkbox-render3d-m2c2c-fields.mjs --nether-only",
+    "test:render3d:m2c2c:pilot:browser": "node scripts/inkbox-render3d-m2c2c-pilot-browser.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

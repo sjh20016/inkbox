@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "experiment": "deep-natural-500y",
+  "profile": "natural",
+  "preset": "medium",
+  "seeds": [20260914, 7, 424242],
+  "years": 500,
+  "stepDays": 3,
+  "snapshotDays": 360,
+  "probeDays": 30,
+  "viewPolicy": "closed"
+}

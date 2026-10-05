@@ -1,6 +1,6 @@
 # 坐天观井 · Inkbox 1.0.0
 
-2026-10-05：M2-C2B Pass1 首批正式资产已接线并完成本地验收。3D默认开启四种凡界建筑family、真实上界角色、三种普通ghost、真实鬼修/法宝与地形自然装饰；assets=off保留旧几何对照。21对Edge矩阵、9模式600日/11 RNG、600+6000实际帧与干净克隆通过，远端最新CI待收口。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+2026-10-05：**M2-C2B Pass 1 已在当前主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。**3D 默认启用四种凡界建筑 family、真实上界角色、三种普通 ghost、真实鬼修 / 法宝与自然装饰；`assets=off` 保留旧几何对照。21 对 Edge 矩阵、9 模式 600 日 / 11 RNG、600 + 6000 帧及干净克隆通过。Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。下一阶段为已授权的 **M2-C2C Meaningful Geography**；不扩展 World 语义之外的上界文明、幽冥城市或浮空岛拓扑。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
 
 当前唯一活跃主线是 `src/inkbox`：一张会自行演化的水墨山河，玩家可以改地形、施神力、观察众生修行与灾祸结果。
 
@@ -97,7 +97,19 @@ npm run test:simulation     # 范围较大的旧 smoke，仅按需运行
 npm run build               # 生成仅含活跃主线的 dist 项目包
 ```
 
-M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端执行 `npm run test:render3d:m2a:browser`。需要 Node 22+ 和本机 Microsoft Edge。默认输出到 `reports/release/render3d-m2a/`；重跑可用 `INKBOX_REPORT_DIR` 指向本地临时目录，保留已发布的硬件基线。GitHub 手动 Browser Smoke 顺序运行 Canvas、M2-A、M2-B、M2-C、M2-C2A，截图 / JSON 存为独立 artifact。
+### World Laboratory（数值研究，不是测试）
+
+```bash
+npm run test:experiment      # 工具自检：统计单测 / 采集纯净性 / 确定性 / Job 校验
+npm run inkbox:health        # = --job=experiments/jobs/baseline-natural.json（3 seeds × 300 年）
+npm run inkbox:experiment -- --profile=natural --seeds=1,2 --years=50
+```
+
+这一支回答「**世界为什么长成这样**」，不是「世界对不对」。它**不进 `npm test`**——
+World Health 是研究工具，不是 release gate。用法与报告口径见
+[`docs/WORLD_LAB.md`](./docs/WORLD_LAB.md)。
+
+M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端执行 `npm run test:render3d:m2a:browser`。需要 Node 22+ 和本机 Microsoft Edge。默认输出到 `reports/release/render3d-m2a/`；重跑可用 `INKBOX_REPORT_DIR` 指向本地临时目录，保留已发布的硬件基线。GitHub 手动 workflow 由 Browser Smoke wrapper 顺序运行 Canvas、M2-A、M2-B、M2-C、M2-C2A、M2-C2B0，随后以独立 steps 运行 C2B0 soak、C2B Pass 1 Browser 矩阵与 C2B Pass 1 soak；截图 / JSON 存为独立 artifact。
 
 测试分类和各旧探针的位置见 [`tests/README.md`](./tests/README.md)。
 
@@ -108,8 +120,9 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
   D8 视界 2.0 **A–F** · **Render3D M0**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻）·
   **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环）· **Render3D M1.1D**（工程加固）。
 - **已完成底座**：M2-B 的完整 Layer Mask、共享高程、Raw/Strata 界缘、3D 划窗、裂缝破口与拾取。
-- **本轮**：M2-C2A 的真实几何 LOD、密度预算、身份拾取与凡间聚落 HLOD 原型；性能和验收边界以 [本轮报告](./M2C2A_LOD_REPORT.md) 为准。
-- **后续**：资产家族扩产、动画、完整 HLOD 和 Trace Field 尚未施工；S3 后处理不进入默认路径。
+- **已完成**：M2-C2B Pass 1 建立第一代正式资产生产体系；验收见 [Pass 1 就绪报告](./M2C2B_READINESS.md)。
+- **当前阶段**：M2-C2C Meaningful Geography，优先呈现已有 Site、Leyline、Upper qi、Nether yin 与 Rift 事实；不新增 World 语义之外的上界文明、幽冥城市或浮空岛拓扑。
+- **后续候选**：群体动画、完整 HLOD 与 Trace Field；S3 后处理不进入默认路径。
 - **暂缓**：D8-G「跨界追迹」为 **WIP**——纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）已保存并有测试钉住，但**追迹 UI 未做**；本阶段不继续扩建 Canvas 版 D8-G。
 - **接手先读**：[`HANDOFF.md`](./HANDOFF.md)（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）。
 - 30 秒看懂项目在哪：[`ROADMAP.md`](./ROADMAP.md)
@@ -129,4 +142,4 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
 > 台词 / 编年史 / 墓志 / 世界内文本 / 界面 / 三界预留文案库。**本包随包出货。**
 
 `美术素材/初期素材构思/` 保留早期 163 张 PNG、生成器与说明；`配色参考/`、`实验建筑资产/`、Sonnet 参考包作为后续设计输入。当前运行使用代码生成的实例母版，不加载这些参考素材；约451MB第三方范式整包保留本地。见 [参考资产索引](./美术素材/参考资产索引.md)。
-正式 M2-A / M2-C 证据与 M2-C2A 的代表截图、摘要随 Git 与 dist；C2A 完整矩阵与日志保留本地或 Actions artifact。本地 MEMORY、备份与安装 / 构建产物不入 Git。具体清单见 ARCHITECTURE。
+M2-A / M2-C 与 C2A 的证据按阶段报告和 ARCHITECTURE 中的清单保存；C2B Pass 1 的完整 Browser / soak 证据保留为 Actions artifact，摘要入口见 [READINESS](./M2C2B_READINESS.md)。本地 MEMORY、备份与安装 / 构建产物不入 Git。具体清单见 ARCHITECTURE。

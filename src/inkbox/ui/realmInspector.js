@@ -102,6 +102,13 @@ export function pickRealmSubject(realmWorld, plane, x, y, radius = REALM_INSPECT
 /** A submitted 3D instance names one current World subject. Never choose a neighbour. */
 export function resolvePlaneSubject(world, plane, ref) {
   if (!world || !['mortal', 'upper', 'nether'].includes(plane) || !ref) return null;
+  if (ref.kind === 'site' || ref.kind === 'leyline') {
+    const id = ref.kind === 'site' ? ref.siteId : ref.leylineId;
+    if(id == null) return null;
+    const subject = world[ref.kind === 'site' ? 'sites' : 'leylines']?.find(item => item && item.id === id);
+    if(!subject || !Number.isFinite(subject.x) || !Number.isFinite(subject.y)) return null;
+    return { kind:ref.kind,plane,x:subject.x,y:subject.y,subject,world };
+  }
   if (ref.kind === 'entity') {
     if (ref.entityId == null) return null;
     const container = ref.entityContainer || 'entities';
@@ -134,13 +141,26 @@ export function resolvePlaneSubject(world, plane, ref) {
 /** Exact 3D inspection stays read-only, including mortal house and aggregate cards. */
 export function planeSubjectInspectRows(picked, ctx = {}) {
   if (!picked) return null;
-  if (picked.plane !== 'mortal' && (picked.kind !== 'artifact' || picked.plane === 'nether'))
+  if (!['site','leyline'].includes(picked.kind) && picked.plane !== 'mortal' && (picked.kind !== 'artifact' || picked.plane === 'nether'))
     return realmInspectRows(picked, ctx);
   const s = picked.subject, label = ctx.planeLabel || (picked.plane === 'mortal' ? '凡间' : '');
   const head = `${label} · 格 (${Math.floor(picked.x)}, ${Math.floor(picked.y)})`;
   if (picked.kind === 'ghost') return { ...realmInspectRows(picked, ctx), head };
   let rows;
-  if (picked.kind === 'house') rows = [
+  if (picked.kind === 'site') {
+    rows = [['地点', s.name || '无名地点'], ['类型', {secret:'秘境',cave:'洞府',formation:'阵法',ruin:'遗迹'}[s.kind] || String(s.kind || '未知')]];
+    if(Number.isFinite(s.age)) rows.push(['存续', `${Math.floor(s.age/360)} 年`]);
+    if(Number.isFinite(s.visits)) rows.push(['访问', String(s.visits)]);
+    for(const [field,label] of [['sub','形态'],['omen','异象'],['element','五行'],['reward','所得'],['note','记述']])
+      if(s[field] != null && s[field] !== '') rows.push([label, typeof s[field] === 'object' ? JSON.stringify(s[field]) : String(s[field])]);
+  } else if (picked.kind === 'leyline') {
+    rows = [['灵脉', s.name || `灵脉 ${s.id}`]];
+    if(Number.isFinite(s.strength)) rows.push(['强度',s.strength.toFixed(3)]);
+    if(Number.isFinite(s.radius)) rows.push(['范围',String(s.radius)]);
+    if(s.element) rows.push(['五行',String(s.element)]);
+    if(s.owner != null) rows.push(['归属', factionName(picked.world,s.owner) || String(s.owner)]);
+    if(s.discovered != null) rows.push(['已发现', s.discovered ? '是' : '否']);
+  } else if (picked.kind === 'house') rows = [
     ['建筑', picked.structType === STRUCT.HALL ? '宗祠' : '屋舍'],
     ['聚落', picked.village.name || '无名聚落'], ['屋舍格', `${picked.x}, ${picked.y}`],
   ];

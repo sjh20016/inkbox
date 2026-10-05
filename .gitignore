@@ -13,9 +13,11 @@ reports/*
 reports/release/**
 !reports/release/**/
 !reports/release/**/summary/
-!reports/release/**/summary/**
+!reports/release/**/summary/*.json
 !reports/release/**/golden/
-!reports/release/**/golden/**
+!reports/release/**/golden/*.png
+# proof/, matrix/, source images and logs remain ignored. The evidence audit
+# limits each new stage to eight representative golden PNGs plus compact JSON.
 run/
 *.log
 *.zip

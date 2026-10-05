@@ -61,7 +61,21 @@ export class TerrainMesh {
     }
     // Keep material as the legacy tint source for the historical Slab probe.
     this.mesh.material = profile ? this.inkMaterial : this.material;
+    this.syncScalarField();
   }
+  /** Field ownership remains with PlaneStage; this material only borrows it. */
+  setScalarField(field,enabled){this.scalarField=field;this.scalarFieldEnabled=!!enabled;this.syncScalarField();}
+  syncScalarField(){
+    this.scalarField?.setEnabled(this.scalarFieldEnabled&&!!this.artProfile);
+    this.bindScalarField();
+  }
+  bindScalarField(){
+    if(!this.inkMaterial)return;
+    const field=this.scalarField,active=field?.enabled&&field.valid&&field.texture;
+    this.inkMaterial.uniforms.fieldMode.value=active?field.mode:0;
+    this.inkMaterial.uniforms.fieldTexture.value=active?field.texture:this.artData.typeTexture;
+  }
+  updateScalarField(dt){this.scalarField?.update(dt);this.bindScalarField();}
   /**
    * 刷新一块地形。
    *

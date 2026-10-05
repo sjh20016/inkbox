@@ -83,8 +83,13 @@ export class EnvironmentBatch {
       const scale = record.scale || {};
       const values = [position.x, position.y, position.z, scale.x, scale.y, scale.z, record.rotationY ?? 0];
       if (!values.every(Number.isFinite) || values.slice(3, 6).some(value => value <= 0)) throw new Error('Environment instance transform must be finite and use positive scales');
+      const quaternion = record.quaternion;
+      if (quaternion != null && (!Array.isArray(quaternion) || quaternion.length !== 4
+        || !quaternion.every(Number.isFinite) || Math.abs(Math.hypot(...quaternion) - 1) > 1e-5))
+        throw new Error('Environment instance quaternion must be a finite unit quaternion');
       this._dummy.position.set(position.x, position.y, position.z);
-      this._dummy.rotation.set(0, record.rotationY ?? 0, 0);
+      if (quaternion) this._dummy.quaternion.fromArray(quaternion);
+      else this._dummy.rotation.set(0, record.rotationY ?? 0, 0);
       this._dummy.scale.set(scale.x, scale.y, scale.z);
       this._dummy.updateMatrix();
       mesh.setMatrixAt(index, this._dummy.matrix);
