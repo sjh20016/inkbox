@@ -1,6 +1,6 @@
 # M2-C2B Pass1 正式资产生产报告
 
-2026-10-05。当前运行候选 7e400a4。本地验收完成；最新远端 CI 的结论单独记录于 READINESS。
+2026-10-05。运行候选 `7e400a4` 的本地验收已完成；M2-C2B Pass 1 随后在主线 `e0a851c` 远端封板，第一代正式资产生产体系成立。Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941) 和 800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。验收汇总见 [READINESS](./M2C2B_READINESS.md)。
 
 ## 正式运行内容
 

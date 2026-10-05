@@ -2,7 +2,7 @@
 
 ## M2-C2B Pass1
 
-实际GLB/atlas：test:render3d:m2c2b:sample（11）；角色/ghost：content（5）；装饰：decorations（7）；法宝：artifacts（4）；实际GLB九模式600日：purity。
+M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板。Push [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。实际GLB/atlas：test:render3d:m2c2b:sample（11）；角色/ghost：content（5）；装饰：decorations（7）；法宝：artifacts（4）；实际GLB九模式600日：purity。
 
 Edge串行browser包含HOUSE三件套、真实HALL、角色9项、法宝5项、装饰7对及matrix的21对视角。soak另跑600实际生命周期与6000实际帧，检查GPU、GC heap、DOM、listener、GL/LINK与单次加载。旧C2A/C2B0探针显式assets=off，所有原断言保留；新矩阵明确assets=on。CI Fast运行CPU门禁，手动Browser运行全部原基线和新增生产套件/soak，完整证据只进artifact。
 
@@ -52,7 +52,7 @@ M2-A 本地记录为 view 113、M2-A 13 组、160 点拾取零错误；历史计
 ## GitHub 浏览器复验
 
 Actions → Inkbox CI → Run workflow，选择 main。
-Windows job 用 `scripts/inkbox-browser-smoke.mjs` 在同一宿主内启动 / 维持 / 释放服务器，顺序执行 Canvas、M2-A、M2-B、M2-C、M2-C2A、M2-C2B0 测试脚本，随后独立跑 C2B0 soak，分别记录退出码；失败也继续收集其余结果。
+Windows workflow 先由 `scripts/inkbox-browser-smoke.mjs` 在同一宿主内启动 / 维持 / 释放服务器，顺序执行 Canvas、M2-A、M2-B、M2-C、M2-C2A、M2-C2B0 并分别记录退出码；wrapper 之后，workflow 另以独立 steps 运行 C2B0 soak、C2B Pass 1 Browser 矩阵与 C2B Pass 1 soak。
 HTTP 资源先探测，启动失败补存页面 / 网络诊断。输出到 reports/ci 的独立目录，通过 artifact 保存截图、JSON 和日志，成功 / 失败均保留可用证据。
 这套远端功能复验不会改 reports/release 的已发布文件，也不把 runner 软件光栅读数当成本机 Intel UHD 730 性能基线。
 

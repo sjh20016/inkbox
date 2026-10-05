@@ -1,10 +1,10 @@
 # Project Status
 
-2026-10-05：M2-C2B Pass1 首批正式资产已接线并完成本地验收。3D默认开启四种凡界建筑family、真实上界角色、三种普通ghost、真实鬼修/法宝与地形自然装饰；assets=off保留旧几何对照。21对Edge矩阵、9模式600日/11 RNG、600+6000实际帧与干净克隆通过，远端最新CI待收口。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+2026-10-05 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。下一阶段是已授权的 **M2-C2C Meaningful Geography**；不扩展 World 语义之外的上界文明、幽冥城市或浮空岛拓扑。详见 [资产报告](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md) 与 [就绪报告](./M2C2B_READINESS.md)。下方日期章节均为对应阶段的历史记录。
 
-## 2026-10-04 · C2A.1 / C2B0 三界视觉基线
+## 2026-10-04 · C2A.1 / C2B0 三界视觉基线（历史）
 
-运行包瘦身、2–4 屋顶簇 HLOD、真实产品 RAF 密林测量已封板。三界由 stage-local 深冻结 Profile 派发，3D 默认 v1、legacy 可切换；24 对/48 张新截图、真实裂缝破口/拾取/Region、600 日六模式完整 World 与 11 RNG，以及 600+6000 帧/21 次 GC 峰值门禁通过。资源数保持 53 geometry / 7 texture / 13 program；未改模拟、生成器或存档。终验与第一家族受控试产条件见 [READINESS](./M2C2B0_READINESS.md)。下文保留旧阶段事实。
+当时的 C2A.1 / C2B0 封板内容：运行包瘦身、2–4 屋顶簇 HLOD、真实产品 RAF 密林测量。三界由 stage-local 深冻结 Profile 派发，3D 默认 v1、legacy 可切换；24 对 / 48 张新截图、真实裂缝破口 / 拾取 / Region、600 日六模式完整 World 与 11 RNG，以及 600 + 6000 帧 / 21 次 GC 峰值门禁通过。资源数保持 53 geometry / 7 texture / 13 program；未改模拟、生成器或存档。其后第一代正式资产体系已由 C2B Pass 1 投产并远端封板，详见顶部当前真相与 [C2B READINESS](./M2C2B_READINESS.md)。下文是更早阶段历史。
 
 ## 2026-10-03 · M2-C2A 实体 LOD 与密度预算
 
@@ -16,17 +16,17 @@ M2-B 的视界工程已完成；M2-C 接入单一 ArtPass、只读高度/类型�
 
 用户新增 `美术素材/配色参考` 和实验建筑素材，允许后续调整；参考索引已登记。完整家族、动画、几何 LOD/HLOD 和 Trace Field 未施工。下面的 2026-09-30 索引保留为历史记录。
 
-## 2026-09-30 · 历史状态索引
+## 2026-09-30 · 历史状态索引（历史）
 
 > 2026-09-30 收口：顶部是当前状态索引；下方日期章节保存当时事实，旧阶段的“当前 / 下一阶段”、测试数和禁令不适用于新任务。
 > 接手看 HANDOFF / ROADMAP；规则看 THREE_REALMS / VIEW_CONTRACT；本文件不承担当前施工授权。
 
 - 当前活跃版本：Inkbox 1.0.0（`src/inkbox`）
 - 当前入口：`inkbox.html`（3D 立体沙盘：`inkbox.html?renderer=3d`）；`npm run dev` 从 `http://127.0.0.1:4180/` 启动
-- 当前阶段：**Render3D M2-A 架构原型已完成**（2026-09-30）。一个 Host 管理三界 Stage，共享相机与视界状态，提供按位面拾取、只读 FX、Mask 与矩形 Slab 探针。13 组架构不变量、12 套发布门禁与 Edge 浏览器验收通过；交付证据和局限见 `Render3D M2-A 架构原型工程报告.md`。
-- **当前收口包**：**M2-A final cleanup**；只处理文档 / 记忆一致性、工作区归属、CI 和 checkpoint，M2-A 功能封板。
+- 当时阶段：**Render3D M2-A 架构原型已完成**（2026-09-30）。一个 Host 管理三界 Stage，共享相机与视界状态，提供按位面拾取、只读 FX、Mask 与矩形 Slab 探针。13 组架构不变量、12 套发布门禁与 Edge 浏览器验收通过；交付证据和局限见 `Render3D M2-A 架构原型工程报告.md`。
+- 当时收口包：**M2-A final cleanup**；只处理文档 / 记忆一致性、工作区归属、CI 和 checkpoint，M2-A 功能封板。
 - **上一阶段（已完成）**：Render3D M1.1D 工程加固；更早的 M1 实体可见化见各阶段报告。
-- **下一阶段**：**Render3D M2-B 未开始**。World-space Mask + grid boundary skirt + 完整 Layer Mask 是设计倾向；范围以 ROADMAP 与下一轮任务为准，本轮不施工。
+- 当时下一阶段：Render3D M2-B；其后续工程已完成，现况见本文件顶部及 [ROADMAP](./ROADMAP.md)。
 - **正式完成**：D6-2 三界生态 **A–F** · D6-3 跨界生态 **A–E** · D7 观察与表现层 **A–G 封板** · D8 视界 2.0 **A–F** · **Render3D M0**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻，`npm run test:render3d`）· **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环，`npm run test:render3d:m1`）· **Render3D M1.1D**（工程加固，`npm run test:render3d:bridge` + `npm run test:vendor`）。
 - **WIP / 暂缓**：**D8-G「跨界追迹」**——纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）已保存并由 `test:view` V9 钉住，**追迹 UI 未做**；本阶段不继续扩建 Canvas 版 D8-G。
 - **接手先读 `HANDOFF.md`**；阶段看 `ROADMAP.md`，目录与模块边界看 `ARCHITECTURE.md`，视界规则看 `VIEW_CONTRACT.md` v2。
@@ -41,7 +41,7 @@ M2-B 的视界工程已完成；M2-C 接入单一 ArtPass、只读高度/类型�
 
 ## Render3D M2-A 与 final cleanup（2026-09-30）
 
-- M2-A 功能基线：发布仓库 `f274def`；Host / 三界 Group Stage / 统一视界状态 / 位面拾取 / FX 只读探针 / 世界 Mask / 矩形 Slab 已交付。**M2 整体、M2-B 与 D8-G UI 未完成**。
+- 截至 2026-09-30 的 M2-A 功能基线：发布仓库 `f274def`；Host / 三界 Group Stage / 统一视界状态 / 位面拾取 / FX 只读探针 / 世界 Mask / 矩形 Slab 已交付。当时 M2 整体、M2-B 与 D8-G UI 尚未完成；M2-B 后续已完成，现况见顶部当前真相。
 - 本地验收：13 组架构不变量、600 日三路等价、12 套门禁；Edge 160 点拾取零错误、11 项生命周期 / UI 检查。证据与原型局限见 `Render3D M2-A 架构原型工程报告.md` 和 `reports/release/render3d-m2a/`。
 - [M2-A CI run 36651925371](https://github.com/sjh20016/inkbox/actions/runs/36651925371)：`f274def` Fast / Heavy 成功。push 的 Browser Smoke 按设计 skipped；不能把本机 JSON 当该 runner 的浏览器复验。
 - [Nightly run 36636327689](https://github.com/sjh20016/inkbox/actions/runs/36636327689)：schedule 实跑成功，源码是 **`b9f9f12`**；记录成立，但不是 M2-A HEAD 的 Nightly 证据。
