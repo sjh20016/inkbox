@@ -58,7 +58,7 @@
 
 22. **6000 帧。**固定资源预热后，以 600 lifecycle 和 20×300 product RAF 检查各视界、LOD、production/style/field 开关、Site dense、高 qi/veg 与真实冻结 Rift 快照 burst。逐状态和逐 30 帧资源、字段上传计数、material refs 及 GC 后 CPU 内存门禁结果见 READINESS。
 
-23. **Git/dist 增量。**以 e0a851c 精确构建包作为基线：300 文件、8175787 bytes、ZIP 2563944 bytes；新包与本轮 Git tree 差分的最终尺寸记录在性能报告。原历史 PNG/提交不重写，新阶段最多 8 张 Golden + compact JSON；全矩阵和 proof ignored / artifact。
+23. **Git/dist 增量。**以 e0a851c 精确构建包作为基线：300 文件、8175787 bytes、ZIP 2563944 bytes；新包333文件，约8.8MB目录/2.7MB ZIP。冻结验收提交45ab058的Git tree新增43、修改34、删除0，blob净增7861268 bytes，其中8张Golden为7206282 bytes；逐历史对象zlib松散估算8226347 bytes，不称实际pack或传输大小。审计文字之后的最终package/Git精确值记录于ignored packaging.json，避免包自身字节自引用。原历史 PNG/提交不重写，全矩阵和 proof ignored / artifact。
 
 24. **下一阶段裁决。**优先考虑已有宗门/灵脉的空间归属与锚点表达，再评估 Upper 仙门的真实 World 锚点设计。250 年 R2 中局部流量与占据相关 .8904、热点重合 64.17%，不足以支持 runtime 道路。Upper 已有高 qi 因果但尚无正式聚落锚，须先定义真实语义；幽冥城市/经济扩展也需另行设计授权。当前不将高场值自动升级为文明。
 

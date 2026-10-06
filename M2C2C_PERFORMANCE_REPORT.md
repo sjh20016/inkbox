@@ -88,7 +88,9 @@ GC后heap 24035768→24304508 bytes，峰值24645756，增量268740；容差上�
 
 ## 包与 Git 证据
 
-精确 e0a851c 包基线：300文件，8175787 bytes，ZIP2563944 bytes。干净克隆ccac961经npm ci及16项安装/CPU/祖先资产/build命令全部通过；11×600日纯度full SHA与主工作区一致，save keys=49。候选包333文件，目录8753296 bytes、ZIP2729439 bytes；最终报告更新后的尺寸以交付构建为准。最终规模约8.8 MB目录、2.7 MB ZIP，较基线约+0.6 MB/+0.2 MB；精确末包字节与SHA留ignored packaging.json，避免把ZIP自身字节写进包内形成自引用。Git增量在最终提交前按tree相对e0a851c统计，包含8张Golden（7206282 bytes），不会把用户移走的旧素材/文档误计作本轮删除。
+精确 e0a851c 包基线：300文件，8175787 bytes，ZIP2563944 bytes。干净克隆ccac961经npm ci及16项安装/CPU/祖先资产/build命令全部通过；11×600日纯度full SHA与主工作区一致，save keys=49。候选包333文件，目录8753296 bytes、ZIP2729439 bytes；最终报告更新后的尺寸以交付构建为准。最终规模约8.8 MB目录、2.7 MB ZIP，较基线约+0.6 MB/+0.2 MB；精确末包字节与SHA留ignored packaging.json，避免把ZIP自身字节写进包内形成自引用。
+
+冻结验收提交45ab058c4603c28e55eca4cbd2711cecf7107aca相对e0a851c：Git tree 1105→1148文件，新增43、修改34、删除0；blob净增7861268 bytes，其中8张Golden为7206282 bytes。该历史范围引入293个对象（17commit/131tree/145blob），原始payload合计10715169 bytes，逐对象zlib松散估算8226347 bytes；这不是实际pack或网络传输字节。精确可复查统计在ignored git-delta-45ab058.json，后续本段审计文字提交与最终package/Git尺寸另由ignored packaging.json记录，不把用户移走的旧素材/文档误算作本轮删除。
 
 运行包保留源码、运行 GLB、manifest、契约、测试及 compact summary；排除 environment source、角色 .blend、preview、research、全量矩阵、proof、PNG和日志。新阶段 Golden 最多8张，只进开发仓库。
 
