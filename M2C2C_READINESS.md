@@ -1,7 +1,7 @@
 # M2-C2C 就绪与验收状态
 
 2026-10-06。**本地开发与验收完成；远端Push门禁以本轮main提交的Actions状态为准，手动C2C Browser/Nightly尚未执行。**
-源基线 main e0a851c 已完成C2B远端封板；当前工程分支 codex/m2c2c-meaningful-geography。
+源基线 main e0a851c 已完成C2B远端封板；本轮工程已并入main，首次推送为c67a0ee。
 
 | 包 | 本地结果 |
 | --- | --- |
@@ -13,7 +13,7 @@
 | 5 Leyline | 11组Node，旧sample/quaternion回归通过 |
 | 6/7 Realm Field | 10组Node；Upper60年只读关系证据完成 |
 | 8 Rift | 16组Node；池化、target、方向、Region与身份通过 |
-| 9 Cross-Realm | 7组Node；完整23对GPU、同World/advance/camera及真实点击通过 |
+| 9 Cross-Realm | 8组Node；完整23对GPU、同World/advance/camera及真实点击通过 |
 | 10 Performance/Purity/Soak | 11模式600日/11流通过；600＋6000实帧稳定114/10/16资源；干净克隆16命令及包审计通过 |
 | 11 Visual Seal | 四份报告、24答复及8张正常Golden完成；全矩阵/proof留ignored或Artifact |
 | R1 Minimal Animation | 条件Lab候选，未拆现有批处理 |
@@ -22,6 +22,8 @@
 ## 工程门禁
 
 七个委托命令均已接线：test:render3d:m2c2c、:sites、:fields、:rifts、:purity、:browser、:soak。Fast增加当前CPU门禁并保留所有旧项；.github/workflows/c2c-browser.yml单独手动运行当前23配对/耐久及两关键祖先。ci.yml原完整历史Browser、Heavy与Nightly规则保留。
+
+main首次Push [37402977427](https://github.com/sjh20016/inkbox/actions/runs/37402977427) 的Heavy通过，Fast在旧dirty分类门禁失败；本地复现G5后以426412d修复。Stage继续向实体/聚落/标记传同一个heightChanged选项，类型变化只独立使已启用的生产Site/Leyline准入缓存失效。旧Bridge脚本与e0基线完全相同，36项断言通过；新增类型变水/恢复及关闭生产的旧cadence检查通过，C2C共8组，完整Fast集合26命令全绿，独立只读审查通过。修复后case1/4两对GPU复验完成，配对World/advance/camera不变、Formation105约90px且实际点击通过；该pass:false诊断不替代原23对或Soak。compact summary保存修复源码、原始证据SHA和各轮来源。
 
 600日CPU纯度使用相同明确fixture并实际提交Site/灵脉/场/真实producer FX。共同完整SHA：4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498；saveSHA：95a6a9634e4b056702b6c5692b02728e3aa11958720abf0c976489ffaef57759。全部save keys与11条RNG流一致。
 

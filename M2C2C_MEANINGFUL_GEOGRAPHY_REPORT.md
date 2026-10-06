@@ -70,6 +70,8 @@ R2 完成独立 250 年 headless 采样，脚本与研究报告（开发仓库�
 
 ## 冷启动复现
 
+主线首推c67a0ee的[CI 37402977427](https://github.com/sjh20016/inkbox/actions/runs/37402977427) Heavy成功、Fast在旧Bridge G5失败。本地复现后426412d恢复heightChanged的原有分层契约，生产Site/Leyline对type变化单独重验完整footprint；关闭生产或无batch时不强制更新旧marker。旧Bridge脚本与e0完全相同，36断言通过；新增准入拒绝/恢复和旧cadence检查后C2C为8组，完整Fast集合26命令通过，独立审查通过。修复后概览/Formation两对GPU完成、约90px实际点击105、配对纯度通过；诊断仍为pass:false，完整23对和Soak保留各自原运行来源。compact summary另记426412d源码SHA与复验证据，远端最终结果以本轮main的Actions为准。
+
 独立干净克隆的旧Browser自行推进路径曾生成不同Site分布，Secret/Formation被既有完整footprint规则拒绝。现在Browser与Soak统一在GPU测量前由Node普通配方生成自然产品存档：Mortal seed226/small/3日步长/day72000，Realms既有NETHER_STYLE_A/60年配方。默认缺失或全部core/world/sim/io源码、Node/V8、存档SHA不匹配时重建；显式无效输入拒绝，仍经产品importFile导入。
 
 两配方重新生成的save、完整World、advanceState及900日历史均与完整23对矩阵的原输入逐字节一致；8项显式坏缓存检查通过。干净克隆d9ca78b从缺Mortal缓存自动生成并重建Realms，额外1/4两对GPU完成，Formation105约90px、38/96前景三角及实际点击105通过，World/advance/camera不变、无运行错误。该诊断保持pass:false/diagnosticComplete，只证明冷启动，不替代完整23对矩阵。完整失败及修复证据留ignored，并在compact summary记录SHA。这里不声称长模拟在不同Node/Browser引擎之间逐字节相同。

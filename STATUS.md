@@ -4,6 +4,8 @@
 
 ## 2026-10-06 · M2-C2C Meaningful Geography（本地完成）
 
+工程已并入main；c67a0ee首次Push Heavy通过、Fast在旧dirty分类失败，426412d恢复原heightChanged派发并为生产Site/Leyline单独重验type准入。旧Bridge36断言、新C2C8组及完整Fast26命令通过，独立审查和case1/4两对GPU复验通过。原23对/Soak与修复复验分开记录来源，最终远端门禁以本轮main Actions为准，详见[就绪报告](./M2C2C_READINESS.md)。
+
 已完成实现与本地验收：既有四类 Site、Leyline、Upper qi、Nether yin 与持久 Rift / 瞬时 FX 进入 Render3D 地理表现；六个开关独立，派生缓存归 Stage，未增改模拟、World 语义或存档字段。自然 Formation 8/4 阵点分别贴地，四家族均通过约 90px 正常视角生产几何与真实点击验收。
 
 六开关为 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx`。正式生产开启时使用当前真实资产与字段，关闭 production 或资产/footprint 不适合时保留旧标记回退；原 `assets=off` 基线继续有效。七个委托命令均已接线，具体职责和独立复跑入口见 [测试索引](./tests/README.md)。

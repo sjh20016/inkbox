@@ -30,6 +30,8 @@ Site/Leyline 近景按整对象实际提交 bounds 控制80–100 projected pixe
 
 ## 最终结论
 
+首次主线CI的旧dirty分类失败已由426412d修复：保持marker原heightChanged契约，生产Site/Leyline单独处理类型准入失效。旧36断言和新增8组契约通过。修复后概览/Formation两对GPU诊断完成：同一自然save、World/相机及Site/Leyline统计，off/on各自World/advance/camera一致，Formation105约90px、38/96前景三角、实际CDP点击105，runtime error为0。诊断保留pass:false，不替代原471ccbe运行层的23对/Soak或新增Golden；compact summary分别记录来源与证据SHA。最终远端Push结果以本轮main Actions为准。
+
 本地视觉与工程验收通过：23对完整矩阵和同World/advance/camera断言、Site/Leyline前景实际triangle ray与CDP点击、87/441历史像素变化、两界实际冻结事件池化输出、两个关键祖先及600＋6000耐久全绿。完整矩阵中的高倍率界缘、old-trace局部和部分被真实界缘遮挡的Rift视角用于技术检查，没有列入Golden。另用原真实Rift在关闭玩家视窗的凡界镜头补拍两种持久伤口，World与相机配对不变；该诊断仍为pass:false/diagnosticComplete，不代替完整23对结论。树木、聚落和高差仍可自然遮挡微型地景，未为了截图移除世界内容。远端Push门禁以本轮main提交的Actions状态为准；手动C2C Browser/Nightly尚未运行，不引用旧C2B远端作本阶段的封板证据。
 
 独立重生成的自然save/World/advance/history与原验收输入完全相同；干净克隆d9ca78b从缺失缓存自动生成，额外概览与Formation两对诊断完成、90px模型及真实105点击通过。初次cold失败和修复后的诊断独立留proof，compact summary记录SHA，不新增Golden或替代23对矩阵。

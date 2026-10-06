@@ -9,6 +9,8 @@
 
 ## 0. 当前状态与范围
 
+工程已并入main。首推c67a0ee的旧dirty分类回归已由426412d修复：heightChanged原派发不变，生产Site/Leyline独立重验type准入；旧Bridge36断言、新C2C8组和完整Fast26命令通过。修复后的两对GPU与实际点击105通过，独立审查通过；compact summary分别保留原23对/Soak和修复源码/复验SHA，最终远端门禁以本轮main Actions为准。
+
 2026-10-06 C2C 实现与本地验收完成：既有四类 Site、Leyline、Upper `qi`、Nether `veg`、持久 Rift 与短命 FX。六个只读开关 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx` 由 Host 编排；production on 使用正式资源，`geography=off` / `assets=off`、缺资产或完整 footprint 拒绝时保留旧基线与诚实回退。真实 id 必须解析当前 World；不复制半径公式或事件消费口。
 
 本地 11 模式 × 600 日 / 11 RNG / 49 save keys 一致，full SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`。完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。6000 帧分为 20 × 300 帧，200 段检查均保持 114 geometry / 10 texture / 16 program。M2-B 祖先的 Upper / Nether / boundary 分别有 173 / 235 / 91 个可见几何命中，visible geometry === hit；C2B sample 三档真实 GLB 点击通过。 远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行，C2B 三个历史 Actions 不能作本轮证明。入口：[就绪](./M2C2C_READINESS.md)、[工程与24项答复](./M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](./M2C2C_PERFORMANCE_REPORT.md)、[视觉](./M2C2C_VISUAL_ACCEPTANCE.md)。运行包为 333 文件，目录约 8.8MB、ZIP 约 2.7MB；compact acceptance summary 保持不超过 256KiB。8 张正常 Golden 共 7206282 bytes，选择 case 1 / 3 / 4 / 5 / 6 / 8 / 12 / 14，位于开发路径 reports/release/render3d-m2c2c/golden/，不进入 runtime。

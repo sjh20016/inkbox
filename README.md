@@ -74,6 +74,8 @@ npm run test:characters:browser  # 本机Edge/Chrome实载、尺度截图和生�
 
 ## 当前 C2C 地理表现
 
+工程已并入main。首推c67a0ee暴露的旧dirty分类回归由426412d修复，旧Bridge36断言、新C2C8组与完整Fast26命令通过；修复后的两对GPU诊断及实际Formation105点击通过。最新源码与原23对/Soak的来源分别记录于[就绪报告](./M2C2C_READINESS.md)及compact summary；最终远端门禁查看本轮main Actions。
+
 生产资产开启时，凡界已有 `secret` / `cave` / `formation` / `ruin` 与 Leyline 使用正式 GLB；Formation 的 8/4 阵点按自身地形分别贴地，远档仍共享轮廓。上界读取已有 `qi`，幽冥读取已有 `veg`，通过 Stage 持有的 R8 缓存表现强弱；Rift 地貌读取真实持久裂隙，短命 FX 读取唯一 PresentationStage 的冻结事件快照。地点检视回到当前 World 的真实 id，不另造玩法或存档字段。
 
 六个独立表现开关为 `sites`、`leylines`、`upperQi`、`netherYin`、`rifts`、`riftFx`，由 Host API 控制，不写进 World。产品 3D 默认启用；`&geography=off` 关闭 C2C 表现，`&assets=off` 保留旧资产基线。资产未就绪、关闭或完整 footprint 不适合时，Site / Leyline / Rift 保留既有标记回退，不把回退标记当作正式模型验收。

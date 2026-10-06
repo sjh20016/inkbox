@@ -96,6 +96,8 @@ GC后heap 24035768→24304508 bytes，峰值24645756，增量268740；容差上�
 
 ## 已知边界
 
+完整23对表格与600＋6000 Soak记录原验收运行层471ccbe；后续冷启动预检不计入GPU帧。426412d修复首次main Push暴露的旧dirty契约：heightChanged保持原分类，只有活跃生产Site/Leyline独立失效type准入缓存。旧36断言、新8组契约与完整Fast26命令通过；类型未变化的帧路径经独立审查。修复后case1/4两对GPU诊断使用同一自然save、World和相机，Site/Leyline提交统计与原对应视角相同，配对纯度通过。独立浏览器导入的transient advanceState及整帧draw/triangle不要求跨运行相同；两次场景顺序也不同，因此该两对不加入上表，不作新的性能或Soak结论。修复及原始来源SHA均记入compact summary。
+
 各短段独立采地保持表面接触；地形/Region不合适的 Site 或纹段会fallback而不改 World。低矮 Formation 由实帧遮挡诊断发现整块贴地埋入山坡，现改成各阵点分别贴地，增加的是固定物理实例槽，身份cap与draw family没有增加。场扫描暂采用4Hz有界cadence；本次不改变模拟/Bridge dirty分类。
 
 冷启动缓存自然生成发生在GPU启动与计时前，不计作渲染帧；两配方重生成后save/World/advance/history SHA与原正式输入相同。独立d9ca78b克隆的1/4两对冷诊断完成，只检查重建、前景和点击，不加入上表23对计时样本或耐久数据。默认及显式缓存采用完整模拟源码与Node/V8校验；8个坏输入拒绝检查通过。

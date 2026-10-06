@@ -4,6 +4,8 @@
 
 当前实现既有四类 Site、Leyline、Upper `qi`、Nether `veg`、持久 Rift 与短命 FX 六个独立表现开关 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx`。production on 验正式 GLB / 当前字段和真实 id；off、缺资产或完整 footprint 拒绝时验旧标记回退，不用 fallback 冒充生产模型。
 
+主线首推c67a0ee的Fast旧dirty门禁失败已由426412d修复：旧Bridge脚本保持与e0逐字节相同，36断言通过；`test:render3d:m2c2c`新增type变化造成生产footprint拒绝/恢复及关闭生产的旧cadence检查，共8组通过。完整Fast集合26命令通过，修复后的case1/4两对GPU诊断完成、Formation105真实点击通过；诊断仍为pass:false。完整23对/Soak保留原运行层471ccbe来源，compact summary另记录最新源码SHA、Fast26命令与两对复验证据，不混合两次计时或跨运行transient advanceState。
+
 | 委托命令 | 验证内容 | CI 归属 |
 | --- | --- | --- |
 | `npm run test:render3d:m2c2c` | 跨层接线、六开关、Region、旧行为回退与只读边界 | Fast |
