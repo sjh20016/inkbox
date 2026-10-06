@@ -1,6 +1,6 @@
 # M2-C2C 就绪与验收状态
 
-2026-10-06。**当前为验收进行中，尚未宣布C2C封板。**
+2026-10-06。**本地开发与验收完成；远端Push门禁以本轮main提交的Actions状态为准，手动C2C Browser/Nightly尚未执行。**
 源基线 main e0a851c 已完成C2B远端封板；当前工程分支 codex/m2c2c-meaningful-geography。
 
 | 包 | 本地结果 |
@@ -13,9 +13,9 @@
 | 5 Leyline | 11组Node，旧sample/quaternion回归通过 |
 | 6/7 Realm Field | 10组Node；Upper60年只读关系证据完成 |
 | 8 Rift | 16组Node；池化、target、方向、Region与身份通过 |
-| 9 Cross-Realm | 7组Node；正式23配对Browser进行中 |
-| 10 Performance/Purity/Soak | 11模式600日/11流通过；GPU耐久与clean clone待完成 |
-| 11 Visual Seal | 待上述全绿，选四份报告与少量Golden |
+| 9 Cross-Realm | 7组Node；完整23对GPU、同World/advance/camera及真实点击通过 |
+| 10 Performance/Purity/Soak | 11模式600日/11流通过；600＋6000实帧稳定114/10/16资源；干净克隆16命令及包审计通过 |
+| 11 Visual Seal | 四份报告、24答复及8张正常Golden完成；全矩阵/proof留ignored或Artifact |
 | R1 Minimal Animation | 条件Lab候选，未拆现有批处理 |
 | R2 Movement Trace | 250年headless完成，观察纯度通过；不足以授权道路 |
 
@@ -25,10 +25,14 @@
 
 600日CPU纯度使用相同明确fixture并实际提交Site/灵脉/场/真实producer FX。共同完整SHA：4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498；saveSHA：95a6a9634e4b056702b6c5692b02728e3aa11958720abf0c976489ffaef57759。全部save keys与11条RNG流一致。
 
-当前新增运行层只改表现，不新增World kind/模拟字段/道路/污染/城市。完整报告：[工程及24项答复](./M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](./M2C2C_PERFORMANCE_REPORT.md)、[视觉](./M2C2C_VISUAL_ACCEPTANCE.md)。compact summary待最终验收写入 reports/release/render3d-m2c2c/summary/acceptance-summary.json。
+当前新增运行层只改表现，不新增World kind/模拟字段/道路/污染/城市。完整报告：[工程及24项答复](./M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](./M2C2C_PERFORMANCE_REPORT.md)、[视觉](./M2C2C_VISUAL_ACCEPTANCE.md)。[compact acceptance summary](./reports/release/render3d-m2c2c/summary/acceptance-summary.json)记录精简结果、源证据SHA、相机及图SHA；运行包333文件、约8.8 MB目录/2.7 MB ZIP，仅携compact summary，不带Golden或全证据。
 
 ## 下一轮边界
 
 优先研究既有宗门/灵脉的地理归属及真实空间锚点；Upper仙门空间语义需单独定义。R2流量与人口同位，不直接生成道路。R1需要共享GPU姿势/骨骼数据方案，只留Lab。幽冥文明、上界宫城、浮岛拓扑及Gameplay G仍需另行授权。
 
-本轮结果为本地开发交付；新增C2C远端CI/Browser/Nightly尚未执行。
+本轮结果为本地开发交付；远端Push门禁以本轮main提交的Actions状态为准，手动C2C Browser/Nightly尚未执行。
+
+两个关键祖先：M2-B实际Upper173/Nether235/界缘91次拾取，visible geometry===returned hit且无runtime error；正式GLB sample三LOD/产品点击/一次资源加载/完整World纯度均通过。
+
+冷启动复现通过：Browser/Soak共享Node自然产品save预检，完整模拟源码/Node-V8/saveSHA验证；独立重生成与原23对及Soak输入完全相同，8项显式坏输入拒绝。干净克隆d9ca78b无Mortal缓存自动生成，1/4两对诊断完成、Formation105真实点击与90px前景通过，保持diagnosticOnly且pass:false，不替代23对验收。Realms自然history采用同样源码与引擎预检。新存档只由普通模拟生成，不改World事实以通过地形准入。

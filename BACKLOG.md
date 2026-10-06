@@ -3,7 +3,7 @@
 > **本文件只放「还没做」的事。已完成的功能不许留在这里。**
 > 分区：**P0 阻塞** · **P1 当前工程** · **P2 后续体验** · **ICEBOX 暂停研究**。
 > 每条给一个稳定编号 `#N`；**源码注释引用编号即可**（已关闭的旧编号见文末表）。
-> 核对：2026-10-05，M2-C2B Pass 1 远端封板。当前阶段去哪 → [`ROADMAP.md`](./ROADMAP.md)；历史 → `STATUS.md`。
+> 核对：2026-10-06，M2-C2C 本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行；C2B Pass 1 远端封板仅作历史基线。当前阶段 → [`ROADMAP.md`](./ROADMAP.md)；历史 → `STATUS.md`。
 
 ## P0 阻塞
 
@@ -11,11 +11,17 @@
 
 ## P1 当前工程
 
-- 暂无。
+- 暂无已授权的 runtime 施工。C2C 本地验收收口已关闭为 `#33`；远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行；两类状态单独保留，不重开已通过的本地工程。下一阶段优先真实宗门 / 灵脉空间归属，需后续授权；R1 只留 Lab，R2 不授权道路。
+
+已完成范围（不作为待办）：四类 Site、Leyline、Upper qi、Nether veg、持久 Rift / 短命 FX 六开关；production on 用正式资源，off / 不适合时诚实回退。11 模式 × 600 日 / 11 RNG / 49 save keys 一致，SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`；23 对 GPU、600/6000 Soak、两关键祖先、干净克隆与包审计通过。七命令见 [测试索引](./tests/README.md)，最终本地状态见 [C2C READINESS](./M2C2C_READINESS.md)。
+
+开关名称为 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx`，属于表现状态，不成为 World 或存档字段。
+
+当前手动 `.github/workflows/c2c-browser.yml` 只跑 C2C 和两个关键祖先；原 `.github/workflows/ci.yml` 的完整历史 Browser、Heavy 与 Nightly 分层保留，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。R2 研究不足以授权 runtime 道路：开发路径 `research/MOVEMENT_TRACE_REPORT.md` 不随运行包，研究或 Golden 文件不作为产品依赖。
 
 > 上一轮 P1 `#1`–`#7`（**Render3D M1.1D「Development Hardening」**）**已全部完成**——
 > 落点见文末「已关闭编号」表；过程与数据见 `Render3D M1.1D 工程报告.md`。
-> Render3D M2-A 至 M2-C2B Pass 1 均已完成。当前阶段为 M2-C2C Meaningful Geography，具体范围见 [`ROADMAP.md`](./ROADMAP.md)。
+> Render3D M2-A 至 M2-C2C 均已本地完成；远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行，具体证据范围见 [`ROADMAP.md`](./ROADMAP.md)。
 
 ## P2 后续体验
 
@@ -60,7 +66,7 @@
 
 ## 已关闭编号（**不是待办**）
 
-> 两类来源：① **上一轮 P1**（Render3D M1.1D 的 `#1`–`#7`，本阶段已交付）；
+> 当前 C2C 收口编号 `#33` 已关闭；历史编号另有两类来源：① **上一轮 P1**（Render3D M1.1D 的 `#1`–`#7`，本阶段已交付）；
 > ② **更早一轮**的 BACKLOG 编号制（早已随文件重写消失），源码里仍能搜到
 > `BACKLOG #12` / `BACKLOG #13` / `BACKLOG ⑭` 这类注释——在这里给出落点，
 > 免得下一个人以为是待办项。
@@ -74,7 +80,7 @@
 | `#5` | 性能基线重测（GPU 信息 + 逐层 profiling + JSON） | **已完成**：`npm run test:render3d:perf` |
 | `#6` | Three.js vendor 治理（运行时迁出 `node_modules`） | **已完成**：`vendor/three/**` + `npm run test:vendor` |
 | `#7` | 收尾文档与工程报告 | **已完成**：`Render3D M1.1D 工程报告.md` |
-| `#21` | 旧环境中 spawnSync EBUSY、需手工补 ZIP | **不作为当前产品待办**：2026-09-30 自动构建 / ZIP 已实测成功；若再出现，按当次执行权限或环境故障诊断，不伪报 build 通过 |
+| `#33` | C2C 本地验收收口 | **已完成**：23 对 GPU、600/6000 Soak、两关键祖先、干净克隆、包审计与四报告；远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行 |
 | `#23` | 完整三界视觉层 / 正式 3D 视界 | **已完成**：M2-B 完成完整 Layer Mask、界缘、检视与 FX；后续 Art Pass 与三界视觉底座见 M2-C / C2B0 报告 |
 | `#12` | 幽冥 `stepNether` 没接进推进循环 ⇒ 幽冥实体只增不减 | **已修**：统一入口 `sim/advance.js` |
 | `#13` | 「游戏日驱动」时钟被各测试各自手抄一份 ⇒ 迟早与真实游戏脱节 | **已修**：`advanceWorld(world, days, deps)` 是唯一定义处 |
@@ -91,5 +97,5 @@
   表现层（`render/fxLayer.js` / `render/overlayLayer.js` / `render/relationGraph.js`）**不写世界、不抽 RNG、不进存档**——
   删掉 `fxLayer.js`，模拟结果逐字不变。
 - 「记挂」（D7-E）是**玩家的观察者状态**（`world.watch`），不进三界人口守恒、不影响 AI、不给数值 buff。
-- **Render3D M0 / M1 / M1.1D / M2-A / M2-B / M2-C / M2-C2A / C2A.1 / C2B0 / C2B Pass 1 已完成**；D8-G UI 仍暂缓。
+- **Render3D M0 / M1 / M1.1D / M2-A / M2-B / M2-C / M2-C2A / C2A.1 / C2B0 / C2B Pass 1 / C2C 已本地完成**；D8-G UI 仍暂缓。
 - M1.1D 的性能是软件光栅相对数据；M2-A 基线来自 Intel UHD 730 / ANGLE D3D11。Mask 当前隐藏多种 Layer，不能拿它的较低三角数证明完整视界更快。

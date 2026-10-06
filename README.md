@@ -1,6 +1,6 @@
 # 坐天观井 · Inkbox 1.0.0
 
-2026-10-05：**M2-C2B Pass 1 已在当前主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。**3D 默认启用四种凡界建筑 family、真实上界角色、三种普通 ghost、真实鬼修 / 法宝与自然装饰；`assets=off` 保留旧几何对照。21 对 Edge 矩阵、9 模式 600 日 / 11 RNG、600 + 6000 帧及干净克隆通过。Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。下一阶段为已授权的 **M2-C2C Meaningful Geography**；不扩展 World 语义之外的上界文明、幽冥城市或浮空岛拓扑。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+2026-10-06：**M2-C2C Meaningful Geography 本地验收完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。**既有四类 Site、Leyline、Upper qi、Nether yin 与持久 Rift / 瞬时 FX 已接入六个只读表现开关。完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。 CPU 11 模式 × 600 日、11 RNG 与 49 save keys 一致，full SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`。C2B Pass 1 的远端封板基线仍是 main `e0a851c`：Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、Windows Browser [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功，不能充作 C2C 远端证据。C2C 入口：[就绪](./M2C2C_READINESS.md)、[工程与24项答复](./M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](./M2C2C_PERFORMANCE_REPORT.md)、[视觉](./M2C2C_VISUAL_ACCEPTANCE.md)。
 
 当前唯一活跃主线是 `src/inkbox`：一张会自行演化的水墨山河，玩家可以改地形、施神力、观察众生修行与灾祸结果。
 
@@ -72,6 +72,26 @@ npm run test:characters:browser  # 本机Edge/Chrome实载、尺度截图和生�
 
 角色资产随发布包收录；运行游戏不需要安装 Blender。Blender 只用于修改或重建源资产。当前群体采用休止姿态实例绘制；原生 GLB 保留 Idle/Walk，完整群体动画仍是后续工作。几何 LOD 保留现有 GLB 近景与真实身份。
 
+## 当前 C2C 地理表现
+
+生产资产开启时，凡界已有 `secret` / `cave` / `formation` / `ruin` 与 Leyline 使用正式 GLB；Formation 的 8/4 阵点按自身地形分别贴地，远档仍共享轮廓。上界读取已有 `qi`，幽冥读取已有 `veg`，通过 Stage 持有的 R8 缓存表现强弱；Rift 地貌读取真实持久裂隙，短命 FX 读取唯一 PresentationStage 的冻结事件快照。地点检视回到当前 World 的真实 id，不另造玩法或存档字段。
+
+六个独立表现开关为 `sites`、`leylines`、`upperQi`、`netherYin`、`rifts`、`riftFx`，由 Host API 控制，不写进 World。产品 3D 默认启用；`&geography=off` 关闭 C2C 表现，`&assets=off` 保留旧资产基线。资产未就绪、关闭或完整 footprint 不适合时，Site / Leyline / Rift 保留既有标记回退，不把回退标记当作正式模型验收。
+
+委托的七个命令已接线（独立 Leyline 定向门禁另见测试索引）：
+
+```bash
+npm run test:render3d:m2c2c
+npm run test:render3d:m2c2c:sites
+npm run test:render3d:m2c2c:fields
+npm run test:render3d:m2c2c:rifts
+npm run test:render3d:m2c2c:purity
+npm run test:render3d:m2c2c:browser
+npm run test:render3d:m2c2c:soak
+```
+
+2026-10-06 本地验收完成：完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。手动 [c2c-browser.yml](./.github/workflows/c2c-browser.yml) 验当前阶段和 M2-B / C2B sample 两个关键祖先；[ci.yml](./.github/workflows/ci.yml) 保留完整历史 Browser 回归，普通 push 不启动 GPU。远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行，C2B e0a851c 的三个成功 run 仍只属于历史基线。
+
 ## 检查与测试
 
 ```bash
@@ -88,6 +108,9 @@ npm run test:render3d:m2a  # Render3D M2-A（多 Stage / 掩码 / 拾取 / 纯�
 npm run test:render3d:m2c2a # 屏幕LOD/密度预算/真实HLOD/拾取/Region/600日六模式纯度
 npm run test:render3d:m2c2a:browser # Edge固定场景三档对照与真实POI近中远景
 npm run test:render3d:m2c2a:soak # 600帧生命周期与6000帧资源耐久
+npm run test:render3d:m2c2c # C2C Sites / Leyline / Field / Rift / 纯度 CPU 门禁
+npm run test:render3d:m2c2c:browser # 本机 Edge 正式 23 对 geography off/on 矩阵
+npm run test:render3d:m2c2c:soak # 600 lifecycle + 6000 产品 RAF 耐久
 npm run test:vendor       # npm Three 与浏览器 vendor 的版本、许可证、逐字节一致性
 npm run test:render3d:m2a:release  # 顺序执行 12 套发布门禁并保存实际结果
 npm run test:render3d:perf # 浏览器性能探针（本机 Edge/Chrome，记录 GPU 环境）
@@ -109,8 +132,8 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
   **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环）· **Render3D M1.1D**（工程加固）。
 - **已完成底座**：M2-B 的完整 Layer Mask、共享高程、Raw/Strata 界缘、3D 划窗、裂缝破口与拾取。
 - **已完成**：M2-C2B Pass 1 建立第一代正式资产生产体系；验收见 [Pass 1 就绪报告](./M2C2B_READINESS.md)。
-- **当前阶段**：M2-C2C Meaningful Geography，优先呈现已有 Site、Leyline、Upper qi、Nether yin 与 Rift 事实；不新增 World 语义之外的上界文明、幽冥城市或浮空岛拓扑。
-- **后续候选**：群体动画、完整 HLOD 与 Trace Field；S3 后处理不进入默认路径。
+- **当前阶段已本地完成**：M2-C2C Meaningful Geography；23 对 GPU 矩阵、600/6000 帧 Soak、两关键祖先与干净克隆验证通过。远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。只呈现已有 World 事实，详见 [C2C 就绪](./M2C2C_READINESS.md)。
+- **后续优先方向**：真实宗门 / 灵脉空间归属；R1 群体动画只留 Lab，R2 研究不授权 runtime 道路。完整 HLOD、Trace Field 与 Gameplay G 需后续授权。
 - **暂缓**：D8-G「跨界追迹」为 **WIP**——纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）已保存并有测试钉住，但**追迹 UI 未做**；本阶段不继续扩建 Canvas 版 D8-G。
 - **接手先读**：[`HANDOFF.md`](./HANDOFF.md)（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）。
 - 30 秒看懂项目在哪：[`ROADMAP.md`](./ROADMAP.md)

@@ -1,5 +1,29 @@
 # Inkbox 测试与验证入口
 
+## M2-C2C 当前阶段（2026-10-06 本地完成）
+
+当前实现既有四类 Site、Leyline、Upper `qi`、Nether `veg`、持久 Rift 与短命 FX 六个独立表现开关 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx`。production on 验正式 GLB / 当前字段和真实 id；off、缺资产或完整 footprint 拒绝时验旧标记回退，不用 fallback 冒充生产模型。
+
+| 委托命令 | 验证内容 | CI 归属 |
+| --- | --- | --- |
+| `npm run test:render3d:m2c2c` | 跨层接线、六开关、Region、旧行为回退与只读边界 | Fast |
+| `npm run test:render3d:m2c2c:sites` | 四家族实际 GLB、Formation 8/4 子实例、共享 LOD、完整 footprint、当前身份与生命周期 | Fast |
+| `npm run test:render3d:m2c2c:fields` | Upper qi / Nether veg 的 R8 缓存、实际字段绑定、开关与资源生命周期 | Fast |
+| `npm run test:render3d:m2c2c:rifts` | 真实持久 Rift 地貌、唯一权威半径、冻结 presentation snapshot 与固定 FX 池 | Fast |
+| `npm run test:render3d:m2c2c:purity` | 11 模式各 600 游戏日，完整 World / advanceState / save keys 和全部 11 RNG 流一致 | Fast |
+| `npm run test:render3d:m2c2c:browser` | 隔离 Edge 的自然世界 23 对 off/on、真实模型前景拾取 / 点击、可见场变化与产品帧测量 | 手动 C2C current-browser |
+| `npm run test:render3d:m2c2c:soak` | 全状态预热后 600 lifecycle + 6000 产品 RAF、GPU / heap / DOM / listeners / FX 测量窗口 | 手动 C2C current-browser |
+
+`npm run test:render3d:m2c2c:leylines` 是额外定向入口，钉真实 id / strength / radius、地纹逐段贴地、Region、池容量与关闭回退。旧 Node 门禁保留。本地 11 模式 × 600 日、11 RNG 与 49 save keys 一致，full SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`。完整 23 对 GPU、600/6000 Soak、两个关键祖先与干净克隆全部通过；远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。
+
+手动 [c2c-browser.yml](../.github/workflows/c2c-browser.yml) 只运行当前 C2C 和 `test:render3d:m2b:browser` / `test:render3d:m2c2b:sample:browser` 两关键祖先；[ci.yml](../.github/workflows/ci.yml) 保留完整历史 Browser 回归，Fast / Heavy 与 [nightly.yml](../.github/workflows/nightly.yml) 的长测分层不变。两套 GPU workflow 都按需手动触发，不随普通 push 启动。
+
+Browser 与 Soak 在 GPU 测量前共同调用 `ensureCanonicalMortalCache`：通过 Node 的 seed226 / small / 每次 3 日普通推进到 day72000，自然生成产品存档与 metadata，再经产品 importFile 导入。默认缓存缺失，或 simulation 源码、Node / V8、保存 SHA 不匹配时重建；显式指定输入校验失败则拒绝，不在浏览器内重新模拟来替代该输入，也不手写 World / Site / 坐标。Browser 的 canonical Realms save / 原始 900 日历史 R8 同样在测量前校验或由普通 Node 配方生成，经产品 importFile 载入；Realms 也校验完整 simulation 源码、Node / V8 与保存 SHA，默认不匹配时重建，显式坏输入拒绝。save 使用原量化规则，历史 R8 是独立只读表现证据，不能解释为某个鬼魂消失的因果记录。
+
+本地 CDP 测试需 Node 22+ 与 Microsoft Edge，CI 为 Node 24；先 `npm ci` 安装 Node 的 Three。C2C Browser / Soak 默认自管服务器，也接受明确受控 `INKBOX_URL`；`INKBOX_REPORT_DIR` 指向独立输出目录。GPU 矩阵、Soak 和祖先顺序运行，不并发采样。完整 PNG / JSON / 日志在开发路径 `reports/local/m2c2c/` 或 Actions artifact，最多 8 张正常 Golden 保存在开发路径 `reports/release/render3d-m2c2c/golden/`，不进入 runtime；`research/` 也不随包，文档不链接这些排除文件。
+
+本轮结果：四类真实 Site 的约 90px 正常生产几何及 CDP 点击通过；441 个历史前景 GL 点中 87 点变化，RGB 总差 133。600 lifecycle 实际 update / render 各 600 次；20 × 300 = 6000 产品帧，200 段检查均为 114 geometry / 10 texture / 16 program。M2-B Upper / Nether / boundary 的 173 / 235 / 91 个可见几何全部命中；sample 三档实际 GLB 点击通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过，包 333 文件，约 8.8MB 目录 / 2.7MB ZIP。8 张 Golden 共 7206282 bytes，compact summary ≤256KiB。独立干净克隆 d9ca78b 的 cold 复验通过：缺 Mortal 缓存时自动自然生成，Realms 旧 metadata 自动重建；新 Mortal / Realms save 与 World / advance / history SHA 均与原完整 23 对矩阵一致。诊断 case 1 / 4 两对的 World / advance / camera 不变，Formation105 约 90px、38/96 前景三角，真实点击返回 105，error 0。报告保留 diagnosticComplete=true、pass=false，表示仅完成诊断，不替代 23 对全矩阵。8 项显式坏 save / source / engine / missing 拒绝检查通过。初次 cold 失败与修复后证据均独立留 proof。当前四报告：[工程与24项答复](../M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[就绪](../M2C2C_READINESS.md)、[性能](../M2C2C_PERFORMANCE_REPORT.md)、[视觉](../M2C2C_VISUAL_ACCEPTANCE.md)；下方 C2B run 与旧计数仅代表各自历史基线。
+
 ## M2-C2B.1 生产契约
 
 `npm run test:render3d:m2c2b1` 验证实际 GLB 共享 node 的单批次与身份、装饰/法宝迟滞兼容，以及 C2C 的 Golden/summary 证据上限。长期规则见 [ASSET_PRODUCTION_SPEC](../ASSET_PRODUCTION_SPEC.md)。当前阶段 Browser 验收与历史全回归分层保留，旧 Node 门禁不删减。

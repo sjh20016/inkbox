@@ -1,6 +1,6 @@
 # ARCHITECTURE · 工作区与模块地图
 
-2026-10-05 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。当前下一阶段为 M2-C2C Meaningful Geography；只呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。详见 [ROADMAP](./ROADMAP.md)。
+2026-10-06 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。M2-C2C Meaningful Geography 已本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行；只呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。详见 [ROADMAP](./ROADMAP.md)。
 
 历史基线：2026-10-04，Render3D M2-C2A.1 / M2-C2B0。当前阶段以 [ROADMAP](./ROADMAP.md) 为准；历史实现范围以各阶段报告为准。
 
@@ -23,6 +23,9 @@
 | `reports/release/render3d-m2c/` | 历史 M2-C 证据 | 保留历史 | 否 |
 | `reports/release/render3d-m2c2a/` | C2A 代表图片与摘要 | 小集合；完整矩阵走 artifact | 仅 acceptance-summary.json / tree-gate.json |
 | `reports/release/render3d-m2c2b0/` | 三界 summary 与 8 张代表 golden | 小集合 | 否 |
+| `M2C2C_*REPORT.md`、`M2C2C_READINESS.md`、`M2C2C_VISUAL_ACCEPTANCE.md` | 当前工程、性能、视觉与就绪报告 | 是 | 是 |
+| `reports/release/render3d-m2c2c/` | compact summary 与最多 8 张正常 Golden | 小集合；全量走本地 / artifact | 仅白名单 acceptance-summary.json；Golden 否 |
+| `research/` | 只读空间关系 / 流量研究与脚本结果 | 研究资料 | 否；文档只写开发路径，不链接运行包缺失文件 |
 | 其他 `reports/` 输出 | 本机探针、日志、发布核验；CI 证据由 Actions artifact 保存 | 否 | 否 |
 | `.workbuddy-ai/memory/` | 本地交接索引；历史记录压缩归档 | 否 | 否 |
 | `.local-backups/` | 经校验的原工程 / Git 历史 / 清理备份 | 否 | 否 |
@@ -49,7 +52,7 @@ flowchart TD
   Events --> Presentation[PresentationStage · 唯一 ingest]
   Presentation --> CanvasFX[Canvas drawPlane]
   Presentation --> Snapshot[冻结 snapshotPlane]
-  Snapshot --> ThreeFX[ThreeFxProbe · 只读探针]
+  Snapshot --> ThreeFX[ThreeFxProbe + RiftNarrativeFx · 只读池化表现]
 ```
 
 `sim/advance.js` 定义完整世界游戏日时钟；Sandbox.advanceDays 接入游戏，完整世界回归复用同一推进函数。
@@ -78,6 +81,12 @@ render3d/Render3DHost.js          1 GPU + 1 Scene + 1 CameraRig；Stage 生命�
 M2-C 的 `render3d/art/ArtPass.js` 由 Host 持有，只协调已有 Layer 的材质和参数。`TerrainDataTextures` 随 TerrainMesh 生命周期，直接接已有 dirty 通道；`PigmentTerrainMaterial` 将纸、颜料与结构墨组合。`PilotAssets/PilotMaterial` 提供共享母版；`VisualScenarios` 是显式载入的开发证据模块，`ArtDebugPanel` 仅在 URL 开启时创建。没有第二套高程、Region 或 Renderer。
 M2-C2A 的 `lod/PresentationBudget.js` 统一屏幕像素、迟滞与细节配额；Layer 持有按类别/LOD 固定的实例批次与身份映射。ArtPass 提供当前投影倍率，Host 只编排开关和统计；LOD 分配变化才上传矩阵。SettlementLayer 的凡间 HLOD 从真实屋舍派生，成员及完整包围范围跨 Region 时拒绝合并。全部高程和归属继续使用 Stage 的 ElevationField / RegionGeometry。
 CameraRig 只持有 dimensions / coordinates；聚焦高程由 Host 按目标 Stage 计算。
+
+C2C 的 `stage/GeographyFeatures.js` 定义六个只读开关 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx`；Host / PlaneStage 编排 enabled、production、Region、ArtView、LOD 与释放。`markers/WorldMarkerLayer.js` 只有一次世界事实 derive；SiteGeographyLayer、LeylineGeographyLayer、RiftWoundLayer 复用该输入，实际实例携带当前权威 id / 中心，Picker 回到当前 World 校验。Formation 8/4 个子实例分别贴地，仍只是一份 Site 身份；完整父 footprint 与 Region 判据不变。production off、资产缺失或地形拒绝时保留旧标记回退。
+
+`art/ScalarFieldTexture.js` 由 Stage 持有，分别只读 Upper `qi` / Nether `veg` 到 R8 缓存；材质改变场的视觉强弱，不反写生态。持久 Rift 半径经已有 `readers/riftViewModel.js` 读取，短命 FX 只消费 PresentationStage 冻结 snapshot，不建立第二个 drain。没有新的 World kind、存档字段或 renderer 地形真相。
+
+2026-10-06 本地实现及验收完成：11 模式 × 600 日 / 11 RNG / 49 save keys 一致，full SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`；完整 23 对 GPU、600 lifecycle、6000 产品 RAF、两关键祖先及干净克隆通过。6000 帧的 200 段检查均保持 114 geometry / 10 texture / 16 program，这是实际资源观测。运行包 333 文件，约 8.8MB 目录 / 2.7MB ZIP，仅收 compact summary（≤256KiB），8 张 Golden 与 research 均留开发目录。七命令及 Leyline 定向门禁见 [测试索引](./tests/README.md)。手动 [c2c-browser.yml](./.github/workflows/c2c-browser.yml) 验当前阶段和 M2-B / C2B sample 两个关键祖先；[ci.yml](./.github/workflows/ci.yml) 保留完整历史 Browser 回归，普通 push 不启动 GPU。远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行，C2B e0a851c 的三个成功 run 仍只属于历史基线。
 各界数据解释集中在 profile 与 derive 函数，Layer 共享机制；dirty 分类是 height / water / type / veg，不给 World 新增 renderer dirty。
 world 集合的身份、尺寸或地形数组变化会释放旧 Stage 集合并重建；相机与 GPU 保留。缺失子世界允许回退，尺寸不一致明确拒绝。
 

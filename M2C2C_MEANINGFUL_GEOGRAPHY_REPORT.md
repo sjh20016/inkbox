@@ -1,8 +1,8 @@
 # M2-C2C Meaningful Geography 工程报告
 
 2026-10-06。施工基线为 main e0a851c51acc86c98062c42e344ef1f26f6dcf80。
-当前实现与 CPU 门禁已完成；正式浏览器矩阵、Soak 和最终包验收进行中。
-最终门禁以 [READINESS](./M2C2C_READINESS.md) 和 compact acceptance summary 为准。
+本地工程交付已通过：完整23对GPU矩阵、两个祖先回归、11×600日纯度、600＋6000产品帧、独立干净克隆与包审计。
+最终门禁见[READINESS](./M2C2C_READINESS.md)与[compact acceptance summary](./reports/release/render3d-m2c2c/summary/acceptance-summary.json)。远端Push门禁以本轮main提交的Actions状态为准；手动C2C Browser/Nightly尚未执行。
 
 ## 交付与范围
 
@@ -67,3 +67,9 @@
 R1 留在 Lab 候选：正式 CharacterBatch 剔除 skin attributes，使用共享 InstancedMesh 和静态 LOD；资产虽有 rig/Idle/Walk，运行时没有群体骨骼消费路径。新增每实体 SkinnedMesh/Mixer 会绕开现有批处理，适合另立 GPU pose instancing 试验，未作为本阶段完成条件。
 
 R2 完成独立 250 年 headless 采样，脚本与研究报告（开发仓库路径 research/MOVEMENT_TRACE_REPORT.md）进入开发仓库，149511-byte 全结果留 ignored。五次观察探针通过；采样只统计端点及近邻转移，没有补路径、写 World、生成道路或进入运行包。
+
+## 冷启动复现
+
+独立干净克隆的旧Browser自行推进路径曾生成不同Site分布，Secret/Formation被既有完整footprint规则拒绝。现在Browser与Soak统一在GPU测量前由Node普通配方生成自然产品存档：Mortal seed226/small/3日步长/day72000，Realms既有NETHER_STYLE_A/60年配方。默认缺失或全部core/world/sim/io源码、Node/V8、存档SHA不匹配时重建；显式无效输入拒绝，仍经产品importFile导入。
+
+两配方重新生成的save、完整World、advanceState及900日历史均与完整23对矩阵的原输入逐字节一致；8项显式坏缓存检查通过。干净克隆d9ca78b从缺Mortal缓存自动生成并重建Realms，额外1/4两对GPU完成，Formation105约90px、38/96前景三角及实际点击105通过，World/advance/camera不变、无运行错误。该诊断保持pass:false/diagnosticComplete，只证明冷启动，不替代完整23对矩阵。完整失败及修复证据留ignored，并在compact summary记录SHA。这里不声称长模拟在不同Node/Browser引擎之间逐字节相同。

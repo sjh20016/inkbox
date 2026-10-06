@@ -1,6 +1,24 @@
 # Project Status
 
-2026-10-05 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。下一阶段是已授权的 **M2-C2C Meaningful Geography**；不扩展 World 语义之外的上界文明、幽冥城市或浮空岛拓扑。详见 [资产报告](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md) 与 [就绪报告](./M2C2B_READINESS.md)。下方日期章节均为对应阶段的历史记录。
+2026-10-06 当前真相：**C2B Pass 1 的已封板基线为 main `e0a851c`**，第一代正式资产生产体系成立；Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。它们是 C2B 基线证据，不代表 C2C 远端封板。**M2-C2C Meaningful Geography 已本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行**；验收证据见下方。历史 C2B 资产报告：[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪](./M2C2B_READINESS.md)。
+
+## 2026-10-06 · M2-C2C Meaningful Geography（本地完成）
+
+已完成实现与本地验收：既有四类 Site、Leyline、Upper qi、Nether yin 与持久 Rift / 瞬时 FX 进入 Render3D 地理表现；六个开关独立，派生缓存归 Stage，未增改模拟、World 语义或存档字段。自然 Formation 8/4 阵点分别贴地，四家族均通过约 90px 正常视角生产几何与真实点击验收。
+
+六开关为 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx`。正式生产开启时使用当前真实资产与字段，关闭 production 或资产/footprint 不适合时保留旧标记回退；原 `assets=off` 基线继续有效。七个委托命令均已接线，具体职责和独立复跑入口见 [测试索引](./tests/README.md)。
+
+正式矩阵中的真实 900 日历史 R8 前后对照通过：441 个前景地表 GL 采样点中 87 点变化，RGB 总差 133。它证明真实场变化可见，不声称关联某个鬼魂的消失。
+
+当前手动 `.github/workflows/c2c-browser.yml` 验当前 C2C 和两个关键祖先；`.github/workflows/ci.yml` 的完整历史 Browser 回归与旧 Node 门禁保留。C2B 历史三次成功 run 的证据身份不变，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。
+
+本地纯度门禁完成：11 种模式各推进 600 日，11 条 RNG 流及完整 World / advanceState / 49 save keys 一致；full-state SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`。该结果与 GPU 验收分别记录，均不替代远端 CI。
+
+本地验收全部通过：完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。6000 帧分为 20 × 300 帧，200 段检查均保持 114 geometry / 10 texture / 16 program。M2-B 祖先的 Upper / Nether / boundary 分别有 173 / 235 / 91 个可见几何命中，visible geometry === hit；C2B sample 三档真实 GLB 点击通过。运行包为 333 文件，目录约 8.8MB、ZIP 约 2.7MB；compact acceptance summary 保持不超过 256KiB。8 张正常 Golden 共 7206282 bytes，选择 case 1 / 3 / 4 / 5 / 6 / 8 / 12 / 14，位于开发路径 reports/release/render3d-m2c2c/golden/，不进入 runtime。 远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。额外 d9ca78b 干净克隆 cold 复验与 8 项坏缓存拒绝检查通过；自动生成 / 重建后 save、World / advance / history SHA 与原 23 对矩阵一致。case 1 / 4 诊断保持 World / advance / camera，Formation105 38/96 前景三角且真实点击成功、error 0；diagnosticComplete=true、pass=false 保留诊断身份，不替代完整矩阵。证据入口：[就绪](./M2C2C_READINESS.md)、[工程与24项答复](./M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](./M2C2C_PERFORMANCE_REPORT.md)、[视觉](./M2C2C_VISUAL_ACCEPTANCE.md)；全量本机结果位于开发路径 reports/local/m2c2c/。
+
+范围继续限于 World 已有语义，不新增 World 事实、城市、道路或浮岛拓扑。250 年 R2 端点研究显示局部流量与占据 Pearson 相关 0.8904、top-24 平均重合 64.17%，不支持 runtime 道路地景化。R2 报告在开发路径 `research/MOVEMENT_TRACE_REPORT.md`（研究目录不进入运行包）。
+
+后续优先研究既有宗门 / 灵脉空间锚点；Upper 仙门需要真实语义，R1 群体动画只留 Lab。幽冥城市、上界宫城、浮岛拓扑及 Gameplay G 均未授权。
 
 ## 2026-10-04 · C2A.1 / C2B0 三界视觉基线（历史）
 

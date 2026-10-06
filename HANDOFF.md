@@ -1,6 +1,6 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-2026-10-05 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。下一阶段是已授权的 **M2-C2C Meaningful Geography**；范围限于呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+2026-10-06 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。**M2-C2C Meaningful Geography 已本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行**；范围限于呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
 
 > 历史基线：2026-10-04，M2-C2A.1 / M2-C2B0 三界视觉阶段。读序：README → 本文 → 当前任务涉及的契约 / 源码。
 > 阶段看 ROADMAP，目录和模块责任看 ARCHITECTURE，历史查 STATUS；本地 MEMORY 只作索引。
@@ -8,6 +8,10 @@
 长期正式资产规则：[ASSET_PRODUCTION_SPEC](./ASSET_PRODUCTION_SPEC.md)。新增阶段区分正常 Golden、极端 Proof 和完整矩阵；Git 每阶段最多 8 张代表 PNG，完整浏览器证据保留在本机或 Actions artifact。
 
 ## 0. 当前状态与范围
+
+2026-10-06 C2C 实现与本地验收完成：既有四类 Site、Leyline、Upper `qi`、Nether `veg`、持久 Rift 与短命 FX。六个只读开关 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx` 由 Host 编排；production on 使用正式资源，`geography=off` / `assets=off`、缺资产或完整 footprint 拒绝时保留旧基线与诚实回退。真实 id 必须解析当前 World；不复制半径公式或事件消费口。
+
+本地 11 模式 × 600 日 / 11 RNG / 49 save keys 一致，full SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`。完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。6000 帧分为 20 × 300 帧，200 段检查均保持 114 geometry / 10 texture / 16 program。M2-B 祖先的 Upper / Nether / boundary 分别有 173 / 235 / 91 个可见几何命中，visible geometry === hit；C2B sample 三档真实 GLB 点击通过。 远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行，C2B 三个历史 Actions 不能作本轮证明。入口：[就绪](./M2C2C_READINESS.md)、[工程与24项答复](./M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](./M2C2C_PERFORMANCE_REPORT.md)、[视觉](./M2C2C_VISUAL_ACCEPTANCE.md)。运行包为 333 文件，目录约 8.8MB、ZIP 约 2.7MB；compact acceptance summary 保持不超过 256KiB。8 张正常 Golden 共 7206282 bytes，选择 case 1 / 3 / 4 / 5 / 6 / 8 / 12 / 14，位于开发路径 reports/release/render3d-m2c2c/golden/，不进入 runtime。
 
 C2A.1 包清单、真实聚落 HLOD 与密林测量已封板；C2B0 的 24 对截图、600 日全部 11 RNG、600+6000 帧及 21 次 GC 峰值门禁已通过。单源是 [RealmStyleProfile](./src/inkbox/render3d/art/RealmStyleProfile.js)，以 stage.plane 选色。文档入口：[视觉](./M2C2B0_VISUAL_REPORT.md)、[性能](./M2C2B0_PERFORMANCE_REPORT.md)、[终验与就绪条件](./M2C2B0_READINESS.md)。该段只记录 C2B0 当时事实；C2B Pass 1 随后建立了第一代正式资产生产体系。
 
@@ -19,6 +23,8 @@ M2-C2A 接入三档真实几何 LOD、迟滞、密度预算与凡间小聚落 HL
 
 用户允许实验建筑资产自由修改，并指定 `美术素材/配色参考` 为后续颜色参考；使用索引见 [参考资产索引](./美术素材/参考资产索引.md)。范式包用于研究，产品不依赖整套第三方素材。
 
+Browser / Soak 的 Mortal 输入共同由 `ensureCanonicalMortalCache` 在 GPU 测量前准备：Node seed226 / small / 每次 3 日普通推进到 day72000，生成自然产品存档与 metadata，经产品 importFile 导入。默认缺失或 simulation 源码 / Node-V8 / 保存 SHA 不匹配时重建，显式输入坏校验拒绝；Realms 同样校验完整 simulation 源码 / Node-V8 / 保存 SHA，默认旧 metadata 不匹配时自动重建。独立干净克隆 d9ca78b 的 cold 复验通过：缺 Mortal 缓存时自动自然生成，Realms 旧 metadata 自动重建；新 Mortal / Realms save 与 World / advance / history SHA 均与原完整 23 对矩阵一致。诊断 case 1 / 4 两对的 World / advance / camera 不变，Formation105 约 90px、38/96 前景三角，真实点击返回 105，error 0。报告保留 diagnosticComplete=true、pass=false，表示仅完成诊断，不替代 23 对全矩阵。8 项显式坏 save / source / engine / missing 拒绝检查通过。初次 cold 失败与修复后证据均独立留 proof。
+
 ## 1. 唯一工作区与版本
 
 - 活跃源码：`inkbox.html` + `src/inkbox/**`；`index.html` / `game.html` 是跳转入口。
@@ -27,7 +33,7 @@ M2-C2A 接入三档真实几何 LOD、迟滞、密度预算与凡间小聚落 HL
 - `render3d-m0` / `render3d-m2a` 是历史 checkpoint，不从旧快照继续新功能，不重写已发布历史。
 - D6-2 / D6-3、D7 A–G、D8 A–F、M0 / M1 / M1.1D / M2-A / M2-B / M2-C / M2-C2A / M2-C2A.1 / M2-C2B0 / M2-C2B Pass 1 已完成。
   D8-G 只有 `realmTrace` / `netherGhostOf` 逻辑地基，追迹 UI 仍暂缓。
-- 当前阶段为 M2-C2C Meaningful Geography；按委托书呈现已有 World 事实，不新增世界语义之外的上界文明、幽冥城市或浮空岛拓扑。
+- 当前 M2-C2C 已本地完成；下一阶段优先真实宗门 / 灵脉空间归属，R1 只留 Lab，R2 不授权道路；新的 runtime 施工需后续授权。
 
 ## 2. 启动与依赖
 
@@ -64,6 +70,20 @@ Three 固定为 `0.186.1`：浏览器 importmap 读 `vendor/three/`，Node 测�
 
 ## 5. 验证与 CI
 
+当前七个委托命令如下，Leyline 单独定位还可跑 `npm run test:render3d:m2c2c:leylines`；测试职责与历史入口见 [tests/README](./tests/README.md)。
+
+```bash
+npm run test:render3d:m2c2c
+npm run test:render3d:m2c2c:sites
+npm run test:render3d:m2c2c:fields
+npm run test:render3d:m2c2c:rifts
+npm run test:render3d:m2c2c:purity
+npm run test:render3d:m2c2c:browser
+npm run test:render3d:m2c2c:soak
+```
+
+Fast 保留全部旧 CPU 门禁并加入当前 C2C CPU 套件；手动 [c2c-browser.yml](./.github/workflows/c2c-browser.yml) 独立运行当前阶段和 M2-B / C2B sample 两个关键祖先。`ci.yml` 的手动 Browser job 保留完整历史回归，Heavy / Nightly 的分层不变。浏览器验收与 Soak 串行执行，不以 CPU submission 或 RAF 间隔冒充 GPU timer 时间。
+
 | 门禁 | 命令 / 环境 |
 | --- | --- |
 | Fast Gate（push / PR / 手动） | core、view、presentation、render3d、render3d:m1、render3d:bridge、render3d:m2a、m2b、m2c、m2c2a、m2c2b0、vendor、build |
@@ -84,7 +104,7 @@ Git 的源码、素材和开发记录范围大于发布包，具体归属见 ARC
 
 - `剧情文案素材/` 是活跃文案资产，已入 Git 且随包；`美术素材/` 的设计输入见参考索引，产品只加载已接入的代码母版，整套参考包不进运行包。
 - `scripts/_*.mjs` 是已入 Git 的历史一次性探针，保留参考，不在 npm / CI / build 门禁中。
-- `reports/release/render3d-m2a/`、`render3d-m2c/` 的正式证据随包；`render3d-m2c2a/` 只长期保存代表图及摘要，不放重复大矩阵。其他 reports 与 `*.log` 是本地 / Actions 输出。
+- 历史 `reports/release/render3d-m2a/`、`render3d-m2c/` 的证据保留在开发目录，运行包仅收录打包白名单列出的摘要；`render3d-m2c2a/` 只长期保存代表图及摘要，不放重复大矩阵。C2C 的 `research/`、Golden、完整 PNG / JSON / 日志不进 runtime，文档只给开发路径；其他 reports 与 `*.log` 是本地 / Actions 输出。
 - `.workbuddy-ai/`、`.local-backups/`、node_modules、dist 不入 Git。备份不能作为源码或发布依赖。
 
 ## 7. 开发纪律
