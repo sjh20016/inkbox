@@ -102,7 +102,9 @@ void main() {
     color=clamp((color-vec3(0.5))*realmContrast+vec3(0.5),0.0,1.0)*paperExposure;
   } else color*=1.0-inkAmount;
   if(fieldMode>1.5){
-    float yin=smoothstep(0.35,0.90,scalar);
+    // Natural decay can raise an already dense cell. Keep that upper range
+    // responsive instead of flattening every value above 0.90 to one wash.
+    float yin=smoothstep(0.35,1.0,scalar);
     float empty=(1.0-smoothstep(0.18,0.58,scalar))*(1.0-water);
     color=mix(color,paperColor,empty*0.46);
     vec3 coldInk=mix(fieldColdColor,fieldInkColor,0.42+0.18*rock);
