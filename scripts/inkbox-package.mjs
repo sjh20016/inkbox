@@ -54,6 +54,7 @@ const FILES = [
   // `.bat` 只是它的薄壳。**必须随包出货**，否则三个 .bat 全都点不动。
   'scripts/inkbox-launch.mjs',
   '.github/workflows/ci.yml',
+  '.github/workflows/c2c-browser.yml',
   // 长测（smoke + 800 年长跑）**不进** ci.yml，单独按天跑（M1.1D D3.5）。
   // 必须随包出货：接手的人要知道「慢测去哪了」，否则会以为项目没有长测。
   '.github/workflows/nightly.yml',
@@ -125,6 +126,10 @@ const FILES = [
   'ENTITY_PRESENTATION_CONTRACT.md',
   'ASSET_PRODUCTION_SPEC.md',
   'M2C2C_WORLD_SEMANTIC_MAP.md',
+  'M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md',
+  'M2C2C_PERFORMANCE_REPORT.md',
+  'M2C2C_VISUAL_ACCEPTANCE.md',
+  'M2C2C_READINESS.md',
   'scripts/inkbox-render3d-m2c2b1.mjs',
   'scripts/inkbox-render3d-m2c2c-sites.mjs',
   'scripts/inkbox-render3d-m2c2c.mjs',
@@ -132,6 +137,9 @@ const FILES = [
   'scripts/inkbox-render3d-m2c2c-fields.mjs',
   'scripts/inkbox-render3d-m2c2c-rifts.mjs',
   'scripts/inkbox-render3d-m2c2c-rift-wounds.mjs',
+  'scripts/inkbox-render3d-m2c2c-purity.mjs',
+  'scripts/inkbox-render3d-m2c2c-browser.mjs',
+  'scripts/inkbox-render3d-m2c2c-soak.mjs',
   'scripts/inkbox-upper-qi-spatial-proof.mjs',
   'scripts/inkbox-c2c-test-utils.mjs',
   'scripts/inkbox-render3d-m2c2c-pilot-browser.mjs',
@@ -224,6 +232,7 @@ const DIRECTORIES = [
   'assets/environment/docs',
 ];
 const RELEASE_SUMMARIES = [
+  'reports/release/render3d-m2c2c/summary/acceptance-summary.json',
   'reports/release/render3d-m2a/performance.json',
   'reports/release/render3d-m2c2a/acceptance-summary.json',
   'reports/release/render3d-m2c2a/tree-gate.json',

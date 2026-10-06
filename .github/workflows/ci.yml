@@ -98,6 +98,24 @@ jobs:
       - name: Render3D M2-C2B 实际生产 GLB 九模式 600 日与 11 RNG
         run: npm run test:render3d:m2c2b:purity
 
+      - name: C2B.1 资产生产规范与独立分类预算
+        run: npm run test:render3d:m2c2b1
+
+      - name: C2C 语义事实源与三界 Region 接线
+        run: npm run test:render3d:m2c2c
+
+      - name: C2C 四类真实 Site 与灵脉生产地貌
+        run: npm run test:render3d:m2c2c:sites && npm run test:render3d:m2c2c:leylines
+
+      - name: C2C 两界只读 R8 场与资源生命周期
+        run: npm run test:render3d:m2c2c:fields
+
+      - name: C2C 真实裂隙、池化快照 FX 与身份检视
+        run: npm run test:render3d:m2c2c:rifts
+
+      - name: C2C 十一模式 600 日与全部十一条 RNG 流
+        run: npm run test:render3d:m2c2c:purity
+
       - name: 构建发布包（自包含，clone 即可跑）
         run: npm run build
 

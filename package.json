@@ -74,6 +74,9 @@
     "test:render3d:m2c2c:leylines": "node scripts/inkbox-render3d-m2c2c-leylines.mjs",
     "test:render3d:m2c2c:fields": "node scripts/inkbox-render3d-m2c2c-fields.mjs",
     "test:render3d:m2c2c:rifts": "node scripts/inkbox-render3d-m2c2c-rifts.mjs",
+    "test:render3d:m2c2c:purity": "node scripts/inkbox-render3d-m2c2c-purity.mjs",
+    "test:render3d:m2c2c:browser": "node scripts/inkbox-render3d-m2c2c-browser.mjs",
+    "test:render3d:m2c2c:soak": "node scripts/inkbox-render3d-m2c2c-soak.mjs",
     "test:upper-qi": "node scripts/inkbox-upper-qi-spatial-proof.mjs",
     "test:render3d:m2c2c:pilot:browser": "node scripts/inkbox-render3d-m2c2c-pilot-browser.mjs"
   },

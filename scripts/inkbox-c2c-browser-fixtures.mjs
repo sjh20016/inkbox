@@ -15,7 +15,7 @@ import { generateNetherWorld } from '../src/inkbox/world/worldgenNether.js';
 
 export const C2C_RECIPES = Object.freeze([
   Object.freeze({ key: 'mortal', scenario: null, preset: 'small', seed: 226, totalDays: 72000, stepDays: 3,
-    siteCoverageStartDay: 36000, coverageCheckDays: 30,
+    siteCoverageStartDay: 72000, coverageCheckDays: 30,
     intent: 'natural four Site kinds, leyline and mixed settlement search; fixed RNG and ordinary advanceDays' }),
   Object.freeze({ key: 'realms', scenario: 'NETHER_STYLE_A', extraDays: 0,
     intent: 'natural Upper/Nether field, ghosts, decay deltas and rifts' }),
@@ -62,18 +62,32 @@ export async function applyNaturalScenario(sandbox, name, { netherChunkSteps = 3
   // First establish the actual day-zero recipe, then each chunk follows the
   // same deterministic recipe from step zero and ordinary advanceDays calls.
   await applyScenarioAsync(sandbox, name, { startStep: 0, stepCount: 0 });
-  let previous = sandbox.world.nether.veg.slice(), recipeInfo = null;
+  let previous = sandbox.world.nether.veg.slice(), previousDay = sandbox.world.day, recipeInfo = null, bestHistory = null;
   const deltas = [];
   for (let startStep = 0; startStep < totalSteps; startStep += netherChunkSteps) {
     recipeInfo = await applyScenarioAsync(sandbox, name, {
       startStep, stepCount: Math.min(netherChunkSteps, totalSteps - startStep),
     });
-    deltas.push(diffNetherVeg({ nether: { ...sandbox.world.nether, veg: previous } }, sandbox.world));
+    const current = sandbox.world.nether.veg.slice();
+    const diff = diffNetherVeg({ nether: { ...sandbox.world.nether, veg: previous } }, sandbox.world);
+    deltas.push(diff);
+    if (diff.trace && diff.trace.delta > (bestHistory?.trace?.delta || 0)) {
+      const toBytes = values => Uint8Array.from(values, value => Math.round(Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0)) * 255));
+      bestHistory = { plane: 'nether', key: 'veg', width: sandbox.world.nether.w, height: sandbox.world.nether.h,
+        fromDay: previousDay, toDay: sandbox.world.day, trace: diff.trace,
+        beforeBytes: toBytes(previous), afterBytes: toBytes(current),
+        encoding: 'R8 quantization matching ScalarFieldTexture; read-only copies of real pre/post 900-day chunk fields' };
+    }
     previous = sandbox.world.nether.veg.slice();
+    previousDay = sandbox.world.day;
     if (onChunk) await onChunk({ completedSteps: Math.min(totalSteps, startStep + netherChunkSteps), totalSteps, worldDay: sandbox.world.day });
   }
   deltas.sort((a, b) => (b.trace?.delta || 0) - (a.trace?.delta || 0));
+  sandbox.decayDeltaFieldHistory = bestHistory;
   return { ...recipeInfo, decayDeltaEvidence: deltas[0] || null,
+    decayDeltaHistory: bestHistory ? { plane: bestHistory.plane, key: bestHistory.key, width: bestHistory.width, height: bestHistory.height,
+      fromDay: bestHistory.fromDay, toDay: bestHistory.toDay, trace: bestHistory.trace,
+      encoding: bestHistory.encoding, byteLength: bestHistory.beforeBytes.byteLength } : null,
     decayDeltaCheckpoints: deltas.length, decayDeltaSource: 'read-only nether.veg snapshots at 900-day ordinary-simulation chunks' };
 }
 
@@ -85,19 +99,20 @@ export async function applyC2CRecipe(sandbox, recipe, { onChunk = null } = {}) {
   sandbox.advanceState = createAdvanceState();
   sandbox.newWorld(recipe.preset, recipe.seed);
   sandbox.speedIndex = 0;
-  const firstSiteDays = {}, kindsSeen = new Set();
+  const firstSiteDays = {}, firstKinds = new Set();
   let fullSiteCoverageDay = null;
   for (let day = 0; day < recipe.totalDays; day += recipe.stepDays) {
     const days = Math.min(recipe.stepDays, recipe.totalDays - day);
     sandbox.advanceDays(days);
     const completedDays = day + days;
     if (completedDays % recipe.coverageCheckDays === 0) {
-      for (const site of sandbox.world.sites || []) if (!kindsSeen.has(site.kind)) {
-        kindsSeen.add(site.kind);
+      for (const site of sandbox.world.sites || []) if (!firstKinds.has(site.kind)) {
+        firstKinds.add(site.kind);
         firstSiteDays[site.kind] = { day: sandbox.world.day, id: site.id, x: site.x, y: site.y };
       }
+      const currentKinds = new Set((sandbox.world.sites || []).map(site => site.kind));
       if (sandbox.world.day >= recipe.siteCoverageStartDay
-        && ['secret', 'cave', 'formation', 'ruin'].every(kind => kindsSeen.has(kind))) {
+        && ['secret', 'cave', 'formation', 'ruin'].every(kind => currentKinds.has(kind))) {
         fullSiteCoverageDay = sandbox.world.day;
         break;
       }
@@ -109,7 +124,10 @@ export async function applyC2CRecipe(sandbox, recipe, { onChunk = null } = {}) {
   }
   return { scenario: 'fixed-natural-seed', key: recipe.key, preset: recipe.preset, seed: recipe.seed,
     requestedDays: recipe.totalDays, actualDays: sandbox.world.day, stepDays: recipe.stepDays, worldDay: sandbox.world.day,
-    firstSiteDays, fullSiteCoverageDay,
+    firstSiteDays, firstKindsSeen: [...firstKinds], fullSiteCoverageDay,
+    simultaneousSiteKinds: [...new Set((sandbox.world.sites || []).map(site => site.kind))],
+    fullCoverageSiteIds: fullSiteCoverageDay == null ? null : Object.fromEntries(
+      ['secret', 'cave', 'formation', 'ruin'].map(kind => [kind, (sandbox.world.sites || []).filter(site => site.kind === kind).map(site => site.id)])),
     rngRecipe: { sandbox: 'mulberry32(12345) before newWorld', life: 'world seed ^ 0xa5a5a5a5', advanceState: 'fresh' } };
 }
 
@@ -233,6 +251,36 @@ export function scenarioSummary(sandbox, recipe) {
     activeRifts: targets.rifts };
 }
 
+/** Node-only preflight for a independently repeatable natural browser recipe. */
+export async function ensureCanonicalRealmsCache({savePath,metaPath,historyPath,explicit=false}) {
+  const fs=await import('node:fs'),path=await import('node:path'),{createHash}=await import('node:crypto'),{spawn}=await import('node:child_process'),{fileURLToPath}=await import('node:url');
+  const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+  const validate=()=>{
+    for(const file of [savePath,metaPath,historyPath])require(fs.existsSync(file),'natural Realms cache missing '+file);
+    const saveText=fs.readFileSync(savePath,'utf8'),save=JSON.parse(saveText),meta=JSON.parse(fs.readFileSync(metaPath,'utf8')),
+      historyText=fs.readFileSync(historyPath,'utf8'),history=JSON.parse(historyText);
+    require(save.seed===20260923&&save.day===21600,'natural Realms cache recipe identity mismatch');
+    require(hash(saveText)===meta.saveSHA256&&hash(historyText)===meta.historySHA256,'natural Realms cache save/history SHA mismatch');
+    require(history.toDay-history.fromDay===900&&history.trace?.delta>=.03&&history.plane==='nether'&&history.key==='veg','natural Realms cache lacks true 900-day positive history');
+    require(history.beforeBytes?.length===history.width*history.height&&history.afterBytes?.length===history.beforeBytes.length,'natural Realms cache R8 dimensions mismatch');
+    for(const bytes of [history.beforeBytes,history.afterBytes])require(bytes.every(byte=>Number.isInteger(byte)&&byte>=0&&byte<=255),'natural history contains non-R8 bytes');
+    require(hash(Uint8Array.from(history.beforeBytes))===meta.beforeR8SHA256&&hash(Uint8Array.from(history.afterBytes))===meta.afterR8SHA256,'natural Realms cache raw R8 SHA mismatch');
+    require(history.afterBytes[history.trace.index]>history.beforeBytes[history.trace.index],'natural Realms positive delta did not survive R8 quantization');
+    require(meta.sourceWorldSHA256&&meta.advanceSHA256&&meta.sourceFiles,'natural Realms source provenance absent');
+    for(const [file,digest] of Object.entries(meta.sourceFiles))require(hash(fs.readFileSync(path.join(root,file)))===digest,'natural Realms source file changed '+file);
+    return {seed:save.seed,day:save.day,saveSHA256:meta.saveSHA256,historySHA256:meta.historySHA256,sourceWorldSHA256:meta.sourceWorldSHA256};
+  };
+  let reason=null;try{return {generated:false,...validate()};}catch(error){if(explicit)throw error;reason=error.message;}
+  console.log('Generating canonical natural Realms cache before GPU measurement: '+reason);
+  await new Promise((resolve,reject)=>{
+    const child=spawn(process.execPath,[path.join(root,'scripts/inkbox-c2c-browser-fixtures.mjs'),'--realms-only','--write-realms-cache'],
+      {cwd:root,windowsHide:true,env:{...process.env,INKBOX_REALMS_CACHE_DIR:path.dirname(savePath)},stdio:['ignore','pipe','pipe']});
+    let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',data=>{output=(output+data.toString()).slice(-12000);});
+    child.on('error',reject);child.on('close',code=>code===0?resolve():reject(new Error('canonical natural Realms generation failed '+code+': '+output)));
+  });
+  return {generated:true,reason,...validate()};
+}
+
 async function main() {
   if (typeof globalThis.requestAnimationFrame !== 'function')
     globalThis.requestAnimationFrame = callback => setTimeout(() => callback(performance.now()), 0);
@@ -246,11 +294,35 @@ async function main() {
     if (recipe.key === 'realms') {
       row.decayDeltaEvidence = recipeInfo.decayDeltaEvidence;
       row.decayDeltaCheckpoints = recipeInfo.decayDeltaCheckpoints;
+      if(process.argv.includes('--write-realms-cache')){
+        const fs=await import('node:fs'),path=await import('node:path'),{createHash}=await import('node:crypto');
+        const {serializeWorld}=await import('../src/inkbox/io/save.js');
+        const out=path.resolve(process.env.INKBOX_REALMS_CACHE_DIR||'reports/local/m2c2c/pilot');fs.mkdirSync(out,{recursive:true});
+        const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),history=sandbox.decayDeltaFieldHistory;
+        require(history&&history.trace?.delta>=.03,'canonical natural Realms cache requires a real positive trace');
+        require(history.toDay-history.fromDay===900,'canonical natural history must cover an ordinary 900-day chunk');
+        const saveText=JSON.stringify(serializeWorld(sandbox.world)),historyText=JSON.stringify({...history,beforeBytes:Array.from(history.beforeBytes),afterBytes:Array.from(history.afterBytes)});
+        fs.writeFileSync(path.join(out,'natural-realms-save.json'),saveText);
+        fs.writeFileSync(path.join(out,'natural-realms-history.json'),historyText);
+        const files=['scripts/inkbox-c2c-browser-fixtures.mjs','src/inkbox/render3d/art/VisualScenarios.js','src/inkbox/sim/advance.js','src/inkbox/sim/netherLife.js','src/inkbox/world/worldgenNether.js','src/inkbox/io/save.js'];
+        const meta={recipe,recipeInfo,summary:row,generatedAt:new Date().toISOString(),seed:sandbox.world.seed,day:sandbox.world.day,
+          source:'canonical headless createScenarioSandbox + applyC2CRecipe; ordinary 3-day advance only, no World/ghost/field edits',
+          sourceWorldSHA256:hash(JSON.stringify(sandbox.world)),advanceSHA256:hash(JSON.stringify(sandbox.advanceState)),
+          saveSHA256:hash(saveText),historySHA256:hash(historyText),beforeR8SHA256:hash(history.beforeBytes),afterR8SHA256:hash(history.afterBytes),
+          sourceFiles:Object.fromEntries(files.map(file=>[file,hash(fs.readFileSync(file))])),
+          serializationLimit:'Product import uses existing save.js 16-bit quantized fields; raw historical before/after fields were independently quantized to R8 before saving and are read-only historical presentation evidence, never written back into the imported World'};
+        fs.writeFileSync(path.join(out,'natural-realms-meta.json'),JSON.stringify(meta,null,2));
+        row.canonicalCache={directory:out,sourceWorldSHA256:meta.sourceWorldSHA256,saveSHA256:meta.saveSHA256,historySHA256:meta.historySHA256};
+        console.log(JSON.stringify({canonicalRealmsCache:row.canonicalCache}));
+      }
     }
     reports.push(row);
     console.log(JSON.stringify({ recipe: recipe.key, seed: row.seed, day: row.day, coverage: row.targets.coverage,
     kinds: Object.keys(row.targets.sites.byKind).filter(kind => row.targets.sites.byKind[kind]), leyline: !!row.targets.leyline,
       firstSiteDays: recipeInfo.firstSiteDays || null, fullSiteCoverageDay: recipeInfo.fullSiteCoverageDay || null,
+      fullCoverageSiteIds: recipeInfo.fullCoverageSiteIds || null,
+      simultaneousSiteKinds: recipeInfo.simultaneousSiteKinds || null,
+      decayDeltaHistory: recipeInfo.decayDeltaHistory || null,
       upperQiRange: row.targets.fields.upperQi?.range, netherYinRange: row.targets.fields.netherYin?.range,
       activeRifts: row.targets.rifts.length, traceDelta: row.decayDeltaEvidence?.trace?.delta ?? null }, null, 2));
   }
