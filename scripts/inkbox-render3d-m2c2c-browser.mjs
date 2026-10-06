@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { launch, findEdge, sleep } from './cdp.mjs';
 import { sampleBody } from './inkbox-product-frame-timing.mjs';
-import { ensureCanonicalRealmsCache } from './inkbox-c2c-browser-fixtures.mjs';
+import { ensureCanonicalMortalCache, ensureCanonicalRealmsCache } from './inkbox-c2c-browser-fixtures.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || 'reports/local/m2c2c/browser');
@@ -46,16 +46,20 @@ const page = (body, timeoutMs = 180000) => browser.js(`return (async()=>{${body}
 function sourceDigest(value) { return createHash('sha256').update(JSON.stringify(value)).digest('hex'); }
 async function installRecipe(key) {
   let cacheEvidence=null,cacheInfo=null,cacheHistory=null;
-  if(key==='mortal'&&fs.existsSync(NATURAL_SAVE)){
+  if(key==='mortal'){
+    assert(fs.existsSync(NATURAL_SAVE)&&fs.existsSync(NATURAL_GEOGRAPHY),'canonical natural Mortal preflight did not supply save and metadata');
     const saveText=fs.readFileSync(NATURAL_SAVE,'utf8'),save=JSON.parse(saveText);
     assert.equal(save.seed,226,'natural saved World seed mismatch');assert.equal(save.day,72000,'natural saved World day mismatch');
     assert.deepEqual([...new Set(save.sites.map(site=>site.kind))].sort(),['cave','formation','ruin','secret'],'cached current World lacks simultaneous four-kind Site coverage');
-    const meta=fs.existsSync(NATURAL_GEOGRAPHY)?JSON.parse(fs.readFileSync(NATURAL_GEOGRAPHY,'utf8')):null;
+    const meta=JSON.parse(fs.readFileSync(NATURAL_GEOGRAPHY,'utf8'));
+    assert.equal(createHash('sha256').update(saveText).digest('hex'),meta.saveSHA256,'natural Mortal save changed after preflight');
+    cacheInfo=meta.recipeInfo;
     const productionRecord=meta?.records?.at(-1)||null;
     cacheEvidence={source:'serialized natural World loaded by product importFile UI; no World field edits',path:path.relative(ROOT,NATURAL_SAVE).replaceAll(path.sep,'/'),
-      saveSHA256:createHash('sha256').update(saveText).digest('hex'),worldSHA256:productionRecord?.WorldSHA||null,
-      advanceSHA256:productionRecord?.advanceSHA||null,recipeStart:meta?.recipe||null,day:save.day,seed:save.seed,
-      continuation:{fromDay:meta?.recipe?.worldDay??null,toDay:save.day,ordinaryStepDays:meta?.recipe?.stepDays??null},
+      saveSHA256:meta.saveSHA256,worldSHA256:meta.sourceWorldSHA256,
+      advanceSHA256:meta.advanceSHA256,recipeStart:meta.recipe,recipeInfo:meta.recipeInfo,day:save.day,seed:save.seed,
+      sourceFiles:meta.sourceFiles,sourceHashMethod:meta.sourceHashMethod,engine:meta.engine,serializationLimit:meta.serializationLimit,
+      continuation:{fromDay:0,toDay:save.day,ordinaryStepDays:meta.recipe.stepDays},
       productionRecord:productionRecord?{day:productionRecord.day,renderedKinds:productionRecord.renderedKinds,
         renderedSiteCandidates:productionRecord.sites?.filter(site=>site.rendered).map(({id,kind,x,y})=>({id,kind,x,y}))||[]}:null,
       currentSites:save.sites.map(site=>({id:site.id,kind:site.kind,x:site.x,y:site.y}))};
@@ -492,6 +496,8 @@ function browserErrors(){
 try {
   fs.mkdirSync(OUT,{recursive:true});
   fs.rmSync(path.join(OUT,'browser-progress.json'),{force:true});
+  report.mortalCachePreflight=await ensureCanonicalMortalCache({savePath:NATURAL_SAVE,metaPath:NATURAL_GEOGRAPHY,
+    explicit:!!(process.env.INKBOX_C2C_NATURAL_SAVE||process.env.INKBOX_C2C_NATURAL_META)});
   report.realmsCachePreflight=await ensureCanonicalRealmsCache({savePath:REALMS_SAVE,metaPath:REALMS_META,historyPath:REALMS_HISTORY,
     explicit:!!(process.env.INKBOX_C2C_REALMS_SAVE||process.env.INKBOX_C2C_REALMS_META||process.env.INKBOX_C2C_REALMS_HISTORY)});
   if(!process.env.INKBOX_URL){server=spawn(process.execPath,['scripts/inkbox-server.mjs','--port',String(port)],{cwd:ROOT,windowsHide:true,stdio:'ignore'});

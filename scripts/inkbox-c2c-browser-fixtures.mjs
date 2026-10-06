@@ -251,10 +251,59 @@ export function scenarioSummary(sandbox, recipe) {
     activeRifts: targets.rifts };
 }
 
-/** Node-only preflight for a independently repeatable natural browser recipe. */
+// Generate both acceptance and soak inputs in the same Node process family.
+// Long simulations can diverge between Node and a browser's V8 build; loading
+// the ordinary product save keeps their presentation comparisons comparable.
+async function canonicalCacheSources() {
+  const fs=await import('node:fs'),path=await import('node:path'),{createHash}=await import('node:crypto'),{fileURLToPath}=await import('node:url');
+  const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+  const files=['scripts/inkbox-c2c-browser-fixtures.mjs','src/inkbox/render3d/art/VisualScenarios.js'];
+  for(const directory of ['core','world','sim','io']) {
+    const base='src/inkbox/'+directory;
+    for(const relative of fs.readdirSync(path.join(root,base),{recursive:true}))
+      if(relative.endsWith('.js'))files.push(base+'/'+relative.replaceAll(path.sep,'/'));
+  }
+  return Object.fromEntries(files.sort().map(file=>[file,createHash('sha256')
+    .update(fs.readFileSync(path.join(root,file),'utf8').replaceAll('\r\n','\n')).digest('hex')]));
+}
+
+/** Node-only preflight; absent/stale defaults regenerate, invalid explicit inputs fail. */
+export async function ensureCanonicalMortalCache({savePath,metaPath,explicit=false}) {
+  const fs=await import('node:fs'),path=await import('node:path'),{createHash}=await import('node:crypto'),{spawn}=await import('node:child_process'),{fileURLToPath}=await import('node:url');
+  const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+  const sourceFiles=await canonicalCacheSources();
+  const validate=()=>{
+    for(const file of [savePath,metaPath])require(fs.existsSync(file),'natural Mortal cache missing '+file);
+    const saveText=fs.readFileSync(savePath,'utf8'),save=JSON.parse(saveText),meta=JSON.parse(fs.readFileSync(metaPath,'utf8'));
+    require(save.seed===226&&save.day===72000,'natural Mortal cache recipe identity mismatch');
+    require(hash(saveText)===meta.saveSHA256,'natural Mortal cache save SHA mismatch');
+    require(meta.recipe?.key==='mortal'&&meta.recipe.preset==='small'&&meta.recipe.seed===226
+      &&meta.recipe.totalDays===72000&&meta.recipe.stepDays===3,'natural Mortal cache generation recipe mismatch');
+    require(['secret','cave','formation','ruin'].every(kind=>save.sites?.some(site=>site.kind===kind)),
+      'natural Mortal cache lacks current four-kind Site coverage');
+    require(/^[a-f0-9]{64}$/.test(meta.sourceWorldSHA256)&&/^[a-f0-9]{64}$/.test(meta.advanceSHA256),
+      'natural Mortal source provenance absent');
+    require(meta.engine?.node===process.versions.node&&meta.engine?.v8===process.versions.v8,'natural Mortal cache Node/V8 engine changed');
+    require(JSON.stringify(meta.sourceFiles)===JSON.stringify(sourceFiles),'natural Mortal simulation source changed');
+    return {seed:save.seed,day:save.day,saveSHA256:meta.saveSHA256,sourceWorldSHA256:meta.sourceWorldSHA256,
+      advanceSHA256:meta.advanceSHA256,sourceFiles:meta.sourceFiles,engine:meta.engine};
+  };
+  let reason=null;try{return {generated:false,...validate()};}catch(error){if(explicit)throw error;reason=error.message;}
+  console.log('Generating canonical natural Mortal cache before GPU measurement: '+reason);
+  await new Promise((resolve,reject)=>{
+    const child=spawn(process.execPath,[path.join(root,'scripts/inkbox-c2c-browser-fixtures.mjs'),'--mortal-only','--write-mortal-cache'],
+      {cwd:root,windowsHide:true,env:{...process.env,INKBOX_MORTAL_CACHE_SAVE:savePath,INKBOX_MORTAL_CACHE_META:metaPath},stdio:['ignore','pipe','pipe']});
+    let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',data=>{output=(output+data.toString()).slice(-12000);});
+    child.on('error',reject);child.on('close',code=>code===0?resolve():reject(new Error('canonical natural Mortal generation failed '+code+': '+output)));
+  });
+  return {generated:true,reason,...validate()};
+}
+
+/** Node-only preflight for an independently repeatable natural browser recipe. */
 export async function ensureCanonicalRealmsCache({savePath,metaPath,historyPath,explicit=false}) {
   const fs=await import('node:fs'),path=await import('node:path'),{createHash}=await import('node:crypto'),{spawn}=await import('node:child_process'),{fileURLToPath}=await import('node:url');
   const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+  const sourceFiles=await canonicalCacheSources();
   const validate=()=>{
     for(const file of [savePath,metaPath,historyPath])require(fs.existsSync(file),'natural Realms cache missing '+file);
     const saveText=fs.readFileSync(savePath,'utf8'),save=JSON.parse(saveText),meta=JSON.parse(fs.readFileSync(metaPath,'utf8')),
@@ -267,7 +316,8 @@ export async function ensureCanonicalRealmsCache({savePath,metaPath,historyPath,
     require(hash(Uint8Array.from(history.beforeBytes))===meta.beforeR8SHA256&&hash(Uint8Array.from(history.afterBytes))===meta.afterR8SHA256,'natural Realms cache raw R8 SHA mismatch');
     require(history.afterBytes[history.trace.index]>history.beforeBytes[history.trace.index],'natural Realms positive delta did not survive R8 quantization');
     require(meta.sourceWorldSHA256&&meta.advanceSHA256&&meta.sourceFiles,'natural Realms source provenance absent');
-    for(const [file,digest] of Object.entries(meta.sourceFiles))require(hash(fs.readFileSync(path.join(root,file)))===digest,'natural Realms source file changed '+file);
+    require(meta.engine?.node===process.versions.node&&meta.engine?.v8===process.versions.v8,'natural Realms cache Node/V8 engine changed');
+    require(JSON.stringify(meta.sourceFiles)===JSON.stringify(sourceFiles),'natural Realms simulation source changed');
     return {seed:save.seed,day:save.day,saveSHA256:meta.saveSHA256,historySHA256:meta.historySHA256,sourceWorldSHA256:meta.sourceWorldSHA256};
   };
   let reason=null;try{return {generated:false,...validate()};}catch(error){if(explicit)throw error;reason=error.message;}
@@ -291,6 +341,26 @@ async function main() {
     const sandbox = createScenarioSandbox();
     const recipeInfo = await applyC2CRecipe(sandbox, recipe);
     const row = scenarioSummary(sandbox, { ...recipe, visualRecipe: recipeInfo });
+    if(recipe.key==='mortal'&&process.argv.includes('--write-mortal-cache')){
+      const fs=await import('node:fs'),path=await import('node:path'),{createHash}=await import('node:crypto');
+      const {serializeWorld}=await import('../src/inkbox/io/save.js');
+      const savePath=path.resolve(process.env.INKBOX_MORTAL_CACHE_SAVE||'reports/local/m2c2c/pilot/full-sites-natural-save.json');
+      const metaPath=path.resolve(process.env.INKBOX_MORTAL_CACHE_META||'reports/local/m2c2c/pilot/full-natural-geography.json');
+      const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+      require(sandbox.world.day===72000&&Object.values(row.targets.sites.byKind).every(Boolean),
+        'canonical natural Mortal recipe must reach day72000 with all four Site kinds');
+      const saveText=JSON.stringify(serializeWorld(sandbox.world));
+      const meta={recipe,recipeInfo,summary:row,generatedAt:new Date().toISOString(),seed:sandbox.world.seed,day:sandbox.world.day,
+        source:'canonical Node createScenarioSandbox + applyC2CRecipe; seed226 small, ordinary 3-day advance to day72000; no World/coordinate/terrain edits',
+        sourceWorldSHA256:hash(JSON.stringify(sandbox.world)),advanceSHA256:hash(JSON.stringify(sandbox.advanceState)),saveSHA256:hash(saveText),
+        sourceFiles:await canonicalCacheSources(),sourceHashMethod:'SHA-256 of LF-normalized fixture and all core/world/sim/io JavaScript',
+        engine:{node:process.versions.node,v8:process.versions.v8},
+        serializationLimit:'Product import uses existing save.js serialization, including 16-bit quantized fields. Browser and soak both import this save through the product file input.'};
+      fs.mkdirSync(path.dirname(savePath),{recursive:true});fs.mkdirSync(path.dirname(metaPath),{recursive:true});
+      fs.writeFileSync(savePath,saveText);fs.writeFileSync(metaPath,JSON.stringify(meta,null,2));
+      row.canonicalCache={savePath,metaPath,sourceWorldSHA256:meta.sourceWorldSHA256,saveSHA256:meta.saveSHA256};
+      console.log(JSON.stringify({canonicalMortalCache:row.canonicalCache}));
+    }
     if (recipe.key === 'realms') {
       row.decayDeltaEvidence = recipeInfo.decayDeltaEvidence;
       row.decayDeltaCheckpoints = recipeInfo.decayDeltaCheckpoints;
@@ -304,12 +374,12 @@ async function main() {
         const saveText=JSON.stringify(serializeWorld(sandbox.world)),historyText=JSON.stringify({...history,beforeBytes:Array.from(history.beforeBytes),afterBytes:Array.from(history.afterBytes)});
         fs.writeFileSync(path.join(out,'natural-realms-save.json'),saveText);
         fs.writeFileSync(path.join(out,'natural-realms-history.json'),historyText);
-        const files=['scripts/inkbox-c2c-browser-fixtures.mjs','src/inkbox/render3d/art/VisualScenarios.js','src/inkbox/sim/advance.js','src/inkbox/sim/netherLife.js','src/inkbox/world/worldgenNether.js','src/inkbox/io/save.js'];
         const meta={recipe,recipeInfo,summary:row,generatedAt:new Date().toISOString(),seed:sandbox.world.seed,day:sandbox.world.day,
           source:'canonical headless createScenarioSandbox + applyC2CRecipe; ordinary 3-day advance only, no World/ghost/field edits',
           sourceWorldSHA256:hash(JSON.stringify(sandbox.world)),advanceSHA256:hash(JSON.stringify(sandbox.advanceState)),
           saveSHA256:hash(saveText),historySHA256:hash(historyText),beforeR8SHA256:hash(history.beforeBytes),afterR8SHA256:hash(history.afterBytes),
-          sourceFiles:Object.fromEntries(files.map(file=>[file,hash(fs.readFileSync(file))])),
+          sourceFiles:await canonicalCacheSources(),sourceHashMethod:'SHA-256 of LF-normalized fixture and all core/world/sim/io JavaScript',
+          engine:{node:process.versions.node,v8:process.versions.v8},
           serializationLimit:'Product import uses existing save.js 16-bit quantized fields; raw historical before/after fields were independently quantized to R8 before saving and are read-only historical presentation evidence, never written back into the imported World'};
         fs.writeFileSync(path.join(out,'natural-realms-meta.json'),JSON.stringify(meta,null,2));
         row.canonicalCache={directory:out,sourceWorldSHA256:meta.sourceWorldSHA256,saveSHA256:meta.saveSHA256,historySHA256:meta.historySHA256};

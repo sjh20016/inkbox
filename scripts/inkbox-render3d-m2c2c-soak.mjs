@@ -7,6 +7,7 @@ import { spawn, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { launch, findEdge, sleep } from './cdp.mjs';
+import { ensureCanonicalMortalCache } from './inkbox-c2c-browser-fixtures.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const port=Number(process.env.INKBOX_PORT||4241),base=process.env.INKBOX_URL||`http://127.0.0.1:${port}`;
@@ -73,16 +74,19 @@ async function cpuMemorySample(){
 async function prepare(){
   await page(`window.inkbox.setSpeed(0);window.__b6=await import('./src/inkbox/render3d/art/VisualScenarios.js');window.__c2cFixture=await import('./scripts/inkbox-c2c-browser-fixtures.mjs');return true;`);
   let scenario=null;
-  if(fs.existsSync(naturalSave)){
+  assert(fs.existsSync(naturalSave)&&fs.existsSync(naturalMeta),'canonical natural Mortal preflight did not supply save and metadata');
+  {
     const bytes=fs.readFileSync(naturalSave),save=JSON.parse(bytes.toString('utf8'));
     assert.equal(save.seed,226);assert.equal(save.day,72000);
     assert.deepEqual([...new Set(save.sites.map(x=>x.kind))].sort(),['cave','formation','ruin','secret']);
-    const meta=fs.existsSync(naturalMeta)?JSON.parse(fs.readFileSync(naturalMeta,'utf8')):null;
+    const meta=JSON.parse(fs.readFileSync(naturalMeta,'utf8'));
+    assert.equal(createHash('sha256').update(bytes).digest('hex'),meta.saveSHA256,'natural Mortal save changed after preflight');
     const productionRecord=meta?.records?.at(-1)||null;
     report.naturalCache={source:'natural fixed-seed sim serialized World imported via product file-input/importFile path; no World edits',
-      saveSHA256:createHash('sha256').update(bytes).digest('hex'),worldSHA256:productionRecord?.WorldSHA||null,
-      advanceSHA256:productionRecord?.advanceSHA||null,day:save.day,seed:save.seed,recipeStart:meta?.recipe||null,
-      continuation:{fromDay:meta?.recipe?.worldDay??null,toDay:save.day,ordinaryStepDays:meta?.recipe?.stepDays??null},
+      saveSHA256:meta.saveSHA256,worldSHA256:meta.sourceWorldSHA256,
+      advanceSHA256:meta.advanceSHA256,day:save.day,seed:save.seed,recipeStart:meta.recipe,recipeInfo:meta.recipeInfo,
+      sourceFiles:meta.sourceFiles,sourceHashMethod:meta.sourceHashMethod,engine:meta.engine,serializationLimit:meta.serializationLimit,
+      continuation:{fromDay:0,toDay:save.day,ordinaryStepDays:meta.recipe.stepDays},
       productionRecord:productionRecord?{day:productionRecord.day,renderedKinds:productionRecord.renderedKinds,
         renderedSiteCandidates:productionRecord.sites?.filter(x=>x.rendered).map(({id,kind,x,y})=>({id,kind,x,y}))||[]}:null};
     await page(`window.inkbox.setSpeed(0);return true;`);
@@ -92,11 +96,6 @@ async function prepare(){
     assert(await browser.waitFor('return window.inkbox?.world?.seed===226&&window.inkbox?.world?.day===72000',{timeoutMs:30000}),
       'C2C natural save did not load through product importFile');
     scenario={scenario:'cached serialized natural World',seed:226,worldDay:72000,source:report.naturalCache.source};
-  }else{
-    scenario=await page(`const f=window.__c2cFixture,k=window.inkbox,recipe=f.C2C_RECIPES.find(x=>x.key==='mortal');
-      k.setSpeed(0);const sb=f.createScenarioSandbox(),info=await f.applyC2CRecipe(sb,recipe,{onChunk:async()=>new Promise(requestAnimationFrame)});
-      k.world=sb.world;k.life=sb.life;k.upperLife=sb.upperLife;k.advanceState=sb.advanceState;k.rng=sb.rng;k.render3d.renderer.setWorld(sb.world);
-      return {scenario:'fixed natural seed226 ordinary simulation',seed:k.world.seed,worldDay:k.world.day,info};`,{label:'natural C2C recipe fallback',timeoutMs:600000});
   }
   const setup=await page(`
     const k=window.inkbox,r=k.render3d.renderer,f=window.__c2cFixture;
@@ -389,6 +388,8 @@ async function soakBlock(block,state){
 
 try{
   fs.mkdirSync(output,{recursive:true});
+  report.mortalCachePreflight=await ensureCanonicalMortalCache({savePath:naturalSave,metaPath:naturalMeta,
+    explicit:!!(process.env.INKBOX_C2C_NATURAL_SAVE||process.env.INKBOX_C2C_NATURAL_META)});
   const executable=findEdge();assert(executable,'Microsoft Edge is required');
   server=await startServer();
   browser=await launch({url:'about:blank',browser:executable,width:1500,height:940,gpu:true,timeoutMs:30000});report.browser=browser.meta;
