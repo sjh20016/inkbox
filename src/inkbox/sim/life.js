@@ -39,6 +39,8 @@ import { stepSites } from './sites.js';
 import { stepArtifacts, dropArtifacts, wearArtifacts, ownerLine, KILL_WEAR } from './artifacts.js';
 import { tickBusanzi } from './busanzi.js';
 import { WorldEvents } from './worldEvents.js';
+// B0.1 观测计数器（只自增，不抽签、不改状态、不进存档）。见 sim/telemetry.js。
+import { bumpTelemetry } from './telemetry.js';
 
 const TERRAIN_SPEED = Object.freeze({
   [TERRAIN.SAND]: 0.82,
@@ -407,7 +409,20 @@ export class Life {
         if (soul) world.souls.push(soul);
         break;
       }
-      initEntity(entity, this.rng, { cultivator: sp === SPECIES.CULTIVATOR });
+      // ── B0.1 · 出生记账 ────────────────────────────────────
+      //
+      // 位置刻意选在 `addEntity` **成功之后**：顶到上限而没生出来的那一次
+      // 不该算作出生（上面那一支已经 `break` 掉了，走不到这里）。
+      //
+      // ⚠️ 口径是「凡间经由 `Life.spawn` 创建的全部实体」——**包含**世界初开时
+      //    撒下的初始人口与神力笔刷投放的人。所以 day 0 的第一份快照里
+      //    `popBirthsCum` 就等于初始人口数；要「自然出生数」就做后段差分。
+      //    这不是瑕疵，是刻意的：把「初开」和「繁衍」硬分开会让 day 0 的读数
+      //    变成一个没有对照的 0，而「初始有多少人」本身也是要看的数。
+      //
+      // ⚠️ 它只做 `+= 1`：不抽签、不读签、不写 world ⇒ 世界指纹一个字节不变。
+      bumpTelemetry(world, 'births');
+      initEntity(entity, this.rng, { cultivator: sp === SPECIES.CULTIVATOR, world });
       entity.surname = surname;
       // ── 先天修士也要留一笔 ─────────────────────────────────
       //

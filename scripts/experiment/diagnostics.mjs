@@ -94,13 +94,7 @@ function column(snapshots, key) {
 // ───────────────────────────────────────────────────────────────────────
 
 /**
- * `population_plateau` —— 长期人口几乎不变。
- *
- * 委托书 §12 明文：「暂时不要自动判断是好是坏。」
- * 所以这里是 `info`，且 evidence 里同时给出「相对变化」「变异系数」「平台起点」
- * 三个数——因为「贴顶」与「卡死」在单看一个数时长得一样：
- *   · 贴顶（`POP_SOFT_CAP` 保险丝生效）⇒ 人口高、波动小；
- *   · 卡死（生育链断了）⇒ 人口可能低、波动也小。
+ * 通用「后段平台」检测。`entity_plateau` 与 `civil_plateau` 共用同一套判据。
  *
  * ⚠️⚠️ **判据只看「后段」（`final_third`），不看整段**——这一条是修过的。
  *
@@ -118,13 +112,18 @@ function column(snapshots, key) {
  * 改看后段之后：成长期被排除在窗口之外，平台本身成为唯一的观测对象。
  * 代价是「一直在缓慢增长」的世界不会被报出来——但那本来就**不是**平台，
  * 不该用这个码。
+ *
+ * @param {object[]} snapshots
+ * @param {number} seed
+ * @param {object[]} out
+ * @param {{key: string, code: string, metric: string, buildNote: Function}} spec
  */
-function detectPopulationPlateau(snapshots, seed, out) {
-  // 直接扫 snapshots 而不是用 `column()`：这里需要**年号**与人口配对，
+function detectPlateau(snapshots, seed, out, spec) {
+  // 直接扫 snapshots 而不是用 `column()`：这里需要**年号**与数值配对，
   // 而 `column()` 会把 null 滤掉、破坏下标对齐。
   const series = [];
   for (let i = 0; i < snapshots.length; i += 1) {
-    const v = snapshots[i].popTotal;
+    const v = snapshots[i][spec.key];
     if (typeof v === 'number' && Number.isFinite(v)) {
       series.push({ v, day: snapshots[i].day, year: snapshots[i].year });
     }
@@ -158,7 +157,7 @@ function detectPopulationPlateau(snapshots, seed, out) {
   const plateauFrom = series[startIdx];
   const tailPoint = series[series.length - 1];
 
-  out.push(entry(SEVERITY.INFO, 'population_plateau', seed, 'popTotal', 'final_third', {
+  out.push(entry(SEVERITY.INFO, spec.code, seed, spec.metric, 'final_third', {
     plateauFromDay: plateauFrom.day,
     plateauFromYear: plateauFrom.year,
     plateauYears: Math.max(0, (tailPoint.year || 0) - (plateauFrom.year || 0)),
@@ -168,9 +167,52 @@ function detectPopulationPlateau(snapshots, seed, out) {
     coefficientOfVariationInWindow: cv,
     samples: series.length,
     windowSamples: seg.length,
-    note: '后段人口几乎不变。贴顶（保险丝生效）与卡死（生育链断了）在此读数下同形，'
-      + '需结合人口绝对水平判断——而 births 累计数当前不可得，见 telemetry_gap。',
+    note: spec.buildNote(),
   }));
+}
+
+/**
+ * `entity_plateau` —— **世界实体总数**（含兽 / 灵）长期几乎不变。
+ *
+ * ⚠️ B0.1 §3 拆分点：本码量的是 `popTotal`，**不是**凡间人口。
+ *    `popTotal = popCivil + popWild`，而 `popWild`（兽 + 灵）可以独立地
+ *    暴涨或崩溃。于是「实体总数平稳」既可能意味着「凡间人口稳」，
+ *    也可能意味着「凡间人口在掉、兽群在涨，两条曲线正好互相抵消」。
+ *    要回答「人」的问题，必须看 `civil_plateau`。
+ */
+function detectEntityPlateau(snapshots, seed, out) {
+  detectPlateau(snapshots, seed, out, {
+    key: 'popTotal',
+    code: 'entity_plateau',
+    metric: 'popTotal',
+    buildNote: () => '后段**世界实体总数**（凡间人 + 兽 + 灵）几乎不变。'
+      + '贴顶（保险丝生效）与卡死（生育链断了）在此读数下同形，'
+      + '但现在 births 累计数已可得（popBirthsCum），两者可以分开：'
+      + '贴顶时 births 仍在涨、死亡也涨；卡死时 births 后段停止增长。'
+      + '⚠️ 本码含兽 / 灵，凡间人口的问题请看 civil_plateau。',
+  });
+}
+
+/**
+ * `civil_plateau` —— **凡间人口**（凡人 + 修士，不含兽 / 灵）长期几乎不变。
+ *
+ * B0.1 §3 新增。与 `entity_plateau` 分开的理由不是「多一个指标」，
+ * 而是两者能给出**相反的结论**：
+ *   · `popTotal` 平台 + `popCivil` 下跌 ⇒ 兽群补上了人的缺口（生态在换血）；
+ *   · `popTotal` 平台 + `popCivil` 上涨 ⇒ 人在挤走兽（开发 / 扩张）；
+ *   · 只有两者同时平台，才是「整个世界都停住了」。
+ * 合成一个码时这三种情形在报告上长得一模一样。
+ */
+function detectCivilPlateau(snapshots, seed, out) {
+  detectPlateau(snapshots, seed, out, {
+    key: 'popCivil',
+    code: 'civil_plateau',
+    metric: 'popCivil',
+    buildNote: () => '后段**凡间人口**（凡人 + 修士，不含兽 / 灵）几乎不变。'
+      + '与 entity_plateau 对照读：若只有本码触发，说明变化全发生在兽 / 灵那一侧，'
+      + '「凡间社会」其实已经停住了；若两者都触发，才是整个世界停住。'
+      + '分子分母口径见 CSV 的 popCultivatorShareCivil（只对人口算占比）。',
+  });
 }
 
 /**
@@ -273,6 +315,13 @@ function detectStalledFlow(snapshots, seed, out) {
   const flows = [
     'soulCumulativeCreated', 'warDeclaredCum', 'clanFoundedCum', 'artifactForgedCum',
     'netherBornCum', 'riftOpenedCum', 'possessionSucceededCum', 'popDeathsCum',
+    // ── B0.1 §6 / §7 新增的账本（全部单调递增，与上面同构）──────
+    //   births 停滞 = 生育链断了（这是「人口平台是贴顶还是卡死」的关键判据，
+    //   B0 时代因为没有这个计数器而**无法回答**）；
+    //   awakens 停滞 = 修行通道关了；
+    //   soulEvictions 停滞 = 魂池不再满（或逐出路径断了）；
+    //   lifeRngDraws 停滞 = 世界不再吃随机数（= 几乎没东西在推进）。
+    'popBirthsCum', 'popAwakensCum', 'soulPoolEvictedCum', 'lifeRngDrawsCum',
   ];
   for (const key of flows) {
     const series = column(snapshots, key);
@@ -352,21 +401,62 @@ function detectCrossRealmAbsence(snapshots, seed, out, viewPolicy) {
 // ───────────────────────────────────────────────────────────────────────
 
 /**
- * `granary_empty` —— 某次探针观测到有聚落粮仓见底。
+ * `granary_empty` —— 某次探针观测到有聚落粮仓见底。**观测事实，不是饥荒判定。**
  *
  * 这是**探针存在的全部理由**：一次只持续几十天的粮荒在年度快照上完全看不见。
  * 阈值取 0（`life.js:1494` 的 clamp 下界），由数据导出，不新增游戏常量。
+ *
+ * ⚠️⚠️ B0.1 §5 降级：**B0 时代它是 `warning`，并附带「这正是探针层的用途」
+ *    这类暗示性措辞，读起来像是「发现了饥荒」。那是越界。**
+ *
+ *    「粮仓见底」是一个**关于 `village.food` 这个变量的陈述**。
+ *    「饥荒」是一个**关于人的陈述**（有人饿死 / 生育率下降 / 人口下降）。
+ *    从前者推到后者需要一条 B0 尚未验证的因果链。把观测事实印成诊断结论，
+ *    代价不是数字错，而是**结论错**——读报告的人会把一次粮仓触底
+ *    直接写进「B0 发现经济脆弱」的结论里，而实际上什么都没被证明。
+ *
+ *    所以现在：`info`，措辞只陈述观测，并把「受影响人口 / 占比」一并给出——
+ *    因为「3 座村见底」在 10 村的世界与 90 村的世界里是两件完全不同的事，
+ *    单看村数会把两者印成同一个数。
  */
 function detectGranaryEmpty(probes, seed, out) {
   const hits = probes.filter((p) => (p.foodEmptyCount || 0) > 0);
   if (!hits.length) return;
-  out.push(entry(SEVERITY.WARNING, 'granary_empty', seed, 'food.emptyVillages', 'probe_window', {
+
+  // 取「最严重的那一次」作为代表证据，而不是第一次命中：
+  // 第一次命中往往只是刚刚触底（1 座村），看起来像噪音；
+  // 整段里受影响人口最多的那一次才说明这件事的规模。
+  let worst = hits[0];
+  for (let i = 1; i < hits.length; i += 1) {
+    if ((hits[i].foodEmptyPopulation || 0) > (worst.foodEmptyPopulation || 0)) worst = hits[i];
+  }
+  const shareSeries = hits
+    .map((p) => p.foodEmptyShare)
+    .filter((v) => typeof v === 'number' && Number.isFinite(v));
+  const popSeries = hits
+    .map((p) => p.foodEmptyPopulation)
+    .filter((v) => typeof v === 'number' && Number.isFinite(v));
+
+  out.push(entry(SEVERITY.INFO, 'granary_empty', seed, 'food.emptyVillages', 'probe_window', {
     probeDaysWithEmptyGranary: hits.length,
     totalProbes: probes.length,
     firstDay: hits[0].day,
     firstYear: hits[0].year,
+    // ── 规模证据（B0.1 §4 / §5）────────────────────────────────
+    maxEmptyVillages: worst.foodEmptyCount,
+    maxEmptyShare: worst.foodEmptyShare,
+    maxAffectedPopulation: worst.foodEmptyPopulation,
+    peakShareInWindow: shareSeries.length ? Math.max(...shareSeries) : null,
+    peakAffectedPopulation: popSeries.length ? Math.max(...popSeries) : null,
+    worstDay: worst.day,
+    worstYear: worst.year,
     minFoodAtFirstHit: hits[0].foodMin,
-    note: '年度快照可能整年跳过这种短时粮荒——这正是探针层的用途。',
+    observation: '至少一个聚落的 village.food 在夹取下界（0）上被观测到。',
+    notClaimed: '本诊断**不**断言发生饥荒。famine 是关于人的陈述，需要饿死 / 生育下降等'
+      + '因果证据；B0 只有「粮仓变量触底」这一个观测。',
+    note: '年度快照可能整年跳过这种短时触底——这正是探针层的用途。'
+      + '请把 maxAffectedPopulation 与 villageCount 一起读：同样是「3 座村见底」，'
+      + '在 10 村与 90 村的世界里意义完全不同。',
   }));
 }
 
@@ -438,7 +528,9 @@ export function diagnoseSeed(result, config) {
   const { snapshots, probes, seed } = result;
 
   if (snapshots.length >= 2) {
-    detectPopulationPlateau(snapshots, seed, out);
+    // B0.1 §3：实体平台与凡间平台是两个不同的问题，各自出码。
+    detectEntityPlateau(snapshots, seed, out);
+    detectCivilPlateau(snapshots, seed, out);
     detectFoodHighFloor(snapshots, seed, out);
     detectMonotonicResource(snapshots, seed, out);
     detectConcentration(snapshots, seed, out);

@@ -219,6 +219,45 @@ export function currentCommit(cwd = REPO_ROOT) {
   }
 }
 
+/**
+ * 云环境可能提供的源码版本环境变量（按可信度排序）。
+ *
+ * B0.1 §9：`commit` 的语义是「本机 git 仓库的 HEAD」，而**云实验容器里
+ * 通常没有 `.git`**（CI 的 checkout 常常只拷工作树）。于是一份在云上跑出来的
+ * 1000 seed 结果，`commit` 会是 `null`——**它无法回答「这批数据是哪版代码跑的」**，
+ * 而那正是未来最需要回答的问题。
+ *
+ * 所以：git 优先（最权威），git 拿不到时退回环境变量。
+ * ⚠️ 但**必须同时记录来源**（`sourceRevisionSource`），否则「这是 git SHA」
+ *    与「这是 CI 塞进来的变量」在 JSON 里长得一模一样——
+ *    而两者的可信度差得很远。来源不可得时如实写 null，不猜。
+ */
+const SOURCE_REVISION_ENV_KEYS = Object.freeze([
+  'WORLD_LAB_SOURCE_REVISION',   // 本实验自己的约定，优先级最高
+  'GITHUB_SHA',                  // GitHub Actions
+  'CI_COMMIT_SHA',               // GitLab CI
+  'VERCEL_GIT_COMMIT_SHA',
+  'SOURCE_VERSION',              // Heroku
+]);
+
+/**
+ * 取「这份结果对应哪一版源码」，并说明**来源**。
+ *
+ * @returns {{revision: string|null, source: string|null}}
+ *   `revision === null` ⟹ 两个渠道都没有，如实记 unavailable（委托书 §8：「不要猜」）。
+ */
+export function sourceRevision(cwd = REPO_ROOT) {
+  const git = currentCommit(cwd);
+  if (git) return { revision: git, source: 'git rev-parse HEAD' };
+  for (const key of SOURCE_REVISION_ENV_KEYS) {
+    const raw = process.env[key];
+    if (typeof raw === 'string' && raw.trim()) {
+      return { revision: raw.trim(), source: `env ${key}` };
+    }
+  }
+  return { revision: null, source: null };
+}
+
 // ───────────────────────────────────────────────────────────────────────
 // Manifest
 // ───────────────────────────────────────────────────────────────────────
@@ -233,6 +272,7 @@ export function currentCommit(cwd = REPO_ROOT) {
  *   · 没有 `columns`，无法判断两份历史 CSV 能不能并排分析。
  */
 export function buildManifest(config, extra = {}) {
+  const rev = sourceRevision();
   return {
     schemaVersion: config.schemaVersion,
     experiment: config.experiment,
@@ -244,15 +284,41 @@ export function buildManifest(config, extra = {}) {
     snapshotDays: config.snapshotDays,
     probeDays: config.probeDays,
     viewPolicy: config.viewPolicy,
-    commit: currentCommit(),
+    // ── 溯源（B0.1 §9）─────────────────────────────────────────
+    //   `commit` 语义**保持不变**：只有本机 git 仓库才有值（旧报告照读）。
+    //   `sourceRevision` 是它的超集：git 拿不到时退回 CI 环境变量。
+    //   `sourceRevisionSource` 说明这个值**从哪儿来**——不写来源，
+    //   「git SHA」与「CI 变量」在 JSON 里就分不开了。
+    commit: rev.source === 'git rev-parse HEAD' ? rev.revision : null,
+    sourceRevision: rev.revision,
+    sourceRevisionSource: rev.source,
+    sourceRevisionAvailable: rev.revision !== null,
     node: process.version,
     collectorVersion: COLLECTOR_VERSION,
+    // worker 标记进 manifest：聚合步骤要能一眼看出这些 seed 目录是谁写的。
+    worker: config.worker === true,
     // ── 下面三项是本实现额外记录的（委托书 §8 未点名，但 §25 的
     //    「未来要能表达 paired control / parameter sweep」需要它们）──
     profileSpec: describeProfile(config.profile),
     digestScheme: DIGEST_SCHEME,
     columns: { snapshot: SNAPSHOT_COLUMNS.slice(), probe: PROBE_COLUMNS.slice() },
     ...extra,
+  };
+}
+
+/**
+ * manifest 里「随配置变化的那部分」。
+ *
+ * ⚠️ 存在的唯一理由是**让单进程与聚合两条路径写出逐 byte 相同的 manifest**。
+ *    如果 begin() 与 aggregate 各自拼一遍，两者迟早会漂开——
+ *    而漂开的那天，一份聚合产物与一份单进程产物就无法互相验证了，
+ *    偏偏「能互相验证」正是聚合契约的全部价值。
+ */
+export function manifestExtras(config) {
+  return {
+    configSignature: configSignature(config),
+    commitSource: 'git rev-parse HEAD',
+    commitAvailable: currentCommit() !== null,
   };
 }
 
@@ -306,6 +372,13 @@ export function createReporter(config, options = {}) {
   const rootDir = path.resolve(options.outputRoot || config.outputRoot || 'reports/inkbox/experiments');
   const dir = path.join(rootDir, config.experiment);
   const seedsDir = path.join(dir, 'seeds');
+  // ── B0.1 §10：worker 模式 ─────────────────────────────────────
+  //   worker 模式下本报告器**只写 seeds/<seed>/，顶层一个字节都不动**。
+  //   这不是「小心一点」，是结构上的：顶层文件由多个并行 worker 同时写时，
+  //   后写的覆盖先写的**且不报错**，于是你会拿到一份「1000 seed」的报告
+  //   而里面只有最后几个 seed 的数据。
+  //   把顶层交给一个单独的聚合步骤（`aggregate()`），这个竞争就不存在了。
+  const isWorker = config.worker === true;
 
   /** 已完成的 seed 结果（按配置顺序）。 */
   const done = [];
@@ -316,12 +389,8 @@ export function createReporter(config, options = {}) {
     return path.join(seedsDir, String(seed));
   }
 
-  function begin() {
-    fs.mkdirSync(dir, { recursive: true });
-
-    // ── 防覆盖：同一目录里已有一份**不同配置**的结果时，拒绝开跑 ──
-    const manifestPath = path.join(dir, 'manifest.json');
-    const commit = currentCommit();
+  /** 防覆盖检查的公共部分。`where` 是 manifest 的路径，`label` 用于报错文案。 */
+  function guardOverwrite(manifestPath, label) {
     const signature = configSignature(config);
     if (fs.existsSync(manifestPath) && options.overwrite !== true) {
       let previous = null;
@@ -330,7 +399,7 @@ export function createReporter(config, options = {}) {
       } catch { /* 读不动就当作「有一份但不可解析」，仍然拦下来 */ }
       if (!previous || previous.configSignature !== signature) {
         const err = new Error(
-          `输出目录「${path.relative(REPO_ROOT, dir)}」已存在一份**不同配置**的结果`
+          `${label}已存在一份**不同配置**的结果`
           + (previous ? `（experiment=${previous.experiment} / years=${previous.years} / seeds=${JSON.stringify(previous.seeds)} / signature=${previous.configSignature || '—'}）` : '（manifest 不可解析）')
           + `，本次配置的 signature 是 ${signature}。`
           + '为避免覆盖正式结果，已中止。请改 --experiment=<新名字>，或显式加 --overwrite。',
@@ -339,14 +408,33 @@ export function createReporter(config, options = {}) {
         throw err;
       }
     }
+    return signature;
+  }
+
+  function begin() {
+    fs.mkdirSync(dir, { recursive: true });
+
+    if (isWorker) {
+      // worker：manifest 写进**自己的 seed 目录**，顶层留给聚合步骤。
+      const sDir = seedDir(config.seeds[0]);
+      fs.mkdirSync(sDir, { recursive: true });
+      const manifestPath = path.join(sDir, 'manifest.json');
+      const signature = guardOverwrite(
+        manifestPath, `worker 输出目录「${path.relative(REPO_ROOT, sDir)}」`,
+      );
+      writeJson(manifestPath, buildManifest(config, { configSignature: signature }));
+      return;
+    }
+
+    // ── 防覆盖：同一目录里已有一份**不同配置**的结果时，拒绝开跑 ──
+    const manifestPath = path.join(dir, 'manifest.json');
+    const signature = guardOverwrite(
+      manifestPath, `输出目录「${path.relative(REPO_ROOT, dir)}」`,
+    );
 
     // manifest 在**跑之前**就落盘：这样即便第 1 个 seed 就崩，
     // 目录里也已经有一份「本来打算跑什么」的记录。
-    writeJson(manifestPath, buildManifest(config, {
-      configSignature: signature,
-      commitSource: 'git rev-parse HEAD',
-      commitAvailable: commit !== null,
-    }));
+    writeJson(manifestPath, buildManifest(config, manifestExtras(config)));
   }
 
   /** 写一个 seed 的全套产物。**只写自己的目录，不动顶层**。 */
@@ -364,8 +452,9 @@ export function createReporter(config, options = {}) {
     writeJson(path.join(sDir, 'fingerprint.json'), r.fingerprint);
   }
 
-  /** 刷新顶层合并产物（内容 = 已完成 seed 的并集）。 */
+  /** 刷新顶层合并产物（内容 = 已完成 seed 的并集）。**worker 模式下是空操作。** */
   function refreshMerged() {
+    if (isWorker) return;
     const snapshots = [];
     const probes = [];
     const diagnostics = [];
@@ -403,7 +492,10 @@ export function createReporter(config, options = {}) {
   }
 
   function finish(runtime) {
-    writeJson(path.join(dir, 'runtime.json'), {
+    const runtimePath = isWorker
+      ? path.join(seedDir(config.seeds[0]), 'runtime.json')
+      : path.join(dir, 'runtime.json');
+    writeJson(runtimePath, {
       deterministic: false,
       note: '本文件包含非确定性 metadata（墙钟时间 / 主机名 / 内存）。'
         + 'manifest.json / summary.json / timeseries.csv / probes.csv / diagnostics.json '
@@ -413,7 +505,100 @@ export function createReporter(config, options = {}) {
     return dir;
   }
 
-  return { dir, rootDir, begin, record, finish, done, failures, seedDir };
+  return { dir, rootDir, seedsDir, isWorker, begin, record, finish, done, failures, seedDir };
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// 聚合（B0.1 §10：从各 worker 的 seed 目录重建顶层产物）
+// ───────────────────────────────────────────────────────────────────────
+
+/**
+ * 从 `<outputRoot>/<experiment>/seeds/<seed>/` 重建顶层产物。
+ *
+ * ── 契约（B0.1 §10）──────────────────────────────────────────────
+ *   · **输入**：一份与 worker 完全相同的 Job（同一 `seeds` 数组、同一顺序），
+ *     以及各 seed 已经跑完的目录。
+ *   · **输出**：顶层 `timeseries.csv` / `probes.csv` / `diagnostics.json` /
+ *     `summary.json` / `manifest.json`。
+ *   · **保证**：输出与「同一份 Job 单进程跑完」**逐 byte 相同**。
+ *     这一条是可断言的，也是聚合唯一值得存在的理由——如果聚合结果与单进程
+ *     结果不同，那它就不是「同一份实验」，而是另一次实验。
+ *
+ * ── 为什么顺序必须来自 Job 而不是目录扫描 ──────────────────────
+ *   单进程模式下行的顺序 = `config.seeds` 的顺序。若聚合时按目录名字排序
+ *   （`7` < `20260914` < `424242` 是**字典序**，不是数字序），
+ *   `--seeds=7,2,20260914` 这种输入就会得到与单进程不同的行序。
+ *   行序不同 ⇒ CSV 不逐 byte 相同 ⇒ 上面那条保证失效。
+ *   所以：**聚合的顺序由 Job 定义，不由文件系统定义。**
+ *
+ * @param {object} config 已校验的配置（`worker` 应为 false）
+ * @param {object} [options]
+ * @param {string} [options.outputRoot]
+ * @param {boolean} [options.overwrite]
+ * @returns {{dir: string, seeds: number[], missing: number[], failed: number[]}}
+ */
+export function aggregate(config, options = {}) {
+  const rootDir = path.resolve(options.outputRoot || config.outputRoot || 'reports/inkbox/experiments');
+  const dir = path.join(rootDir, config.experiment);
+  const seedsDir = path.join(dir, 'seeds');
+
+  const summaries = [];
+  const diagnostics = [];
+  const failures = [];
+  const missing = [];
+  const failed = [];
+  const snapshotRows = [];
+  const probeRows = [];
+
+  for (const seed of config.seeds) {
+    const sDir = path.join(seedsDir, String(seed));
+    const summaryPath = path.join(sDir, 'summary.json');
+    if (!fs.existsSync(summaryPath)) {
+      // 缺一个 seed 目录不是「聚合完成」——必须报出来，否则你会拿到一份
+      // 静默少几个 seed 的「1000 seed」报告（这正是 worker 模式要防的事）。
+      missing.push(seed);
+      continue;
+    }
+    summaries.push(JSON.parse(fs.readFileSync(summaryPath, 'utf8')));
+
+    const diagPath = path.join(sDir, 'diagnostics.json');
+    if (fs.existsSync(diagPath)) {
+      const d = JSON.parse(fs.readFileSync(diagPath, 'utf8'));
+      if (Array.isArray(d)) for (const e of d) diagnostics.push(e);
+    }
+
+    // CSV 逐行拼接：跳过每个文件的表头，只取数据行。
+    // ⚠️ 不重新格式化——直接把原文本切片粘起来，才能保证与单进程逐 byte 相同。
+    for (const [file, sink] of [['timeseries.csv', snapshotRows], ['probes.csv', probeRows]]) {
+      const p = path.join(sDir, file);
+      if (!fs.existsSync(p)) continue;
+      const text = fs.readFileSync(p, 'utf8');
+      const lines = text.split(NL);
+      // 末行是空串（文件以 NL 结尾）——丢掉，最后统一补一个。
+      if (lines.length && lines[lines.length - 1] === '') lines.pop();
+      for (let i = 1; i < lines.length; i += 1) sink.push(lines[i]);
+    }
+
+    const failPath = path.join(sDir, 'failure.json');
+    if (fs.existsSync(failPath)) {
+      const f = JSON.parse(fs.readFileSync(failPath, 'utf8'));
+      failures.push(f);
+      failed.push(seed);
+    }
+  }
+
+  fs.mkdirSync(dir, { recursive: true });
+
+  const header = (cols) => `${cols.join(',')}${NL}`;
+  writeText(path.join(dir, 'timeseries.csv'),
+    `${header(SNAPSHOT_COLUMNS)}${snapshotRows.length ? `${snapshotRows.join(NL)}${NL}` : ''}`);
+  writeText(path.join(dir, 'probes.csv'),
+    `${header(PROBE_COLUMNS)}${probeRows.length ? `${probeRows.join(NL)}${NL}` : ''}`);
+  writeJson(path.join(dir, 'diagnostics.json'), diagnostics);
+  writeJson(path.join(dir, 'summary.json'), buildSummary(config, summaries, diagnostics, failures));
+  writeJson(path.join(dir, 'manifest.json'), buildManifest(config, manifestExtras(config)));
+
+  return { dir, seeds: summaries.map((s) => s.seed), missing, failed };
 }
 
 /** 顶层 summary.json 的形状。 */
@@ -431,6 +616,9 @@ export function buildSummary(config, seedSummaries, diagnostics, failures) {
       probeDays: config.probeDays,
       viewPolicy: config.viewPolicy,
       collect: config.collect,
+      // B0.1 §10：记录这份 summary 是「单进程 / 聚合」哪条路径产出的。
+      // 两条路径的产物必须逐 byte 相同，所以这个值在两边都是 false。
+      worker: config.worker === true,
     },
     completedSeeds: seedSummaries.map((s) => s.seed),
     failedSeeds: failures.map((f) => f.seed),

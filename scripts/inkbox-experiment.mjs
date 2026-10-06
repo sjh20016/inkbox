@@ -50,7 +50,7 @@ import { PROFILE_NAMES } from './experiment/profiles.mjs';
 import { WORLD_PRESETS } from '../src/inkbox/core/config.js';
 import { runSeedSafely } from './experiment/runner.mjs';
 import { diagnoseSeed } from './experiment/diagnostics.mjs';
-import { REPO_ROOT, createReporter } from './experiment/report.mjs';
+import { REPO_ROOT, aggregate, createReporter } from './experiment/report.mjs';
 
 const EXIT_OK = 0;
 const EXIT_SIM_FAILURE = 1;
@@ -61,10 +61,16 @@ const EXIT_JOB_IO = 3;
 const CLI_VALUE_KEYS = Object.freeze([
   'job', 'experiment', 'profile', 'preset', 'seeds', 'years', 'step', 'stepDays',
   'snapshotDays', 'probeDays', 'viewPolicy', 'outputRoot', 'collect', 'failFast', 'help',
+  // B0.1 §10：单 seed worker 模式
+  'worker',
 ]);
 
 /** 命令行允许出现的裸开关。 */
-const CLI_FLAG_KEYS = Object.freeze(['help', 'quiet', 'overwrite', 'fail-fast']);
+const CLI_FLAG_KEYS = Object.freeze([
+  'help', 'quiet', 'overwrite', 'fail-fast',
+  // B0.1 §10：从各 seed 目录重建顶层产物（不跑模拟）
+  'aggregate',
+]);
 
 const USAGE = `水墨沙盒 · World Laboratory
 
@@ -72,24 +78,32 @@ const USAGE = `水墨沙盒 · World Laboratory
   node scripts/inkbox-experiment.mjs --profile=<name> --seeds=<a,b,c> [--years=300] [--step=3]
   node scripts/inkbox-experiment.mjs --job=<path/to/job.json> [覆盖项...]
 
+云实验（B0.1 §10）：
+  # 每个 worker 跑一个 seed，只写 seeds/<seed>/，互不干扰
+  node scripts/inkbox-experiment.mjs --job=<job.json> --seeds=<n> --worker=true
+  # 全部 worker 跑完后，用**同一份 Job** 重建顶层产物
+  node scripts/inkbox-experiment.mjs --job=<job.json> --aggregate
+
 参数：
   --job=<path>          从 JSON Job 文件启动（云端批跑的主入口）
   --experiment=<id>     实验 id，同时是输出目录名（默认 baseline-<profile>）
   --profile=<name>      ${PROFILE_NAMES.join(' / ')}
   --preset=<name>       ${Object.keys(WORLD_PRESETS).join(' / ')}（默认 medium）
   --seeds=<a,b,c>       逗号分隔的非负整数种子
-  --years=<n>           游戏年数（默认 300）
+  --years=<n>           游戏年数（正整数，默认 300；小数会被拒绝而不是四舍五入）
   --step=<n>            每次 advanceWorld 推进的游戏日（默认 3）
   --snapshotDays=<n>    快照间隔，游戏日（默认 360 = 1 年）
   --probeDays=<n>       探针间隔，游戏日（默认 30）
   --viewPolicy=<name>   closed / legacy-duty-cycle（由 profile 钉死，通常不用手填）
   --outputRoot=<path>   输出根目录（默认 reports/inkbox/experiments）
+  --worker=true         单 seed worker：只写 seeds/<seed>/，顶层留给 --aggregate
+  --aggregate           不跑模拟；从各 seeds/<seed>/ 重建顶层产物（顺序由 Job 决定）
   --overwrite           允许覆盖输出目录里**配置不同**的既有结果
   --fail-fast           任一 seed 崩溃即中止（默认：记录后继续跑完其余 seed）
   --quiet               只印每个 seed 的结论行
   --help                印这段
 
-退出码：0 成功 / 1 有 seed 崩溃 / 2 配置非法 / 3 Job 文件读不了
+退出码：0 成功 / 1 有 seed 崩溃或缺失 / 2 配置非法 / 3 Job 文件读不了
 `;
 
 // ───────────────────────────────────────────────────────────────────────
@@ -146,6 +160,7 @@ function describeConfig(config) {
     `probe=${config.probeDays}`,
     `viewPolicy=${config.viewPolicy}`,
     `collect=${config.collect}`,
+    `worker=${config.worker === true}`,
   ].join(' ');
 }
 
@@ -223,6 +238,37 @@ if (!verdict.ok) {
 }
 const config = verdict.config;
 config.failFast = config.failFast || flags.has('fail-fast');
+
+// ── 2.5 聚合模式（B0.1 §10）：不跑模拟，只把各 worker 的 seed 目录合起来 ──
+//
+// ⚠️ 聚合**必须用同一份 Job**（同一 seeds 数组、同一顺序），而不是扫描目录。
+//    理由见 `report.aggregate` 的注释：顺序错了，CSV 行序就与单进程不同，
+//    「聚合结果 === 单进程结果」这条保证就没了。
+if (flags.has('aggregate')) {
+  // 聚合与 worker 是**互斥**的：聚合产出顶层，worker 禁止碰顶层。
+  // 同时给两个，说明调用方对这两条通路的心智模型是错的——
+  // 与其猜他想干嘛，不如让他看见这个矛盾。
+  if (config.worker === true) {
+    fail(EXIT_CONFIG, '--aggregate 与 --worker=true 不能同时使用',
+      '  worker 只写 seeds/<seed>/（禁止碰顶层）；aggregate 只写顶层（不碰 seed 目录）。'
+      + '两者是同一条流水线的不同阶段，不是一个命令的两个开关。');
+  }
+  const result = aggregate(config, { overwrite: flags.has('overwrite') });
+  process.stdout.write(`\n水墨沙盒 · World Laboratory（聚合模式）\n${describeConfig(config)}\n`);
+  process.stdout.write(`合并 seed：${result.seeds.length}/${config.seeds.length}`
+    + `  [${result.seeds.join(', ')}]\n`);
+  process.stdout.write(`输出目录：${path.relative(REPO_ROOT, result.dir)}\n`);
+  if (result.missing.length) {
+    process.stderr.write(`\n✗ 有 ${result.missing.length} 个 seed 的目录不存在或没跑完：`
+      + `${result.missing.join(', ')}\n`);
+    process.stderr.write('  （顶层产物已写出，但它是**不完整的**——这不是「1000 seed」的结果。'
+      + '请先补齐这些 seed 再聚合。）\n');
+  }
+  if (result.failed.length) {
+    process.stderr.write(`⚠️ ${result.failed.length} 个 seed 有 failure.json：${result.failed.join(', ')}\n`);
+  }
+  process.exit((result.missing.length || result.failed.length) ? EXIT_SIM_FAILURE : EXIT_OK);
+}
 
 // ── 3. 开跑 ─────────────────────────────────────────────────────
 const t0 = Date.now();

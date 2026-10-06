@@ -68,7 +68,18 @@ export function runSeed(config, seed, hooks = {}) {
   const snapshots = [];
   const probes = [];
 
-  const totalDays = Math.round(config.years * DAYS_PER_YEAR);
+  // ⚠️ B0.1 §8：这里**不再有 `Math.round`**。
+  //    旧版写的是 `Math.round(config.years)`，于是 `years: 3.7` 会被静默跑成 4 年，
+  //    而报告上写着 4——看起来完全自洽，你永远查不出自己要的是 3.7。
+  //    现在 `validateJob` 已经把 `years` 收紧为**正整数**，所以：
+  //      · 走到这里时 `config.years` 一定是整数（非法值在跑之前就被挡了）；
+  //      · 本文件不再做任何"修正"，只做乘法。
+  //    「非法输入必须响，且必须响在跑之前」——这一行是那条纪律在运行器里的兑现点。
+  if (!Number.isInteger(config.years) || config.years <= 0) {
+    throw new Error(`years 必须是正整数，收到 ${JSON.stringify(config.years)}`
+      + '（runner 不做四舍五入兜底；请在 Job / CLI 里写成整数）');
+  }
+  const totalDays = config.years * DAYS_PER_YEAR;
   const stepDays = config.stepDays;
 
   // 采样计划：用「下一个应采样的游戏日」做游标，而不是用浮点取模。
@@ -97,7 +108,7 @@ export function runSeed(config, seed, hooks = {}) {
   // 少了这一行，诊断里的 final_third 会拿一个没有起点的序列去算漂移。
   sample(world.day);
 
-  const years = Math.round(config.years);
+  const years = config.years;
   for (let y = 1; y <= years; y += 1) {
     // 契约 C1.1 在实验侧的**唯一**兑现处：视界开着才让裂缝时钟累加。
     const viewOpen = profile.viewOpenAt(y);

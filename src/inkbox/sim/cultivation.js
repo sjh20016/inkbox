@@ -34,6 +34,8 @@ import { emitPresentation } from './presentation.js';
 import { rememberDead } from './necrology.js';
 import { clamp } from '../core/noise.js';
 import { arriveUpper } from '../world/planes.js';
+// B0.1 观测计数器（只自增，不抽签、不改状态、不进存档）。见 sim/telemetry.js。
+import { bumpTelemetry } from './telemetry.js';
 
 /** 修行基础速率：每天积累多少修为（再乘灵气与灵根） */
 export const BASE_EXP_PER_DAY = 1.2;
@@ -158,7 +160,7 @@ export function lifespanForEntity(entity, level) {
 }
 
 /** 给一个新生成的实体补齐修炼字段 */
-export function initEntity(entity, rng, { cultivator = false } = {}) {
+export function initEntity(entity, rng, { cultivator = false, world = null } = {}) {
   entity.level = 0;
   entity.exp = 0;
   entity.root = null;
@@ -272,7 +274,9 @@ export function initEntity(entity, rng, { cultivator = false } = {}) {
   entity.ghostRancor = 0;
   entity.ghostDecayDay = NEVER_DECAY_DAY;
   entity.soulBind = null;
-  if (cultivator) awaken(entity, rng, { silent: true });
+  // ⚠️ `world` 只用于 B0.1 的觉醒计数（`awaken` 里 `+= 1`），**不参与任何判定**。
+  //    不传（上界 / 无头路径）就是「不记账」，而不是「记到别的世界头上」。
+  if (cultivator) awaken(entity, rng, { silent: true, world });
   return entity;
 }
 
@@ -280,7 +284,7 @@ export function initEntity(entity, rng, { cultivator = false } = {}) {
  * 觉醒灵根，凡人 → 修士。
  * 原作里灵根不是「选择」出来的，是天赋；这里保留这个意思。
  */
-export function awaken(entity, rng, { silent = false } = {}) {
+export function awaken(entity, rng, { silent = false, world = null } = {}) {
   if (entity.level > 0) return false;
   const root = rollSpiritRoot(rng);
   entity.root = root;
@@ -312,6 +316,17 @@ export function awaken(entity, rng, { silent = false } = {}) {
   if (!silent) {
     entity._justAwakened = true;
   }
+  // ── B0.1 · 觉醒记账 ────────────────────────────────────────
+  //
+  // 位置刻意选在**唯一成功出口**（`level > 0` 的早退在函数开头就返回了 false）：
+  // 四条觉醒入口（自然觉醒 / 生而有灵根 / 神力点化 / 夺舍者觉醒）全都汇到这里，
+  // 所以一处插桩就够，不必在四个调用点各写一遍——那种写法只要漏一处，
+  // 计数就会**静默偏小**，而偏小的计数看起来跟正常数据一模一样。
+  //
+  // ⚠️ `world` 缺省为 `null`（上界 / 无头路径）：此时**不记账**，安静跳过。
+  //    上界的觉醒由 `upperLife.js` 自己走，不该混进凡间的 `awakens` 里。
+  // ⚠️ 只做 `+= 1`：不抽签、不读签、不写 world ⇒ 世界指纹一个字节不变。
+  bumpTelemetry(world, 'awakens');
   return true;
 }
 
@@ -369,7 +384,7 @@ export function stepEntity(world, entity, dtDays, rng) {
     const qi = world.qi[tile] || 0.3;
     const chance = AWAKEN_BASE * (0.2 + qi * 2.2) * (1 + entity.fortune / 200) * dtDays;
     if (rng() < chance) {
-      awaken(entity, rng);
+      awaken(entity, rng, { world });
       world.record(`${entity.name} 于${placeName(world, entity)}觉醒${entity.root.rootName}`, 'awaken', entity);
     }
     return 'alive';

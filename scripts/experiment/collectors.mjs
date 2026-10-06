@@ -57,9 +57,13 @@ import { isUpperMortal } from '../../src/inkbox/sim/upperLife.js';
 import { SPECIES } from '../../src/inkbox/core/config.js';
 import { TIME } from '../../src/inkbox/core/config.js';
 import { describe, gini, hhi, mean, min, max, percentile, sum } from './stats.mjs';
+// B0.1 遥测读数。**只读**：`readTelemetry` 在没有记录时返回零值副本，
+// **绝不创建条目**（`telemetryFor` 才会创建，那个只给模拟侧用）。
+// 本模块不 import 任何会推进世界的模块——这个 import 也不例外。
+import { readTelemetry } from '../../src/inkbox/sim/telemetry.js';
 
 /** 采集器版本。改了任何一个读数的口径就 +1——报告要靠它判断「这份 CSV 可比吗」。 */
-export const COLLECTOR_VERSION = '1.0.0';
+export const COLLECTOR_VERSION = '1.1.0';
 
 // ───────────────────────────────────────────────────────────────────────
 // 列清单：**唯一**一份（CSV 的列顺序与宽度都由它决定）
@@ -119,6 +123,32 @@ export const SNAPSHOT_COLUMNS = Object.freeze([
   'clanCount', 'clanMembers', 'clanFoundedCum', 'clanEndedCum', 'clanMaxGen',
   'artifactLive', 'artifactOnPeople', 'artifactGround',
   'artifactSpirits', 'artifactTravelled', 'artifactForgedCum',
+
+  // ══════════════════════════════════════════════════════════════════
+  // B0.1 追加区（口径补丁）
+  // ══════════════════════════════════════════════════════════════════
+  //
+  // ⚠️⚠️ 这些列**刻意加在最末尾**，而不是插进上面 A/B/E 的分组里。
+  //    上面那句「新增字段一律加在末尾」不是排版偏好，是本文件最贵的一条纪律：
+  //    插进中间会让「旧 CSV 是新 CSV 的前缀子集」这件事失效，
+  //    而**旧报告与新报告仍然看起来都正常**——那是最难发现的一类实验事故。
+  //    代价是人口 / 粮食的恒等式在 CSV 上隔得远了，所以下面逐条注明配对方程。
+  //
+  // 人口口径（B0.1 §1 / §2）：
+  //     popCivil === popMortals + popCultivators        （凡间的「人」）
+  //     popTotal === popCivil + popWild                 （popWild = 兽 + 灵）
+  //   `popCultivatorShare`     分母是 popTotal（含兽 / 灵）
+  //   `popCultivatorShareCivil` 分母是 popCivil（只含人）
+  //   两个都要：前者答「这个世界里多少比例是修士」，后者答
+  //   「人类社群里多少比例是修士」——野兽与山精不是修士的「分母来源」。
+  'popCivil', 'popCultivatorShareCivil',
+  // 粮食（B0.1 §4）：
+  //     foodEmptyShare === foodEmptyCount / villageCount
+  //     foodEmptyPopulation = 粮仓见底那些聚落的 pop 之和
+  //   加「受影响人口」是因为「3 座村见底」在 10 村与 90 村的世界里意义完全不同。
+  'foodEmptyCount', 'foodEmptyShare', 'foodEmptyPopulation',
+  // 遥测账本（B0.1 §6 / §7）：全部**单调递增**，可直接做后段斜率。
+  'popBirthsCum', 'popAwakensCum', 'soulPoolEvictedCum', 'lifeRngDrawsCum',
 ]);
 
 /**
@@ -134,6 +164,9 @@ export const PROBE_COLUMNS = Object.freeze([
   'popTotal', 'popMortals', 'popCultivators', 'popWild',
   'villageCount', 'foodMin', 'foodMean', 'foodP10', 'foodEmptyCount',
   'sectCount', 'sectStabilityMin', 'riftActive',
+  // ── B0.1 追加区（同 SNAPSHOT_COLUMNS：一律加在末尾）──────────
+  // 探针层才是「短时饥荒」唯一看得见的地方，所以粮食的两个新口径必须在这里也有一份。
+  'popCivil', 'foodEmptyShare', 'foodEmptyPopulation',
 ]);
 
 /** 布尔列（CSV 里写成 0 / 1，便于直接进分析工具）。 */
@@ -155,7 +188,22 @@ export function columnKind(name) {
 /** 聚落粮食分布。**只读** `world.villages`。 */
 function foodDistribution(world) {
   const foods = [];
-  for (let i = 0; i < world.villages.length; i += 1) foods.push(world.villages[i].food);
+  let emptyPopulation = 0;
+  let emptyCount = 0;
+  for (let i = 0; i < world.villages.length; i += 1) {
+    const v = world.villages[i];
+    foods.push(v.food);
+    // 「粮仓见底」的判据用 **0**（`life.js:1494` 的 `clamp(food, 0, 400)` 的下界）。
+    // ⚠️ 这是一个**从数据本身导出**的阈值，不是抄来的游戏常量：
+    //    委托书 §12 明说「不要把 400 复制为隐藏常量」——0 是夹取下界，
+    //    它由 `life.js` 的 clamp 定义，本文件不新增任何阈值。
+    if (v.food <= 0) {
+      emptyCount += 1;
+      // B0.1 §4：受影响的**人口**。为什么非要它：「3 座村见底」在 10 村的世界
+      // 与 90 村的世界里是完全不同的两件事，只看村数会把两者印成同一个数。
+      emptyPopulation += v.pop || 0;
+    }
+  }
   return {
     count: foods.length,
     min: min(foods),
@@ -163,11 +211,11 @@ function foodDistribution(world) {
     max: max(foods),
     p10: percentile(foods, 0.1),
     p90: percentile(foods, 0.9),
-    // 「粮仓见底」的判据用 **0**（`life.js:1494` 的 `clamp(food, 0, 400)` 的下界）。
-    // ⚠️ 这是一个**从数据本身导出**的阈值，不是抄来的游戏常量：
-    //    委托书 §12 明说「不要把 400 复制为隐藏常量」——0 是夹取下界，
-    //    它由 `life.js` 的 clamp 定义，本文件不新增任何阈值。
-    empty: foods.filter((f) => f <= 0).length,
+    empty: emptyCount,
+    // 份额的分母是**聚落数**。没有聚落时返回 null（不是 0）——
+    // 「没有村子」与「有村子但都没见底」是两件事。
+    emptyShare: foods.length ? emptyCount / foods.length : null,
+    emptyPopulation,
   };
 }
 
@@ -232,7 +280,11 @@ function upperDistribution(upper) {
  * @returns {object} 键集合 == `SNAPSHOT_COLUMNS`
  */
 export function collectSnapshot(lab) {
-  const { world, upper, nether, seed } = lab;
+  // ⚠️ `lifeRngDraws` 是 getter：这里解构 = **在此刻取一次当前值**。
+  //    不能把它存成快照再反复用——那会永远读到 0（B0.1 §7）。
+  const { world, upper, nether, seed, lifeRngDraws } = lab;
+  // 只读遥测账本。`readTelemetry` 不会创建条目，所以「采集器开着」不影响世界线。
+  const tel = readTelemetry(world);
 
   // ── A · 人口 ────────────────────────────────────────────────
   const cs = world.cultivationStats();
@@ -432,6 +484,31 @@ export function collectSnapshot(lab) {
     artifactSpirits: art.spirits,
     artifactTravelled: art.travelled,
     artifactForgedCum: artLog.forged || 0,
+
+    // ══════════════════════════════════════════════════════════════════
+    // B0.1 追加区（口径补丁）—— 列序必须与 SNAPSHOT_COLUMNS 末尾严格一致
+    // ══════════════════════════════════════════════════════════════════
+    //
+    // 人口（B0.1 §1 / §2）
+    //   popCivil = 凡人 + 修士，即「凡间的『人』」，不含兽 / 灵。
+    //   分母选择在列名里写死：popCultivatorShareCivil 只对人口算占比。
+    popCivil: cs.mortals + cs.cultivators,
+    popCultivatorShareCivil: (cs.mortals + cs.cultivators) > 0
+      ? cs.cultivators / (cs.mortals + cs.cultivators)
+      : null,
+    // 粮食（B0.1 §4）：空仓**观测事实**，不是 famine 判定。
+    foodEmptyCount: food.empty,
+    foodEmptyShare: food.emptyShare,
+    foodEmptyPopulation: food.emptyPopulation,
+    // 遥测账本（B0.1 §6 / §7）
+    //   readTelemetry 是**只读**的：无记录时返回零值副本，不会创建记录，
+    //   因此采集本身不会污染 WeakMap，也不会经由任何路径触碰 world。
+    popBirthsCum: tel.births,
+    popAwakensCum: tel.awakens,
+    soulPoolEvictedCum: tel.soulEvictions,
+    // lifeRngDraws 来自 world-factory 的计数闭包；缺失时记 null 而不是 0，
+    // 因为「0 次抽取」与「没测到」是两件完全不同的事。
+    lifeRngDrawsCum: typeof lifeRngDraws === 'number' ? lifeRngDraws : null,
   };
 }
 
@@ -478,6 +555,14 @@ export function collectProbe(lab) {
     sectCount: world.factions.length,
     sectStabilityMin: stabilityMin,
     riftActive,
+    // ── B0.1 追加区（列序同 PROBE_COLUMNS 末尾）──────────────────
+    //   popCivil 与快照同定义（凡人 + 修士）。探针不采兽 / 灵单列：
+    //   这里已经有 popWild，恒等式在探针上仍可核对，省一次遍历。
+    popCivil: mortals + cultivators,
+    // 探针每 30 天一次，是「短时饥荒」唯一看得见的地方 ⇒ 粮食的两个新口径
+    // 在这里比在年度快照上更关键。
+    foodEmptyShare: food.emptyShare,
+    foodEmptyPopulation: food.emptyPopulation,
   };
 }
 
@@ -492,14 +577,15 @@ export function collectProbe(lab) {
 export function telemetryReport() {
   return {
     birthsCumulative: {
-      available: false,
-      reason: '凡间出生没有累计 counter：life.js 只往 world.entities 里 push，全仓库无 bornLog / birthCount 写入点。',
-      policy: '不通过两个 snapshot 相减冒充精确 flow（委托书 §10.A）。',
+      available: true,
+      source: 'telemetry.births',
+      note: 'B0.1 §6 起由 src/inkbox/sim/telemetry.js 计数（life.js spawn 成功处 bump）。'
+        + '计数器存在 world 之外的 WeakMap 里 ⇒ 不进 serializeWorld、不改世界指纹。',
     },
     awakensCumulative: {
-      available: false,
-      reason: '觉醒没有累计 counter：inkbox-longrun.mjs 里的 mortalAwakened 是脚本逐年比对算出的测试夹具，不是模拟里的 counter。',
-      policy: '不通过两个 snapshot 相减冒充精确 flow（委托书 §10.A）。',
+      available: true,
+      source: 'telemetry.awakens',
+      note: 'B0.1 §6 起计数（cultivation.js awaken 返回 true 处 bump，含 initEntity 的初始觉醒）。',
     },
     deathsCumulative: {
       available: true,
@@ -507,12 +593,12 @@ export function telemetryReport() {
       note: 'necrology.js 维护，单调递增，进存档；不变量 deadLog.total - deadLog.evicted === world.dead.length。',
     },
     soulPoolEviction: {
-      available: false,
-      reason: '魂池满（SOUL_CAP = 120）时的逐出**不记账**：reincarnation.js:569-575 直接 splice 掉一条，'
-        + '没有任何计数器。于是「池子从没满过」与「池子一直在满、一直在丢魂」在 soulPool 这一个读数上同形。',
-      workaround: '用 soulPool 是否长期贴着 SOUL_CAP（120）来间接判断——但那是**推断**，不是精确 flow。'
-        + '要精确答案需要在模拟侧补一个计数器（属 B1，不在 B0 范围）。',
-      policy: '不通过两个 snapshot 相减冒充精确 flow（委托书 §10.A）。',
+      available: true,
+      source: 'telemetry.soulEvictions',
+      note: 'B0.1 §6 起计数（reincarnation.js 池满 splice 处 bump）。'
+        + '此前「池子从没满过」与「池子一直在丢魂」在 soulPool 一个读数上同形，现在可分。',
+      // 保留旧口径的对照，方便读老报告的人做迁移。
+      legacyNote: 'B0（无计数器）时只能用 soulPool 是否长期贴着 SOUL_CAP 间接推断——那是推断，不是 flow。',
     },
     ascensionsCumulative: {
       available: true,
@@ -521,6 +607,12 @@ export function telemetryReport() {
     upperArrivalsCumulative: {
       available: true,
       source: 'upper.popLog.{arrived, born, died, arrivedThunder}',
+    },
+    lifeRngDraws: {
+      available: true,
+      source: 'world-factory 的 lifeRng 计数闭包',
+      note: 'B0.1 §7：凡间主随机流的累计 draw 次数。**这是唯一「多抽一次世界线就漂走」的流**，'
+        + '它的 draw 数本身不进世界状态，只作为「世界吃了多少随机数」的度量。',
     },
   };
 }

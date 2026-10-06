@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "experiment": "deep-natural-500y",
   "profile": "natural",
   "preset": "medium",

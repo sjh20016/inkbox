@@ -40,6 +40,8 @@ import { markSoulRoute } from './necrology.js';
 // 方向是**单向**的：本模块 → netherLife，而 netherLife **不**import 本模块
 // （它要的字段全在 core/config.js 里），所以这条边不引入新的 import 环。
 import { spawnNetherGhost } from './netherLife.js';
+// B0.1 观测计数器（只自增，不抽签、不改状态、不进存档）。见 sim/telemetry.js。
+import { bumpTelemetry } from './telemetry.js';
 
 /** 神魂池上限。满了就丢掉等得最久的那个——「多數神魂散于天地」 */
 export const SOUL_CAP = 120;
@@ -572,6 +574,14 @@ export function enterNether(world, entity, rng) {
       if (world.souls[i].dueDay > world.souls[latest].dueDay) latest = i;
     }
     world.souls.splice(latest, 1);
+    // ── B0.1 · 魂池逐出记账 ──────────────────────────────────
+    //
+    // 为什么必须记这一笔（原文见 `docs/WORLD_LAB.md` §十一）：逐出**不记账**时，
+    // 「池子从没满过」与「池子一直在满、一直在丢魂」在 `soulPool` 这一个读数上
+    // **同形**——两者都印 120。补上账本之后，「一直在丢」才第一次可见。
+    //
+    // ⚠️ 只做 `+= 1`：不抽签、不读签、不写 world ⇒ 世界指纹一个字节不变。
+    bumpTelemetry(world, 'soulEvictions');
   }
   // ── 滞留者在幽冥留下一只普通鬼魂（契约 §二 / §六）────────────────────
   // 「有些魂在河边坐下了，说等一个人」（`G13-07/G13-12`）——魂**留在池里**

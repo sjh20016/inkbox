@@ -22,8 +22,20 @@
 import { WORLD_PRESETS } from '../../src/inkbox/core/config.js';
 import { PROFILE_NAMES, profileDefaultViewPolicy } from './profiles.mjs';
 
-/** Job 文件格式版本。改了字段语义就 +1——云端要靠它决定怎么读。 */
-export const JOB_SCHEMA_VERSION = 1;
+/**
+ * Job 文件格式版本。改了字段语义就 +1——云端要靠它决定怎么读。
+ *
+ * ── 版本历史 ──────────────────────────────────────────────────────
+ * v1 → v2（B0.1 §8 / §10）：
+ *   · `years` 从「正数」收紧为「**正整数**」。
+ *     旧版允许 `years: 3.7`，而 `runner.mjs` 会 `Math.round` 成 4 ——
+ *     那是本文件头点名要禁止的**静默 fallback**，而且是最隐蔽的一种：
+ *     报告上写着 4，看起来完全自洽，你永远查不出自己要的是 3.7。
+ *     B0.1 的裁决是「要整数」而不是「真支持小数」，因为小数年在
+ *     `Math.floor(day / daysPerYear)` 的年号口径下没有定义明确的意义。
+ *   · 新增可选字段 `worker`：单 seed worker 模式（云实验用）。
+ */
+export const JOB_SCHEMA_VERSION = 2;
 
 /** 允许的采样策略。`closed` = 视界从不打开；`legacy-duty-cycle` = 旧长测的 25% 占空比。 */
 export const VIEW_POLICIES = Object.freeze(['closed', 'legacy-duty-cycle']);
@@ -37,6 +49,8 @@ export const JOB_KEYS = Object.freeze([
   'stepDays', 'snapshotDays', 'probeDays', 'viewPolicy',
   // 运行控制（不影响世界线，只影响「跑不跑 / 跑完写哪儿」）
   'collect', 'outputRoot', 'failFast',
+  // B0.1 §10：云实验的单 seed worker 开关（见 validateJob 的说明）
+  'worker',
 ]);
 
 /** 各 profile 的语义硬约束：profile 名 ⟹ viewPolicy 取值。理由见 `validateJob`。 */
@@ -116,7 +130,14 @@ export function validateJob(raw) {
   }
 
   // ── 时间轴 ───────────────────────────────────────────────────
-  if (!isPositiveNumber(raw.years)) errors.push('years 必须是正数（游戏年）');
+  // ⚠️ years 是**正整数**，不是「正数」（B0.1 §8）。
+  //    旧版允许 3.7 而 runner 悄悄 round 成 4 —— 见 JOB_SCHEMA_VERSION 的注释。
+  //    这里报错而不是继续 round：让「你写错了」在跑之前就可见。
+  if (!isPositiveInt(raw.years)) {
+    errors.push('years 必须是正整数（游戏年）。B0.1 起不再接受小数：'
+      + '旧版会把 3.7 静默四舍五入成 4，报告上看起来完全正常。'
+      + (isPositiveNumber(raw.years) ? `收到 ${raw.years}，请显式写成 ${Math.round(raw.years)}。` : `收到 ${JSON.stringify(raw.years)}。`));
+  }
   if (!isPositiveInt(raw.stepDays)) errors.push('stepDays 必须是正整数（每次 advanceWorld 推进的游戏日）');
   if (!isPositiveNumber(raw.snapshotDays)) errors.push('snapshotDays 必须是正数（快照间隔，游戏日）');
   if (!isPositiveNumber(raw.probeDays)) errors.push('probeDays 必须是正数（探针间隔，游戏日）');
@@ -157,6 +178,31 @@ export function validateJob(raw) {
     errors.push('failFast 必须是布尔值');
   }
 
+  // ── worker（B0.1 §10：云实验的单 seed worker 契约）────────────
+  //
+  // 为什么需要它，而不是「云端自己控制 seeds 数组就行」：
+  //   1000 seed 的实验会被切成 N 个进程并行跑。若 worker 仍写**顶层**产物
+  //   （`summary.json` / 顶层 CSV / `manifest.json`），N 个进程会同时往同一批
+  //   文件里写——**结果是后写的覆盖先写的，而且不报错**。
+  //   你最后拿到一份「1000 seed」的报告，里面只有最后几个 seed 的数据，
+  //   聚合统计（均值 / 分位 / 诊断计数）全部建立在一个静默被截断的集合上。
+  //
+  // 所以契约是双向的：
+  //   · `worker: true` ⟹ 必须**恰好一个** seed（否则一个进程内部就要写多个
+  //     seed 目录，说明它其实是聚合器，不该叫 worker）；
+  //   · 并且 worker 模式下 runner **只写** `seeds/<seed>/`，顶层产物交给
+  //     聚合步骤（`--aggregate`）从各 seed 目录重建。
+  //
+  // 这条不是性能优化，是**正确性**：它把「并行写同一文件」这个数据竞争
+  // 从「靠人记得别这么干」变成「结构上做不到」。
+  if (raw.worker !== undefined && typeof raw.worker !== 'boolean') {
+    errors.push('worker 必须是布尔值（true = 单 seed worker 模式，只写 seeds/<seed>/）');
+  }
+  if (raw.worker === true && Array.isArray(raw.seeds) && raw.seeds.length !== 1) {
+    errors.push(`worker: true 要求 seeds 恰好含 1 个元素，收到 ${raw.seeds.length} 个`
+      + '（worker 只跑一个 seed；多 seed 请用聚合模式，否则并行 worker 会互相覆盖顶层产物）');
+  }
+
   if (errors.length) return { ok: false, errors, config: null };
 
   const config = {
@@ -173,6 +219,7 @@ export function validateJob(raw) {
     collect: raw.collect !== false,
     outputRoot: raw.outputRoot || DEFAULT_OUTPUT_ROOT,
     failFast: raw.failFast === true,
+    worker: raw.worker === true,
   };
   return { ok: true, errors: [], config };
 }
@@ -214,6 +261,9 @@ export function jobFromArgs(args, base = {}) {
   if (args.collect !== undefined) raw.collect = boolArg(args.collect);
   if (args.outputRoot !== undefined) raw.outputRoot = args.outputRoot;
   if (args.failFast !== undefined) raw.failFast = boolArg(args.failFast);
+  // B0.1 §10：`--worker=true` 走单 seed 模式（只写 seeds/<seed>/）。
+  // 同 collect / failFast：不做真值强转，`--worker=maybe` 留给校验器报错。
+  if (args.worker !== undefined) raw.worker = boolArg(args.worker);
 
   return raw;
 }

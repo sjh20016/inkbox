@@ -260,7 +260,7 @@ export function tail(values, fraction = 1 / 3) {
 /**
  * 序列的「相对漂移」：后段均值相对整段均值的偏离比例。
  * 整段均值为 0 ⇒ `null`（比值无定义）。
- * 用途：`population_plateau` 用它把「长期几乎不变」变成一个**无量纲**判据，
+ * 用途：`entity_plateau` / `civil_plateau` 用它把「长期几乎不变」变成一个**无量纲**判据，
  * 从而不必把 1400 或别的游戏常量抄进诊断里。
  */
 export function relativeDrift(values, fraction = 1 / 3) {

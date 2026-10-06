@@ -71,7 +71,7 @@ export const ECO_RNG_SEED = 12345;
  *   seed: number, presetKey: string, profileName: string,
  *   world: object, upper: object, nether: object,
  *   life: object, upperLife: object, advanceState: object, ecoRng: () => number,
- *   tally: object, notes: string[]
+ *   tally: object, notes: string[], lifeRngDraws: number
  * }}
  */
 export function createLabWorld({ seed, preset, profile }) {
@@ -89,7 +89,30 @@ export function createLabWorld({ seed, preset, profile }) {
   // ── 凡间主循环 ───────────────────────────────────────────────
   // ⚠️ 用 `world.seed` 而不是入参 `seed`：`World` 构造器会对种子做归一，
   //    两者在边界值上可能不同。旧长测用的也是 `world.seed`，保持一致。
-  const life = new Life(world, mulberry32(world.seed ^ LIFE_RNG_KEY));
+  //
+  // ── B0.1 · 主随机流 draw count ───────────────────────────────
+  //
+  // 把 `mulberry32` 包一层计数闭包：**取到的值一位不变**，只是每次调用 +1。
+  //
+  // ⚠️ 为什么包装是安全的（而不是「我们小心了」）：`mulberry32` 的状态在
+  //    它自己的闭包里，包装函数只是 `return base()`。所以「抽了多少次」与
+  //    「抽到了什么」在结构上不可能互相影响——包装不会多抽、不会少抽、
+  //    不会改种子、不会改调用顺序。
+  //
+  // ⚠️ 为什么不改 `life.js`：那样等于给模拟加一条「观测依赖」，而模拟侧
+  //    一旦有了计数开关，就必须回答「关掉计数会不会改变世界线」。
+  //    放在这里，答案天然是「不会」——计数活在实验框架里，模拟完全不知情。
+  //
+  // 用途：把「这个世界消耗了多少随机性」变成一个可读的数。它是
+  // **单调递增**的，所以后段斜率 = 随机消耗速率；两条 profile 并排比时，
+  // 「加了夹具之后随机消耗涨了多少」第一次可见。
+  const baseLifeRng = mulberry32(world.seed ^ LIFE_RNG_KEY);
+  let lifeRngDraws = 0;
+  const lifeRng = function countedLifeRng() {
+    lifeRngDraws += 1;
+    return baseLifeRng();
+  };
+  const life = new Life(world, lifeRng);
 
   // ── 上界（与 `main.js` 的 `attachUpper` 同款）─────────────────
   // 为什么必须建：不建 `world.upper`，`ascend()` 的 `arriveUpper` 找不到落点，
@@ -169,5 +192,12 @@ export function createLabWorld({ seed, preset, profile }) {
     tally,
     notes,
     ctx,
+    /**
+     * B0.1 · 凡间主随机流累计抽签次数（只读）。
+     *
+     * ⚠️ 用 getter 而不是快照值：`createLabWorld` 返回后主循环还会跑几百年，
+     *    快照值会永远停在 0。getter 让采集器每次都能读到当前值。
+     */
+    get lifeRngDraws() { return lifeRngDraws; },
   };
 }

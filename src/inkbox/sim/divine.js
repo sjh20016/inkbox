@@ -49,7 +49,7 @@ export function grantRoot(world, x, y, radius, rng) {
   let n = 0;
   const awakened = [];
   for (const e of targets) {
-    if (awaken(e, rng)) {
+    if (awaken(e, rng, { world })) {
       world.record(`${e.name} 于${placeName(world, e)}觉醒${e.root.rootName}`, 'awaken', e);
       awakened.push(`${e.name}（${e.root.rootName}）`);
       n += 1;
