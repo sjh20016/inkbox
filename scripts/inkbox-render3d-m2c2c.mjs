@@ -89,6 +89,26 @@ try{
       assert.equal(target.fxProbe.narrative.mesh.count,target.fxProbe.stats.active);
     });
   }
+  check('type-only changes refresh production footprints without forcing legacy marker elevation',()=>{
+    host.setActivePlane('mortal');host.setRealmViewState({open:false});host.setProductionAssetsEnabled(true);host.setGeographyEnabled(true);host.update(.3);
+    const markers=host.stages.get('mortal').markers,site=world.sites.find(s=>s.kind==='cave'),line=world.leylines[0];
+    const cells=[site,line].map(p=>Math.floor(p.y)*world.w+Math.floor(p.x)),previous=cells.map(i=>world.type[i]);
+    assert(markers.siteGeography.renderedIds.has(site.id));assert(markers.leylineGeography.renderedIds.has(line.id));
+    try{
+      for(const i of cells)world.type[i]=TERRAIN.SEA;
+      host.update(.001);
+      assert(!markers.siteGeography.renderedIds.has(site.id),'type-only water change must reject the current Site footprint immediately');
+      assert(markers.siteMeshes.cave.count>0,'rejected production Site must retain its true legacy identity');
+      assert(markers.leylineGeography.stats.terrainRejected>0,'type-only water change must refresh actual Leyline segments');
+      for(const [j,i] of cells.entries())world.type[i]=previous[j];
+      host.update(.001);assert(markers.siteGeography.renderedIds.has(site.id));assert(markers.leylineGeography.renderedIds.has(line.id));
+      host.setGeographyEnabled(false);host.update(.3);
+      const prior=markers.lastDerived,matrixVersion=markers.siteMeshes.cave.instanceMatrix.version;
+      world.type[cells[0]]=TERRAIN.SEA;host.update(.001);
+      assert.equal(markers.lastDerived,prior,'inactive geography must not force a legacy marker derivation');
+      assert.equal(markers.siteMeshes.cave.instanceMatrix.version,matrixVersion,'terrain type cannot force legacy marker elevation writes');
+    }finally{for(const [j,i] of cells.entries())world.type[i]=previous[j];host.update(.3);host.setGeographyEnabled(true);}
+  });
   check('toggle cycles reuse resources and never alter World or save keys',()=>{
     const mortal=host.stages.get('mortal'),siteBatch=mortal.markers.siteGeography.batch,leylineBatch=mortal.markers.leylineGeography.batch;
     const textures=[host.stages.get('upper').scalarField.texture,host.stages.get('nether').scalarField.texture];

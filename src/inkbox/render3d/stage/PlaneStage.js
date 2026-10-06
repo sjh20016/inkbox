@@ -230,7 +230,8 @@ export class PlaneStage {
     const t4 = performance.now();
     this.settlements?.update(dt, this.world, options);
     const t5 = performance.now();
-    this.markers?.update(dt, this.world, { heightChanged: heightChanged || !!typeRegion });
+    if (typeRegion) this.markers?.invalidateGeographyTerrainType();
+    this.markers?.update(dt, this.world, options);
     this.markers?.setZoom(zoom);
     this.decorations?.update({layoutChanged:heightChanged||!!typeRegion});
     this.realmArtifacts?.update(dt,{heightChanged});

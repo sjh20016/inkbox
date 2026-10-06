@@ -239,6 +239,15 @@ export class WorldMarkerLayer {
       : target === 'upper' ? INK.azurite : '#4a4f5c';
   }
 
+  // Terrain type affects production footprint admission, not elevation.
+  // Preserve the legacy height-only update contract when geography is inactive.
+  invalidateGeographyTerrainType() {
+    const active = layer => layer.enabled && layer.productionEnabled && layer.batch;
+    if (!active(this.siteGeography) && !active(this.leylineGeography)) return;
+    this.lastDerived = null;
+    this.clock = Infinity;
+  }
+
   update(dt, world, options = {}) {
     this.clock += Number.isFinite(dt) ? dt : 0;
     const force = !!options.heightChanged;
