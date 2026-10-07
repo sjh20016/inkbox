@@ -27,14 +27,24 @@ export function compareRuns(runs, { partial = false } = {}) {
     if (maps[name].size !== run.views.length) fail(`${name}: duplicate views`);
     if (!(run.captureComplete ?? run.pass)) fail(`${name}: capture incomplete`);
     if ((run.pendingGlErrors || []).length) fail(`${name}: pending GL errors`);
-    // World differs between recipes and UI boundary commits. Advance must stay fixed within each recipe.
-    for (const recipe of ['mortal', 'realms']) {
-      const values = run.views.filter(v => recipe === 'mortal' ? v.view.startsWith('mortal') : !v.view.startsWith('mortal'));
-      if (values.some(v => !v.worldSHA256 || !v.advanceStateSHA256)) fail(`${name}/${recipe}: missing identity`);
-      if (new Set(values.map(v => v.advanceStateSHA256)).size > 1) fail(`${name}/${recipe}: advance drift`);
+    // Re-importing a save can reset the unsaved advance accumulator. Compare
+    // only one import epoch; every fresh capture also records its before/after.
+    const epochs = new Map();
+    for (const v of run.views) {
+      if (!v.worldSHA256 || !v.advanceStateSHA256) fail(`${name}/${v.view}: missing identity`);
+      if (v.captureIdentity && (v.captureIdentity.world !== v.worldSHA256 || v.captureIdentity.advance !== v.advanceStateSHA256))
+        fail(`${name}/${v.view}: identity drift during capture`);
+      if (v.importEpoch === undefined) continue;
+      if (!epochs.has(v.importEpoch)) epochs.set(v.importEpoch, []);
+      epochs.get(v.importEpoch).push(v);
     }
+    for (const [epoch, values] of epochs) if (new Set(values.map(v => v.advanceStateSHA256)).size > 1)
+      fail(`${name}/import-${epoch}: advance drift`);
+    if (run.views.some(v => v.importEpoch === undefined)) report.notes.push(`${name}: legacy capture has no import epochs; no cross-import advance assertion.`);
   }
-  if (!equal([...maps.c2d.keys()].sort(), [...maps.candidate.keys()].sort())) fail('C2D/candidate view sets differ');
+  if (partial) {
+    if ([...maps.candidate.keys()].some(key => !maps.c2d.has(key))) fail('step experiment has no matching C2D reference');
+  } else if (!equal([...maps.c2d.keys()].sort(), [...maps.candidate.keys()].sort())) fail('C2D/candidate view sets differ');
   if (!partial && (!report.coverage.c2d.complete || !report.coverage.candidate.complete)) fail('C2D/candidate require 12 views; --partial explicitly selects a step experiment');
   for (const key of maps.candidate.keys()) {
     report.artDiagnostics.views.push({ view: key, ...Object.fromEntries(Object.entries(maps).map(([name, m]) => [name, m.has(key) ? diagnostic(m.get(key)) : null])) });
@@ -52,7 +62,7 @@ export function compareRuns(runs, { partial = false } = {}) {
         geometries: finite(a.gpu?.memory?.geometries) && a.gpu.memory.geometries === b.gpu?.memory?.geometries };
       if (beforeName === 'c2d') {
         checks.textures = a.gpu?.memory?.textures <= b.gpu?.memory?.textures;
-        checks.programs = finite(a.gpu?.programs) && finite(b.gpu?.programs) ? a.gpu.programs <= b.gpu.programs : null;
+        checks.programs = finite(a.gpu?.programs) && finite(b.gpu?.programs) && a.gpu.programs <= b.gpu.programs;
       }
       // C2D's stage-owned SurfaceVisualField contributes at most one texture per
       // realm (three possible active stages); candidate may not add beyond C2D.
@@ -95,7 +105,7 @@ export function compareRuns(runs, { partial = false } = {}) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const dirs = { main: process.env.INKBOX_C2D1_MAIN_DIR || 'reports/local/m2c2d/baseline',
+  const dirs = { main: process.env.INKBOX_C2D1_MAIN_DIR || 'reports/local/m2c2d1/main',
     c2d: process.env.INKBOX_C2D1_C2D_DIR || 'reports/local/m2c2d1/c2d',
     candidate: process.env.INKBOX_C2D1_CANDIDATE_DIR || 'reports/local/m2c2d1/candidate' };
   const runs = Object.fromEntries(Object.entries(dirs).map(([name, dir]) => [name, JSON.parse(fs.readFileSync(path.join(dir, 'browser.json'), 'utf8'))]));

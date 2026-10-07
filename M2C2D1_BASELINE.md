@@ -26,4 +26,4 @@ Step1 加入六种开发分层视图后，`step1-final` 再采 12 镜：每镜 W
 
 新增 framebuffer diagnostics：2×2 线性明度下采样，3×3 局部对比与高频残差、Sobel 边缘密度、低频能量。它们描述碎面与层级，不作为美术评分。Safety Gate 只检测灾难；艺术接受状态始终保留人工判断。
 
-下一步严格执行“只修 coast → 输出 01～04 → 人工确认后再继续”。不得提前修改 mass、Water 或 Boundary。
+Step2 已按“只修 coast → 输出 01～04 → 人工确认后再继续”执行。用户确认保留岸线修复并按委托顺序继续。确认之前未改变 mass、Water 或 Boundary 的正式视觉策略。

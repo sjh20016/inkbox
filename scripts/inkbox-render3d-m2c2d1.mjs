@@ -111,6 +111,10 @@ check('Safety PASS never certifies art and never waives a positive GPU regressio
   assert.equal(result.artDiagnostics.acceptance, null);
   assert.equal(result.artDiagnostics.status, 'human-review-required');
   assert.equal(result.performance.status, 'observed-exceeds-target');
+  delete runs.candidate.views[0].gpu.programs;
+  const missing = compareRuns(runs, { partial: true });
+  assert.equal(missing.safetyGate.status, 'failed');
+  assert(missing.safetyGate.failures.some(message => message.includes('programs contract')));
 });
 
 fs.mkdirSync('reports/local/m2c2d1', { recursive: true });

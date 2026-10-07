@@ -9,7 +9,8 @@ import { launch, findEdge, sleep } from './cdp.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'reports/local/m2c2d1/decomposition');
-const SOURCE = path.join(ROOT, 'reports/local/m2c2d1/E0-c2d/browser.json');
+const SOURCE = process.env.INKBOX_C2D1_CAMERA_SOURCE || ['E0-c2d', 'c2d', 'candidate']
+  .map(label => path.join(ROOT, `reports/local/m2c2d1/${label}/browser.json`)).find(file => fs.existsSync(file));
 const SAVE = path.resolve(ROOT, process.env.INKBOX_C2C_NATURAL_SAVE || 'reports/local/m2c2c/pilot/full-sites-natural-save.json');
 const port = Number(process.env.INKBOX_PORT || 4241);
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${port}`;
@@ -73,9 +74,9 @@ async function coastPage() {
     t.minFilter = t.magFilter = filter; t.generateMipmaps = false; t.flipY = false; t.needsUpdate = true;
     resources.push(t); return t;
   };
-  const heights = new Float32Array(N * N * 4), types = new Uint8Array(N * N * 4), scalar = new Float32Array(N * N * 4);
+  const heights = new Float32Array(N * N * 4), types = new Uint8Array(N * N * 4), scalar = new Uint8Array(N * N * 4);
   const heightTexture = texture(heights, T.FloatType), typeTexture = texture(types, T.UnsignedByteType);
-  const surfaceTexture = texture(scalar, T.FloatType, T.LinearFilter);
+  const surfaceTexture = texture(scalar, T.UnsignedByteType, T.LinearFilter);
   const material = new PigmentTerrainMaterial({ world: { w: N, h: N, seed: 226 }, heightTexture, typeTexture }, ART_PROFILES.pilot);
   resources.push(material);
   const u = material.uniforms; u.artDebugMode.value = 2; u.surfaceTexture.value = surfaceTexture; u.surfaceDepthRef.value = 0.5;
@@ -104,7 +105,7 @@ async function coastPage() {
     for (const fixture of fixtures) {
       for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
         const i = (y * N + x) * 4; heights[i + 1] = fixture.mountain ? Math.abs(x - 8) * 2 : 0;
-        types[i] = fixture.type; scalar[i] = fixture.depth(x, y) / u.surfaceDepthRef.value;
+        types[i] = fixture.type; scalar[i] = Math.round(255 * fixture.depth(x, y) / u.surfaceDepthRef.value);
       }
       heightTexture.needsUpdate = typeTexture.needsUpdate = surfaceTexture.needsUpdate = true;
       u.surfaceMode.value = 0; gpu.render(scene, camera); const off = fixture.points.map(([x, z]) => sample(x, z));
@@ -130,6 +131,7 @@ async function coastPage() {
 
 try {
   fs.mkdirSync(OUT, { recursive: true });
+  assert(SOURCE, 'fixed camera evidence missing; run test:render3d:m2c2d1:browser first');
   const source = JSON.parse(fs.readFileSync(SOURCE, 'utf8'));
   const view = source.views.find(v => v.view === 'mortal-cliff-near');
   assert(source.captureComplete && view?.poi && view?.camera, 'E0-c2d frozen cliff evidence unavailable');
@@ -172,6 +174,9 @@ try {
     sameAdvance: d.modes.every(m => m.advanceSHA256 === d.baseline.advanceSHA256),
     sameCamera: d.modes.every(m => JSON.stringify(m.camera) === JSON.stringify(d.baseline.camera)),
     sameGPU: d.modes.every(m => JSON.stringify(m.gpu) === JSON.stringify(d.baseline.gpu)),
+    completeResourceEvidence: [d.baseline, ...d.modes].every(m => Number.isFinite(m.gpu.programs) && m.gpu.programs > 0),
+    distinctLayerOutputs: d.modes.slice(0, -1).every(m => m.framebufferSHA256 !== d.baseline.framebufferSHA256),
+    diagnosticModesDiffer: new Set(d.modes.map(m => m.framebufferSHA256)).size === 6,
     roundTripFinal: d.modes.at(-1).framebufferSHA256 === d.baseline.framebufferSHA256,
     noGLErrors: !d.pendingGlErrors.length && [d.baseline, ...d.modes].every(m => !m.glErrors.length) };
   d.pass = Object.values(d.invariants).every(Boolean);

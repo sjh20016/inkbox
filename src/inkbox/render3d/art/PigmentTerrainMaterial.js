@@ -42,6 +42,23 @@ vec2 uvAt(vec2 p) { return (clamp(floor(p+0.5),vec2(0),mapSize-1.0)+0.5)/mapSize
 float hAt(vec2 p) { return texture2D(heightTexture,uvAt(p)).g; }
 float typeAt(vec2 p) { return floor(texture2D(typeTexture,uvAt(p)).r*255.0+0.5); }
 float fieldAt(vec2 p) { return texture2D(fieldTexture,(clamp(p,vec2(0),mapSize-1.0)+0.5)/mapSize).r; }
+float surfaceDepthAt(vec2 p) {
+  return texture2D(surfaceTexture,(clamp(p,vec2(0.0),mapSize-1.0)+0.5)/mapSize).r*surfaceDepthRef;
+}
+float shorelineMask(vec2 p,float centerDepth) {
+  float left=surfaceDepthAt(p-vec2(1.0,0.0)), right=surfaceDepthAt(p+vec2(1.0,0.0));
+  float down=surfaceDepthAt(p-vec2(0.0,1.0)), up=surfaceDepthAt(p+vec2(0.0,1.0));
+  float minDepth=min(centerDepth,min(min(left,right),min(down,up)));
+  float maxDepth=max(centerDepth,max(max(left,right),max(down,up)));
+  // A shoreline requires wet AND dry samples AND a local transition. A dry
+  // plain, a dry mountain and a uniformly shallow pool all have zero weight.
+  float hasWet=smoothstep(0.002,0.016,maxDepth);
+  float hasDry=1.0-smoothstep(0.001,0.006,minDepth);
+  float gradient=smoothstep(0.003,0.016,maxDepth-minDepth);
+  float centerWet=smoothstep(0.002,0.016,centerDepth);
+  float shallow=1.0-smoothstep(0.06,0.22,centerDepth);
+  return hasWet*hasDry*gradient*mix(1.0,shallow,centerWet);
+}
 void main() {
   vec2 p=vWorld.xz+(mapSize-1.0)*0.5;
   vec2 warp=vec2(noise(p*0.19),noise(p*0.19+17.3))-0.5;
@@ -69,13 +86,12 @@ void main() {
   float distant=mix(1.0,0.30,distanceFade*(1.0-nearDetail));
   float wash=noise(p*0.12+vec2(5.7,9.1));
   float water=1.0-step(3.5,id);
-  // M2-C2D P1：岸线一带的连续烘染权重。水深是连续标量（线性过滤），
-  // 岸线附近的沙 / 水 / 陆因此不再像三个格子图层叠放。
+  // The Stage-owned depth field stays continuous; only wet/dry transitions
+  // receive coast wash. Zero depth by itself does not imply a coastline.
   float coastSoft=0.0, wd=0.0;
   if(surfaceMode>0.5){
-    wd=texture2D(surfaceTexture,(clamp(p,vec2(0.0),mapSize-1.0)+0.5)/mapSize).r*surfaceDepthRef;
-    float aaS=max(fwidth(wd)*1.5,0.004);
-    coastSoft=1.0-smoothstep(0.0,aaS+0.03,wd);
+    wd=surfaceDepthAt(p);
+    coastSoft=shorelineMask(p,wd);
   }
   // The scalar comes from this Stage's World. Large masses stay attached to
   // actual river/type/height structure; ghosts do not drive persistent layout.
@@ -153,7 +169,7 @@ void main() {
     float peak=smoothstep(atmosphereHigh,atmosphereHigh+20.0,vWorld.y)*heightWashStrength;
     color=mix(color,paperColor,peak);
     // 岸线连续烘染：沙岸 / 水岸 / 陆地之间的弱过渡。
-    color=mix(color,mix(paperColor,terrainWaterColor,0.35),coastSoft*0.20);
+    color=mix(color,mix(paperColor,terrainWaterColor,0.35),coastSoft*0.07);
     float feibai=smoothstep(0.73,0.91,dryNoise)*feibaiStrength*ink*nearDetail;
     color=mix(color,paperColor,feibai);
     float valleyWash=1.0-smoothstep(atmosphereLow,atmosphereHigh,vWorld.y);
@@ -186,7 +202,6 @@ void main() {
     if(artDebugMode<1.5)color=debugBase;
     else if(artDebugMode<2.5){
       color=mix(paperColor,terrainWaterColor,coastSoft*0.90);
-      color=mix(color,realmInkColor,clamp(wd/surfaceDepthRef,0.0,1.0)*0.35);
     }else if(artDebugMode<3.5)color=debugMass;
     else if(artDebugMode<4.5)color=mix(paperColor,realmInkColor,clamp(ink*0.72+edge+debugDeep,0.0,0.82));
     else color=mix(paperColor,atmosphereColor,(1.0-smoothstep(atmosphereLow,atmosphereHigh,vWorld.y))*atmosphereStrength)*(1.0+grain*paperGrainStrength);

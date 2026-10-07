@@ -66,6 +66,7 @@ async function importSave(savePath, seed, day) {
   assert(await browser.waitFor(`return window.inkbox?.world?.seed===${seed}&&window.inkbox?.world?.day===${day}`, { timeoutMs: 60000 }),
     `canonical save seed=${seed} day=${day} did not load through product importFile`);
   await page(`const k=window.inkbox,r=k.render3d.renderer;k.setSpeed(0);
+    await r.art.comparisonReady;
     r.setProductionAssetsEnabled(true);await r.environmentLoadPromise;
     if(r.environmentLoadError)throw r.environmentLoadError;
     await r.characterLoadPromise;if(r.characterLoadError)throw r.characterLoadError;
@@ -90,7 +91,7 @@ async function measureWithRetry(view) {
   return { unavailable: true, reason: lastError };
 }
 
-async function captureView(view) {
+async function captureView(view, importEpoch) {
   const setup = await page(`
     const k=window.inkbox,r=k.render3d.renderer,v=window.__c2dVisuals;
     document.getElementById('inkInspectClose')?.click();
@@ -160,7 +161,7 @@ async function captureView(view) {
   assert.equal(afterIdentity.advance,setup.advanceStateSHA256,view.key+': advance drift during capture');
   if(DEBUG)assert.equal(setup.artDebug,DEBUG,'artDebug query not applied');
   if(STYLE)assert.equal(setup.artStyle,STYLE,'artStyle query not applied');
-  return { view: view.key, ...setup, metrics, measurement: measured,
+  return { view: view.key, importEpoch, ...setup, captureIdentity: afterIdentity, metrics, measurement: measured,
     image: path.relative(ROOT, image).replaceAll(path.sep, '/'),
     imageSha256: createHash('sha256').update(fs.readFileSync(image)).digest('hex') };
 }
@@ -186,15 +187,16 @@ try {
   assert(await browser.waitFor('return !!window.inkbox?.render3d?.renderer?.getGeographyStats', { timeoutMs: 60000 }));
   await page(`window.inkbox.setSpeed(0);window.__c2dVisuals=await import('./src/inkbox/render3d/art/VisualScenarios.js');return true;`);
 
-  let loadedRecipe = null;
+  let loadedRecipe = null, importEpoch = 0;
   for (const view of VIEWS) {
     if (loadedRecipe !== view.recipe) {
       console.log(`· 载入 ${view.recipe} 规范世界…`);
       if (view.recipe === 'mortal') await importSave(NATURAL_SAVE, 226, 72000);
       else await importSave(REALMS_SAVE, 20260923, 21600);
       loadedRecipe = view.recipe;
+      importEpoch++;
     }
-    const record = await captureView(view);
+    const record = await captureView(view, importEpoch);
     assert(record.worldSHA256 && record.advanceStateSHA256, `${view.key}: World/advance 身份摘要缺失`);
     if (record.measurement?.unavailable) console.log(`WARN ${view.key}: GPU 计时不可用（${record.measurement.reason}），已记录并继续`);
     report.views.push(record);
