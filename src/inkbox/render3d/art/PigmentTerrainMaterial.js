@@ -180,17 +180,19 @@ void main() {
     float yin=smoothstep(0.35,1.0,scalar);
     float empty=(1.0-smoothstep(0.18,0.58,scalar))*(1.0-water);
     color=mix(color,paperColor,empty*0.46);
-    vec3 coldInk=mix(fieldColdColor,fieldInkColor,0.42+0.18*rock);
-    color=mix(color,coldInk,yin*(0.50-water*0.25));
-    float bone=smoothstep(0.81,0.94,dryNoise)*yin*(0.02+rock*0.07);
+    // Dense yin remains geographically readable as magnetic-blue midtone.
+    // Its darkest cues are the sparse Structure marks, not a filled black face.
+    vec3 coldInk=mix(fieldColdColor,fieldInkColor,0.25+0.10*rock);
+    color=mix(color,coldInk,yin*(0.28-water*0.12));
+    float bone=smoothstep(0.86,0.97,dryNoise)*yin*(0.025+rock*0.08);
     color=mix(color,paperColor,bone);
   }else if(fieldMode>0.5){
     float land=1.0-water;
     float clean=clearQi*land*(0.18+0.10*(1.0-smoothstep(0.5,2.2,slope)));
     color=mix(color,paperColor,clean);
     vec3 mineral=mix(fieldMineralGreen,fieldMineralBlue,rock);
-    color=mix(color,mineral,clearQi*land*(0.07+0.15*rock));
-    color=mix(color,fieldMineralGold,clearQi*ridge*land*0.07);
+    color=mix(color,mineral,clearQi*land*(0.06+0.08*rock));
+    color=mix(color,fieldMineralGold,clearQi*ridge*land*0.04);
   }
   // Weak paper stays on the image; all wash / dry brush above stay in world space.
   float grain=hash(floor(gl_FragCoord.xy))-0.5;
