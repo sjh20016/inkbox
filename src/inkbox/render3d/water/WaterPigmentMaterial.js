@@ -27,6 +27,7 @@ uniform float artDebugMode;
 uniform vec3 paperColor, waterColor, inkColor;
 uniform vec3 tint;
 uniform float opacityDeep, paperStrength, rippleStrength, shoreSoftness;
+uniform float pixelsPerUnit;
 varying vec3 vWorld;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7)) + seed) * 43758.5453); }
 float noise(vec2 p) {
@@ -42,16 +43,22 @@ void main() {
   float wet=smoothstep(0.0,aa+0.006*shoreSoftness,depth);
   if(wet<=0.001)discard;
   float deep=smoothstep(0.0,surfaceDepthRef*0.7,depth);
-  // 海（湖）主体回纸：越浅越接近纸色，深处也只混极淡花青。
-  vec3 color=mix(paperColor,waterColor,deep*(1.0-paperStrength)+0.10);
-  // 岸线一带再向纸晕开半格，水陆不再像两层格子叠放。
-  color=mix(color,paperColor,(1.0-deep)*paperStrength*0.55);
-  // 稀疏水纹：世界坐标锚定、低频、只取极少数亮/暗笔。
-  float ripple=smoothstep(0.76,0.95,noise(p*0.53+vec2(seed*0.01,3.7)))*smoothstep(0.02,0.10,depth);
-  color=mix(color,inkColor,ripple*rippleStrength*0.14);
-  float glint=smoothstep(0.90,0.995,noise(p*0.21+vec2(9.2,seed*0.02)))*deep;
-  color=mix(color,paperColor,glint*0.10);
-  float alpha=wet*mix(0.30,opacityDeep,deep);
+  // A negative form still has a readable body: paper with 20–35% hua-qing
+  // in deep water; the shallow edge approaches paper with a lower opacity.
+  float deepMix=clamp((1.0-paperStrength)*0.60,0.20,0.35);
+  vec3 color=mix(paperColor,waterColor,mix(0.07,deepMix,deep));
+  // Long broken horizontal marks in world X, with a slow Z warp. Screen-space
+  // derivatives antialias the narrow line; projected scale only fades detail.
+  float warp=noise(p*0.075+vec2(3.7,seed*0.01));
+  float phase=p.y*1.35+warp*0.85;
+  float line=1.0-smoothstep(0.025,0.025+max(fwidth(phase)*0.7,0.028),abs(fract(phase)-0.5));
+  float broken=smoothstep(0.64,0.84,noise(vec2(p.x*0.10,p.y*0.35)+9.2));
+  float detail=smoothstep(4.5,11.0,pixelsPerUnit);
+  float ripple=line*broken*detail*smoothstep(0.02,0.10,depth);
+  color=mix(color,inkColor,ripple*rippleStrength*0.10);
+  // Paper-like water must cover the sea-floor marks rather than reveal a
+  // second grey terrain. Shallowness lightens both pigment and coverage.
+  float alpha=wet*mix(opacityDeep*0.75,opacityDeep,deep);
   if(artDebugMode>0.5&&abs(artDebugMode-2.0)>0.1)color=paperColor;
   gl_FragColor=vec4(color*tint,alpha);
   #include <tonemapping_fragment>
@@ -74,6 +81,7 @@ export class WaterPigmentMaterial extends THREE.ShaderMaterial {
       paperStrength: { value: 0.5 },
       rippleStrength: { value: 0.6 },
       shoreSoftness: { value: 1.0 },
+      pixelsPerUnit: { value: 2 },
     } });
     this.name = 'Inkbox:WaterPigment';
     // 与 legacy MeshBasicMaterial 同名通道：外部只按 .color / .opacity 读写。

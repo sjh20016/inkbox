@@ -105,6 +105,7 @@ export class ArtPass {
     for (const stage of this.host.stages.values()) {
       if (!stage.visible) continue;
       if (stage.terrain?.inkMaterial) stage.terrain.inkMaterial.uniforms.pixelsPerUnit.value = view.pixelsPerUnit;
+      if (stage.water?.inkMaterial?.uniforms.pixelsPerUnit) stage.water.inkMaterial.uniforms.pixelsPerUnit.value = view.pixelsPerUnit;
       stage.setEnvironmentArtView(view);
       for (const layer of [stage.entities, stage.vegetation, stage.settlements]) layer?.setArtView(view);
     }

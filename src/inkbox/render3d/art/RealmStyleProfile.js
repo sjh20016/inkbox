@@ -17,7 +17,7 @@ export const REALM_STYLES = freeze({
       palette: ['#5B777C','#718F94','#83A6A9','#A5BFC0','#D8CEB8','#A9B77D','#B9BE89','#627A62','#435E50','#B8B68B','#C9AD75','#C9C6B3','#8A937A','#8C9184','#70868A','#58696A','#DDD9CB','#C8AE59','#755F50','#89857D','#A66E49','#AAA08C','#B58A5F'],
       rock: '#70868A', soil: '#B58A5F', slopeStrength: 0.30,
     },
-    water: { color: '#8FB5B8', opacity: 0.43, paperStrength: 0.55, rippleStrength: 0.60, shoreSoftness: 1.0 },
+    water: { color: '#8FB5B8', opacity: 0.84, paperStrength: 0.55, rippleStrength: 0.60, shoreSoftness: 1.0 },
     vegetation: { palette: ['#A9B77D','#627A62','#435E50'], tints5: ['#95A36A','#6C8D62','#577E67','#4D7170','#B0A368'], instanceTintWeight: 0.55, distanceFade: 0.24 },
     building: { palette: { wall: '#DED5BE', roof: '#53605C', wood: '#79664F', earth: '#B58A5F', accent: '#B75A49' }, instanceTintWeight: 0.10, distanceFade: 0.24 },
     entity: { palette: { cloth: '#70868A', skin: '#C9B698', accent: '#B75A49' }, atlas12: ['#C9B698','#ECE4D2','#D8CEB8','#303533','#70868A','#627A62','#B58A5F','#B75A49','#8FB5B8','#C8AE59','#846C80','#627A62'], instanceTintWeight: 0.24, distanceFade: 0.20 },
