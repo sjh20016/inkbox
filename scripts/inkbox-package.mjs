@@ -156,7 +156,12 @@ const FILES = [
   'scripts/inkbox-render3d-m2c2d1-decomposition.mjs',
   'scripts/inkbox-render3d-m2c2d1-diagnostics.mjs',
   'scripts/inkbox-render3d-m2c2d1-framebuffer.mjs',
+  'scripts/inkbox-render3d-m2c2d1-comparison.mjs',
   'M2C2D1_BASELINE.md',
+  'M2C2D1_FOLLOWUPS.md',
+  'M2C2D1_PERFORMANCE_REPORT.md',
+  'M2C2D1_READINESS.md',
+  'M2C2D1_VISUAL_ACCEPTANCE.md',
   'M2C2D_BASELINE.md',
   'M2C2D_VISUAL_ACCEPTANCE.md',
   'M2C2D_PERFORMANCE_REPORT.md',
@@ -250,6 +255,7 @@ const DIRECTORIES = [
 ];
 const RELEASE_SUMMARIES = [
   'reports/release/render3d-m2c2d/summary/acceptance-summary.json',
+  'reports/release/render3d-m2c2d1/summary/acceptance-summary.json',
   'reports/release/render3d-m2c2c/summary/acceptance-summary.json',
   'reports/release/render3d-m2a/performance.json',
   'reports/release/render3d-m2c2a/acceptance-summary.json',

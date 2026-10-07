@@ -18,7 +18,8 @@ name: Inkbox CI
 # 刻意**不**进本 workflow 的：
 #   · `npm run test:simulation`（smoke，6.5–13 分钟）与 `npm run inkbox:longrun`（800 年）
 #     ⇒ 见 `nightly.yml`（D3.5：长测不进普通 CI）。
-#   · Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0 ⇒ 手动 browser-smoke；证据独立存 artifact。
+#   · Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0，以及 C2D.1 Edge 视觉/性能复验
+#     ⇒ 手动浏览器验证；C2D.1 的 CPU 契约仍在 Fast Gate，浏览器性能不作为普通 CI 门槛。
 
 on:
   push:
@@ -121,6 +122,9 @@ jobs:
 
       - name: C2D 连续表面视觉场、绘画水面、绘画法线与界缘断面契约
         run: npm run test:render3d:m2c2d
+
+      - name: C2D.1 绘画化 shader 与诊断 CPU 契约
+        run: npm run test:render3d:m2c2d1
 
       - name: 构建发布包（自包含，clone 即可跑）
         run: npm run build

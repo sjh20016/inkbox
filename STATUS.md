@@ -1,5 +1,9 @@
 # Project Status
 
+2026-10-08 当前阶段：**M2-C2D.1 本机工程验收完成，最终美术待人工裁决**。指定分支 `codex/m2-c2d1-painterly-reconciliation` 从 WIP `daf78c0` 续作；完整十二镜四轮 GPU 零正向预算、CPU、六层/GPU 契约、历史对照与原套件 600/6000 soak 通过。用户已授权完成后上传该分支，远端 CI 以最新对应提交为准。没有合并 main，未把旧 C2B/C2C 的 Actions 作为本阶段证明。入口：[就绪](./M2C2D1_READINESS.md)、[视觉](./M2C2D1_VISUAL_ACCEPTANCE.md)、[性能](./M2C2D1_PERFORMANCE_REPORT.md)。
+
+以下 2026-10-06 段落为历史阶段记录。
+
 2026-10-06 当前真相：**C2B Pass 1 的已封板基线为 main `e0a851c`**，第一代正式资产生产体系成立；Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。它们是 C2B 基线证据，不代表 C2C 远端封板。**M2-C2C Meaningful Geography 已本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行**；验收证据见下方。历史 C2B 资产报告：[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪](./M2C2B_READINESS.md)。
 
 ## 2026-10-06 · M2-C2C Meaningful Geography（本地完成）

@@ -113,6 +113,20 @@ check('TerrainDataTextures: deterministic RGBA snapshots use nearest sampling an
     assert.equal(a.heights[i * 4], world.height[i]);
     assert.ok(Math.abs(a.heights[i * 4 + 1] - elevation.node(4, 3)) < 1e-5,
       'GPU snapshot stores the derived elevation in Float32 precision');
+    assert.equal(a.packedBroadGradient, true);
+    assert.equal(a.packedBroadRadius, 2.5);
+    const at = (x, y) => a.heights[(Math.max(0, Math.min(world.h - 1, y)) * world.w + Math.max(0, Math.min(world.w - 1, x))) * 4 + 1];
+    const axis = (x, y, dx, dy) => {
+      const sx = Math.max(0, Math.min(world.w - 1, x + dx)), sy = Math.max(0, Math.min(world.h - 1, y + dy));
+      const ix = Math.floor(sx), iy = Math.floor(sy), fx = sx - ix, fy = sy - iy;
+      return (at(ix, iy) * (1 - fx) + at(ix + 1, iy) * fx) * (1 - fy)
+        + (at(ix, iy + 1) * (1 - fx) + at(ix + 1, iy + 1) * fx) * fy;
+    };
+    for (const [x, y] of [[0, 0], [4, 3], [18, 10], [0, 7], [18, 5]]) {
+      const j = (y * world.w + x) * 4, radius = a.packedBroadRadius;
+      assert.ok(Math.abs(a.heights[j + 2] - (axis(x, y, radius, 0) - axis(x, y, -radius, 0)) / (2 * radius)) < 1e-5);
+      assert.ok(Math.abs(a.heights[j + 3] - (axis(x, y, 0, radius) - axis(x, y, 0, -radius)) / (2 * radius)) < 1e-5);
+    }
     assert.equal(a.types[i * 4], 2);
     assert.equal(snapshot(world), before);
   } finally { a.dispose(); b.dispose(); }
@@ -129,21 +143,21 @@ check('TerrainDataTextures: height/type dirty channels stay independent with r18
     world.height[1 * world.w + 2] = 0.77;
     data.update(heightRegion, { height: true, type: false });
     assert.deepEqual(data.uploads, { height: initial.height + 1, type: initial.type, cells: initial.cells + 4 });
-    assert.deepEqual(updateRanges(ht), [
-      { start: (1 * world.w + 2) * 4, count: 2 * 4 },
-      { start: (2 * world.w + 2) * 4, count: 2 * 4 },
-    ]);
+    assert.deepEqual(updateRanges(ht), Array.from({ length: 6 }, (_, y) => ({ start: y * world.w * 4, count: 7 * 4 })),
+      'height upload covers the ±3 packed-gradient halo; cells accounting stays the input region');
     assert.deepEqual(updateRanges(tt), []);
     assert.ok(Math.abs(data.heights[(1 * world.w + 2) * 4] - 0.77) < 1e-6);
     assert.ok(Math.abs(ht.image.data[(1 * world.w + 2) * 4] - 0.77) < 1e-6);
 
     ht.clearUpdateRanges(); tt.clearUpdateRanges();
+    const heightBitsBeforeType = new Uint32Array(data.heights.buffer).slice();
     const afterHeight = { ...data.uploads };
     const typeRegion = { x0: 7, y0: 4, x1: 7, y1: 4 };
     world.type[4 * world.w + 7] = 250; // unknown canonical type must be mapped to the safe fallback.
     data.update(typeRegion, { height: false, type: true });
     assert.deepEqual(data.uploads, { height: afterHeight.height, type: afterHeight.type + 1, cells: afterHeight.cells + 1 });
     assert.deepEqual(updateRanges(ht), []);
+    assert.deepEqual(new Uint32Array(data.heights.buffer), heightBitsBeforeType, 'type-only must preserve every height RGBA bit');
     assert.deepEqual(updateRanges(tt), [{ start: (4 * world.w + 7) * 4, count: 4 }]);
     assert.equal(data.types[(4 * world.w + 7) * 4], 5);
     assert.equal(data.types[(4 * world.w + 7) * 4 + 1], 0, 'unused channels stay zero');
@@ -152,6 +166,55 @@ check('TerrainDataTextures: height/type dirty channels stay independent with r18
     data.update(typeRegion, { height: false, type: false });
     data.update({ x0: 40, y0: 40, x1: 41, y1: 41 });
     assert.deepEqual(data.uploads, beforeNoop);
+  } finally { data.dispose(); }
+});
+
+check('TerrainDataTextures: packed broad gradient dirty halo preserves R/G and non-RAW elevation', () => {
+  const world = makeWorld(1903, { w: 13, h: 9 });
+  const elevation = new ElevationField(world, { datum: 7, relief: 1.3 });
+  const data = new TerrainDataTextures(world, elevation), radius = data.packedBroadRadius;
+  const bits = () => new Uint32Array(data.heights.buffer).slice();
+  const at = (x, y) => data.heights[(Math.max(0, Math.min(world.h - 1, y)) * world.w + Math.max(0, Math.min(world.w - 1, x))) * 4 + 1];
+  const sample = (x, y) => {
+    x = Math.max(0, Math.min(world.w - 1, x)); y = Math.max(0, Math.min(world.h - 1, y));
+    const ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
+    return (at(ix, iy) * (1 - fx) + at(ix + 1, iy) * fx) * (1 - fy)
+      + (at(ix, iy + 1) * (1 - fx) + at(ix + 1, iy + 1) * fx) * fy;
+  };
+  try {
+    assert.equal(elevation.raw, false);
+    for (const [x, y] of [[6, 4], [0, 0]]) {
+      const before = bits(), index = y * world.w + x;
+      world.height[index] += 0.37;
+      data.heightTexture.clearUpdateRanges(); data.typeTexture.clearUpdateRanges();
+      const uploads = { ...data.uploads };
+      data.update({ x0: x, y0: y, x1: x, y1: y }, { height: true, type: false });
+      assert.deepEqual(data.uploads, { height: uploads.height + 1, type: uploads.type, cells: uploads.cells + 1 });
+      const hx0 = Math.max(0, x - 3), hx1 = Math.min(world.w - 1, x + 3);
+      const hy0 = Math.max(0, y - 3), hy1 = Math.min(world.h - 1, y + 3);
+      assert.deepEqual(updateRanges(data.heightTexture), Array.from({ length: hy1 - hy0 + 1 }, (_, row) =>
+        ({ start: ((hy0 + row) * world.w + hx0) * 4, count: (hx1 - hx0 + 1) * 4 })));
+      assert.deepEqual(updateRanges(data.typeTexture), []);
+      const now = bits();
+      for (let cy = 0; cy < world.h; cy++) for (let cx = 0; cx < world.w; cx++) {
+        const p = (cy * world.w + cx) * 4, inHalo = cx >= hx0 && cx <= hx1 && cy >= hy0 && cy <= hy1;
+        if (cx === x && cy === y) {
+          assert.equal(data.heights[p], world.height[index]);
+          assert.equal(data.heights[p + 1], Math.fround(elevation.node(x, y)));
+        } else {
+          assert.equal(now[p], before[p], `R changed outside dirty cell ${cx},${cy}`);
+          assert.equal(now[p + 1], before[p + 1], `G changed outside dirty cell ${cx},${cy}`);
+        }
+        if (!inHalo) {
+          assert.equal(now[p + 2], before[p + 2], `B changed outside ±3 halo ${cx},${cy}`);
+          assert.equal(now[p + 3], before[p + 3], `A changed outside ±3 halo ${cx},${cy}`);
+        }
+        const gx = (sample(cx + radius, cy) - sample(cx - radius, cy)) / (2 * radius);
+        const gy = (sample(cx, cy + radius) - sample(cx, cy - radius)) / (2 * radius);
+        assert.ok(Math.abs(data.heights[p + 2] - gx) < 1e-5, `packed X mismatch ${cx},${cy}`);
+        assert.ok(Math.abs(data.heights[p + 3] - gy) < 1e-5, `packed Y mismatch ${cx},${cy}`);
+      }
+    }
   } finally { data.dispose(); }
 });
 
@@ -165,6 +228,10 @@ check('PigmentTerrainMaterial: map size, profile uniforms, opaque output and cac
     assert.equal(material.uniforms.mapSize.value.x, 23); assert.equal(material.uniforms.mapSize.value.y, 15);
     assert.equal(material.uniforms.heightTexture.value, data.heightTexture);
     assert.equal(material.uniforms.typeTexture.value, data.typeTexture);
+    assert.equal(material.uniforms.packedBroadRadius.value, data.packedBroadRadius);
+    const manual = new PigmentTerrainMaterial({ world, heightTexture: data.heightTexture, typeTexture: data.typeTexture }, profile);
+    assert.equal(manual.uniforms.packedBroadRadius.value, 0, 'manual texture has no packed capability');
+    manual.dispose();
     assert.equal(material.uniforms.pigmentDensity.value, 0.73);
     assert.equal(material.uniforms.inkDensity.value, 0.22);
     assert.equal(material.uniforms.paperColor.value.getHexString(), 'e2d8c7');

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { launch, findEdge, sleep } from './cdp.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = path.join(ROOT, 'reports/local/m2c2d1/decomposition');
+const OUT = path.resolve(ROOT, process.env.INKBOX_C2D1_DIAGNOSTIC_OUT || 'reports/local/m2c2d1/decomposition');
 const SOURCE = process.env.INKBOX_C2D1_CAMERA_SOURCE || ['E0-c2d', 'c2d', 'candidate']
   .map(label => path.join(ROOT, `reports/local/m2c2d1/${label}/browser.json`)).find(file => fs.existsSync(file));
 const SAVE = path.resolve(ROOT, process.env.INKBOX_C2C_NATURAL_SAVE || 'reports/local/m2c2c/pilot/full-sites-natural-save.json');
@@ -18,6 +18,7 @@ assert(['localhost', '127.0.0.1', '[::1]'].includes(new URL(base).hostname), 'di
 const decompositionOnly = process.argv.includes('--decomposition-only');
 const report = { suite: 'M2-C2D.1 decomposition and diagnostic GPU terrain/water/boundary contracts', golden: false,
   startedAt: new Date().toISOString(), decompositionOnly, decomposition: { pass: false }, coast: { pass: false, skipped: decompositionOnly },
+  coastSampling: { pass: false, skipped: decompositionOnly },
   height: { pass: false, skipped: decompositionOnly }, waterBoundary: { pass: false, skipped: decompositionOnly } };
 let browser, server;
 const page = body => browser.js(`return (async()=>{${body}})();`, { timeoutMs: 240000 });
@@ -80,7 +81,7 @@ async function coastPage() {
   const surfaceTexture = texture(scalar, T.UnsignedByteType, T.LinearFilter);
   const material = new PigmentTerrainMaterial({ world: { w: N, h: N, seed: 226 }, heightTexture, typeTexture }, ART_PROFILES.pilot);
   resources.push(material);
-  const u = material.uniforms; u.artDebugMode.value = 2; u.surfaceTexture.value = surfaceTexture; u.surfaceDepthRef.value = 0.5;
+  const u = material.uniforms; material.setArtDebugMode(2); u.surfaceTexture.value = surfaceTexture; u.surfaceDepthRef.value = 0.5;
   const scene = new T.Scene(), geometry = new T.PlaneGeometry(16, 16); geometry.rotateX(-Math.PI / 2); resources.push(geometry);
   scene.add(new T.Mesh(geometry, material));
   const aspect = gl.drawingBufferWidth / gl.drawingBufferHeight;
@@ -106,7 +107,10 @@ async function coastPage() {
     for (const fixture of fixtures) {
       for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
         const i = (y * N + x) * 4; heights[i + 1] = fixture.mountain ? Math.abs(x - 8) * 2 : 0;
-        types[i] = fixture.type; scalar[i] = Math.round(255 * fixture.depth(x, y) / u.surfaceDepthRef.value);
+        types[i] = fixture.type;
+        const depthByte = (sx, sy) => Math.round(255 * fixture.depth(Math.max(0, Math.min(N - 1, sx)), Math.max(0, Math.min(N - 1, sy))) / u.surfaceDepthRef.value);
+        scalar[i] = depthByte(x, y); scalar[i + 1] = depthByte(x - 1, y);
+        scalar[i + 2] = depthByte(x + 1, y); scalar[i + 3] = depthByte(x, y - 1);
       }
       heightTexture.needsUpdate = typeTexture.needsUpdate = surfaceTexture.needsUpdate = true;
       u.surfaceMode.value = 0; gpu.render(scene, camera); const off = fixture.points.map(([x, z]) => sample(x, z));
@@ -115,7 +119,10 @@ async function coastPage() {
       glErrors.push(...errors());
       const deltas = on.map((rgb, i) => Math.max(...rgb.map((v, c) => Math.abs(v - off[i][c]))));
       const pass = fixture.expect === 'same' ? deltas.every(d => d === 0) : deltas.some(d => d > 0);
-      samples.push({ name: fixture.name, points: fixture.points, expect: fixture.expect, surfaceOffRGB: off, surfaceOnRGB: on, maxChannelDeltas: deltas, pass });
+      const insideDomain = fixture.points.every(([x, z]) => x + (N - 1) / 2 >= 0 && x + (N - 1) / 2 <= N - 1
+        && z + (N - 1) / 2 >= 0 && z + (N - 1) / 2 <= N - 1);
+      samples.push({ name: fixture.name, points: fixture.points, insideDomain, expect: fixture.expect,
+        surfaceOffRGB: off, surfaceOnRGB: on, maxChannelDeltas: deltas, pass: pass && insideDomain });
     }
   } finally {
     for (const resource of resources) resource.dispose();
@@ -128,6 +135,125 @@ async function coastPage() {
     size: [N, N], shader: 'production PigmentTerrainMaterial', comparison: 'same-position coast RGB with surfaceMode=0/1',
     pendingGlErrors, glErrors, before, after, samples,
     pass: samples.every(s => s.pass) && pendingGlErrors.length === 0 && glErrors.length === 0 && JSON.stringify(before) === JSON.stringify(after) };
+}
+
+// Compare the production two-fetch GLSL against an independent five-R-fetch
+// shoreline scalar on the actual Edge GPU. Fixed-point RGB24 avoids art-colour
+// and 8-bit framebuffer rounding hiding a packing or interpolation error.
+async function coastSamplingPage() {
+  const T = await import('three');
+  const { PigmentTerrainMaterial } = await import('./src/inkbox/render3d/art/PigmentTerrainMaterial.js');
+  const { ART_PROFILES } = await import('./src/inkbox/render3d/art/ArtPassProfile.js');
+  const host = window.inkbox.render3d.renderer, gpu = host.gpu, gl = gpu.getContext(), N = 16;
+  const resources = [], pendingGlErrors = [], glErrors = [];
+  const inventory = () => ({ geometries: gpu.info.memory.geometries, textures: gpu.info.memory.textures,
+    programs: gpu.info.programs?.length ?? null });
+  host.render();
+  const beforeResources = inventory();
+  const errors = dest => { for (let e = gl.getError(); e !== gl.NO_ERROR; e = gl.getError()) dest.push(e); };
+  errors(pendingGlErrors);
+  const production = new PigmentTerrainMaterial({ world: { w: N, h: N, seed: 226 },
+    heightTexture: null, typeTexture: null }, ART_PROFILES.pilot);
+  resources.push(production);
+  const source = production.fragmentShader;
+  const packedCall = /vec4 packedDepth=texture2D\(surfaceTexture,\(clamp\(p,vec2\(0\.0\),mapSize-1\.0\)\+0\.5\)\/mapSize\)\*surfaceDepthRef;/.test(source);
+  const extract = name => {
+    const match = new RegExp('float\\s+' + name + '\\s*\\([^)]*\\)\\s*\\{').exec(source);
+    if (!match) throw Error('production coast helper missing: ' + name);
+    let depth = 1, end = match.index + match[0].length;
+    for (; end < source.length && depth; end++) { if (source[end] === '{') depth++; if (source[end] === '}') depth--; }
+    if (depth) throw Error('unterminated production coast helper: ' + name);
+    return source.slice(match.index, end);
+  };
+  const insideHelper = extract('shorelineMaskInside');
+  const productionInside = /coastSoft=shorelineMaskInside\(p,packedDepth\)/.test(source)
+    && !/\bif\s*\(/.test(insideHelper) && !/shorelineMask\(/.test(insideHelper);
+  const bytes = new Uint8Array(N * N * 4);
+  const surface = new T.DataTexture(bytes, N, N, T.RGBAFormat, T.UnsignedByteType);
+  surface.minFilter = surface.magFilter = T.LinearFilter; surface.generateMipmaps = false;
+  surface.flipY = false; surface.colorSpace = T.NoColorSpace; resources.push(surface);
+  const material = new T.ShaderMaterial({ toneMapped: false, depthTest: false, depthWrite: false,
+    uniforms: { surfaceTexture: { value: surface }, mapSize: { value: new T.Vector2(N, N) },
+      surfaceDepthRef: { value: 0.5 }, probePoint: { value: new T.Vector2() }, probeMode: { value: 0 } },
+    vertexShader: 'void main(){gl_Position=vec4(position.xy,0.0,1.0);}',
+    fragmentShader: `uniform sampler2D surfaceTexture; uniform vec2 mapSize,probePoint; uniform float surfaceDepthRef,probeMode;
+      ${extract('surfaceDepthAt')}
+      ${extract('shorelineMaskValues')}
+      ${insideHelper}
+      ${extract('shorelineMask')}
+      float originalFiveFetch(vec2 p){
+        float center=surfaceDepthAt(p), left=surfaceDepthAt(p-vec2(1.0,0.0));
+        float right=surfaceDepthAt(p+vec2(1.0,0.0)), down=surfaceDepthAt(p-vec2(0.0,1.0));
+        float up=surfaceDepthAt(p+vec2(0.0,1.0));
+        float minimum=min(center,min(min(left,right),min(down,up)));
+        float maximum=max(center,max(max(left,right),max(down,up)));
+        float wet=smoothstep(0.002,0.016,maximum);
+        float dry=1.0-smoothstep(0.001,0.006,minimum);
+        float transition=smoothstep(0.003,0.016,maximum-minimum);
+        float centerWet=smoothstep(0.002,0.016,center);
+        float shallow=1.0-smoothstep(0.06,0.22,center);
+        return wet*dry*transition*mix(1.0,shallow,centerWet);
+      }
+      void main(){
+        vec2 p=probePoint;
+        vec4 packed=texture2D(surfaceTexture,(clamp(p,vec2(0.0),mapSize-1.0)+0.5)/mapSize)*surfaceDepthRef;
+        float value=probeMode>1.5?shorelineMask(p,packed):
+          (probeMode>0.5?originalFiveFetch(p):shorelineMaskInside(p,packed));
+        float fixed24=floor(clamp(value,0.0,1.0)*16777215.0+0.5);
+        gl_FragColor=vec4(floor(fixed24/65536.0),mod(floor(fixed24/256.0),256.0),mod(fixed24,256.0),255.0)/255.0;
+      }` });
+  resources.push(material);
+  const geometry = new T.PlaneGeometry(2, 2); resources.push(geometry);
+  const scene = new T.Scene(); scene.add(new T.Mesh(geometry, material));
+  const camera = new T.OrthographicCamera(-1, 1, 1, -1, 0.1, 10); camera.position.z = 1;
+  const oldTarget = gpu.getRenderTarget(), oldViewport = gpu.getViewport(new T.Vector4()),
+    oldScissor = gpu.getScissor(new T.Vector4()), oldScissorTest = gpu.getScissorTest();
+  const sample = (x, y, mode) => {
+    material.uniforms.probePoint.value.set(x, y); material.uniforms.probeMode.value = mode;
+    gpu.render(scene, camera);
+    if (gl.getParameter(gl.FRAMEBUFFER_BINDING) !== null) throw Error('coast scalar probe requires default framebuffer');
+    const rgba = new Uint8Array(4); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, rgba); errors(glErrors);
+    return (rgba[0] * 65536 + rgba[1] * 256 + rgba[2]) / 16777215;
+  };
+  const fixtures = [
+    { name: 'dry', depth: () => 0 },
+    { name: 'uniform-shallow', depth: () => 0.02 },
+    { name: 'vertical-shore', depth: x => x >= 8 ? 0.02 : 0 },
+    { name: 'diagonal-shore', depth: (x, y) => x + y >= 15 ? 0.06 : 0 },
+    { name: 'sloped-shore', depth: (x, y) => x + y > 14 ? Math.min(0.5, 0.004 + (x + y - 14) * 0.012) : 0 },
+  ];
+  const points = [[0,0],[15,15],[0,7.5],[15,8.25],[7,7],[7.5,7.5],[8.125,6.75],
+    [1.25,13.75],[14.75,0.25],[4.5,10.5],[-0.25,7.5],[15.25,7.5]];
+  const cases = [], tolerance = 2e-6;
+  try {
+    gpu.setRenderTarget(null); gpu.setViewport(0, 0, 1, 1); gpu.setScissor(0, 0, 1, 1); gpu.setScissorTest(true);
+    for (const fixture of fixtures) {
+      const byteAt = (x, y) => Math.round(255 * fixture.depth(Math.max(0,Math.min(N-1,x)),Math.max(0,Math.min(N-1,y))) / 0.5);
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        const i = (y * N + x) * 4;
+        bytes[i] = byteAt(x,y); bytes[i+1] = byteAt(x-1,y);
+        bytes[i+2] = byteAt(x+1,y); bytes[i+3] = byteAt(x,y-1);
+      }
+      surface.needsUpdate = true;
+      for (const [x,y] of points) {
+        const insideDomain = x >= 0 && x <= N - 1 && y >= 0 && y <= N - 1;
+        const packed = sample(x,y,insideDomain ? 0 : 2), reference = sample(x,y,1), error = Math.abs(packed-reference);
+        cases.push({ fixture: fixture.name, point: [x,y], insideDomain, helper: insideDomain ? 'productionInside' : 'genericOutside',
+          packed, reference, error, pass: error <= tolerance });
+      }
+    }
+  } finally {
+    for (const resource of resources) resource.dispose();
+    gpu.setRenderTarget(oldTarget); gpu.setViewport(oldViewport); gpu.setScissor(oldScissor); gpu.setScissorTest(oldScissorTest);
+    host.render(); errors(glErrors);
+  }
+  const maxError = Math.max(...cases.map(v => v.error));
+  const afterResources = inventory(), resourcesRestored = JSON.stringify(beforeResources) === JSON.stringify(afterResources);
+  return { pass: packedCall && productionInside && cases.some(v => v.insideDomain && v.reference > 0 && v.reference < 1)
+      && cases.every(v => v.pass) && resourcesRestored && !pendingGlErrors.length && !glErrors.length,
+    productionPackedCall: packedCall, productionInside, framebuffer: 'existing renderer default framebuffer', renderTargetsCreated: 0,
+    comparison: 'closed-domain production branchless inside helper and outside generic helper versus independent five-R-fetch scalar; RGB24 encoding',
+    tolerance, maxError, cases, beforeResources, afterResources, resourcesRestored, pendingGlErrors, glErrors };
 }
 
 // Execute verbatim production GLSL helpers on a private one-pixel viewport.
@@ -164,8 +290,8 @@ async function heightPage() {
     return owner.slice(match.index, end);
   };
   let helpers;
-  try { helpers = ['uvAt', 'hAt', 'typeAt', 'sampleHeightContinuous', 'sampleHeightBroad']
-    .map(name => extract(name, ['sampleHeightContinuous', 'sampleHeightBroad'].includes(name) ? vertexSource : source)); }
+  try { helpers = ['uvAt', 'hAt', 'typeAt', 'sampleHeightContinuous', 'sampleHeightBroad', 'sampleHeightBroadX', 'sampleHeightBroadY']
+    .map(name => extract(name, ['sampleHeightContinuous', 'sampleHeightBroad', 'sampleHeightBroadX', 'sampleHeightBroadY'].includes(name) ? vertexSource : source)); }
   catch (error) {
     for (const resource of resources) resource.dispose();
     return { pass: false, diagnosticOnly: true, failure: String(error), pendingGlErrors };
@@ -244,19 +370,31 @@ async function heightPage() {
   const filtersNearest = [heightTexture, typeTexture].every(t => t.minFilter === T.NearestFilter && t.magFilter === T.NearestFilter)
     && productionTextureFilters.length > 0 && productionTextureFilters.every(s => [...s.height, ...s.type].every(f => f === T.NearestFilter));
   const massExpression = source.match(/float\s+massMask\s*=([^;]+);/)?.[1] || '';
+  const helper = name => extract(name, vertexSource);
+  const twoFetchesNoBranch = name => {
+    const body = helper(name);
+    return (body.match(/texture2D\s*\(/g) || []).length === 2 && !/\bif\s*\(/.test(body);
+  };
   const sourceGuards = { massExpression, massUsesBroadWithoutFineSlope: /broad/i.test(massExpression) && !/\bslope\b/.test(massExpression),
-    broadFiniteDifferenceUsesContinuousHelper: /float\s+bl\s*=\s*sampleHeightBroad\(/.test(vertexSource) && /float\s+bd\s*=\s*sampleHeightBroad\(/.test(vertexSource),
-    fragmentUsesInterpolatedGradient: /float\s+broadSlope\s*=\s*length\(vBroadGradient\)/.test(source)
+    packedBranchRequiresMatchingRadius: /packedBroadRadius>0\.0\s*&&\s*R==packedBroadRadius/.test(vertexSource)
+      && /vBroadGradient\s*=\s*texture2D\(heightTexture,uvAt\(grid\)\)\.ba/.test(vertexSource),
+    broadXAndYFiniteDifferencesUseAxisHelpers: /float\s+bl\s*=\s*sampleHeightBroadX\(grid-vec2\(R,0\.0\)\),\s*br\s*=\s*sampleHeightBroadX\(grid\+vec2\(R,0\.0\)\)/.test(vertexSource)
+      && /float\s+bd\s*=\s*sampleHeightBroadY\(grid-vec2\(0\.0,R\)\),\s*bu\s*=\s*sampleHeightBroadY\(grid\+vec2\(0\.0,R\)\)/.test(vertexSource),
+    axisHelpersAreBranchlessTwoFetches: twoFetchesNoBranch('sampleHeightBroadX') && twoFetchesNoBranch('sampleHeightBroadY'),
+    genericBroadRemainsContinuous: /float\s+sampleHeightBroad\(vec2 p\)\s*\{\s*return sampleHeightContinuous\(p\);\s*\}/.test(vertexSource),
+    fragmentUsesInterpolatedGradient: /float\s+broadSlope2\s*=\s*dot\(vBroadGradient,vBroadGradient\)/.test(source)
       && /normalize\(vec3\(-vBroadGradient\.x,1\.0,-vBroadGradient\.y\)\)/.test(source),
     vertexPassesUnnormalizedGradient: /vBroadGradient\s*=\s*vec2\(br-bl,bu-bd\)\s*\/\s*\(2\.0\*R\)/.test(vertexSource) };
   const checks = { filtersNearest, integerSamplingExact: integers.every(v => v.pass), boundaryContinuity: boundaries.every(v => v.pass),
     typeRetainsCategoricalBoundary: categorical.every(v => v.pass), fractionalNegativeControl: fractionalNegativeControl.pass,
     broadGradientMatchesBilinearReference: gradient.every(v => v.pass), noOneCellGradientJumps: maxGradientStep < 0.0002,
-    sourceGuards: sourceGuards.massUsesBroadWithoutFineSlope && sourceGuards.broadFiniteDifferenceUsesContinuousHelper
+    sourceGuards: sourceGuards.massUsesBroadWithoutFineSlope && sourceGuards.packedBranchRequiresMatchingRadius
+      && sourceGuards.broadXAndYFiniteDifferencesUseAxisHelpers
+      && sourceGuards.axisHelpersAreBranchlessTwoFetches && sourceGuards.genericBroadRemainsContinuous
       && sourceGuards.fragmentUsesInterpolatedGradient && sourceGuards.vertexPassesUnnormalizedGradient,
     stateUnchanged: JSON.stringify(before) === JSON.stringify(after), noGLErrors: !pendingGlErrors.length && !glErrors.length };
   return { pass: Object.values(checks).every(Boolean), checks, diagnosticOnly: true, golden: false, renderTargetsCreated: 0,
-    method: 'standalone helper contract: continuous/broad extracted from production vertex, nearest/type from fragment; GPU RGB24 encoding vs CPU bilinear reference (not a claim about rendered varying equivalence)',
+    method: 'standalone helper contract: continuous/generic broad retain arbitrary-fraction bilinear sampling; X/Y axis helpers remain radius-mismatch fallback; packed vertex branch is checked separately against a barycentric oracle',
     fixture: { size: [N, N], equation: '0.10 + 0.012*x + 0.006*y + 0.0008*x*x (Float32)', R, gradientStep: 1 / 16, tolerance, epsilon },
     extractedHelpers: helpers, textureFilters: { height: [heightTexture.minFilter, heightTexture.magFilter], type: [typeTexture.minFilter, typeTexture.magFilter] },
     productionTextureFilters, sourceGuards, before, after, pendingGlErrors, glErrors, integers, boundaries, categorical,
@@ -268,6 +406,7 @@ async function heightPage() {
 async function vertexGradientPage() {
   const T = await import('three');
   const { PigmentTerrainMaterial } = await import('./src/inkbox/render3d/art/PigmentTerrainMaterial.js');
+  const { TerrainDataTextures } = await import('./src/inkbox/render3d/art/TerrainDataTextures.js');
   const { ART_PROFILES } = await import('./src/inkbox/render3d/art/ArtPassProfile.js');
   const { gridGeometry } = await import('./src/inkbox/render3d/terrain/TerrainMesh.js');
   const { createCoordinates } = await import('./src/inkbox/render3d/coordinates.js');
@@ -289,23 +428,26 @@ async function vertexGradientPage() {
   host.render(); const before = await sceneIdentity();
   const errors = () => { const a = []; for (let e = gl.getError(); e !== gl.NO_ERROR; e = gl.getError()) a.push(e); return a; };
   const pendingGlErrors = errors(), glErrors = [], resources = [];
-  const world = { w: N, h: N, size: N * N, seed: 226 }, coordinates = createCoordinates(world);
-  const heights = new Float32Array(N * N * 4), types = new Uint8Array(N * N * 4);
-  const texture = (data, type) => {
-    const t = new T.DataTexture(data, N, N, T.RGBAFormat, type); t.minFilter = t.magFilter = T.NearestFilter;
-    t.generateMipmaps = false; t.flipY = false; t.needsUpdate = true; resources.push(t); return t;
-  };
-  const heightTexture = texture(heights, T.FloatType), typeTexture = texture(types, T.UnsignedByteType);
-  const production = new PigmentTerrainMaterial({ world, heightTexture, typeTexture }, ART_PROFILES.pilot); resources.push(production);
+  const world = { w: N, h: N, size: N * N, seed: 226, height: new Float32Array(N * N), type: new Uint8Array(N * N) },
+    coordinates = createCoordinates(world);
+  let fixtureHeight = (x, y) => 0.35 * x - 0.22 * y + 2;
+  const data = new TerrainDataTextures(world, { node: (x, y) => fixtureHeight(x, y) }); resources.push(data);
+  const heights = data.heights, heightTexture = data.heightTexture, typeTexture = data.typeTexture;
+  const rawHeights = new Float32Array(N * N * 4);
+  const rawHeightTexture = new T.DataTexture(rawHeights, N, N, T.RGBAFormat, T.FloatType);
+  rawHeightTexture.minFilter = rawHeightTexture.magFilter = T.NearestFilter;
+  rawHeightTexture.generateMipmaps = false; rawHeightTexture.flipY = false; resources.push(rawHeightTexture);
+  const production = new PigmentTerrainMaterial(data, ART_PROFILES.pilot); resources.push(production);
   const vertexSource = production.vertexShader, geometry = gridGeometry(world, coordinates); resources.push(geometry);
   const positionBefore = await hashArray(geometry.attributes.position.array), indexBefore = await hashArray(geometry.index.array), drawRangeBefore = JSON.stringify(geometry.drawRange);
   const nonindexed = geometry.toNonIndexed(); resources.push(nonindexed);
   const faceGradients = new Float32Array(nonindexed.attributes.position.count * 2);
   nonindexed.setAttribute('oracleFaceGradient', new T.BufferAttribute(faceGradients, 2));
-  const assignment = /vBroadGradient\s*=\s*vec2\(br-bl,bu-bd\)\s*\/\s*\(2\.0\*R\)\s*;/;
-  if (!assignment.test(vertexSource)) {
+  const fallbackAssignment = /vBroadGradient\s*=\s*vec2\(br-bl,bu-bd\)\s*\/\s*\(2\.0\*R\)\s*;/;
+  const packedAssignment = /vBroadGradient\s*=\s*texture2D\(heightTexture,uvAt\(grid\)\)\.ba\s*;/;
+  if (!fallbackAssignment.test(vertexSource) || !packedAssignment.test(vertexSource)) {
     for (const resource of resources) resource.dispose();
-    return { pass: false, failure: 'production unnormalised vBroadGradient assignment unavailable' };
+    return { pass: false, failure: 'production packed/fallback unnormalised vBroadGradient assignments unavailable' };
   }
   const fragmentShader = `varying vec2 vBroadGradient; uniform float oracleComponent;
     void main(){
@@ -313,16 +455,35 @@ async function vertexGradientPage() {
       float packed=floor(clamp(0.5+g/16.0,0.0,1.0)*16777215.0+0.5);
       gl_FragColor=vec4(floor(packed/65536.0),mod(floor(packed/256.0),256.0),mod(packed,256.0),255.0)/255.0;
     }`;
-  const materialFor = vertexShader => {
+  const materialFor = (vertexShader, texture = heightTexture, packedRadius = R, radius = R) => {
     const m = new T.ShaderMaterial({ vertexShader, fragmentShader, toneMapped: false, side: T.DoubleSide, depthTest: false, depthWrite: false,
-      uniforms: { heightTexture: { value: heightTexture }, mapSize: { value: new T.Vector2(N, N) }, broadRadius: { value: R }, oracleComponent: { value: 0 } } });
+      uniforms: { heightTexture: { value: texture }, mapSize: { value: new T.Vector2(N, N) }, broadRadius: { value: radius },
+        packedBroadRadius: { value: packedRadius }, oracleComponent: { value: 0 } } });
     resources.push(m); return m;
   };
+  const replaceHeightHelperWithNearest = (shader, name) => {
+    const pattern = new RegExp('float\\s+' + name + '\\s*\\(vec2 p\\)\\s*\\{[^{}]*\\}');
+    if (!pattern.test(shader)) throw Error('production negative-control helper missing: ' + name);
+    return shader.replace(pattern, `float ${name}(vec2 p){return hAt(p);}`);
+  };
+  const nearestHeightShader = ['sampleHeightBroad', 'sampleHeightBroadX', 'sampleHeightBroadY']
+    .reduce(replaceHeightHelperWithNearest, vertexSource)
+    .replace(packedAssignment, `vBroadGradient=vec2(
+      (hAt(grid+vec2(R,0.0))-hAt(grid-vec2(R,0.0)))/(2.0*R),
+      (hAt(grid+vec2(0.0,R))-hAt(grid-vec2(0.0,R)))/(2.0*R));`);
+  const normalizedShader = vertexSource.replace(packedAssignment,
+    '$&\n vBroadGradient/=sqrt(1.0+dot(vBroadGradient,vBroadGradient));')
+    .replace(fallbackAssignment, '$&\n vBroadGradient/=sqrt(1.0+dot(vBroadGradient,vBroadGradient));');
+  const faceShader = 'attribute vec2 oracleFaceGradient;\n' + vertexSource
+    .replace(packedAssignment, 'vBroadGradient=oracleFaceGradient;')
+    .replace(fallbackAssignment, 'vBroadGradient=oracleFaceGradient;');
   const materials = {
     production: materialFor(vertexSource),
-    vertexNearest: materialFor(vertexSource.replace(/float\s+sampleHeightBroad\s*\(vec2 p\)\s*\{[^}]*\}/, 'float sampleHeightBroad(vec2 p){return hAt(p);}')),
-    vertexNormalizeFirst: materialFor(vertexSource.replace(assignment, '$&\n vBroadGradient/=sqrt(1.0+dot(vBroadGradient,vBroadGradient));')),
-    faceConstant: materialFor('attribute vec2 oracleFaceGradient;\n' + vertexSource.replace(assignment, 'vBroadGradient=oracleFaceGradient;')),
+    vertexNearest: materialFor(nearestHeightShader),
+    vertexNormalizeFirst: materialFor(normalizedShader),
+    faceConstant: materialFor(faceShader),
+    rawFallback: materialFor(vertexSource, rawHeightTexture, 0),
+    radiusFallback: materialFor(vertexSource, heightTexture, R, 3.25),
   };
   const scene = new T.Scene(), mesh = new T.Mesh(geometry, materials.production); mesh.frustumCulled = false; scene.add(mesh);
   // A tiny orthographic view centres the one framebuffer pixel at the exact
@@ -335,8 +496,9 @@ async function vertexGradientPage() {
     const ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
     return (at(ix, iy) * (1 - fx) + at(ix + 1, iy) * fx) * (1 - fy) + (at(ix, iy + 1) * (1 - fx) + at(ix + 1, iy + 1) * fx) * fy;
   };
-  const vertexGradient = (x, y) => [(continuous(x + R, y) - continuous(x - R, y)) / (2 * R), (continuous(x, y + R) - continuous(x, y - R)) / (2 * R)];
-  const oracle = (x, y) => {
+  const vertexGradient = (x, y, radius = R) => [(continuous(x + radius, y) - continuous(x - radius, y)) / (2 * radius),
+    (continuous(x, y + radius) - continuous(x, y - radius)) / (2 * radius)];
+  const oracle = (x, y, radius = R) => {
     const ix = Math.min(14, Math.floor(x)), iy = Math.min(14, Math.floor(y)), fx = x - ix, fy = y - iy;
     const first = fx + fy <= 1;
     const vertices = first ? [[ix, iy], [ix, iy + 1], [ix + 1, iy]] : [[ix + 1, iy], [ix, iy + 1], [ix + 1, iy + 1]];
@@ -345,7 +507,7 @@ async function vertexGradientPage() {
     const indices = [...geometry.index.array.slice(indexOffset, indexOffset + 3)];
     const expectedIndices = vertices.map(([vx, vy]) => vy * N + vx);
     if (indices.some((v, i) => v !== expectedIndices[i])) throw Error('production grid triangle order differs from a,c,b / b,c,d');
-    const grads = vertices.map(([vx, vy]) => vertexGradient(vx, vy));
+    const grads = vertices.map(([vx, vy]) => vertexGradient(vx, vy, radius));
     const value = [0, 1].map(c => grads.reduce((sum, g, i) => sum + g[c] * weights[i], 0));
     return { value, triangle: first ? 'a,c,b' : 'b,c,d', vertices, weights, indices };
   };
@@ -379,7 +541,7 @@ async function vertexGradientPage() {
     { tag: 'half-cell', left: [5.5 - epsilon, 5.23], right: [5.5 + epsilon, 5.23] },
   ];
   for (const pair of pairs) points.push({ tag: pair.tag + '-left', point: pair.left }, { tag: pair.tag + '-right', point: pair.right });
-  const fixtures = [], fixtureSpecs = [
+  const fixtures = [], fallbackCases = [], fixtureSpecs = [
     { name: 'plane', height: (x, y) => 0.35 * x - 0.22 * y + 2 },
     { name: 'nonseparable-undulation', height: (x, y) => 0.30 * x + 0.18 * y + 2.4 * Math.sin(x * 0.77) * Math.cos(y * 0.61) + 1.1 * Math.sin(x * y * 0.19) },
   ];
@@ -387,8 +549,12 @@ async function vertexGradientPage() {
   try {
     gpu.setRenderTarget(null); gpu.setViewport(0, 0, 1, 1); gpu.setScissor(0, 0, 1, 1); gpu.setScissorTest(true);
     for (const fixture of fixtureSpecs) {
-      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) heights[(y * N + x) * 4 + 1] = fixture.height(x, y);
-      heightTexture.needsUpdate = true;
+      fixtureHeight = fixture.height;
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) world.height[y * N + x] = 0.1 + 0.001 * x + 0.002 * y;
+      data.update({ x0: 0, y0: 0, x1: N - 1, y1: N - 1 }, { height: true, type: false });
+      rawHeights.set(heights);
+      for (let i = 0; i < N * N; i++) { rawHeights[i * 4 + 2] = 0; rawHeights[i * 4 + 3] = 0; }
+      rawHeightTexture.needsUpdate = true;
       // Deliberately wrong per-face constant: private diagnostic clone has the
       // same constant mean vertex-gradient at all three vertices of each face.
       const pos = nonindexed.attributes.position;
@@ -417,6 +583,16 @@ async function vertexGradientPage() {
           expectedDelta: right.expected.value.map((v, c) => v - left.expected.value[c]), residualJump, pass: residualJump <= 2 * tolerance };
       });
       fixtures.push({ name: fixture.name, samples, continuity, negatives });
+      // Both fallbacks run the same verbatim production vertex on a few
+      // nontrivial locations. The raw texture has no B/A capability; the
+      // packed texture with R=3.25 must ignore its R=2.5 B/A channels.
+      for (const { tag, point } of points.filter((_, i) => [0, 1, 5, 6, 7, 9].includes(i))) {
+        for (const [mode, radius] of [['rawFallback', R], ['radiusFallback', 3.25]]) {
+          const expected = oracle(...point, radius), actual = sample(point, mode);
+          const maxError = Math.max(...actual.value.map((v, c) => Math.abs(v - expected.value[c])));
+          fallbackCases.push({ fixture: fixture.name, mode, radius, tag, point, maxError, pass: maxError <= tolerance });
+        }
+      }
     }
     geometryAfter = { position: await hashArray(geometry.attributes.position.array), index: await hashArray(geometry.index.array), drawRange: JSON.stringify(geometry.drawRange) };
   } finally {
@@ -429,22 +605,26 @@ async function vertexGradientPage() {
     { rejectedSamples: fixtures.reduce((sum, f) => sum + f.negatives[mode].filter(s => s.rejected).length, 0),
       maxError: Math.max(...fixtures.flatMap(f => f.negatives[mode].map(s => s.oracleError))) }]));
   const checks = { productionMatchesBarycentricOracle: fixtures.every(f => f.samples.every(s => s.pass)),
+    productionPackedCapability: data.packedBroadGradient && data.packedBroadRadius === R
+      && production.uniforms.packedBroadRadius.value === R && materials.production.uniforms.packedBroadRadius.value === R,
+    rawAndDynamicRadiusFallbackMatchOracle: fallbackCases.length === fixtureSpecs.length * 6 * 2 && fallbackCases.every(s => s.pass),
     c0AcrossSharedEdges: fixtures.every(f => f.continuity.every(s => s.pass)),
     negativeControlsRejected: Object.values(negativesRejected).every(n => n.rejectedSamples >= 2),
     nonseparableDistinguishesFragmentBilinear: fixtures.find(f => f.name === 'nonseparable-undulation').samples.some(s => s.differenceFromFragmentBilinear > 10 * tolerance),
     productionDraw: fixtures.every(f => f.samples.every(s => s.actual.draw.every(d => d.calls === 1 && d.triangles === (N - 1) * (N - 1) * 2))),
     fixtureGeometryUnchanged: geometryAfter.position === positionBefore && geometryAfter.index === indexBefore && geometryAfter.drawRange === drawRangeBefore,
     hostWorldAdvanceGeometryDrawResourcesRestored: JSON.stringify(before) === JSON.stringify(after),
-    filtersNearest: heightTexture.minFilter === T.NearestFilter && heightTexture.magFilter === T.NearestFilter,
+    filtersNearest: [heightTexture, rawHeightTexture].every(t => t.minFilter === T.NearestFilter && t.magFilter === T.NearestFilter),
     noGLErrors: !pendingGlErrors.length && !glErrors.length };
   return { pass: Object.values(checks).every(Boolean), checks, diagnosticOnly: true, golden: false, renderTargetsCreated: 0,
     contract: 'shared indexed grid C0 triangle-linear unnormalised vertex gradient; NOT per-fragment bilinear numeric equivalence',
-    method: 'verbatim production vertex + TerrainMesh.gridGeometry + Nearest RGBA Float texture; two RGB24 default-framebuffer draws per probe; CPU actual-index barycentric oracle',
+    method: 'verbatim production vertex + real TerrainDataTextures packed BA + TerrainMesh.gridGeometry; raw no-BA and dynamic-radius fallback; two RGB24 default-framebuffer draws per probe; independent CPU actual-index barycentric oracle',
     R, size: [N, N], epsilon, tolerance, signedEncodingRange: [-8, 8], vertexSource,
-    negativeControls: { vertexNearest: 'sampleHeightBroad -> hAt', faceConstant: 'private nonindexed diagnostic clone stores face-mean gradient at all three vertices',
+    specializedSampling: 'default R=2.5 uses one packed BA texture read per grid vertex; raw/no-capability and mismatched radius retain axis X/Y helpers; arbitrary fractional probes retain generic continuous bilinear sampling',
+    negativeControls: { vertexNearest: 'packed assignment -> nearest hAt finite differences; fallback helpers -> hAt', faceConstant: 'packed/fallback assignment -> private nonindexed face-mean gradient',
       vertexNormalizeFirst: 'normalize normal length at vertex before interpolation' },
     before, after, fixtureGeometryBefore: { position: positionBefore, index: indexBefore, drawRange: drawRangeBefore }, geometryAfter,
-    negativesRejected, fixtures, pendingGlErrors, glErrors };
+    negativesRejected, fixtures, fallbackCases, pendingGlErrors, glErrors };
 }
 
 // Real shipping materials, private quads, existing default framebuffer only.
@@ -614,7 +794,7 @@ try {
   const d = report.decomposition;
   for (const mode of d.modes) {
     fs.writeFileSync(path.join(OUT, `${mode.mode}.png`), Buffer.from(mode.png, 'base64'));
-    delete mode.png; mode.image = `reports/local/m2c2d1/decomposition/${mode.mode}.png`;
+    delete mode.png; mode.image = path.relative(ROOT, path.join(OUT, `${mode.mode}.png`)).replaceAll('\\', '/');
   }
   delete d.baseline.png;
   d.invariants = { sameWorld: d.modes.every(m => m.worldSHA256 === d.baseline.worldSHA256),
@@ -631,6 +811,8 @@ try {
   if (!decompositionOnly) {
     report.coast = await page(`return (${coastPage.toString()})();`);
     fs.writeFileSync(path.join(OUT, 'coast-contract.json'), JSON.stringify(report.coast, null, 2) + '\n');
+    report.coastSampling = await page(`return (${coastSamplingPage.toString()})();`);
+    fs.writeFileSync(path.join(OUT, 'coast-sampling-contract.json'), JSON.stringify(report.coastSampling, null, 2) + '\n');
     report.height = await page(`return (${heightPage.toString()})();`);
     report.height.vertexOracle = await page(`return (${vertexGradientPage.toString()})();`);
     report.height.pass = report.height.pass && report.height.vertexOracle.pass;
@@ -643,10 +825,12 @@ try {
   assert.deepEqual(report.errors, { runtime: [], console: [] }, 'runtime/console errors');
   assert(d.pass, 'decomposition invariants failed (see decomposition.json)');
   if (!decompositionOnly) assert(report.coast.pass, 'GPU coast contract failed (see coast-contract.json)');
+  if (!decompositionOnly) assert(report.coastSampling.pass, 'GPU packed coast scalar contract failed (see coast-sampling-contract.json)');
   if (!decompositionOnly) assert(report.height.pass, 'GPU continuous broad height contract failed (see height-contract.json)');
   if (!decompositionOnly) assert(report.waterBoundary.pass, 'GPU water/boundary contract failed (see water-boundary-contract.json)');
   report.pass = true;
   console.log(JSON.stringify({ decomposition: d.pass, coast: decompositionOnly ? 'skipped by explicit flag' : report.coast.pass,
+    coastSampling: decompositionOnly ? 'skipped by explicit flag' : report.coastSampling.pass,
     height: decompositionOnly ? 'skipped by explicit flag' : report.height.pass,
     waterBoundary: decompositionOnly ? 'skipped by explicit flag' : report.waterBoundary.pass, out: OUT }));
 } catch (error) {

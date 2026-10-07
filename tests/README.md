@@ -1,6 +1,6 @@
 # Inkbox 测试与验证入口
 
-## M2-C2C 当前阶段（2026-10-06 本地完成）
+## M2-C2C 历史阶段（2026-10-06 本地完成）
 
 当前实现既有四类 Site、Leyline、Upper `qi`、Nether `veg`、持久 Rift 与短命 FX 六个独立表现开关 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx`。production on 验正式 GLB / 当前字段和真实 id；off、缺资产或完整 footprint 拒绝时验旧标记回退，不用 fallback 冒充生产模型。
 
@@ -13,6 +13,7 @@
 | `npm run test:render3d:m2c2c:fields` | Upper qi / Nether veg 的 R8 缓存、实际字段绑定、开关与资源生命周期 | Fast |
 | `npm run test:render3d:m2c2c:rifts` | 真实持久 Rift 地貌、唯一权威半径、冻结 presentation snapshot 与固定 FX 池 | Fast |
 | `npm run test:render3d:m2c2c:purity` | 11 模式各 600 游戏日，完整 World / advanceState / save keys 和全部 11 RNG 流一致 | Fast |
+| `npm run test:render3d:m2c2d` / `npm run test:render3d:m2c2d1` | C2D 连续场与 C2D.1 绘画化 shader / 诊断 CPU 契约 | Fast |
 | `npm run test:render3d:m2c2c:browser` | 隔离 Edge 的自然世界 23 对 off/on、真实模型前景拾取 / 点击、可见场变化与产品帧测量 | 手动 C2C current-browser |
 | `npm run test:render3d:m2c2c:soak` | 全状态预热后 600 lifecycle + 6000 产品 RAF、GPU / heap / DOM / listeners / FX 测量窗口 | 手动 C2C current-browser |
 
@@ -25,6 +26,22 @@ Browser 与 Soak 在 GPU 测量前共同调用 `ensureCanonicalMortalCache`：�
 本地 CDP 测试需 Node 22+ 与 Microsoft Edge，CI 为 Node 24；先 `npm ci` 安装 Node 的 Three。C2C Browser / Soak 默认自管服务器，也接受明确受控 `INKBOX_URL`；`INKBOX_REPORT_DIR` 指向独立输出目录。GPU 矩阵、Soak 和祖先顺序运行，不并发采样。完整 PNG / JSON / 日志在开发路径 `reports/local/m2c2c/` 或 Actions artifact，最多 8 张正常 Golden 保存在开发路径 `reports/release/render3d-m2c2c/golden/`，不进入 runtime；`research/` 也不随包，文档不链接这些排除文件。
 
 本轮结果：四类真实 Site 的约 90px 正常生产几何及 CDP 点击通过；441 个历史前景 GL 点中 87 点变化，RGB 总差 133。600 lifecycle 实际 update / render 各 600 次；20 × 300 = 6000 产品帧，200 段检查均为 114 geometry / 10 texture / 16 program。M2-B Upper / Nether / boundary 的 173 / 235 / 91 个可见几何全部命中；sample 三档实际 GLB 点击通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过，包 333 文件，约 8.8MB 目录 / 2.7MB ZIP。8 张 Golden 共 7206282 bytes，compact summary ≤256KiB。独立干净克隆 d9ca78b 的 cold 复验通过：缺 Mortal 缓存时自动自然生成，Realms 旧 metadata 自动重建；新 Mortal / Realms save 与 World / advance / history SHA 均与原完整 23 对矩阵一致。诊断 case 1 / 4 两对的 World / advance / camera 不变，Formation105 约 90px、38/96 前景三角，真实点击返回 105，error 0。报告保留 diagnosticComplete=true、pass=false，表示仅完成诊断，不替代 23 对全矩阵。8 项显式坏 save / source / engine / missing 拒绝检查通过。初次 cold 失败与修复后证据均独立留 proof。当前四报告：[工程与24项答复](../M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[就绪](../M2C2C_READINESS.md)、[性能](../M2C2C_PERFORMANCE_REPORT.md)、[视觉](../M2C2C_VISUAL_ACCEPTANCE.md)；下方 C2B run 与旧计数仅代表各自历史基线。
+
+## M2-C2D.1 绘画化收束（2026-10-08 本机工程验收完成）
+
+本机完整 12 镜四轮 Edge 配对通过逐镜零正向预算；六层/GPU 契约、历史切换、原套件 600/6000 soak 与九项 CPU 通过，最终人工视觉裁决仍待确认；不得把 Safety Gate、图像统计、诊断 PASS 或单轮截图称为性能通过或绘画验收。C2C 的历史结论保留在上节，C2D.1 不继承 C2C 的 600 lifecycle / 6000 frame soak 结果，也没有以该 soak 代替本阶段配对计时。
+
+| 命令 | 验证内容 | 用途 |
+| --- | --- | --- |
+| `npm run test:render3d:m2c2d1` | CPU shader / 诊断契约、debug 模式与只读纯度 | Fast Gate |
+| `npm run test:render3d:m2c2d1:browser` | Edge 固定 12 镜头图像与 decomposition / shader 诊断；单独不构成配对性能或美术验收 | 手动 Edge |
+| `npm run test:render3d:m2c2d1:paired` | 同一 Edge session 的 C2D / candidate 配对 GPU 计时 | 手动 Edge 性能门禁 |
+| `npm run test:render3d:m2c2d1:comparison` | main / C2D / C2D.1 的历史 A/B 生命周期与资源诊断 | 手动 Edge 诊断 |
+| `npm run test:render3d:m2c2d1:diagnostics` | 已生成证据的 Safety Gate 与图像统计；art acceptance 始终留给人工 | 离线诊断 |
+
+配对性能必须以 Microsoft Edge 在同一次浏览器会话完成全部 12 个固定镜头；每镜头 C2D 与 candidate 各跑 4 轮，轮次按镜头奇偶交错 AB/BA，使用固定预热与每轮 120 个产品采样。预热固定为 48 个外部 RAF 与 12 个现有探针 RAF。保留所有预定义轮次，不重试、不丢弃无效轮次；候选与基线各自以四轮中位数聚合，候选中位数必须在每个镜头都小于或等于 C2D 中位数，容差为 0。p95 取四轮 p95 的最大值，max 取四轮最大值，有效 GPU 样本数跨四轮求和，不用 pooled p95。每个镜头都须达到零正向差值，任何正差、缺失轮次或不可用计时都不能被其他镜头的余量抵消。GPU 计时与其他浏览器 soak / 性能采样串行运行；缺失有效计时为 pending，不能当作通过。
+
+Safety Gate 只检查运行安全、状态稳定和资源契约；`test:render3d:m2c2d1:diagnostics` 不会把 Safety PASS 提升为美术验收，所有图像统计和截图仍需单独人工判断。性能与视觉结论分别记录：本机工程完成，最终美术仍为 human-review-required。终验数字与源码 SHA 见 [C2D.1 就绪](../M2C2D1_READINESS.md)。
 
 ## M2-C2B.1 生产契约
 

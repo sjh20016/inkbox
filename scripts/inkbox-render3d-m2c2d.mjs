@@ -110,7 +110,7 @@ check('T1 RealmBoundaryLayer 仍满足 M2-B §30/§44/§58 与 zero-gap 契约',
 });
 
 // ── T2 · 连续表面视觉场 ────────────────────────────────────────────────
-check('T2 SurfaceVisualFieldTexture：RGBA8 + LinearFilter + 水深归一化只写 R', () => {
+check('T2 SurfaceVisualFieldTexture：RGBA8 + LinearFilter + R 水深与 packed 邻格', () => {
   const world = makeWorld();
   const field = new SurfaceVisualFieldTexture(world);
   assert.equal(field.texture.format, THREE.RGBAFormat);
@@ -120,9 +120,17 @@ check('T2 SurfaceVisualFieldTexture：RGBA8 + LinearFilter + 水深归一化只�
   assert.equal(field.texture.generateMipmaps, false);
   assert.equal(field.bytes.byteLength, world.size * 4);
   let wet = 0, dry = 0;
+  const byteAt = (x, y) => {
+    const d = world.water[y * world.w + x];
+    return d > 0 ? Math.min(255, Math.round(d / field.depthReference * 255)) : 0;
+  };
   for (let i = 0; i < world.size; i++) {
     const expected = world.water[i] > 0 ? Math.min(255, Math.round(world.water[i] / field.depthReference * 255)) : 0;
     assert.equal(field.bytes[i * 4], expected, `cell ${i} 的 R 通道必须是归一化水深`);
+    const x = i % world.w, y = Math.floor(i / world.w);
+    assert.deepEqual([...field.bytes.subarray(i * 4, i * 4 + 4)], [
+      expected, byteAt(Math.max(0, x - 1), y), byteAt(Math.min(world.w - 1, x + 1), y), byteAt(x, Math.max(0, y - 1)),
+    ], `cell ${i} 的 G/B/A 必须为 clamped 左/右/下的 R8`);
     if (world.water[i] > 0) {
       wet += 1;
       // 8 bit 量化下限 = depthReference/255 ≈ 0.00196；比它更浅的水按 0 处理（记录在案）。
@@ -135,10 +143,23 @@ check('T2 SurfaceVisualFieldTexture：RGBA8 + LinearFilter + 水深归一化只�
 
 check('T2 更新按核半径外扩，CPU payload 在预算内', () => {
   const world = makeWorld();
-  const field = new SurfaceVisualFieldTexture(world, { kernelRadius: 1 });
+  const field = new SurfaceVisualFieldTexture(world, { kernelRadius: 0 });
+  assert.equal(field.kernelRadius, 1, 'packed 邻格必须保留至少一格 dirty halo');
+  const beforeBytes = field.bytes.slice();
+  world.water[10 * world.w + 10] = world.water[10 * world.w + 10] > 0 ? 0 : 0.5;
   const before = field.stats.cells;
   field.update({ x0: 10, y0: 10, x1: 10, y1: 10 });
   assert.equal(field.stats.cells - before, 9, '单格 dirty 必须按核半径 1 扩成 3×3');
+  const changedDepth = world.water[10 * world.w + 10] > 0 ? 255 : 0;
+  for (let y = 0; y < world.h; y++) for (let x = 0; x < world.w; x++) {
+    const i = (y * world.w + x) * 4;
+    const expected = beforeBytes.subarray(i, i + 4).slice();
+    if (x === 10 && y === 10) expected[0] = changedDepth;
+    if (x === 11 && y === 10) expected[1] = changedDepth;
+    if (x === 9 && y === 10) expected[2] = changedDepth;
+    if (x === 10 && y === 11) expected[3] = changedDepth;
+    assert.deepEqual([...field.bytes.subarray(i, i + 4)], [...expected], `dirty 更新仅修改受影响的 packed byte：${x},${y}`);
+  }
   const medium = new SurfaceVisualFieldTexture({ w: 288, h: 180, size: 288 * 180, water: new Float32Array(288 * 180), plane: 'mortal' });
   assert(medium.bytes.byteLength <= 0.25 * 1024 * 1024, `medium 视觉场必须 ≤ 0.25 MiB，实际 ${medium.bytes.byteLength}`);
   medium.dispose(); field.dispose();
@@ -146,7 +167,7 @@ check('T2 更新按核半径外扩，CPU payload 在预算内', () => {
 
 check('T2 视觉场只编码水深，不读 terrain type', () => {
   const source = readCode('src/inkbox/render3d/art/SurfaceVisualFieldTexture.js');
-  assert.match(source, /w\.water\[i\]/, '必须取 world.water');
+  assert.match(source, /w\.water\[y \* w\.w \+ x\]/, '必须取 world.water 的指定格');
   assert.doesNotMatch(source, /\.type\[/, '不得读取 terrain type');
 });
 

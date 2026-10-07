@@ -103,8 +103,9 @@ export class ArtPass {
   }
   syncDebugStage(stage) {
     const mode = ART_DEBUG_MODES[this.debugView];
-    for (const material of [stage.terrain?.inkMaterial, stage.water?.inkMaterial])
-      if (material?.uniforms.artDebugMode) material.uniforms.artDebugMode.value = mode;
+    stage.terrain?.inkMaterial?.setArtDebugMode?.(mode);
+    const water = stage.water?.inkMaterial;
+    if (water?.uniforms.artDebugMode) water.uniforms.artDebugMode.value = mode;
   }
   styleStage(stage) {
     const realmStyle = this.profile.enabled && this.profile.mode === 'realm-style-v1'

@@ -31,14 +31,29 @@ async function installProbe() {
   const hash = async value => [...new Uint8Array(await crypto.subtle.digest('SHA-256', value))].map(x => x.toString(16).padStart(2, '0')).join('');
   const jsonHash = value => hash(new TextEncoder().encode(JSON.stringify(value)));
   const bytes = array => new Uint8Array(array.buffer, array.byteOffset, array.byteLength);
-  const probe = window.__artComparisonProbe = { shaderErrors: [], releases: [], events: [] };
+  const probe = window.__artComparisonProbe = { shaderErrors: [], releases: [], events: [], settles: [] };
   const originalShaderError = r.gpu.debug.onShaderError;
   r.gpu.debug.checkShaderErrors = true;
   r.gpu.debug.onShaderError = (context, program, vertex, fragment) => {
     probe.shaderErrors.push({ program: context.getProgramInfoLog(program), vertex: context.getShaderInfoLog(vertex), fragment: context.getShaderInfoLog(fragment) });
     originalShaderError?.(context, program, vertex, fragment);
   };
-  probe.settle = async () => { for (let i = 0; i < 24; i++) await new Promise(requestAnimationFrame); r.render(); };
+  probe.settle = async () => {
+    if (!Array.isArray(k.stage?.fx?.items)) throw Error('product transient FX queue unavailable');
+    const started = performance.now(), before = k.stage.fx.items.length;
+    let frames = 0, emptyFrames = 0;
+    // Paused simulation still plays real-time transient FX. Let those expire
+    // naturally before an exact style roundtrip; never clear or disable them.
+    while (frames < 24 || emptyFrames < 3) {
+      await new Promise(requestAnimationFrame); frames++;
+      emptyFrames = k.stage.fx.items.length === 0 ? emptyFrames + 1 : 0;
+      if (performance.now() - started > 10000) throw Error('product transient FX failed to settle');
+    }
+    r.render();
+    const evidence = { frames, elapsedMs: performance.now() - started, before,
+      after: k.stage.fx.items.length, emptyFrames, method: 'natural product RAF expiry, simulation paused' };
+    probe.settles.push(evidence); return evidence;
+  };
   probe.trackWorldRelease = () => {
     const resources = new Map();
     const add = (value, type, label) => { if (value && !resources.has(value)) resources.set(value, { type, label, uuid: value.uuid, disposed: 0 }); };
@@ -103,6 +118,7 @@ async function installProbe() {
       camera: { position: r.cameraRig.camera.position.toArray(), target: r.cameraRig.controls.target.toArray(), zoom: r.cameraRig.camera.zoom },
       framebuffer: { size: [W, H], sha256: framebufferSHA256 }, geometrySHA256: await jsonHash(geometryRecords), objectGeometrySHA256: await jsonHash(objects),
       geometry: geometryRecords, objectGeometry: objects, picks, boundaryStats: r.boundary ? { ...r.boundary.stats } : null,
+      transientFxCount: k.stage.fx.items.length, settle: probe.settles.at(-1),
       resources: { ...r.gpu.info.memory, programs: programs.length }, draw: { calls: r.gpu.info.render.calls, triangles: r.gpu.info.render.triangles },
       programs, glErrors, shaderErrors: probe.shaderErrors.slice(), renderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER) };
     record.materials = { water: r.stages.get('mortal')?.water?.mesh.material.type, boundary: r.boundary?.mesh.material.type,
@@ -165,6 +181,7 @@ function checkRecord(record, reference = null) {
   check(record.glErrors.length === 0 && record.shaderErrors.length === 0, `${record.label}: zero GL/shader errors`);
   check(record.programs.length > 0 && record.programs.every(p => p.linked && p.runnable !== false), `${record.label}: submitted GPU programs linked`);
   check(record.debugView === 'final', `${record.label}: final only`);
+  check(record.transientFxCount === 0 && record.settle?.emptyFrames >= 3, `${record.label}: transient FX naturally settled`);
   check(record.sameRendererObject && record.sameWorldObject && record.sameStageWorldObjects, `${record.label}: Renderer/World object identity`);
   if (reference) for (const key of ['worldSHA256', 'advanceSHA256', 'camera', 'geometrySHA256', 'objectGeometrySHA256', 'picks', 'boundaryStats'])
     check(same(record[key], reference[key]), `${record.label}: ${key} unchanged`);

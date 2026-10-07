@@ -97,7 +97,7 @@ if (process.argv.includes('--paired-design')) {
 const report = { suite: 'M2-C2D.1 evidence capture (not art acceptance)', label: LABEL, captureComplete: false,
   requestedDebug: DEBUG, requestedStyle: STYLE, experiment: EXPERIMENT, selectedViews: VIEWS.map(v => v.key), host: { hostname: os.hostname(), platform: os.platform(), arch: os.arch() },
   startedAt: new Date().toISOString(), nodeVersion: process.version, lodHistory: 'complete preceding camera recipes, including unselected views',
-  sourceSHA256: Object.fromEntries(['art/PigmentTerrainMaterial.js','art/RealmStyleProfile.js','art/ArtPass.js','art/ArtComparisonSnapshots.js',
+  sourceSHA256: Object.fromEntries(['art/PigmentTerrainMaterial.js','art/TerrainDataTextures.js','art/SurfaceVisualFieldTexture.js','art/RealmStyleProfile.js','art/ArtPass.js','art/ArtComparisonSnapshots.js',
     'water/WaterPigmentMaterial.js','boundary/BoundaryInkMaterial.js'].map(file => [file, createHash('sha256').update(fs.readFileSync(path.join(ROOT,'src/inkbox/render3d',file))).digest('hex')])),
   method: 'same natural World (C2C canonical caches) + fixed camera recipes; in-canvas gl.readPixels tonal metrics', views: [] };
 let browser, server;
@@ -175,7 +175,9 @@ async function pairedIdentityProbe() {
     worldObjectUnchanged: k.world === window.__pairedIdentityRefs.world && [...r.stages].every(([plane, stage]) => window.__pairedIdentityRefs.stages.get(plane) === stage.world),
     camera: { position: r.cameraRig.camera.position.toArray(), target: r.cameraRig.controls.target.toArray(), zoom: r.cameraRig.camera.zoom },
     geometrySHA256: await jsonHash(records), objectGeometrySHA256: await jsonHash(objects), geometry: records, picks,
-    boundaryStats: r.boundary ? { ...r.boundary.stats } : null, lod: r.getLODStats(), pendingGlErrors,
+    boundaryVisible: !!r.boundary?.mesh.visible,
+    boundaryStats: r.boundary?.mesh.visible ? { ...r.boundary.stats } : null,
+    boundaryCacheStats: r.boundary ? { ...r.boundary.stats } : null, lod: r.getLODStats(), pendingGlErrors,
     artStyle: r.art.comparisonStyle, artDebug: r.art.debugView,
     rendererInfo: { vendor: debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR),
       renderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER) },
@@ -186,7 +188,7 @@ const pairedIdentity = () => page(`return (${pairedIdentityProbe.toString()})();
 function checkPairedIdentity(record, reference, label) {
   assert(record.worldObjectUnchanged, `${label}: World object identity changed`);
   assert.deepEqual(record.pendingGlErrors, [], `${label}: GL errors (recorded, not retried)`);
-  for (const key of ['worldSHA256', 'advanceStateSHA256', 'camera', 'geometrySHA256', 'objectGeometrySHA256', 'picks', 'boundaryStats', 'lod'])
+  for (const key of ['worldSHA256', 'advanceStateSHA256', 'camera', 'geometrySHA256', 'objectGeometrySHA256', 'picks', 'boundaryVisible', 'boundaryStats', 'boundaryCacheStats', 'lod'])
     assert.deepEqual(record[key], reference[key], `${label}: ${key} changed`);
   assert.equal(record.gpu.drawCalls, reference.gpu.drawCalls, `${label}: draw changed`);
   assert.equal(record.gpu.triangles, reference.gpu.triangles, `${label}: triangles changed`);
@@ -217,6 +219,7 @@ async function capturePairedView(view, importEpoch, setup) {
         r.art.setDebugView('final');for(let i=0;i<48;i++)await new Promise(requestAnimationFrame);return true;`);
       record.before = await pairedIdentity();
       identityReference ??= record.before;
+      assert.deepEqual(record.before.boundaryStats, setup.boundaryStats, `${view.key}: active boundary matches fixed camera setup`);
       assert(identityReference.picks.some(Boolean), `${view.key}: picking probe must hit visible geometry`);
       assert.equal(record.before.artStyle, style, 'paired style did not apply');
       checkPairedIdentity(record.before, identityReference, `${view.key}/${round}/${label}/before`);

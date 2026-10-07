@@ -1,5 +1,9 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+2026-10-08 当前阶段：**M2-C2D.1 本机工程验收完成，最终美术待人工裁决**。指定分支 `codex/m2-c2d1-painterly-reconciliation` 从 WIP `daf78c0` 续作；完整十二镜四轮 GPU 零正向预算、CPU、六层/GPU 契约、历史对照与原套件 600/6000 soak 通过。用户已授权完成后上传该分支，远端 CI 以最新对应提交为准。没有合并 main，未把旧 C2B/C2C 的 Actions 作为本阶段证明。入口：[就绪](./M2C2D1_READINESS.md)、[视觉](./M2C2D1_VISUAL_ACCEPTANCE.md)、[性能](./M2C2D1_PERFORMANCE_REPORT.md)。
+
+以下 2026-10-06 段落为历史阶段记录。
+
 2026-10-06 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。**M2-C2C Meaningful Geography 已本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行**；范围限于呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
 
 > 历史基线：2026-10-04，M2-C2A.1 / M2-C2B0 三界视觉阶段。读序：README → 本文 → 当前任务涉及的契约 / 源码。
