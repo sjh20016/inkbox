@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
+import { createBoundaryInkMaterial, applyBoundaryInkStyle } from './BoundaryInkMaterial.js';
 
 /**
  * M2-B B2/B4 · 界缘断面（§30–§33 / §44–§47 / §55–§60）。
@@ -27,9 +28,10 @@ import { RENDER_ORDER } from '../shared/RenderOrder.js';
  * ── 预算（§86）────────────────────────────────────────────────────────
  * 三角形数 = 边界边数 × 2，与 **Region 周长**相关，与面积无关。
  *
- * ── 材质（§44）────────────────────────────────────────────────────────
- * 一档 `MeshLambertMaterial` + 顶点色。没有 EffectComposer / RenderTarget /
- * WebGPU / TSL / 大型 shader pipeline，也没有全局水墨管线（§46 留给 Art Pass）。
+ * ── 材质（§44 / M2-C2D P3）──────────────────────────────────────────────
+ * 一档 `BoundaryInkMaterial`（独立文件：顶点色 + 竖向层理 / 干笔 / 底缘消隐 /
+ * 顶缘窄亮带），几何与拾取契约不变。仍然没有 EffectComposer / RenderTarget /
+ * WebGPU / 全屏水墨管线（§46 留给 Art Pass）。
  */
 
 const DEPTH_REFERENCE = 60;
@@ -65,14 +67,17 @@ export class RealmBoundaryLayer {
     this.edges = 0;
     this.position = new THREE.BufferAttribute(new Float32Array(0), 3).setUsage(THREE.DynamicDrawUsage);
     this.color = new THREE.BufferAttribute(new Float32Array(0), 3).setUsage(THREE.DynamicDrawUsage);
+    // M2-C2D P3：只读表现属性——底 0 / 顶 1，以及按边坐标稳定 hash 的 edgeSeed。
+    this.vertical = new THREE.BufferAttribute(new Float32Array(0), 1).setUsage(THREE.DynamicDrawUsage);
+    this.edgeSeed = new THREE.BufferAttribute(new Float32Array(0), 1).setUsage(THREE.DynamicDrawUsage);
     this.legacyColors = new Float32Array(0);
     this.geometry = new THREE.BufferGeometry();
     this.geometry.setAttribute('position', this.position);
     this.geometry.setAttribute('color', this.color);
+    this.geometry.setAttribute('aVertical', this.vertical);
+    this.geometry.setAttribute('aSeed', this.edgeSeed);
     this.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(0), 1).setUsage(THREE.DynamicDrawUsage));
-    this.material = new THREE.MeshLambertMaterial({
-      vertexColors: true, side: THREE.DoubleSide, flatShading: true, transparent: true, opacity: 0.96,
-    });
+    this.material = createBoundaryInkMaterial();
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.mesh.name = 'RealmBoundary';
     this.mesh.renderOrder = RENDER_ORDER.realmBoundary;
@@ -95,14 +100,16 @@ export class RealmBoundaryLayer {
   setVisible(visible) { this.mesh.visible = !!visible; }
 
   /** Apply profile-owned colours to the current boundary buffers; null restores legacy ink. */
-  setRealmStyle(style = null) {
-    if (this.realmStyle === style) return;
+  setRealmStyle(style = null, realmStyle = null) {
+    if (this.realmStyle === style && this.realmInkStyle === realmStyle) return;
     this.realmStyle = style;
+    this.realmInkStyle = realmStyle;
     if (style) {
       if (style.top) this.realmPalette.top.set(style.top);
       if (style.base) this.realmPalette.base.set(style.base);
       if (style.rift) this.realmPalette.rift.set(style.rift);
     }
+    applyBoundaryInkStyle(this.material, realmStyle);
     this.#rewriteColors();
   }
 
@@ -155,9 +162,13 @@ export class RealmBoundaryLayer {
     if (this.position.count >= vertices) return;
     this.position = new THREE.BufferAttribute(new Float32Array(vertices * 3), 3).setUsage(THREE.DynamicDrawUsage);
     this.color = new THREE.BufferAttribute(new Float32Array(vertices * 3), 3).setUsage(THREE.DynamicDrawUsage);
+    this.vertical = new THREE.BufferAttribute(new Float32Array(vertices), 1).setUsage(THREE.DynamicDrawUsage);
+    this.edgeSeed = new THREE.BufferAttribute(new Float32Array(vertices), 1).setUsage(THREE.DynamicDrawUsage);
     this.legacyColors = new Float32Array(vertices * 3);
     this.geometry.setAttribute('position', this.position);
     this.geometry.setAttribute('color', this.color);
+    this.geometry.setAttribute('aVertical', this.vertical);
+    this.geometry.setAttribute('aSeed', this.edgeSeed);
     this.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(edgeCount * 6), 1).setUsage(THREE.DynamicDrawUsage));
   }
 
@@ -240,6 +251,13 @@ export class RealmBoundaryLayer {
       index[t + 3] = base + 2; index[t + 4] = base + 1; index[t + 5] = base + 3;
       t += 6;
 
+      // P3 只读表现属性：底 0 / 顶 1，与稳定 edge seed（不参与几何，也不影响 zero-gap）。
+      const vertical = this.vertical.array, seeds = this.edgeSeed.array;
+      vertical[base] = 1; vertical[base + 1] = 0; vertical[base + 2] = 1; vertical[base + 3] = 0;
+      let edgeHash = (ax * 73856093) ^ (ay * 19349663) ^ (bx * 83492791) ^ (by * 2971215073);
+      const edgeSeedValue = ((edgeHash >>> 0) % 997) / 997;
+      seeds[base] = seeds[base + 1] = seeds[base + 2] = seeds[base + 3] = edgeSeedValue;
+
       if (this.edgeNodes.length < (edges + 1) * 4) {
         this.edgeNodes = new Int32Array(Math.max(edges + 1, edgeCount) * 4);
         this.edgeRawGap = new Float32Array(Math.max(edges + 1, edgeCount));
@@ -263,6 +281,8 @@ export class RealmBoundaryLayer {
     this.geometry.index.needsUpdate = true;
     this.position.needsUpdate = true;
     this.color.needsUpdate = true;
+    this.vertical.needsUpdate = true;
+    this.edgeSeed.needsUpdate = true;
     this.geometry.computeBoundingSphere();
     this.edges = edges;
     this.vertices = v;
