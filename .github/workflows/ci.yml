@@ -116,6 +116,9 @@ jobs:
       - name: C2C 十一模式 600 日与全部十一条 RNG 流
         run: npm run test:render3d:m2c2c:purity
 
+      - name: C2D 连续表面视觉场、绘画水面、绘画法线与界缘断面契约
+        run: npm run test:render3d:m2c2d
+
       - name: 构建发布包（自包含，clone 即可跑）
         run: npm run build
 

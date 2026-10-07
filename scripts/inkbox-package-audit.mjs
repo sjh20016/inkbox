@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ALLOWED_RELEASE_JSON = new Set([
+  'reports/release/render3d-m2c2d/summary/acceptance-summary.json',
   'reports/release/render3d-m2c2c/summary/acceptance-summary.json',
   'reports/release/render3d-m2a/performance.json',
   'reports/release/render3d-m2c2a/acceptance-summary.json',
@@ -133,6 +134,12 @@ function audit(packageRoot) {
         if (fs.statSync(summaryPath).size > 256 * 1024) fail('C2C acceptance summary exceeds 256 KiB');
         try { JSON.parse(fs.readFileSync(summaryPath, 'utf8')); }
         catch { fail('C2C acceptance summary is not valid JSON'); }
+      }
+      if (file === 'reports/release/render3d-m2c2d/summary/acceptance-summary.json') {
+        const summaryPath = path.join(packageRoot, file);
+        if (fs.statSync(summaryPath).size > 256 * 1024) fail('C2D acceptance summary exceeds 256 KiB');
+        try { JSON.parse(fs.readFileSync(summaryPath, 'utf8')); }
+        catch { fail('C2D acceptance summary is not valid JSON'); }
       }
     }
     if (/^reports\/release\//i.test(file) && /\.(?:png|jpe?g|webp|gif|bmp|tiff?)$/i.test(file)) {

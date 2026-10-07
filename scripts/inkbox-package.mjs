@@ -144,6 +144,16 @@ const FILES = [
   'scripts/inkbox-c2c-test-utils.mjs',
   'scripts/inkbox-render3d-m2c2c-pilot-browser.mjs',
   'scripts/inkbox-c2c-browser-fixtures.mjs',
+  // M2-C2D 近景绘画化与界缘统一（2026-10-07）：三条验收入口 + 四份交付报告。
+  // 与 C2C 同理——不随包出货，接手者在包里就看不到本阶段的固定镜头配方与
+  // 视觉/性能裁决依据（`package.json` 的 `test:render3d:m2c2d*` 会指向空文件）。
+  'scripts/inkbox-render3d-m2c2d.mjs',
+  'scripts/inkbox-render3d-m2c2d-browser.mjs',
+  'scripts/inkbox-render3d-m2c2d-metrics.mjs',
+  'M2C2D_BASELINE.md',
+  'M2C2D_VISUAL_ACCEPTANCE.md',
+  'M2C2D_PERFORMANCE_REPORT.md',
+  'M2C2D_READINESS.md',
   'PERFORMANCE_REPORT.md',
   'VISUAL_ACCEPTANCE.md',
   '美术素材/参考资产索引.md',
@@ -232,6 +242,7 @@ const DIRECTORIES = [
   'assets/environment/docs',
 ];
 const RELEASE_SUMMARIES = [
+  'reports/release/render3d-m2c2d/summary/acceptance-summary.json',
   'reports/release/render3d-m2c2c/summary/acceptance-summary.json',
   'reports/release/render3d-m2a/performance.json',
   'reports/release/render3d-m2c2a/acceptance-summary.json',
