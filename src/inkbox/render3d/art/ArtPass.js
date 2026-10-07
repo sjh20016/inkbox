@@ -1,13 +1,16 @@
 import * as THREE from 'three';
 import { resolveArtProfile } from './ArtPassProfile.js';
 import { realmStyleFor } from './RealmStyleProfile.js';
+import { ART_DEBUG_MODES } from './ArtDiagnostics.js';
 
 /** Single, thin presentation coordinator. M2-B owns elevation, regions and boundary.
  * No alternate Stage, mask, event drain, clock, world fields or postprocessing renderer.
  */
 export class ArtPass {
-  constructor(host, { profile = 'baseline' } = {}) {
+  constructor(host, { profile = 'baseline', development = false, debugView = 'final' } = {}) {
     this.host = host; this.profile = resolveArtProfile(profile); this.saved = new WeakMap();
+    this.development = development;
+    this.debugView = development && Object.hasOwn(ART_DEBUG_MODES, debugView) ? debugView : 'final';
     this.styleContextKey = null;
     this.clearColor = host.gpu.getClearColor?.(new THREE.Color()).clone() || new THREE.Color('#d9cdb4');
   }
@@ -17,6 +20,18 @@ export class ArtPass {
     this.styleContextKey = null;
     this.syncStyleContext();
     return this.profile;
+  }
+  setDebugView(view = 'final') {
+    if (!this.development) view = 'final';
+    if (!Object.hasOwn(ART_DEBUG_MODES, view)) throw new Error(`Unknown art debug view: ${view}`);
+    this.debugView = view;
+    for (const stage of this.host.stages.values()) this.syncDebugStage(stage);
+    return this.debugView;
+  }
+  syncDebugStage(stage) {
+    const mode = ART_DEBUG_MODES[this.debugView];
+    for (const material of [stage.terrain?.inkMaterial, stage.water?.inkMaterial])
+      if (material?.uniforms.artDebugMode) material.uniforms.artDebugMode.value = mode;
   }
   styleStage(stage) {
     const realmStyle = this.profile.enabled && this.profile.mode === 'realm-style-v1'
@@ -51,6 +66,7 @@ export class ArtPass {
         material.opacity = profile ? 0.40 : saved.opacity;
       }
     }
+    this.syncDebugStage(stage);
   }
   syncStyleContext() {
     const targetPlane = this.host.realmPrototype?.open ? this.host.realmPrototype.targetPlane : null;

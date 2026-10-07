@@ -1,4 +1,5 @@
 import { ART_CONTROLS, ART_PROFILES } from './ArtPassProfile.js';
+import { ART_DEBUG_VIEWS } from './ArtDiagnostics.js';
 
 /** Developer-only profile controls. No listeners survive adapter disposal. */
 export class ArtDebugPanel {
@@ -14,6 +15,12 @@ export class ArtDebugPanel {
     select.value = host.art.profile.name;
     select.addEventListener('change', () => { host.setArtProfile(select.value); this.refresh(); }, { signal: this.abort.signal });
     el.append(select); this.inputs = new Map();
+    const viewLabel = document.createElement('label'); viewLabel.style.cssText = 'display:block;margin:7px 0';
+    const viewSelect = this.viewSelect = document.createElement('select');
+    viewSelect.setAttribute('aria-label', 'Art decomposition');
+    for (const view of ART_DEBUG_VIEWS) viewSelect.add(new Option(view, view));
+    viewSelect.addEventListener('change', () => { host.art.setDebugView(viewSelect.value); this.refresh(); }, { signal: this.abort.signal });
+    viewLabel.append(document.createTextNode('分层视图 '), viewSelect); el.append(viewLabel);
     const lodLabel = document.createElement('label'); lodLabel.style.cssText = 'display:block;margin:7px 0';
     const lod = document.createElement('input'); lod.type = 'checkbox'; lod.checked = host.lodEnabled;
     lod.setAttribute('aria-label', 'Geometry LOD');
@@ -40,6 +47,7 @@ export class ArtDebugPanel {
   refresh() {
     const profile = this.host.art.profile;
     this.select.value = profile.name;
+    this.viewSelect.value = this.host.art.debugView;
     const fixedRealmStyle = profile.mode === 'realm-style-v1';
     for (const [key,input] of this.inputs) {
       input.value = profile[key];

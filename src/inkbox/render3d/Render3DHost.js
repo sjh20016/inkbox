@@ -57,7 +57,8 @@ export class Render3DHost {
     this.boundaryMode = 'raw';
     this.boundaryKey = null;
     this.boundaryField = null;
-    this.art = new ArtPass(this, { profile: options.artProfile || 'baseline' });
+    this.art = new ArtPass(this, { profile: options.artProfile || 'baseline',
+      development: options.artDevelopment === true, debugView: options.artDebugView || 'final' });
     this.lodEnabled = !!options.lodEnabled;
     this.characterLibrary = options.characterLibrary || null;
     this.ownsCharacterLibrary = !options.characterLibrary;

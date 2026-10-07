@@ -15,6 +15,7 @@ uniform sampler2D heightTexture;
 uniform sampler2D typeTexture;
 uniform sampler2D fieldTexture;
 uniform float fieldMode;
+uniform float artDebugMode;
 uniform sampler2D surfaceTexture;
 uniform float surfaceMode, surfaceDepthRef;
 uniform float massShadeStrength, deepInkStrength, heightWashStrength, broadRadius;
@@ -98,6 +99,9 @@ void main() {
     float colorCoverage=clamp((coverage-0.12)*1.45,0.0,0.85);
     color=mix(color,pigment,colorLayerStrength*colorCoverage);
   }
+  vec3 debugBase=color;
+  vec3 debugMass=paperColor;
+  float debugDeep=0.0;
   float boundary=max(abs(id-typeAt(q+vec2(0.38,0))),abs(id-typeAt(q+vec2(0,0.38))));
   float edge=min(1.0,boundary)*terrainBoundaryStrength*0.16*distant*(1.0-coastSoft*0.75);
   float sparse=smoothstep(1.0-inkDensity,1.13-inkDensity,noise(p*0.23+3.0));
@@ -131,6 +135,7 @@ void main() {
     float massMask=smoothstep(0.06,0.55,slope+length(vec2(br-bl,bd-bu))*0.6);
     float lit=smoothstep(0.34,0.98,keyDot);
     float shade=smoothstep(0.30,0.92,-keyDot);
+    debugMass=mix(paperColor,realmInkColor,clamp(shade*massShadeStrength*massMask*1.10,0.0,0.75));
     color=mix(color,paperColor,clamp(lit*massShadeStrength*massMask*0.55,0.0,0.60));
     color=mix(color,realmInkColor,clamp(shade*massShadeStrength*massMask*1.10,0.0,0.75));
     // 深墨集中在山脊 / 沟谷 / 坡折等结构位置，不把整片山体一起压黑。
@@ -142,6 +147,7 @@ void main() {
     float c2dCurv=abs(curvature);
     float c2dStruct=smoothstep(0.05,0.55,c2dCurv)*smoothstep(0.10,0.65,slope);
     float deep=structure*structure*deepInkStrength + c2dStruct*deepInkStrength;
+    debugDeep=deep;
     color=mix(color,realmInkColor,clamp(deep,0.0,0.60));
     // 高峰按位面风格适度回纸色（幽冥 heightWash = 0，不参与）。
     float peak=smoothstep(atmosphereHigh,atmosphereHigh+20.0,vWorld.y)*heightWashStrength;
@@ -175,6 +181,16 @@ void main() {
   // Weak paper stays on the image; all wash / dry brush above stay in world space.
   float grain=hash(floor(gl_FragCoord.xy))-0.5;
   color*=1.0+grain*paperGrainStrength;
+  // Uniform-only local diagnostics; zero follows the unchanged final path.
+  if(artDebugMode>0.5){
+    if(artDebugMode<1.5)color=debugBase;
+    else if(artDebugMode<2.5){
+      color=mix(paperColor,terrainWaterColor,coastSoft*0.90);
+      color=mix(color,realmInkColor,clamp(wd/surfaceDepthRef,0.0,1.0)*0.35);
+    }else if(artDebugMode<3.5)color=debugMass;
+    else if(artDebugMode<4.5)color=mix(paperColor,realmInkColor,clamp(ink*0.72+edge+debugDeep,0.0,0.82));
+    else color=mix(paperColor,atmosphereColor,(1.0-smoothstep(atmosphereLow,atmosphereHigh,vWorld.y))*atmosphereStrength)*(1.0+grain*paperGrainStrength);
+  }
   gl_FragColor=vec4(color,1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -186,6 +202,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
     super({ vertexShader, fragmentShader, side: THREE.DoubleSide, uniforms: {
       heightTexture: { value: data.heightTexture }, typeTexture: { value: data.typeTexture },
       fieldTexture: { value: data.typeTexture },fieldMode:{value:0},
+      artDebugMode: { value: 0 },
       // PlaneStage may bind its continuous surface field before the terrain is rendered.
       // Keep the no-field fallback valid for legacy profiles and test-created stages.
       surfaceTexture: { value: data.typeTexture }, surfaceMode: { value: 0 }, surfaceDepthRef: { value: 0.5 },

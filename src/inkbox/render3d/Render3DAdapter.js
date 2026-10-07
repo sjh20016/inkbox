@@ -1,5 +1,6 @@
 import { Renderer3D } from './Renderer3D.js';
 import { ArtDebugPanel } from './art/ArtDebugPanel.js';
+import { artDebugOptions } from './art/ArtDiagnostics.js';
 import { sculpt, strokeSamples, restoreHeights } from './terrain/sculpt.js';
 import { isViewTool } from '../ui/realmView.js';
 
@@ -40,7 +41,9 @@ export class Render3DAdapter {
     const artParams = new URLSearchParams(globalThis.location?.search || '');
     const requestedArt = artParams.get('art');
     const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'realm-style-v1';
+    const diagnostics = artDebugOptions();
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
+      artDevelopment: diagnostics.development, artDebugView: diagnostics.debugView,
       productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off',
       geography: artParams.get('geography') !== 'off' && artParams.get('assets') !== 'off' }); }
     catch (error) { this.canvas.remove(); throw error; }
@@ -149,7 +152,7 @@ export class Render3DAdapter {
     sandbox.camera.focusOn = function (...args) { if (adapter.active) return adapter.focusMortal(...args); return adapter.originalFocus.apply(this, args); };
     sandbox.camera.fit = function (...args) { const result = adapter.originalFit.apply(this, args); if (adapter.active) adapter.renderer.cameraRig.fit(); return result; };
     this.addPrototypeControls();
-    if (artParams.get('artdebug') === '1') this.artDebug = new ArtDebugPanel(this.renderer, stage);
+    if (diagnostics.panel) this.artDebug = new ArtDebugPanel(this.renderer, stage);
     this.setActive(true); this.resize();
   }
   listen(target, name, fn, capture = false) { target.addEventListener(name, fn, { signal: this.abort.signal, capture }); }

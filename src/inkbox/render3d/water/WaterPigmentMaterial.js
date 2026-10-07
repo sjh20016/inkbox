@@ -23,6 +23,7 @@ uniform sampler2D surfaceTexture;
 uniform float surfaceDepthRef;
 uniform vec2 mapSize;
 uniform float seed;
+uniform float artDebugMode;
 uniform vec3 paperColor, waterColor, inkColor;
 uniform vec3 tint;
 uniform float opacityDeep, paperStrength, rippleStrength, shoreSoftness;
@@ -51,6 +52,7 @@ void main() {
   float glint=smoothstep(0.90,0.995,noise(p*0.21+vec2(9.2,seed*0.02)))*deep;
   color=mix(color,paperColor,glint*0.10);
   float alpha=wet*mix(0.30,opacityDeep,deep);
+  if(artDebugMode>0.5&&abs(artDebugMode-2.0)>0.1)color=paperColor;
   gl_FragColor=vec4(color*tint,alpha);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -63,6 +65,7 @@ export class WaterPigmentMaterial extends THREE.ShaderMaterial {
       surfaceDepthRef: { value: surfaceField?.depthReference ?? 0.5 },
       mapSize: { value: new THREE.Vector2(world.w, world.h) },
       seed: { value: (world.seed >>> 0) % 8191 },
+      artDebugMode: { value: 0 },
       paperColor: { value: new THREE.Color('#ECE4D2') },
       waterColor: { value: new THREE.Color('#8FB5B8') },
       inkColor: { value: new THREE.Color('#303533') },
