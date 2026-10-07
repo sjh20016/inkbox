@@ -41,6 +41,15 @@ float noise(vec2 p) {
 vec2 uvAt(vec2 p) { return (clamp(floor(p+0.5),vec2(0),mapSize-1.0)+0.5)/mapSize; }
 float hAt(vec2 p) { return texture2D(heightTexture,uvAt(p)).g; }
 float typeAt(vec2 p) { return floor(texture2D(typeTexture,uvAt(p)).r*255.0+0.5); }
+// Presentation-only interpolation. Exact height/type reads and their Nearest
+// textures retain cell semantics; a moving fragment gets a continuous field.
+float sampleHeightContinuous(vec2 p) {
+  vec2 c=clamp(p,vec2(0.0),mapSize-1.0), i=floor(c), f=fract(c);
+  float a=hAt(i), b=hAt(i+vec2(1.0,0.0));
+  float c0=hAt(i+vec2(0.0,1.0)), d0=hAt(i+vec2(1.0,1.0));
+  return mix(mix(a,b,f.x),mix(c0,d0,f.x),f.y);
+}
+float sampleHeightBroad(vec2 p) { return sampleHeightContinuous(p); }
 float fieldAt(vec2 p) { return texture2D(fieldTexture,(clamp(p,vec2(0),mapSize-1.0)+0.5)/mapSize).r; }
 float surfaceDepthAt(vec2 p) {
   return texture2D(surfaceTexture,(clamp(p,vec2(0.0),mapSize-1.0)+0.5)/mapSize).r*surfaceDepthRef;
@@ -69,14 +78,17 @@ void main() {
   pigment=mix(vec3(lum),pigment,pigmentSaturation);
   float h=hAt(p), l=hAt(p-vec2(1,0)), r=hAt(p+vec2(1,0));
   float d=hAt(p-vec2(0,1)), u=hAt(p+vec2(0,1));
-  float slope=length(vec2(r-l,u-d))*0.5;
+  vec2 fineGradient=vec2(r-l,u-d)*0.5;
+  float fineSlope=length(fineGradient);
+  float slope=fineSlope;
   float curvature=l+r+d+u-4.0*h;
-  // M2-C2D P2：绘画用低频高度法线——「大山势」只看低频邻域，
-  // 真实高频 slope/curvature 继续留给结构墨、局部皴与飞白（「小笔触」）。
-  // heightTexture .g 已经是舞台高程（世界 Y 单位），格距为 1。
-  float R=max(broadRadius,1.0);
-  float bl=hAt(p-vec2(R,0.0)), br=hAt(p+vec2(R,0.0));
-  float bd=hAt(p-vec2(0.0,R)), bu=hAt(p+vec2(0.0,R));
+  // A continuous derivative spans five cells, rather than stepping between
+  // distant nearest texels. Reuse these four bilinear samples for both normal
+  // and slope; no second neighbourhood or filtered render target is needed.
+  float R=clamp(broadRadius,2.0,4.0);
+  float bl=sampleHeightBroad(p-vec2(R,0.0)), br=sampleHeightBroad(p+vec2(R,0.0));
+  float bd=sampleHeightBroad(p-vec2(0.0,R)), bu=sampleHeightBroad(p+vec2(0.0,R));
+  float broadSlope=length(vec2(br-bl,bu-bd))/(2.0*R);
   vec3 broadN=normalize(vec3(bl-br,2.0*R,bd-bu));
   // Ridge / valley are distinct signed structural measurements, not N dot V.
   float ridge=smoothstep(0.16,1.7,-curvature);
@@ -125,46 +137,32 @@ void main() {
   float dry=mix(1.0,smoothstep(0.24,0.58,dryNoise),dryBrushStrength*nearDetail);
   float structure=max(max(ridge,valley),breakInk)*smoothstep(0.10,0.65,slope);
   float ink=structure*sparse*dry*structuralInkStrength*distant;
-  // M2-C2D P2：silhouette / facing 改吃绘画用低频法线（broadN），
-  // 不再直接受真实三角面 dFdx/dFdy 影响 ⇒ 近景不再一片片竖直三角形抢明暗。
-  // ⚠️ 范围要比 legacy 的窄带**放宽**：低频法线是平滑的，若只在「几乎掠射」
-  //    的窄带里入墨，暗端面积会大幅缩水、明度跨度反而变窄。放宽到
-  //    「背向视线的整块形体」，才既能去掉三角面噪点、又撑得住暗端。
+  // Facing reads the continuous broad field, never triangle derivatives.
   float facing=abs(dot(broadN,normalize(cameraPosition-vWorld)));
-  float silhouette=smoothstep(0.58,0.05,facing)*silhouetteInkStrength*nearDetail;
+  float silhouette=(1.0-smoothstep(0.06,0.28,facing))*silhouetteInkStrength*nearDetail;
   float inkAmount=clamp(ink*0.72+edge+silhouette*0.4,0.0,0.82);
   float clearQi=fieldMode>0.5&&fieldMode<1.5?smoothstep(0.42,0.97,scalar):0.0;
   inkAmount*=1.0-clearQi*0.35;
   if (realmStyleEnabled > 0.5) {
     color=mix(color,realmInkColor,inkAmount);
-    // ── M2-C2D P2 明度骨架（低频主光的两面）────────────────────────────
-    // 同一束世界锚定主光，在「绘画用低频法线」上分两面：
-    //   受光面回纸（留白 / 亮部），背光面入墨（大山势 / 暗部）。
-    // 两面都只看低频 ⇒ 近景得到的是大山势的明暗，不是一片片三角面各自
-    // 抢明暗；而且跨度是被「亮部 + 暗部」同时拉开的，不是只把山压黑。
-    // ⚠️ 主光要**斜掠**（水平分量大于垂直分量）：几乎竖直的光会让所有朝上的
-    //    地形都算「受光」，于是只剩回纸、没有暗部，明度跨度反而被压平。
-    //    斜掠光才能在低频法线上真正分出受光面与背光面。
-    // massMask 只让有坡度的位置参与，平地 / 水面不受这层影响。
-    vec3 keyLight=normalize(vec3(-0.62,0.42,-0.66));
+    // Mass establishes a soft volume. Its mask has no fineSlope, curvature,
+    // sparse ink or brush noise; those belong to the small structural marks.
+    vec3 keyLight=normalize(vec3(-0.45,0.76,-0.47));
     float keyDot=dot(broadN,keyLight);
-    float massMask=smoothstep(0.06,0.55,slope+length(vec2(br-bl,bd-bu))*0.6);
-    float lit=smoothstep(0.34,0.98,keyDot);
-    float shade=smoothstep(0.30,0.92,-keyDot);
-    debugMass=mix(paperColor,realmInkColor,clamp(shade*massShadeStrength*massMask*1.10,0.0,0.75));
-    color=mix(color,paperColor,clamp(lit*massShadeStrength*massMask*0.55,0.0,0.60));
-    color=mix(color,realmInkColor,clamp(shade*massShadeStrength*massMask*1.10,0.0,0.75));
-    // 深墨集中在山脊 / 沟谷 / 坡折等结构位置，不把整片山体一起压黑。
-    // ⚠️ legacy 的 ridge / valley 阈值是按另一套高程尺度写的；在本项目当前
-    //    高程下（高差约 0–60 世界 Y、格距 1），离散拉普拉斯量级只有 ±0.5
-    //    左右，smoothstep(0.16,1.7,…) 这类判据几乎不触发，于是「深墨」在
-    //    画面上基本是空的。这里按实际曲率量级另标定一条结构暗部，只在
-    //    沟谷 / 坡折处压墨，让深墨真正落下来。
-    float c2dCurv=abs(curvature);
-    float c2dStruct=smoothstep(0.05,0.55,c2dCurv)*smoothstep(0.10,0.65,slope);
-    float deep=structure*structure*deepInkStrength + c2dStruct*deepInkStrength;
+    float massMask=smoothstep(0.10,0.85,broadSlope);
+    float lit=smoothstep(0.68,0.98,keyDot);
+    float shade=1.0-smoothstep(0.10,0.60,keyDot);
+    float massInk=clamp(shade*massShadeStrength*massMask*0.65,0.0,0.24);
+    debugMass=mix(paperColor,realmInkColor,massInk);
+    color=mix(color,paperColor,clamp(lit*massShadeStrength*massMask*0.30,0.0,0.16));
+    color=mix(color,realmInkColor,massInk);
+    // Structure owns the deepest terrain marks. Curvature supplies location;
+    // existing sparse/dry masks and slope direction keep it from filling faces.
+    float strokeDirection=0.55+0.45*abs(dot(normalize(fineGradient+vec2(0.0001)),vec2(0.78,-0.6258)));
+    float c2dStruct=smoothstep(0.12,0.50,abs(curvature))*smoothstep(0.35,1.60,fineSlope);
+    float deep=(structure*structure*deepInkStrength+c2dStruct*deepInkStrength)*sparse*dry*strokeDirection*nearDetail*distant;
     debugDeep=deep;
-    color=mix(color,realmInkColor,clamp(deep,0.0,0.60));
+    color=mix(color,realmInkColor,clamp(deep,0.0,0.22));
     // 高峰按位面风格适度回纸色（幽冥 heightWash = 0，不参与）。
     float peak=smoothstep(atmosphereHigh,atmosphereHigh+20.0,vWorld.y)*heightWashStrength;
     color=mix(color,paperColor,peak);

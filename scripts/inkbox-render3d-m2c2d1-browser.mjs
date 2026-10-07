@@ -47,13 +47,18 @@ for (const key of requested) assert(ALL_VIEWS.some(v => v.key === key), 'Unknown
 const VIEWS = requested.length ? ALL_VIEWS.filter(v => requested.includes(v.key)) : ALL_VIEWS;
 const DEBUG = process.env.INKBOX_C2D1_ART_DEBUG || null;
 const STYLE = process.env.INKBOX_C2D1_ART_STYLE || null;
+const EXPERIMENT = process.env.INKBOX_C2D1_EXPERIMENT || null;
 if (DEBUG) assert(['base','coast','mass','structure','atmosphere','final'].includes(DEBUG), 'Invalid artDebug');
 if (STYLE) assert(['main-style','c2d-style','c2d1-style'].includes(STYLE), 'Invalid artStyle');
+if (EXPERIMENT) {
+  assert(['E1','E2','E3','E4'].includes(EXPERIMENT), 'Invalid ablation experiment');
+  assert(!STYLE || STYLE === 'c2d1-style', 'ablation uses the current shader, not a historical snapshot');
+}
 if (process.argv.includes('--list')) { console.log(JSON.stringify(ALL_VIEWS, null, 2)); process.exit(0); }
 
 
 const report = { suite: 'M2-C2D.1 evidence capture (not art acceptance)', label: LABEL, captureComplete: false,
-  requestedDebug: DEBUG, requestedStyle: STYLE, selectedViews: VIEWS.map(v => v.key), host: { hostname: os.hostname(), platform: os.platform(), arch: os.arch() },
+  requestedDebug: DEBUG, requestedStyle: STYLE, experiment: EXPERIMENT, selectedViews: VIEWS.map(v => v.key), host: { hostname: os.hostname(), platform: os.platform(), arch: os.arch() },
   startedAt: new Date().toISOString(), method: 'same natural World (C2C canonical caches) + fixed camera recipes; in-canvas gl.readPixels tonal metrics', views: [] };
 let browser, server;
 const page = (body, timeoutMs = 240000) => browser.js(`return (async()=>{${body}})();`, { timeoutMs });
@@ -91,7 +96,7 @@ async function measureWithRetry(view) {
   return { unavailable: true, reason: lastError };
 }
 
-async function captureView(view, importEpoch) {
+async function captureView(view, importEpoch, selected = true) {
   const setup = await page(`
     const k=window.inkbox,r=k.render3d.renderer,v=window.__c2dVisuals;
     document.getElementById('inkInspectClose')?.click();
@@ -139,6 +144,17 @@ async function captureView(view, importEpoch) {
       poiSource='player-window boundary edge with max visualDepth; edge index '+best;
     }
     const cam=v.applyCamera(r,'WORLD_OVERVIEW',{poi,zoom:${view.zoom},polar:${view.polar},yaw:${view.yaw}});
+    // Controlled uniform-only ablations, after product view/profile updates.
+    // E1 restores main tone with the repaired coast; E2 adds only broad mass;
+    // E3 adds calibrated structure. E4 uses the final production profile.
+    const experiment=${JSON.stringify(EXPERIMENT)};
+    if(experiment&&experiment!=='E4')for(const stage of r.stages.values()){
+      const u=stage.terrain?.inkMaterial?.uniforms;if(!u)continue;
+      u.realmContrast.value={mortal:1.03,upper:1.09,nether:1.30}[stage.plane];
+      u.massShadeStrength.value=experiment==='E1'?0:{mortal:0.16,upper:0.14,nether:0.12}[stage.plane];
+      u.deepInkStrength.value=experiment==='E3'?{mortal:0.16,upper:0.12,nether:0.16}[stage.plane]:0;
+      u.heightWashStrength.value=0;
+    }
     for(let i=0;i<24;i++)await new Promise(requestAnimationFrame);
     // 先记录（而不是吞掉）产品渲染遗留的 GL error，再让采样在干净状态下计时。
     const gl=r.gpu.getContext(),pendingGlErrors=[];
@@ -151,6 +167,9 @@ async function captureView(view, importEpoch) {
       worldSHA256:await sha(k.world),advanceStateSHA256:await sha(k.advanceState),
       boundaryStats:kind==='boundary'?{...r.boundary.stats}:null,
       gpu:{memory:{...r.gpu.info.memory},programs:r.gpu.info.programs?.length??null,drawCalls:r.gpu.info.render.calls,triangles:r.gpu.info.render.triangles}};`);
+  // LOD uses hysteresis. A subset still visits preceding camera recipes, so a
+  // four-view ablation has exactly the same presentation history as all twelve.
+  if (!selected) return null;
   const measured = await measureWithRetry(view);
   const metricBody = framebufferBody(view.paper);
   const metrics = await page(metricBody);
@@ -188,7 +207,8 @@ try {
   await page(`window.inkbox.setSpeed(0);window.__c2dVisuals=await import('./src/inkbox/render3d/art/VisualScenarios.js');return true;`);
 
   let loadedRecipe = null, importEpoch = 0;
-  for (const view of VIEWS) {
+  const lastSelected = Math.max(...VIEWS.map(view => ALL_VIEWS.indexOf(view)));
+  for (const view of ALL_VIEWS.slice(0, lastSelected + 1)) {
     if (loadedRecipe !== view.recipe) {
       console.log(`· 载入 ${view.recipe} 规范世界…`);
       if (view.recipe === 'mortal') await importSave(NATURAL_SAVE, 226, 72000);
@@ -196,7 +216,8 @@ try {
       loadedRecipe = view.recipe;
       importEpoch++;
     }
-    const record = await captureView(view, importEpoch);
+    const record = await captureView(view, importEpoch, VIEWS.includes(view));
+    if (!record) continue;
     assert(record.worldSHA256 && record.advanceStateSHA256, `${view.key}: World/advance 身份摘要缺失`);
     if (record.measurement?.unavailable) console.log(`WARN ${view.key}: GPU 计时不可用（${record.measurement.reason}），已记录并继续`);
     report.views.push(record);

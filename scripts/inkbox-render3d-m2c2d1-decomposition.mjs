@@ -17,7 +17,8 @@ const base = process.env.INKBOX_URL || `http://127.0.0.1:${port}`;
 assert(['localhost', '127.0.0.1', '[::1]'].includes(new URL(base).hostname), 'diagnostics require localhost');
 const decompositionOnly = process.argv.includes('--decomposition-only');
 const report = { suite: 'M2-C2D.1 decomposition and diagnostic GPU coast contract', golden: false,
-  startedAt: new Date().toISOString(), decompositionOnly, decomposition: { pass: false }, coast: { pass: false, skipped: decompositionOnly } };
+  startedAt: new Date().toISOString(), decompositionOnly, decomposition: { pass: false }, coast: { pass: false, skipped: decompositionOnly },
+  height: { pass: false, skipped: decompositionOnly } };
 let browser, server;
 const page = body => browser.js(`return (async()=>{${body}})();`, { timeoutMs: 240000 });
 
@@ -129,6 +130,134 @@ async function coastPage() {
     pass: samples.every(s => s.pass) && pendingGlErrors.length === 0 && glErrors.length === 0 && JSON.stringify(before) === JSON.stringify(after) };
 }
 
+// Execute verbatim production GLSL helpers on a private one-pixel viewport.
+// RGB24 fixed-point encoding avoids judging sampling through art colours.
+async function heightPage() {
+  const T = await import('three');
+  const { PigmentTerrainMaterial } = await import('./src/inkbox/render3d/art/PigmentTerrainMaterial.js');
+  const { ART_PROFILES } = await import('./src/inkbox/render3d/art/ArtPassProfile.js');
+  const k = window.inkbox, host = k.render3d.renderer, gpu = host.gpu, gl = gpu.getContext(), N = 16, R = 2.5;
+  const digest = async v => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(v))))].map(x => x.toString(16).padStart(2, '0')).join('');
+  const before = { world: await digest(k.world), advance: await digest(k.advanceState) };
+  const errors = () => { const a = []; for (let e = gl.getError(); e !== gl.NO_ERROR; e = gl.getError()) a.push(e); return a; };
+  const pendingGlErrors = errors(), glErrors = [], resources = [];
+  const heights = new Float32Array(N * N * 4), types = new Uint8Array(N * N * 4);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const i = (y * N + x) * 4; heights[i + 1] = 0.10 + 0.012 * x + 0.006 * y + 0.0008 * x * x;
+    types[i] = (x + y * 3) % 23;
+  }
+  const texture = (data, type) => {
+    const t = new T.DataTexture(data, N, N, T.RGBAFormat, type);
+    t.minFilter = t.magFilter = T.NearestFilter; t.generateMipmaps = false; t.flipY = false; t.needsUpdate = true;
+    resources.push(t); return t;
+  };
+  const heightTexture = texture(heights, T.FloatType), typeTexture = texture(types, T.UnsignedByteType);
+  const production = new PigmentTerrainMaterial({ world: { w: N, h: N, seed: 226 }, heightTexture, typeTexture }, ART_PROFILES.pilot);
+  resources.push(production);
+  const source = production.fragmentShader;
+  const extract = name => {
+    const match = new RegExp('(?:float|vec2)\\s+' + name + '\\s*\\([^)]*\\)\\s*\\{').exec(source);
+    if (!match) throw Error('production GLSL helper missing: ' + name);
+    let depth = 1, end = match.index + match[0].length;
+    for (; end < source.length && depth; end++) { if (source[end] === '{') depth++; if (source[end] === '}') depth--; }
+    if (depth) throw Error('unterminated production GLSL helper: ' + name);
+    return source.slice(match.index, end);
+  };
+  let helpers;
+  try { helpers = ['uvAt', 'hAt', 'typeAt', 'sampleHeightContinuous', 'sampleHeightBroad'].map(extract); }
+  catch (error) {
+    for (const resource of resources) resource.dispose();
+    return { pass: false, diagnosticOnly: true, failure: String(error), pendingGlErrors };
+  }
+  const material = new T.ShaderMaterial({ toneMapped: false, depthTest: false, depthWrite: false,
+    uniforms: { heightTexture: { value: heightTexture }, typeTexture: { value: typeTexture }, mapSize: { value: new T.Vector2(N, N) },
+      probePoint: { value: new T.Vector2() }, probeMode: { value: 0 } },
+    vertexShader: 'void main(){gl_Position=vec4(position.xy,0.0,1.0);}',
+    fragmentShader: `uniform sampler2D heightTexture,typeTexture; uniform vec2 mapSize,probePoint; uniform float probeMode;
+      ${helpers.join('\n')}
+      void main(){
+        float value=sampleHeightContinuous(probePoint);
+        if(probeMode>0.5&&probeMode<1.5)value=hAt(probePoint);
+        if(probeMode>1.5&&probeMode<2.5)value=typeAt(probePoint)/255.0;
+        if(probeMode>2.5&&probeMode<3.5)value=sampleHeightBroad(probePoint);
+        if(probeMode>3.5)value=0.5+(sampleHeightBroad(probePoint+vec2(2.5,0.0))-sampleHeightBroad(probePoint-vec2(2.5,0.0)))/5.0;
+        float packed=floor(clamp(value,0.0,1.0)*16777215.0+0.5);
+        gl_FragColor=vec4(floor(packed/65536.0),mod(floor(packed/256.0),256.0),mod(packed,256.0),255.0)/255.0;
+      }` });
+  resources.push(material);
+  const geometry = new T.PlaneGeometry(2, 2); resources.push(geometry);
+  const scene = new T.Scene(); scene.add(new T.Mesh(geometry, material));
+  const camera = new T.OrthographicCamera(-1, 1, 1, -1, 0.1, 10); camera.position.z = 1;
+  const oldTarget = gpu.getRenderTarget(), oldViewport = gpu.getViewport(new T.Vector4()), oldScissor = gpu.getScissor(new T.Vector4()), oldScissorTest = gpu.getScissorTest();
+  const at = (x, y) => heights[(Math.max(0, Math.min(15, y)) * N + Math.max(0, Math.min(15, x))) * 4 + 1];
+  const expected = (x, y) => {
+    x = Math.max(0, Math.min(15, x)); y = Math.max(0, Math.min(15, y));
+    const ix = Math.floor(x), iy = Math.floor(y), fx = x - ix, fy = y - iy;
+    return (at(ix, iy) * (1 - fx) + at(ix + 1, iy) * fx) * (1 - fy) + (at(ix, iy + 1) * (1 - fx) + at(ix + 1, iy + 1) * fx) * fy;
+  };
+  const sample = (x, y, mode) => {
+    material.uniforms.probePoint.value.set(x, y); material.uniforms.probeMode.value = mode;
+    gpu.render(scene, camera);
+    if (gl.getParameter(gl.FRAMEBUFFER_BINDING) !== null) throw Error('height probe requires default framebuffer');
+    const b = new Uint8Array(4); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, b); glErrors.push(...errors());
+    return (b[0] * 65536 + b[1] * 256 + b[2]) / 16777215;
+  };
+  const tolerance = 2e-6, epsilon = 1e-4, integers = [], boundaries = [], gradient = [], categorical = [];
+  let fractionalNegativeControl;
+  try {
+    gpu.setRenderTarget(null); gpu.setViewport(0, 0, 1, 1); gpu.setScissor(0, 0, 1, 1); gpu.setScissorTest(true);
+    for (const y of [0, 4, 8, 15]) for (const x of [0, 4, 8, 15]) {
+      const nearest = sample(x, y, 1), continuous = sample(x, y, 0), broad = sample(x, y, 3), type = Math.round(sample(x, y, 2) * 255), height = at(x, y);
+      integers.push({ point: [x, y], expectedHeight: height, nearest, continuous, broad, type, expectedType: (x + y * 3) % 23,
+        pass: [nearest, continuous, broad].every(v => Math.abs(v - height) <= tolerance) && type === (x + y * 3) % 23 });
+    }
+    // Both integer and half-integer boundaries catch nearest sampling hiding
+    // behind one chosen probe location. Check both axes and clamped edges.
+    for (const axis of ['x', 'y']) for (const center of [0, 4, 4.5, 7, 7.5, 10, 10.5, 15]) {
+      const point = d => axis === 'x' ? [center + d, 7.25] : [7.25, center + d];
+      const a = point(-epsilon), b = point(epsilon), left = sample(...a, 0), right = sample(...b, 0);
+      const leftExpected = expected(...a), rightExpected = expected(...b), delta = Math.abs(right - left);
+      boundaries.push({ axis, center, left, right, delta, expectedDelta: Math.abs(rightExpected - leftExpected),
+        pass: Math.abs(left - leftExpected) <= tolerance && Math.abs(right - rightExpected) <= tolerance && delta < 2e-5 });
+    }
+    for (const x of [7.49, 7.51]) {
+      const type = Math.round(sample(x, 7, 2) * 255), expectedType = (Math.floor(x + 0.5) + 21) % 23;
+      categorical.push({ point: [x, 7], type, expectedType, pass: type === expectedType });
+    }
+    fractionalNegativeControl = { point: [7.25, 7.25], nearest: sample(7.25, 7.25, 1), continuous: sample(7.25, 7.25, 0) };
+    fractionalNegativeControl.pass = Math.abs(fractionalNegativeControl.nearest - fractionalNegativeControl.continuous) > 0.001;
+    for (let i = 0; i <= 104; i++) {
+      const x = 4.25 + i / 16, y = 7.25, actual = sample(x, y, 4) - 0.5, want = (expected(x + R, y) - expected(x - R, y)) / (2 * R);
+      gradient.push({ x, actual, expected: want, pass: Math.abs(actual - want) <= tolerance });
+    }
+  } finally {
+    for (const resource of resources) resource.dispose();
+    gpu.setRenderTarget(oldTarget); gpu.setViewport(oldViewport); gpu.setScissor(oldScissor); gpu.setScissorTest(oldScissorTest);
+    host.render(); glErrors.push(...errors());
+  }
+  const after = { world: await digest(k.world), advance: await digest(k.advanceState) };
+  const maxGradientStep = Math.max(...gradient.slice(1).map((v, i) => Math.abs(v.actual - gradient[i].actual)));
+  const productionTextureFilters = [...host.stages.values()].filter(s => s.terrain?.artData).map(s => ({ plane: s.plane,
+    height: [s.terrain.artData.heightTexture.minFilter, s.terrain.artData.heightTexture.magFilter],
+    type: [s.terrain.artData.typeTexture.minFilter, s.terrain.artData.typeTexture.magFilter] }));
+  const filtersNearest = [heightTexture, typeTexture].every(t => t.minFilter === T.NearestFilter && t.magFilter === T.NearestFilter)
+    && productionTextureFilters.length > 0 && productionTextureFilters.every(s => [...s.height, ...s.type].every(f => f === T.NearestFilter));
+  const massExpression = source.match(/float\s+massMask\s*=([^;]+);/)?.[1] || '';
+  const sourceGuards = { massExpression, massUsesBroadWithoutFineSlope: /broad/i.test(massExpression) && !/\bslope\b/.test(massExpression),
+    broadFiniteDifferenceUsesContinuousHelper: /float\s+bl\s*=\s*sampleHeightBroad\(/.test(source) && /float\s+bd\s*=\s*sampleHeightBroad\(/.test(source) };
+  const checks = { filtersNearest, integerSamplingExact: integers.every(v => v.pass), boundaryContinuity: boundaries.every(v => v.pass),
+    typeRetainsCategoricalBoundary: categorical.every(v => v.pass), fractionalNegativeControl: fractionalNegativeControl.pass,
+    broadGradientMatchesBilinearReference: gradient.every(v => v.pass), noOneCellGradientJumps: maxGradientStep < 0.0002,
+    sourceGuards: sourceGuards.massUsesBroadWithoutFineSlope && sourceGuards.broadFiniteDifferenceUsesContinuousHelper,
+    stateUnchanged: JSON.stringify(before) === JSON.stringify(after), noGLErrors: !pendingGlErrors.length && !glErrors.length };
+  return { pass: Object.values(checks).every(Boolean), checks, diagnosticOnly: true, golden: false, renderTargetsCreated: 0,
+    method: 'verbatim production GLSL helpers; GPU RGB24 float encoding; default framebuffer gl.readPixels; independent CPU bilinear reference',
+    fixture: { size: [N, N], equation: '0.10 + 0.012*x + 0.006*y + 0.0008*x*x (Float32)', R, gradientStep: 1 / 16, tolerance, epsilon },
+    extractedHelpers: helpers, textureFilters: { height: [heightTexture.minFilter, heightTexture.magFilter], type: [typeTexture.minFilter, typeTexture.magFilter] },
+    productionTextureFilters, sourceGuards, before, after, pendingGlErrors, glErrors, integers, boundaries, categorical,
+    fractionalNegativeControl, gradient, maxGradientStep };
+}
+
 try {
   fs.mkdirSync(OUT, { recursive: true });
   assert(SOURCE, 'fixed camera evidence missing; run test:render3d:m2c2d1:browser first');
@@ -184,14 +313,18 @@ try {
   if (!decompositionOnly) {
     report.coast = await page(`return (${coastPage.toString()})();`);
     fs.writeFileSync(path.join(OUT, 'coast-contract.json'), JSON.stringify(report.coast, null, 2) + '\n');
+    report.height = await page(`return (${heightPage.toString()})();`);
+    fs.writeFileSync(path.join(OUT, 'height-contract.json'), JSON.stringify(report.height, null, 2) + '\n');
   }
   report.errors = { runtime: browser.errors(), console: browser.cdp.events.filter(e => e.method === 'Runtime.consoleAPICalled' && e.params?.type === 'error')
     .map(e => (e.params.args || []).map(a => a.value ?? a.description ?? '').join(' ')) };
   assert.deepEqual(report.errors, { runtime: [], console: [] }, 'runtime/console errors');
   assert(d.pass, 'decomposition invariants failed (see decomposition.json)');
   if (!decompositionOnly) assert(report.coast.pass, 'GPU coast contract failed (see coast-contract.json)');
+  if (!decompositionOnly) assert(report.height.pass, 'GPU continuous broad height contract failed (see height-contract.json)');
   report.pass = true;
-  console.log(JSON.stringify({ decomposition: d.pass, coast: decompositionOnly ? 'skipped by explicit flag' : report.coast.pass, out: OUT }));
+  console.log(JSON.stringify({ decomposition: d.pass, coast: decompositionOnly ? 'skipped by explicit flag' : report.coast.pass,
+    height: decompositionOnly ? 'skipped by explicit flag' : report.height.pass, out: OUT }));
 } catch (error) {
   report.pass = false; report.failure = error.stack || String(error);
   if (browser) report.errors = { runtime: browser.errors(), console: browser.cdp.events.filter(e => e.method === 'Runtime.consoleAPICalled' && e.params?.type === 'error')
