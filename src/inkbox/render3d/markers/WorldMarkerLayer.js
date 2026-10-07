@@ -223,10 +223,11 @@ export class WorldMarkerLayer {
   }
 
   /** Existing persistent rifts retain their World radius and visibility contract. */
-  setArtProfile(profile) {
+  setArtProfile(profile, riftColors = null) {
     const style = profile?.realmStyle || null;
-    if (style === this.realmStyle) return;
+    if (style === this.realmStyle && riftColors?.upper === this.riftColors?.upper && riftColors?.nether === this.riftColors?.nether) return;
     this.realmStyle = style;
+    this.riftColors = riftColors;
     const rifts = (this.lastDerived?.rifts || []).filter(r=>!this.riftWounds.renderedIds.has(r.id));
     for (let i = 0; i < this.rifts.count; i++)
       this.rifts.setColorAt(i, this.colorOf(this.riftColor(rifts[i]?.targetPlane)));
@@ -235,7 +236,7 @@ export class WorldMarkerLayer {
 
   riftColor(targetPlane) {
     const target = targetPlane === 'upper' ? 'upper' : 'nether';
-    return this.realmStyle ? realmStyleFor(target).boundary.rift
+    return this.realmStyle ? (this.riftColors?.[target] ?? realmStyleFor(target).boundary.rift)
       : target === 'upper' ? INK.azurite : '#4a4f5c';
   }
 

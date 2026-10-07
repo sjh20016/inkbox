@@ -1,9 +1,10 @@
 import { ART_CONTROLS, ART_PROFILES } from './ArtPassProfile.js';
-import { ART_DEBUG_VIEWS } from './ArtDiagnostics.js';
+import { ART_DEBUG_VIEWS, ART_COMPARISON_STYLES } from './ArtDiagnostics.js';
 
 /** Developer-only profile controls. No listeners survive adapter disposal. */
 export class ArtDebugPanel {
   constructor(host, parent) {
+    if (!host.art.development) throw new Error('Art debug panel is development-only');
     this.host = host; this.abort = new AbortController();
     const el = this.element = document.createElement('details');
     el.id = 'inkArtDebug';
@@ -15,11 +16,27 @@ export class ArtDebugPanel {
     select.value = host.art.profile.name;
     select.addEventListener('change', () => { host.setArtProfile(select.value); this.refresh(); }, { signal: this.abort.signal });
     el.append(select); this.inputs = new Map();
+    const comparisonLabel = document.createElement('label'); comparisonLabel.style.cssText = 'display:block;margin:7px 0';
+    const comparisonSelect = this.comparisonSelect = document.createElement('select');
+    comparisonSelect.setAttribute('aria-label', 'Art historical comparison');
+    for (const style of ART_COMPARISON_STYLES) comparisonSelect.add(new Option(style, style));
+    const status = this.comparisonStatus = document.createElement('div'); status.setAttribute('role', 'status');
+    comparisonSelect.addEventListener('change', async () => {
+      comparisonSelect.disabled = true; this.viewSelect.disabled = true; status.textContent = '加载对照…';
+      try { await host.art.setComparisonStyle(comparisonSelect.value); status.textContent = ''; }
+      catch (error) { status.textContent = error.message; }
+      finally { if (this.host) { comparisonSelect.disabled = false; this.refresh(); } }
+    }, { signal: this.abort.signal });
+    comparisonLabel.append(document.createTextNode('历史 A/B '), comparisonSelect); el.append(comparisonLabel, status);
     const viewLabel = document.createElement('label'); viewLabel.style.cssText = 'display:block;margin:7px 0';
     const viewSelect = this.viewSelect = document.createElement('select');
     viewSelect.setAttribute('aria-label', 'Art decomposition');
     for (const view of ART_DEBUG_VIEWS) viewSelect.add(new Option(view, view));
-    viewSelect.addEventListener('change', () => { host.art.setDebugView(viewSelect.value); this.refresh(); }, { signal: this.abort.signal });
+    viewSelect.addEventListener('change', () => {
+      try { host.art.setDebugView(viewSelect.value); }
+      catch (error) { this.comparisonStatus.textContent = error.message; }
+      this.refresh();
+    }, { signal: this.abort.signal });
     viewLabel.append(document.createTextNode('分层视图 '), viewSelect); el.append(viewLabel);
     const lodLabel = document.createElement('label'); lodLabel.style.cssText = 'display:block;margin:7px 0';
     const lod = document.createElement('input'); lod.type = 'checkbox'; lod.checked = host.lodEnabled;
@@ -43,11 +60,19 @@ export class ArtDebugPanel {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }, { signal: this.abort.signal });
     el.append(button); parent.append(el); this.refresh();
+    host.art.comparisonReady.then(() => { if (this.host) this.refresh(); }).catch(error => {
+      if (this.host) this.comparisonStatus.textContent = error.message;
+    });
   }
   refresh() {
     const profile = this.host.art.profile;
     this.select.value = profile.name;
     this.viewSelect.value = this.host.art.debugView;
+    this.comparisonSelect.value = this.host.art.comparisonStyle;
+    this.viewSelect.disabled = !this.host.art.comparisonDebugSupported;
+    if (!this.host.art.comparisonDebugSupported && !this.comparisonStatus.textContent)
+      this.comparisonStatus.textContent = '历史快照仅提供 final；分层需切回 c2d1-style。';
+    else if (this.host.art.comparisonDebugSupported && this.comparisonStatus.textContent.startsWith('历史快照')) this.comparisonStatus.textContent = '';
     const fixedRealmStyle = profile.mode === 'realm-style-v1';
     for (const [key,input] of this.inputs) {
       input.value = profile[key];

@@ -400,9 +400,17 @@ check('原地修改 path 后刷新 RegionMask',
   section('V2 · 视界生命周期（切走工具关闭 / 关闭后 selection 归 null）');
 
   const selToolBody = (findBody('selectTool') && findBody('selectTool').body) || '';
-  check('selectTool() 在**换了工具**时清空 selection（关闭路径①）',
+  // ⚠️ 2026 QoL 填缝包（Q8）之后，关闭路径收敛成**唯一**一条 `closeRealmView()`：
+  //    工具切换 / Escape / 「关闭视界」按钮全走它（原先三处各写一遍内联逻辑）。
+  //    所以这里不再断言 `this.selection = null` 字面出现在 `selectTool` 里，
+  //    而是拆成两条——「换工具 ⇒ 调 closeRealmView」+「closeRealmView 清 selection」。
+  //    合起来仍然证明同一件事：换了工具，`selection` 必然归 null。
+  const closeViewBody = (findBody('closeRealmView') && findBody('closeRealmView').body) || '';
+  check('selectTool() 在**换了工具**时关闭视界（关闭路径①，经唯一 closeRealmView）',
     /id\s*!==\s*this\.toolId/.test(selToolBody)
-    && countIn(selToolBody, /this\.selection\s*=\s*null/g) >= 1);
+    && /this\.closeRealmView\s*\(\s*'tool'\s*\)/.test(selToolBody));
+  check('closeRealmView() 清空 selection（关闭路径①的唯一实现）',
+    countIn(closeViewBody, /this\.selection\s*=\s*null/g) >= 1);
 
   const commitBody = (findBody('commitSelection') && findBody('commitSelection').body) || '';
   check('commitSelection() 退化划选时清空 selection（关闭路径②）',

@@ -12,6 +12,7 @@ import { compareRuns } from './inkbox-render3d-m2c2d1-diagnostics.mjs';
 
 const checks = [];
 const check = (label, run) => { run(); checks.push({ label, pass: true }); console.log(`PASS ${label}`); };
+const checkAsync = async (label, run) => { await run(); checks.push({ label, pass: true }); console.log(`PASS ${label}`); };
 const digest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
 function makeHost(development) {
@@ -36,6 +37,7 @@ check('development queries are accepted locally and ignored on published origins
   }
   assert.equal(artDebugOptions({ hostname: 'example.com', protocol: 'https:', search: '?artDebug=coast&artdebug=1' }).debugView, 'final');
   assert.equal(artDebugOptions({ hostname: 'example.com', protocol: 'https:', search: '?artDebug=coast&artdebug=1' }).panel, false);
+  assert.equal(artDebugOptions({ hostname: 'example.com', protocol: 'https:', search: '?artStyle=main-style' }).comparisonStyle, 'c2d1-style');
   assert.equal(artDebugOptions({ hostname: 'localhost', protocol: 'http:', search: '?artDebug=unknown' }).debugView, 'final');
 });
 
@@ -115,6 +117,41 @@ check('Safety PASS never certifies art and never waives a positive GPU regressio
   const missing = compareRuns(runs, { partial: true });
   assert.equal(missing.safetyGate.status, 'failed');
   assert(missing.safetyGate.failures.some(message => message.includes('programs contract')));
+});
+
+await checkAsync('historical hot switches queue in order, restore the current shader and release a replaced World', async () => {
+  const { host, world } = makeHost(true);
+  const initial = digest(world), terrain = host.stages.get('mortal').terrain;
+  const shader = terrain.inkMaterial.fragmentShader, geometry = terrain.geometry;
+  const colors = terrain.inkMaterial.uniforms.palette.value.map(c => c.getHexString());
+  try {
+    const order = [], requested = ['main-style', 'c2d-style', 'c2d1-style'];
+    const result = await Promise.all(requested.map(name => host.art.setComparisonStyle(name).then(value => { order.push(value); return value; })));
+    assert.deepEqual(result, requested); assert.deepEqual(order, requested);
+    assert.equal(host.stages.get('mortal').terrain.geometry, geometry);
+    assert.equal(terrain.inkMaterial.fragmentShader, shader);
+    assert.deepEqual(terrain.inkMaterial.uniforms.palette.value.map(c => c.getHexString()), colors);
+    assert.equal(digest(world), initial);
+    await host.art.setComparisonStyle('main-style');
+    assert.equal(host.art.comparisonSourceRevision, '8b3f2bac761b59bf70f524ff9a00429fa40cc07a');
+    assert.equal(host.stages.get('mortal').markers.riftColor('upper'), '#557D91');
+    assert.equal(host.stages.get('mortal').markers.riftColor('nether'), '#8E302B');
+    assert.throws(() => host.art.setDebugView('structure'), /historical final/);
+    const legacy = host.boundary.mesh.material; let releases = 0;
+    legacy.addEventListener('dispose', () => releases++);
+    const next = generateWorld({ preset: { w: 48, h: 32 }, seed: 20261008, scatter: true });
+    const beforeNext = digest(next);
+    host.setWorld(next);
+    assert.equal(releases, 1);
+    assert.equal(host.stages.get('mortal').water.mesh.material.type, 'MeshBasicMaterial');
+    await host.art.setComparisonStyle('c2d1-style');
+    assert.equal(host.stages.get('mortal').terrain.inkMaterial.fragmentShader, shader);
+    assert.equal(host.boundary.mesh.material, host.boundary.material);
+    assert.equal(digest(next), beforeNext);
+  } finally { host.dispose(); }
+  const production = makeHost(false).host;
+  try { assert.equal(await production.art.setComparisonStyle('main-style'), 'c2d1-style'); }
+  finally { production.dispose(); }
 });
 
 fs.mkdirSync('reports/local/m2c2d1', { recursive: true });

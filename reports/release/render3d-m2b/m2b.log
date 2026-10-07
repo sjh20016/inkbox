@@ -42,6 +42,7 @@ PASS T2 §27 目标位面内容纪律：不为了填满 Layer 而机械复制凡
 PASS T3 同一 (x,y) 的 XZ 完全一致，只有 Y 允许不同（§73）
 PASS T3 相机 / 反复 applyView 不得让 Region 与界缘漂移（§73）
 PASS T3 Shoulder：边缘 = R、K 格之外恢复 T、中间 smoothstep 单调过渡（§37）
+PASS T3 closing or switching Strata windows restores non-target Stage RAW geometry
 PASS T4 无缝界缘 · raw · 矩形：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
 PASS T4 无缝界缘 · raw · 凹形：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
 PASS T4 无缝界缘 · raw · 随机套索：墙底=凡间边缘、墙顶=目标界边缘、零 NaN
@@ -68,4 +69,4 @@ PASS T8 跨界 FX：开窗时源 Stage 与目标 Stage 都能看到（§64/§65�
 PASS T8 结构：Three FX 只读 snapshotPlane，不新增 runtime event 消费者（§64/S8）
 PASS T10 600 日纯度：无 3D / 凡间 / 上界窗 / 幽冥窗 / 反复重画 / Strata ⇒ digest 逐字一致（§80）
 
-69 M2-B invariant groups passed.
+70 M2-B invariant groups passed.

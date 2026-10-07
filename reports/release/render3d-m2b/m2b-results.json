@@ -1,7 +1,7 @@
 {
   "suite": "Render3D M2-B",
   "status": "passed",
-  "passed": 69,
+  "passed": 70,
   "failed": 0,
   "checks": [
     {
@@ -178,6 +178,10 @@
     },
     {
       "label": "T3 Shoulder：边缘 = R、K 格之外恢复 T、中间 smoothstep 单调过渡（§37）",
+      "status": "passed"
+    },
+    {
+      "label": "T3 closing or switching Strata windows restores non-target Stage RAW geometry",
       "status": "passed"
     },
     {

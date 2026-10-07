@@ -2,11 +2,36 @@ import * as THREE from 'three';
 import { TERRAIN_INFO } from '../../core/config.js';
 import { realmStyleFor } from './RealmStyleProfile.js';
 
+// Shared exact and visual sampling. The fragment keeps exact cell reads for
+// Structure; Mass samples this continuous field once per existing grid vertex.
+const heightSampling = `
+vec2 uvAt(vec2 p) { return (clamp(floor(p+0.5),vec2(0),mapSize-1.0)+0.5)/mapSize; }
+float hAt(vec2 p) { return texture2D(heightTexture,uvAt(p)).g; }
+float sampleHeightContinuous(vec2 p) {
+  vec2 c=clamp(p,vec2(0.0),mapSize-1.0), i=floor(c), f=fract(c);
+  vec2 texel=1.0/mapSize, uv=(i+0.5)*texel;
+  float a=texture2D(heightTexture,uv).g, b=texture2D(heightTexture,uv+vec2(texel.x,0.0)).g;
+  float c0=texture2D(heightTexture,uv+vec2(0.0,texel.y)).g, d0=texture2D(heightTexture,uv+texel).g;
+  return mix(mix(a,b,f.x),mix(c0,d0,f.x),f.y);
+}
+float sampleHeightBroad(vec2 p) { return sampleHeightContinuous(p); }
+`;
+
 const vertexShader = `
+uniform sampler2D heightTexture;
+uniform vec2 mapSize;
+uniform float broadRadius;
 varying vec3 vWorld;
+varying vec2 vBroadGradient;
+${heightSampling}
 void main() {
   vec4 p = modelMatrix * vec4(position, 1.0);
   vWorld = p.xyz;
+  vec2 grid=p.xz+(mapSize-1.0)*0.5;
+  float R=clamp(broadRadius,2.0,4.0);
+  float bl=sampleHeightBroad(grid-vec2(R,0.0)), br=sampleHeightBroad(grid+vec2(R,0.0));
+  float bd=sampleHeightBroad(grid-vec2(0.0,R)), bu=sampleHeightBroad(grid+vec2(0.0,R));
+  vBroadGradient=vec2(br-bl,bu-bd)/(2.0*R);
   gl_Position = projectionMatrix * viewMatrix * p;
 }`;
 
@@ -33,23 +58,14 @@ uniform float colorLayerStrength;
 uniform float feibaiStrength, atmosphereStrength, atmosphereLow, atmosphereHigh;
 uniform vec3 slopeRockColor, slopeSoilColor, terrainWaterColor, realmInkColor, atmosphereColor;
 varying vec3 vWorld;
+varying vec2 vBroadGradient;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7)) + seed) * 43758.5453); }
 float noise(vec2 p) {
   vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
   return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
 }
-vec2 uvAt(vec2 p) { return (clamp(floor(p+0.5),vec2(0),mapSize-1.0)+0.5)/mapSize; }
-float hAt(vec2 p) { return texture2D(heightTexture,uvAt(p)).g; }
+${heightSampling}
 float typeAt(vec2 p) { return floor(texture2D(typeTexture,uvAt(p)).r*255.0+0.5); }
-// Presentation-only interpolation. Exact height/type reads and their Nearest
-// textures retain cell semantics; a moving fragment gets a continuous field.
-float sampleHeightContinuous(vec2 p) {
-  vec2 c=clamp(p,vec2(0.0),mapSize-1.0), i=floor(c), f=fract(c);
-  float a=hAt(i), b=hAt(i+vec2(1.0,0.0));
-  float c0=hAt(i+vec2(0.0,1.0)), d0=hAt(i+vec2(1.0,1.0));
-  return mix(mix(a,b,f.x),mix(c0,d0,f.x),f.y);
-}
-float sampleHeightBroad(vec2 p) { return sampleHeightContinuous(p); }
 float fieldAt(vec2 p) { return texture2D(fieldTexture,(clamp(p,vec2(0),mapSize-1.0)+0.5)/mapSize).r; }
 float surfaceDepthAt(vec2 p) {
   return texture2D(surfaceTexture,(clamp(p,vec2(0.0),mapSize-1.0)+0.5)/mapSize).r*surfaceDepthRef;
@@ -82,14 +98,11 @@ void main() {
   float fineSlope=length(fineGradient);
   float slope=fineSlope;
   float curvature=l+r+d+u-4.0*h;
-  // A continuous derivative spans five cells, rather than stepping between
-  // distant nearest texels. Reuse these four bilinear samples for both normal
-  // and slope; no second neighbourhood or filtered render target is needed.
-  float R=clamp(broadRadius,2.0,4.0);
-  float bl=sampleHeightBroad(p-vec2(R,0.0)), br=sampleHeightBroad(p+vec2(R,0.0));
-  float bd=sampleHeightBroad(p-vec2(0.0,R)), bu=sampleHeightBroad(p+vec2(0.0,R));
-  float broadSlope=length(vec2(br-bl,bu-bd))/(2.0*R);
-  vec3 broadN=normalize(vec3(bl-br,2.0*R,bd-bu));
+  // Interpolate the unnormalised gradient over the existing shared grid, then
+  // derive both Mass inputs here. This is a continuous triangle-linear visual
+  // reconstruction, not identical to a per-fragment bilinear derivative.
+  float broadSlope=length(vBroadGradient);
+  vec3 broadN=normalize(vec3(-vBroadGradient.x,1.0,-vBroadGradient.y));
   // Ridge / valley are distinct signed structural measurements, not N dot V.
   float ridge=smoothstep(0.16,1.7,-curvature);
   float valley=smoothstep(0.22,2.0,curvature)*0.58;
@@ -161,8 +174,8 @@ void main() {
     float strokeDirection=0.55+0.45*abs(dot(normalize(fineGradient+vec2(0.0001)),vec2(0.78,-0.6258)));
     float c2dStruct=smoothstep(0.12,0.50,abs(curvature))*smoothstep(0.35,1.60,fineSlope);
     float deep=(structure*structure*deepInkStrength+c2dStruct*deepInkStrength)*sparse*dry*strokeDirection*nearDetail*distant;
-    debugDeep=deep;
-    color=mix(color,realmInkColor,clamp(deep,0.0,0.22));
+    debugDeep=clamp(deep,0.0,0.22);
+    color=mix(color,realmInkColor,debugDeep);
     // 高峰按位面风格适度回纸色（幽冥 heightWash = 0，不参与）。
     float peak=smoothstep(atmosphereHigh,atmosphereHigh+20.0,vWorld.y)*heightWashStrength;
     color=mix(color,paperColor,peak);
@@ -203,7 +216,10 @@ void main() {
     else if(artDebugMode<2.5){
       color=mix(paperColor,terrainWaterColor,coastSoft*0.90);
     }else if(artDebugMode<3.5)color=debugMass;
-    else if(artDebugMode<4.5)color=mix(paperColor,realmInkColor,clamp(ink*0.72+edge+debugDeep,0.0,0.82));
+    else if(artDebugMode<4.5){
+      float structureInk=clamp(ink*0.72+edge,0.0,0.82)*(1.0-clearQi*0.35);
+      color=mix(mix(paperColor,realmInkColor,structureInk),realmInkColor,debugDeep);
+    }
     else color=mix(paperColor,atmosphereColor,(1.0-smoothstep(atmosphereLow,atmosphereHigh,vWorld.y))*atmosphereStrength)*(1.0+grain*paperGrainStrength);
   }
   gl_FragColor=vec4(color,1.0);

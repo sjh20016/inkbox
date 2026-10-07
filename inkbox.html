@@ -353,6 +353,118 @@
      用属性选择器而不是多拼一个类名：理由见 main.js 里 `data-zero` 那段注释。 */
   .realm-soul[data-zero="1"] { opacity: .42; }
 
+  /* ── QoL 填缝包（QOL_PASS1）─────────────────────────────────────────
+     这一块只补**已有元素缺的那几种形态**，不重做视觉：一枚世界信息丸、
+     一行工具状态、一颗「关闭视界」、一个可点的人名、一枚所在界标签、
+     一条轻量确认条、一页帮助、一个「更多」按钮。
+     配色全部沿用上面的变量，不引入新色。 */
+
+  /* Q5：左栏工具提示下面那行「此刻手里拿的是什么」 */
+  .tool-state {
+    margin-top: 6px; padding: 4px 9px; border-radius: 5px;
+    background: rgba(255,255,255,.4); border: 1px solid var(--line);
+    color: var(--ink-mid); font-size: 11.5px; letter-spacing: .6px;
+  }
+  .tool-state b { color: var(--ink); font-weight: 700; }
+
+  /* Q6：底栏速度簇旁边那行「岁月在几档」（与 #inkSpeedPill 同一句话） */
+  .speed-state { color: var(--ink-soft); font-size: 11.5px; letter-spacing: 1px; min-width: 62px; }
+
+  /* Q34：顶栏的世界信息丸。**可点**——点一下把 seed 复制走（报 bug 时要用）。 */
+  .world-info {
+    display: flex; align-items: center; gap: 7px; cursor: pointer;
+    border: 1px dashed var(--line-strong); border-radius: 999px; padding: 3px 11px;
+    background: rgba(255,255,255,.3); color: var(--ink-soft);
+    font-size: 11px; letter-spacing: .5px; font-variant-numeric: tabular-nums;
+    transition: border-color .12s, color .12s;
+  }
+  .world-info:hover { border-color: var(--ink-soft); color: var(--ink-mid); }
+  .world-info span + span::before { content: "·"; margin-right: 7px; color: var(--line-strong); }
+
+  /* Q28：长列表尾部的「另有 N 人 · 展开 / 收起」 */
+  .fold-more {
+    width: 100%; margin-top: 5px; padding: 4px 8px;
+    font-size: 11px; color: var(--ink-soft);
+  }
+
+  /* Q9 / Q10：列表里可点的姓名 / 地名。做成「文字按钮」——看着像正文里
+     被画了一道，而不是右栏又多了一排按钮（右栏已经有够多按钮了）。 */
+  .log-name {
+    border: 0; background: transparent; padding: 0; margin: 0;
+    font-family: var(--serif); font-size: inherit; color: var(--ink);
+    letter-spacing: inherit; cursor: pointer;
+    border-bottom: 1px dashed var(--line-strong);
+    transition: color .12s, border-color .12s;
+  }
+  .log-name:hover { color: var(--cinnabar); border-bottom-color: var(--cinnabar); }
+
+  /* Q19：编年史 / 大事记条目上的「查看」。只有条目带定位信息时才出现。 */
+  .log-view { padding: 1px 6px; font-size: 10.5px; margin-left: 4px; }
+
+  /* Q37：检视面板标题上那枚「所在界」标签（读真实来源，不猜窗口） */
+  .plane-tag {
+    display: inline-block; font-weight: 400; font-size: 10px; letter-spacing: 1px;
+    color: var(--ink-soft); border: 1px solid var(--line-strong);
+    border-radius: 3px; padding: 0 4px; margin-left: 6px; vertical-align: 1px;
+  }
+
+  /* Q11：能点着跳过去的提示（`#inkHint` 的补充形态，不新开一块浮层） */
+  .stage-hint.toast-link { cursor: pointer; border-color: var(--cinnabar); color: var(--ink); }
+  .stage-hint.toast-link:hover { background: rgba(240,234,220,1); }
+
+  /* Q8：视界开着的时候，画布左上角浮出的「关闭视界」 */
+  .close-view { position: absolute; left: 12px; top: 12px; z-index: 5; }
+
+  /* Q21：轻量确认条——**不是** modal。贴在画布底部中央，不遮世界、不锁焦点，
+     点「先留着」就什么都不会发生（保护玩家，不是拦路）。 */
+  .confirm-bar {
+    position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+    z-index: 7; display: none; align-items: center; gap: 10px; max-width: 88%;
+    background: rgba(240,234,220,.98); border: 1px solid var(--line-strong);
+    border-radius: 6px; box-shadow: var(--shadow); padding: 8px 12px;
+  }
+  .confirm-bar.on { display: flex; }
+  .confirm-bar p { color: var(--ink-mid); font-size: 12px; line-height: 1.5; }
+
+  /* Q31 / Q33：帮助层。全屏遮罩 + 一张纸；点纸外或按 Esc 关掉。 */
+  .help-layer {
+    position: fixed; inset: 0; z-index: 40; display: none;
+    background: rgba(34,32,28,.34); backdrop-filter: blur(2px);
+  }
+  .help-layer.on { display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .help-card {
+    width: min(680px, 100%); max-height: 86vh; overflow: auto;
+    background: var(--paper); border: 1px solid var(--line-strong);
+    border-radius: 8px; box-shadow: var(--shadow); padding: 18px 20px 22px;
+  }
+  .help-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+  .help-head h2 { font-size: 16px; letter-spacing: 4px; font-weight: 700; }
+  .help-head small { color: var(--ink-soft); font-size: 11px; letter-spacing: 1px; }
+  .help-head .ink-x { margin-left: auto; font-size: 18px; }
+  .help-sec { margin-top: 14px; }
+  .help-sec > h3 {
+    font-size: 11px; font-weight: 400; letter-spacing: 3px; color: var(--ink-soft);
+    border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-bottom: 7px;
+  }
+  .help-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 22px; }
+  .help-row { display: flex; gap: 10px; align-items: baseline; font-size: 12px; color: var(--ink-mid); line-height: 1.95; }
+  .help-row kbd {
+    flex: 0 0 70px; text-align: center; font-family: var(--serif); font-size: 11px; color: var(--ink);
+    border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 4px;
+    padding: 0 4px; background: rgba(255,255,255,.5);
+  }
+  .help-lesson {
+    font-size: 12px; line-height: 1.7; color: var(--ink-mid);
+    padding: 5px 0; border-bottom: 1px solid rgba(34,32,28,.07);
+  }
+  .help-lesson b { color: var(--ink); letter-spacing: 2px; margin-right: 8px; }
+  @media (max-width: 640px) { .help-cols { grid-template-columns: 1fr; } }
+
+  /* Q4 / Q39：按钮的不可用态与忙碌态**必须在视觉上分得开**——
+     点了没反应而外观不变，玩家只会以为界面坏了。 */
+  button.btn:disabled { opacity: .42; cursor: not-allowed; }
+  button.btn[aria-busy="true"] { opacity: .55; cursor: progress; }
+
   @media (max-width: 1080px) {
     .main { grid-template-columns: 156px minmax(0, 1fr); }
     .rail.right { display: none; }
@@ -372,9 +484,18 @@
       <small>坐天观井 · 世界盒子</small>
     </div>
     <div class="pills">
+      <!-- Q34：世界信息极简入口。只报「这是哪一局」——seed / 幅面 / 渲染器，
+           不显示 SHA、不显示 dirty。点一下把 seed 复制走（报 bug 时要用）。 -->
+      <div class="world-info" id="inkWorldInfo" title="点击复制种子">
+        <span id="inkInfoSeed">seed —</span>
+        <span id="inkInfoPreset">—</span>
+        <span id="inkInfoRenderer">Canvas</span>
+      </div>
       <div class="pill" id="inkTimePill">仙历 1 年 · 第 1 日</div>
       <div class="pill" id="inkSpeedPill">常速 ×2</div>
       <div class="pill" id="inkFpsPill">-- FPS</div>
+      <!-- Q31：帮助入口。与键盘 `?` 走**同一条**路径（`qol.openHelp()`）。 -->
+      <button class="btn" id="inkBtnHelp" title="快捷键与门道（按 ?）">? 帮助</button>
     </div>
   </header>
 
@@ -384,10 +505,17 @@
       <div class="groups" id="inkGroups"></div>
       <div class="tools" id="inkTools"></div>
       <div class="ink-tool-hint" id="inkToolHint">选一个神力，然后在山河上落笔。</div>
+      <!-- Q5：工具切换 / 快捷键 / 程序切换之后，「我手里拿的是什么」不该只靠
+           上面那行 hint 的措辞去猜（它同时承担着「这个工具怎么用」）。
+           这一行只说**状态**：名字 + 笔刷半径。 -->
+      <div class="tool-state" id="inkToolState">—</div>
     </aside>
 
     <section class="stage">
       <canvas id="inkCanvas" aria-label="水墨世界"></canvas>
+      <!-- Q8：视界开着时才浮出来的「关闭视界」。判据只有 `sb.selection`
+           （见 main.js 的 syncCloseViewBtn），所以这里**初始 hidden**。 -->
+      <button class="btn close-view" id="inkBtnCloseView" hidden title="关闭当前视界（Esc）">✕ 关闭视界</button>
       <div class="stage-hint" id="inkHint">左键落笔 · 右键平移 · 滚轮缩放 · 空格暂停 · W 战争显示</div>
       <div class="inspect" id="inkInspect"></div>
       <!-- 史册条目点开后摊出的完整传记正文。与检视面板同一套外观，
@@ -407,9 +535,22 @@
         <div class="busanzi-meter"><i id="inkBusanziMeter" style="width:0%"></i></div>
         <div id="inkBusanziLines"></div>
       </div>
+      <!-- Q21：未保存保护用的**轻量**确认条（不是 modal）。
+           `guardDiscard()` 只在「有未保存变化」时把它显示出来；
+           不 dirty 时重新开天 / 读档 / 导入**直接执行**，不拿确认框拦路。 -->
+      <div class="confirm-bar" id="inkConfirm" hidden role="alertdialog" aria-live="polite">
+        <p id="inkConfirmText">当前世界有尚未保存的变化，仍要继续？</p>
+        <button class="btn" id="inkConfirmOk">仍然继续</button>
+        <button class="btn" id="inkConfirmCancel">先留着</button>
+      </div>
     </section>
 
     <aside class="rail right">
+      <!-- Q30：一次收起右栏。放在**第一个 sec-title 之前**是有意的——
+           setupSectionTogglesPanel 把每个 sec-title 之后的兄弟收进 .sec-body，
+           所以它不会被折进任何一节里，永远留在最上面。
+           「世界」那一节是核心区，收起全部时**不**折它（见 collapseAllMap）。 -->
+      <button class="btn" id="inkBtnCollapseAll" style="width:100%;margin-bottom:8px">收起全部</button>
       <div class="sec-title">世界</div>
       <div class="stat-grid">
         <div class="stat"><span>生灵</span><b id="inkStatPeople">0</b></div>
@@ -419,6 +560,14 @@
         <div class="stat"><span>陆地</span><b id="inkStatLand">0%</b></div>
       </div>
       <div class="stat" style="margin-top:5px"><span>最高峰（高程）</span><b id="inkStatPeak">0.00</b></div>
+
+      <!-- ── 最近看过（Q13，见 railPanels.js refreshRecentPanel）──────────
+           最多 5 条，重复看的会**上浮**。数据只在 UI runtime（`sb.qol.recent()`），
+           不进 World、不进正式存档，换世界 / 读档时清空。
+           ⚠️ 空的时候**连标题一起藏起来**——一个永远空着的区块只是右栏上
+              又多占一行地方（所以这里初始就 display:none）。 -->
+      <div class="sec-title" id="inkRecentTitle" style="display:none">最近看过</div>
+      <div class="chronicle" id="inkRecent" style="display:none"></div>
 
       <div class="sec-title">势力</div>
       <div class="factions" id="inkFactionList"></div>
@@ -483,7 +632,11 @@
            一级区域）。标题上那颗红点是「未读的重大事件」，点开这一块即已读。
            三种状态三种出口：在世/异魂占身 → 镜头 focus + 人物卡；已入上界 →
            就地摊出上界现况（不移动镜头）；故人 → 打开史册传记。 -->
-      <div class="sec-title" id="inkWatchTitle">天道记挂 · <span id="inkWatchCount">0</span><span id="inkWatchDot" style="display:none;color:var(--cinnabar)"> ●</span></div>
+      <!-- ⚠️ `data-sec-key` 是给 Q29 的折叠持久化用的：这个标题里嵌着**实时**
+           未读数（「天道记挂 · 3」），拿 textContent 当折叠键的话键会随计数变，
+           表现为「折起来、刷新一次又展开了」，而且偏好里会攒下一串只差一个
+           数字的垃圾键（见 railPanels.js 的 sectionKey）。 -->
+      <div class="sec-title" id="inkWatchTitle" data-sec-key="记挂">天道记挂 · <span id="inkWatchCount">0</span><span id="inkWatchDot" style="display:none;color:var(--cinnabar)"> ●</span></div>
       <div class="chronicle" id="inkWatch"></div>
 
       <div class="sec-title">编年</div>
@@ -564,6 +717,11 @@
         <button class="btn" data-speed="4">迅</button>
         <button class="btn" data-speed="5">飞</button>
       </div>
+      <!-- Q6：把「现在是什么档」写成**一句话**。六颗按钮里哪颗亮着，
+           在缩到很小或者色差不够的屏幕上不一定看得出来；
+           而且「暂停」与「常速」是同一个维度的两端，得有个地方能一眼确认。
+           档位名取自 core/config.js 的 TIME.speeds（唯一来源）。 -->
+      <span class="speed-state" id="inkSpeedState">岁月 · 常</span>
     </div>
 
     <div class="cluster">
@@ -600,6 +758,35 @@
       <input type="file" id="inkImportFile" accept=".json" style="display:none" />
     </div>
   </footer>
+
+  <!-- ── 帮助层（Q31 / Q32 / Q33，见 ui/qol.js）────────────────────────
+       键位表的事实来源是 PLAYER_GUIDE.md 与 main.js 的 keydown 实现
+       （`HELP_KEYS` / `HELP_MOUSE` 由 qol.js 在启动时填进来，不在这里手写，
+        免得与实现漂移）。「观井初课」是原作的新手引导文案
+       （`core/lore.js` 的 FIRST_LESSON，此前**零读者**）。
+       ⚠️ 三块内容都是**空容器**：内容由 `qol.renderHelp()` 灌。
+       ⚠️ 按 Esc 会关它（Q1 的 Escape 分层里，help 排在 confirm 之后、浮层之前）。 -->
+  <div class="help-layer" id="inkHelp" hidden>
+    <div class="help-card">
+      <div class="help-head">
+        <h2>键位与门道</h2>
+        <small>按 Esc 关闭</small>
+        <button class="ink-x" id="inkHelpClose" title="关闭（Esc）">✕</button>
+      </div>
+      <div class="help-sec">
+        <h3>键盘</h3>
+        <div class="help-cols" id="inkHelpKeys"></div>
+      </div>
+      <div class="help-sec">
+        <h3>鼠标</h3>
+        <div class="help-cols" id="inkHelpMouse"></div>
+      </div>
+      <div class="help-sec">
+        <h3>观井初课</h3>
+        <div id="inkHelpLesson"></div>
+      </div>
+    </div>
+  </div>
 </div>
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
 <script type="module" src="./src/inkbox/main.js"></script>

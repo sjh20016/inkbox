@@ -56,6 +56,9 @@ jobs:
       - name: 表现层回归（D7 FX / 记挂 / 关系图 / 战争线）
         run: npm run test:presentation
 
+      - name: UX/QoL 填缝包回归（QOL_PASS1 · Escape 分层 / 折叠 / 偏好白名单 / 模拟纯度门禁）
+        run: npm run test:qol
+
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
         run: npm run test:render3d
 

@@ -75,6 +75,7 @@ const FILES = [
   'scripts/inkbox-three-realms.mjs',
   'scripts/inkbox-presentation.mjs',
   'scripts/inkbox-view.mjs',
+  'scripts/inkbox-qol-check.mjs',
   'scripts/inkbox-render3d.mjs',
   'scripts/inkbox-render3d-browser.mjs',
   // ⚠️ 这个脚本用外部 Playwright（`INKBOX_PLAYWRIGHT`），本机默认装不到 ⇒ 它是**可选** QA。
@@ -380,6 +381,41 @@ function removeOutputDirectory() {
   if (fs.existsSync(absoluteOutput)) throw new Error(`旧发布目录未能移除：${absoluteOutput}`);
 }
 
+function removeStageDirectory() {
+  const absoluteDist = path.resolve(DIST);
+  const absoluteStage = path.resolve(STAGE);
+  if (!absoluteStage.startsWith(`${absoluteDist}${path.sep}`)) {
+    throw new Error(`拒绝清理发布目录范围外路径：${STAGE}`);
+  }
+
+  let removalError = null;
+  try {
+    fs.rmSync(absoluteStage, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  } catch (error) {
+    removalError = error;
+  }
+
+  // Windows may transiently retain copied files (for example, while an indexer
+  // has them open). Use the same guarded PowerShell fallback as the release dir.
+  if (fs.existsSync(absoluteStage) && process.platform === 'win32') {
+    const script = [
+      "$target = [System.IO.Path]::GetFullPath($env:INKBOX_PACKAGE_STAGE)",
+      "$dist = [System.IO.Path]::GetFullPath($env:INKBOX_PACKAGE_DIST) + [System.IO.Path]::DirectorySeparatorChar",
+      'if (-not $target.StartsWith($dist, [System.StringComparison]::OrdinalIgnoreCase)) { throw "Refusing to remove outside dist: $target" }',
+      'Remove-Item -LiteralPath $target -Recurse -Force -ErrorAction Stop',
+    ].join('; ');
+    const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
+      encoding: 'utf8',
+      windowsHide: true,
+      env: { ...process.env, INKBOX_PACKAGE_STAGE: absoluteStage, INKBOX_PACKAGE_DIST: absoluteDist },
+    });
+    if (result.status !== 0) throw new Error(result.error?.message || result.stderr || removalError?.message || '无法清理打包暂存目录');
+  }
+  if (fs.existsSync(absoluteStage)) {
+    throw new Error(`打包暂存目录未能移除：${absoluteStage}${removalError ? ` (${removalError.message})` : ''}`);
+  }
+}
+
 try {
   for (const relative of FILES) copyRelative(relative);
   for (const relative of DIRECTORIES) copyRelative(relative);
@@ -442,5 +478,5 @@ try {
   console.error(error?.stack || String(error));
   process.exitCode = 1;
 } finally {
-  fs.rmSync(STAGE, { recursive: true, force: true });
+  removeStageDirectory();
 }

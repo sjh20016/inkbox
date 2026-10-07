@@ -23,6 +23,11 @@ import { REALMS } from '../src/inkbox/core/cultivation.js';
 // **从模块读、不在断言里手抄五个词**——那五个词是考古定名（06 册 §5.2），
 // 手抄一份就等于给自己造第二个真相，将来改名时断言会指着旧名字绿着。
 import { ROUTE_LABEL, SOUL_ROUTES, SOUL_ROUTE_POSSESS } from '../src/inkbox/sim/reincarnation.js';
+// QOL_PASS1（11c 节）：编年史的折叠上限。**从模块读、不在断言里手抄 20**——
+// 那个数字与 `refreshChroniclePanel` 里 `foldState(...)` 的实参必须永远是同一个，
+// 手抄一份就等于给自己造第二个真相（本项目已经因此红过一次：标签按 12 算、
+// 实际显示 20，按钮多报了 8 条）。
+import { CHRONICLE_PANEL_LIMIT } from '../src/inkbox/ui/railPanels.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -251,6 +256,11 @@ const KEYS = {
   digit1: { key: '1', code: 'Digit1', vk: 49 },
   digit6: { key: '6', code: 'Digit6', vk: 54 },
   space: { key: ' ', code: 'Space', vk: 32 },
+  // QOL_PASS1：Q1 的 Escape 分层与 Q31 的「? 帮助」都要真的按下去才算数。
+  // ⚠️ `?` 用 `key: '?'`（而不是 `key:'/'` + Shift）——真实键盘上 Shift+/ 送出的
+  //    正是 `e.key === '?'`，而 `main.js` 的判据就是 `e.key === '?'`。两者一致。
+  escape: { key: 'Escape', code: 'Escape', vk: 27 },
+  question: { key: '?', code: 'Slash', vk: 191 },
 };
 
 async function key(cdp, name, modifiers = 0) {
@@ -1811,10 +1821,12 @@ async function main() {
       `${upperPanel.meta} vs 世界 ${upperPanel.pop}/${upperPanel.sect}/${upperPanel.arrived}`);
     // 这一条**能红**：上界有大事/名册却渲染出 0 行 ⇒ 接线断了；
     // 上界什么都没有时，必须给出那句说明而不是一片空白。
-    check('上界那块渲染了内容（有大事/名册行；空的时候给出那句「还没有人飞升」）',
+    // ⚠️ 2026 QoL 填缝包（Q27）把空状态文案统一成**人话**（委托书点名的措辞），
+    //    从「还没有人飞升」改成「此界尚无人飞升。凡间有人飞升之后，这里会记下他。」
+    check('上界那块渲染了内容（有大事/名册行；空的时候给出那句「此界尚无人飞升」）',
       (upperPanel.msCount > 0 || upperPanel.arrCount > 0)
         ? upperPanel.rows > 0
-        : /还没有人飞升/.test(upperPanel.text),
+        : /此界尚无人飞升/.test(upperPanel.text),
       `名册 ${upperPanel.arrCount} · 大事 ${upperPanel.msCount} · 渲染 ${upperPanel.rows} 行`);
 
     // ②' 上界**生态账本**（D6-2 工程包 E）：同一行上追加了「生态 生 / 亡」两项。
@@ -2391,6 +2403,534 @@ async function main() {
     check('共线被拒时要发得出声（提示里说明「太小」）',
       /太小/.test(collinear.hint),
       `提示「${collinear.hint}」`);
+
+    // ── 11c. QoL 填缝包（QOL_PASS1 · 玩家体验）─────────────────────
+    // 这一段是「玩家体验填缝包」在**真浏览器**里的唯一验收：Q1 的 Escape 分层、
+    // Q2 的输入框保护、Q21 的未保存保护，只有在真 DOM + 真键盘事件下才算数
+    // ——`test:qol` 那些纯模块断言证明不了「按下去会发生什么」。
+    // ⚠️ 本段**绝不 `newWorld`**：11 节已经开过一局，而这台 8 GB 机器上第四次开天
+    //    会把浏览器拖到 CDP 超时（见 10f 的注释）。直接复用 11b 留下的那个世界。
+    section('11c. QoL 填缝包（Escape 分层 / 帮助 / 工具状态 / 未保存保护）');
+
+    const qolBase = await cdp.js(`
+      const s = window.inkbox;
+      s.setSpeed(0);
+      s.selection = null;
+      s.selectPath = null;
+      s.qol.closeHelp();
+      s.qol.closeConfirm(false);
+      const insp = document.getElementById('inkInspect');
+      if (insp) insp.classList.remove('on');
+      s.dirty = true;
+      return { seed: s.world.seed >>> 0, day: s.world.day, entities: s.world.entities.length };
+    `);
+    check('QoL 段起手：复用 11b 的世界、时间已停、UI 现场已清',
+      qolBase.seed === 424242 && typeof qolBase.day === 'number',
+      `seed=${qolBase.seed} day=${qolBase.day} 实体=${qolBase.entities}`);
+    await sleep(250);
+
+    // ── Q31：按 `?` 开帮助层 ─────────────────────────────────────
+    await key(cdp, 'question');
+    const helpOn = await cdp.js(`
+      const layer = document.getElementById('inkHelp');
+      return {
+        open: window.inkbox.qol.helpOpen(),
+        hidden: layer.hidden,
+        on: layer.classList.contains('on'),
+        rows: document.querySelectorAll('#inkHelpKeys .help-row').length,
+        mouse: document.querySelectorAll('#inkHelpMouse .help-row').length,
+        lesson: ((document.getElementById('inkHelpLesson') || {}).textContent || '').trim().length,
+      };
+    `);
+    check('Q31 按 `?` 真的打开了快捷键帮助层',
+      helpOn.open === true && helpOn.hidden === false && helpOn.on === true,
+      `open=${helpOn.open} hidden=${helpOn.hidden} on=${helpOn.on}`);
+    check('Q31 帮助层里列了快捷键与鼠标操作（不是空壳）',
+      helpOn.rows >= 5 && helpOn.mouse >= 2,
+      `键 ${helpOn.rows} 条 · 鼠标 ${helpOn.mouse} 条`);
+    check('Q31 帮助层复用了原作的「门道」（FIRST_LESSON 进了帮助层）',
+      helpOn.lesson > 10, `门道正文 ${helpOn.lesson} 字`);
+    await shot(cdp, '11c-help');
+
+    // ── Q1：Escape 分层关闭（本段最核心的一组）────────────────────
+    // 先只开帮助层，按一下 Escape，它必须关掉。
+    await key(cdp, 'escape');
+    const esc1 = await cdp.js(`
+      return { help: window.inkbox.qol.helpOpen(),
+               confirm: window.inkbox.qol.confirmOpen() };
+    `);
+    check('Q1 只有帮助层开着时，Escape 关掉它',
+      esc1.help === false, `help=${esc1.help}`);
+
+    // 再把**两层**同时打开：确认条 + 帮助层。
+    // `ESCAPE_ORDER` = confirm → help → float → realmView → selection → inspect，
+    // 所以第一下 Escape 必须先关**确认条**，而帮助层要**原封不动**。
+    // 这条断言就是「逐次发送 Escape，每次只关最上层」的字面落实。
+    await cdp.js(`
+      const s = window.inkbox;
+      window.__qolOk = 0;
+      window.__qolCancel = 0;
+      s.qol.confirm({
+        text: 'QoL 分层测试：确认条 + 帮助层同时开着',
+        okLabel: '仍然继续',
+        cancelLabel: '先留着',
+        onOk: function () { window.__qolOk = window.__qolOk + 1; },
+        onCancel: function () { window.__qolCancel = window.__qolCancel + 1; },
+      });
+      return true;
+    `);
+    await key(cdp, 'question');
+    const layered = await cdp.js(`
+      return { confirm: window.inkbox.qol.confirmOpen(),
+               help: window.inkbox.qol.helpOpen() };
+    `);
+    check('Q1 分层前提成立：确认条与帮助层同时开着',
+      layered.confirm === true && layered.help === true,
+      `confirm=${layered.confirm} help=${layered.help}`);
+
+    await key(cdp, 'escape');
+    const esc2 = await cdp.js(`
+      return { confirm: window.inkbox.qol.confirmOpen(),
+               help: window.inkbox.qol.helpOpen(),
+               ok: window.__qolOk, cancel: window.__qolCancel };
+    `);
+    check('Q1 ★ 两层同开时，第一下 Escape **只**关确认条（帮助层原封不动）',
+      esc2.confirm === false && esc2.help === true,
+      `confirm=${esc2.confirm} help=${esc2.help}`);
+    check('Q1 关确认条走的是「取消」分支（绝不顺手执行 onOk）',
+      esc2.cancel === 1 && esc2.ok === 0,
+      `cancel=${esc2.cancel} ok=${esc2.ok}`);
+
+    await key(cdp, 'escape');
+    const esc3 = await cdp.js(`
+      return { help: window.inkbox.qol.helpOpen(),
+               confirm: window.inkbox.qol.confirmOpen() };
+    `);
+    check('Q1 第二下 Escape 才轮到帮助层',
+      esc3.help === false && esc3.confirm === false,
+      `help=${esc3.help} confirm=${esc3.confirm}`);
+
+    // 一层都没开的时候，Escape 必须**什么都不做**。
+    // 这是「不在这张表里的东西它一律不碰」的反证：不重置世界、不改速度、不换工具。
+    const idleBefore = await cdp.js(`
+      const s = window.inkbox;
+      return { seed: s.world.seed >>> 0, day: s.world.day, speed: s.speedIndex, tool: s.toolId };
+    `);
+    await key(cdp, 'escape');
+    const idleAfter = await cdp.js(`
+      const s = window.inkbox;
+      return { seed: s.world.seed >>> 0, day: s.world.day, speed: s.speedIndex, tool: s.toolId };
+    `);
+    check('Q1 ★ 一层都没开时，Escape 不产生任何副作用（世界 / 速度 / 工具都不动）',
+      JSON.stringify(idleBefore) === JSON.stringify(idleAfter),
+      `${JSON.stringify(idleBefore)} → ${JSON.stringify(idleAfter)}`);
+
+    // ── Q33：帮助入口是常驻的 ────────────────────────────────────
+    await cdp.js(`document.getElementById('inkBtnHelp').click(); return true;`);
+    await sleep(150);
+    const helpViaBtn = await cdp.js(`return window.inkbox.qol.helpOpen();`);
+    check('Q33 「? 帮助」按钮是常驻入口（新手引导结束后仍能再打开）',
+      helpViaBtn === true, `open=${helpViaBtn}`);
+    await cdp.js(`document.getElementById('inkHelpClose').click(); return true;`);
+    await sleep(150);
+    const helpViaClose = await cdp.js(`return window.inkbox.qol.helpOpen();`);
+    check('Q33 帮助层里的「关闭」按钮能关掉它',
+      helpViaClose === false, `open=${helpViaClose}`);
+
+    // ── Q2：输入框快捷键保护 ─────────────────────────────────────
+    // 焦点在种子输入框里时按 `g`，网格**不许**被切走。
+    // ⚠️ 后面紧跟一条**反证**：焦点移开后 `g` 必须照常生效——否则上面那条
+    //    可能只是因为 `g` 整个坏了，而不是因为保护生效了（假绿）。
+    const grid0 = await cdp.js(`
+      document.getElementById('inkSeedInput').focus();
+      return { grid: document.getElementById('inkBtnGrid').classList.contains('on'),
+               active: document.activeElement.id };
+    `);
+    check('Q2 前提：焦点确实落在种子输入框上',
+      grid0.active === 'inkSeedInput', `activeElement=${grid0.active}`);
+    await key(cdp, 'g');
+    const grid1 = await cdp.js(`return document.getElementById('inkBtnGrid').classList.contains('on');`);
+    check('Q2 ★ 焦点在输入框里时，`g` 不得切换网格',
+      grid1 === grid0.grid, `网格 ${grid0.grid} → ${grid1}`);
+    await cdp.js(`document.getElementById('inkSeedInput').blur(); return true;`);
+    await key(cdp, 'g');
+    const grid2 = await cdp.js(`return document.getElementById('inkBtnGrid').classList.contains('on');`);
+    check('Q2 反证：焦点移开后 `g` 照常切换网格（上一条不是「g 整个失灵」）',
+      grid2 === !grid0.grid, `网格 ${grid1} → ${grid2}`);
+    await key(cdp, 'g');   // 复原
+
+    // ── Q5 / Q32：工具状态行与快捷键 tooltip ─────────────────────
+    const toolState = await cdp.js(`
+      const s = window.inkbox;
+      const out = {};
+      const read = function () {
+        return ((document.getElementById('inkToolState') || {}).textContent || '').trim();
+      };
+      s.selectTool('raise');      out.raise = read();
+      s.selectTool('viewUpper');  out.viewUpper = read();
+      s.selectTool('inspect');    out.inspect = read();
+      return out;
+    `);
+    check('Q5 笔刷类工具的状态行带半径（抬山 · N）',
+      /^抬山 · \d+$/.test(toolState.raise), `「${toolState.raise}」`);
+    check('Q5 ★ 划选类工具只报名字、不谎报半径（上界视界没有「半径」可言）',
+      toolState.viewUpper === '上界视界' && toolState.viewUpper.indexOf('·') < 0,
+      `「${toolState.viewUpper}」`);
+    check('Q5 点选类工具也带半径（检视 · N）',
+      /^检视 · \d+$/.test(toolState.inspect), `「${toolState.inspect}」`);
+
+    // ── Q32：撤销按钮的 tooltip 带快捷键 ─────────────────────────
+    // ⚠️ 必须**在有东西可撤的时候**读。没有可撤时按钮的 tooltip 是
+    //    「没有可撤销的操作」——那本身是句好提示（Q4/Q7 要的），但证明不了
+    //    Q32 要的「tooltip 带快捷键」。所以先用真指针画一笔：pointerdown 里
+    //    有 `history.begin()`，抬手时 `history.end()` 提交，这样才有可撤的东西。
+    //    （第 4 节的同一套手法：按下 → 睡够让限速笔刷真的落笔 → 抬手。）
+    await cdp.js(`window.inkbox.selectTool('raise'); window.inkbox.setBrush(1); return true;`);
+    await sleep(120);
+    const strokeAt = { x: left + width * 0.5, y: top + height * 0.66 };
+    await mouseMove(cdp, strokeAt.x, strokeAt.y);
+    await mouseDown(cdp, strokeAt.x, strokeAt.y);
+    await sleep(320);
+    await mouseUp(cdp, strokeAt.x, strokeAt.y);
+    await sleep(250);
+    const undoInfo = await cdp.js(`
+      const s = window.inkbox;
+      const btn = document.getElementById('inkBtnUndo');
+      return {
+        depth: (s.history && s.history.stack) ? s.history.stack.length : 0,
+        title: btn.title || '', disabled: btn.disabled,
+      };
+    `);
+    check('Q7 画了一笔之后，撤销按钮变为可用（状态跟着 History 走）',
+      undoInfo.depth > 0 && undoInfo.disabled === false,
+      `可撤 ${undoInfo.depth} 步 · disabled=${undoInfo.disabled}`);
+    check('Q32 ★ 撤销按钮的 tooltip 写明快捷键（Ctrl+Z）与可撤步数',
+      /Ctrl\+Z/.test(undoInfo.title), `「${undoInfo.title}」`);
+
+    // ── Q34：世界信息极简入口 ────────────────────────────────────
+    const info = await cdp.js(`
+      const box = document.getElementById('inkWorldInfo');
+      return {
+        seed: ((document.getElementById('inkInfoSeed') || {}).textContent || '').trim(),
+        preset: ((document.getElementById('inkInfoPreset') || {}).textContent || '').trim(),
+        renderer: ((document.getElementById('inkInfoRenderer') || {}).textContent || '').trim(),
+        title: box.title || '',
+        raw: (box.textContent || '').trim(),
+      };
+    `);
+    check('Q34 世界信息报了 seed，且与真实种子一致',
+      /seed\s*424242/.test(info.seed), `「${info.seed}」`);
+    check('Q34 世界信息报了幅面与渲染器',
+      info.preset.length > 0 && info.renderer.length > 0,
+      `幅面「${info.preset}」· 渲染「${info.renderer}」`);
+    check('Q34 世界信息**不**暴露 SHA / dirty 这类内部标记（只给玩家看得懂的三样）',
+      !/sha|dirty/i.test(info.raw) && !/[0-9a-f]{8,}/i.test(info.raw),
+      `「${info.raw}」`);
+    check('Q34 世界信息可点击复制种子（tooltip 说明了这件事）',
+      /种子/.test(info.title), `「${info.title}」`);
+    // 真的点一下：`copySeed` 在无剪贴板权限时会退化成一句提示，
+    // 两条路都必须**发得出声**（静默失败 = 玩家以为复制成功了）。
+    await cdp.js(`document.getElementById('inkWorldInfo').click(); return true;`);
+    const seedHint = await waitForHint(cdp, /种子/, 2500);
+    check('Q34 点世界信息会就「种子」发一句反馈（复制成功或明确说明不可用）',
+      /种子/.test(seedHint), `「${seedHint}」`);
+
+    // ── Q6：时间速度的文字状态 ───────────────────────────────────
+    const speedState = await cdp.js(`
+      const s = window.inkbox;
+      const read = function () {
+        return ((document.getElementById('inkSpeedState') || {}).textContent || '').trim();
+      };
+      s.setSpeed(0); const paused = read();
+      s.setSpeed(3); const running = read();
+      s.setSpeed(0);
+      return { paused: paused, running: running };
+    `);
+    check('Q6 暂停时状态行说「岁月已停」',
+      /岁月已停/.test(speedState.paused), `「${speedState.paused}」`);
+    check('Q6 运行时状态行说「岁月 · 档位名」（与暂停态是同一句话的两个形态）',
+      /岁月\s*·/.test(speedState.running), `「${speedState.running}」`);
+
+    // ── Q8：视界开着时浮出「关闭视界」 ───────────────────────────
+    const closeHiddenClosed = await cdp.js(`
+      const s = window.inkbox;
+      s.selection = null; s.selectPath = null; s.dirty = true;
+      return document.getElementById('inkBtnCloseView').hidden;
+    `);
+    await sleep(200);
+    check('Q8 没有视界时，「关闭视界」按钮是收起来的',
+      closeHiddenClosed === true, `hidden=${closeHiddenClosed}`);
+
+    // 真划一扇视界出来（三角形套索，非共线 ⇒ 必定开窗；手法与 11b ①-1 相同）
+    await cdp.js(`
+      const s = window.inkbox;
+      s.selectTool('viewUpper');
+      s.selection = null; s.selectPath = null;
+      s.camera.zoom = 8; s.camera.clamp(); s.dirty = true;
+      return true;
+    `);
+    await sleep(250);
+    const qa = { x: left + width * 0.42, y: top + height * 0.42 };
+    const qb = { x: left + width * 0.58, y: top + height * 0.42 };
+    const qc = { x: left + width * 0.50, y: top + height * 0.58 };
+    const qPts = [
+      qa, { x: (qa.x + qb.x) / 2, y: qa.y }, qb,
+      { x: (qb.x + qc.x) / 2, y: (qb.y + qc.y) / 2 }, qc,
+      { x: (qc.x + qa.x) / 2, y: (qc.y + qa.y) / 2 },
+    ];
+    await mouseMove(cdp, qPts[0].x, qPts[0].y);
+    await mouseDown(cdp, qPts[0].x, qPts[0].y);
+    for (let k = 1; k < qPts.length; k += 1) await mouseMove(cdp, qPts[k].x, qPts[k].y);
+    await sleep(80);
+    await mouseUp(cdp, qPts[qPts.length - 1].x, qPts[qPts.length - 1].y);
+    await sleep(300);
+    const closeShown = await cdp.js(`
+      const s = window.inkbox;
+      const btn = document.getElementById('inkBtnCloseView');
+      return { sel: !!s.selection, hidden: btn.hidden, on: btn.classList.contains('on') };
+    `);
+    check('Q8 ★ 视界开着时，「关闭视界」按钮浮出来（玩家找得到关的入口）',
+      closeShown.sel === true && closeShown.hidden === false,
+      `selection=${closeShown.sel} hidden=${closeShown.hidden} on=${closeShown.on}`);
+    await shot(cdp, '11c-close-view');
+
+    await cdp.js(`document.getElementById('inkBtnCloseView').click(); return true;`);
+    await sleep(300);
+    const afterCloseBtn = await cdp.js(`
+      const s = window.inkbox;
+      return { sel: !!s.selection,
+               hidden: document.getElementById('inkBtnCloseView').hidden,
+               hint: ((document.getElementById('inkHint') || {}).textContent || '').trim() };
+    `);
+    check('Q8 点「关闭视界」真的关掉视界（收敛到唯一那条 closeRealmView）',
+      afterCloseBtn.sel === false && afterCloseBtn.hidden === true,
+      `selection=${afterCloseBtn.sel} hidden=${afterCloseBtn.hidden}`);
+    check('Q8 关闭时说清了「关的是哪一界的视界」（不静默）',
+      /已关闭.*视界/.test(afterCloseBtn.hint), `「${afterCloseBtn.hint}」`);
+
+    // ── Q41：滚轮只在地图区域控制缩放 ────────────────────────────
+    // 布局是 `.main` 三列网格（左栏 | stage | 右栏），画布只占中间那一列，
+    // 滚轮监听器也只挂在 `#inkCanvas` 上——所以「在右栏上滚」这条事件链
+    // **根本走不到**画布。这里把它跑成一条真断言，免得将来有人把监听器
+    // 挪到 `window` / `.main` 上（那时滚动侧栏会把地图一起拉走，且不报错）。
+    const q41Rail = await cdp.js(`
+      const r = document.querySelector('.rail.right').getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+    `);
+    const zoomBefore = await cdp.js(`return window.inkbox.camera.zoom;`);
+    await wheel(cdp, q41Rail.x, q41Rail.y, -240);
+    const zoomAfterRail = await cdp.js(`return window.inkbox.camera.zoom;`);
+    check('Q41 ★ 在右栏上滚滚轮**不**缩放地图（否则想翻侧栏却把地图拉走了）',
+      Math.abs(zoomAfterRail - zoomBefore) < 1e-9,
+      `zoom ${zoomBefore} → ${zoomAfterRail}`);
+
+    // 反证：在地图上滚必须**照常**缩放——否则上一条只是因为滚轮整个坏了。
+    await wheel(cdp, left + width * 0.5, top + height * 0.5, -240);
+    const zoomAfterMap = await cdp.js(`return window.inkbox.camera.zoom;`);
+    check('Q41 反证：在地图上滚滚轮照常缩放（上一条不是「滚轮整个失灵」）',
+      zoomAfterMap > zoomAfterRail,
+      `zoom ${zoomAfterRail} → ${zoomAfterMap}`);
+
+    // ── Q21：未保存保护（本段最要紧的一条）───────────────────────
+    // 场景：玩家**存档**（dirty 清零）→ 真的改世界 → 点「重新开天」。
+    // 原先 `applyTool` 从不置 dirty，于是确认条根本不出现，改动静默消失。
+    const guard = await cdp.js(`
+      const s = window.inkbox;
+      s.setSpeed(0);
+      s.qol.resetDirty();
+      const clean = s.qol.isDirty();
+      // 真雕一刀：抬山工具 + 合法落点，走**正式**的 applyTool 路径
+      // （不是直接调 markDirty——那会变成「用 API 测 API」）。
+      s.selectTool('raise');
+      s.hoverTile = { x: Math.floor(s.world.w * 0.5), y: Math.floor(s.world.h * 0.5) };
+      s.applyTool(true);
+      return { clean: clean, afterEdit: s.qol.isDirty(),
+               seed: s.world.seed >>> 0, day: s.world.day };
+    `);
+    check('Q21 起手是干净的（存档之后 dirty 应为 false）',
+      guard.clean === false, `dirty=${guard.clean}`);
+    check('Q21 ★ 玩家雕了一刀之后世界必须变「脏」（否则保护是空的）',
+      guard.afterEdit === true, `dirty=${guard.afterEdit}`);
+
+    await cdp.js(`document.getElementById('inkBtnRegen').click(); return true;`);
+    await sleep(300);
+    const asked = await cdp.js(`
+      const s = window.inkbox;
+      return {
+        open: s.qol.confirmOpen(),
+        text: ((document.getElementById('inkConfirmText') || {}).textContent || '').trim(),
+        ok: ((document.getElementById('inkConfirmOk') || {}).textContent || '').trim(),
+        cancel: ((document.getElementById('inkConfirmCancel') || {}).textContent || '').trim(),
+        seed: s.world.seed >>> 0, day: s.world.day,
+      };
+    `);
+    check('Q21 ★ 世界脏着点「重新开天」时，先弹确认条而不是直接开天',
+      asked.open === true, `open=${asked.open} 文案「${asked.text}」`);
+    check('Q21 确认条说清了「会丢掉什么」（未保存的变化）',
+      /未保存|变化/.test(asked.text), `「${asked.text}」`);
+    check('Q21 确认条出现时世界**还没**被换掉（确认不是马后炮）',
+      asked.seed === guard.seed && asked.day === guard.day,
+      `seed ${guard.seed}→${asked.seed} day ${guard.day}→${asked.day}`);
+
+    await cdp.js(`document.getElementById('inkConfirmCancel').click(); return true;`);
+    await sleep(300);
+    const kept = await cdp.js(`
+      const s = window.inkbox;
+      const btn = document.getElementById('inkBtnRegen');
+      return { open: s.qol.confirmOpen(), seed: s.world.seed >>> 0, day: s.world.day,
+               dirty: s.qol.isDirty(), disabled: btn.disabled,
+               busy: btn.getAttribute('aria-busy') };
+    `);
+    check('Q21 ★ 点「先留着」= 世界原封不动（种子与天数都不变）',
+      kept.open === false && kept.seed === guard.seed && kept.day === guard.day,
+      `open=${kept.open} seed ${guard.seed}→${kept.seed} day ${guard.day}→${kept.day}`);
+    check('Q21 取消之后世界仍然是「脏」的（改动还在，下次开天还会再问）',
+      kept.dirty === true, `dirty=${kept.dirty}`);
+    check('Q39 取消之后「重新开天」按钮回到可用态（不会卡在忙碌里）',
+      kept.disabled === false, `disabled=${kept.disabled} aria-busy=${kept.busy}`);
+
+    // ── Q13 / Q14：最近看过 与 记挂未读数 ────────────────────────
+    const recentPre = await cdp.js(`
+      const s = window.inkbox;
+      const ent = s.world.entities && s.world.entities[0];
+      return { box: document.getElementById('inkRecent').style.display,
+               title: document.getElementById('inkRecentTitle').style.display,
+               entId: ent ? ent.id : null };
+    `);
+    check('Q13 前提：世界里有人可检视，且「最近看过」此刻是空的（空块整体收起）',
+      recentPre.entId !== null && recentPre.box === 'none' && recentPre.title === 'none',
+      `entity=${recentPre.entId} box=「${recentPre.box}」 title=「${recentPre.title}」`);
+
+    await cdp.js(`window.inkbox.showPersonCard(${recentPre.entId}); return true;`);
+    await sleep(250);
+    const recentInfo = await cdp.js(`
+      const rows = Array.from(document.querySelectorAll('#inkRecent [data-recent]'));
+      return {
+        title: document.getElementById('inkRecentTitle').style.display,
+        box: document.getElementById('inkRecent').style.display,
+        rows: rows.length,
+        keys: rows.map(function (r) { return r.dataset.recent; }),
+      };
+    `);
+    check('Q13 ★ 点开一个人之后，「最近看过」那一块浮出来，且记的正是那个人',
+      recentInfo.title === '' && recentInfo.box === '' && recentInfo.rows >= 1
+        && recentInfo.keys[0] === 'mortal:' + recentPre.entId,
+      `标题「${recentInfo.title}」· 行 ${recentInfo.rows} · 键 ${JSON.stringify(recentInfo.keys)}`);
+
+    const watchCount = await cdp.js(`
+      return ((document.getElementById('inkWatchCount') || {}).textContent || '').trim();
+    `);
+    check('Q14 记挂标题带数字，格式是「记挂 · N」（未读优先，否则是人数）',
+      /^记挂 · \d+$/.test(watchCount), `「${watchCount}」`);
+
+    // ── Q28：长列表折叠（先快进出一段编年史，否则列表根本不够长）────
+    await cdp.js(`window.inkbox.setSpeed(5); return true;`);
+    await sleep(4000);
+    await cdp.js(`window.inkbox.setSpeed(0); return true;`);
+    await sleep(400);
+    // ⚠️ 读之前**先手动重画一次**。编年史面板挂在 `setInterval(..., 2500)` 上，
+    //    快进结束的那一刻 DOM 里可能还是上一次刷新的结果（世界已 35 条、面板按
+    //    34 条算的标签）。不重画的话，断言会拿「活的 world」去比「旧的 DOM」，
+    //    红得毫无道理——而且这条断言本来就是**算术题**，两边必须是同一时刻的快照。
+    await cdp.js(`window.inkbox.refreshChronicle(); return true;`);
+    await sleep(200);
+    const foldInfo = await cdp.js(`
+      const s = window.inkbox;
+      const box = document.getElementById('inkChronicle');
+      const ctl = box.querySelector('[data-fold]');
+      return {
+        rendered: box.querySelectorAll('.ink-log').length,
+        chronicle: (s.world.chronicle || []).length,
+        hasCtl: !!ctl,
+        label: ctl ? ctl.textContent.trim() : '',
+      };
+    `);
+    // 面板只取**最后 40 条**（`refreshChroniclePanel` 的 `slice(-40)`），折叠上限是
+    // `CHRONICLE_PANEL_LIMIT`(20)。所以「该不该有折叠控件」与「按钮上写几条」
+    // 都能**精确算出来**——这里拿它当算术题验。
+    // ⚠️ 这正是在守刚修掉的那个 bug：标签若按 12 算，就会写「另有 N+8 条」。
+    const foldTotal = Math.min(foldInfo.chronicle, 40);
+    const shouldFold = foldTotal > CHRONICLE_PANEL_LIMIT;
+    check('Q28 ★ 编年史该不该折叠、以及「另有 N 条」的 N 是否算对',
+      shouldFold
+        ? (foldInfo.hasCtl === true
+          && foldInfo.rendered === CHRONICLE_PANEL_LIMIT
+          && foldInfo.label === `另有 ${foldTotal - CHRONICLE_PANEL_LIMIT} 条 · 展开`)
+        : (foldInfo.hasCtl === false && foldInfo.rendered === foldTotal),
+      `编年史 ${foldInfo.chronicle} 条 · 面板 ${foldTotal} 条 · 渲染 ${foldInfo.rendered} 行 · `
+        + `控件 ${foldInfo.hasCtl}「${foldInfo.label}」`);
+
+    if (shouldFold) {
+      await cdp.js(`
+        const ctl = document.querySelector('#inkChronicle [data-fold]');
+        if (ctl) ctl.click();
+        return true;
+      `);
+      await sleep(300);
+      const expanded = await cdp.js(`
+        const box = document.getElementById('inkChronicle');
+        const ctl = box.querySelector('[data-fold]');
+        return { rendered: box.querySelectorAll('.ink-log').length,
+                 label: ctl ? ctl.textContent.trim() : '' };
+      `);
+      check('Q28 ★ 点「展开」之后编年史真的多出记录（折叠不是摆设）',
+        expanded.rendered === foldTotal && expanded.rendered > foldInfo.rendered,
+        `展开前 ${foldInfo.rendered} 行 → 展开后 ${expanded.rendered} 行（控件「${expanded.label}」）`);
+      // 折回去，免得后面的截图里右栏停在展开态
+      await cdp.js(`
+        const ctl = document.querySelector('#inkChronicle [data-fold]');
+        if (ctl) ctl.click();
+        return true;
+      `);
+      await sleep(200);
+    }
+
+    // ── Q30：收起全部（核心区「世界」不参与）─────────────────────
+    const collapseAll = await cdp.js(`
+      const titles = Array.from(document.querySelectorAll('.rail.right .sec-title'));
+      const btn = document.getElementById('inkBtnCollapseAll');
+      if (!btn) return { n: titles.length, hasBtn: false };
+      btn.click();
+      const after = titles.map(function (t) {
+        return { text: t.textContent.trim(), collapsed: t.classList.contains('collapsed') };
+      });
+      return { n: titles.length, hasBtn: true, after: after };
+    `);
+    check('Q30 右栏有「收起全部」按钮，且一次收起多块分区',
+      collapseAll.hasBtn === true && collapseAll.n >= 3,
+      `${collapseAll.n} 块分区`);
+    const nonCore = (collapseAll.after || []).filter((t) => t.text.indexOf('世界') < 0);
+    const core = (collapseAll.after || []).filter((t) => t.text.indexOf('世界') >= 0);
+    check('Q30 ★ 「收起全部」收起了所有非核心分区',
+      nonCore.length > 0 && nonCore.every((t) => t.collapsed === true),
+      nonCore.map((t) => `${t.text}:${t.collapsed}`).join(' '));
+    check('Q30 ★ 核心区「世界」**不**参与收起（否则界面看着像坏了）',
+      core.every((t) => t.collapsed === false),
+      core.map((t) => `${t.text}:${t.collapsed}`).join(' ') || '(没有核心区标题?)');
+    // 复原，免得最后一张截图里右栏全是折的
+    await cdp.js(`
+      Array.from(document.querySelectorAll('.rail.right .sec-title.collapsed'))
+        .forEach(function (t) { t.click(); });
+      return true;
+    `);
+
+    // ── Q29：UI 偏好白名单（运行时实证）──────────────────────────
+    const prefs = await cdp.js(`
+      const raw = localStorage.getItem('inkbox-ui-prefs-v1');
+      let parsed = null;
+      try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+      return { raw: raw || '', keys: parsed ? Object.keys(parsed) : null };
+    `);
+    check('Q29 UI 偏好写进了 `inkbox-ui-prefs-v1`（点过帮助 / 折过面板就该有这个键）',
+      prefs.raw.length > 0, `raw=${prefs.raw.slice(0, 70)}`);
+    check('Q29 ★ 偏好里**只有**白名单字段（collapsed / helpSeen / folds）',
+      Array.isArray(prefs.keys)
+        && prefs.keys.length > 0
+        && prefs.keys.every((k) => ['collapsed', 'helpSeen', 'folds'].includes(k)),
+      `字段 ${JSON.stringify(prefs.keys)}`);
+    check('Q29 ★ 偏好里没有夹带世界数据（seed / day / entities / selection 一律不许）',
+      !/(seed|"day"|entities|world|selection)/i.test(prefs.raw),
+      `raw=${prefs.raw.slice(0, 140)}`);
 
     // ── 12. 运行时报错总账 ────────────────────────────────
     section('12. 运行时报错');

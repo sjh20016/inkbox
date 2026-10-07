@@ -47,6 +47,12 @@ export class Render3DAdapter {
       productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off',
       geography: artParams.get('geography') !== 'off' && artParams.get('assets') !== 'off' }); }
     catch (error) { this.canvas.remove(); throw error; }
+    // The product and evidence harness await art.comparisonReady before capturing.
+    // Production resolves to candidate without loading the historical snapshot module.
+    this.renderer.art.setComparisonStyle(diagnostics.comparisonStyle).catch(error => {
+      this.artComparisonError = error;
+      if (this.active) console.error('Art comparison initialization failed', error);
+    });
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
     Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
     this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"></label><button data-action="undo">撤销雕刻</button><button data-action="fit">全图</button><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><details><summary>操作 / 性能</summary><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;

@@ -22,21 +22,9 @@ import { generateNetherWorld } from './world/worldgenNether.js';
 import { recomputeRect, flushDirty } from './world/terrain.js';
 import { Life } from './sim/life.js';
 import { UpperLife } from './sim/upperLife.js';
-// 三界面板（Batch 3）要的两样：五路的中文名（**考古定名**，只有这一份）
-// 与「这个人死了之后去哪了」要读的魂路账本/魂池读数。
-// ⚠️ `ROUTE_LABEL` 不在 `necrology.js` 里再抄一份——它已经有 `longrun` 的
-//    键集断言盯着（`inkbox-longrun.mjs:737-745`），多一份真相就是多一个漂移点。
-import { reincarnationStats, ROUTE_LABEL, SOUL_ROUTES, SOUL_ROUTE_POSSESS } from './sim/reincarnation.js';
-// 幽冥鬼魂 / 鬼修的低频 tick（契约 `reports/d5/BATCH2-DESIGN.md` §六）。
-// ⚠️ `stepNether` 收的是**凡间 world**（它要读凡间魂池 `world.souls` 做对账），
-//    不是 `this.nether`——见 `netherLife.js` 里 `stepNether` 的 @param 注释。
-// `netherGhostStats` 是**唯一**的幽冥实体统计口径（契约 §七「Feedback」）：
-//    右栏那行与视界提示行都从它取数，**不在 main.js 里再 filter 一遍
-//    `nether.entities`**——那会出现第二份真相，两边迟早对不上。
-import { netherGhostStats, netherEcoStats, netherItemStats } from './sim/netherLife.js';
-// 上界生态账本的**只读**汇总（D6-2 工程包 E）。与幽冥的 `netherEcoStats` 同款口径：
-// 三界面板上两处都印「生 / 亡」，玩家可以横向对照，账平不平一眼可见。
-import { upperEcoStats } from './world/planes.js';
+// ⚠️ 三界面板要的那几份只读读数（五路中文名 `ROUTE_LABEL` / 幽冥实体口径
+//    `netherGhostStats` / 上界生态账 `upperEcoStats`）已随面板一起搬进
+//    `ui/railPanels.js`，本文件不再 import——见下面 QoL 那段搬迁说明。
 // 凡间鬼影（D6-3 工程包 B）：**只 import 只读汇总**，不 import `stepMortalWraiths`
 // ——推进走 `sim/advance.js` 那个唯一入口（`ADVANCE_PERIODS.wraith`），本文件不驱动它。
 // `wraithStats` 是**唯一**的凡间鬼影统计口径（`sim/wraiths.js`）：右栏那格与
@@ -60,24 +48,17 @@ import { advanceWorld, createAdvanceState } from './sim/advance.js';
 import { computeTerritory } from './sim/territory.js';
 import { artifactStats, artifactPower, describeArtifact, ownerLine } from './sim/artifacts.js';
 import { lineageOf, clanStats } from './sim/family.js';
-import { biographyRows, exportChronicle, chronicleFileName, biographyFileName } from './sim/biography.js';
-// ── 世界可观察性（Batch 1）────────────────────────────────
-// `compileBiography` 是**已经写好、只是没人调**的那一份：此前它只服务导出按钮，
-// 面板上看不到——玩家点一个人只能看到 `biographyRows` 那几行摘要。
-// `attentionOf` / `ATTENTION_NAMES` 同理（「世人注目」0..4，纯派生、不写回实体）。
-// `findEntity` 是活人版的名录查找（死者用 `findDead`）。
-import {
-  compileBiography, attentionOf, ATTENTION_NAMES, displayName, findEntity,
-} from './sim/biography.js';
-import {
-  necrologyList, necrologyStats, findDead, compileDeadBiography,
-  exportNecrology, necrologyFileName,
-} from './sim/necrology.js';
+import { biographyRows, exportChronicle, chronicleFileName } from './sim/biography.js';
+// ⚠️ `compileBiography` / `attentionOf` / `ATTENTION_NAMES` / `displayName` /
+//    `findEntity`，以及史册那套 `necrologyList` / `necrologyStats` / `findDead` /
+//    `compileDeadBiography`，都已随面板一起搬进 `ui/railPanels.js`。
+//    本文件只留导出按钮真正用得到的那几个文件名。
+import { exportNecrology, necrologyFileName } from './sim/necrology.js';
 import { warStats } from './sim/war.js';
 import { History } from './sim/powers.js';
-import {
-  greetOnBoot, reactToTool, busanziTierName, busanziNextStep, busanziRecent,
-} from './sim/busanzi.js';
+// ⚠️ `busanziTierName` / `busanziNextStep` / `busanziRecent` 已随「不算子」面板
+//    搬进 `ui/railPanels.js`；本文件只留开机问候与落笔回话这两个**交互**入口。
+import { greetOnBoot, reactToTool } from './sim/busanzi.js';
 import { TerrainLayer } from './render/terrainLayer.js';
 import { UnitsLayer } from './render/unitsLayer.js';
 import { Camera } from './render/camera.js';
@@ -85,20 +66,17 @@ import { Camera } from './render/camera.js';
 // 删掉这一层模拟结果逐字不变。镜头滑过去之后浮出一个收缩墨环，
 // 给「找到某人 / 某宗门」一个落点感（墨环属于表现层，**不属于 Camera**）。
 import { drawFocusPulses, drawWarLines, spawnFocusPulse, updateFocusPulses } from './render/overlayLayer.js';
-// 人物局部关系图（D7-F）：**纯 SVG 字符串生成器**，零 import、零副作用、零 RNG。
-// 它只吃「已解析好的邻居列表」，世界怎么查、点谁跳到哪全在本文件（见 showPersonCard）。
-import { relationGraphSvg, RELATION_GRAPH_MAX } from './render/relationGraph.js';
+// ⚠️ 人物局部关系图（D7-F）的生成器 `relationGraphSvg` 与它的上限常量
+//    `RELATION_GRAPH_MAX`，已随人物卡面板搬进 `ui/railPanels.js`。
 // 多位面表现舞台（D8-C）：一帧收齐三界（凡间 / 上界 / 幽冥）的 transient 表现
 // 事件 → 按位面路由成短命特效 → 分发给主画布与视界窗。**纯表现**——删掉它模拟
 // 结果逐字不变，也不抽任何 RNG。收队列 / 更新 / 画哪一界全在舞台里，本文件不写三遍。
 import { PresentationStage } from './render/presentationStage.js';
 // 「记挂」观察者状态（D7-E，见 sim/watch.js）。这是**玩家的**观察列表——
 // 存在 `world.watch`（世界级字段），**不挂实体、不参与模拟、不抽 RNG**。
-// 面板只做三件事：增删、显示状态、点行导航。删掉这块 UI，模拟结果逐字不变。
-import {
-  WATCH_CAP, isWatched, toggleWatch, watchRows, watchHasNews,
-  ensureWatch, resolveWatch, markWatchRead, markAllWatchRead,
-} from './sim/watch.js';
+// ⚠️ 面板本体（增删 / 状态 / 点行导航）已搬进 `ui/railPanels.js`，本文件不再
+//    import `sim/watch.js`：**未读计数**由 `ui/qol.js` 直接向 `watchNewsCount`
+//    取数，已读位仍然只由 `world.watch[].lastReadDay` 这一处持有（不建 UI 侧复本）。
 // 表现事件的模拟侧发射口——玩家落笔（tool-impact）由本文件直接发。
 // ⚠️ 队列的**抽取端**已收进 `render/presentationStage.js`（D8-C）：本文件不再
 //    自己 `drainRuntimeEvents`，否则三界要写三遍（见该文件头注释）。
@@ -121,10 +99,8 @@ import { getRealmViewState } from './ui/realmViewState.js';
 // 视界的**穿透检视**（D8-F）：点开窗里的东西看它是什么。**只读**——本模块只产出
 // 字符串行，不暴露任何改状态的接口（「D8 仍然是观察」是结构性的，见其头注释）。
 import { pickRealmSubject, realmInspectRows, resolvePlaneSubject, planeSubjectInspectRows } from './ui/realmInspector.js';
-// 跨界**追迹**（D8-G）：点一条「已入上界 / 已落幽冥」的记挂，算出他在哪一界、
-// 同坐标在哪，并摊出一条只针对他的「跨界来历」链。**纯逻辑、够不到 `openRifts`**
-// ——「引路，不代替玩家开门」因此是结构性的（见其头注释）。
-import { traceTargetOf, crossRealmChain } from './ui/realmTrace.js';
+// ⚠️ 跨界**追迹**（D8-G）的 `traceTargetOf` 随「记挂」点行导航搬进
+//    `ui/railPanels.js`；`crossRealmChain` 在搬迁之前就已无人调用，一并清掉。
 // 视界的**绘制层**（D8-B 从本文件拔出去）：裁剪 / 贴另一界地形 / 画人与宗门 / 边框。
 // ⚠️ 它不 import `sim/*`——够不到模拟，就不可能改模拟。
 import { drawRealmView, drawSelectHint } from './render/realmViewLayer.js';
@@ -135,6 +111,27 @@ import {
 import {
   CAUSAL_TOOL_IDS, createInterventionOutcome, measureChangedCells,
 } from './sim/interventionFeedback.js';
+// ── QoL 填缝包（QOL_PASS1）──────────────────────────────────────────
+// 右栏观察面板的**实现**已搬进 `ui/railPanels.js`（本轮从本文件搬出去约 750 行，
+// 语义一字未改，只是把 `this.` 换成 `sb.`）。本文件只留一行委托：
+//   `refreshChronicle() { return refreshChroniclePanel(this); }`
+// 为什么搬：`npm run test:view` 的 V6 ④ 钉着 `main.js ≤ 3084 行`（D7 硬指标），
+// 而本轮要往主程序里加几十处 QoL 接线——搬完之后主程序**比搬迁前更小**。
+// ⚠️ 这是本轮唯一「顺手做」的重构，而它本身不是新功能：
+//    删掉 `ui/railPanels.js`、把这些函数贴回本文件，就等于回到改动前。
+import {
+  refreshChroniclePanel, refreshMilestonesPanel, refreshNotablesPanel,
+  showPersonCardPanel, hidePersonCardPanel, buildRelationSvgPanel,
+  bindRelationGraphPanel, refreshWatchPanel, openWatchRowPanel,
+  refreshThreeRealmsPanel, refreshUpperRealmPanel, refreshNetherRealmPanel,
+  refreshNecrologyPanel, setNecroSortPanel, showDeadBiographyPanel,
+  hideDeadBiographyPanel, downloadTextPanel, refreshBusanziPanel,
+  refreshSlotsPanel, setupSectionTogglesPanel, refreshRecentPanel,
+} from './ui/railPanels.js';
+// QoL 控制器（DOM 侧）：Escape 分层 / UI 偏好 / 最近看过 / dirty / 确认条 /
+// Toast 定位 / 忙碌按钮 / 世界信息。**判定**在 `ui/qolState.js`（零 import 纯逻辑），
+// 本文件只跟这个控制器说话——不直接 import `qolState.js`，免得判定散回主程序。
+import { createQol } from './ui/qol.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -154,213 +151,6 @@ function setTextIfChanged(element, text) {
 /** 各阶境界的横条颜色，与小人身上的束带/灵光保持同一套色（按 `REALMS` 逐档对应） */
 const REALM_BAR = ['#a8b6bd', '#8fa7b8', '#c8a44e', '#8fb0d8', '#c98fd8', '#e8c860', '#b98cff'];
 
-/** 史册面板一屏渲染多少条（全 800 条塞进 DOM 只会让侧栏滚不动） */
-const NECRO_PANEL_LIMIT = 30;
-
-/** 大事记面板一屏渲染多少条（账本本身封顶在 World.MILESTONE_CAP = 600） */
-const MILESTONE_PANEL_LIMIT = 12;
-
-// ── 三界面板（Batch 3）────────────────────────────────────────
-//
-// 这一块的**全部内容都是现成读数**：上界的 `entities`/`factions`/`arrivedLog`/
-// `milestones`，幽冥的 `soulLog`/`souls`/`reincarnationStats` 早就在跑，
-// 缺的只是出口——Batch 3 之前 `grep -n "上界\|幽冥" inkbox.html` 是 **0 命中**。
-// 所以这里只有取数上限与显示色，**一个后台状态都没有**。
-//
-// 上限都取「一屏看得完」的量级（不是为了省 CPU：这些数组本来就只有几十上百条）。
-const UPPER_ARRIVAL_LIMIT = 4;
-const UPPER_MILESTONE_LIMIT = 4;
-const SOUL_POOL_LIMIT = 5;
-const SOUL_BACK_LIMIT = 4;
-
-/**
- * 五路的显示顺序。**从 `SOUL_ROUTES` 派生，不另抄一份字面量**——
- * 抄一份的话，将来有人加了第六路，条形图会**静默地**少画一根，
- * 而账本里那个数照样在涨（故障类 1：字段存在 ≠ 字段生效）。
- */
-const SOUL_ROUTE_ORDER = Object.values(SOUL_ROUTES);
-
-/** 五路各自的条形色。取自 `inkbox.html` 的调色板，缺键兜底成淡墨，不留空白 */
-const SOUL_ROUTE_COLOR = {
-  natural: '#4d6b52',
-  linger: '#3f5f7d',
-  ghost: '#7d776b',
-  wraith: '#a8493c',
-  gone: '#b3aa97',
-};
-
-/** 「两世抉择」的中文（`stepReincarnation` 写进 `pastLife.choice` 的三个值） */
-const PAST_LIFE_CHOICE = {
-  inherit: '前世记忆尽数归来',
-  fuse: '两世各占一半',
-  refuse: '斩断旧债与旧名',
-};
-
-/**
- * 「值得关注的人物」——**不新建任何评分系统**，只是把已经存在的读数挑出来。
- *
- * 每条规则都简单、透明、可维护，而且都能回答「**为什么**是他」：
- *   当世之巅 = 境界最高（同境界比修为）
- *   最年长   = 年龄最大
- *   名动一方 = `attentionOf` 最高（境界/杀名/法宝/世家 的派生量，见 biography.js）
- *   身怀重宝 = 身上法宝最多
- *   血债累累 = 杀人最多
- *   新晋突破 = 个人日志里最后一条跨大境界记录最新的人
- *   来历不凡 = 身负禁术 / 灵兽 / 是夺舍之身
- *
- * 同一个**人**只出现一次（先到先得，规则按上面这个顺序排）——
- * 一张榜上同一个人占三行，玩家会以为面板坏了。
- *
- * ⚠️ 纯读：不改世界、不抽 rng、不写回实体。面板每 2.5 秒调一次也不会让世界漂。
- *    这也是本项目的一条老规矩（见 biography.js 的 `attentionOf` 注释）。
- */
-function notablePeople(world) {
-  const live = [];
-  for (let i = 0; i < world.entities.length; i += 1) {
-    const e = world.entities[i];
-    if (e && e.hp > 0 && (e.level || 0) >= 1) live.push(e);
-  }
-  if (!live.length) return [];
-
-  const rows = [];
-  const taken = new Set();
-  const push = (e, reason) => {
-    if (!e || taken.has(e.id)) return;
-    taken.add(e.id);
-    rows.push({ e, reason });
-  };
-  /** 在 live 里取 `score` 最大的那个；`score` 返回 `null` 表示「此人不是候选」 */
-  const top = (score) => {
-    let win = null;
-    let winScore = -Infinity;
-    for (let i = 0; i < live.length; i += 1) {
-      const s = score(live[i]);
-      if (s === null || s === undefined) continue;
-      if (s > winScore) { winScore = s; win = live[i]; }
-    }
-    return win;
-  };
-
-  // ① 当世之巅（这里手写两趟比较，不塞进 top()：它是「境界优先、修为次之」的字典序）
-  let peak = null;
-  for (let i = 0; i < live.length; i += 1) {
-    const e = live[i];
-    if (!peak) { peak = e; continue; }
-    const lv = e.level || 0;
-    const pl = peak.level || 0;
-    if (lv > pl || (lv === pl && (e.exp || 0) > (peak.exp || 0))) peak = e;
-  }
-  push(peak, '当世之巅');
-
-  push(top((e) => (e.age || 0)), '最年长');
-  // 注目度 0/1 是「路人 / 乡邻」，上榜没有意义——所以门槛设在 2（一乡之望）
-  push(top((e) => {
-    const a = attentionOf(world, e);
-    return a >= 2 ? a : null;
-  }), '名动一方');
-  push(top((e) => {
-    const n = Array.isArray(e.artifacts) ? e.artifacts.length : 0;
-    return n >= 1 ? n : null;
-  }), '身怀重宝');
-  push(top((e) => {
-    const k = e.kills || 0;
-    return k >= 3 ? k : null;
-  }), '血债累累');
-  push(top((e) => {
-    const log = e.log;
-    if (!Array.isArray(log)) return null;
-    for (let i = log.length - 1; i >= 0; i -= 1) {
-      if (log[i] && log[i].kind === 'breakthrough') return log[i].day || 0;
-    }
-    return null;
-  }), '新晋突破');
-  push(top((e) => ((e.forbidden || e.beast || e.possessedBy) ? 1 : null)), '来历不凡');
-
-  return rows;
-}
-
-// ── 三界面板的两个纯读辅助（Batch 3）──────────────────────────
-
-/**
- * 境界标签。**`level === 0` 是「凡人」，不是「炼气」**——
- * `realmLabel(0)` 会给出「炼气」（境界表第一档从 0 起重），
- * 直接用它的话，一个被裂缝卷上界的凡人会在名册上被写成「炼气」。
- * 这种错不报错、不 NaN，只是把一个人说成了另一个人。
- */
-function realmOrMortal(level) {
-  return (level || 0) > 0 ? realmLabel(level) : '凡人';
-}
-
-/**
- * 「我刚送上去的那个人，后来怎么样了？」
- *
- * `upper.arrivedLog` 记的是他**上来那一刻**的快照（名字 / 境界 / 走的哪条道），
- * 而玩家真正想问的是**现在**：还在吗？什么境界了？死了没有？
- * 这三件事都能从上界的现成状态里读出来，**不需要新账本**：
- *   · `upper.entities` 里找得到 ⇒ 在世（顺带报当前境界与岁数）；
- *   · `upper.dead` 里找得到     ⇒ 已陨落（带年份）；
- *   · 两处都没有                ⇒ **如实说不知道**，不猜。
- *     上界的名录也是 800 上限、按重要性淘汰的，老得足够久的会被汰掉——
- *     那时候「查不到」是真的查不到，硬凑一句「下落不明」只会更误导。
- *
- * ⚠️ 纯读：不写世界、不抽 rng。面板每 2.5 秒调一次也不会让世界漂。
- */
-function upperFateOf(upper, entry) {
-  const alive = upper.entities.find((e) => e.id === entry.id);
-  if (alive) {
-    return `如今在世 · ${realmOrMortal(alive.level)} · ${Math.floor((alive.age || 0) / 360)} 岁`;
-  }
-  const rec = findDead(upper, entry.id);
-  if (rec) return `仙历 ${Math.floor((rec.died || 0) / 360) + 1} 年在上界陨落`;
-  return '已不在上界名录（陨落已久，或身份已断）';
-}
-
-/**
- * 逝者名录上那一行「魂归何处」。
- *
- * `soulRoute` 是 Batch 3 新加的一列（见 `necrology.markSoulRoute`）。
- * 三种情形**必须分开说**，因为它们对玩家的意思完全不同：
- *   · `'possess'`   → 元神夺舍：**他还活着**，只是换了具身子；
- *   · 五路之一      → 魂路名（考古定名，见 `ROUTE_LABEL`）；
- *   · 凡人（level 0）→ 魂不留（`soulTier === 0`，`soulLog` 也不记他）。
- *
- * ⚠️ 飞升者返回空串：那一行的 `who` 已经写着「飞升」，再说一遍是啰嗦。
- * ⚠️ **Batch 3 之前的老档**没有这一列，会全部落到最后一支（空串）——
- *    这是**对的**：那些记录写下的那一刻这个字段还不存在，补不出来，
- *    也不该拿 `level`/`cause` 去猜（`necrology.js` 文件头那条「不猜」的规矩）。
- */
-function soulRouteText(record) {
-  const r = record.soulRoute;
-  if (r === SOUL_ROUTE_POSSESS) return '魂未入幽冥 · 元神夺舍';
-  if (r && ROUTE_LABEL[r]) return `魂归${ROUTE_LABEL[r]}`;
-  if (record.fate === 'ascended') return '';
-  if ((record.level || 0) === 0) return '魂不留';
-  return '';
-}
-
-/**
- * 把 `compileBiography` 的 Markdown **显示**成排版。
- *
- * 传记正文是 Markdown（导出按钮落盘用的就是那一份原文）。直接摊在面板上
- * 会满屏 `#` 与 `-`，读起来像配置文件而不像「这个人的一生」。
- * 这里只认三种记号（`#` / `##` / `- `），其余原样保留——**原文一字不改**，
- * 只是换一种显示方式；所以「面板上看到的」与「导出来的」不会打架。
- */
-function renderBiographyHtml(md) {
-  const esc = (s) => String(s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const lines = String(md || '').split('\n');
-  const out = [];
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i];
-    if (!line.trim()) continue;
-    if (line.startsWith('## ')) out.push(`<div class="bio-h2">${esc(line.slice(3))}</div>`);
-    else if (line.startsWith('# ')) out.push(`<div class="bio-h1">${esc(line.slice(2))}</div>`);
-    else if (line.startsWith('- ')) out.push(`<div class="bio-li">${esc(line.slice(2))}</div>`);
-    else out.push(`<div>${esc(line)}</div>`);
-  }
-  return out.join('');
-}
 
 // ── 视界（D8-B：实现已搬到 `ui/realmView.js` + `render/realmViewLayer.js`）──
 //
@@ -476,6 +266,8 @@ class Sandbox {
     /** D8-F：划选按下的**屏幕坐标**，抬手时用它判「拖动 vs 短点击」（`VIEW_CLICK_PX`） */
     this.pressX = null;
     this.pressY = null;
+    /** Q8：`#inkBtnCloseView` 上一次的显示态（挡掉 render() 里重复的 DOM 写） */
+    this.closeViewShown = null;
 
     this.pointer = { x: 0, y: 0, inside: false, down: false, painting: false, panning: false, lastX: 0, lastY: 0 };
     this.hoverTile = { x: 0, y: 0 };
@@ -543,15 +335,33 @@ class Sandbox {
     // 撤销提示前面**，而不是让它被盖掉。
     this.clickSaid = '';
     this.strokeIntervention = null;
+
+    // ── QoL 控制器（QOL_PASS1）──────────────────────────────
+    // Escape 分层 / UI 偏好（`inkbox-ui-prefs-v1`）/ 最近看过 / dirty 标志 /
+    // 确认条 / Toast 定位 / 忙碌按钮 / 世界信息。**在 `boot()` 里建**——
+    // 构造器里 DOM 还没保证齐全，而它启动时要读三个 localStorage 键。
+    // ⚠️ 它持有的全是 UI 状态：不进 World、不进正式存档、不抽 RNG。
+    this.qol = null;
+    /** Q30：「收起全部」的监听只挂一次（按钮常驻） */
+    this.collapseAllBound = false;
   }
 
   // ── 启动 ────────────────────────────────────────────────
   boot() {
+    this.qol = createQol(this);
     this.buildToolPanel();
     this.bindEvents();
     this.setupSectionToggles();
     this.resize();
     this.newWorld(this.presetKey, this.seed);
+    this.refreshRecent();
+    // Q31 / Q33：第一次打开时提示一次「按 ? 看快捷键」（看过一次就不再念，
+    // 见 `ui/qol.js` 的 `nudgeHelpOnce` / `helpSeen`）。
+    // ⚠️ 它收一个前缀，为的是与上面 `newWorld()` 那句「新世界已开 · 种子 N」
+    //    并成**一句**——提示只有一条槽位，分开发就会互相覆盖。
+    // ⚠️ 帮助入口本身是**常驻**的（顶栏那颗「? 帮助」），所以「新手引导结束后
+    //    还能再打开」不依赖这句话。
+    this.qol.nudgeHelpOnce(`新世界已开 · 种子 ${this.seed}`);
     requestAnimationFrame((ts) => this.frame(ts));
   }
 
@@ -579,9 +389,19 @@ class Sandbox {
     // 换世界就把摊开的那份传记收起来：它属于上一个世界，
     // 留着就是一条查不到的旧闻（而且看起来完全正常）。
     this.hideDeadBiography();
+    // 活人卡同理（Q36）：上一个世界的人，在新世界里查不到——留着就是一张空卡。
+    this.hidePersonCard();
+    // Q13：最近看过是**上一个世界**的导航记录，换世界必须清空。
+    // ⚠️ 它只在 UI runtime 里，不进 World、不进正式存档。
+    this.qol.clearRecent();
     this.dirty = true;
+    // Q21：换世界是一次「改了世界」的动作，之后没存就再换一次要问一句。
+    this.qol.markDirty('newWorld');
     this.notify(`新世界已开 · 种子 ${this.seed}`);
     this.syncWorldControls();
+    this.syncWorldInfo();
+    this.qol.syncToolState();
+    this.refreshSlots();
     this.refreshChronicle();
     this.refreshNecrology();
     // 三界：换世界之后上界/幽冥也整个换了，面板不刷就是开在别人图上的窗
@@ -701,11 +521,102 @@ class Sandbox {
     this.seed = this.world.seed >>> 0;
   }
 
-  notify(text, ms = 2600) {
-    this.toast = text;
-    this.toastTimer = ms / 1000;
-    const el = $('inkHint');
-    if (el) el.textContent = text;
+  /**
+   * 一条提示。实现在 `ui/qol.js`（Q11 的「提示本身可以是入口」就在那里）。
+   *
+   * ⚠️ 本方法保留成一层薄委托，是因为全文件几十处都在调 `this.notify(...)`；
+   *    把实现搬进控制器是为了让「提示能不能点、点了去哪」只有一份判据。
+   *
+   * @param {string} text 玩家看到的这句话
+   * @param {number} ms 显示时长
+   * @param {object|null} target Q11：带定位信息时提示变成入口
+   *   （`{plane, x, y, entityId}`，只消费已有字段）
+   */
+  notify(text, ms = 2600, target = null) {
+    this.qol.notify(text, ms, target);
+  }
+
+  /** Q34：顶部那颗「seed / 幅面 / 渲染器」信息丸。 */
+  syncWorldInfo() {
+    this.qol.syncWorldInfo(this.render3d ? '3D' : 'Canvas');
+  }
+
+  /**
+   * Q8：关闭视界。**唯一**的关闭路径——工具切换（`selectTool` 路径 ①）、
+   * Escape（Q1）、视界附近的「关闭视界」按钮（Q8）全走它。
+   *
+   * ⚠️ 它**只**清 `selection` / `selectPath`（两个 UI 字段），
+   *    不碰世界、不碰相机、不碰速度。Q8 明令「不得创造新的 selection 状态」，
+   *    所以这里没有第二个「视界开没开」的标志位——判据永远只有 `this.selection`。
+   * @param {string} why 'tool' | 'escape' | 'button' —— 只影响文案
+   */
+  closeRealmView(why = 'button') {
+    if (!this.selection) return false;
+    const label = this.viewPlane().label;
+    this.selection = null;
+    this.selectPath = null;
+    // ⚠️ **不置** `this.dirty`：那个标志管的是**地形位图**要不要重画
+    //    （见 `render()` 的 `terrain.needsRender(now, this.dirty)`），
+    //    而视界窗是每帧按 `this.selection` 现画在画布上的（纸底 + 地形 blit
+    //    每帧都重来一遍），置了只会白烧一次整张地形重绘。
+    if (why === 'tool') this.notify(`已收起${label}视界`, 2200);
+    else if (why === 'escape') this.notify(`已关闭${label}视界`, 2000);
+    else this.notify(`已关闭${label}视界 · 切回「视界」类神力可再划开`, 2600);
+    return true;
+  }
+
+  /**
+   * Q8：视界开着的时候，画布上浮出那颗「关闭视界」。
+   *
+   * ⚠️ 判据**只有** `this.selection`——Q8 明令「不得创造新的 selection 状态」，
+   *    所以这里没有第二个「视界开没开」的标志位（`closeViewShown` 只缓存
+   *    **上一次的显示态**，不是状态真相；把它删掉，按钮照样正确，只是多写几次 DOM）。
+   * ⚠️ 从 `render()` 里调，而不是在每个赋值点各调一次：`selection` 有八处赋值
+   *    （提交 / 放弃 / 换工具 / Escape / 读档 / 重新开天…），逐个去挂迟早漏一处，
+   *    而漏掉的那一处**不报错**——只是窗口开着、按钮不在，玩家找不到关的入口。
+   *    缓存挡掉重复写，所以每帧调一次是安全的。
+   */
+  syncCloseViewBtn() {
+    const btn = $('inkBtnCloseView');
+    if (!btn) return;
+    const want = Boolean(this.selection);
+    if (this.closeViewShown === want) return;
+    this.closeViewShown = want;
+    btn.hidden = !want;
+    btn.classList.toggle('on', want);
+  }
+
+  /**
+   * Q7：撤销。**Ctrl+Z 与「撤销」按钮共用这一条路径**——
+   * 两条路各写一遍的话，「按钮会说没有可撤销的操作、Ctrl+Z 却静默无事」
+   * 这种不一致迟早出现，而且不报错。
+   */
+  undo() {
+    const label = this.history.undo(this.world);
+    if (!label) {
+      this.notify('没有可撤销的操作', 2200);
+      this.qol.syncUndoState();
+      return false;
+    }
+    this.notify(`已撤销「${label}」`);
+    this.dirty = true;
+    this.qol.markDirty('undo');
+    this.qol.syncUndoState();
+    return true;
+  }
+
+  /** Q28：折叠状态变了 → 重画那几块长列表（**纯展示**，不碰世界）。 */
+  refreshFolds() {
+    this.refreshChronicle();
+    this.refreshMilestones();
+    this.refreshNotables();
+    this.refreshWatch();
+    this.refreshNecrology();
+  }
+
+  /** Q13：重画「最近看过」。 */
+  refreshRecent() {
+    refreshRecentPanel(this);
   }
 
   // ── 工具面板 ────────────────────────────────────────────
@@ -766,10 +677,9 @@ class Sandbox {
     //    取的是**正在被切走的那一界**（窗里贴的就是它），说「上界视界」还是
     //    「幽冥视界」得与玩家刚看到的一致。
     if (id !== this.toolId && this.selection) {
-      const label = this.viewPlane().label;
-      this.selection = null;
-      this.selectPath = null;
-      this.notify(`已收起${label}视界`, 2200);
+      // Q8 / Q1：关闭路径收敛到**一条** `closeRealmView()`——工具切换、Escape、
+      // 「关闭视界」按钮全走它。原先这段内联逻辑是三个出口各写一遍的第一份。
+      this.closeRealmView('tool');
     }
     this.toolId = id;
     document.querySelectorAll('.ink-tool').forEach((el) => el.classList.toggle('on', el.dataset.tool === id));
@@ -777,6 +687,8 @@ class Sandbox {
     const hint = $('inkToolHint');
     if (hint) hint.textContent = `${tool.name} — ${tool.hint}`;
     this.updateCursor();
+    // Q5：工具切换 / 快捷键切换 / 程序切换都必须同步那一行「我手里拿的是什么」。
+    this.qol.syncToolState();
   }
 
   get tool() {
@@ -808,51 +720,7 @@ class Sandbox {
   //   · 不重新写 HTML 结构，只是把每个 sec-title 之后到下一个 sec-title 之前
   //     的兄弟元素包进一个 `.sec-body` 容器，用 max-height 做折叠动画。
   //   · 这是 JS 一次性做，boot 之后所有 refresh 函数依然 appendChild 到 sec-body 内。
-  setupSectionToggles() {
-    const rail = document.querySelector('.rail.right');
-    if (!rail) return;
-    const STORAGE_KEY = 'inkbox.sec';
-    let stored = {};
-    try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch (_) { /* localStorage 不可用就当空 */ }
-    const titles = rail.querySelectorAll('.sec-title');
-    for (const title of titles) {
-      const key = (title.textContent || '').trim();
-      if (!title.querySelector('.chev')) {
-        const chev = document.createElement('span');
-        chev.className = 'chev';
-        chev.textContent = '\u25BE'; // ▾ 展开；折叠时 CSS 旋转 -90°
-        title.appendChild(chev);
-      }
-      // 包后续兄弟到 sec-body（直到下一个 sec-title）
-      const body = document.createElement('div');
-      body.className = 'sec-body';
-      let sib = title.nextElementSibling;
-      while (sib && !sib.classList.contains('sec-title')) {
-        const after = sib.nextElementSibling;
-        body.appendChild(sib);
-        sib = after;
-      }
-      title.after(body);
-      // 状态恢复：localStorage > data-default-collapsed > 默认展开
-      const initialCollapsed = stored[key] !== undefined
-        ? stored[key]
-        : title.dataset.defaultCollapsed === '1';
-      if (initialCollapsed) {
-        body.classList.add('collapsed');
-        title.classList.add('collapsed');
-      }
-      title.addEventListener('click', () => {
-        const collapsed = !body.classList.contains('collapsed');
-        body.classList.toggle('collapsed', collapsed);
-        title.classList.toggle('collapsed', collapsed);
-        try {
-          const cur = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-          cur[key] = collapsed;
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(cur));
-        } catch (_) { /* 不存也不影响 UI */ }
-      });
-    }
-  }
+  setupSectionToggles() { return setupSectionTogglesPanel(this); }
 
   // ── 事件 ────────────────────────────────────────────────
   bindEvents() {
@@ -958,6 +826,14 @@ class Sandbox {
       if (this.pointer.painting) {
         const label = this.tool.name;
         if (this.history.end(label)) {
+          // ── Q7：撤销栈**刚刚**才有内容 ⇒ 按钮的可用态必须立刻跟上 ──────────
+          // ⚠️ 不能指望 `applyTool` 里那次 `markDirty` 代劳：它是在**拖拽过程中**
+          //    跑的，那时 `history.end()` 还没提交，栈仍是空的，
+          //    `syncUndoState()` 据此把按钮锁成「没有可撤销的操作」。
+          //    真正入栈发生在这一行，所以刷新也必须在这一行之后。
+          // ⚠️ 漏掉它**不报错**——只是玩家画完一笔、撤销按钮依然是灰的，
+          //    得等下一次存档（`markPersisted` 会顺手同步）才亮起来。
+          this.qol.syncUndoState();
           if (this.strokeIntervention) {
             const entry = this.history.stack[this.history.stack.length - 1];
             const outcome = createInterventionOutcome({
@@ -1014,7 +890,27 @@ class Sandbox {
     }, { passive: false });
 
     window.addEventListener('keydown', (e) => {
-      if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+      // ── Q1：Escape 走分层关闭，**故意放在输入框保护之前** ──────────
+      // 用户明确要求「Escape 可以按既定规则处理」，所以焦点落在 seed 输入框里
+      // 时它照样逐层退回。能关哪几层由 `ui/qolState.js` 的 `ESCAPE_ORDER` 决定
+      // （confirm → help → float → realmView → selection → inspect），
+      // **不在这张表里的东西它一律不碰**：不重置世界、不改模拟、不改时间速度、
+      // 不误触「重新开天」。
+      if (e.key === 'Escape') {
+        if (this.qol.handleEscape()) e.preventDefault();
+        return;
+      }
+      // ── Q2：焦点在文本输入类元素上时，游戏快捷键一律不响应 ──────────
+      // ⚠️ 判据含 `isContentEditable`：`contenteditable` 的宿主元素 `tagName`
+      //    是 `DIV`，只看标签名会把它漏掉——于是玩家在可编辑区域里打一个 `w`，
+      //    战争显示就开了。这类漏判**不报错**，只是行为莫名其妙。
+      if (this.qol.isTextEntry(e.target)) return;
+      // ── Q31：`?` 开合快捷键帮助（帮助层自己按 Escape 关）──────────
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        if (this.qol.helpOpen()) this.qol.closeHelp(); else this.qol.openHelp();
+        return;
+      }
       if (e.code === 'Space') {
         this.spaceDown = true;
         e.preventDefault();
@@ -1023,13 +919,17 @@ class Sandbox {
       }
       if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        const label = this.history.undo(this.world);
-        this.notify(label ? `已撤销「${label}」` : '没有可撤销的操作');
-        this.dirty = true;
+        // Q7：Ctrl+Z 与「撤销」按钮**共用一条执行路径**（`this.undo()`）——
+        // 两条路各写一遍的话，「按钮说没有可撤销的操作、Ctrl+Z 却静默无事」
+        // 这种不一致迟早出现，而且不报错。
+        this.undo();
         return;
       }
       if (e.key >= '1' && e.key <= '6') {
-        this.setSpeed(Number(e.key) - 1);
+        // Q6：快捷键切档与 UI 按钮完全同步（`setSpeed` 是唯一入口），
+        // 并给一次轻量反馈（`announce=true`）。**不每个 tick 重复提示**——
+        // 只有玩家真的按了键才说一次。
+        this.setSpeed(Number(e.key) - 1, true);
         return;
       }
       if (e.key === '[') this.setBrush(this.brushIndex - 1);
@@ -1058,73 +958,127 @@ class Sandbox {
       if (btn) this.setSpeed(Number(btn.dataset.speed));
     });
     $('inkBtnPause').addEventListener('click', () => this.togglePause());
-    $('inkBtnUndo').addEventListener('click', () => {
-      const label = this.history.undo(this.world);
-      this.notify(label ? `已撤销「${label}」` : '没有可撤销的操作');
-      this.dirty = true;
-    });
+    // Q7：按钮与 Ctrl+Z 共用 `this.undo()`（同一条路径、同一句反馈）。
+    $('inkBtnUndo').addEventListener('click', () => this.undo());
     $('inkBtnGrid').addEventListener('click', () => this.toggleGrid());
     $('inkBtnRelief').addEventListener('click', () => this.toggleRelief());
     $('inkBtnFit').addEventListener('click', () => {
       this.camera.fit(this.world);
       this.dirty = true;
     });
+    // ── Q40：两个 destructive 按钮的文案与确认逻辑统一 ────────────────
+    // 两个都**换掉当前世界**，所以两个都要过 `guardDiscard`（Q21 的未保存保护）：
+    //   · 「重新开天」= 按输入框里的种子开一局（种子留着，方便复现）；
+    //   · 「随机开天」= 随机种子开一局（原先叫「随机种子」，id 却是 `Clear`——
+    //     名字说的是种子，做的事是换世界，玩家按下去才发现天没了）。
+    // ⚠️ 与普通按钮的区别靠**文案 + 确认**，不做大红色视觉改版（Q40 明令）。
+    // ⚠️ Q38 / Q39：都走 `runOnce`，跑的时候按钮 disabled——双击不会开两次天。
     $('inkBtnRegen').addEventListener('click', () => {
-      const seedInput = $('inkSeedInput');
-      const presetSelect = $('inkPresetSelect');
-      const seed = (Number(seedInput.value) >>> 0) || (Math.floor(Math.random() * 0xffffffff) >>> 0);
-      seedInput.value = String(seed);
-      this.newWorld(presetSelect.value, seed);
+      this.qol.guardDiscard('当前世界有尚未保存的变化，仍要按种子重新开天？', () => {
+        void this.qol.runOnce('inkBtnRegen', async () => {
+          const seedInput = $('inkSeedInput');
+          const presetSelect = $('inkPresetSelect');
+          const seed = (Number(seedInput.value) >>> 0) || (Math.floor(Math.random() * 0xffffffff) >>> 0);
+          seedInput.value = String(seed);
+          this.newWorld(presetSelect.value, seed);
+        });
+      });
     });
-    $('inkBtnSave').addEventListener('click', async () => {
+    // Q4：槽位下拉**换了槽**，读档按钮的可用性要跟着变。
+    // ⚠️ 少了这一句，「换到一个空槽」之后按钮仍然是亮的（`refreshSlots` 只在
+    //    开机 / 存完 / 读完之后跑），点下去只会得到一句「没有存档」——
+    //    而按钮本身早该拦住（Q39 那句注释说的就是这个）。
+    const slotSelect = $('inkSlotSelect');
+    if (slotSelect) slotSelect.addEventListener('change', () => this.refreshSlots());
+    $('inkBtnSave').addEventListener('click', () => this.qol.runOnce('inkBtnSave', async () => {
       const slot = $('inkSlotSelect').value || 'auto';
       const result = await saveToStorage(this.world, slot, { name: slot });
       if (result.ok) {
+        // Q24：往**侧索引**里记一笔「这一格现在是仙历几年 / 什么种子」。
+        // 它不进正式存档、不改 `save.js` 的 schema——只是槽位旁边那一行小字。
+        this.qol.noteSlotSaved(slot, this.world);
         // 报的是**落盘**体积（压缩后）。压缩比必须一起给出来，否则
         // 「同一个世界，存档怎么突然只剩三分之一」会被当成丢了数据。
         const ratio = result.bytes > 0 ? (result.rawBytes / result.bytes).toFixed(1) : '1.0';
-        this.notify(`已存档到「${slot}」· ${(result.bytes / 1024).toFixed(0)} KB`
+        let msg = `已存档到「${this.qol.slotLabel(slot)}」· ${(result.bytes / 1024).toFixed(0)} KB`
           + (result.codec === 'gzip'
             ? `（压缩 ${ratio}×）`
-            : `（明文·${plainSaveTag(result.fallbackReason)}）`));
+            : `（明文·${plainSaveTag(result.fallbackReason)}）`);
+        // Q25：容量预警。用的是**已落盘的真实码元数**（`listSlots` 的 `bytes`
+        // 就是 `encoded.length`），不是估算——估出来的数在「快满了」这一刻
+        // 恰恰最不准，而这一刻正是它唯一有用的时候。
+        const used = listSlots().reduce((n, s) => n + (s.bytes || 0), 0);
+        const warn = this.qol.quotaWarning(used, 0);
+        if (warn) msg += ` · ${warn}`;
+        this.notify(msg, warn ? 8000 : 2600);
+        // 存档给了玩家一份可恢复的副本 ⇒ 未保存标志清掉（Q21）。
+        this.qol.markPersisted('save');
       } else {
-        this.notify(`存档失败：${result.error}`);
+        // Q22：失败必须说人话。「浏览器空间不足」是这里最常见的一条，
+        // 而 `QuotaExceededError` 的原文在各浏览器里长得都不一样（还可能是英文）。
+        this.notify(`存档失败 · ${this.qol.describeSaveError(result.error)}`, 8000);
       }
       this.refreshSlots();
+      this.qol.syncUndoState();
+    }));
+    $('inkBtnLoad').addEventListener('click', () => {
+      // Q21：读档会丢掉当前世界 ⇒ 没保存过就先问一句。
+      this.qol.guardDiscard('当前世界有尚未保存的变化，仍要读档覆盖吗？', () => {
+        // Q39：读档是异步的（解压 + 反序列化），期间按钮 disabled。
+        void this.qol.runOnce('inkBtnLoad', async () => {
+          const slot = $('inkSlotSelect').value || 'auto';
+          const world = await loadFromStorage(slot);
+          if (!world) {
+            this.notify(`「${this.qol.slotLabel(slot)}」没有存档`);
+            return;
+          }
+          this.world = world;
+          this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
+          this.terrain.setWorld(this.world);
+          // 上界也要跟着换：存档里带 upper 就复用，没带就按凡间 seed 重新派生
+          // （旧档降级路径）。不换的话视界会贴上一个世界的上界——看着完全正常，只是全错。
+          this.attachUpper(this.world);
+          // 幽冥同理：存档带 nether 就复用，没带就按凡间 seed 重新派生（旧档降级）。
+          this.attachNether(this.world);
+          this.camera.bind(this.world);
+          this.camera.fit(this.world);
+          this.history.clear();
+          this.selected = null;
+          // 视界是 UI 状态，换世界就收掉。
+          this.selection = null;
+          this.selectPath = null;
+          this.hideDeadBiography();
+          this.hidePersonCard();
+          // Q13：最近看过属于上一个世界，读档必须清空。
+          this.qol.clearRecent();
+          this.dirty = true;
+          // Q21：刚读进来的世界与存档逐字一致 ⇒ 没有未保存的变化。
+          this.qol.resetDirty();
+          this.notify(`已读取「${this.qol.slotLabel(slot)}」`);
+          this.syncWorldControls();
+          this.syncWorldInfo();
+          this.qol.syncToolState();
+          this.qol.syncUndoState();
+          this.refreshSlots();
+          this.refreshTerritory();
+          this.refreshChronicle();
+          this.refreshNecrology();
+          this.refreshThreeRealms();
+          this.refreshBusanzi();
+        });
+      });
     });
-    $('inkBtnLoad').addEventListener('click', async () => {
-      const slot = $('inkSlotSelect').value || 'auto';
-      const world = await loadFromStorage(slot);
-      if (!world) {
-        this.notify(`「${slot}」没有存档`);
-        return;
-      }
-      this.world = world;
-      this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
-      this.terrain.setWorld(this.world);
-      // 上界也要跟着换：存档里带 upper 就复用，没带就按凡间 seed 重新派生
-      // （旧档降级路径）。不换的话视界会贴上一个世界的上界——看着完全正常，只是全错。
-      this.attachUpper(this.world);
-      // 幽冥同理：存档带 nether 就复用，没带就按凡间 seed 重新派生（旧档降级）。
-      this.attachNether(this.world);
-      this.camera.bind(this.world);
-      this.camera.fit(this.world);
-      this.history.clear();
-      this.selected = null;
-      // 视界是 UI 状态，换世界就收掉。
-      this.selection = null;
-      this.selectPath = null;
-      this.hideDeadBiography();
-      this.dirty = true;
-      this.notify(`已读取「${slot}」`);
-      this.syncWorldControls();
-      this.refreshTerritory();
-      this.refreshChronicle();
-      this.refreshNecrology();
-      this.refreshThreeRealms();
-      this.refreshBusanzi();
+    // Q26：导出文件名带上 seed 与天数（`inkbox_seed226_day175200.json`）。
+    // ⚠️ 只改**文件名**，不改文件内容（导出仍然是不压缩的 JSON）。
+    $('inkBtnExport').addEventListener('click', () => {
+      this.qol.runOnce('inkBtnExport', async () => {
+        const name = this.qol.exportFileName(this.world);
+        exportFile(this.world, name);
+        // 导出一份到磁盘也算「给了玩家可恢复的副本」⇒ 清 dirty（Q21）。
+        this.qol.markPersisted('export');
+        this.notify(`已导出 ${name}`, 4000);
+      });
     });
-    $('inkBtnExport').addEventListener('click', () => exportFile(this.world));
     // 编年史导出：编年是这个世界唯一的「史书」，而它是个 400 条的滚动窗口——
     // 越往后，前面的事就被顶出去了。导出是**唯一**能把早年的记录留下来
     // 的办法，也是「观察层」这个玩法真正的出口（见 sim/biography.js）。
@@ -1149,10 +1103,19 @@ class Sandbox {
       const md = exportNecrology(this.world, { sort: this.necroSort });
       this.downloadText(necrologyFileName(this.world), md);
     });
-    $('inkBtnImport').addEventListener('click', () => $('inkImportFile').click());
-    $('inkImportFile').addEventListener('change', async (e) => {
+    $('inkBtnImport').addEventListener('click', () => {
+      // Q21：导入会替换当前世界 ⇒ 没保存过就先问一句。
+      this.qol.guardDiscard('当前世界有尚未保存的变化，仍要导入覆盖吗？', () => $('inkImportFile').click());
+    });
+    // ── Q23：导入失败**不许**动到当前世界 ────────────────────────────
+    // 顺序是「读 → 解 → 构造候选 → 成功之后才替换」：
+    // `await importFile(file)` 在任何一步失败都会**抛出去**，
+    // 而 `this.world = world` 在它**之后**才执行——所以失败时 `this.world`
+    // 一个字都没动过。这不是巧合，是这一段的**结构**保证的（见 test:qol 的断言）。
+    $('inkImportFile').addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
+      void this.qol.runOnce('inkBtnImport', async () => {
       try {
         const world = await importFile(file);
         this.world = world;
@@ -1169,47 +1132,94 @@ class Sandbox {
         this.selection = null;
         this.selectPath = null;
         this.hideDeadBiography();
+        this.hidePersonCard();
+        // Q13：最近看过属于上一个世界，导入也要清空。
+        this.qol.clearRecent();
         this.dirty = true;
+        // Q21：刚导入的世界与文件逐字一致 ⇒ 没有未保存的变化。
+        this.qol.resetDirty();
         this.notify('世界已导入');
         this.syncWorldControls();
+        this.syncWorldInfo();
+        this.qol.syncToolState();
+        this.qol.syncUndoState();
+        this.refreshSlots();
         this.refreshTerritory();
         this.refreshChronicle();
         this.refreshNecrology();
         this.refreshThreeRealms();
         this.refreshBusanzi();
       } catch (error) {
-        this.notify('导入失败：文件不是有效存档');
+        // Q22：说清「哪一步坏了」而不是只写 console。
+        // ⚠️ Q23：这里**只**发一条提示——`this.world` 上一行都没碰过，
+        //    玩家原来的世界原封不动。
+        this.notify('导入失败 · 文件不是有效存档', 6000);
       }
       e.target.value = '';
+      });
     });
+    // Q40：见上面「重新开天」那一段的说明（两个 destructive 按钮同一套文案与确认）。
     $('inkBtnClear').addEventListener('click', () => {
-      this.newWorld(this.presetKey, (Math.floor(Math.random() * 0xffffffff) >>> 0));
-      $('inkSeedInput').value = String(this.seed);
+      this.qol.guardDiscard('当前世界有尚未保存的变化，仍要随机开一局新天？', () => {
+        void this.qol.runOnce('inkBtnClear', async () => {
+          this.newWorld(this.presetKey, (Math.floor(Math.random() * 0xffffffff) >>> 0));
+          $('inkSeedInput').value = String(this.seed);
+        });
+      });
     });
+    // Q8：视界附近那颗「关闭视界」。它只调**既有**的关闭逻辑。
+    const closeView = $('inkBtnCloseView');
+    if (closeView) closeView.addEventListener('click', () => this.closeRealmView('button'));
+    // ⚠️ Q31 的「? 帮助」按钮**不在这里绑**：`ui/qol.js` 的 `bind()` 已经绑了
+    //    （`openHelp` 归它管，绑两处只会让一次点击跑两遍同一个幂等操作）。
 
     this.refreshSlots();
+    this.refreshRecent();
     $('inkSeedInput').value = String(this.seed);
     this.setSpeed(this.speedIndex);
     this.setBrush(this.brushIndex);
+    // Q5 / Q6 / Q7 / Q4：开机时把三处状态同步到位（工具名 / 档位文字 / 撤销可用性）。
+    this.qol.syncToolState();
+    this.qol.syncSpeedState();
+    this.qol.syncUndoState();
+    this.syncWorldInfo();
   }
 
   togglePause() {
     this.speedIndex = this.speedIndex === 0 ? 2 : 0;
-    this.setSpeed(this.speedIndex);
+    this.setSpeed(this.speedIndex, true);
   }
 
-  setSpeed(index) {
+  /**
+   * 切档。**唯一入口**——数字键、底栏按钮、`togglePause`、`update` 都走它，
+   * 所以「键盘切档」与「UI 按钮」不可能脱节（Q6）。
+   *
+   * @param {number} index 0..5
+   * @param {boolean} announce Q6：玩家**主动**切档时给一次轻量反馈。
+   *   ⚠️ 程序化调用（读档后同步、测试里的 `setSpeed(0)`）**不要**传 true，
+   *      否则世界每跑一段就自己弹一句「岁月 · 疾」——那是噪音，不是反馈。
+   */
+  setSpeed(index, announce = false) {
+    const before = this.speedIndex;
     this.speedIndex = Math.max(0, Math.min(TIME.speeds.length - 1, index));
     document.querySelectorAll('#inkSpeedBar [data-speed]').forEach((el) => {
       el.classList.toggle('on', Number(el.dataset.speed) === this.speedIndex);
     });
     $('inkBtnPause').classList.toggle('on', this.speedIndex === 0);
+    // Q6：档位的**文字**状态（`岁月 · 疾` / `岁月已停`）与暂停按钮的文案。
+    this.qol.syncSpeedState();
+    if (announce && this.speedIndex !== before) {
+      const speed = TIME.speeds[this.speedIndex];
+      this.notify(this.speedIndex === 0 ? '岁月已停' : `岁月 · ${speed.label}`, 1800);
+    }
   }
 
   setBrush(index) {
     this.brushIndex = Math.max(0, Math.min(LIMITS.brushSizes.length - 1, index));
     $('inkBrushRange').value = String(this.brushIndex);
     $('inkBrushLabel').textContent = `半径 ${this.brushRadius}`;
+    // Q5：笔刷半径是「当前工具状态」的一部分（`抬山 · 12` 里的那个数）。
+    this.qol.syncToolState();
   }
 
   toggleGrid() {
@@ -1263,43 +1273,7 @@ class Sandbox {
     }
   }
 
-  refreshSlots() {
-    const select = $('inkSlotSelect');
-    const current = select.value;
-    select.innerHTML = '';
-    const slots = listSlots();
-    // ── 预置槽 ────────────────────────────────────────────────
-    // ⚠️ 2026-09-22 之前这里**一个预置槽都没有**：下拉里只有 localStorage 里已经存在的键，
-    //    首次打开就只有一个空的 `auto`。于是玩家**没有办法存第二份**——「存档」永远覆盖
-    //    auto，想留住两个世界只能靠导出文件。而 INKBOX.md 一直写着「localStorage 8 槽」
-    //    （文档与实现不符：故障类 1 的镜像——**文档说有、代码里没有**）。
-    //    修法就是把这 8 个命名槽显式说出来：`save.js` 本来就接受任意槽名
-    //    （键是 `${saveKey}:${slot}`），这里只是把「有哪几个槽」摆给玩家看。
-    const preset = ['auto'];
-    for (let i = 1; i <= 8; i += 1) preset.push(`slot${i}`);
-    const byName = new Map(slots.map((s) => [s.slot, s]));
-    const merged = preset.map((name) => byName.get(name) || { slot: name, bytes: 0, compressed: false });
-    // 兜底：`listSlots()` 里既不是 auto 也不是 slot1..8 的槽名照旧列出来。
-    // 目前没有已知的写入路径会产生这类槽名（导入只返回 world、不落槽），
-    // 留着是为了将来真出现别的写入路径时，老档不会从下拉里静默消失。
-    for (const s of slots) if (!preset.includes(s.slot)) merged.push(s);
-    merged.forEach((s) => {
-      const option = document.createElement('option');
-      option.value = s.slot;
-      // 压缩状态必须显示出来：同一个世界，压缩后 24.6%、退回明文 72.3%。
-      // 只给一个 KB 数字的话，两者看起来只是「大小不同」，
-      // 玩家会以为存档坏了，而实际上该查的是浏览器支不支持压缩。
-      const size = s.bytes
-        ? `${(s.bytes / 1024).toFixed(0)} KB${s.compressed ? ' · 压缩' : ' · 明文'}`
-        : '空';
-      // 槽名是给 `save.js` 用的键（`auto` / `slot3`），不是给玩家看的字。
-      const label = s.slot === 'auto' ? '自动'
-        : (/^slot[1-8]$/.test(s.slot) ? `槽 ${s.slot.slice(4)}` : s.slot);
-      option.textContent = `${label}（${size}）`;
-      select.appendChild(option);
-    });
-    if (current) select.value = current;
-  }
+  refreshSlots() { return refreshSlotsPanel(this); }
 
   // ── 落笔 ────────────────────────────────────────────────
   applyTool(isFirst) {
@@ -1330,6 +1304,22 @@ class Sandbox {
     };
     ctx.result = tool.apply(ctx);
     this.dirty = true;
+    // ── Q21：**玩家真的改了世界** ⇒ 世界与磁盘上的存档不再一致 ──────────
+    // ⚠️ 这一行是 Q21 未保存保护的**主要触发点**。原先它不存在：`markDirty` 只在
+    //    `newWorld()`（开天）与 `undo()` 里各响一次，而开天之后玩家最常干的两件事
+    //    ——雕刻地形、施放神力——**一条都不置 dirty**。后果是「存档 → 雕了半天
+    //    → 点重新开天」静默丢掉全部改动：`needsDiscardConfirm()` 恒为 false，
+    //    确认条根本不出现，玩家连「要丢东西了」都不知道。这类漏接线**不报错**，
+    //    只是保护看起来装好了、实际是空的。
+    // ⚠️ 拖拽笔刷会反复调到这里，但 `markDirty` 只在**状态真的翻转**时才写 DOM
+    //    （见 `ui/qol.js` 的 `markDirty`：`if (changed) api.syncUndoState()`），
+    //    所以按住刷子拖两秒也只在第一下付出代价。
+    // ⚠️ 刻意**不**发 `'advance'`：时间流逝是这个世界持续在做的事，把它也算成
+    //    「未保存的工作」，确认条就会几乎每次开天都弹，玩家很快学会闭眼点掉
+    //    ——保护反而失效。受保护的是玩家**主动做过的编辑**。
+    //    分桶只为可读：`terrain` / `intervention` 都落在 `DIRTY_EVENTS` 里，
+    //    置的同样是「脏」这一个事实。
+    this.qol.markDirty(CAUSAL_TOOL_IDS.includes(tool.id) ? 'intervention' : 'terrain');
     this.rebuildVillageCache();
 
     // 卜算子的反应只在「按下的那一下」触发，拖拽重复的那几十次不算。
@@ -1557,7 +1547,10 @@ class Sandbox {
     if (!view.open) return false;
     if (!Number.isFinite(this.pressX) || !Number.isFinite(this.pressY)) return false;
     const moved = Math.hypot(this.pointer.x - this.pressX, this.pointer.y - this.pressY);
-    if (moved >= VIEW_CLICK_PX) return false;
+    // Q42：拖动 / 点击的阈值**复用** `VIEW_CLICK_PX`（6px）这一条既有规范——
+    // 判据走 `qolState.isClickWithinDrag`，不在这里另立一个 magic number。
+    // 语义与原来的 `moved >= VIEW_CLICK_PX` 完全等价（都是「屏幕像素」口径）。
+    if (!this.qol.isClickWithinDrag(moved, VIEW_CLICK_PX)) return false;
     const t = this.hoverTile;
     if (!t) return false;
     return view.region.contains(t.x, t.y);
@@ -1606,7 +1599,10 @@ class Sandbox {
     panel.dataset.plane = planeId;
     panel.dataset.subjectKind = ref.kind;
     panel.dataset.subjectId = String(ref.entityId ?? ref.artifactId ?? ref.siteId ?? ref.leylineId ?? ref.riftId ?? ref.houseKey ?? ref.settlementId ?? '');
-    panel.innerHTML = `<div class="inspect-head">${text(head)}<button class="ink-x" id="inkInspectClose">×</button></div>`
+    // Q37：与 `inspectAt` / `inspectPlaneAt` 同一枚短标签（真实位面，不猜窗口）。
+    panel.innerHTML = `<div class="inspect-head">${text(head)}`
+      + `<span class="plane-tag">${planeLabel(planeId)}</span>`
+      + '<button class="ink-x" id="inkInspectClose">×</button></div>'
       + rows.map(([k, v]) => `<div class="inspect-row"><span>${text(k)}</span><b>${text(v)}</b></div>`).join('');
     panel.classList.add('on');
     $('inkInspectClose').addEventListener('click', () => panel.classList.remove('on'));
@@ -1636,7 +1632,12 @@ class Sandbox {
     const rows = card ? card.rows : [['此处', '窗内无可检视之物']];
     const panel = $('inkInspect');
     if (!panel) return;
-    panel.innerHTML = `<div class="inspect-head">${head}<button class="ink-x" id="inkInspectClose">×</button></div>`
+    // Q37：标出**这一格真正属于哪一界**（读的是检视器自己的 `planeId`，
+    // 不是「当前开着哪扇窗」）。窗内检视恒非凡间，所以这个标签必然与凡间那张卡不同。
+    panel.dataset.plane = planeId;
+    panel.innerHTML = `<div class="inspect-head">${head}`
+      + `<span class="plane-tag">${plane.label}</span>`
+      + '<button class="ink-x" id="inkInspectClose">×</button></div>'
       + rows.map(([k, v]) => (k === '@note'
         ? `<div class="inspect-note">${v}</div>`
         : `<div class="inspect-row"><span>${k}</span><b>${v}</b></div>`)).join('');
@@ -1645,7 +1646,25 @@ class Sandbox {
   }
 
   inspectAt(x, y) {
-    if (!this.world.inside(x, y)) return;
+    // Q35（BACKLOG #15）：整数守卫。**与正式拾取同一套取整规则**——
+    // `render/camera.js` 的 `pick()` 对世界坐标用的是 `Math.round`
+    // （矩形分支与立体分支都是），所以这里也必须是 `Math.round`。
+    //
+    // ⚠️ 为什么非加不可：实体的 `x` / `y` 是**连续坐标**，把浮点直接喂进
+    //    `world.idx(x, y)`（`y * w + x`）会算出**非整数索引** ⇒ `world.height[i]`
+    //    是 `undefined` ⇒ 面板里的 `.toFixed()` 抛 `TypeError`、**整页脚本中断**。
+    //    这条路径**不报错、不 NaN**，只是把整页弄死（本仓 2026-09 实测踩过）。
+    // ⚠️ 非有限值（NaN / Infinity）**直接拒绝**，而不是兜底成 0——
+    //    兜底会把「一次坏调用」变成「安静地检视了 (0,0)」。
+    const pt = this.qol.inspectPoint(x, y);
+    if (!pt) return;
+    x = pt.x;
+    y = pt.y;
+    if (!this.world.inside(x, y)) {
+      // Q3：**不许静默返回**。玩家点了一下却什么都没发生，只会以为工具坏了。
+      this.notify('此处已出图外 · 点回地图上再看', 2400);
+      return;
+    }
     this.selected = { x, y };
     const world = this.world;
     const i = world.idx(x, y);
@@ -1819,7 +1838,13 @@ class Sandbox {
     const bioBtn = strongest
       ? '<button class="btn" id="inkInspectBio" style="width:calc(100% - 20px);margin:8px 10px 10px">查看他的一生</button>'
       : '';
-    panel.innerHTML = `<div class="inspect-head">格 (${x}, ${y})<button class="ink-x" id="inkInspectClose">×</button></div>`
+    // Q37：把**真实位面**标在头上（本方法只服务凡间，所以恒为「凡间」）。
+    // ⚠️ 标签读的是**检视器自己的位面**，不是「当前开着哪扇窗」——
+    //    窗内检视（`inspectPlaneAt`）会把它改成上界 / 幽冥。
+    panel.dataset.plane = 'mortal';
+    panel.innerHTML = `<div class="inspect-head">格 (${x}, ${y})`
+      + '<span class="plane-tag">凡间</span>'
+      + '<button class="ink-x" id="inkInspectClose">×</button></div>'
       // `@note` 是 `rows` 里唯一的**伪标签**，专门表示「说明行」：
       // 它不是一项读数，是给上一行做注解的整行小字。两列布局（span + b）
       // 装不下一句解释——长句会被 `.inspect` 的 `overflow: hidden` 裁掉。
@@ -2059,6 +2084,8 @@ class Sandbox {
   render(now) {
     const world = this.world;
     if (!world) return;
+    // Q8：视界窗口与「关闭视界」按钮同帧同步（判据都是 `this.selection`）。
+    this.syncCloseViewBtn();
     if (this.render3d?.render(now)) return;
     const ctx = this.ctx;
     const { width, height } = this.canvasSize();
@@ -2333,19 +2360,7 @@ class Sandbox {
     setPeriodicMarkup(bars, barsHtml);
   }
 
-  refreshChronicle() {
-    const list = $('inkChronicle');
-    if (!list || !this.world) return;
-    const items = this.world.chronicle.slice(-40).reverse();
-    setPeriodicMarkup(list, items.length
-      ? items.map((c) => {
-        // 卜算子的话单独标一下，免得读者分不清哪句是旁白、哪句是史实
-        const cls = c.kind === 'busanzi' ? 'ink-log is-busanzi' : 'ink-log';
-        const who = c.kind === 'busanzi' ? '卜算子' : `${Math.floor(c.day / 360) + 1} 年`;
-        return `<div class="${cls}"><b>${who}</b>${c.text}</div>`;
-      }).join('')
-      : '<div class="ink-empty">世界还很安静。</div>');
-  }
+  refreshChronicle() { return refreshChroniclePanel(this); }
 
   // ── 大事记（World.milestones，见 world/World.js 的 milestone()）──────
   /**
@@ -2359,33 +2374,7 @@ class Sandbox {
    * 刷新节奏与编年史一致（挂 2.5 秒那个定时器，不在 rAF 里）——
    * 每帧把 600 条重排一遍是白烧 CPU。
    */
-  refreshMilestones() {
-    const box = $('inkMilestones');
-    const world = this.world;
-    if (!box || !world) return;
-    const all = Array.isArray(world.milestones) ? world.milestones : [];
-    const items = all.slice(-MILESTONE_PANEL_LIMIT).reverse();
-    const active = this.life?.events?.activeCrises || [];
-    const activeRows = active.map((event) => {
-      const village = world.villageById(event.villageId);
-      const yearsLeft = Math.max(0, Math.ceil(
-        ((event.startedDay || 0) + (event.durationDays || 0) - world.day) / 360,
-      ));
-      const impact = village
-        ? `聚落元气 ${Math.max(0, village.hp || 0).toFixed(0)} · 粮食 ${Math.max(0, village.food || 0).toFixed(0)}`
-        : '受灾聚落已不在';
-      return `<div class="ink-log crisis-active"><b>进行中 · 事件 #${event.id}「${event.name}」</b>`
-        + `${event.villageName || '受灾聚落'} · 约 ${yearsLeft} 年后结算 · ${impact}</div>`;
-    });
-    const milestoneRows = items.map((m) => {
-        const year = Math.floor((m.day || 0) / 360) + 1;
-        return `<div class="ink-log"><b>仙历 ${year} 年</b>${m.text}</div>`;
-      });
-    const rows = [...activeRows, ...milestoneRows];
-    setPeriodicMarkup(box, rows.length
-      ? rows.join('')
-      : '<div class="ink-empty">还没有值得记的大事。快进一些年，或者亲手去改一改这个世界。</div>');
-  }
+  refreshMilestones() { return refreshMilestonesPanel(this); }
 
   // ── 值得关注的人物（见本文件顶部的 notablePeople）────────────────
   /**
@@ -2396,118 +2385,12 @@ class Sandbox {
    *   · Feedback：每行都带「为什么是他」，不是一串没有由来的名字；
    *   · Stability：纯读派生，不写世界。
    */
-  refreshNotables() {
-    const box = $('inkNotables');
-    const world = this.world;
-    if (!box || !world) return;
-    const rows = notablePeople(world);
-    setPeriodicMarkup(box, rows.length
-      ? rows.map((r) => {
-        const e = r.e;
-        const tags = [realmLabel(e.level || 0)];
-        if (e.faction) {
-          const f = world.factionById(e.faction);
-          if (f) tags.push(f.name);
-        }
-        return `<div class="ink-log notable-row" data-live="${e.id}">`
-          + `<span class="notable-reason">${r.reason}</span>${displayName(e)}（${tags.join(' · ')} · `
-          + `${Math.floor((e.age || 0) / 360)} 岁）`
-          + `<div class="necro-epitaph">${ATTENTION_NAMES[attentionOf(world, e)]}`
-          + `${e.forbidden ? ` · 身负禁术「${e.forbidden}」` : ''}`
-          + `${e.beast ? ` · 有灵兽${e.beast}` : ''}</div>`
-          + '</div>';
-      }).join('')
-      : '<div class="ink-empty">还没有觉醒的修士。用「生灵」撒下凡人，再快进几年。</div>');
-    // 事件委托（同史册）：面板每 2.5 秒重建 innerHTML，
-    // 逐行挂监听会被下一次刷新全部丢掉——而且不报错，只是点了没反应。
-    if (!this.notablesBound) {
-      box.addEventListener('click', (ev) => {
-        const el = ev.target.closest('[data-live]');
-        if (el) this.showPersonCard(Number(el.dataset.live));
-      });
-      this.notablesBound = true;
-    }
-    // 正在摊开的那个人死了 / 换世界了 → 收起面板，不留一张查不到的旧卡片
-    if (this.personOpenId !== null && !findEntity(world, this.personOpenId)) {
-      this.hidePersonCard();
-    }
-  }
+  refreshNotables() { return refreshNotablesPanel(this); }
 
   /** 点开一个**活人**：把 `compileBiography` 那一整篇摊出来 */
-  showPersonCard(id) {
-    const world = this.world;
-    const entity = findEntity(world, id);
-    const panel = $('inkPersonDetail');
-    if (!entity || !panel) return;
-    this.personOpenId = id;
-    // D7-E：人物卡加一个「记挂」开关。记挂的是**这一世的人**（`mortal:<id>`），
-    // 所以转世后会拿到新 id、**不自动继承**（见 sim/watch.js 头注释）。
-    const watched = isWatched(world, entity);
-    panel.innerHTML = `<div class="inspect-head">${displayName(entity)}的一生`
-      + '<button class="ink-x" id="inkPersonClose">×</button></div>'
-      + `<div class="necro-body">${renderBiographyHtml(compileBiography(world, entity))}</div>`
-      + `<button class="btn" id="inkBtnPersonWatch" style="width:calc(100% - 20px);margin:0 10px 6px">`
-      + `${watched ? '★ 已记挂' : '☆ 记挂此人'}</button>`
-      // D7-F：一跳关系图（默认收起，点「查看关系」摊开）
-      + '<button class="btn" id="inkBtnPersonRel" style="width:calc(100% - 20px);margin:0 10px 6px">'
-      + `${this.relationOpen ? '收起关系' : '查看关系'}</button>`
-      + '<div id="inkPersonRel" style="text-align:center;padding:0 10px"></div>'
-      + '<button class="btn" id="inkBtnPersonBio" style="width:calc(100% - 20px);margin:0 10px 10px">导出此人传记（Markdown）</button>';
-    panel.classList.add('on');
-    $('inkPersonClose').addEventListener('click', () => this.hidePersonCard());
-    // 关系图开关。⚠️ 换人（点外圈节点）时 `relationOpen` 保持——于是能顺着关系网一路点下去；
-    //    这里同步把新中心的关系图填进容器（否则按钮写着「收起关系」、图却是空的）。
-    if (this.relationOpen) {
-      const relBox = $('inkPersonRel');
-      if (relBox) relBox.innerHTML = this.buildRelationSvg(entity);
-    }
-    this.bindRelationGraph();
-    $('inkBtnPersonRel').addEventListener('click', () => {
-      // 纯 UI 开关：重绘关系图容器，**不重排整张卡**（否则会把玩家的滚动位置重置）。
-      this.relationOpen = !this.relationOpen;
-      $('inkBtnPersonRel').textContent = this.relationOpen ? '收起关系' : '查看关系';
-      const box = $('inkPersonRel');
-      const now = findEntity(this.world, id);
-      if (box) box.innerHTML = (this.relationOpen && now) ? this.buildRelationSvg(now) : '';
-      if (this.relationOpen) this.bindRelationGraph();
-    });
-    $('inkBtnPersonWatch').addEventListener('click', () => {
-      // 再取一次实体：卡片可能开着不动、人却在这期间死了（面板每 2.5 秒刷新）。
-      const now = findEntity(this.world, id);
-      if (!now) return;
-      const res = toggleWatch(this.world, now, this.world.day);
-      if (!res.ok) {
-        // 上限满 ⇒ **不静默顶掉别人**，就地提示玩家先取关一个（不弹模态框）。
-        if (res.reason === 'full') {
-          $('inkBtnPersonWatch').textContent = `记挂已满（上限 ${WATCH_CAP}）`;
-        }
-        return;
-      }
-      this.showPersonCard(id);   // 重绘按钮状态（☆ / ★）
-      this.refreshWatch();       // 侧栏「天道记挂」同步
-    });
-    $('inkBtnPersonBio').addEventListener('click', () => {
-      // 再编译一遍：正文是纯派生，不值得为它多存一份（存了就会与世界不同步）
-      const now = findEntity(this.world, id);
-      if (now) this.downloadText(biographyFileName(now), compileBiography(this.world, now));
-    });
-    // 「找到这个人」和「看见他在哪」是同一件事——所以顺带把镜头挪过去。
-    // 挪镜头**不是**改世界状态（camera 是渲染层），所以不影响存读档等价。
-    // D7-C：改成 0.75 秒的滑行 + 落点墨环（不再是啪一下瞬移）。
-    this.camera.focusOn(entity.x, entity.y, {
-      zoom: Math.max(this.camera.zoom, 7),
-      duration: PERSON_FOCUS_DURATION,
-    });
-    spawnFocusPulse(this.focusPulses, entity.x, entity.y);
-    this.dirty = true;
-  }
+  showPersonCard(id) { return showPersonCardPanel(this, id); }
 
-  hidePersonCard() {
-    const panel = $('inkPersonDetail');
-    if (panel) panel.classList.remove('on');
-    this.personOpenId = null;
-    this.relationOpen = false;   // 收起卡片时也收起关系图（下次打开是干净状态）
-  }
+  hidePersonCard() { return hidePersonCardPanel(this); }
 
   // ── 人物局部关系图（D7-F，见 render/relationGraph.js）────────
   /**
@@ -2520,29 +2403,7 @@ class Sandbox {
    *   · 都没有            ⇒ 不可考（点了只提示，不抛错）。
    * 纯读派生，不改世界、不抽 RNG。
    */
-  buildRelationSvg(entity) {
-    const world = this.world;
-    const neighbors = [];
-    const rels = entity && entity.relations;
-    if (rels && typeof rels.forEach === 'function') {
-      rels.forEach((rel, id) => {
-        const live = findEntity(world, id);
-        const dead = live ? null : findDead(world, id);
-        neighbors.push({
-          id,
-          name: (live && displayName(live)) || (dead && dead.name) || '无名',
-          type: rel && rel.type,
-          score: rel && rel.score,
-          state: live ? 'live' : (dead ? 'dead' : 'unknown'),
-        });
-      });
-    }
-    return relationGraphSvg(
-      { id: entity.id, name: displayName(entity) },
-      neighbors,
-      { max: RELATION_GRAPH_MAX },
-    );
-  }
+  buildRelationSvg(entity) { return buildRelationSvgPanel(this, entity); }
 
   /**
    * 关系图外圈节点的点击委托。
@@ -2550,20 +2411,7 @@ class Sandbox {
    *    卡片每开一次就 `panel.innerHTML = …` 重排一次，绑在子容器上的监听会被一起丢掉，
    *    而且**不报错**，只是点了没反应（本仓记录过的故障类）。
    */
-  bindRelationGraph() {
-    const panel = $('inkPersonDetail');
-    if (!panel || this.relationBound) return;
-    panel.addEventListener('click', (ev) => {
-      const el = ev.target.closest('[data-goto]');
-      if (!el) return;
-      const nid = Number(el.dataset.goto);
-      if (!Number.isFinite(nid)) return;
-      if (findEntity(this.world, nid)) this.showPersonCard(nid);
-      else if (findDead(this.world, nid)) this.showDeadBiography(nid);
-      else this.notify('此人已不可考');
-    });
-    this.relationBound = true;
-  }
+  bindRelationGraph() { return bindRelationGraphPanel(this); }
 
   // ── 天道记挂（D7-E，见 sim/watch.js）────────────────────────
   /**
@@ -2581,68 +2429,10 @@ class Sandbox {
    *
    * ⚠️ 纯读 + 一个只增的 `lastReadDay`：挂 2.5 秒定时器刷新，不抽 rng、不动世界。
    */
-  refreshWatch() {
-    const box = $('inkWatch');
-    const world = this.world;
-    if (!box || !world) return;
-    const rows = watchRows(world);
-    const count = $('inkWatchCount');
-    setTextIfChanged(count, String(rows.length));
-    const dot = $('inkWatchDot');
-    if (dot) dot.style.display = watchHasNews(world) ? '' : 'none';
-    setPeriodicMarkup(box, rows.length
-      ? rows.map((r) => {
-        const e = r.entry;
-        const tags = [];
-        if (r.entity) tags.push(realmOrMortal(r.entity.level || 0));
-        tags.push(r.label);
-        // 已入上界的：顺手把「现在在上界怎么样」摊在小字里（复用三界面板的
-        // `upperFateOf`，不新增账本）。其余状态没有这一行。
-        const extra = (r.upper && world.upper)
-          ? `<div class="necro-epitaph">${upperFateOf(world.upper, r.upper)}</div>`
-          : '';
-        return `<div class="ink-log notable-row" data-watch="${e.key}">`
-          + `<span class="notable-reason">★</span>${e.name}（${tags.join(' · ')}）`
-          + `${extra}</div>`;
-      }).join('')
-      : '<div class="ink-empty">还没有记挂任何人。点开一个人物卡，按「☆ 记挂此人」。</div>');
-    // 事件委托（同活人榜 / 史册）：面板每 2.5 秒重建 innerHTML，
-    // 逐行挂监听会被下一次刷新全部丢掉——而且不报错，只是点了没反应。
-    if (!this.watchBound) {
-      box.addEventListener('click', (ev) => {
-        const el = ev.target.closest('[data-watch]');
-        if (el) this.openWatchRow(el.dataset.watch);
-      });
-      // 点标题 = 把全部记挂标为已读（红点熄灭）。第一版**不造通知中心**，
-      // 只用这一下「清红点」的手势。标题是常驻元素，挂一次即可。
-      const title = $('inkWatchTitle');
-      if (title) {
-        title.style.cursor = 'pointer';
-        title.addEventListener('click', () => {
-          markAllWatchRead(this.world, this.world.day);
-          this.refreshWatch();
-        });
-      }
-      this.watchBound = true;
-    }
-  }
+  refreshWatch() { return refreshWatchPanel(this); }
 
   /** 点一行「记挂」：按状态导航（见 refreshWatch 的三种出口）。**纯导航 + 标已读**。 */
-  openWatchRow(key) {
-    const world = this.world;
-    if (!world) return;
-    const entry = ensureWatch(world).find((w) => w.key === key);
-    if (!entry) return;
-    const r = resolveWatch(world, entry);
-    markWatchRead(world, key, world.day);   // 点开即已读（红点熄灭）
-    if ((r.state === 'alive' || r.state === 'possessed') && r.entity) {
-      this.showPersonCard(r.entity.id);     // 内含 focus + 墨环 + 人物卡
-    } else if (r.state === 'dead' && r.dead) {
-      this.showDeadBiography(r.dead.id);
-    }
-    // ascended / unknown：只标已读、就地显示现况（红点灭），不移动镜头。
-    this.refreshWatch();
-  }
+  openWatchRow(key) { return openWatchRowPanel(this, key); }
 
   // ── 三界（上界 / 幽冥，见 Batch 3）───────────────────────────
   /**
@@ -2659,160 +2449,13 @@ class Sandbox {
    * ⚠️ 刷新节奏与大事记一致（挂 2.5 秒那个定时器，**不在 rAF 里**）：纯读派生，
    *    不写世界、不抽 rng。把它挪进 `frame()` 才是「每帧重排几百条魂」。
    */
-  refreshThreeRealms() {
-    const world = this.world;
-    if (!world) return;
-    this.refreshUpperRealm(world);
-    this.refreshNetherRealm(world);
-  }
+  refreshThreeRealms() { return refreshThreeRealmsPanel(this); }
 
   /** 上界那一块：人口 / 飞升名册（带现状）/ 上界自己的大事 */
-  refreshUpperRealm(world) {
-    const upper = world.upper || this.upper;
-    const meta = $('inkUpperMeta');
-    const box = $('inkUpperLog');
-    if (!upper) {
-      if (meta) meta.textContent = '未生成';
-      setPeriodicMarkup(box, '<div class="ink-empty">这一局没有上界。</div>');
-      return;
-    }
-    const pop = upper.popLog || {};
-    if (meta) {
-      // `arrived` 是**累计**从凡间到达的（`planes.arriveUpper` 记账），
-      // 与 `upper.entities.length`（此刻活着几个）是两件事——两个都报，
-      // 只报一个的话「上来过 1 个」与「此刻 13 个」谁都会读错。
-      //
-      // ── 生态账本（D6-2 工程包 E）──
-      // 追加「生 / 亡」两项，与**幽冥那一行同款口径**：生 = 四种来源之和
-      // （开天播种 + 从凡间到达 + 修士化生 + 凡人生育），亡 = 累计陨落。
-      // ⚠️ 守恒式 `生灵 === 生 − 亡` 是**契约**（`upperEcoStats` 是这四项相加的
-      //    唯一处，smoke 5x 直接断言）——三项摆在同行，账平不平一眼可见。
-      // ⚠️ **追加**而不是改写：playtest 10e 用 `includes('生灵 N')` 等子串对账，
-      //    改写会悄悄改掉那条断言的契约（规格明令：不新增区 / CSS 类，也不动锚点）。
-      const eco = upperEcoStats(upper);
-      meta.textContent = `生灵 ${upper.entities.length} · 宗门 ${upper.factions.length}`
-        + ` · 飞升上来 ${pop.arrived || 0}`
-        + ` · 生态 生 ${eco.born} · 亡 ${eco.died}`;
-    }
-    if (!box) return;
-    const rows = [];
-    const log = Array.isArray(upper.arrivedLog) ? upper.arrivedLog : [];
-    for (const a of log.slice(-UPPER_ARRIVAL_LIMIT).reverse()) {
-      rows.push(`<div class="ink-log"><b>仙历 ${Math.floor((a.day || 0) / 360) + 1} 年</b>`
-        + `${a.name}（${realmOrMortal(a.level)}）`
-        + `${a.via === 'rift' ? '被裂缝卷上界' : '飞升上界'}`
-        + `${a.sect ? ` · 入「${a.sect}」` : ''}`
-        + `<div class="necro-epitaph">${upperFateOf(upper, a)}</div></div>`);
-    }
-    const ms = Array.isArray(upper.milestones) ? upper.milestones : [];
-    for (const m of ms.slice(-UPPER_MILESTONE_LIMIT).reverse()) {
-      rows.push(`<div class="ink-log"><b>仙历 ${Math.floor((m.day || 0) / 360) + 1} 年</b>${m.text}</div>`);
-    }
-    setPeriodicMarkup(box, rows.length ? rows.join('')
-      : '<div class="ink-empty">上界还只有开天时的那十几个人。凡间有人飞升之后，这里会记下他。</div>');
-  }
+  refreshUpperRealm(world) { return refreshUpperRealmPanel(this, world); }
 
   /** 幽冥那一块：魂路五路分布 / 魂池里排着谁 / 谁已经带着前世回来 */
-  refreshNetherRealm(world) {
-    const meta = $('inkNetherMeta');
-    const bars = $('inkSoulRoutes');
-    const box = $('inkSoulPool');
-    const st = reincarnationStats(world);
-    const log = world.soulLog || {};
-    let total = 0;
-    for (const k of SOUL_ROUTE_ORDER) total += Number(log[k]) || 0;
-    if (meta) {
-      // `waiting` 是**此刻**池子里排队的（上限 SOUL_CAP = 120），
-      // `total` 是**累计**判过路的魂——同「上界那两栏」的理由，两个都报。
-      let line = `魂池 ${st.waiting} · 累计 ${total} · 已归来 ${st.reborn}`;
-      // ── 幽冥实体读数（2026-09-23 补，契约 `reports/d5/BATCH2-DESIGN.md` §七）──
-      // 上三栏是**凡间魂池**的账（累计判过路），这一栏才是**幽冥里此刻站着谁**
-      // ——两者不是一回事：面板印「鬼修 45」曾让玩家开视界却一个都查不到
-      // （BATCH-REPORT 那条 P1）。所以**扩展现有这一行**（BACKLOG P3 #3：
-      // 右栏已 12 个区，加区前先考虑合并 ⇒ 不新增区、不加新 CSS 类）。
-      //
-      // ⚠️ `world.nether` 在老档 / 单世界路径下可能是 `undefined`：
-      //    此时**退回原字符串**，不抛错（守卫风格照抄 `refreshUpperRealm`）。
-      // ⚠️ 口径只有 `netherGhostStats` 一份（`sim/netherLife.js`）——
-      //    不要在这里自己 `filter` 一遍 `nether.entities`，那是第二份真相。
-      // ⚠️ 没有鬼修时「最高」印 `—` 而**不是**省略整段：忽有忽无的尾巴会让
-      //    以文字为锚点的断言（playtest / smoke）随时变红。
-      const nether = world.nether;
-      if (nether) {
-        const gs = netherGhostStats(nether);
-        // 生态账本（D6-2 工程包 E）：与**上界那一行同款口径**（生 / 亡）。
-        // ⚠️ 多一栏「逐」：幽冥有**两条**离开路径（消散 + 上限逐出），
-        //    而上界只有一条（陨落）——守恒式是 `鬼魂 + 鬼修 === 生 − 亡 − 逐`。
-        //    这是两个世界的规则差别，不是口径不统一。
-        // ⚠️ D6-3 工程包 B 再加一栏「出」：**第三条离开路径**——自幽冥缝
-        //    爬入凡间的鬼（`nether.popLog.climbedOut`）。守恒式因此变成
-        //    `鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出`（`netherEcoStats.conserved`
-        //    与 playtest 的断言同步改了）。**必须印**：不印的话玩家看到
-        //    「鬼魂 3 但生 100 亡 20 逐 5」，账差 72 却查不出差在哪。
-        const eco = netherEcoStats(nether);
-        // ⚠️ D6-3 工程包 C 再加一栏「物」：幽冥**此刻躺着几件物品**（自生 + 跌入者
-        //    带下来的，减去漏回凡间的）。它是 `netherItemStats().alive`——现算，
-        //    不入档（铁律二）。**必须印**：玩家开幽冥视界时，这一栏是「幽冥里有没有
-        //    东西」的唯一读数；不印的话「幽冥物品泄漏」这条通道对玩家不可见。
-        // ⚠️ D6-3 工程包 D 再加一栏「夺」：**第四条离开路径**——低阶鬼修真夺舍
-        //    凡间活人后**从幽冥消失**（`nether.popLog.possessedOut`）。守恒式因此
-        //    变成 `鬼魂 + 鬼修 === 生 − 亡 − 逐 − 出 − 夺`（`netherEcoStats.conserved`
-        //    与 playtest 10e 的算式同步改了）。**必须印**：不印的话玩家看到
-        //    「鬼魂 3 但生 100 亡 20 逐 5 出 3」，账差 69 却查不出差在哪。
-        const items = netherItemStats(nether);
-        line += ` · 幽冥 鬼魂 ${gs.ghost} · 鬼修 ${gs.cultivator}`
-          + ` · 最高 ${gs.topTierName || '—'}`
-          + ` · 生态 生 ${eco.born} · 亡 ${eco.died} · 逐 ${eco.evicted} · 出 ${eco.climbedOut} · 夺 ${eco.possessedOut}`
-          + ` · 物 ${items.alive}`;
-      }
-      meta.textContent = line;
-    }
-    if (bars) {
-      let max = 1;
-      for (const k of SOUL_ROUTE_ORDER) max = Math.max(max, Number(log[k]) || 0);
-      setPeriodicMarkup(bars, SOUL_ROUTE_ORDER.map((k) => {
-        const n = Number(log[k]) || 0;
-        const pct = n ? Math.max(3, (n / max) * 100) : 0;
-        // ⚠️ 「零的那几路压淡」走 `data-zero` 而**不是**多拼一个类名：
-        //    `_uiclass.mjs` 的类名抽取要求 class 属性里是字面量，
-        //    一旦写成「类名 + 模板插值」（realm-soul 后面接一个条件类名），
-        //    整段匹配就失败 ⇒ 那个类名对探针**完全不可见**，改名/删样式都不会红。
-        //    走 data 属性后 class 属性是纯字面量，探针照得到。
-        //    （探针这个盲点已记进 BACKLOG，本轮不动 RESEARCH 资产。）
-        return `<div class="realm-soul" data-zero="${n ? '0' : '1'}">`
-          + `<span>${ROUTE_LABEL[k] || k}</span>`
-          + `<i style="width:${pct}%;background:${SOUL_ROUTE_COLOR[k] || '#7d776b'}"></i>`
-          + `<b>${n}</b></div>`;
-      }).join(''));
-    }
-    if (!box) return;
-    const rows = [];
-    // ① 池子里还排着谁。⚠️ 池子**只装 natural / linger 两路**——后三路
-    //    （鬼修 / 怨魂化 / 魂火散尽）不入轮回，只在上面那五根条里计数。
-    //    所以「某人不在池子里」并不等于「他没留下魂」，这行小字得说清楚。
-    const pool = world.souls.slice().sort((a, b) => a.dueDay - b.dueDay).slice(0, SOUL_POOL_LIMIT);
-    for (const s of pool) {
-      const left = Math.max(0, Math.ceil((s.dueDay - world.day) / 360));
-      rows.push(`<div class="ink-log"><b>${left > 0 ? `${left} 年后` : '待投胎'}</b>`
-        + `${s.ofName}（${realmOrMortal(s.ofLevel)}）`
-        + ` · ${ROUTE_LABEL[s.route] || s.route}`
-        + ` · 第 ${(s.incarnation || 1) + 1} 世`
-        + `${s.ofSectName ? ` · 前世在「${s.ofSectName}」` : ''}</div>`);
-    }
-    // ② 已经带着前世回来的人
-    const back = [];
-    for (const e of world.entities) {
-      if (e && e.pastLife) back.push(e);
-    }
-    for (const e of back.slice(-SOUL_BACK_LIMIT).reverse()) {
-      rows.push(`<div class="ink-log"><b>${e.name}</b>（${realmOrMortal(e.level)}）`
-        + ` ← 前世 ${e.pastLife.name}（${e.pastLife.realm || realmOrMortal(e.pastLife.level)}）`
-        + `<div class="necro-epitaph">${PAST_LIFE_CHOICE[e.pastLife.choice] || '记忆尚未觉醒'}`
-        + `${e.pastLife.conflict ? ' · 两世相争' : ''}</div></div>`);
-    }
-    setPeriodicMarkup(box, rows.length ? rows.join('')
-      : '<div class="ink-empty">魂池还是空的。这个世界的人死得还不够多——快进一些年。</div>');
-  }
+  refreshNetherRealm(world) { return refreshNetherRealmPanel(this, world); }
 
   // ── 史册（逝者名录，见 sim/necrology.js）─────────────────
   /**
@@ -2825,91 +2468,17 @@ class Sandbox {
    * 列表只渲染前 `NECRO_PANEL_LIMIT` 条：全 800 条塞进 DOM 没有意义，
    * 只会让侧栏滚不动。要看全的用下面的导出。
    */
-  refreshNecrology() {
-    const box = $('inkNecrology');
-    const world = this.world;
-    if (!box || !world) return;
-    const rows = necrologyList(world, { sort: this.necroSort, limit: NECRO_PANEL_LIMIT });
-    const st = necrologyStats(world);
-    const count = $('inkNecroCount');
-    if (count) count.textContent = `${st.count} / 累计 ${st.total}`;
-    setPeriodicMarkup(box, rows.length
-      ? rows.map((r) => {
-        const year = Math.floor((r.died || 0) / 360);
-        const tags = [realmOrMortal(r.level)];
-        if (r.sectName) tags.push(r.sectName);
-        const who = r.fate === 'ascended' ? '飞升' : r.cause;
-        // 「这个人死了之后去哪了」就在这一行上回答（Batch 3 加的 `soulRoute` 列）。
-        // 不印出来的话，玩家只能靠「五路总数 + 魂池名单」去反推，
-        // 而那两条都查不到**具体某个人**——他可能压根没进池子（后三路）。
-        const fate = soulRouteText(r);
-        return `<div class="ink-log necro-row" data-dead="${r.id}">`
-          + `<b>仙历 ${year} 年</b>${r.name}（${tags.join(' · ')}）· ${who}`
-          + (fate ? ` · ${fate}` : '')
-          + (r.epitaph ? `<div class="necro-epitaph">「${r.epitaph}」</div>` : '')
-          + '</div>';
-      }).join('')
-      : '<div class="ink-empty">名录尚空——这个世界还没有人离世。</div>');
-    // 点开某一条：用**事件委托**。面板每 2.5 秒重建一次 innerHTML，
-    // 逐条挂监听会被下一次刷新全部丢掉（而且不会报错，只是点了没反应）。
-    if (!this.necroBound) {
-      box.addEventListener('click', (ev) => {
-        const el = ev.target.closest('[data-dead]');
-        if (el) this.showDeadBiography(Number(el.dataset.dead));
-      });
-      this.necroBound = true;
-    }
-    // 正在摊开的那条被淘汰了 / 换世界了 → 收起面板，不留一条查不到的旧闻
-    if (this.necroOpenId !== null && !findDead(world, this.necroOpenId)) {
-      this.hideDeadBiography();
-    }
-  }
+  refreshNecrology() { return refreshNecrologyPanel(this); }
 
-  setNecroSort(sort) {
-    this.necroSort = sort === 'importance' ? 'importance' : 'recent';
-    const recent = $('inkBtnNecroRecent');
-    const imp = $('inkBtnNecroImportance');
-    if (recent) recent.classList.toggle('on', this.necroSort === 'recent');
-    if (imp) imp.classList.toggle('on', this.necroSort === 'importance');
-    this.refreshNecrology();
-  }
+  setNecroSort(sort) { return setNecroSortPanel(this, sort); }
 
   /** 点开一条名录：把那个人的完整传记正文摊出来 */
-  showDeadBiography(id) {
-    const record = findDead(this.world, id);
-    const panel = $('inkNecroDetail');
-    if (!record || !panel) return;
-    this.necroOpenId = id;
-    const md = compileDeadBiography(this.world, record);
-    panel.innerHTML = `<div class="inspect-head">${record.name}传`
-      + '<button class="ink-x" id="inkNecroClose">×</button></div>'
-      + `<div class="necro-body">${renderBiographyHtml(md)}</div>`
-      + '<button class="btn" id="inkBtnNecroBio" style="width:calc(100% - 20px);margin:0 10px 10px">导出此人传记（Markdown）</button>';
-    panel.classList.add('on');
-    $('inkNecroClose').addEventListener('click', () => this.hideDeadBiography());
-    $('inkBtnNecroBio').addEventListener('click', () => {
-      // 再编译一遍：正文是纯派生，不值得为它多存一份（存了就会与世界不同步）
-      this.downloadText(biographyFileName(record), compileDeadBiography(this.world, record));
-    });
-  }
+  showDeadBiography(id) { return showDeadBiographyPanel(this, id); }
 
-  hideDeadBiography() {
-    const panel = $('inkNecroDetail');
-    if (panel) panel.classList.remove('on');
-    this.necroOpenId = null;
-  }
+  hideDeadBiography() { return hideDeadBiographyPanel(this); }
 
   /** 下载一段文本为 .md（史册两个导出按钮共用） */
-  downloadText(name, text) {
-    const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    a.click();
-    URL.revokeObjectURL(url);
-    this.notify(`已导出 ${name}（${text.length} 字）`);
-  }
+  downloadText(name, text) { return downloadTextPanel(this, name, text); }
 
   /**
    * 读档 / 导入之后立刻把地盘重算一遍。
@@ -2936,29 +2505,7 @@ class Sandbox {
    * 单独拎出来显示——**不新增状态，纯筛选**。
    * 亲缘同理：它是推导量，这里只负责画出来。
    */
-  refreshBusanzi() {
-    const box = $('inkBusanzi');
-    if (!box || !this.world) return;
-    const recent = busanziRecent(this.world, 3);
-    if (!recent.length) {
-      box.classList.remove('on');
-      return;
-    }
-    const lines = $('inkBusanziLines');
-    if (lines) {
-      setPeriodicMarkup(lines, recent
-        .map((c) => `<div class="busanzi-line">${c.text}</div>`)
-        .join(''));
-    }
-    const tier = $('inkBusanziTier');
-    if (tier) tier.textContent = busanziTierName(this.world);
-    const meter = $('inkBusanziMeter');
-    if (meter) {
-      const next = busanziNextStep(this.world);
-      meter.style.width = next ? `${Math.min(100, (next.value / next.need) * 100).toFixed(1)}%` : '100%';
-    }
-    box.classList.add('on');
-  }
+  refreshBusanzi() { return refreshBusanziPanel(this); }
 }
 
 const sandbox = new Sandbox();

@@ -46,6 +46,7 @@ export function compareRuns(runs, { partial = false } = {}) {
     if ([...maps.candidate.keys()].some(key => !maps.c2d.has(key))) fail('step experiment has no matching C2D reference');
   } else if (!equal([...maps.c2d.keys()].sort(), [...maps.candidate.keys()].sort())) fail('C2D/candidate view sets differ');
   if (!partial && (!report.coverage.c2d.complete || !report.coverage.candidate.complete)) fail('C2D/candidate require 12 views; --partial explicitly selects a step experiment');
+  if (!partial && !report.coverage.main?.complete) fail('main reference requires the same 12 fresh views');
   for (const key of maps.candidate.keys()) {
     report.artDiagnostics.views.push({ view: key, ...Object.fromEntries(Object.entries(maps).map(([name, m]) => [name, m.has(key) ? diagnostic(m.get(key)) : null])) });
   }

@@ -173,33 +173,57 @@ export function watchRows(world) {
   return ensureWatch(world).map((entry) => ({ entry, ...resolveWatch(world, entry) }));
 }
 
-/** 有没有「未读的重大事件」——标题上的红点。**纯读**。 */
-export function watchHasNews(world) {
-  const list = ensureWatch(world);
-  for (let i = 0; i < list.length; i += 1) {
-    const entry = list[i];
-    const read = Number.isFinite(entry.lastReadDay) ? entry.lastReadDay : entry.addedDay;
-    const r = resolveWatch(world, entry);
-    if (r.state === 'alive' && r.entity) {
-      const log = Array.isArray(r.entity.log) ? r.entity.log : [];
-      for (let j = log.length - 1; j >= 0; j -= 1) {
-        const row = log[j];
-        if (row && WATCH_MAJOR_KINDS.has(row.kind) && (row.day || 0) > read) return true;
-      }
-    } else if (r.state === 'dead' && r.dead && (Number(r.dead.died) || 0) > read) {
-      return true;
-    } else if (r.state === 'ascended' && r.upper && (Number(r.upper.day) || 0) > read) {
-      return true;
-    } else if (r.state === 'nether' && r.ghost) {
-      // 「跌入幽冥」那一刻也算一条大事（锚是 `ghostOf.deathDay` = 跌落那天）。
-      // 没有它，记挂的人掉进幽冥后红点不亮，玩家不会知道「他去哪了」。
-      const fell = r.ghost.ghostOf && Number.isFinite(r.ghost.ghostOf.deathDay)
-        ? r.ghost.ghostOf.deathDay
-        : 0;
-      if (fell > read) return true;
+/**
+ * 一条记挂**自上次读过以来**有没有新消息。**纯读、不写世界**。
+ *
+ * 这是「红点亮不亮」与「标题上那个数字是几」的**唯一**判据：
+ * `watchHasNews` 与 `watchNewsCount` 都从它派生——
+ * 两处各写一遍的话，红点亮了而数字是 0（或反过来）是迟早的事，
+ * 而且那种不一致**不报错**，玩家只会觉得这一块坏了。
+ */
+function watchEntryHasNews(world, entry) {
+  const read = Number.isFinite(entry.lastReadDay) ? entry.lastReadDay : entry.addedDay;
+  const r = resolveWatch(world, entry);
+  if (r.state === 'alive' && r.entity) {
+    const log = Array.isArray(r.entity.log) ? r.entity.log : [];
+    for (let j = log.length - 1; j >= 0; j -= 1) {
+      const row = log[j];
+      if (row && WATCH_MAJOR_KINDS.has(row.kind) && (row.day || 0) > read) return true;
     }
+    return false;
+  }
+  if (r.state === 'dead' && r.dead) return (Number(r.dead.died) || 0) > read;
+  if (r.state === 'ascended' && r.upper) return (Number(r.upper.day) || 0) > read;
+  if (r.state === 'nether' && r.ghost) {
+    // 「跌入幽冥」那一刻也算一条大事（锚是 `ghostOf.deathDay` = 跌落那天）。
+    // 没有它，记挂的人掉进幽冥后红点不亮，玩家不会知道「他去哪了」。
+    const fell = r.ghost.ghostOf && Number.isFinite(r.ghost.ghostOf.deathDay)
+      ? r.ghost.ghostOf.deathDay
+      : 0;
+    return fell > read;
   }
   return false;
+}
+
+/** 有没有「未读的重大事件」——标题上的红点。**纯读**。 */
+export function watchHasNews(world) {
+  return watchNewsCount(world) > 0;
+}
+
+/**
+ * **按人**数一数「有未读消息」的记挂有几个（Q14：标题上印 `记挂 · 3`）。
+ *
+ * ⚠️ 它数的是**人**，不是事件条数：一个人这期间突破了三次，仍然只算 1。
+ *    印成事件条数的话，那个数字会比列表行数还大，玩家会以为列表被截断了。
+ * ⚠️ 纯读、不抽 RNG、不写 `lastReadDay`（标已读是 `markWatchRead` 的事）。
+ */
+export function watchNewsCount(world) {
+  const list = ensureWatch(world);
+  let n = 0;
+  for (let i = 0; i < list.length; i += 1) {
+    if (watchEntryHasNews(world, list[i])) n += 1;
+  }
+  return n;
 }
 
 /** 把一条记挂标记为已读。 */

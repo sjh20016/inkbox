@@ -33,6 +33,7 @@
     "test:three-realms": "node scripts/inkbox-three-realms.mjs",
     "test:presentation": "node scripts/inkbox-presentation.mjs",
     "test:view": "node scripts/inkbox-view.mjs",
+    "test:qol": "node scripts/inkbox-qol-check.mjs",
     "test:d7": "npm run test:core && npm run test:regression && npm run test:three-realms && npm run test:save-equivalence && npm run test:presentation",
     "test:browser": "node scripts/inkbox-playtest.mjs",
     "test:simulation": "node scripts/inkbox-smoke.mjs",

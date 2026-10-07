@@ -1,7 +1,26 @@
 
+# 可再生成的依赖、构建产物、测试结果与工具缓存。
 node_modules/
 logs/
 dist/
+/coverage/
+/.nyc_output/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/.cache/
+/.vite/
+__pycache__/
+*.py[cod]
+
+# 临时截图、视频和追踪文件放在明确的临时目录；不全局忽略图片，避免误伤 fixtures / baseline。
+**/tmp-screenshots/
+**/tmp-videos/
+**/tmp-traces/
+*.trace.zip
+
+# reports 默认是可重建输出；下面只放行归档与经过筛选的正式证据。
 reports/
 !reports/
 reports/*
@@ -19,7 +38,9 @@ reports/release/**
 # proof/, matrix/, source images and logs remain ignored. The evidence audit
 # limits each new stage to eight representative golden PNGs plus compact JSON.
 run/
+# 一次性日志与压缩输出。
 *.log
+npm-debug.log*
 *.zip
 !reports/archive/v4-docs/*.zip
 .vscode/
