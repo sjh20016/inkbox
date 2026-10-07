@@ -51,7 +51,7 @@ GPU 为同镜头采样中位与 p95（毫秒）。`baseline → final`。
 - World 身份：8 镜 `worldSHA256` 在 baseline / final 逐字一致（配对见 `acceptance-summary.json`）。
 - `advanceState` 是开机帧时序累加器，不入档、不进世界摘要，跨进程数值不稳定，故**不以跨运行逐字相等为断言**；门禁改为在单次运行内断言其恒定，并以 `worldSHA256` 作为世界身份判据（见 `metrics-gate.json` notes）。
 - runtime error：final 运行 `pass=true`、`glErrors=[]`、`gpuTimingUnavailable=[]`、console / Edge runtime error 0。
-- 6000 帧资源增长与 soak：由既有 C2C 门禁覆盖（本阶段不新增 C2D soak，理由见 READINESS）。
+- 6000 帧资源增长：C2C soak 在本轮工作树上重跑 6000 帧，`geometry=114 / textures=11 / programs=16` 全程恒定（较 C2C 基线 `114/10/16` 只多 1 张 Surface 视觉场纹理），无增长。本阶段不新增 C2D soak（理由见 READINESS）。
 
 ## 六、复现
 

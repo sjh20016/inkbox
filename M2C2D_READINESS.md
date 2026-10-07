@@ -1,6 +1,6 @@
 # M2-C2D 就绪与验收状态
 
-2026-10-07。工作区 `E:/world4/坐天观井-实验分支D1`，分支 `m2-c2d-nearfield-painterly`，开工 HEAD `8b3f2bac761b59bf70f524ff9a00429fa40cc07a`。**本地开发与验收完成**；远端 Push 门禁以本轮分支提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未在本轮重跑。
+2026-10-07。工作区 `E:/world4/坐天观井-实验分支D1`，分支 `m2-c2d-nearfield-painterly`，开工 HEAD `8b3f2bac761b59bf70f524ff9a00429fa40cc07a`。**本地开发与验收完成**（含 C2C 浏览器 23 配对与 6000 帧 soak 重跑）；远端 Push 门禁以本轮分支提交的 Actions 状态为准，Nightly 尚未在本轮重跑。
 
 本文件是委托书第十四节要求的最终答复载体，逐条回答 12 个问题。
 
@@ -68,8 +68,10 @@
 | `test:render3d:m2c2a` | 8 组通过，digest `935cfa00a5e6…` |
 | `test:render3d:m2c2c` | 通过 |
 | `test:render3d:m2c2c:purity` | 11 模式 600 日，digest `4b37e9605591ef48…` |
+| `test:render3d:m2c2c:browser` | `pass=true`，23 配对，runtime / console error 0 |
+| `test:render3d:m2c2c:soak` | 6000 帧稳定 `geometry=114 textures=11 programs=16`，无增长 |
 | `test:vendor` | 13 项断言通过 |
-| `build` | 通过 |
+| `build` | 通过（344 文件） |
 
 ## 四、提交纪律（6 段）
 
