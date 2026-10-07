@@ -1,0 +1,550 @@
+{
+  "suite": "M2-C2D nearfield painterly + boundary unification",
+  "generatedAt": "2026-10-07T04:11:09.767Z",
+  "baselineDir": "reports/local/m2c2d/baseline",
+  "finalDir": "reports/local/m2c2d/final",
+  "baselineHead": "8b3f2bac761b59bf70f524ff9a00429fa40cc07a",
+  "method": "C2C canonical natural Worlds (mortal seed226/day72000; realms seed20260923/day21600) imported through the product importFile; fixed camera recipes; in-canvas gl.readPixels sRGB->L* tonal metrics",
+  "gatePass": true,
+  "golden": [
+    {
+      "order": 1,
+      "view": "mortal-overview",
+      "file": "01-mortal-overview.png",
+      "poi": {
+        "x": 99.5,
+        "y": 63.5
+      },
+      "zoom": 1.45,
+      "metrics": {
+        "bufferSize": [
+          1086,
+          806
+        ],
+        "samples": 437658,
+        "lstarP2": 39.067258685170785,
+        "lstarP98": 90.76749689625083,
+        "lstarSpan": 51.70023821108005,
+        "darkRatioL30": 0.012544041237678735,
+        "darkRatioL20": 0.00007540134077293228,
+        "nearPaperRatio": 0.5913932796841369,
+        "meanSaturation": 0.11357646507781814
+      },
+      "worldSHA256": "c52b086adc76ea72affa8d6da97ead4bf881ff1a349e965a1acb88f331e5eef1",
+      "imageSha256": "11f13ec906365711096dbeefdfb3b1e378fe0ee71d157f75885cdc04418f8d26"
+    },
+    {
+      "order": 2,
+      "view": "mortal-coast-near",
+      "file": "02-mortal-coast-near.png",
+      "poi": {
+        "x": 50,
+        "y": 113
+      },
+      "zoom": 5,
+      "metrics": {
+        "bufferSize": [
+          1086,
+          806
+        ],
+        "samples": 437658,
+        "lstarP2": 21.629539003695783,
+        "lstarP98": 90.76749689625083,
+        "lstarSpan": 69.13795789255505,
+        "darkRatioL30": 0.044975757326496946,
+        "darkRatioL20": 0.0016588294970045104,
+        "nearPaperRatio": 0.2615741058086451,
+        "meanSaturation": 0.13259813179672686
+      },
+      "worldSHA256": "c52b086adc76ea72affa8d6da97ead4bf881ff1a349e965a1acb88f331e5eef1",
+      "imageSha256": "0d01589530a7e21f23add131df8b1f87733c2a0aa0d0f48367baab1d11602dd8"
+    },
+    {
+      "order": 3,
+      "view": "mortal-cliff-near",
+      "file": "03-mortal-cliff-near.png",
+      "poi": {
+        "x": 142,
+        "y": 73
+      },
+      "zoom": 5,
+      "metrics": {
+        "bufferSize": [
+          1086,
+          806
+        ],
+        "samples": 437658,
+        "lstarP2": 28.264037849410606,
+        "lstarP98": 88.03027637804374,
+        "lstarSpan": 59.76623852863313,
+        "darkRatioL30": 0.02940195312321493,
+        "darkRatioL20": 0.0013755032468274315,
+        "nearPaperRatio": 0.03198844760063794,
+        "meanSaturation": 0.12497308759070508
+      },
+      "worldSHA256": "c52b086adc76ea72affa8d6da97ead4bf881ff1a349e965a1acb88f331e5eef1",
+      "imageSha256": "9aadd7b3dfb53f0bdc728a38c1a9ec79fb87be6e1ac600e3384511a77246ab27"
+    },
+    {
+      "order": 4,
+      "view": "mortal-settlement-near",
+      "file": "04-mortal-settlement-near.png",
+      "poi": {
+        "x": 78,
+        "y": 16
+      },
+      "zoom": 6,
+      "metrics": {
+        "bufferSize": [
+          1086,
+          806
+        ],
+        "samples": 437658,
+        "lstarP2": 47.913093397968446,
+        "lstarP98": 90.76749689625083,
+        "lstarSpan": 42.85440349828239,
+        "darkRatioL30": 0.0011561538918516284,
+        "darkRatioL20": 0.00018050624003217123,
+        "nearPaperRatio": 0.29074071535308393,
+        "meanSaturation": 0.09266163991267004
+      },
+      "worldSHA256": "c52b086adc76ea72affa8d6da97ead4bf881ff1a349e965a1acb88f331e5eef1",
+      "imageSha256": "940ca549629218aa6237cca0f43727bd4ac6c85eea155935179e228cf50286a5"
+    },
+    {
+      "order": 5,
+      "view": "upper-overview",
+      "file": "05-upper-overview.png",
+      "poi": {
+        "x": 143.5,
+        "y": 89.5
+      },
+      "zoom": 1.45,
+      "metrics": {
+        "bufferSize": [
+          1086,
+          806
+        ],
+        "samples": 437658,
+        "lstarP2": 49.12595278323717,
+        "lstarP98": 88.71814309243783,
+        "lstarSpan": 39.59219030920066,
+        "darkRatioL30": 0,
+        "darkRatioL20": 0,
+        "nearPaperRatio": 0.5912995992304494,
+        "meanSaturation": 0.12036080055650657
+      },
+      "worldSHA256": "a5895fb168c47a0bf8741cfd69de104d54e7ad9108eddb3c67eff946f530be19",
+      "imageSha256": "7d1f937b46eb8eaace85509ce53bafe05418b3502f2b499adfd035d355ee18d5"
+    },
+    {
+      "order": 6,
+      "view": "upper-boundary-near",
+      "file": "06-upper-boundary-near.png",
+      "poi": {
+        "x": 86.5,
+        "y": 135
+      },
+      "zoom": 3.5,
+      "metrics": {
+        "bufferSize": [
+          1086,
+          806
+        ],
+        "samples": 437658,
+        "lstarP2": 35.0175304016329,
+        "lstarP98": 90.76749689625083,
+        "lstarSpan": 55.74996649461794,
+        "darkRatioL30": 0.01430112096659949,
+        "darkRatioL20": 0.0009368045368758254,
+        "nearPaperRatio": 0.22991011246224222,
+        "meanSaturation": 0.1332909542349255
+      },
+      "worldSHA256": "0bb6cbcc587fb0e0dfb3d4636092ad6e9361d0d72ed80f3bcec9fad39b4396d0",
+      "imageSha256": "84fd26f270f99d1de8b7019d0198b3d2d0ed8dbeae7a98dbc895322b35d66f34"
+    },
+    {
+      "order": 7,
+      "view": "nether-overview",
+      "file": "07-nether-overview.png",
+      "poi": {
+        "x": 143.5,
+        "y": 89.5
+      },
+      "zoom": 1.45,
+      "metrics": {
+        "bufferSize": [
+          1086,
+          806
+        ],
+        "samples": 437658,
+        "lstarP2": 18.124556572327855,
+        "lstarP98": 83.89834287659738,
+        "lstarSpan": 65.77378630426952,
+        "darkRatioL30": 0.05466140228214725,
+        "darkRatioL20": 0.02774083873709609,
+        "nearPaperRatio": 0.6080135631017827,
+        "meanSaturation": 0.07891567941151173
+      },
+      "worldSHA256": "0bb6cbcc587fb0e0dfb3d4636092ad6e9361d0d72ed80f3bcec9fad39b4396d0",
+      "imageSha256": "4745b74cd3a57ad794a364fa8faac6f98f04f791b5de81a4e73dc66522c2cd76"
+    },
+    {
+      "order": 8,
+      "view": "nether-boundary-near",
+      "file": "08-nether-boundary-near.png",
+      "poi": {
+        "x": 152.5,
+        "y": 45
+      },
+      "zoom": 3.5,
+      "metrics": {
+        "bufferSize": [
+          1086,
+          806
+        ],
+        "samples": 437658,
+        "lstarP2": 16.20221593273515,
+        "lstarP98": 90.76749689625083,
+        "lstarSpan": 74.56528096351568,
+        "darkRatioL30": 0.09686558911296035,
+        "darkRatioL20": 0.049872274698508884,
+        "nearPaperRatio": 0.06033935173126048,
+        "meanSaturation": 0.11118812700807724
+      },
+      "worldSHA256": "3798831388d543780aa86d83293406648c2fe4a129de85cf2cdf80f46e9870d4",
+      "imageSha256": "c59fdb02159e3f6ef826f29e1f07511285e1950127ed80c5fd5a90789cc902f5"
+    }
+  ],
+  "paired": [
+    {
+      "view": "mortal-overview",
+      "baseline": {
+        "span": 44.0923337761815,
+        "nearPaper": 0.5827358348299357,
+        "dark30": 0.010167756558774202,
+        "dark20": 0.00007540134077293228,
+        "saturation": 0.11397971798031442
+      },
+      "final": {
+        "span": 51.70023821108005,
+        "nearPaper": 0.5913932796841369,
+        "dark30": 0.012544041237678735,
+        "dark20": 0.00007540134077293228,
+        "saturation": 0.11357646507781814
+      },
+      "gpu": {
+        "calls": [
+          25,
+          25
+        ],
+        "triangles": [
+          159036,
+          159036
+        ],
+        "medianMs": [
+          8.23302,
+          7.969843
+        ],
+        "p95Ms": [
+          9.403802,
+          9.308229
+        ]
+      }
+    },
+    {
+      "view": "mortal-coast-near",
+      "baseline": {
+        "span": 69.13795789255505,
+        "nearPaper": 0.26194882762339544,
+        "dark30": 0.028149833888561387,
+        "dark20": 0.0008454089723025741,
+        "saturation": 0.1256045653322274
+      },
+      "final": {
+        "span": 69.13795789255505,
+        "nearPaper": 0.2615741058086451,
+        "dark30": 0.044975757326496946,
+        "dark20": 0.0016588294970045104,
+        "saturation": 0.13259813179672686
+      },
+      "gpu": {
+        "calls": [
+          32,
+          32
+        ],
+        "triangles": [
+          287488,
+          287488
+        ],
+        "medianMs": [
+          7.411145,
+          7.711614
+        ],
+        "p95Ms": [
+          9.078229,
+          8.505416
+        ]
+      }
+    },
+    {
+      "view": "mortal-cliff-near",
+      "baseline": {
+        "span": 46.84198057871048,
+        "nearPaper": 0.026123137244149542,
+        "dark30": 0.014760383678580078,
+        "dark20": 0.0006351991737840963,
+        "saturation": 0.1268168294265857
+      },
+      "final": {
+        "span": 59.76623852863313,
+        "nearPaper": 0.03198844760063794,
+        "dark30": 0.02940195312321493,
+        "dark20": 0.0013755032468274315,
+        "saturation": 0.12497308759070508
+      },
+      "gpu": {
+        "calls": [
+          32,
+          32
+        ],
+        "triangles": [
+          286258,
+          286258
+        ],
+        "medianMs": [
+          8.968489,
+          9.786145
+        ],
+        "p95Ms": [
+          9.541458,
+          10.112812
+        ]
+      }
+    },
+    {
+      "view": "mortal-settlement-near",
+      "baseline": {
+        "span": 46.19898064631866,
+        "nearPaper": 0.24224165901228814,
+        "dark30": 0.00021249468763280918,
+        "dark20": 0.00010282001014490767,
+        "saturation": 0.09690742384676516
+      },
+      "final": {
+        "span": 42.85440349828239,
+        "nearPaper": 0.29074071535308393,
+        "dark30": 0.0011561538918516284,
+        "dark20": 0.00018050624003217123,
+        "saturation": 0.09266163991267004
+      },
+      "gpu": {
+        "calls": [
+          31,
+          31
+        ],
+        "triangles": [
+          292318,
+          292318
+        ],
+        "medianMs": [
+          10.171718,
+          11.967135
+        ],
+        "p95Ms": [
+          10.422187,
+          12.416302
+        ]
+      }
+    },
+    {
+      "view": "upper-overview",
+      "baseline": {
+        "span": 30.906962999288353,
+        "nearPaper": 0.5962692330541198,
+        "dark30": 0,
+        "dark20": 0,
+        "saturation": 0.11667080070633461
+      },
+      "final": {
+        "span": 39.59219030920066,
+        "nearPaper": 0.5912995992304494,
+        "dark30": 0,
+        "dark20": 0,
+        "saturation": 0.12036080055650657
+      },
+      "gpu": {
+        "calls": [
+          10,
+          10
+        ],
+        "triangles": [
+          106004,
+          106004
+        ],
+        "medianMs": [
+          7.044062,
+          7.984635
+        ],
+        "p95Ms": [
+          7.259427,
+          8.05677
+        ]
+      }
+    },
+    {
+      "view": "upper-boundary-near",
+      "baseline": {
+        "span": 58.628278369542016,
+        "nearPaper": 0.24483729304616847,
+        "dark30": 0.010672717053041417,
+        "dark20": 0,
+        "saturation": 0.142006908734172
+      },
+      "final": {
+        "span": 55.74996649461794,
+        "nearPaper": 0.22991011246224222,
+        "dark30": 0.01430112096659949,
+        "dark20": 0.0009368045368758254,
+        "saturation": 0.1332909542349255
+      },
+      "gpu": {
+        "calls": [
+          30,
+          29
+        ],
+        "triangles": [
+          306915,
+          305979
+        ],
+        "medianMs": [
+          9.181562,
+          9.456718
+        ],
+        "p95Ms": [
+          12.119687,
+          9.923177
+        ]
+      }
+    },
+    {
+      "view": "nether-overview",
+      "baseline": {
+        "span": 49.369636917668785,
+        "nearPaper": 0.6326355281978165,
+        "dark30": 0.011333050007083156,
+        "dark20": 0.0028378322799994518,
+        "saturation": 0.07329275155971658
+      },
+      "final": {
+        "span": 65.77378630426952,
+        "nearPaper": 0.6080135631017827,
+        "dark30": 0.05466140228214725,
+        "dark20": 0.02774083873709609,
+        "saturation": 0.07891567941151173
+      },
+      "gpu": {
+        "calls": [
+          9,
+          9
+        ],
+        "triangles": [
+          105816,
+          105816
+        ],
+        "medianMs": [
+          7.440781,
+          7.307239
+        ],
+        "p95Ms": [
+          7.54125,
+          8.188697
+        ]
+      }
+    },
+    {
+      "view": "nether-boundary-near",
+      "baseline": {
+        "span": 69.92049938981398,
+        "nearPaper": 0.06259453728710546,
+        "dark30": 0.047112128648396694,
+        "dark20": 0.017582221734779212,
+        "saturation": 0.10440319677485405
+      },
+      "final": {
+        "span": 74.56528096351568,
+        "nearPaper": 0.06033935173126048,
+        "dark30": 0.09686558911296035,
+        "dark20": 0.049872274698508884,
+        "saturation": 0.11118812700807724
+      },
+      "gpu": {
+        "calls": [
+          30,
+          29
+        ],
+        "triangles": [
+          307321,
+          306385
+        ],
+        "medianMs": [
+          8.33125,
+          8.10375
+        ],
+        "p95Ms": [
+          8.565833,
+          8.665572
+        ]
+      }
+    }
+  ],
+  "textureDelta": [
+    {
+      "view": "mortal-overview",
+      "textures": 4
+    },
+    {
+      "view": "mortal-coast-near",
+      "textures": 4
+    },
+    {
+      "view": "mortal-cliff-near",
+      "textures": 4
+    },
+    {
+      "view": "mortal-settlement-near",
+      "textures": 4
+    },
+    {
+      "view": "upper-overview",
+      "textures": 7
+    },
+    {
+      "view": "upper-boundary-near",
+      "textures": 7
+    },
+    {
+      "view": "nether-overview",
+      "textures": 10
+    },
+    {
+      "view": "nether-boundary-near",
+      "textures": 10
+    }
+  ],
+  "notes": [
+    "mortal-overview: 远景跨度 44.1 → 51.7，纸色亮部 0.583 → 0.591",
+    "mortal-coast-near: 跨度 69.1 → 69.1；纸色 0.262 → 0.262；深墨 L*≤30 0.028 → 0.045",
+    "mortal-cliff-near: 跨度 46.8 → 59.8；纸色 0.026 → 0.032；深墨 L*≤30 0.015 → 0.029",
+    "mortal-cliff-near: GPU median +0.82ms（8.97 → 9.79）",
+    "mortal-settlement-near: 跨度 46.2 → 42.9；纸色 0.242 → 0.291；深墨 L*≤30 0.000 → 0.001",
+    "mortal-settlement-near: GPU median +1.80ms（10.17 → 11.97）",
+    "upper-overview: 远景跨度 30.9 → 39.6，纸色亮部 0.596 → 0.591",
+    "upper-overview: GPU median +0.94ms（7.04 → 7.98）",
+    "upper-boundary-near: 三角形 306915 → 305979（ShaderMaterial.forceSinglePass=true 取消了 DoubleSide+transparent 的第二遍；几何契约见 boundaryStats 比对）",
+    "upper-boundary-near: 跨度 58.6 → 55.7；纸色 0.245 → 0.230；深墨 L*≤30 0.011 → 0.014",
+    "nether-overview: 远景跨度 49.4 → 65.8，纸色亮部 0.633 → 0.608",
+    "nether-boundary-near: 三角形 307321 → 306385（ShaderMaterial.forceSinglePass=true 取消了 DoubleSide+transparent 的第二遍；几何契约见 boundaryStats 比对）",
+    "advanceState 是开机帧时序累加器（不入档）；World 身份改由 worldSHA256 逐字比对"
+  ]
+}
