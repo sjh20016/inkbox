@@ -62,9 +62,19 @@ export class TerrainMesh {
     // Keep material as the legacy tint source for the historical Slab probe.
     this.mesh.material = profile ? this.inkMaterial : this.material;
     this.syncScalarField();
+    this.bindSurfaceField();
   }
   /** Field ownership remains with PlaneStage; this material only borrows it. */
   setScalarField(field,enabled){this.scalarField=field;this.scalarFieldEnabled=!!enabled;this.syncScalarField();}
+  /** M2-C2D P1：连续表面视觉场同样归 PlaneStage 所有，这里只绑定借用。 */
+  setSurfaceField(field){this.surfaceField=field||null;this.bindSurfaceField();}
+  bindSurfaceField(){
+    if(!this.inkMaterial)return;
+    const field=this.surfaceField;
+    this.inkMaterial.uniforms.surfaceTexture.value=field?field.texture:this.artData.typeTexture;
+    this.inkMaterial.uniforms.surfaceMode.value=field&&this.artProfile?1:0;
+    this.inkMaterial.uniforms.surfaceDepthRef.value=field?field.depthReference:0.5;
+  }
   syncScalarField(){
     this.scalarField?.setEnabled(this.scalarFieldEnabled&&!!this.artProfile);
     this.bindScalarField();

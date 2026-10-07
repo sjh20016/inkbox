@@ -3,6 +3,7 @@ import { gridGeometry } from '../terrain/TerrainMesh.js';
 import { ElevationField } from '../terrain/ElevationField.js';
 import { applyQuadMask } from '../region/quadMask.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
+import { WaterPigmentMaterial } from './WaterPigmentMaterial.js';
 
 /**
  * 水面网格。
@@ -28,7 +29,29 @@ export class WaterLayer {
     this.regionGeometry = null;
     this.regionInside = true;
     this.keptQuads = (world.w - 1) * (world.h - 1);
+    this.inkMaterial = null;
+    this.surfaceField = null;
     this.update({ x0: 0, y0: 0, x1: world.w - 1, y1: world.h - 1 });
+  }
+  /**
+   * M2-C2D P1：realm-style 艺术档案把水面材质换成连续绘画水面；
+   * `null` 恢复 legacy MeshBasicMaterial（art=legacy / pilot 等路径不变）。
+   * 几何、Region 遮罩、update 通道完全不动；draw call 仍是一格水网一次。
+   */
+  setArtProfile(profile) {
+    if (profile?.realmStyle) {
+      if (!this.inkMaterial) this.inkMaterial = new WaterPigmentMaterial(this.world, this.surfaceField, profile);
+      else this.inkMaterial.setProfile(profile);
+      this.mesh.material = this.inkMaterial;
+    } else {
+      this.mesh.material = this.material;
+    }
+  }
+  get inkActive() { return this.mesh.material === this.inkMaterial && !!this.inkMaterial; }
+  /** Field ownership stays with PlaneStage; the water mesh only borrows it. */
+  setSurfaceField(field) {
+    this.surfaceField = field || null;
+    this.inkMaterial?.setSurfaceField(this.surfaceField);
   }
   update(region) {
     const w = this.world, attr = this.geometry.attributes.position;
@@ -54,5 +77,5 @@ export class WaterLayer {
       inside: this.regionInside, quadW: this.world.w - 1, quadH: this.world.h - 1,
     });
   }
-  dispose() { this.geometry.dispose(); this.material.dispose(); }
+  dispose() { this.geometry.dispose(); this.material.dispose(); this.inkMaterial?.dispose(); }
 }

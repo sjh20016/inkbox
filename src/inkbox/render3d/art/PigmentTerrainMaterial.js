@@ -15,6 +15,9 @@ uniform sampler2D heightTexture;
 uniform sampler2D typeTexture;
 uniform sampler2D fieldTexture;
 uniform float fieldMode;
+uniform sampler2D surfaceTexture;
+uniform float surfaceMode, surfaceDepthRef;
+uniform float massShadeStrength, deepInkStrength, heightWashStrength, broadRadius;
 uniform vec3 fieldInkColor, fieldColdColor;
 uniform vec3 fieldMineralBlue, fieldMineralGreen, fieldMineralGold;
 uniform vec2 mapSize;
@@ -50,6 +53,13 @@ void main() {
   float d=hAt(p-vec2(0,1)), u=hAt(p+vec2(0,1));
   float slope=length(vec2(r-l,u-d))*0.5;
   float curvature=l+r+d+u-4.0*h;
+  // M2-C2D P2：绘画用低频高度法线——「大山势」只看低频邻域，
+  // 真实高频 slope/curvature 继续留给结构墨、局部皴与飞白（「小笔触」）。
+  // heightTexture .g 已经是舞台高程（世界 Y 单位），格距为 1。
+  float R=max(broadRadius,1.0);
+  float bl=hAt(p-vec2(R,0.0)), br=hAt(p+vec2(R,0.0));
+  float bd=hAt(p-vec2(0.0,R)), bu=hAt(p+vec2(0.0,R));
+  vec3 broadN=normalize(vec3(bl-br,2.0*R,bd-bu));
   // Ridge / valley are distinct signed structural measurements, not N dot V.
   float ridge=smoothstep(0.16,1.7,-curvature);
   float valley=smoothstep(0.22,2.0,curvature)*0.58;
@@ -58,6 +68,14 @@ void main() {
   float distant=mix(1.0,0.30,distanceFade*(1.0-nearDetail));
   float wash=noise(p*0.12+vec2(5.7,9.1));
   float water=1.0-step(3.5,id);
+  // M2-C2D P1：岸线一带的连续烘染权重。水深是连续标量（线性过滤），
+  // 岸线附近的沙 / 水 / 陆因此不再像三个格子图层叠放。
+  float coastSoft=0.0, wd=0.0;
+  if(surfaceMode>0.5){
+    wd=texture2D(surfaceTexture,(clamp(p,vec2(0.0),mapSize-1.0)+0.5)/mapSize).r*surfaceDepthRef;
+    float aaS=max(fwidth(wd)*1.5,0.004);
+    coastSoft=1.0-smoothstep(0.0,aaS+0.03,wd);
+  }
   // The scalar comes from this Stage's World. Large masses stay attached to
   // actual river/type/height structure; ghosts do not drive persistent layout.
   float scalar=0.0;
@@ -81,20 +99,55 @@ void main() {
     color=mix(color,pigment,colorLayerStrength*colorCoverage);
   }
   float boundary=max(abs(id-typeAt(q+vec2(0.38,0))),abs(id-typeAt(q+vec2(0,0.38))));
-  float edge=min(1.0,boundary)*terrainBoundaryStrength*0.16*distant;
+  float edge=min(1.0,boundary)*terrainBoundaryStrength*0.16*distant*(1.0-coastSoft*0.75);
   float sparse=smoothstep(1.0-inkDensity,1.13-inkDensity,noise(p*0.23+3.0));
   float dryNoise=noise(p*2.1+9.0);
   float dry=mix(1.0,smoothstep(0.24,0.58,dryNoise),dryBrushStrength*nearDetail);
   float structure=max(max(ridge,valley),breakInk)*smoothstep(0.10,0.65,slope);
   float ink=structure*sparse*dry*structuralInkStrength*distant;
-  vec3 normal=normalize(cross(dFdx(vWorld),dFdy(vWorld)));
-  float facing=abs(dot(normal,normalize(cameraPosition-vWorld)));
-  float silhouette=(1.0-smoothstep(0.04,0.26,facing))*silhouetteInkStrength*nearDetail;
+  // M2-C2D P2：silhouette / facing 改吃绘画用低频法线（broadN），
+  // 不再直接受真实三角面 dFdx/dFdy 影响 ⇒ 近景不再一片片竖直三角形抢明暗。
+  // ⚠️ 范围要比 legacy 的窄带**放宽**：低频法线是平滑的，若只在「几乎掠射」
+  //    的窄带里入墨，暗端面积会大幅缩水、明度跨度反而变窄。放宽到
+  //    「背向视线的整块形体」，才既能去掉三角面噪点、又撑得住暗端。
+  float facing=abs(dot(broadN,normalize(cameraPosition-vWorld)));
+  float silhouette=smoothstep(0.58,0.05,facing)*silhouetteInkStrength*nearDetail;
   float inkAmount=clamp(ink*0.72+edge+silhouette*0.4,0.0,0.82);
   float clearQi=fieldMode>0.5&&fieldMode<1.5?smoothstep(0.42,0.97,scalar):0.0;
   inkAmount*=1.0-clearQi*0.35;
   if (realmStyleEnabled > 0.5) {
     color=mix(color,realmInkColor,inkAmount);
+    // ── M2-C2D P2 明度骨架（低频主光的两面）────────────────────────────
+    // 同一束世界锚定主光，在「绘画用低频法线」上分两面：
+    //   受光面回纸（留白 / 亮部），背光面入墨（大山势 / 暗部）。
+    // 两面都只看低频 ⇒ 近景得到的是大山势的明暗，不是一片片三角面各自
+    // 抢明暗；而且跨度是被「亮部 + 暗部」同时拉开的，不是只把山压黑。
+    // ⚠️ 主光要**斜掠**（水平分量大于垂直分量）：几乎竖直的光会让所有朝上的
+    //    地形都算「受光」，于是只剩回纸、没有暗部，明度跨度反而被压平。
+    //    斜掠光才能在低频法线上真正分出受光面与背光面。
+    // massMask 只让有坡度的位置参与，平地 / 水面不受这层影响。
+    vec3 keyLight=normalize(vec3(-0.62,0.42,-0.66));
+    float keyDot=dot(broadN,keyLight);
+    float massMask=smoothstep(0.06,0.55,slope+length(vec2(br-bl,bd-bu))*0.6);
+    float lit=smoothstep(0.34,0.98,keyDot);
+    float shade=smoothstep(0.30,0.92,-keyDot);
+    color=mix(color,paperColor,clamp(lit*massShadeStrength*massMask*0.55,0.0,0.60));
+    color=mix(color,realmInkColor,clamp(shade*massShadeStrength*massMask*1.10,0.0,0.75));
+    // 深墨集中在山脊 / 沟谷 / 坡折等结构位置，不把整片山体一起压黑。
+    // ⚠️ legacy 的 ridge / valley 阈值是按另一套高程尺度写的；在本项目当前
+    //    高程下（高差约 0–60 世界 Y、格距 1），离散拉普拉斯量级只有 ±0.5
+    //    左右，smoothstep(0.16,1.7,…) 这类判据几乎不触发，于是「深墨」在
+    //    画面上基本是空的。这里按实际曲率量级另标定一条结构暗部，只在
+    //    沟谷 / 坡折处压墨，让深墨真正落下来。
+    float c2dCurv=abs(curvature);
+    float c2dStruct=smoothstep(0.05,0.55,c2dCurv)*smoothstep(0.10,0.65,slope);
+    float deep=structure*structure*deepInkStrength + c2dStruct*deepInkStrength;
+    color=mix(color,realmInkColor,clamp(deep,0.0,0.60));
+    // 高峰按位面风格适度回纸色（幽冥 heightWash = 0，不参与）。
+    float peak=smoothstep(atmosphereHigh,atmosphereHigh+20.0,vWorld.y)*heightWashStrength;
+    color=mix(color,paperColor,peak);
+    // 岸线连续烘染：沙岸 / 水岸 / 陆地之间的弱过渡。
+    color=mix(color,mix(paperColor,terrainWaterColor,0.35),coastSoft*0.20);
     float feibai=smoothstep(0.73,0.91,dryNoise)*feibaiStrength*ink*nearDetail;
     color=mix(color,paperColor,feibai);
     float valleyWash=1.0-smoothstep(atmosphereLow,atmosphereHigh,vWorld.y);
@@ -133,6 +186,10 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
     super({ vertexShader, fragmentShader, side: THREE.DoubleSide, uniforms: {
       heightTexture: { value: data.heightTexture }, typeTexture: { value: data.typeTexture },
       fieldTexture: { value: data.typeTexture },fieldMode:{value:0},
+      // PlaneStage may bind its continuous surface field before the terrain is rendered.
+      // Keep the no-field fallback valid for legacy profiles and test-created stages.
+      surfaceTexture: { value: data.typeTexture }, surfaceMode: { value: 0 }, surfaceDepthRef: { value: 0.5 },
+      massShadeStrength: { value: 0 }, deepInkStrength: { value: 0 }, heightWashStrength: { value: 0 }, broadRadius: { value: 2.5 },
       fieldInkColor:{value:new THREE.Color(realmStyleFor('nether').ink.color)},
       fieldColdColor:{value:new THREE.Color(realmStyleFor('nether').pilotPalette.blue)},
       fieldMineralBlue:{value:new THREE.Color(realmStyleFor('upper').terrain.rock)},
@@ -179,6 +236,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       u.terrainWaterColor.value.setRGB(0.30, 0.43, 0.46);
     }
     this.uniforms.paperColor.value.set(profile.paperColor);
+    for (const key of ['massShadeStrength','deepInkStrength','heightWashStrength']) if (this.uniforms[key]) this.uniforms[key].value = profile[key] ?? 0;
     for (const key of ['pigmentDensity','pigmentSaturation','terrainBoundaryStrength','structuralInkStrength',
       'silhouetteInkStrength','inkDensity','dryBrushStrength','distanceFade','paperGrainStrength']) {
       if (this.uniforms[key]) this.uniforms[key].value = profile[key];

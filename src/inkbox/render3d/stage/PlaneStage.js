@@ -15,6 +15,7 @@ import { RealmDecorationLayer } from '../environment/RealmDecorationLayer.js';
 import { RealmArtifactLayer } from '../markers/RealmArtifactLayer.js';
 import { geographyFeatures } from './GeographyFeatures.js';
 import { ScalarFieldTexture } from '../art/ScalarFieldTexture.js';
+import { SurfaceVisualFieldTexture } from '../art/SurfaceVisualFieldTexture.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
@@ -55,6 +56,10 @@ export class PlaneStage {
     }
     this.water = p.water ? new WaterLayer(world, this.coordinates, this.elevation) : null;
     if (this.water) this.root.add(this.water.mesh);
+    // M2-C2D P1：Stage-owned 连续表面视觉场；Terrain / Water 只借用，不各存一份。
+    this.surfaceField = p.water ? new SurfaceVisualFieldTexture(world) : null;
+    this.terrain?.setSurfaceField(this.surfaceField);
+    this.water?.setSurfaceField(this.surfaceField);
     this.vegetation = p.vegetation ? new VegetationLayer(world, this.coordinates, this.elevation) : null;
     if (this.vegetation) this.root.add(this.vegetation.group || this.vegetation.mesh);
     this.entities = p.entities ? new EntityLayer(world, this.coordinates, this.elevation,
@@ -217,6 +222,8 @@ export class PlaneStage {
     if (typeRegion) this.terrain?.update(typeRegion, { height: false, type: true });
     const t1 = performance.now();
     if ((heightChanged || waterRegion) && this.water) this.water.update(mergeRegion(heightRegion, waterRegion));
+    // P1：视觉场只接现有 water dirty（值只编码水深）；扩核由场自己负责。
+    if (waterRegion) this.surfaceField?.update(waterRegion);
     const t2 = performance.now();
     // §22：Region 变化也要重建植被实例（走同一条节流通道，不是每帧全量重写）。
     if (this.vegetation && (heightChanged || typeRegion || vegRegion || this.vegetation.pendingRegionRebuild)) this.vegetationPending = true;
@@ -250,6 +257,7 @@ export class PlaneStage {
   releaseLayers() {
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
     this.scalarField?.dispose();this.scalarField=null;
+    this.surfaceField?.dispose();this.surfaceField=null;
     this.entities?.dispose(); this.settlements?.dispose(); this.markers?.dispose();
     this.decorations?.dispose();this.decorations=null;
     this.realmArtifacts?.dispose();this.realmArtifacts=null;

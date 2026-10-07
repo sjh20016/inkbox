@@ -28,6 +28,9 @@ export class ArtPass {
       structuralInkStrength: realmStyle.ink.structure, silhouetteInkStrength: realmStyle.ink.silhouette,
       inkDensity: realmStyle.ink.density, dryBrushStrength: realmStyle.ink.dryBrush,
       distanceFade: realmStyle.pigment.distanceFade ?? this.profile.distanceFade,
+      // M2-C2D P2：明度骨架只加三项真正可解释的 tone control。
+      massShadeStrength: realmStyle.tone.massShade, deepInkStrength: realmStyle.tone.deepInk,
+      heightWashStrength: realmStyle.tone.heightWash,
     } : this.profile;
     stage.terrain?.setArtProfile(profile);
     stage.markers?.setArtProfile(profile);
@@ -37,13 +40,16 @@ export class ArtPass {
       layer?.setArtProfile(realmStyle ? { ...pilot, layerCategory: category,
         distanceFade: realmStyle[category].distanceFade ?? pilot.distanceFade } : pilot);
     if (stage.water) {
-      const material = stage.water.material;
-      if (!this.saved.has(material)) this.saved.set(material, { color: material.color.clone(), opacity: material.opacity });
-      const saved = this.saved.get(material);
-      // Existing water semantics and geometry remain authoritative. Pale pigment, not a new sea.
-      material.color.copy(realmStyle ? new THREE.Color(realmStyle.water.color)
-        : profile ? new THREE.Color(profile.paperColor).lerp(new THREE.Color('#667e80'), 0.24) : saved.color);
-      material.opacity = realmStyle ? realmStyle.water.opacity : profile ? 0.40 : saved.opacity;
+      // M2-C2D P1：realm-style 走连续绘画水面材质；其余档案保持 legacy 调色路径。
+      stage.water.setArtProfile(realmStyle ? profile : null);
+      if (!stage.water.inkActive) {
+        const material = stage.water.material;
+        if (!this.saved.has(material)) this.saved.set(material, { color: material.color.clone(), opacity: material.opacity });
+        const saved = this.saved.get(material);
+        // Existing water semantics and geometry remain authoritative. Pale pigment, not a new sea.
+        material.color.copy(profile ? new THREE.Color(profile.paperColor).lerp(new THREE.Color('#667e80'), 0.24) : saved.color);
+        material.opacity = profile ? 0.40 : saved.opacity;
+      }
     }
   }
   syncStyleContext() {
@@ -65,7 +71,7 @@ export class ArtPass {
     if (!this.saved.has(material)) this.saved.set(material, { color: material.color.clone() });
     const realmStyle = this.profile.enabled && this.profile.mode === 'realm-style-v1' && targetPlane
       ? realmStyleFor(targetPlane) : null;
-    boundary.setRealmStyle?.(realmStyle?.boundary ?? null);
+    boundary.setRealmStyle?.(realmStyle?.boundary ?? null, realmStyle ?? null);
     if (realmStyle)
       material.color.set('#ffffff');
     else if (this.profile.enabled) material.color.set('#b8b4aa');
