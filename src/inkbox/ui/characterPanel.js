@@ -12,6 +12,7 @@ const ESC = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
   .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 const n = value => Number.isFinite(value) ? Number(value.toFixed(2)) : 0;
 const row = (title, body) => '<div class="cc-row"><span>' + ESC(title) + '</span><b>' + ESC(body) + '</b></div>';
+const liveRow = (title, key, body) => '<div class="cc-row"><span>' + ESC(title) + '</span><b data-cc-field="' + key + '">' + ESC(body) + '</b></div>';
 const tag = t => '<span class="cc-trait" title="' + ESC(t.type + ' · ' + t.axis) + '">' + ESC(t.name) + '</span>';
 const card = (title, html) => '<section class="cc-section"><h3>' + ESC(title) + '</h3>' + html + '</section>';
 
@@ -65,18 +66,18 @@ function characterBody(session, world, entity) {
   if (tab === 'overview') {
     return card('一眼观命',
       row('身份', p.level > 0 ? '修士' : '凡人') + row('所依', p.faction)
-      + row('寿元', p.ageYears + ' / ' + p.lifespanYears + ' 年'))
+      + liveRow('寿元', 'life', p.ageYears + ' / ' + p.lifespanYears + ' 年'))
       + card('人物特征', '<div class="cc-traits">' + (p.traits.length ? p.traits.slice(0,8).map(tag).join('') : '<span class="cc-empty">凡骨无奇，命数未定。</span>') + '</div>')
-      + card('眼下境况', row('当前状态', p.state) + row('气运', p.fortune) + row('道心', p.mind) + row('心魔', p.heartDemon) + row('污染', p.pollution))
+      + card('眼下境况', liveRow('当前状态', 'state', p.state) + liveRow('气运', 'fortune', p.fortune) + liveRow('道心', 'mind', p.mind) + liveRow('心魔', 'heartDemon', p.heartDemon) + liveRow('污染', 'pollution', p.pollution))
       + card('近期经历', eventsHtml(p.logs, 4));
   }
   if (tab === 'cultivation') return card('修炼实况',
-    row('境界', p.realm) + row('修为', p.awakened ? n(p.exp) + ' / ' + n(p.target) : '尚未启灵') +
-    row('每日修为', p.awakened ? n(p.rate) + ' / 游戏日' : '无') +
-    row('基础战力', n(p.combat)) + row('体魄', n(p.hp) + ' / ' + n(p.maxHp)) +
+    liveRow('境界', 'realm', p.realm) + liveRow('修为', 'cultivation', p.awakened ? n(p.exp) + ' / ' + n(p.target) : '尚未启灵') +
+    liveRow('每日修为', 'rate', p.awakened ? n(p.rate) + ' / 游戏日' : '无') +
+    liveRow('基础战力', 'combat', n(p.combat)) + liveRow('体魄', 'health', n(p.hp) + ' / ' + n(p.maxHp)) +
     row('道途', p.dao) + row('灵根', p.root + (p.rootQuality ? ' · ' + p.rootQuality : '')) +
-    row('血脉', p.bloodline) + row('道心', p.mind) + row('心魔', p.heartDemon) +
-    row('因果', p.karma) + row('气运', p.fortune) + row('污染', p.pollution) +
+    row('血脉', p.bloodline) + liveRow('道心', 'mind', p.mind) + liveRow('心魔', 'heartDemon', p.heartDemon) +
+    liveRow('因果', 'karma', p.karma) + liveRow('气运', 'fortune', p.fortune) + liveRow('污染', 'pollution', p.pollution) +
     '<p class="cc-small">修炼速度、战力均取自现有模拟计算。突破满条后仍可能失败。</p>') +
     card('功法与法宝', row('功法', p.techniques.join('、') || '无') +
       row('法宝', p.artifacts.join('、') || '无') + row('禁术', p.forbidden || '无')) +
@@ -226,10 +227,18 @@ export function refreshCharacterCard(sb, force = false) {
     p.logs[0]?.day, p.logs[0]?.text, e ? 'alive' : 'gone'].join(':');
   if (force || signature !== st.signature) { st.signature = signature; renderTab(sb); }
   updateFields(sb);
-  // Dynamic numbers in expanded detail remain readable without replacing the document.
-  for (const name of ['fortune','mind','heartDemon','pollution','exp','rate','combat']) {
+  // Update visible numbers in place; never reset the scroll, tabs or open biography.
+  const values = {
+    fortune: p.fortune, mind: p.mind, heartDemon: p.heartDemon,
+    pollution: p.pollution, karma: p.karma, state: p.state,
+    realm: p.realm, cultivation: p.awakened ? n(p.exp) + ' / ' + n(p.target) : '尚未启灵',
+    rate: p.awakened ? n(p.rate) + ' / 游戏日' : '无',
+    combat: n(p.combat), health: n(p.hp) + ' / ' + n(p.maxHp),
+    life: p.ageYears + ' / ' + p.lifespanYears + ' 年',
+  };
+  for (const [name, value] of Object.entries(values)) {
     const node = panel.querySelector('[data-cc-field="' + name + '"]');
-    if (node) node.textContent = String(n(p[name]));
+    if (node && node.textContent !== String(value)) node.textContent = String(value);
   }
 }
 export function closeCharacterCard(sb) {
