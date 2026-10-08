@@ -1,5 +1,13 @@
 # Inkbox 测试与验证入口
 
+## Current Truth · 2026-10-08
+
+当前 CI 基线是 GitHub `main` `1cd8d36`，M2-C2E 已合并。公开 run [37749151683](https://github.com/sjh20016/inkbox/actions/runs/37749151683) 的 Heavy Gate 通过；Fast Gate 仅因历史 C2D 水拓扑长度断言失败。整理分支修正该旧断言后，本机完整 Fast / Heavy Gate、build 和 package audit 均通过；集成后的新 run 才能确认公开门禁恢复。可选 Browser Smoke 在本机 Edge CDP 启动阶段失败，未到应用断言。
+
+C2E 当前入口：`test:render3d:m2c2e` 覆盖地形 / 创建 / Canvas / 雕刻事务 / CPU 访问策略；`test:render3d:m2c2e:generation` 覆盖种子、存档与三界访问纯度；`test:render3d:m2c2e:browser` 覆盖真实产品交互；`test:render3d:m2c2e:soak` 覆盖 GPU 与耐久。44 CPU、108 seed、14 GPU、12 固定镜头及 600/6000 联合耐久证据见 [C2E READINESS](../M2C2E_READINESS.md)。
+
+下方 C2C、C2D 与更早门禁章节均按其标题 / 日期作为历史记录阅读；旧 C2C 的成功结果不描述当前 CI 状态。
+
 2026-10-08 M2-C2E：`npm run test:render3d:m2c2e` 运行44项几何、创建/Canvas、雕刻事务、独立访问 CPU 门禁；`npm run test:render3d:m2c2e:generation` 运行 108 组种子/保存与实际三界开放纯度。Fast Gate 已加入前者。旧断言不删。
 
 `npm run test:render3d:m2c2e:browser` 为真实产品创建、鼠标雕刻、Undo/Redo、importFile读档与扩图；`npm run test:render3d:m2c2e:soak` 为同机实 GPU 的 600/6000 产品 RAF、资源/内存/单笔成本。需要 Node 24 与本机 Edge；不要与任何 GPU 或重型 CPU 测量并发。`INKBOX_REPORT_DIR` 指向独立 ignored 目录。失败 PNG、错误栈和现场状态保留，修复后另开 run 目录；完整本轮解释见 [READINESS](../M2C2E_READINESS.md)。

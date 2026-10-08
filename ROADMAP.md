@@ -1,5 +1,24 @@
 # ROADMAP · 坐天观井 Inkbox
 
+## Current Truth · 2026-10-08
+
+当前基线是 GitHub `main` `1cd8d36`；M2-C2E 已合并，旧阶段文字仅供追溯，不构成当前指令。已完成范围：v2 地形拓扑与 ElevationField 插值、湿域裁切 / 水岸 / 世界外缘、三种地貌与严格 seed、雕刻事务、40/60/80/100% 渐进访问，以及完整预生成世界；当前容量为 512×320 原型。CPU、GPU、固定镜头与联合耐久证据见 [C2E READINESS](./M2C2E_READINESS.md)。
+
+最新公开 main CI [37749151683](https://github.com/sjh20016/inkbox/actions/runs/37749151683)：Heavy Gate 通过；Fast Gate 只在历史 C2D 水拓扑长度断言处失败。整理分支修复后，本机完整 Fast / Heavy Gate、build 和 package audit 全通过；公开 run 仍记录原始失败，集成后的新 run 才能确认 main 状态。可选 Browser Smoke 因本机 Edge CDP 启动失败未到应用断言。
+
+| 当前状态 | 后续动作 |
+| --- | --- |
+| M2-C2E 功能与本机工程验收完成 | 保留最大图 / 密集模拟帧长尾和 DPR 2 GPU 预算为待评估性能边界；不预设实现 |
+| 地貌、生成和访问机制已接入 | 最终视觉效果待用户裁决 |
+| 主线有一项历史断言 CI 失败 | 将断言修正随整理提交纳入并观察后续公开 CI |
+| 草稿角色 PR #1 仍在旧 C2D.1 基线上 | 独立评估后再决定与 main 的整合；PR 不是当前开发入口 |
+
+当前开发入口是 `main`。后续候选方向均须另行确认范围；复杂侵蚀、Chunk Streaming、物理崩塌、自动搬迁及角色视觉整合都不因旧路线图而自动获批。
+
+---
+
+以下既有路线图段落保留阶段历史；旧“当前真相”、下一阶段和远端门禁说明不再是当前状态。
+
 2026-10-08 M2-C2E：地形几何、三种地貌/seed、笔划事务与渐进地图开放正式接入，本机CPU/GPU/耐久工程验证完成；最终美术由用户裁决。512×320为预生成原型，性能与交接见 [READINESS](./M2C2E_READINESS.md)。
 
 2026-10-06 当前真相：**M2-C2C Meaningful Geography 本地验收完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。**完整 23 对 GPU、600/6000 帧 Soak、两关键祖先与干净克隆验证通过。C2B Pass 1 的 main `e0a851c` 及三个成功 Actions run 仍只属于历史远端基线，见 [STATUS](./STATUS.md)。

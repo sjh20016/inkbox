@@ -1,5 +1,19 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## Current Truth · 2026-10-08
+
+GitHub `main`（`1cd8d36`）是当前唯一事实基线，M2-C2E 已合并；本文件下方旧阶段段落均为历史记录，不是当前施工指令。C2E 已交付地形拓扑 / 湿域裁切 / 岸线与世界外缘、三种地貌和严格 seed、雕刻事务、40/60/80/100% 渐进访问及完整预生成世界；CPU、GPU 与耐久验收范围见 [C2E 就绪报告](./M2C2E_READINESS.md)。
+
+最新公开 main CI run [37749151683](https://github.com/sjh20016/inkbox/actions/runs/37749151683)：Heavy Gate 通过；Fast Gate 仅因历史 C2D 水拓扑长度断言失败。整理分支已修正长期契约，本机完整 Fast Gate、Heavy Gate、build 和 package audit 均通过；公开 main 的旧 run 仍记录失败，需集成后由新 CI run 确认。可选 Browser Smoke 在本机 Edge CDP `Page.enable` 超时，未到浏览器断言。
+
+**Current development entry:** 从 `main` 当前提交开始工作。角色草稿 PR [#1](https://github.com/sjh20016/inkbox/pull/1) 仍基于旧 `codex/m2-c2d1-painterly-reconciliation`（头 `30da87d` / 基点 `3a98fb2`），相对当前 main 为 16 ahead / 6 behind，且与 main 在 CI、打包清单及 Render3D 核心文件有重叠；先独立审阅并规划整合，不将其当作当前基线。
+
+本轮仓库整理的入口：[ROADMAP](./ROADMAP.md)（当前状态）、[BACKLOG](./BACKLOG.md)（真正未完成项）、[STATUS](./STATUS.md)（时间线与证据索引）、[ARCHITECTURE](./ARCHITECTURE.md)（稳定模块地图）、[测试索引](./tests/README.md)。
+
+---
+
+以下全部旧段落均为历史阶段记录；当其中的“当前”“下一阶段”、分支、CI 或授权描述与上方冲突时，以 `main` 当前代码及上方 Current Truth 为准。
+
 2026-10-08 当前交接：M2-C2E 委托书 v1.0，本地工程验收完成（44CPU、108种子、14GPU、12固定镜、600/6000耐久），分支 `codex/m2-c2e-living-terrain`。最大图/密集模拟有帧长尾，最终美术由用户裁决。接手先看 [READINESS](./M2C2E_READINESS.md)、[实现](./M2C2E_IMPLEMENTATION_REPORT.md)、[性能](./M2C2E_PERFORMANCE_REPORT.md)。本轮保持用户历史文档目录迁移，不合并 main；下列 C2C/早期门禁是历史记录。
 
 2026-10-08 历史阶段：**M2-C2D.1 本机工程验收完成，最终美术待人工裁决**。指定分支 `codex/m2-c2d1-painterly-reconciliation` 从 WIP `daf78c0` 续作；完整十二镜四轮 GPU 零正向预算、CPU、六层/GPU 契约、历史对照与原套件 600/6000 soak 通过。用户已授权完成后上传该分支，远端 CI 以最新对应提交为准。没有合并 main，未把旧 C2B/C2C 的 Actions 作为本阶段证明。入口：[就绪](./M2C2D1_READINESS.md)、[视觉](./M2C2D1_VISUAL_ACCEPTANCE.md)、[性能](./M2C2D1_PERFORMANCE_REPORT.md)。

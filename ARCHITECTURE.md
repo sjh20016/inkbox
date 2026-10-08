@@ -1,5 +1,21 @@
 # ARCHITECTURE · 工作区与模块地图
 
+## Current Truth · 2026-10-08
+
+稳定模块地图以当前 `main` `1cd8d36` 为基线；M2-C2E 已合并。下方旧 C2B/C2C 阶段状态描述保留为历史快照，不是当前状态或施工指令。当前任务状态见 [ROADMAP](./ROADMAP.md)，阶段时间线见 [STATUS](./STATUS.md)。
+
+### 当前模块责任增量（M2-C2E）
+
+- `terrain/topology` 与 `ElevationField` 共用 v2 网格对角 / 插值；v1 对角规则仍作为显式兼容路径。
+- `WaterLayer` 持有湿域裁切、水岸和世界边缘水帘；`TerrainSideLayer` 只封完整世界外缘。世界侧壁参与拾取遮挡。
+- `terrain/sculpt` / `TerrainStroke` 管理显式笔划事务与 Undo/Redo；写入仍经既有 World 地形数组，不引入第二套地形真相。
+- `worldGeneration` 负责版本化地貌 / seed 生成；`core/mapAccess` 计算访问范围，World `mapProgress` 保存进度。`AccessGeometry` 把访问几何与既有 Realm Region 几何组合，不改变 `RealmMask` 的身份职责。
+- Host 将访问权限传给 Canvas 与 Three；两种 renderer 共用权限语义。世界完整预生成，渐进开放控制可访问区域，不是 chunk streaming。
+
+模块边界与详细实现见 [C2E 实现报告](./M2C2E_IMPLEMENTATION_REPORT.md)；性能 / 容量限制见 [C2E 就绪报告](./M2C2E_READINESS.md)。
+
+---
+
 2026-10-06 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。M2-C2C Meaningful Geography 已本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行；只呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。详见 [ROADMAP](./ROADMAP.md)。
 
 历史基线：2026-10-04，Render3D M2-C2A.1 / M2-C2B0。当前阶段以 [ROADMAP](./ROADMAP.md) 为准；历史实现范围以各阶段报告为准。
