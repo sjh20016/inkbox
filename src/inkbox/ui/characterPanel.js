@@ -65,8 +65,7 @@ function characterBody(session, world, entity) {
   if (tab === 'overview') {
     return card('一眼观命',
       row('身份', p.level > 0 ? '修士' : '凡人') + row('所依', p.faction)
-      + row('寿元', '<' /* replaced by text below */))
-      .replace('<', p.ageYears + ' / ' + p.lifespanYears + ' 年')
+      + row('寿元', p.ageYears + ' / ' + p.lifespanYears + ' 年'))
       + card('人物特征', '<div class="cc-traits">' + (p.traits.length ? p.traits.slice(0,8).map(tag).join('') : '<span class="cc-empty">凡骨无奇，命数未定。</span>') + '</div>')
       + card('眼下境况', row('当前状态', p.state) + row('气运', p.fortune) + row('道心', p.mind) + row('心魔', p.heartDemon) + row('污染', p.pollution))
       + card('近期经历', eventsHtml(p.logs, 4));
@@ -206,8 +205,10 @@ export function openCharacterCard(sb, id, callbacks = {}) {
   }
   st.signature = '';
   refreshCharacterCard(sb, true);
-  sb.camera.focusOn(e.x, e.y, { zoom: Math.max(sb.camera.zoom, 7), duration: .75 });
-  spawnFocusPulse(sb.focusPulses, e.x, e.y);
+  if (!sb.suppressCharacterFocus) {
+    sb.camera.focusOn(e.x, e.y, { zoom: Math.max(sb.camera.zoom, 7), duration: .75 });
+    spawnFocusPulse(sb.focusPulses, e.x, e.y);
+  }
   sb.qol?.noteRecent({ key: 'mortal:' + e.id, kind: 'person', id: e.id, name: displayName(e), plane: 'mortal' });
   sb.refreshRecent?.();
   sb.dirty = true;
@@ -222,7 +223,7 @@ export function refreshCharacterCard(sb, force = false) {
   const p = st.snapshot;
   const signature = [p.awakened, p.realm, p.state, p.root, p.dao, p.bloodline,
     p.techniques.join('|'), p.artifacts.join('|'), p.traits.map(t => t.name).join('|'),
-    p.logs.length, e ? 'alive' : 'gone'].join(':');
+    p.logs[0]?.day, p.logs[0]?.text, e ? 'alive' : 'gone'].join(':');
   if (force || signature !== st.signature) { st.signature = signature; renderTab(sb); }
   updateFields(sb);
   // Dynamic numbers in expanded detail remain readable without replacing the document.
