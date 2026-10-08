@@ -57,6 +57,9 @@ jobs:
       - name: 表现层回归（D7 FX / 记挂 / 关系图 / 战争线）
         run: npm run test:presentation
 
+      - name: Character G0/G0.5 角色卡与敕令只读 / 定向数据回归
+        run: npm run test:character
+
       - name: UX/QoL 填缝包回归（QOL_PASS1 · Escape 分层 / 折叠 / 偏好白名单 / 模拟纯度门禁）
         run: npm run test:qol
 
