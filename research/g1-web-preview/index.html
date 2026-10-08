@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>坐天观井 · G1-W 命簿预览</title>
+<link rel="stylesheet" href="../../src/inkbox/ui/g1/presentation/characterCard.css">
+<style>
+html,body{margin:0;min-height:100%;background:#262f31;color:#e5e3d8;font:14px/1.6 system-ui,sans-serif}
+main{max-width:1000px;margin:auto;padding:32px 18px;display:grid;grid-template-columns:minmax(0,390px) minmax(210px,1fr);gap:30px}
+aside{padding:8px 0}h1{font:normal 26px/1.3 Georgia,serif;margin:0 0 18px}small{color:#b4beb5}pre{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:700px){main{grid-template-columns:1fr;justify-items:center}aside{width:100%}}
+</style></head>
+<body><main><div id="character"></div><aside><h1>天道所见 · 人物命簿</h1>
+<p>G1-W 独立预览。数据来自 fixture，不连接游戏 World，也不改写模拟。</p>
+<small id="state">W1：仅基础视觉结构</small>
+<pre id="events"></pre></aside></main>
+<script type="module">
+import { createCharacterCardView } from "../../src/inkbox/ui/g1/presentation/characterCardView.js";
+import { cultivator } from "./fixture.js";
+const card = createCharacterCardView(document.getElementById("character"), {
+  onAction: action => { document.getElementById("events").textContent = JSON.stringify(action, null, 2); }
+});
+card.render(cultivator);
+</script></body></html>
