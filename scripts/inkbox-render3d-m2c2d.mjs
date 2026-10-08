@@ -12,6 +12,7 @@ import { generateUpperWorld } from '../src/inkbox/world/worldgenUpper.js';
 import { generateNetherWorld } from '../src/inkbox/world/worldgenNether.js';
 import { Render3DHost } from '../src/inkbox/render3d/Render3DHost.js';
 import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
+import { RegionGeometry } from '../src/inkbox/render3d/region/RegionGeometry.js';
 import { SurfaceVisualFieldTexture } from '../src/inkbox/render3d/art/SurfaceVisualFieldTexture.js';
 import { WaterPigmentMaterial } from '../src/inkbox/render3d/water/WaterPigmentMaterial.js';
 import { createBoundaryInkMaterial, applyBoundaryInkStyle } from '../src/inkbox/render3d/boundary/BoundaryInkMaterial.js';
@@ -171,24 +172,37 @@ check('T2 视觉场只编码水深，不读 terrain type', () => {
   assert.doesNotMatch(source, /\.type\[/, '不得读取 terrain type');
 });
 
-// ── T3 · 水面材质替换与拓扑不变 ────────────────────────────────────────
-check('T3 水面：realm-style 换材质，legacy 原样恢复，拓扑与网格数不变', () => {
+// ── T3 · 水面材质替换与 legacy 几何恢复 ────────────────────────────────
+check('T3 水面：realm-style 不改 World / Region，legacy 几何原样恢复', () => {
   const world = makeWorld();
   const { host } = makeHost(world);
+  host.setArtProfile('legacy');
   const water = host.stages.get('mortal').water;
+  const regionGeometry = new RegionGeometry(world, windowRegion(world));
+  water.setRegionGeometry(regionGeometry, true);
+  const mesh = water.mesh;
   const legacyMaterial = water.material;
-  const indexBefore = water.geometry.index.array.slice();
-  const quadsBefore = water.keptQuads;
+  const legacyGeometry = water.legacyGeometry;
+  const legacyIndices = legacyGeometry.index.array.slice();
+  const waterData = world.water;
+  const waterBefore = world.water.slice();
+  const regionInside = water.regionInside;
   host.setArtProfile('realm-style-v1');
   assert.equal(water.inkActive, true, 'realm-style 必须使用绘画水面材质');
   assert(water.mesh.material instanceof WaterPigmentMaterial);
   assert.equal(water.mesh.material.uniforms.surfaceTexture.value, host.stages.get('mortal').surfaceField.texture);
   assert.equal(water.mesh.material.uniforms.surfaceDepthRef.value, host.stages.get('mortal').surfaceField.depthReference);
-  assert.equal(water.geometry.index.array.length, indexBefore.length, '水面三角形拓扑不得改变');
-  assert.equal(water.keptQuads, quadsBefore, 'Region 遮罩结果不得改变');
+  assert.equal(world.water, waterData, '切换 art profile 不得替换 World 水深事实源');
+  assert.deepEqual(world.water, waterBefore, '切换 art profile 不得改写 World 水深');
+  assert.equal(host.world, world, '切换 art profile 不得建立第二套 World');
+  assert.equal(water.regionGeometry, regionGeometry, '切换 art profile 不得替换 Region 几何');
+  assert.equal(water.regionInside, regionInside, '切换 art profile 不得改变 Region 方向');
+  assert.equal(water.mesh, mesh, '切换 art profile 必须复用原水面 mesh');
   host.setArtProfile('legacy');
   assert.equal(water.inkActive, false, 'legacy 必须恢复原材质');
   assert.equal(water.mesh.material, legacyMaterial);
+  assert.equal(water.geometry, legacyGeometry, 'legacy 必须恢复原始几何');
+  assert.deepEqual(water.geometry.index.array, legacyIndices, 'legacy 路径仍保持既有水面拓扑');
   assert.equal(host.stages.get('mortal').root.children.filter(child => child === water.mesh).length, 1, '水面仍只有一个网格');
   host.dispose();
 });
