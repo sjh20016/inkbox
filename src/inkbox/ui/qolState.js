@@ -481,7 +481,7 @@ export function toastHint(location) {
  *    回来点重新开天」不会得到任何提醒，而那是玩家最需要提醒的一种情况。
  */
 export const DIRTY_EVENTS = Object.freeze([
-  'advance', 'intervention', 'terrain', 'undo', 'watch', 'load', 'import', 'newWorld',
+  'advance', 'intervention', 'terrain', 'undo', 'watch', 'character-edict', 'load', 'import', 'newWorld',
 ]);
 
 /** 玩家做了一件事之后，dirty 变成什么。 */
