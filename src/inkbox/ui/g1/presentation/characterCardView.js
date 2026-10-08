@@ -235,7 +235,7 @@ export function createCharacterCardView(root, { onAction } = {}) {
     const target = event.target;
     if (target?.getAttribute?.("role") !== "tab" || !card.contains(target)) return;
     const ids = CHARACTER_TABS.map(item => item.id);
-    let next = ids.indexOf(activeTab);
+    let next = ids.indexOf(target.dataset.tab);
     if (event.key === "Home") next = 0;
     else if (event.key === "End") next = ids.length - 1;
     else next = (next + (event.key === "ArrowRight" ? 1 : -1) + ids.length) % ids.length;
