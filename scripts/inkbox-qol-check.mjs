@@ -514,7 +514,7 @@ const emitted = [
   ...[...mainSrc.matchAll(/\.markDirty\s*\(\s*['"]([A-Za-z_$][\w$]*)['"]/g)].map((m) => m[1]),
   ...[...railSrc.matchAll(/\.markDirty\s*\(\s*['"]([A-Za-z_$][\w$]*)['"]/g)].map((m) => m[1]),
 ];
-emitted.push(...[...characterSrc.matchAll(/\\.markDirty\\s*\\(\\s*['"]([A-Za-z_$][\\w$]*)['"]/g)].map((m) => m[1]));
+emitted.push(...[...characterSrc.matchAll(/\.markDirty\s*\(\s*['"]([A-Za-z_$][\w$]*)['"]/g)].map((m) => m[1]));
 const unknownEvents = [...new Set(emitted)].filter((e) => !DIRTY_EVENTS.includes(e));
 check('★ 字面量发出的事件名没有一个是白名单外的（拼错 = 静默失效）',
   emitted.length >= 3 && unknownEvents.length === 0,
