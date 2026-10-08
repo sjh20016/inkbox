@@ -48,6 +48,8 @@ npm-debug.log*
 # AI 工作目录（本地记忆 / 工具数据，不属于项目源码）
 .workbuddy-ai/
 .local-backups/
+# Blender's automatic previous-version backup is local recovery state, not a source asset.
+*.blend1
 
 # 系统杂项
 .DS_Store
