@@ -22,7 +22,7 @@
 .g1-world-progress__meta { margin: 7px 0 11px; font: 11px/1.6 system-ui, sans-serif;
   color: var(--g1w-muted); overflow-wrap: anywhere; }
 .g1-world-progress__button { padding: 6px 11px; border: 1px solid #476c62; color: #faf5ea;
-  background: #537a6c; border-radius: 3px; font: 12px/1.5 inherit; cursor: pointer; }
+  background: #537a6c; border-radius: 3px; font: inherit; font-size: 12px; cursor: pointer; }
 .g1-world-progress__button:disabled { opacity: .5; cursor: default; }
 .g1-world-progress__button:hover:not(:disabled) { background: #396258; }
 .g1-world-progress__button:focus-visible { outline: 2px solid #b15b45; outline-offset: 2px; }

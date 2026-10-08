@@ -53,7 +53,7 @@ export function createWorldProgressView(root, { onAction } = {}) {
   let disposed = false;
   function click() {
     if (disposed || !current || current.canRequestExpand !== true ||
-      !Object.hasOwn(REVELATION_STAGES, String(current.stage)) ||
+      current.stage === 100 || !Object.hasOwn(REVELATION_STAGES, String(current.stage)) ||
       typeof onAction !== "function") return;
     onAction({ type: "request-map-expansion", stage: current.stage });
   }

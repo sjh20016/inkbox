@@ -24,3 +24,14 @@ export const progressionFixture = {
   stage: 40, openedPercent: 40, boundaryText: "天眼初开",
   canRequestExpand: true, disabledReason: "",
 };
+
+export const fixtureVariants = {
+  mortal: { ...cultivator, identity: { ...cultivator.identity, key: "mortal:2", name: "许子桑" },
+    header: { realm: "凡人", ageText: "18 岁", stateText: "采药" },
+    cultivation: { unawakened: true, stateText: "尚未启灵" }, history: [], edicts: [] },
+  dead: { ...cultivator, identity: { ...cultivator.identity, status: "dead", key:"mortal:3", name:"故人林舟" },
+    header: { ...cultivator.header, stateText:"已故" } },
+  unknown: { ...cultivator, identity: { ...cultivator.identity, key:"mortal:4", status:"unknown",
+    name:"<无名氏>" }, relations: [], history: [] },
+  full: { ...cultivator, cultivation: { ...cultivator.cultivation, exp:128, percent:100, stateText:"修为已满" } },
+};

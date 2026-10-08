@@ -15,6 +15,11 @@ button.demo{background:#e9dfcc;border:0;border-radius:3px;margin:3px;padding:7px
 </style></head>
 <body><main><div id="character"></div><div id="world"><div id="creation"></div><div id="progress"></div></div>
 <aside><h1>天道所见 · 人物命簿</h1><p>独立预览，只展示夹具数据。不接线正式 World。</p>
+<div><button class="demo" data-fixture="cultivator">正常修士</button>
+<button class="demo" data-fixture="mortal">凡人</button>
+<button class="demo" data-fixture="full">修为满条</button>
+<button class="demo" data-fixture="dead">已故</button>
+<button class="demo" data-fixture="unknown">不可考</button></div>
 <button class="demo" id="stage">切换天地阶段</button>
 <pre id="events" aria-live="polite">点击按钮可观察事件回调</pre>
 </aside></main>
@@ -22,12 +27,16 @@ button.demo{background:#e9dfcc;border:0;border-radius:3px;margin:3px;padding:7px
 import { createCharacterCardView } from "../../src/inkbox/ui/g1/presentation/characterCardView.js";
 import { createWorldCreationInfoView } from "../../src/inkbox/ui/g1/presentation/worldCreationInfo.js";
 import { createWorldProgressView } from "../../src/inkbox/ui/g1/presentation/worldProgressView.js";
-import { cultivator, creationFixture, progressionFixture } from "./fixture.js";
+import { cultivator, creationFixture, progressionFixture, fixtureVariants } from "./fixture.js";
 const report = action => { document.getElementById("events").textContent = JSON.stringify(action,null,2); };
 const card = createCharacterCardView(document.getElementById("character"), { onAction:report });
 const creation = createWorldCreationInfoView(document.getElementById("creation"));
 const progress = createWorldProgressView(document.getElementById("progress"),{onAction:report});
 card.render(cultivator); creation.render(creationFixture); progress.render(progressionFixture);
+document.querySelectorAll("[data-fixture]").forEach(button => {
+  button.addEventListener("click", () => card.render(button.dataset.fixture === "cultivator"
+    ? cultivator : fixtureVariants[button.dataset.fixture]));
+});
 let stage = 0; const steps = [40,60,80,100];
 document.getElementById("stage").addEventListener("click", () => {
   stage = (stage + 1) % steps.length;

@@ -54,7 +54,7 @@ function syncHistory(doc, list, events) {
   }
   while (list.children.length > items.length) list.lastChild.remove();
 }
-function syncEdicts(doc, list, edicts, available) {
+function syncEdicts(doc, list, edicts, available, readonlyMessage) {
   const items = Array.isArray(edicts) ? edicts : [];
   for (let i = 0; i < items.length; i++) {
     let item = list.children[i];
@@ -74,7 +74,7 @@ function syncEdicts(doc, list, edicts, available) {
     put(item.children[1], readable(edict.description, ""));
     button.dataset.edictId = typeof edict.id === "string" ? edict.id : "";
     button.disabled = !available || !edict.enabled || !button.dataset.edictId;
-    const reason = !available ? "此人不可施令" :
+    const reason = !available ? readonlyMessage :
       edict.enabled ? "" : readable(edict.disabledReason, "当前无法施行");
     put(item.children[2], reason);
     item.children[2].hidden = !reason;
@@ -172,10 +172,11 @@ export function createCharacterCardView(root, { onAction } = {}) {
   section(doc, "生平行迹", pages.history);
   const history = node(doc, "ol", "g1-character__history");
   const historyEmpty = node(doc, "p", "g1-character__volume-empty", "此人生平尚无可考之事");
+  pages.history.append(history, historyEmpty);
   section(doc, "人间牵系", pages.history);
   const relations = node(doc, "dl", "g1-character__pairs");
   const relationsAction = command(doc, "察看人物关系", "show-relations", "g1-character__section-action");
-  pages.history.append(history, historyEmpty, relations, relationsAction);
+  pages.history.append(relations, relationsAction);
 
   const footer = node(doc, "footer", "g1-character__footer", "观其所历，不代其所行");
   card.append(header, growth, tabs, body, footer);
@@ -278,7 +279,11 @@ export function createCharacterCardView(root, { onAction } = {}) {
     track.setAttribute("aria-valuetext", percentText);
     put(measure, Number.isFinite(cultivationModel.exp) && Number.isFinite(cultivationModel.required)
       ? progress.exp + " / " + progress.required : "数值未载");
-    put(growthState, readable(cultivationModel.stateText, "修行未载"));
+    const growthStatus = cultivationModel.atRealmCap === true ? "已至境界上限" :
+      cultivationModel.unawakened === true ? "尚未启灵" :
+      hasProgress && progress.percent >= 100 ? "修为已满" :
+      readable(cultivationModel.stateText, "修行未载");
+    put(growthState, growthStatus);
     watch.hidden = !alive || !next;
     watch.dataset.active = String(Boolean(next?.watched));
     put(watch, next?.watched ? "已记挂" : "记挂");
@@ -289,7 +294,14 @@ export function createCharacterCardView(root, { onAction } = {}) {
     put(cultivationIntro, [cultivationModel.rateText, cultivationModel.stateText]
       .filter(Boolean).map(String).join(" · ") || "此人修行之路尚未明晰。");
     syncPairs(doc, cultivation, next?.cultivationRows);
-    syncEdicts(doc, edicts, next?.edicts, alive && !!next);
+    const readonlyReason = !next ? "没有可考录的施令对象" :
+      identity.status === "dead" ? "此人已故，不可再施敕令" :
+      identity.status === "ascended" ? "此人已飞升，凡间敕令不可施行" :
+      identity.status === "missing" ? "踪迹未明，无法施行敕令" :
+      "身份不可考，无法施行敕令";
+    fateIntro.textContent = alive ? "敕令请求交由天道裁决，此处不直接改写人物命数。" :
+      readonlyReason;
+    syncEdicts(doc, edicts, next?.edicts, alive && !!next, readonlyReason);
     edictEmpty.hidden = Array.isArray(next?.edicts) && next.edicts.length > 0;
     syncHistory(doc, history, next?.history);
     historyEmpty.hidden = Array.isArray(next?.history) && next.history.length > 0;

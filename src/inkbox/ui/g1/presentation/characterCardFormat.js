@@ -26,7 +26,7 @@ export function cultivationProgress(cultivation = {}) {
 }
 
 export function isReadonlyIdentity(identity = {}) {
-  return !identity || identity.status !== "alive" || identity.canFocus === false ||
+  return !identity || identity.status !== "alive" ||
     typeof identity.key !== "string" || identity.key.length === 0;
 }
 
