@@ -92,4 +92,64 @@ check('profile refresh grounds layers immediately without Bridge scan or clock a
   for(const [,dt]of calls.slice(1))assert.equal(dt,0);
   s.dispose();
 });
+function referenceWater(w,c,e,region=null,inside=true){
+ const out=[],keep=(x,y)=>!region||region.allInside||region.isInsideQuad(x,y)===inside;
+ const node=(i)=>{const x=i%w.w,y=Math.floor(i/w.w),p=c.cellToRender(x,y);return {x:p.x,z:p.z,h:Math.fround(e.nodeForHeight(w.height[i]+w.water[i],x,y))+.04,d:w.water[i]-.0015,ground:Math.fround(e.node(x,y))};};
+ for(let y=0;y<w.h-1;y++)for(let x=0;x<w.w-1;x++){
+  if(!keep(x,y))continue;const indices=quadIndices(w,x,y);
+  for(let t=0;t<6;t+=3){const triangle=indices.slice(t,t+3).map(node),polygon=[];
+   for(let k=0;k<3;k++){const a=triangle[k],b=triangle[(k+1)%3];if(a.d>0)polygon.push(a);
+    if((a.d>0)!==(b.d>0)){const f=a.d/(a.d-b.d);polygon.push({x:a.x+f*(b.x-a.x),z:a.z+f*(b.z-a.z),h:a.h+f*(b.h-a.h)});}}
+   for(let k=1;k<polygon.length-1;k++)for(const p of [polygon[0],polygon[k],polygon[k+1]])out.push(p.x,p.h,p.z);
+  }
+ }
+ const edges=[];for(let x=0;x<w.w-1;x++){edges.push([x,0,x+1,0,x,0],[x+1,w.h-1,x,w.h-1,x,w.h-2]);}
+ for(let y=0;y<w.h-1;y++){edges.push([0,y+1,0,y,0,y],[w.w-1,y,w.w-1,y+1,w.w-2,y]);}
+ for(const [ax,ay,bx,by,x,y] of edges){
+  if(!keep(x,y))continue;let a=node(ay*w.w+ax),b=node(by*w.w+bx);if(a.d<=0&&b.d<=0)continue;
+  if((a.d>0)!==(b.d>0)){const f=a.d/(a.d-b.d),p={x:a.x+f*(b.x-a.x),z:a.z+f*(b.z-a.z),ground:a.ground+f*(b.ground-a.ground),h:a.h+f*(b.h-a.h)};if(a.d<=0)a=p;else b=p;}
+  out.push(a.x,a.ground,a.z,a.x,a.h,a.z,b.x,b.h,b.z,a.x,a.ground,a.z,b.x,b.h,b.z,b.x,b.ground,b.z);
+ }
+ return Float32Array.from(out);
+}
+function visiblePositions(layer){const geometry=layer.geometry,out=new Float32Array(geometry.drawRange.count*3),attr=geometry.attributes.position.array,index=geometry.index.array;
+ for(let i=0;i<geometry.drawRange.count;i++)out.set(attr.subarray(index[i]*3,index[i]*3+3),i*3);return out;}
+check('optimized water matches original triangle/rim outputs over 120 changing height/wet/mask matrices',()=>{
+ for(const version of [1,2]){
+  const w={w:31,h:23,size:31*23,seed:42,generation:{version},height:new Float32Array(31*23),water:new Float32Array(31*23),type:new Uint8Array(31*23)};
+  for(let i=0;i<w.size;i++){w.height[i]=.25+.2*Math.sin(i*.1);w.water[i]=i%3===0?0:.03;}
+  const c=createCoordinates(w),e=new ElevationField(w,{datum:3,relief:.7}),water=new WaterLayer(w,c,e);water.setClipped(true);
+  for(let frame=0;frame<120;frame++){
+   const x=frame%w.w,y=(frame*7)%w.h,x1=Math.min(w.w-1,x+4),y1=Math.min(w.h-1,y+3);
+   for(let cy=y;cy<=y1;cy++)for(let cx=x;cx<=x1;cx++){const i=cy*w.w+cx;w.height[i]=.25+.2*Math.sin(i*.1+frame*.2);w.water[i]=[0,.00149,.0015,.00151,.02,.05][(i+frame)%6];}
+   water.update({x0:x,y0:y,x1,y1});
+   if(frame%25===0){const r=new RegionGeometry(w,{x0:4,y0:3,x1:24,y1:18,contains:(x,y)=>x>=4&&x<24&&y>=3&&y<18});water.setRegionGeometry(frame%50===0?r:null,frame%100===0);}
+   assert.deepEqual(visiblePositions(water),referenceWater(w,c,e,water.regionGeometry,water.regionInside),version+':'+frame);
+  }water.dispose();
+ }
+});
+check('position-only full wet edits never upload unchanged water/terrain indices; threshold and diagonal changes do',()=>{
+ const w=world();w.height.fill(.5);w.water.fill(.03);const c=createCoordinates(w),water=new WaterLayer(w,c),terrain=new TerrainMesh(w,c);water.setClipped(true);
+ const wi=water.geometry.index.version,ti=terrain.geometry.index.version,legacy=water.legacyGeometry.attributes.position.version;
+ const xy=c.cellToRender;c.cellToRender=()=>assert.fail('update must reuse immutable XY');
+ w.height.fill(.55);w.water.fill(.04);water.update({x0:0,y0:0,x1:2,y1:2});terrain.update({x0:0,y0:0,x1:2,y1:2},{height:true,type:false});
+ assert.equal(water.geometry.index.version,wi);assert.equal(terrain.geometry.index.version,ti);assert.equal(water.legacyGeometry.attributes.position.version,legacy);
+ w.water[0]=0;water.update({x0:0,y0:0,x1:0,y1:0});assert.ok(water.geometry.index.version>wi);
+ w.height.set([.3,.9,.6,.8,.31,.5,.2,.4,.7]);terrain.update({x0:0,y0:0,x1:2,y1:2},{height:true,type:false});assert.ok(terrain.geometry.index.version>ti);
+ c.cellToRender=xy;water.dispose();terrain.dispose();
+});
+check('shore interpolation preserves original JS coordinate precision with custom fractional scales',()=>{
+ const w=world(),base=createCoordinates(w),c={...base,cellToRender:(x,y)=>{const p=base.cellToRender(x,y);return {x:p.x*.137,z:p.z*.193};}},e=new ElevationField(w),water=new WaterLayer(w,c,e);
+ w.water.set([.01,0,.02,0,.002,0,.04,0,.03]);water.setClipped(true);
+ assert.deepEqual(visiblePositions(water),referenceWater(w,c,e));water.dispose();
+});
+check('inactive legacy catches up every node, topology and latest mask when switched back',()=>{
+ const w=world(),c=createCoordinates(w),water=new WaterLayer(w,c);water.setClipped(true);
+ const legacy=water.legacyGeometry.attributes.position.version;
+ for(let n=0;n<10;n++){for(let i=0;i<w.size;i++){w.height[i]=.2+((i+n)%7)*.05;w.water[i]=(i+n)%3?.025:0;}water.update({x0:0,y0:0,x1:2,y1:2});}
+ const r=new RegionGeometry(w,{x0:0,y0:0,x1:1,y1:1,contains:(x,y)=>x<1&&y<1});water.setRegionGeometry(r,false);assert.equal(water.legacyGeometry.attributes.position.version,legacy);
+ water.setClipped(false);const expected=new WaterLayer(w,c);expected.setRegionGeometry(r,false);
+ assert.deepEqual(water.geometry.attributes.position.array,expected.geometry.attributes.position.array);assert.deepEqual(water.geometry.index.array,expected.geometry.index.array);assert.equal(water.geometry.drawRange.count,expected.geometry.drawRange.count);
+ water.dispose();expected.dispose();
+});
 console.log(`M2-C2E geometry CPU contracts: ${checks.length}/${checks.length} passed`);

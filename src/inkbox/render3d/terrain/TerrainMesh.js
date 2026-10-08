@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { quadIndices, dirtyQuads, adaptiveTopology } from './topology.js';
+import { quadIndices, diagonalAD, adaptiveTopology } from './topology.js';
 import { ElevationField } from './ElevationField.js';
 import { RegionGeometry } from '../region/RegionGeometry.js';
 import { applyQuadMask } from '../region/quadMask.js';
@@ -120,9 +120,15 @@ export class TerrainMesh {
     if (writeHeight) {
       position.needsUpdate = true;
       if (adaptiveTopology(w)) {
-        dirtyQuads(w,region,(x,y)=>this.fullIndices.set(quadIndices(w,x,y),(y*(w.w-1)+x)*6));
-        this.keptQuads=applyQuadMask({geometry:this.geometry,fullIndices:this.fullIndices,
-          regionGeometry:this.regionGeometry,inside:this.regionInside,quadW:w.w-1,quadH:w.h-1});
+        let changed=false;const full=this.fullIndices,qw=w.w-1;
+        for(let y=Math.max(0,region.y0-1);y<=Math.min(w.h-2,region.y1);y++)for(let x=Math.max(0,region.x0-1);x<=Math.min(w.w-2,region.x1);x++){
+          const a=y*w.w+x,b=a+1,c=a+w.w,d=c+1,o=(y*qw+x)*6,ad=diagonalAD(w,x,y);
+          // The third corner distinguishes both valid index patterns; unchanged topology is never re-uploaded.
+          if(full[o+2]===(ad?d:b))continue;
+          full[o]=a;full[o+1]=c;full[o+2]=ad?d:b;full[o+3]=ad?a:b;full[o+4]=ad?d:c;full[o+5]=ad?b:d;changed=true;
+        }
+        if(changed)this.keptQuads=applyQuadMask({geometry:this.geometry,fullIndices:full,
+          regionGeometry:this.regionGeometry,inside:this.regionInside,quadW:qw,quadH:w.h-1});
       }
     }
     if (writeType) color.needsUpdate = true;
