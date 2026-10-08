@@ -15,6 +15,7 @@ export const WORLD_PRESETS = Object.freeze({
   small: { key: 'small', w: 200, h: 128, label: '小景 · 200×128' },
   medium: { key: 'medium', w: 288, h: 180, label: '中堂 · 288×180' },
   large: { key: 'large', w: 384, h: 240, label: '长卷 · 384×240' },
+  expanse: { key: 'expanse', w: 512, h: 320, label: '广境 · 512×320' },
 });
 
 export const SEA_LEVEL = 0.3;

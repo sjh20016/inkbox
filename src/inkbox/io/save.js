@@ -706,6 +706,8 @@ export function serializeWorld(world, meta = {}) {
     // `nether: undefined` 会 `hasOwnProperty` 为真、`JSON.stringify` 却把它丢掉，
     // 于是「写了」与「没写」落盘后长得一模一样，而 save-equiv 的顶层键判据会红）。
     ...(world.nether ? { nether: serializeNetherWorld(world.nether) } : {}),
+    ...(world.generation ? { generation: { ...world.generation } } : {}),
+    ...(world.mapProgress ? { mapProgress: { ...world.mapProgress } } : {}),
     meta,
   };
 }
@@ -713,6 +715,11 @@ export function serializeWorld(world, meta = {}) {
 export function deserializeWorld(data) {
   const preset = { w: data.w, h: data.h };
   const world = new World(preset.w, preset.h, data.seed);
+  // Optional metadata never regenerates the saved terrain or changes legacy key sets.
+  if (data.generation?.version >= 2) {
+    world.generation = { version: data.generation.version, terrainPreset: data.generation.terrainPreset };
+  }
+  if (data.mapProgress) world.mapProgress = { version: 1, stage: Math.max(0, Math.min(3, Math.trunc(data.mapProgress.stage) || 0)) };
   const t = data.terrain;
   const size = world.size;
   world.height = decodeQuantized(t.height, size, 1);

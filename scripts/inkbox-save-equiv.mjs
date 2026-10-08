@@ -2775,6 +2775,22 @@ if (nth2) {
   }
 }
 
+// M2-C2E optional state registration: retain every legacy assertion above.
+// These fields exist only in new opted-in worlds and use the same keyed equivalence contract.
+section('M2-C2E 可选生成与地图进度字段');
+const OPTIONAL_WORLD_FIELDS = ['generation', 'mapProgress'];
+const optionalWorld = generateWorld({ preset: WORLD_PRESETS.small, seed: SEED, generationVersion: 2 });
+optionalWorld.mapProgress = { version: 1, stage: 2 };
+const optionalPayload = JSON.parse(JSON.stringify(serializeWorld(optionalWorld)));
+const optionalClone = deserializeWorld(optionalPayload);
+for (const key of OPTIONAL_WORLD_FIELDS) {
+  check(`可选字段 ${key} 显式写入且逐键还原`,
+    Object.hasOwn(optionalPayload, key)
+      && Object.hasOwn(optionalClone, key)
+      && JSON.stringify(optionalWorld[key]) === JSON.stringify(optionalClone[key]));
+  check(`旧世界没有新增 ${key} payload 键`, !Object.hasOwn(payloadJson, key));
+}
+
 // ── 7. 继续演化：信息性输出，不作为失败判据 ────────────────
 section(`7. 分叉观察（各再跑 ${POST_YEARS} 年，仅供参考）`);
 const lifeA = new Life(world, mulberry32(0x5eed));

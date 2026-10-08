@@ -10,12 +10,14 @@ import { World } from './World.js';
 import { recomputeAll, classify } from './terrain.js';
 import { createNoise2D, fbm, ridged, domainWarp, clamp, smoothstep, mulberry32 } from '../core/noise.js';
 
+import { generationParameters, smoothGeneratedHeight } from './worldGeneration.js';
+
 const HEIGHT_BINS = 256;
 
 /** 目标水域占比：山水画以水与云气为重，留出足够的「虚」 */
 const WATER_TARGET = 0.42;
 
-function buildHeightField(world, noise, warpNoise) {
+function buildHeightField(world, noise, warpNoise, parameters = null) {
   const { w, h, height } = world;
   for (let y = 0; y < h; y += 1) {
     const ny = y / h;
@@ -35,7 +37,7 @@ function buildHeightField(world, noise, warpNoise) {
       // 褶皱山脉：只在内陆隆起区叠加，并用幂次把山脊收窄，
       // 否则会摊成一大片高原，画出来就没有「峰」了。
       const ridge = ridged(noise, nx * 5.2 + 11.3, ny * 5.2 + 7.7, 5, 2.1, 0.5);
-      value += Math.pow(ridge, 1.7) * smoothstep(0.3, 0.85, mask) * 0.42;
+      value += Math.pow(ridge, parameters?.ridgePower ?? 1.7) * smoothstep(0.3, 0.85, mask) * (parameters?.ridgeWeight ?? 0.42);
 
       // 高原台地
       const plateau = fbm(noise, nx * 2.1 + 41.5, ny * 2.1 + 23.9, 3, 2.0, 0.5);
@@ -66,11 +68,12 @@ function buildHeightField(world, noise, warpNoise) {
   };
 
   const landSpan = 1 - SEA_LEVEL;
+  const waterTarget = parameters?.waterTarget ?? WATER_TARGET;
   for (let i = 0; i < world.size; i += 1) {
     const q = quantileOf(height[i]);
-    height[i] = q < WATER_TARGET
-      ? SEA_LEVEL * Math.pow(q / WATER_TARGET, 0.72)
-      : SEA_LEVEL + landSpan * Math.pow((q - WATER_TARGET) / (1 - WATER_TARGET), 2.15);
+    height[i] = q < waterTarget
+      ? SEA_LEVEL * Math.pow(q / waterTarget, 0.72)
+      : SEA_LEVEL + landSpan * Math.pow((q - waterTarget) / (1 - waterTarget), parameters?.landPower ?? 2.15);
   }
 }
 
@@ -415,14 +418,17 @@ function seedLeylines(world, noise) {
  * 生成一个完整世界。
  * @param {{preset:{w:number,h:number}, seed:number|string, scatter?:boolean}} options
  */
-export function generateWorld({ preset, seed = 1, scatter = true } = {}) {
+export function generateWorld({ preset, seed = 1, scatter = true, generationVersion = 1, terrainPreset = 'standard' } = {}) {
   const world = new World(preset.w, preset.h, seed);
   const rootNoise = createNoise2D(world.seed);
   const warpNoise = createNoise2D(world.seed ^ 0x9e3779b9);
   const rainNoise = createNoise2D(world.seed ^ 0x51ed2701);
   const moistNoise = createNoise2D(world.seed ^ 0x2545f491);
 
-  buildHeightField(world, rootNoise, warpNoise);
+  const parameters = generationVersion >= 2 ? generationParameters(terrainPreset) : null;
+  if (parameters) world.generation = { version: 2, terrainPreset };
+  buildHeightField(world, rootNoise, warpNoise, parameters);
+  if (parameters) smoothGeneratedHeight(world);
   carveRivers(world, rainNoise);
   fillSea(world);
   const dist = distanceToWater(world);
