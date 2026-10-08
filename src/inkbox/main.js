@@ -132,6 +132,8 @@ import {
 // Toast 定位 / 忙碌按钮 / 世界信息。**判定**在 `ui/qolState.js`（零 import 纯逻辑），
 // 本文件只跟这个控制器说话——不直接 import `qolState.js`，免得判定散回主程序。
 import { createQol } from './ui/qol.js';
+import { characterCandidatesAt } from './ui/characterPick.js';
+import { refreshCharacterCard } from './ui/characterPanel.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -764,6 +766,29 @@ class Sandbox {
         return;
       }
       if (tool.readonly) {
+        if (tool.id === 'inspect') {
+          // The inspect brush can now identify *any* mortal person, not just
+          // the strongest entity in a 5-cell radius. Screen projection matches
+          // the Canvas character layer; repeated clicks cycle crowded groups.
+          const hits = characterCandidatesAt(this.world, this.camera, this.pointer.x, this.pointer.y);
+          if (hits.length) {
+            const last = this.characterPickCycle;
+            const ids = hits.map(h => h.id).join(',');
+            const same = last && last.ids === ids &&
+              Math.hypot(last.x - this.pointer.x, last.y - this.pointer.y) < 9 &&
+              performance.now() - last.time < 3500;
+            const index = same ? (last.index + 1) % hits.length : 0;
+            this.characterPickCycle = { x: this.pointer.x, y: this.pointer.y, ids, index, time: performance.now() };
+            // Map click must not move the camera: the player may click again
+            // at the same spot to resolve overlapping people.
+            this.suppressCharacterFocus = true;
+            try { this.showPersonCard(hits[index].id); }
+            finally { this.suppressCharacterFocus = false; }
+            if (hits.length > 1) this.notify('此处 ' + hits.length + ' 人重叠 · 再点切换 · 当前：' + hits[index].name, 2500);
+            return;
+          }
+        }
+        this.characterPickCycle = null;
         this.inspectAt(this.hoverTile.x, this.hoverTile.y);
         return;
       }
@@ -1876,6 +1901,11 @@ class Sandbox {
     }
 
     this.update(dt);
+    // UI-only live character readout, independent of game speed and RNG.
+    if (this.personOpenId && (!this.characterCardLastUpdate || now - this.characterCardLastUpdate >= 0.35)) {
+      this.characterCardLastUpdate = now;
+      refreshCharacterCard(this);
+    }
     this.render(now);
     requestAnimationFrame((ts) => this.frame(ts));
   }
