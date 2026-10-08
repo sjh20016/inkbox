@@ -115,7 +115,13 @@ export class Render3DAdapter {
       // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
       this.renderer.setSelection(hit.x, hit.y, hit.plane);
       if (this.mode === 'inspect') {
-        if (['entity', 'house', 'settlement', 'artifact', 'site', 'leyline', 'rift'].includes(hit.kind))
+        if (hit.kind === 'entity' && hit.plane === 'mortal' && hit.entityContainer !== 'wraiths' && hit.entityId != null) {
+          // The picker already returns the exact instance identity; do not
+          // reselect the nearest/strongest neighbour by terrain coordinates.
+          sandbox.suppressCharacterFocus = true;
+          try { sandbox.showPersonCard(hit.entityId); }
+          finally { sandbox.suppressCharacterFocus = false; }
+        } else if (['entity', 'house', 'settlement', 'artifact', 'site', 'leyline', 'rift'].includes(hit.kind))
           sandbox.inspectPlaneSubject(hit.plane, this.selectedCell);
         else sandbox.inspectPlaneAt(hit.plane, hit.x, hit.y);
         return;
