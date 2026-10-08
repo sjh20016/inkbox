@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { quadIndices, dirtyQuads, adaptiveTopology } from './topology.js';
 import { ElevationField } from './ElevationField.js';
 import { RegionGeometry } from '../region/RegionGeometry.js';
 import { applyQuadMask } from '../region/quadMask.js';
@@ -17,7 +18,7 @@ export function gridGeometry(world, coordinates) {
   let j = 0;
   for (let y = 0; y < world.h - 1; y++) for (let x = 0; x < world.w - 1; x++) {
     const a = y * world.w + x, b = a + 1, c = a + world.w, d = c + 1;
-    indices.set([a, c, b, b, c, d], j); j += 6;
+    indices.set(quadIndices(world,x,y), j); j += 6;
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(position, 3).setUsage(THREE.DynamicDrawUsage));
@@ -116,7 +117,14 @@ export class TerrainMesh {
       if (writeHeight) position.addUpdateRange(start, count);
       if (writeType) color.addUpdateRange(start, count);
     }
-    if (writeHeight) position.needsUpdate = true;
+    if (writeHeight) {
+      position.needsUpdate = true;
+      if (adaptiveTopology(w)) {
+        dirtyQuads(w,region,(x,y)=>this.fullIndices.set(quadIndices(w,x,y),(y*(w.w-1)+x)*6));
+        this.keptQuads=applyQuadMask({geometry:this.geometry,fullIndices:this.fullIndices,
+          regionGeometry:this.regionGeometry,inside:this.regionInside,quadW:w.w-1,quadH:w.h-1});
+      }
+    }
     if (writeType) color.needsUpdate = true;
     // The existing dirty channels are also the only GPU snapshot update source.
     // Disabled art does not collect unbounded upload ranges; re-enable performs a full sync.

@@ -27,6 +27,8 @@ export class PlanePicker {
       if (!stage.visible || !stage.terrain?.mesh.visible) continue;
       if (onlyPlane && stage.plane !== onlyPlane) continue;
       const objects = [stage.terrain.mesh];
+      // The opaque outer cut face occludes subjects behind it. Window tracing still samples terrain only.
+      if (!onlyPlane && stage.terrainSides?.mesh.visible) objects.push(stage.terrainSides.mesh);
       // Entity silhouettes are pickable too: a tall ghost must not inspect the
       // mortal terrain visible behind it. Instanced hits resolve via stage data.
       if (!onlyPlane && stage.entities?.group.visible) stage.entities.group.traverse(object => {
@@ -83,7 +85,7 @@ export class PlanePicker {
         houseKey: building?.houseKey, houseX: building?.houseX, houseY: building?.houseY,
         artifactId: artifact?.id,
         siteId: site?.id, leylineId: leyline?.id, riftId:rift?.id,
-        kind: entity ? 'entity' : settlement ? 'settlement' : building ? 'house' : artifact ? 'artifact' : site ? 'site' : leyline ? 'leyline' : rift ? 'rift' : 'terrain',
+        kind: hit.object === stage.terrainSides?.mesh ? 'world-edge' : entity ? 'entity' : settlement ? 'settlement' : building ? 'house' : artifact ? 'artifact' : site ? 'site' : leyline ? 'leyline' : rift ? 'rift' : 'terrain',
         point: hit.point, worldPoint: hit.point, world, stage, distance: hit.distance };
     }
     // M2-B B4（§62）：界缘断面也可以被命中——它同样是**提交给 GPU 的可见几何**，

@@ -1,3 +1,4 @@
+import { diagonalAD } from './topology.js';
 import { SEA_LEVEL } from '../../core/config.js';
 
 // Pure presentation mapping; no simulation threshold changes.
@@ -35,6 +36,8 @@ export function interpolateElevation(world, x, y, nodeAt) {
   const u = x - ix, v = y - iy, i = iy * world.w + ix;
   // Match Float32 position attributes before interpolation, especially at silhouettes.
   const a = nodeAt(i), b = nodeAt(i + 1), c = nodeAt(i + world.w), d = nodeAt(i + world.w + 1);
+  if (diagonalAD(world,ix,iy)) return v >= u
+    ? a + v*(c-a) + u*(d-c) : a + u*(b-a) + v*(d-b);
   return u + v <= 1 ? a + u * (b - a) + v * (c - a) : d + (1 - u) * (c - d) + (1 - v) * (b - d);
 }
 

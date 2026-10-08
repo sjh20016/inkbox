@@ -207,7 +207,7 @@ export class Render3DHost {
    *
    * 只在 **(Region identity, 模式, 目标位面)** 变化时重建（§12 / §85）：
    * 这些量决定了 `RealmBoundaryLayer.keyFor()` 的缓存键。地形高度变脏时由
-   * `update()` 把键置空，下一帧走同一条重建路径。
+   * `update()` 把键置空，同帧走同一条重建路径。
    *
    * ⚠️ 顺序是**承重**的：先把目标位面的表现剖面换好，再画墙——墙顶取的就是
    *    目标界在边界节点的**最终**高程（§33），顺序反了墙顶会慢一帧。
@@ -293,10 +293,10 @@ export class Render3DHost {
       });
     }
     // §85：地形高度真的变过（雕刻 / 水文 / 生态）⇒ 界缘断面必须跟着重建。
-    // 只把缓存键置空，下一帧走同一条重建路径——不在渲染循环里重建几何。
+    // 相关可见 Stage 更新完成后把缓存键置空，同帧复用正式重建路径。
     if (this.boundary?.mesh.visible) {
       for (const stage of this.stages.values()) {
-        if (stage.heightChanged) { this.boundaryKey = null; break; }
+        if (stage.visible && stage.heightChanged) { this.boundaryKey = null; this.#applyBoundary(); break; }
       }
     }
     this.slabProbe?.update();

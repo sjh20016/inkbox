@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { WorldRenderBridge, mergeRegion } from '../WorldRenderBridge.js';
+import { TerrainSideLayer } from '../terrain/TerrainSideLayer.js';
 import { TerrainMesh } from '../terrain/TerrainMesh.js';
 import { WaterLayer } from '../water/WaterLayer.js';
 import { VegetationLayer } from '../vegetation/VegetationLayer.js';
@@ -47,6 +48,8 @@ export class PlaneStage {
     // M2-B §6：每个 Stage 持有一份高程单源（默认 RAW ⇒ 与 M2-A 逐位一致）。
     this.elevation = new ElevationField(world, p.elevation);
     this.terrain = p.terrain ? new TerrainMesh(world, this.coordinates, this.elevation) : null;
+    this.terrainSides=this.terrain?new TerrainSideLayer(world,this.coordinates,this.elevation):null;
+    if(this.terrainSides)this.root.add(this.terrainSides.mesh);
     this.scalarField=this.plane==='upper'?new ScalarFieldTexture(world,'qi',1)
       :this.plane==='nether'?new ScalarFieldTexture(world,'veg',2):null;
     this.syncScalarField();
@@ -159,6 +162,7 @@ export class PlaneStage {
     const region = { x0: 0, y0: 0, x1: this.world.w - 1, y1: this.world.h - 1 };
     this.terrain?.update(region, { height: true, type: false });
     this.water?.update(region);
+    this.terrainSides?.update();
     if (this.entities) { this.entities.lastDerived = null; this.entities.clock = Infinity; }
     if (this.settlements) { this.settlements.lastDerived = null; this.settlements.clock = Infinity; }
     if (this.markers) { this.markers.lastDerived = null; this.markers.clock = Infinity; }
@@ -166,7 +170,23 @@ export class PlaneStage {
     if (this.selectionMarker) this.selectionMarker.needsPlace = true;
     this.decorations?.invalidateGround();
     if(this.realmArtifacts)this.realmArtifacts.clock=Infinity;
+    this.refreshGroundLayers();
     return true;
+  }
+
+  // A new Strata shoulder can be applied after this Stage updated in the current frame.
+  // Flush only ground-dependent layers; do not scan the Bridge or advance simulation again.
+  refreshGroundLayers() {
+    const options = { heightChanged: true };
+    if (this.vegetation) {
+      this.vegetation.update(); this.vegetationPending = false; this.treeClock = 0;
+    }
+    this.entities?.update(0, this.world, options);
+    this.settlements?.update(0, this.world, options);
+    this.markers?.update(0, this.world, options);
+    this.decorations?.update({ layoutChanged: true });
+    this.realmArtifacts?.update(0, options);
+    this.selectionMarker?.update(this.world, true);
   }
 
   /**
@@ -190,6 +210,7 @@ export class PlaneStage {
     // 凡间取 outside、目标界取 inside（§20），同一张区域表 ⇒ V5 由构造保证。
     this.terrain?.setRegionGeometry(this.regionGeometry, this.regionInside);
     this.water?.setRegionGeometry(this.regionGeometry, this.regionInside);
+    this.terrainSides?.setRegionGeometry(this.regionGeometry,this.regionInside);
     this.vegetation?.setRegionGeometry(this.regionGeometry, this.regionInside);
     this.settlements?.setRegionGeometry(this.regionGeometry, this.regionInside);
     this.markers?.setRegionGeometry(this.regionGeometry, this.regionInside);
@@ -219,6 +240,7 @@ export class PlaneStage {
     const t0 = performance.now();
     this.terrain?.updateScalarField(dt);
     if (heightRegion) this.terrain?.update(heightRegion, { height: true, type: false });
+    if(heightRegion)this.terrainSides?.update(heightRegion);
     if (typeRegion) this.terrain?.update(typeRegion, { height: false, type: true });
     const t1 = performance.now();
     if ((heightChanged || waterRegion) && this.water) this.water.update(mergeRegion(heightRegion, waterRegion));
@@ -228,7 +250,7 @@ export class PlaneStage {
     // §22：Region 变化也要重建植被实例（走同一条节流通道，不是每帧全量重写）。
     if (this.vegetation && (heightChanged || typeRegion || vegRegion || this.vegetation.pendingRegionRebuild)) this.vegetationPending = true;
     this.treeClock += Number.isFinite(dt) ? dt : 0;
-    if (this.vegetationPending && this.treeClock >= 0.15) {
+    if (this.vegetationPending && (heightChanged || this.treeClock >= 0.15)) {
       this.vegetation.update(); this.vegetationPending = false; this.treeClock = 0;
     }
     const t3 = performance.now();
@@ -255,6 +277,7 @@ export class PlaneStage {
   }
 
   releaseLayers() {
+    this.terrainSides?.dispose();this.terrainSides=null;
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
     this.scalarField?.dispose();this.scalarField=null;
     this.surfaceField?.dispose();this.surfaceField=null;
