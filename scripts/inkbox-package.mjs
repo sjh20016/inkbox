@@ -76,6 +76,7 @@ const FILES = [
   'scripts/inkbox-presentation.mjs',
   'scripts/inkbox-view.mjs',
   'scripts/inkbox-qol-check.mjs',
+  'scripts/inkbox-character-check.mjs',
   'scripts/inkbox-render3d.mjs',
   'scripts/inkbox-render3d-browser.mjs',
   // ⚠️ 这个脚本用外部 Playwright（`INKBOX_PLAYWRIGHT`），本机默认装不到 ⇒ 它是**可选** QA。
