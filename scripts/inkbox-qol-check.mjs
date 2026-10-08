@@ -488,6 +488,7 @@ check('只有 dirty 时才拦一句',
 // 所以这里钉死「谁必须调用它」。
 const mainSrc = stripComments(findFile('main.js').src);
 const railSrc = stripComments(findFile('ui/railPanels.js').src);
+const characterSrc = stripComments(findFile('ui/characterPanel.js').src);
 const applyToolBody = bodyOf(mainSrc, 'applyTool');
 
 check('★ main.js 的 applyTool() 必须置 dirty（玩家雕刻 / 施放神力 = 改世界）',
@@ -503,7 +504,7 @@ check('★ applyTool 用的两个事件名都在 DIRTY_EVENTS 白名单里',
   `terrain=${DIRTY_EVENTS.includes('terrain')} intervention=${DIRTY_EVENTS.includes('intervention')}`);
 
 check('★ railPanels 的「☆ 记挂」也要置 dirty（world.watch 是随存档走的世界字段）',
-  /markDirty\s*\(\s*['"]watch['"]/.test(railSrc) && DIRTY_EVENTS.includes('watch'),
+  /markDirty\s*\(\s*['"]watch['"]/.test(railSrc + characterSrc) && DIRTY_EVENTS.includes('watch'),
   DIRTY_EVENTS.includes('watch') ? '已接线' : 'watch 不在 DIRTY_EVENTS 里');
 
 // 反查：源码里**字面量发出**的事件名，每一个都必须在白名单里。
@@ -513,6 +514,7 @@ const emitted = [
   ...[...mainSrc.matchAll(/\.markDirty\s*\(\s*['"]([A-Za-z_$][\w$]*)['"]/g)].map((m) => m[1]),
   ...[...railSrc.matchAll(/\.markDirty\s*\(\s*['"]([A-Za-z_$][\w$]*)['"]/g)].map((m) => m[1]),
 ];
+emitted.push(...[...characterSrc.matchAll(/\\.markDirty\\s*\\(\\s*['"]([A-Za-z_$][\\w$]*)['"]/g)].map((m) => m[1]));
 const unknownEvents = [...new Set(emitted)].filter((e) => !DIRTY_EVENTS.includes(e));
 check('★ 字面量发出的事件名没有一个是白名单外的（拼错 = 静默失效）',
   emitted.length >= 3 && unknownEvents.length === 0,
