@@ -145,6 +145,7 @@ export function drawFx(ctx, camera, world, fx, plane = 'mortal') {
   ctx.lineJoin = 'round';
   for (let i = 0; i < fx.items.length; i += 1) {
     const item = fx.items[i];
+    if (camera.canAccess && !camera.canAccess(item.x, item.y)) continue;
     if (item.plane !== plane) continue;   // 只画这一界（三界不串）
     const k = item.ttl > 0 ? Math.min(1, item.age / item.ttl) : 1;
     const zoom = camera.zoom;

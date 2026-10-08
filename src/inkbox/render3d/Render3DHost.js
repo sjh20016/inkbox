@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { accessBounds, canAccess } from '../world/mapProgress.js';
 import { CameraRig } from './CameraRig.js';
 import { createCoordinates } from './coordinates.js';
 import { PlaneStage } from './stage/PlaneStage.js';
@@ -131,7 +132,7 @@ export class Render3DHost {
     this.boundaryKey = null; this.boundaryField = null;
     this.art.setProfile(this.art.profile);
     this.setLODEnabled(this.lodEnabled);
-    this.debug.samples = []; this.applyView(); return true;
+    this.accessKey = null; this.debug.samples = []; this.applyView(); return true;
   }
   setArtProfile(profile) { return this.art.setProfile(profile); }
   setGeographyEnabled(enabled) {
@@ -238,7 +239,7 @@ export class Render3DHost {
     const rifts = activeRiftsFor(this.world, targetPlane);
     // 半径会随裂缝生长变化 ⇒ 量化后进缓存键，让破口宽度跟着更新（§58）。
     const riftSignature = rifts.map(r => `${r.id}:${Math.round(r.radius * 20)}`).join(',');
-    const key = RealmBoundaryLayer.keyFor({ region, mode: spec.mode, sign, targetPlane, riftSignature });
+    const key = RealmBoundaryLayer.keyFor({ region, mode: spec.mode, sign, targetPlane, riftSignature }) + (this.playerAccessBounds ? `|access:${this.accessKey}` : '');
     if (this.boundaryKey !== key) {
       this.boundaryKey = key;
       if (spec.mode === 'strata') {
@@ -261,18 +262,33 @@ export class Render3DHost {
         regionGeometry: target.regionGeometry,
         mortalElevation: mortal.elevation,
         targetElevation: target.elevation,
-        sign, key, rifts, targetPlane,
+        sign, key, rifts, targetPlane, accessBounds: this.playerAccessBounds,
       });
     }
     this.boundary.setVisible(true);
   }
   setPresentation(presentation) { this.presentation = presentation; }
+  syncAccess() {
+    const bounds = this.world.mapProgress && this.world.mapProgress.stage < 3 ? accessBounds(this.world) : null;
+    const key = bounds ? Object.values(bounds).join(',') : 'full';
+    if (key === this.accessKey) return;
+    const initial = this.accessKey == null;
+    this.accessKey = key; this.playerAccessBounds = bounds;
+    for (const stage of this.stages.values()) stage.setAccessBounds(bounds);
+    this.cameraRig.setAccessBounds?.(bounds, { transition: !initial });
+    this.boundaryKey = null;
+  }
   applyView() {
+    this.syncAccess();
     if (this.slabProbe) {
       const rectangle = this.slabProbe.region;
       this.slabRegion ||= { ...rectangle, contains: (x, y) => x >= rectangle.x0 && x < rectangle.x1 && y >= rectangle.y0 && y < rectangle.y1 };
     }
     this.realmPrototype.apply(this.realmViewState, this.activePlane);
+    for (const stage of this.stages.values()) {
+      if (stage.selectionMarker?.cell && !canAccess(this.world, stage.selectionMarker.cell.x, stage.selectionMarker.cell.y))
+        stage.selectionMarker.mesh.visible = false;
+    }
     this.#applyBoundary();
     this.art.syncStyleContext();
   }
@@ -289,7 +305,7 @@ export class Render3DHost {
       stage.fxProbe.root.visible = true;
       stage.fxProbe.update(this.presentation, stage.world, {
         enabled: stage.productionAssetsEnabled && stage.geographyFeatures.riftFx,
-        region: stage.regionGeometry, inside: stage.regionInside,
+        region: stage.contentGeometry, inside: stage.contentInside,
       });
     }
     // §85：地形高度真的变过（雕刻 / 水文 / 生态）⇒ 界缘断面必须跟着重建。

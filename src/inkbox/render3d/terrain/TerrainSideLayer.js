@@ -12,9 +12,23 @@ export class TerrainSideLayer {
     this.edges.forEach(([ax,ay,bx,by],i)=>{for(let k=0;k<6;k++)normals.set([by-ay,0,ax-bx],i*18+k*3);});
     this.geometry.setAttribute('normal',new THREE.BufferAttribute(normals,3));
     this.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(this.edges.length*6),1));
-    this.material=new THREE.MeshLambertMaterial({color:'#555343',flatShading:true,side:THREE.DoubleSide});
+    this.geometry.setAttribute('color',new THREE.BufferAttribute(new Float32Array(this.edges.length*18),3));
+    this.material=new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide});
+    this.setArtProfile(null);
     this.mesh=new THREE.Mesh(this.geometry,this.material);this.mesh.name='WorldOuterSides';
     this.update();this.setRegionGeometry(null,true);
+  }
+  setArtProfile(profile) {
+    const style=profile?.realmStyle || null;
+    if(this.sideStyle===style && this.sideStyled)return;
+    this.sideStyle=style;this.sideStyled=true;
+    const paper=new THREE.Color(style?.paper?.color || '#ECE4D2');
+    const top=new THREE.Color(style?.boundary?.color || '#A59C89').lerp(paper,.32);
+    const bottom=paper.clone();
+    const attr=this.geometry.attributes.color;
+    this.edges.forEach((_,i)=>{
+      for(let k=0;k<6;k++){const c=k===0||k===1||k===3?top:bottom;attr.array.set([c.r,c.g,c.b],i*18+k*3);}
+    });attr.needsUpdate=true;
   }
   update(region=null) {
     const attr=this.geometry.attributes.position;

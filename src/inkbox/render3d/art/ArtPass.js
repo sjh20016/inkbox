@@ -122,6 +122,7 @@ export class ArtPass {
       heightWashStrength: realmStyle.tone?.heightWash ?? 0,
     } : this.profile;
     stage.terrain?.setArtProfile(profile);
+    stage.terrainSides?.setArtProfile(profile);
     this.syncComparisonMaterial(stage.terrain?.inkMaterial, 'terrain');
     stage.markers?.setArtProfile(profile, realmStyle ? {
       upper: this.realmStyleFor('upper').boundary.rift,

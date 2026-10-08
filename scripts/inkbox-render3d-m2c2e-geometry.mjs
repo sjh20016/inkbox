@@ -1,3 +1,4 @@
+import { PlanePicker } from '../src/inkbox/render3d/picking/PlanePicker.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { ElevationField } from '../src/inkbox/render3d/terrain/ElevationField.js';
@@ -64,5 +65,31 @@ check('height edits refresh vegetation and outside sides in the same Stage updat
   const w=generateWorld({preset:{w:16,h:12},seed:1234,scatter:false});const stage=new PlaneStage({plane:'mortal',world:w});
   stage.update(.2);let rebuilt=0;stage.vegetation.update=()=>rebuilt++;w.height[0]+=.05;stage.update(.001);assert.equal(rebuilt,1);
   assert.equal(stage.terrainSides.geometry.attributes.position.getY(0),Math.fround(stage.elevation.at(0,0)));stage.dispose();
+});
+check('opaque world edge wins depth; onlyPlane still samples terrain',()=>{
+  const w=world();w.height=Float32Array.from([.6,.35,.1,.6,.35,.1,.6,.35,.1]);
+  const c=createCoordinates(w),e=new ElevationField(w),t=new TerrainMesh(w,c,e),side=new TerrainSideLayer(w,c,e);
+  const scene=new THREE.Scene();scene.add(t.mesh,side.mesh);
+  const stage={plane:'mortal',world:w,coordinates:c,terrain:t,terrainSides:side,visible:true};
+  const picker=new PlanePicker({stages:new Map([['mortal',stage]]),scene,cameraRig:{camera:new THREE.PerspectiveCamera()}});
+  picker.raycaster.setFromCamera=()=>picker.raycaster.ray.set(new THREE.Vector3(-3,0,0),new THREE.Vector3(1,.5,0).normalize());
+  const hit=picker.pick(1,1,2,2),wall=picker.raycaster.intersectObject(side.mesh)[0];
+  assert.equal(hit.kind,'world-edge');assert.equal(hit.distance,wall.distance);
+  const terrainHit=picker.pick(1,1,2,2,'mortal');assert.equal(terrainHit.kind,'terrain');assert.ok(terrainHit.distance>hit.distance);
+  t.dispose();side.dispose();
+});
+check('profile refresh grounds layers immediately without Bridge scan or clock advance',()=>{
+  const w=generateWorld({preset:{w:16,h:12},seed:1234,scatter:false}),s=new PlaneStage({plane:'mortal',world:w});
+  s.setSelection(0,0);s.update(.2);const calls=[];
+  for(const key of ['vegetation','entities','settlements','markers']){
+    const original=s[key].update.bind(s[key]);s[key].update=(...args)=>{calls.push([key,args[0]]);return original(...args);};
+  }
+  s.bridge.changes=()=>{throw Error('profile refresh must not scan Bridge');};
+  s.setElevationProfile({datum:3,relief:.7});
+  assert.ok(Math.abs(s.selectionMarker.mesh.position.y-(s.elevation.at(0,0)+.18))<1e-9);
+  assert.equal(s.vegetationPending,false);assert.equal(s.treeClock,0);
+  assert.deepEqual(calls.map(c=>c[0]),['vegetation','entities','settlements','markers']);
+  for(const [,dt]of calls.slice(1))assert.equal(dt,0);
+  s.dispose();
 });
 console.log(`M2-C2E geometry CPU contracts: ${checks.length}/${checks.length} passed`);

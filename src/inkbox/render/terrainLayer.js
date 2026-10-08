@@ -7,6 +7,7 @@
 //   3. 云气留白：高山的背风侧混入纸白，形成绕山的雾带。
 
 import { SEA_LEVEL, TERRAIN } from '../core/config.js';
+import { accessBounds } from '../world/mapProgress.js';
 import { clamp, createNoise2D, fbm } from '../core/noise.js';
 import { TERRAIN_RGB, INK_RGB, mixRgb, BAYER4 } from './palette.js';
 
@@ -36,6 +37,8 @@ export class TerrainLayer {
     this.lastRender = -1e9;
     this.time = 0;
   }
+
+  invalidate() { this.lastRender = -Infinity; }
 
   allocate(w, h) {
     this.w = w;
@@ -161,13 +164,14 @@ export class TerrainLayer {
       }
       this._prevRow.fill(-1);
     }
+    const bounds = accessBounds(this.world);
     const prevRow = this._prevRow;
     const prevR = this._prevR;
     const prevG = this._prevG;
     const prevB = this._prevB;
 
-    for (let y = 0; y < h; y += 1) {
-      for (let x = 0; x < w; x += 1) {
+    for (let y = bounds.y0; y <= bounds.y1; y += 1) {
+      for (let x = bounds.x0; x <= bounds.x1; x += 1) {
         const i = y * w + x;
         const hv = height[i];
         const depth = water[i];

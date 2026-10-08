@@ -61,6 +61,7 @@ export function drawFocusPulses(ctx, camera, world, list) {
   ctx.lineCap = 'round';
   for (let i = 0; i < list.length; i += 1) {
     const pulse = list[i];
+    if (camera.canAccess && !camera.canAccess(pulse.x, pulse.y)) continue;
     const k = pulse.ttl > 0 ? Math.min(1, Math.max(0, 1 - pulse.life / pulse.ttl)) : 1;
     const cx = Math.max(0, Math.min(world.w - 1, Math.round(pulse.x)));
     const cy = Math.max(0, Math.min(world.h - 1, Math.round(pulse.y)));
@@ -140,6 +141,7 @@ export function drawWarLines(ctx, camera, world, opts = {}) {
     const bx = Number.isFinite(fb.capitalX) ? fb.capitalX : w.x;
     const by = Number.isFinite(fb.capitalY) ? fb.capitalY : w.y;
 
+    if (camera.canAccess && (!camera.canAccess(ax, ay) || !camera.canAccess(bx, by))) continue;
     const [sax, say] = camera.tileScreen(ax + 0.5, ay + 0.5, groundHeight(world, ax, ay));
     const [sbx, sby] = camera.tileScreen(bx + 0.5, by + 0.5, groundHeight(world, bx, by));
 

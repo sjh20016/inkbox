@@ -743,10 +743,21 @@
         <option value="small">小景 200×128</option>
         <option value="medium" selected>中堂 288×180</option>
         <option value="large">长卷 384×240</option>
+        <option value="expanse">广域 512×320</option>
       </select>
-      <input type="number" id="inkSeedInput" min="0" step="1" placeholder="种子" />
+      <label for="inkTerrainSelect">地貌</label>
+      <select id="inkTerrainSelect" aria-label="地貌">
+        <option value="standard" selected>标准世界</option>
+        <option value="mountains">群山世界</option>
+        <option value="wetlands">水泽世界</option>
+        <option value="legacy">兼容旧世界</option>
+      </select>
+      <input type="number" id="inkSeedInput" min="0" max="4294967295" step="1" placeholder="种子" aria-label="世界种子" />
       <button class="btn" id="inkBtnRegen">重新开天</button>
       <button class="btn danger" id="inkBtnClear">随机种子</button>
+      <label title="完整世界持续模拟，按阶段开放观察和编辑范围"><input id="inkProgressive" type="checkbox" /> 渐进探索</label>
+      <button class="btn" id="inkBtnExpand" hidden>拓展地图</button>
+      <span id="inkMapProgress" aria-live="polite"></span>
     </div>
 
     <div class="cluster">

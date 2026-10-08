@@ -1,4 +1,5 @@
 import { recomputeRect } from '../../world/terrain.js';
+import { SEA_LEVEL } from '../../core/config.js';
 
 // The only render3d world write boundary. A stamp reads a stable neighbourhood.
 //
@@ -21,20 +22,20 @@ import { recomputeRect } from '../../world/terrain.js';
 // ⚠️ 表现层纪律（P4）：这里写 `world.height` 是**玩家主动雕刻**这一个动作本身，
 //    不是把视觉参数反写模拟。Render3D 的任何 datum / relief / shoulder / wallHeight
 //    都**不得**经由此处回流（那属于 S5 的停止条件）。
-export function sculpt(world, { x, y, radius = 6, strength = 0.035, mode = 'raise', targetHeight }) {
+export function sculpt(world, { x, y, radius = 6, strength = 0.035, mode = 'raise', targetHeight, syncWater = false, accessBounds = null, deferCanonical = false, beforeChange = null }) {
   if (![x, y, radius, strength].every(Number.isFinite) || radius <= 0 || strength < 0) throw new Error('Invalid brush');
-  if (!['raise', 'lower', 'flatten', 'smooth'].includes(mode)) throw new Error('Unknown sculpt mode');
+  if (!['raise', 'lower', 'flatten', 'smooth', 'ridge', 'basin'].includes(mode)) throw new Error('Unknown sculpt mode');
   if (mode === 'flatten' && !Number.isFinite(targetHeight)) throw new Error('Flatten requires a stroke target');
   const x0 = Math.max(0, Math.ceil(x - radius)), x1 = Math.min(world.w - 1, Math.floor(x + radius));
   const y0 = Math.max(0, Math.ceil(y - radius)), y1 = Math.min(world.h - 1, Math.floor(y + radius));
   const changes = [];
   for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) {
     const distance = Math.hypot(cx - x, cy - y);
-    if (distance >= radius) continue;
+    if (distance >= radius || !brushAccess(accessBounds,cx,cy)) continue;
     const i = cy * world.w + cx, old = world.height[i];
     const falloff = (1 - (distance / radius) ** 2) ** 2;
     let next;
-    if (mode === 'raise' || mode === 'lower') next = old + (mode === 'raise' ? 1 : -1) * strength * falloff;
+    if (mode === 'raise' || mode === 'lower' || mode === 'ridge' || mode === 'basin') next = old + (mode === 'raise' || mode === 'ridge' ? 1 : -1) * strength * falloff;
     else {
       let target = targetHeight;
       if (mode === 'smooth') {
@@ -50,10 +51,19 @@ export function sculpt(world, { x, y, radius = 6, strength = 0.035, mode = 'rais
     next = Math.fround(Math.max(0, Math.min(1, next)));
     if (next !== old) changes.push([i, next, old]);
   }
-  for (const [i, value] of changes) world.height[i] = value;
+  for (const [i, value, old] of changes) {
+    beforeChange?.(i,old,world.water?.[i] ?? 0,world.riverBase?.[i] ?? 0);
+    if(syncWater && world.water){
+      const depth=world.water[i],surface=old+depth;
+      world.water[i]=Math.max(value<SEA_LEVEL?SEA_LEVEL-value:0,depth>0?surface-value:0,0);
+      // River sources otherwise immediately refill a raised channel in maintainRivers().
+      if(world.riverBase && value>old && value>=surface && value>=SEA_LEVEL)world.riverBase[i]=0;
+    }
+    world.height[i] = value;
+  }
   if (!changes.length) return null;
   // canonical 派生量重算：type / qi 必须跟着新高度走（含 world.touch()）。
-  recomputeRect(world, x0, y0, x1, y1);
+  if(!deferCanonical)recomputeRect(world, x0, y0, x1, y1);
   return { x0, y0, x1, y1, count: changes.length, changes };
 }
 
@@ -87,4 +97,80 @@ export function restoreHeights(world, changes) {
 export function strokeSamples(from, to, radius) {
   const count = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.y - from.y) / Math.max(0.5, radius * 0.25)));
   return Array.from({ length: count }, (_, i) => ({ x: from.x + (to.x - from.x) * (i + 1) / count, y: from.y + (to.y - from.y) * (i + 1) / count }));
+}
+
+function brushAccess(bounds,x,y){
+  return !bounds || (typeof bounds==='function'?bounds(x,y):x>=bounds.x0&&y>=bounds.y0&&x<=bounds.x1&&y<=bounds.y1);
+}
+function mergeBrushRegion(a,b){
+  if(!a)return b?{x0:b.x0,y0:b.y0,x1:b.x1,y1:b.y1}:null;
+  if(!b)return a;
+  return {x0:Math.min(a.x0,b.x0),y0:Math.min(a.y0,b.y0),x1:Math.max(a.x1,b.x1),y1:Math.max(a.y1,b.y1)};
+}
+/** A session-only edit transaction; simulation advances must not interleave its commands. */
+export class TerrainStroke {
+  constructor(world,firstPoint,options={}){
+    if(!firstPoint || ![firstPoint.x,firstPoint.y].every(Number.isFinite))throw new Error('Invalid stroke point');
+    this.world=world;this.plane='mortal';this.before=new Map();this.region=null;this.pending=null;this.closed=false;
+    this.options={radius:6,strength:.035,mode:'raise',syncWater:true,...options};
+    const x=Math.max(0,Math.min(world.w-1,Math.round(firstPoint.x))),y=Math.max(0,Math.min(world.h-1,Math.round(firstPoint.y)));
+    if(this.options.mode==='flatten')this.options.targetHeight=Number.isFinite(options.targetHeight)?options.targetHeight:world.height[y*world.w+x];
+    this.spacing=Math.max(.5,this.options.radius*.25);this.remainder=0;
+    this.last={x:firstPoint.x,y:firstPoint.y};this.lastStamp=this.last;this.stats={stamps:0,canonicalFlushes:0};
+    this.stamp(firstPoint);
+  }
+  stamp(point){
+    const region=sculpt(this.world,{...this.options,...point,deferCanonical:true,
+      beforeChange:(i,h,w,r)=>{if(!this.before.has(i))this.before.set(i,[h,w,r]);}});
+    this.stats.stamps++;this.lastStamp={x:point.x,y:point.y};
+    this.region=mergeBrushRegion(this.region,region);this.pending=mergeBrushRegion(this.pending,region);
+  }
+  sample(point){
+    if(this.closed)return false;
+    if(!point || ![point.x,point.y].every(Number.isFinite))return false;
+    if(!this.last){this.resume(point);return true;}
+    const from=this.last,dx=point.x-from.x,dy=point.y-from.y,length=Math.hypot(dx,dy);
+    if(length<1e-10)return false;
+    let distance=this.spacing-this.remainder;
+    while(distance<=length+1e-10){
+      const f=Math.min(1,distance/length);
+      // Quantize only the input trajectory to remove floating summation drift across pointer-event segments.
+      this.stamp({x:Math.round((from.x+dx*f)*1e9)/1e9,y:Math.round((from.y+dy*f)*1e9)/1e9});
+      distance+=this.spacing;
+    }
+    this.remainder=(this.remainder+length)%this.spacing;
+    if(this.remainder<1e-9||this.spacing-this.remainder<1e-9)this.remainder=0;
+    this.last={x:point.x,y:point.y};return true;
+  }
+  breakPath(){this.last=null;this.remainder=0;}
+  resume(point){this.last={x:point.x,y:point.y};this.remainder=0;this.stamp(point);}
+  flush(){
+    if(!this.pending)return null;
+    const region=this.pending;this.pending=null;
+    recomputeRect(this.world,region.x0,region.y0,region.x1,region.y1);this.stats.canonicalFlushes++;return region;
+  }
+  finish(){
+    if(this.closed)return this.result;
+    if(this.last&&Math.hypot(this.last.x-this.lastStamp.x,this.last.y-this.lastStamp.y)>1e-9)this.stamp(this.last);
+    this.flush();this.closed=true;
+    const records=[];
+    for(const [i,before] of this.before){const after=[this.world.height[i],this.world.water?.[i]??0,this.world.riverBase?.[i]??0];
+      if(before.some((v,k)=>v!==after[k]))records.push([i,...before,...after]);}
+    this.result=records.length?{plane:'mortal',world:this.world,region:this.region,records,
+      changes:records.map(([i,h])=>[i,h]),bytes:records.length*128,stats:{...this.stats,cells:records.length}}:null;
+    return this.result;
+  }
+}
+/** Undo and redo restore all mutable stamp channels before one canonical rebuild. */
+export function restoreTerrainStroke(world,entry,side='before'){
+  if(entry?.world!==world || !entry.records?.length)return null;
+  const offset=side==='after'?4:1,expected=side==='after'?1:4;
+  // Validate every touched cell before any write: later simulation owns its new values.
+  for(const record of entry.records){const i=record[0];
+    if(world.height[i]!==record[expected] || (world.water?.[i]??0)!==record[expected+1]
+      || (world.riverBase?.[i]??0)!==record[expected+2])return null;
+  }
+  for(const record of entry.records){const i=record[0];world.height[i]=record[offset];
+    if(world.water)world.water[i]=record[offset+1];if(world.riverBase)world.riverBase[i]=record[offset+2];}
+  const r=entry.region;recomputeRect(world,r.x0,r.y0,r.x1,r.y1);return {...r,count:entry.records.length};
 }

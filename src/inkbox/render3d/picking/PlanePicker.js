@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { canAccess } from '../../world/mapProgress.js';
 import { visibleRift } from '../readers/riftViewModel.js';
 
 function visiblySubmitted(object) {
@@ -77,6 +78,7 @@ export class PlanePicker {
       const rift = hit.instanceId == null ? null : hit.object.userData.renderRifts?.[hit.instanceId];
       const record = entity || settlement || building || artifact || site || leyline || rift;
       const world = record ? { x: record.x, y: record.y } : stage.coordinates.renderToWorld(hit.point.x, hit.point.z);
+      if (host.world?.mapProgress && !canAccess(host.world, world.x, world.y)) continue;
       const cell = record ? { x: Math.max(0, Math.min(stage.world.w - 1, Math.floor(record.x))), y: Math.max(0, Math.min(stage.world.h - 1, Math.floor(record.y))) }
         : stage.coordinates.renderPointToCell(hit.point);
       nearest = { ...cell, plane: stage.plane, entityId: entity?.id,
@@ -94,7 +96,8 @@ export class PlanePicker {
     const boundary = host.boundary;
     if (!onlyPlane && boundary?.mesh.visible && boundary.edges) {
       const hit = this.raycaster.intersectObject(boundary.mesh, false)[0];
-      if (hit && (!nearest || hit.distance < nearest.distance)) {
+      const cell = hit && host.coordinates.renderToWorld(hit.point.x, hit.point.z);
+      if (hit && (!host.world?.mapProgress || canAccess(host.world, cell.x, cell.y)) && (!nearest || hit.distance < nearest.distance)) {
         nearest = {
           ...boundary.edgeAtTriangle(hit.faceIndex),
           plane: null, entityId: null,

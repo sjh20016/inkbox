@@ -39,7 +39,10 @@ export function decorationFootprintOwned(world,region,inside,record) {
   const x0=Math.floor(record.x-rx),x1=Math.ceil(record.x+rx)-1,y0=Math.floor(record.y-ry),y1=Math.ceil(record.y+ry)-1;
   if(x0<0||y0<0||x1>=world.w-1||y1>=world.h-1)return false;
   if(!region)return true;
-  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if((region.quadInside[y*region.quadW+x]===1)!==inside)return false;
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    const owned = region.isInsideQuad ? region.isInsideQuad(x,y) : region.quadInside[y*region.quadW+x]===1;
+    if(owned!==inside)return false;
+  }
   return true;
 }
 export function decorationGround(elevation,record) {

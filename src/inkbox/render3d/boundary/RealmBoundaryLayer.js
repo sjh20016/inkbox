@@ -183,7 +183,7 @@ export class RealmBoundaryLayer {
    * @param {Array<{x:number,y:number,radius:number}>} [options.rifts] 已按目标位面过滤的活跃裂缝
    * @param {string} [options.key] 缓存键
    */
-  rebuild({ regionGeometry, mortalElevation, targetElevation, sign, rifts = [], key = null, targetPlane = null }) {
+  rebuild({ regionGeometry, mortalElevation, targetElevation, sign, rifts = [], key = null, targetPlane = null, accessBounds = null }) {
     const edgeCount = regionGeometry?.edgeCount ?? 0;
     this.key = key;
     this.sign = sign;
@@ -207,6 +207,9 @@ export class RealmBoundaryLayer {
     let breachEdges = 0;
 
     for (const { ax, ay, bx, by } of regionGeometry.boundaryEdges()) {
+      // Clip only true realm boundary edges. Access edges never become physical walls.
+      if (accessBounds && (Math.min(ax, bx) < accessBounds.x0 || Math.max(ax, bx) > accessBounds.x1
+        || Math.min(ay, by) < accessBounds.y0 || Math.max(ay, by) > accessBounds.y1)) continue;
       const pa = this.coordinates.cellToRender(ax, ay);
       const pb = this.coordinates.cellToRender(bx, by);
       // ⚠️ §33：这两个调用与目标 Stage 地形网格写顶点时**完全同源**。

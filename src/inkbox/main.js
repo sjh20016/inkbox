@@ -8,6 +8,8 @@ import { APP, LIMITS, TIME, WORLD_PRESETS, SEA_LEVEL, SPECIES_INFO, TERRAIN_INFO
 import { REALMS, realmLabel, pollutionLabel, POLLUTION_ASCEND_LIMIT } from './core/cultivation.js';
 import { mulberry32 } from './core/noise.js';
 import { generateWorld } from './world/worldgen.js';
+import { createSandboxWorld, creationOptions, parseSeed, syncCreationControls, syncMapProgress, expandSandboxMap } from './ui/worldCreation.js';
+import { accessBounds, canAccess } from './world/mapProgress.js';
 // 上界：`generateUpperWorld` 的 seed 收的是**凡间种子**，内部自己派生上界 seed
 // （所以这里绝不能先 xor 一次再传进去，那会双重派生）。
 // `recomputeUpperQi` 是上界专用的灵气补算——**不能用凡间的 `recomputeQi`**：
@@ -365,11 +367,11 @@ class Sandbox {
     requestAnimationFrame((ts) => this.frame(ts));
   }
 
-  newWorld(presetKey = this.presetKey, seed = this.seed) {
+  newWorld(presetKey = this.presetKey, seed = this.seed, options = {}) {
     const preset = WORLD_PRESETS[presetKey] || WORLD_PRESETS.medium;
     this.presetKey = presetKey;
     this.seed = seed >>> 0;
-    this.world = generateWorld({ preset, seed: this.seed, scatter: true });
+    this.world = createSandboxWorld(preset, this.seed, options);
     this.life = new Life(this.world, mulberry32(this.seed ^ 0xa5a5a5a5));
     this.terrain = new TerrainLayer(this.world, { relief: this.camera.relief });
     // 上界：与凡间同尺寸的另一张地图 + 第二个 TerrainLayer。
@@ -519,7 +521,10 @@ class Sandbox {
     const seedInput = $('inkSeedInput');
     if (seedInput) seedInput.value = String(this.world.seed);
     this.seed = this.world.seed >>> 0;
+    syncCreationControls(this);
   }
+
+  expandMap(all = false) { return expandSandboxMap(this, all); }
 
   /**
    * 一条提示。实现在 `ui/qol.js`（Q11 的「提示本身可以是入口」就在那里）。
@@ -539,6 +544,7 @@ class Sandbox {
   /** Q34：顶部那颗「seed / 幅面 / 渲染器」信息丸。 */
   syncWorldInfo() {
     this.qol.syncWorldInfo(this.render3d ? '3D' : 'Canvas');
+    syncMapProgress(this);
   }
 
   /**
@@ -973,14 +979,20 @@ class Sandbox {
     //     名字说的是种子，做的事是换世界，玩家按下去才发现天没了）。
     // ⚠️ 与普通按钮的区别靠**文案 + 确认**，不做大红色视觉改版（Q40 明令）。
     // ⚠️ Q38 / Q39：都走 `runOnce`，跑的时候按钮 disabled——双击不会开两次天。
+    $('inkBtnExpand')?.addEventListener('click', () => this.expandMap());
+    $('inkSeedInput').addEventListener('input', e => e.target.setCustomValidity(''));
     $('inkBtnRegen').addEventListener('click', () => {
+      let requestedSeed;
+      try { requestedSeed = parseSeed($('inkSeedInput').value); }
+      catch (error) { $('inkSeedInput').setCustomValidity(error.message); this.notify(error.message, 3200); return; }
+      const requestedOptions = creationOptions();
       this.qol.guardDiscard('当前世界有尚未保存的变化，仍要按种子重新开天？', () => {
         void this.qol.runOnce('inkBtnRegen', async () => {
           const seedInput = $('inkSeedInput');
           const presetSelect = $('inkPresetSelect');
-          const seed = (Number(seedInput.value) >>> 0) || (Math.floor(Math.random() * 0xffffffff) >>> 0);
+          const seed = requestedSeed;
           seedInput.value = String(seed);
-          this.newWorld(presetSelect.value, seed);
+          this.newWorld(presetSelect.value, seed, requestedOptions);
         });
       });
     });
@@ -1287,6 +1299,12 @@ class Sandbox {
     const x = this.hoverTile.x;
     const y = this.hoverTile.y;
     if (!world.inside(x, y)) return;
+    const bounds = accessBounds(world);
+    const radius = this.brushRadius;
+    if (!canAccess(world, x, y) || (world.mapProgress && world.mapProgress.stage < 3 &&
+      (x-radius < bounds.x0 || x+radius > bounds.x1 || y-radius < bounds.y0 || y+radius > bounds.y1))) {
+      this.notify('此处尚未开放 · 请拓展地图或将笔刷移入开放区域', 2400); return;
+    }
 
     const eventIdBefore = this.life.events.nextEventId;
     const ctx = {
@@ -1395,6 +1413,9 @@ class Sandbox {
   commitSelection(points) {
     const world = this.world;
     if (!world) return;
+    if (world.mapProgress && world.mapProgress.stage < 3 && points?.some(([x, y]) => !canAccess(world, x, y))) {
+      this.notify('视界不能越过未开放区域 · 请先拓展地图', 2600); return;
+    }
     // 当前工具对应哪一界（决定文案里的界名与开缝门控）。它同时给出
     // 「上界」/「幽冥」两个中文名，免得这里再抄一份三目。
     const plane = this.viewPlane();
@@ -1665,6 +1686,7 @@ class Sandbox {
       this.notify('此处已出图外 · 点回地图上再看', 2400);
       return;
     }
+    if (!canAccess(this.world, x, y)) { this.notify('此处尚未开放 · 请先拓展地图', 2400); return; }
     this.selected = { x, y };
     const world = this.world;
     const i = world.idx(x, y);
@@ -1987,6 +2009,9 @@ class Sandbox {
   }
 
   update(dt) {
+    // A brush transaction sees a stable world. Keep the chosen speed; do not accrue catch-up time.
+    this.render3d?.flushStroke?.();
+    const editingTerrain = !!this.render3d?.stroke;
     const world = this.world;
     if (!world) return;
 
@@ -2011,8 +2036,8 @@ class Sandbox {
     this.stage.ingestWorlds(world).update(dt);
 
     const speed = TIME.speeds[this.speedIndex].mult;
-    const paused = this.speedIndex === 0;
-    const days = TIME.baseDaysPerSecond * speed * dt;
+    const paused = this.speedIndex === 0 || editingTerrain;
+    const days = paused ? 0 : TIME.baseDaysPerSecond * speed * dt;
     if (days > 0) {
       // ── 世界推进：**全部游戏日驱动的时钟**都在 `advanceDays()` 里 ────
       // ⚠️ 原先散在这里的四段注释（上界 / 幽冥 / 裂缝 / 植被野火）**已随逻辑
@@ -2056,7 +2081,7 @@ class Sandbox {
     }
 
     this.autoSaveAccum += dt;
-    if (this.autoSaveAccum >= 90) {
+    if (this.autoSaveAccum >= 90 && !editingTerrain) {
       this.autoSaveAccum = 0;
       // ⚠️ 这里**不能 await**：这段代码在帧循环里。长卷实测 encodeSave 74 ms，
       // 按 60 FPS 算是掉 4~5 帧——每次自动存档画面都卡一下，而玩家不知道是为什么。
@@ -2105,6 +2130,8 @@ class Sandbox {
     const zoom = this.camera.zoom;
     const originX = this.camera.toScreenX(0);
     const originY = this.camera.toScreenY(-this.terrain.pad);
+    ctx.save();
+    this.camera.clipAccess(ctx);
     ctx.drawImage(
       this.terrain.canvas,
       0, 0, this.terrain.canvas.width, this.terrain.canvas.height,
@@ -2172,6 +2199,8 @@ class Sandbox {
         this.units.drawSelection(ctx, this.camera, world, this.hoverTile.x, this.hoverTile.y);
       }
     }
+
+    ctx.restore();
 
     // 画外压边：做成卷轴装裱的样子——四周压一圈暗角，再落两道墨线。
     // 这一步把「一张地图」变成「一幅裱好的画」。

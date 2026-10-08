@@ -23,6 +23,7 @@
 //    因此不影响存读档等价（与旧代码里那两处直接赋值同性质）。
 
 import { LIMITS, SEA_LEVEL } from '../core/config.js';
+import { accessBounds, canAccess } from '../core/mapAccess.js';
 
 /** `focusOn` 不给 duration 时的默认补间时长（秒）。找人物 0.6~0.9 之间取中。 */
 export const DEFAULT_FOCUS_DURATION = 0.75;
@@ -94,6 +95,10 @@ export class Camera {
    *    调用方保证先 `bind`（真实游戏在 `newWorld` / 读档里都先 bind 再操作相机）。
    */
   clampPoint(x, y, zoom) {
+    if (this.accessWorld?.mapProgress?.stage < 3) {
+      const b = accessBounds(this.accessWorld);
+      return { x: Math.max(b.x0, Math.min(b.x1, x)), y: Math.max(b.y0, Math.min(b.y1, y)) };
+    }
     const margin = 6 / zoom;
     const halfW = this.viewW / (2 * zoom);
     const halfH = this.viewH / (2 * zoom);
@@ -125,11 +130,12 @@ export class Camera {
 
   fit(world, padding = 1.04) {
     this.cancelTransition();
-    const scaleX = this.viewW / (world.w * padding);
-    const scaleY = this.viewH / (world.h * padding);
+    const bounds = accessBounds(world);
+    const scaleX = this.viewW / ((bounds.x1-bounds.x0+1) * padding);
+    const scaleY = this.viewH / ((bounds.y1-bounds.y0+1) * padding);
     this.zoom = Math.max(LIMITS.minZoom, Math.min(LIMITS.maxZoom, Math.min(scaleX, scaleY)));
-    this.x = world.w / 2;
-    this.y = world.h / 2;
+    this.x = (bounds.x0 + bounds.x1 + 1) / 2;
+    this.y = (bounds.y0 + bounds.y1 + 1) / 2;
     this.clamp();
   }
 
@@ -224,6 +230,7 @@ export class Camera {
   }
 
   bind(world) {
+    this.accessWorld = world;
     this.worldW = world.w;
     this.worldH = world.h;
     this.reliefScale = world.reliefScale;
@@ -263,15 +270,34 @@ export class Camera {
     return { x: cx, y: bestY };
   }
 
+  canAccess(x, y) { return !this.accessWorld || canAccess(this.accessWorld, x, y); }
+
+  // A paper-white reveal edge for Canvas fallback, derived from the same access rectangle.
+  clipAccess(ctx) {
+    const world = this.accessWorld;
+    if (!world?.mapProgress || world.mapProgress.stage >= 3) return;
+    const b = accessBounds(world), points = [];
+    const push = (x,y,cx,cy) => {
+      const i = cy * world.w + cx, height = world.height[i] + (world.water[i] > .0015 ? world.water[i] : 0);
+      points.push(this.tileScreen(x,y,height));
+    };
+    for(let x=b.x0;x<=b.x1;x++) push(x,b.y0,x,b.y0);
+    for(let y=b.y0;y<=b.y1;y++) push(b.x1+1,y,b.x1,y);
+    for(let x=b.x1;x>=b.x0;x--) push(x+1,b.y1+1,x,b.y1);
+    for(let y=b.y1;y>=b.y0;y--) push(b.x0,y+1,b.x0,y);
+    ctx.beginPath(); points.forEach(([x,y],i)=> i ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.closePath(); ctx.clip();
+  }
+
   /** 可见范围（世界格，含立体抬升余量） */
   visibleRect(world) {
+    const bounds = accessBounds(this.accessWorld || world);
     const halfW = this.viewW / (2 * this.zoom);
     const halfH = this.viewH / (2 * this.zoom);
     return {
-      x0: Math.max(0, Math.floor(this.x - halfW) - 1),
-      x1: Math.min(world.w - 1, Math.ceil(this.x + halfW) + 1),
-      y0: Math.max(0, Math.floor(this.y - halfH - this.reliefScale) - 1),
-      y1: Math.min(world.h - 1, Math.ceil(this.y + halfH) + 1),
+      x0: Math.max(bounds.x0, Math.floor(this.x - halfW) - 1),
+      x1: Math.min(bounds.x1, Math.ceil(this.x + halfW) + 1),
+      y0: Math.max(bounds.y0, Math.floor(this.y - halfH - this.reliefScale) - 1),
+      y1: Math.min(bounds.y1, Math.ceil(this.y + halfH) + 1),
     };
   }
 }

@@ -245,7 +245,7 @@ export class UnitsLayer {
    * 抄两遍，改一处忘一处。
    */
   territoryCanvas(camera, world, pad) {
-    const key = `${world.terrRev || 0}|${pad}|${world.seed}|${world.w}x${world.h}`;
+    const key = `${world.terrRev || 0}|${pad}|${world.seed}|${world.w}x${world.h}|${camera.accessWorld?.mapProgress?.stage ?? 3}`;
     if (this.terrCanvas && this.terrKey === key) return this.terrCanvas;
 
     const w = world.w;
@@ -280,6 +280,7 @@ export class UnitsLayer {
     for (let y = 0; y < world.h; y += 1) {
       const base = y * w;
       for (let x = 0; x < w; x += 1) {
+        if (camera.canAccess && !camera.canAccess(x, y)) continue;
         const i = base + x;
         const id = owner[i];
         if (!id) continue;
@@ -332,6 +333,7 @@ export class UnitsLayer {
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < world.leylines.length; i += 1) {
       const l = world.leylines[i];
+      if (camera.canAccess && !camera.canAccess(l.x, l.y)) continue;
       if (l.x < rect.x0 - 20 || l.x > rect.x1 + 20 || l.y < rect.y0 - 20 || l.y > rect.y1 + 20) continue;
       const idx = world.idx(Math.floor(l.x), Math.floor(l.y));
       const [sx, sy] = UnitsLayer.project(camera, l.x, l.y, world.height[idx]);
@@ -389,6 +391,7 @@ export class UnitsLayer {
     ctx.lineJoin = 'round';
     for (let i = 0; i < list.length; i += 1) {
       const rift = list[i];
+      if (camera.canAccess && !camera.canAccess(rift.x, rift.y)) continue;
       // 已闭合的（closedDay >= 0）不画——它们在活跃列表里可能还留着一帧。
       if (!riftIsActive(rift)) continue;
       if (rift.x < rect.x0 - 12 || rift.x > rect.x1 + 12
@@ -464,6 +467,7 @@ export class UnitsLayer {
     const cell = Math.max(0.24, Math.min(3, camera.zoom * 0.22));
     for (let i = 0; i < world.villages.length; i += 1) {
       const v = world.villages[i];
+      if (camera.canAccess && !camera.canAccess(v.x, v.y)) continue;
       if (v.x < rect.x0 - 14 || v.x > rect.x1 + 14 || v.y < rect.y0 - 14 || v.y > rect.y1 + 14) continue;
       const faction = world.factionById(v.faction);
       const roof = faction ? faction.color : '#6b6152';
@@ -471,6 +475,7 @@ export class UnitsLayer {
       const colors = { 1: wall, 2: roof, 3: toCss(INK_RGB.ink) };
       for (let hIdx = 0; hIdx < v.houses.length; hIdx += 1) {
         const h = v.houses[hIdx];
+      if (camera.canAccess && !camera.canAccess(h.x, h.y)) continue;
         const idx = world.idx(h.x, h.y);
         const [sx, sy] = UnitsLayer.project(camera, h.x + 0.5, h.y + 1, world.height[idx]);
         const rows = h.type === 2 ? HOUSE_LARGE : HOUSE_SMALL;
@@ -490,6 +495,7 @@ export class UnitsLayer {
     for (let i = 0; i < world.factions.length; i += 1) {
       const f = world.factions[i];
       if (!f.capitalX) continue;
+      if (camera.canAccess && !camera.canAccess(f.capitalX, f.capitalY)) continue;
       if (f.capitalX < rect.x0 - 20 || f.capitalX > rect.x1 + 20
         || f.capitalY < rect.y0 - 20 || f.capitalY > rect.y1 + 20) continue;
       const idx = world.idx(
@@ -519,6 +525,7 @@ export class UnitsLayer {
     ctx.lineWidth = Math.max(1, camera.zoom * 0.18);
     for (let i = 0; i < world.sites.length; i += 1) {
       const site = world.sites[i];
+      if (camera.canAccess && !camera.canAccess(site.x, site.y)) continue;
       if (site.x < rect.x0 - 6 || site.x > rect.x1 + 6 || site.y < rect.y0 - 6 || site.y > rect.y1 + 6) continue;
       const idx = world.idx(Math.floor(site.x), Math.floor(site.y));
       const [sx, sy] = UnitsLayer.project(camera, site.x + 0.5, site.y + 0.5, world.height[idx]);
@@ -570,6 +577,7 @@ export class UnitsLayer {
 
     for (let i = 0; i < list.length; i += 1) {
       const e = list[i];
+      if (camera.canAccess && !camera.canAccess(e.x, e.y)) continue;
       if (e.x < rect.x0 || e.x > rect.x1 || e.y < rect.y0 || e.y > rect.y1) continue;
       const idx = world.idx(Math.floor(e.x), Math.floor(e.y));
       const height = world.height[idx];
@@ -666,6 +674,7 @@ export class UnitsLayer {
     ctx.globalAlpha = 0.55;                 // 半透明：一眼看出「不是人」
     for (let i = 0; i < list.length; i += 1) {
       const e = list[i];
+      if (camera.canAccess && !camera.canAccess(e.x, e.y)) continue;
       if (e.x < rect.x0 || e.x > rect.x1 || e.y < rect.y0 || e.y > rect.y1) continue;
       const idx = world.idx(Math.floor(e.x), Math.floor(e.y));
       const height = world.height[idx];
@@ -754,6 +763,7 @@ export class UnitsLayer {
     const vis = [];
     for (let i = 0; i < world.villages.length; i += 1) {
       const v = world.villages[i];
+      if (camera.canAccess && !camera.canAccess(v.x, v.y)) continue;
       if (v.x < rect.x0 - 10 || v.x > rect.x1 + 10 || v.y < rect.y0 - 10 || v.y > rect.y1 + 10) continue;
       vis.push(v);
     }
@@ -763,6 +773,7 @@ export class UnitsLayer {
 
     for (let i = 0; i < vis.length && placed.length < budget; i += 1) {
       const v = vis[i];
+      if (camera.canAccess && !camera.canAccess(v.x, v.y)) continue;
       const idx = world.idx(Math.floor(v.x), Math.floor(v.y));
       const [sx, sy] = UnitsLayer.project(camera, v.x, v.y, world.height[idx]);
       const text = `${v.name}${v.level > 1 ? ` ·${v.pop}` : ''}`;
@@ -782,6 +793,7 @@ export class UnitsLayer {
       for (let i = 0; i < world.factions.length; i += 1) {
         const f = world.factions[i];
         if (!f.capitalX) continue;
+      if (camera.canAccess && !camera.canAccess(f.capitalX, f.capitalY)) continue;
         if (f.capitalX < rect.x0 - 6 || f.capitalX > rect.x1 + 6
           || f.capitalY < rect.y0 - 6 || f.capitalY > rect.y1 + 6) continue;
         const idx = world.idx(

@@ -5,7 +5,14 @@ import { WORLD_PRESETS, SEA_LEVEL } from '../src/inkbox/core/config.js';
 import { TERRAIN_PRESETS } from '../src/inkbox/world/worldGeneration.js';
 import { createMapProgress, accessBounds, canAccess, expandMap } from '../src/inkbox/world/mapProgress.js';
 import { serializeWorld, deserializeWorld } from '../src/inkbox/io/save.js';
-import { Life } from '../src/inkbox/sim/life.js';
+import { Life, mercyRngFor, MERCY_SEED_KEY } from '../src/inkbox/sim/life.js';
+import { UpperLife } from '../src/inkbox/sim/upperLife.js';
+import { generateUpperWorld } from '../src/inkbox/world/worldgenUpper.js';
+import { generateNetherWorld } from '../src/inkbox/world/worldgenNether.js';
+import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
+import { openRifts, riftRngFor, RIFT_SEED_KEY, netherRiftRngFor, NETHRIFT_SEED_KEY,
+  netherItemRngFor, NETHERITEM_SEED_KEY, netherPossessRngFor, NETHER_POSSESS_SEED_KEY } from '../src/inkbox/sim/rifts.js';
+import { mortalHauntRngFor, MORTALHAUNT_SEED_KEY } from '../src/inkbox/sim/wraiths.js';
 import { mulberry32 } from '../src/inkbox/core/noise.js';
 const hash = value => createHash('sha256').update(value).digest('hex');
 const heightHash = world => hash(new Uint8Array(world.height.buffer));
@@ -75,3 +82,85 @@ for (let day = 0; day < 12; day += 1) {
 assert.deepEqual(serializeWorld(a), serializeWorld(b));
 console.log('PASS legacy full access, expansion identity, same saved payload + commands reproducible (existing RNG cursors are not persisted)');
 console.log(`PASS ${seeds.length * 3 * 3} fixed-seed generation/save/progress matrix cases`);
+
+// Actual advanceWorld purity comparison: only one restored world opens its map.
+// Same save, same eleven random streams, same clocks and the same three-world simulation.
+const HIDDEN_STREAMS = [
+  ['mercy', MERCY_SEED_KEY, mercyRngFor], ['rift', RIFT_SEED_KEY, riftRngFor],
+  ['netherRift', NETHRIFT_SEED_KEY, netherRiftRngFor], ['netherItem', NETHERITEM_SEED_KEY, netherItemRngFor],
+  ['netherPossess', NETHER_POSSESS_SEED_KEY, netherPossessRngFor], ['mortalHaunt', MORTALHAUNT_SEED_KEY, mortalHauntRngFor],
+];
+function progressPositions(world) {
+  const positions = {};
+  // Match the established C2C purity fixture: sample only AFTER the final save snapshot.
+  // These getters intentionally have no state API. Locate their eight-value continuation
+  // in the original deterministic stream; this is test instrumentation, never save logic.
+  for (const [name, salt, get] of HIDDEN_STREAMS) {
+    const sample = Array.from({ length: 8 }, () => get(world)());
+    const rng = mulberry32((world.seed ^ salt) >>> 0), limit = 1000000;
+    const sequence = new Float64Array(limit + sample.length);
+    for (let i = 0; i < sequence.length; i += 1) sequence[i] = rng();
+    let position = -1;
+    search: for (let i = 0; i <= limit; i += 1) {
+      for (let j = 0; j < sample.length; j += 1) if (sequence[i + j] !== sample[j]) continue search;
+      position = i; break;
+    }
+    assert.ok(position >= 0, `${name}: hidden stream exceeds established purity scan limit`);
+    positions[name] = position;
+  }
+  return positions;
+}
+function purityDependencies(world) {
+  const counts = {}, directStreams = {};
+  const counted = (name, rng) => {
+    counts[name] = 0;
+    const stream = () => { counts[name] += 1; return rng(); };
+    directStreams[name] = stream; return stream;
+  };
+  const life = new Life(world, counted('life', mulberry32(world.seed ^ 0xa5a5a5a5)));
+  life.warRng = counted('war', life.warRng);
+  const upperLife = new UpperLife(world.upper);
+  upperLife.rng = counted('upper', upperLife.rng);
+  upperLife.spatialRng = counted('upperSpatial', upperLife.spatialRng);
+  const deps = { life, upperLife, state: createAdvanceState(),
+    rng: counted('advance', mulberry32(world.seed ^ 0x1a2b3c4d)), nether: true, wraith: true, riftActive: true };
+  return { deps, counts, directStreams };
+}
+const puritySeed = 908, purityPreset = { w: 64, h: 48 };
+const purityWorld = generateWorld({ preset: purityPreset, seed: puritySeed, generationVersion: 2 });
+purityWorld.upper = generateUpperWorld({ preset: purityPreset, seed: puritySeed });
+purityWorld.nether = generateNetherWorld({ preset: purityPreset, seed: puritySeed });
+createMapProgress(purityWorld, true);
+const puritySelection = { x0: 10, y0: 9, x1: 44, y1: 35 };
+assert.ok(openRifts(purityWorld, puritySelection, 'upper').opened);
+assert.ok(openRifts(purityWorld, puritySelection, 'nether').opened);
+// Consume the generation-only pendingSpawns before producing the common saved fixture.
+advanceWorld(purityWorld, 1, purityDependencies(purityWorld).deps);
+assert.ok(purityWorld.entities.length > 0, 'purity fixture must exercise actual living entities');
+const puritySaved = JSON.parse(JSON.stringify(serializeWorld(purityWorld)));
+const openingWorld = deserializeWorld(puritySaved), lockedWorld = deserializeWorld(puritySaved);
+const opening = purityDependencies(openingWorld), locked = purityDependencies(lockedWorld);
+for (let day = 0; day < 120; day += 1) {
+  if ([20, 50, 80].includes(day)) {
+    const before = { ...opening.counts };
+    assert.equal(expandMap(openingWorld), true);
+    assert.deepEqual(opening.counts, before, 'opening the map must not consume a simulation random draw');
+  }
+  advanceWorld(openingWorld, 1, opening.deps);
+  advanceWorld(lockedWorld, 1, locked.deps);
+}
+assert.equal(openingWorld.mapProgress.stage, 3);
+assert.equal(lockedWorld.mapProgress.stage, 0);
+assert.equal(openingWorld.day, puritySaved.day + 120);
+const openingSave = serializeWorld(openingWorld), lockedSave = serializeWorld(lockedWorld);
+delete openingSave.mapProgress; delete lockedSave.mapProgress;
+assert.deepEqual(openingSave, lockedSave, 'all three saved worlds must match after removing only player map progress');
+assert.deepEqual(opening.deps.state, locked.deps.state, 'actual advance clocks and remainders must match');
+assert.deepEqual(opening.counts, locked.counts, 'five direct random stream draw counts must match');
+assert.equal(Object.keys(opening.counts).length, 5);
+for (const name of Object.keys(opening.directStreams)) {
+  assert.deepEqual(Array.from({ length: 8 }, () => opening.directStreams[name]()),
+    Array.from({ length: 8 }, () => locked.directStreams[name]()), `${name}: direct stream continuation must match`);
+}
+assert.deepEqual(progressPositions(openingWorld), progressPositions(lockedWorld), 'six hidden stream positions must match');
+console.log('PASS 120-day real advanceWorld map-opening purity: full three-world save + advanceState + eleven RNG streams');

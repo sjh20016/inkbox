@@ -10,6 +10,7 @@ import { WorldMarkerLayer } from '../markers/WorldMarkerLayer.js';
 import { SelectionMarker } from '../SelectionMarker.js';
 import { ElevationField } from '../terrain/ElevationField.js';
 import { RegionGeometry } from '../region/RegionGeometry.js';
+import { composeAccessGeometry } from '../region/AccessGeometry.js';
 import { renderProfileFor } from './PlaneRenderProfile.js';
 import { createEnvironmentMaterial, setEnvironmentMaterialProfile, setEnvironmentMaterialView } from '../environment/EnvironmentMaterial.js';
 import { RealmDecorationLayer } from '../environment/RealmDecorationLayer.js';
@@ -85,6 +86,7 @@ export class PlaneStage {
     this.pending = null;
     this.vegetationPending = false;
     this.treeClock = 0;
+    this.accessKey = null; this.accessBounds = null; this.contentGeometry = null; this.contentInside = true; this.contentKey = null;
     this.regionMask = null;
     this.regionGeometry = null;
     this.regionInside = true;
@@ -206,17 +208,24 @@ export class PlaneStage {
       this.regionMask = region || null;
       this.regionGeometry = region ? new RegionGeometry(this.world, region) : null;
     }
-    // §19：所有需要 Region 过滤的 Layer 走**同一份** RegionGeometry。
-    // 凡间取 outside、目标界取 inside（§20），同一张区域表 ⇒ V5 由构造保证。
-    this.terrain?.setRegionGeometry(this.regionGeometry, this.regionInside);
-    this.water?.setRegionGeometry(this.regionGeometry, this.regionInside);
-    this.terrainSides?.setRegionGeometry(this.regionGeometry,this.regionInside);
-    this.vegetation?.setRegionGeometry(this.regionGeometry, this.regionInside);
-    this.settlements?.setRegionGeometry(this.regionGeometry, this.regionInside);
-    this.markers?.setRegionGeometry(this.regionGeometry, this.regionInside);
-    this.entities?.setRegionGeometry(this.regionGeometry, this.regionInside);
-    this.decorations?.setRegionGeometry(this.regionGeometry,this.regionInside);
-    this.realmArtifacts?.setRegionGeometry(this.regionGeometry,this.regionInside);
+    const key = `${this.regionInside}|${this.accessBounds ? Object.values(this.accessBounds).join(',') : 'full'}`;
+    if (this.contentSource !== this.regionGeometry || this.contentKey !== key) {
+      this.contentSource = this.regionGeometry; this.contentKey = key;
+      const content = composeAccessGeometry(this.world, this.accessBounds, this.regionGeometry, this.regionInside);
+      this.contentGeometry = content.geometry; this.contentInside = content.inside;
+    }
+    for (const layer of [this.terrain, this.water, this.terrainSides, this.vegetation, this.settlements,
+      this.markers, this.entities, this.decorations, this.realmArtifacts]) {
+      layer?.setRegionGeometry(this.contentGeometry, this.contentInside);
+    }
+  }
+
+  setAccessBounds(bounds = null) {
+    const key = bounds ? Object.values(bounds).join(',') : 'full';
+    if (key === this.accessKey) return false;
+    this.accessKey = key; this.accessBounds = bounds;
+    this.setRegionMask(this.regionMask, this.regionInside);
+    return true;
   }
 
   markTerrainDirty(region) {
