@@ -55,6 +55,8 @@ import {
   withFoldExpanded, slotLabel, slotMetaText, collapseAllMap,
 } from './qolState.js';
 
+import { openCharacterCard, closeCharacterCard } from './characterPanel.js';
+
 const $ = (id) => document.getElementById(id);
 
 // ── 共享 DOM 小工具 ──────────────────────────────────────────────────
@@ -566,108 +568,14 @@ export function refreshNotablesPanel(sb) {
  * Q37：卡片头带上**真实位面**（本方法只服务凡间，所以恒为「凡间」）。
  */
 export function showPersonCardPanel(sb, id) {
-  const world = sb.world;
-  const entity = findEntity(world, id);
-  const panel = $('inkPersonDetail');
-  if (!panel) return;
-  if (!entity) {
-    // Q36：不抛异常、不留旧内容——把话说清楚，并把面板收掉。
-    hidePersonCardPanel(sb);
-    sb.notify?.('此人已不在此界', 2600);
-    return;
-  }
-  sb.personOpenId = id;
-  const watched = isWatched(world, entity);
-  const plane = planeTagOf('mortal');
-  panel.dataset.plane = 'mortal';
-  panel.innerHTML = `<div class="inspect-head">${displayName(entity)}的一生`
-    + `<span class="plane-tag">${plane}</span>`
-    + '<button class="ink-x" id="inkPersonClose">×</button></div>'
-    + `<div class="necro-body">${renderBiographyHtml(compileBiography(world, entity))}</div>`
-    + '<div class="inspect-actions">'
-    + '<button class="btn" id="inkBtnPersonLocate">定位</button>'
-    + `<button class="btn" id="inkBtnPersonWatch">${watched ? '★ 取消记挂' : '☆ 记挂此人'}</button>`
-    + `<button class="btn" id="inkBtnPersonRel">${sb.relationOpen ? '收起关系' : '查看关系'}</button>`
-    + '<button class="btn" id="inkBtnPersonBio">导出传记</button>'
-    + '</div>'
-    + '<div id="inkPersonRel" style="text-align:center;padding:0 10px"></div>';
-  panel.classList.add('on');
-  $('inkPersonClose').addEventListener('click', () => hidePersonCardPanel(sb));
-  // 关系图开关。⚠️ 换人（点外圈节点）时 `relationOpen` 保持——于是能顺着关系网一路点下去。
-  if (sb.relationOpen) {
-    const relBox = $('inkPersonRel');
-    if (relBox) relBox.innerHTML = buildRelationSvgPanel(sb, entity);
-  }
-  bindRelationGraphPanel(sb);
-  $('inkBtnPersonLocate').addEventListener('click', () => {
-    const now = findEntity(sb.world, id);
-    if (!now) { sb.notify?.('此人已不在此界', 2600); return; }
-    sb.camera.focusOn(now.x, now.y, { zoom: Math.max(sb.camera.zoom, 7), duration: 0.75 });
-    spawnFocusPulse(sb.focusPulses, now.x, now.y);
-    sb.dirty = true;
+  return openCharacterCard(sb, id, {
+    renderRelations: (_world, entity) => buildRelationSvgPanel(sb, entity),
+    bindRelations: () => bindRelationGraphPanel(sb),
   });
-  $('inkBtnPersonRel').addEventListener('click', () => {
-    // 纯 UI 开关：重绘关系图容器，**不重排整张卡**（否则会把玩家的滚动位置重置）。
-    sb.relationOpen = !sb.relationOpen;
-    $('inkBtnPersonRel').textContent = sb.relationOpen ? '收起关系' : '查看关系';
-    const box = $('inkPersonRel');
-    const now = findEntity(sb.world, id);
-    if (box) box.innerHTML = (sb.relationOpen && now) ? buildRelationSvgPanel(sb, now) : '';
-    if (sb.relationOpen) bindRelationGraphPanel(sb);
-  });
-  $('inkBtnPersonWatch').addEventListener('click', () => {
-    // 再取一次实体：卡片可能开着不动、人却在这期间死了（面板每 2.5 秒刷新）。
-    const now = findEntity(sb.world, id);
-    if (!now) { sb.notify?.('此人已不在此界', 2600); return; }
-    const wasWatched = isWatched(sb.world, now);
-    const name = displayName(now);
-    const res = toggleWatch(sb.world, now, sb.world.day);
-    if (!res.ok) {
-      // 上限满 ⇒ **不静默顶掉别人**，就地提示玩家先取关一个（不弹模态框）。
-      if (res.reason === 'full') {
-        sb.notify?.(`记挂已满（上限 ${WATCH_CAP}）· 先在「天道记挂」里取关一个`, 3600);
-      }
-      return;
-    }
-    // Q16：动作本身要有一句明确反馈——成功 / 取消都必须说，且说清是谁。
-    sb.notify?.(wasWatched ? `不再记挂 · ${name}` : `已记挂 · ${name}`, 2400);
-    // ── Q21：`world.watch` 是**随存档走**的世界字段 ─────────────────────
-    // 改它 = 世界与磁盘上的存档不再一致，所以要置脏（否则「存档 → 记挂一批人
-    // → 重新开天」会静默丢掉这份名单）。
-    // ⚠️ 只有**玩家按 ☆ 增删**才算编辑。下面的「点开面板即标为已读」
-    //    （`markAllWatchRead` 写 `lastReadDay`）**不置脏**——那是一次浏览留下的
-    //    书签，不是玩家做出来的东西；把它算进去会让确认条在正常浏览时也弹。
-    if (sb.qol && typeof sb.qol.markDirty === 'function') sb.qol.markDirty('watch');
-    showPersonCardPanel(sb, id);   // 重绘按钮状态（☆ / ★）
-    sb.refreshWatch();             // 侧栏「天道记挂」同步
-  });
-  $('inkBtnPersonBio').addEventListener('click', () => {
-    // 再编译一遍：正文是纯派生，不值得为它多存一份（存了就会与世界不同步）
-    const now = findEntity(sb.world, id);
-    if (now) sb.downloadText(biographyFileName(now), compileBiography(sb.world, now));
-  });
-  // 「找到这个人」和「看见他在哪」是同一件事——所以顺带把镜头挪过去。
-  // 挪镜头**不是**改世界状态（camera 是渲染层），所以不影响存读档等价。
-  sb.camera.focusOn(entity.x, entity.y, { zoom: Math.max(sb.camera.zoom, 7), duration: 0.75 });
-  spawnFocusPulse(sb.focusPulses, entity.x, entity.y);
-  sb.dirty = true;
-  // Q13：最近看过（纯 UI runtime，不进世界、不进存档）。
-  sb.qol?.noteRecent({
-    key: `mortal:${entity.id}`, kind: 'person', id: entity.id,
-    name: displayName(entity), plane: 'mortal',
-  });
-  // ⚠️ **必须就地重画**。`refreshRecentPanel` 不在 `main.js` 那个 2.5 秒定时器里
-  //    （它只刷编年史 / 卜算子 / 名录 / 大事记 / 活人榜 / 三界 / 记挂），
-  //    漏掉这一行的话，「最近看过」整块**整局都不会出现**——数据记下了，
-  //    面板永远是空的，而且不报错。Q13 要的正是「刚看过谁，立刻能点回去」。
-  sb.refreshRecent?.();
 }
 
 export function hidePersonCardPanel(sb) {
-  const panel = $('inkPersonDetail');
-  if (panel) panel.classList.remove('on');
-  sb.personOpenId = null;
-  sb.relationOpen = false;   // 收起卡片时也收起关系图（下次打开是干净状态）
+  return closeCharacterCard(sb);
 }
 
 // ── 人物局部关系图 ───────────────────────────────────────────────────
