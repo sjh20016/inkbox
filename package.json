@@ -7,6 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:character": "node scripts/inkbox-character-check.mjs",
     "test:characters": "node scripts/inkbox-characters-check.mjs",
     "test:characters:browser": "node scripts/inkbox-characters-browser.mjs",
     "test:render3d": "node scripts/inkbox-render3d.mjs",
