@@ -117,3 +117,13 @@ checkpoint `render3d-m2a` 指向 `f274def`；cleanup 另加提交，不重写这
 `vegetation/treeVariation.js` 只用 seed/cell 稳定 hash 产生五种既有树轮廓和颜色；`SettlementLayer` 的远景簇持有真实房屋成员，区域跨界簇不合并。界缘切换/关闭恢复非当前目标界 Raw 派生高程。详见 [Profile 规格](./REALM_STYLE_PROFILE_SPEC.md)。
 
 角色运行包仅收录 mesh/data/materials/docs。编辑源和 preview 不入 dist；完整本地/Actions 截图与日志也不入包。打包阶段把指向排除资料的文档链接改为明确的“开发资料，运行包不附带”，源码文档保留原链接。
+
+## M2-C2E 地形和访问边界（2026-10-08）
+
+terrain/topology统一v2网格对角与ElevationField插值，v1原对角保持。WaterLayer提交World湿域裁切和外周水帘，TerrainSideLayer仅封完整世界外周；世界侧壁参与Picker遮挡。Stage.profile变化立即refreshGroundLayers，不另扫Bridge。
+
+TerrainStroke是正式雕刻写边界：固定距离采样，height/water/riverBase去重before/after，canonical矩形按帧flush，Undo/Redo走同路径。main持有stroke期间隔离模拟且不补跑，不改变倍速。
+
+worldGeneration配置v2生成，save显式可选generation/mapProgress。core/mapAccess只读访问策略，world/mapProgress只写进度；region/AccessGeometry组合访问与原RegionGeometry指定侧，真实Region仍只属于RealmMask。Host传播三界，Canvas/3D共用权限，闭区完整模拟。详见[M2-C2E实现](./M2C2E_IMPLEMENTATION_REPORT.md)。
+
+WaterLayer独占节点与裁切scratch缓存（约32字节/格）：World dirty更新邻域，profile/world变更全量初始化，Region/style变更重建可见索引；legacy回切先同步，dispose/Host换世界释放。TerrainMesh仅在对角变化时重传拓扑索引。Undo/Redo写前对整笔height/water/riverBase预期快照作原子校验，后续模拟冲突会拒绝和清空历史。

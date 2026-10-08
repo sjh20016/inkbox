@@ -157,6 +157,24 @@ const FILES = [
   'scripts/inkbox-render3d-m2c2d1-diagnostics.mjs',
   'scripts/inkbox-render3d-m2c2d1-framebuffer.mjs',
   'scripts/inkbox-render3d-m2c2d1-comparison.mjs',
+  // M2-C2E reproducible development handoff and stage gates.
+  'M2C2E_BASELINE.md',
+  'M2C2E_INVESTIGATION.md',
+  'M2C2E_IMPLEMENTATION_REPORT.md',
+  'M2C2E_GEOMETRY_REPORT.md',
+  'M2C2E_WORLD_GENERATION_REPORT.md',
+  'M2C2E_TERRAIN_EDITING_REPORT.md',
+  'M2C2E_EXPANSION_REPORT.md',
+  'M2C2E_PERFORMANCE_REPORT.md',
+  'M2C2E_VISUAL_ACCEPTANCE.md',
+  'M2C2E_READINESS.md',
+  'scripts/inkbox-render3d-m2c2e-geometry.mjs',
+  'scripts/inkbox-m2c2e-creation.mjs',
+  'scripts/inkbox-m2c2e-generation.mjs',
+  'scripts/inkbox-m2c2e-sculpt.mjs',
+  'scripts/inkbox-m2c2e-expansion.mjs',
+  'scripts/inkbox-render3d-m2c2e-browser.mjs',
+  'scripts/inkbox-render3d-m2c2e-soak.mjs',
   'M2C2D1_BASELINE.md',
   'M2C2D1_FOLLOWUPS.md',
   'M2C2D1_PERFORMANCE_REPORT.md',
@@ -254,6 +272,7 @@ const DIRECTORIES = [
   'assets/environment/docs',
 ];
 const RELEASE_SUMMARIES = [
+  'reports/release/render3d-m2c2e/summary/acceptance-summary.json',
   'reports/release/render3d-m2c2d/summary/acceptance-summary.json',
   'reports/release/render3d-m2c2d1/summary/acceptance-summary.json',
   'reports/release/render3d-m2c2c/summary/acceptance-summary.json',
@@ -277,8 +296,10 @@ function copyRelative(relative) {
   // The editable checkout may archive historical root documents. Preserve the
   // package's established document paths so historical links still resolve.
   if (!fs.existsSync(from) && !relative.includes('/') && relative.endsWith('.md')) {
-    const archived = path.join(ROOT, '历史委托书', relative);
-    if (fs.existsSync(archived)) from = archived;
+    for (const archive of ['历史委托书', '历史工程汇报']) {
+      const archived = path.join(ROOT, archive, relative);
+      if (fs.existsSync(archived)) { from = archived; break; }
+    }
   }
   if (!fs.existsSync(from)) throw new Error(`打包文件不存在：${relative}`);
   const to = path.join(STAGE, relative);

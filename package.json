@@ -87,7 +87,11 @@
     "test:render3d:m2c2d1:comparison": "node scripts/inkbox-render3d-m2c2d1-comparison.mjs",
     "test:render3d:m2c2d1:diagnostics": "node scripts/inkbox-render3d-m2c2d1-diagnostics.mjs",
     "test:upper-qi": "node scripts/inkbox-upper-qi-spatial-proof.mjs",
-    "test:render3d:m2c2c:pilot:browser": "node scripts/inkbox-render3d-m2c2c-pilot-browser.mjs"
+    "test:render3d:m2c2c:pilot:browser": "node scripts/inkbox-render3d-m2c2c-pilot-browser.mjs",
+    "test:render3d:m2c2e": "node scripts/inkbox-render3d-m2c2e-geometry.mjs && node scripts/inkbox-m2c2e-creation.mjs && node scripts/inkbox-m2c2e-sculpt.mjs && node scripts/inkbox-m2c2e-expansion.mjs",
+    "test:render3d:m2c2e:generation": "node scripts/inkbox-m2c2e-generation.mjs",
+    "test:render3d:m2c2e:browser": "node scripts/inkbox-render3d-m2c2e-browser.mjs",
+    "test:render3d:m2c2e:soak": "node scripts/inkbox-render3d-m2c2e-soak.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

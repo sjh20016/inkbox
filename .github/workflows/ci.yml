@@ -75,6 +75,9 @@ jobs:
       - name: Render3D M2-B 完整视界与界缘
         run: npm run test:render3d:m2b
 
+      - name: M2-C2E 地形 / 事务 / 渐进访问 CPU 契约
+        run: npm run test:render3d:m2c2e
+
       - name: Render3D M2-C 写意渲染与实体母版
         run: npm run test:render3d:m2c
 

@@ -1,6 +1,8 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-2026-10-08 当前阶段：**M2-C2D.1 本机工程验收完成，最终美术待人工裁决**。指定分支 `codex/m2-c2d1-painterly-reconciliation` 从 WIP `daf78c0` 续作；完整十二镜四轮 GPU 零正向预算、CPU、六层/GPU 契约、历史对照与原套件 600/6000 soak 通过。用户已授权完成后上传该分支，远端 CI 以最新对应提交为准。没有合并 main，未把旧 C2B/C2C 的 Actions 作为本阶段证明。入口：[就绪](./M2C2D1_READINESS.md)、[视觉](./M2C2D1_VISUAL_ACCEPTANCE.md)、[性能](./M2C2D1_PERFORMANCE_REPORT.md)。
+2026-10-08 当前交接：M2-C2E 委托书 v1.0，本地工程验收完成（44CPU、108种子、14GPU、12固定镜、600/6000耐久），分支 `codex/m2-c2e-living-terrain`。最大图/密集模拟有帧长尾，最终美术由用户裁决。接手先看 [READINESS](./M2C2E_READINESS.md)、[实现](./M2C2E_IMPLEMENTATION_REPORT.md)、[性能](./M2C2E_PERFORMANCE_REPORT.md)。本轮保持用户历史文档目录迁移，不合并 main；下列 C2C/早期门禁是历史记录。
+
+2026-10-08 历史阶段：**M2-C2D.1 本机工程验收完成，最终美术待人工裁决**。指定分支 `codex/m2-c2d1-painterly-reconciliation` 从 WIP `daf78c0` 续作；完整十二镜四轮 GPU 零正向预算、CPU、六层/GPU 契约、历史对照与原套件 600/6000 soak 通过。用户已授权完成后上传该分支，远端 CI 以最新对应提交为准。没有合并 main，未把旧 C2B/C2C 的 Actions 作为本阶段证明。入口：[就绪](./M2C2D1_READINESS.md)、[视觉](./M2C2D1_VISUAL_ACCEPTANCE.md)、[性能](./M2C2D1_PERFORMANCE_REPORT.md)。
 
 以下 2026-10-06 段落为历史阶段记录。
 

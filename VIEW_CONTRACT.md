@@ -103,3 +103,7 @@ CI 的软件光栅读数不能替代实显卡性能结论。完整本地证据�
 
 M2-B 未开始。本轮只升级文档表述与验证接线，不改 V1–V11 的玩家规则、三界概率或存档。
 World-space Mask + grid boundary skirt + 逐 Layer Mask 是下一轮设计倾向，Slab 保留研究、RenderTarget 暂缓；施工范围由 ROADMAP 与用户下一轮任务确定。
+
+## 8. M2-C2E 可选访问范围（2026-10-08）
+
+本节补充已完成的M2-B后续状态，上述M2-A时期的“后续边界”保留作历史。渐进探索与RealmMask分别保存/维护：mapProgress只控制访问矩形，不创建或改写视界；唯一开窗提交仍Sandbox.commitSelection。三界内容按访问权限与真实Region指定侧相交，真实界缘仅裁去闭区段。闭区拒绝拾取/编辑/检视/开窗，并限制相机目标。扩图保持World/数组/seed/实体/RealmMask身份，不改变三界概率或模拟。旧档缺进度仍全图开放。

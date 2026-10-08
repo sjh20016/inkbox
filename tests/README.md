@@ -1,5 +1,9 @@
 # Inkbox 测试与验证入口
 
+2026-10-08 M2-C2E：`npm run test:render3d:m2c2e` 运行44项几何、创建/Canvas、雕刻事务、独立访问 CPU 门禁；`npm run test:render3d:m2c2e:generation` 运行 108 组种子/保存与实际三界开放纯度。Fast Gate 已加入前者。旧断言不删。
+
+`npm run test:render3d:m2c2e:browser` 为真实产品创建、鼠标雕刻、Undo/Redo、importFile读档与扩图；`npm run test:render3d:m2c2e:soak` 为同机实 GPU 的 600/6000 产品 RAF、资源/内存/单笔成本。需要 Node 24 与本机 Edge；不要与任何 GPU 或重型 CPU 测量并发。`INKBOX_REPORT_DIR` 指向独立 ignored 目录。失败 PNG、错误栈和现场状态保留，修复后另开 run 目录；完整本轮解释见 [READINESS](../M2C2E_READINESS.md)。
+
 ## M2-C2C 历史阶段（2026-10-06 本地完成）
 
 当前实现既有四类 Site、Leyline、Upper `qi`、Nether `veg`、持久 Rift 与短命 FX 六个独立表现开关 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx`。production on 验正式 GLB / 当前字段和真实 id；off、缺资产或完整 footprint 拒绝时验旧标记回退，不用 fallback 冒充生产模型。
@@ -143,3 +147,5 @@ scripts/_*.mjs 是已入 Git 的 D8 / M1 一次性研究探针，不进 npm 门�
 `npm run test:render3d:m2c2b0:perf`：先起服务器，再用 INKBOX_URL 指向它；固定GOLDEN_A/DENSITY_A和真实密林镜头，包装产品单次 update/render，异步GPU timer有界/剔除disjoint，不以rAF或CPU提交代替GPU时间。与其他GPU测量串行。
 
 新门禁/性能完整输出在忽略目录 reports/m2c2b0；Git仅保留 release/render3d-m2c2b0 的golden/summary，CI大图上传 reports/ci artifact。当前报告只说明本地结果；未push或触发远端Actions。
+
+M2-C2E本轮本机结果：44/44 CPU、108固定种子与120日实际三界/11RNG纯度、browser-optimized14/14、6行24GPU视角、final-canonical-r3十二镜及soak-optimized600/6000采样通过。完整数据与缓存源码SHA在release精简摘要；远端CI本分支未运行。GPU顺序独占，不把6000帧采样块之间的真实操作额外RAF计作连续持笔帧。

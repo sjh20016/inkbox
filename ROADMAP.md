@@ -1,5 +1,7 @@
 # ROADMAP · 坐天观井 Inkbox
 
+2026-10-08 M2-C2E：地形几何、三种地貌/seed、笔划事务与渐进地图开放正式接入，本机CPU/GPU/耐久工程验证完成；最终美术由用户裁决。512×320为预生成原型，性能与交接见 [READINESS](./M2C2E_READINESS.md)。
+
 2026-10-06 当前真相：**M2-C2C Meaningful Geography 本地验收完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。**完整 23 对 GPU、600/6000 帧 Soak、两关键祖先与干净克隆验证通过。C2B Pass 1 的 main `e0a851c` 及三个成功 Actions run 仍只属于历史远端基线，见 [STATUS](./STATUS.md)。
 
 > 当前阶段和下一轮方向的唯一短表。接手看 HANDOFF，目录 / 模块看 ARCHITECTURE，未完事项看 BACKLOG，历史看 STATUS。
@@ -24,6 +26,7 @@
 | M2-C2B0 | stage-local 三界视觉、全部随机流纯度与资源耐久 | 已完成并终验通过；见 [READINESS](./M2C2B0_READINESS.md) |
 | M2-C2B | 第一代正式资产生产 | **已完成**，见 [Pass 1 就绪报告](./M2C2B_READINESS.md) |
 | M2-C2C Meaningful Geography | 呈现已有 Site、Leyline、Upper qi、Nether yin 与 Rift 语义 | **本地完成**；23 对 GPU、600/6000 Soak、两关键祖先与干净克隆通过；远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行 |
+| M2-C2E | 几何、水岸、版本地貌、笔划事务、预生成大图访问 | 本机CPU/GPU/联合耐久完成；美术裁决与性能边界见READINESS |
 | 后续候选 | 优先真实宗门 / 灵脉空间归属；R1 群体动画只留 Lab | 需后续授权；R2 不授权 runtime 道路，Gameplay G 未授权 |
 | Gameplay G · 镇 / 泄 | 模拟派生封印量影响幽冥裂缝 | 未开始；**未授权** |
 
