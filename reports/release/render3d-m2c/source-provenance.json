@@ -1,7 +1,7 @@
 {
   "capturedBaseCommit": "c1596291c14f9c23c2af3361186b037699745bc2",
   "capturedRenderSourceDigest": "99a51fe99ce0ab3a82c12dea6f5c0a789c194040b07a56295fec3bc699b5d63b",
-  "note": "Screenshots were captured before committing M2-C. Raw working-file hashes remain unchanged. canonicalLfSha256 permits comparison to Git index/clone independently of CRLF checkout conversion; no capture metadata was rewritten to claim a later commit.",
+  "note": "Screenshots were captured before committing M2-C. Raw working-file hashes remain unchanged. canonicalLfSha256 permits comparison to Git index/clone independently of CRLF checkout conversion; no capture metadata was rewritten to claim a later commit. The compact release retains the eight pilot PNGs and their manifests; hashes for all 32 original captures remain listed as provenance.",
   "render": {
     "src/inkbox/render3d/BrushOverlay.js": {
       "capturedSha256": "64b52fd2df361f61742f01d4f13327346d0d090f6ccab967a7f38b869220f3c1",

@@ -1,7 +1,0 @@
-{
-  "name": "presentation",
-  "command": "npm run test:presentation",
-  "exitCode": 0,
-  "log": "presentation.log",
-  "capturedSummary": "> zuotian-guan-jing-inkbox@1.0.0 test:presentation"
-}

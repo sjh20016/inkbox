@@ -1,7 +1,7 @@
 {
   "suite": "Render3D M2-C contract and integration",
   "status": "passed",
-  "passed": 9,
+  "passed": 10,
   "failed": 0,
   "checks": [
     {
@@ -14,6 +14,10 @@
     },
     {
       "label": "TerrainDataTextures: height/type dirty channels stay independent with r186 RGBA component ranges",
+      "status": "passed"
+    },
+    {
+      "label": "TerrainDataTextures: packed broad gradient dirty halo preserves R/G and non-RAW elevation",
       "status": "passed"
     },
     {

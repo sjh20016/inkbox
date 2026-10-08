@@ -1,7 +1,0 @@
-{
-  "name": "render3d-bridge",
-  "command": "npm run test:render3d:bridge",
-  "exitCode": 0,
-  "log": "render3d-bridge.log",
-  "capturedSummary": "> zuotian-guan-jing-inkbox@1.0.0 test:render3d:bridge"
-}

@@ -2,8 +2,11 @@
 
 ## Current Truth · 2026-10-08
 
-稳定模块地图以当前 `main` `1cd8d36` 为基线；M2-C2E 已合并。下方旧 C2B/C2C 阶段状态描述保留为历史快照，不是当前状态或施工指令。当前任务状态见 [ROADMAP](./ROADMAP.md)，阶段时间线见 [STATUS](./STATUS.md)。
+稳定模块地图以当前 GitHub main 为基线；当前正式阶段为 M2-C2E，工程接入已完成。产品主线、实验分支、归档 tag 与本地部署规则见 [HANDOFF](./HANDOFF.md)。阶段时间线见 [ROADMAP](./ROADMAP.md)，未完成事项见 [BACKLOG](./BACKLOG.md)。 下方阶段性叙述中标为“当前”的内容属于对应日期快照。
 
+报告策略：保留 C2C、C2D、C2D.1、C2E 的阶段证据；M2-C 只保留正式 pilot 样本及核心机器可读证据。完整重复日志不作为 release 长期资产。
+
+---
 ### 当前模块责任增量（M2-C2E）
 
 - `terrain/topology` 与 `ElevationField` 共用 v2 网格对角 / 插值；v1 对角规则仍作为显式兼容路径。
@@ -16,7 +19,7 @@
 
 ---
 
-2026-10-06 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。M2-C2C Meaningful Geography 已本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行；只呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。详见 [ROADMAP](./ROADMAP.md)。
+2026-10-06 · 阶段记录：**M2-C2B Pass 1 已在主线 `e0a851c` 完成远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。M2-C2C Meaningful Geography 已本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行；只呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。详见 [ROADMAP](./ROADMAP.md)。
 
 历史基线：2026-10-04，Render3D M2-C2A.1 / M2-C2B0。当前阶段以 [ROADMAP](./ROADMAP.md) 为准；历史实现范围以各阶段报告为准。
 

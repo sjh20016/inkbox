@@ -2,7 +2,7 @@
 
 记录时间：2026-10-03（Asia/Shanghai）  
 工作区：`E:\world4\坐天观井-实验分支D1`  
-口径：本次从当前工作树重新运行命令；所有 13 个命令均以独立退出码记录。详细 stdout/stderr、逐命令状态和机器可读汇总见 [`reports/release/render3d-m2c/baseline-gates/`](reports/release/render3d-m2c/baseline-gates/)。
+口径：本次从当前工作树重新运行命令；所有 13 个命令均以独立退出码记录。逐命令原始 stdout/stderr 已从 release 精简；阶段汇总与验收结论见 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md)。
 
 ## 结果
 
@@ -32,7 +32,7 @@
 
 ## M2-C 收口门禁
 
-最终14项命令行门禁（含自动 build）全部退出0，见 `reports/release/render3d-m2c/gates/gate-results.json`。新增M2-C检查在真实UpperLife推进下比较600日完整World SHA-256；既有断言保持。图形/GPU另走Edge验收，不计入上述命令行计数。
+最终14项命令行门禁（含自动 build）全部退出0，见 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md)；保留的机器可读证据位于仓库开发资料中，不进入运行包。新增M2-C检查在真实UpperLife推进下比较600日完整World SHA-256；既有断言保持。图形/GPU另走Edge验收，不计入上述命令行计数。
 
 首次并发收口在三界长测中触发机器内存分配失败（Node `Zone Allocation failed`），本地服务器也被终止；未发生断言失败。清理本轮隔离的headless Edge测试树后，三界与存档长测单独重跑通过。首次日志按 `*.allocation-failure.txt` 保留，汇总记录重跑原因和退出码。个别重跑有npm版本更新提示，未升级任何依赖。
 
@@ -48,4 +48,4 @@
 
 浏览器机器可读汇总见 `reports/release/render3d-m2c/browser/browser-results.json`，M2-C 原始结果见 `evidence.json` 与 `soak-evidence.json`。
 
-发现并记录一处既有测试漂移：M2-A oracle 未纳入 M2-B 的可见界缘。原样 oracle 在 Art 关闭和修改前 `c159629` 源码副本上均出现相同六个偏差（上界4/幽冥2）。补齐独立 Raycaster 的界缘几何与边缘解码后原门禁通过；所有原采样与退出断言保留，新增严格界缘身份/端点/距离/交点比较。生产拾取器没有改动。首次失败日志、诊断与复验全部保留；重复诊断 PNG 保留本地 `reports/m2c/archived-m2a-diagnostics/`，不重复纳入发布包。
+发现并记录一处既有测试漂移：M2-A oracle 未纳入 M2-B 的可见界缘。原样 oracle 在 Art 关闭和修改前 `c159629` 源码副本上均出现相同六个偏差（上界4/幽冥2）。补齐独立 Raycaster 的界缘几何与边缘解码后原门禁通过；所有原采样与退出断言保留，新增严格界缘身份/端点/距离/交点比较。生产拾取器没有改动。首次失败结论、诊断与复验由阶段报告和紧凑 JSON 汇总保留；重复诊断 PNG 保留本地 `reports/m2c/archived-m2a-diagnostics/`，不重复纳入发布包。

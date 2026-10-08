@@ -1,7 +1,0 @@
-{
-  "name": "render3d",
-  "command": "npm run test:render3d",
-  "exitCode": 0,
-  "log": "render3d.log",
-  "capturedSummary": "> zuotian-guan-jing-inkbox@1.0.0 test:render3d\nPASS small: coordinate round trips, corners, clamp\nPASS small: real heightfield, sea baseline, stable trees\nPASS small: raycast at 4 yaws and 2 pitches\nPASS small: render data purity\nPASS medium: coordinate round trips, corners, clamp\nPASS medium: real heightfield, sea baseline, stable trees\nPASS medium: raycast at 4 yaws and 2 pitches\nPASS medium: render data purity\nPASS large: coordinate round trips, corners, clamp\nPASS large: real heightfield, sea baseline, stable trees\nPASS large: raycast at 4 yaws and 2 pitches\nPASS large: render data purity\nPASS raise: bounded, deterministic, height-only editing\nPASS lower: bounded, deterministic, height-only editing\nPASS flatten: bounded, deterministic, height-only editing\nPASS smooth: bounded, deterministic, height-only editing\nPASS stroke spacing avoids disconnected brush stamps\nPASS dirty update retains geometry and refreshes exact heights\nPASS stationary picking cache invalidates after sculpt and camera movement\nRender3D M0: 19 groups passed"
-}

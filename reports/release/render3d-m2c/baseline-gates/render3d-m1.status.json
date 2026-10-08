@@ -1,7 +1,0 @@
-{
-  "name": "render3d-m1",
-  "command": "npm run test:render3d:m1",
-  "exitCode": 0,
-  "log": "render3d-m1.log",
-  "capturedSummary": "> zuotian-guan-jing-inkbox@1.0.0 test:render3d:m1"
-}

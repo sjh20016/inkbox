@@ -2,30 +2,24 @@
   {
     "name": "canvas",
     "script": "scripts/inkbox-playtest.mjs",
-    "args": [
-      "--shots=reports/release/render3d-m2c/browser/canvas"
-    ],
     "exitCode": 0,
     "elapsedMs": 80779,
-    "log": "canvas.txt"
+    "artifacts": "Legacy Canvas screenshots and console log were pruned from the compact M2-C release."
   },
   {
     "name": "m2a",
     "script": "scripts/inkbox-render3d-m2a-browser.mjs",
-    "args": [],
     "exitCode": 0,
-    "elapsedMs": 52324.0,
-    "log": "m2a.txt",
+    "elapsedMs": 52324,
     "previousExitCode": 1,
-    "originalLog": "m2a-oracle-v1.txt",
-    "rerunReason": "Existing M2-A oracle omitted M2-B realm boundary. Same 6 mismatches reproduced on archived c159629 runtime and baseline profile. Oracle now includes independent boundary decoding; original samples and exit assertions retained; boundary identity/point/distance added."
+    "rerunReason": "Existing M2-A oracle omitted M2-B realm boundary. Same 6 mismatches reproduced on archived c159629 runtime and baseline profile. Oracle now includes independent boundary decoding; original samples and exit assertions retained; boundary identity/point/distance added.",
+    "artifacts": "Duplicate M2-A browser captures and raw logs were pruned; the standalone M2-A release evidence remains."
   },
   {
     "name": "m2b",
     "script": "scripts/inkbox-render3d-m2b-browser.mjs",
-    "args": [],
     "exitCode": 0,
     "elapsedMs": 54595,
-    "log": "m2b.txt"
+    "artifacts": "Duplicate M2-B browser captures and raw log were pruned; the standalone M2-B release evidence remains."
   }
 ]

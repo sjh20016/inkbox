@@ -1,7 +1,0 @@
-{
-  "name": "regression-intervention",
-  "command": "npm run test:regression",
-  "exitCode": 0,
-  "log": "regression-intervention.log",
-  "capturedSummary": "> zuotian-guan-jing-inkbox@1.0.0 test:regression\n  ✓ 灾祸目标消失时记录 failed 结局，不会静默移除 · 事件 #3"
-}

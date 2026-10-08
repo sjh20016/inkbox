@@ -2,18 +2,15 @@
 
 ## Current Truth · 2026-10-08
 
-本文件是时间线与证据索引，不是当前状态的裁决来源；旧章节保留其记录日期和阶段范围。当前事实以 GitHub `main` `1cd8d36` 为准，M2-C2E 已合并。
+本文件是时间线与证据索引。当前产品主线为 GitHub main，正式阶段为 M2-C2E；完整分支、archive tag 和工作区交接规则见 [HANDOFF](./HANDOFF.md)。
 
 | 日期 / 标识 | 记录 | 证据 / 说明 |
 | --- | --- | --- |
-| 2026-10-08 · main `1cd8d36` | M2-C2E 已合并：地形拓扑、湿域 / 岸线 / 世界外缘、三种地貌与严格 seed、雕刻事务、渐进访问及完整预生成世界 | [C2E readiness](./M2C2E_READINESS.md)、[实现报告](./M2C2E_IMPLEMENTATION_REPORT.md) |
-| 2026-10-08 · CI `37749151683` | Heavy Gate passed；Fast Gate failed only at the historical C2D water-topology length assertion | 整理分支完整本地 Fast / Heavy Gate、build、package audit 全通过；公开 run 仍保留原始结果，Browser Smoke 因 Edge CDP 失败未到断言 |
-| 2026-10-08 · PR #1 | 角色视觉草稿：head `30da87d`，base `codex/m2-c2d1-painterly-reconciliation` / `3a98fb2`；较当前 main 16 ahead / 6 behind，存在核心文件重叠 | 独立整合决策待办；不代表 main 当前状态 |
+| 2026-10-08 · main a97d547 | 已验证的 repository-consolidation 通过 fast-forward 收入 main；Fast Gate 与 Heavy Gate 均成功 | [GitHub Actions 37774235996](https://github.com/sjh20016/inkbox/actions/runs/37774235996) |
+| 2026-10-08 · 分支收束 | 远端开发分支收束为 main 与 B数值系统；G0/G0.5 独有历史由 archive/g0-character-fate-web-20261008 保存；render3d-m0 tag 精确保存 M0 分支 HEAD | PR #1 未合并并已关闭；原临时分支均在独有提交审计后删除 |
+| 2026-10-08 · 报告策略 | reports/release：307→153 个 tracked 文件，130.96→79.75 MiB；render3d-m2c：177→23 个文件，57.93→6.72 MiB | 保留 8 张 pilot PNG、8 份 manifest 与核心 JSON；裁掉重复门禁日志及旧 Canvas / M2-A / M2-B 浏览器副本 |
 
-更早阶段条目是阶段快照。它们出现的“当前真相”、分支和门禁结论只对各自记录时点有效，不应覆盖本索引顶部的基线。
-
----
-
+更早条目是阶段快照；其“当前真相”、分支和门禁结论只对各自记录时点有效。
 2026-10-08 当前阶段：**M2-C2D.1 本机工程验收完成，最终美术待人工裁决**。指定分支 `codex/m2-c2d1-painterly-reconciliation` 从 WIP `daf78c0` 续作；完整十二镜四轮 GPU 零正向预算、CPU、六层/GPU 契约、历史对照与原套件 600/6000 soak 通过。用户已授权完成后上传该分支，远端 CI 以最新对应提交为准。没有合并 main，未把旧 C2B/C2C 的 Actions 作为本阶段证明。入口：[就绪](./M2C2D1_READINESS.md)、[视觉](./M2C2D1_VISUAL_ACCEPTANCE.md)、[性能](./M2C2D1_PERFORMANCE_REPORT.md)。
 
 以下 2026-10-06 段落为历史阶段记录。

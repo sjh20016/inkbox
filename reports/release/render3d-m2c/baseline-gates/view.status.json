@@ -1,7 +1,0 @@
-{
-  "name": "view",
-  "command": "npm run test:view",
-  "exitCode": 0,
-  "log": "view.log",
-  "capturedSummary": "> zuotian-guan-jing-inkbox@1.0.0 test:view"
-}

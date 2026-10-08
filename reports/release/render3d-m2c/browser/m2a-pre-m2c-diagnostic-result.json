@@ -1,6 +1,0 @@
-{
-  "exitCode": 1,
-  "elapsedMs": 50891.0,
-  "sourceCommit": "c1596291c14f9c23c2af3361186b037699745bc2",
-  "sourceNote": "git archive HEAD of src/inkbox and vendor/three; unmodified M2-A oracle; current CDP teardown helper only"
-}
