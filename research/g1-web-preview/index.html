@@ -2,21 +2,36 @@
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>坐天观井 · G1-W 命簿预览</title>
 <link rel="stylesheet" href="../../src/inkbox/ui/g1/presentation/characterCard.css">
+<link rel="stylesheet" href="../../src/inkbox/ui/g1/presentation/worldProgress.css">
 <style>
-html,body{margin:0;min-height:100%;background:#262f31;color:#e5e3d8;font:14px/1.6 system-ui,sans-serif}
-main{max-width:1000px;margin:auto;padding:32px 18px;display:grid;grid-template-columns:minmax(0,390px) minmax(210px,1fr);gap:30px}
-aside{padding:8px 0}h1{font:normal 26px/1.3 Georgia,serif;margin:0 0 18px}small{color:#b4beb5}pre{white-space:pre-wrap;overflow-wrap:anywhere}
-@media(max-width:700px){main{grid-template-columns:1fr;justify-items:center}aside{width:100%}}
+html,body{margin:0;min-height:100%;background:#263137;color:#e5e3d8;font:14px/1.6 system-ui,sans-serif}
+main{max-width:1120px;margin:auto;padding:30px 18px;display:grid;grid-template-columns:minmax(0,390px) minmax(240px,320px) minmax(180px,1fr);gap:22px;align-items:start}
+aside{min-width:0}h1{font:normal 25px/1.3 Georgia,serif;margin:0 0 12px}
+aside p{margin-top:0}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
+#world{display:grid;gap:14px}label{display:block;margin:9px 0}
+button.demo{background:#e9dfcc;border:0;border-radius:3px;margin:3px;padding:7px 10px;cursor:pointer}
+@media(max-width:900px){main{grid-template-columns:minmax(0,390px) minmax(230px,320px)}aside{grid-column:1/-1}}
+@media(max-width:680px){main{grid-template-columns:1fr;justify-items:center}aside{grid-column:1;width:100%}}
 </style></head>
-<body><main><div id="character"></div><aside><h1>天道所见 · 人物命簿</h1>
-<p>G1-W 独立预览。数据来自 fixture，不连接游戏 World，也不改写模拟。</p>
-<small id="state">W1：仅基础视觉结构</small>
-<pre id="events"></pre></aside></main>
+<body><main><div id="character"></div><div id="world"><div id="creation"></div><div id="progress"></div></div>
+<aside><h1>天道所见 · 人物命簿</h1><p>独立预览，只展示夹具数据。不接线正式 World。</p>
+<button class="demo" id="stage">切换天地阶段</button>
+<pre id="events" aria-live="polite">点击按钮可观察事件回调</pre>
+</aside></main>
 <script type="module">
 import { createCharacterCardView } from "../../src/inkbox/ui/g1/presentation/characterCardView.js";
-import { cultivator } from "./fixture.js";
-const card = createCharacterCardView(document.getElementById("character"), {
-  onAction: action => { document.getElementById("events").textContent = JSON.stringify(action, null, 2); }
+import { createWorldCreationInfoView } from "../../src/inkbox/ui/g1/presentation/worldCreationInfo.js";
+import { createWorldProgressView } from "../../src/inkbox/ui/g1/presentation/worldProgressView.js";
+import { cultivator, creationFixture, progressionFixture } from "./fixture.js";
+const report = action => { document.getElementById("events").textContent = JSON.stringify(action,null,2); };
+const card = createCharacterCardView(document.getElementById("character"), { onAction:report });
+const creation = createWorldCreationInfoView(document.getElementById("creation"));
+const progress = createWorldProgressView(document.getElementById("progress"),{onAction:report});
+card.render(cultivator); creation.render(creationFixture); progress.render(progressionFixture);
+let stage = 0; const steps = [40,60,80,100];
+document.getElementById("stage").addEventListener("click", () => {
+  stage = (stage + 1) % steps.length;
+  progress.render({ ...progressionFixture, stage:steps[stage], openedPercent:steps[stage],
+    canRequestExpand:steps[stage] !== 100 });
 });
-card.render(cultivator);
 </script></body></html>

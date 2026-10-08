@@ -15,3 +15,12 @@ export const cultivator = {
   ],
   watched: false,
 };
+
+export const creationFixture = {
+  seed: "602412", terrainName: "群山水泽", mapSize: { width: 384, height: 240 },
+  gradualAccess: true, openedRangeText: "凡界西南 · 已开放四成",
+};
+export const progressionFixture = {
+  stage: 40, openedPercent: 40, boundaryText: "天眼初开",
+  canRequestExpand: true, disabledReason: "",
+};
