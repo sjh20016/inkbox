@@ -1,0 +1,4 @@
+.g2-demo-portraits{background:#f7f4ed;padding:22px;border:1px solid #d9d4c8}
+.g2-demo-portraits>p{font-size:13px;color:#6f726c;line-height:1.5}
+.g2-demo-portraits__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(87px,1fr));gap:12px}
+.g2-demo-portraits__tile{min-width:0}.g2-demo-portraits__tile small{display:block;font-size:10px;margin-top:6px;text-align:center;color:#858276}

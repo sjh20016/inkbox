@@ -1,0 +1,8 @@
+.g2-portrait{position:relative;margin:0;display:block;aspect-ratio:1;overflow:hidden;border:1px solid #b6b7a8;background:#eae6db;isolation:isolate}
+.g2-portrait__image{display:block;width:100%;height:100%;object-fit:cover}
+.g2-portrait__state{position:absolute;inset:3px;border:1px solid transparent;pointer-events:none}
+.g2-portrait[data-status="dead"]{filter:saturate(.32)}.g2-portrait[data-status="dead"] .g2-portrait__state{border-color:#6e6b6a}
+.g2-portrait[data-status="ascended"] .g2-portrait__state{border-color:#ae9160;box-shadow:inset 0 0 0 2px rgba(174,145,96,.18)}
+.g2-portrait[data-status="nether"]{background:#d0d3d1;filter:saturate(.65)}
+.g2-portrait[data-status="nether"] .g2-portrait__state{border-color:#617478}
+.g2-portrait[data-status="missing"] .g2-portrait__state{border-style:dashed;border-color:#85877c}
