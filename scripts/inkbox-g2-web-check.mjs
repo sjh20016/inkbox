@@ -47,7 +47,7 @@ class NodeDouble {
   constructor(doc,tag){
     this.ownerDocument=doc;this.tagName=tag.toUpperCase();this.children=[];
     this.parentNode=null;this.className="";this.dataset={};this.attributes=new Map();
-    this.handlers=new Map();this._text="";this.value="";this.disabled=false;this.hidden=false;this.scrollTop=0;
+    this.handlers=new Map();this._text="";this.value="";this.checked=false;this.disabled=false;this.hidden=false;this.scrollTop=0;
   }
   get textContent(){return this._text+this.children.map(n=>n.textContent).join("");}
   set textContent(s){this.replaceChildren();this._text=String(s??"");}
