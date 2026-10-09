@@ -146,6 +146,7 @@ export class PresentationStage {
     if (plane !== null) this.fx.items = this.fx.items.filter(item => item.plane !== plane);
     else {
       this.fx.items.length = 0;
+      this.fx.combatReceived = 0; this.fx.combatAccepted = 0;
       this.fx.combatMerged = 0; this.fx.combatDropped = 0; this.fx.combatEvicted = 0;
       this._combatDisabledSkipped = 0;
     }

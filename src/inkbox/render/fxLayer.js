@@ -53,7 +53,7 @@ const EVENT_TO_FX = Object.freeze({
 });
 
 export function createFxState() {
-  return { items: [], combatMerged: 0, combatDropped: 0, combatEvicted: 0 };
+  return { items: [], combatReceived: 0, combatAccepted: 0, combatMerged: 0, combatDropped: 0, combatEvicted: 0 };
 }
 
 /** Isolated counters for budgeting and diagnostics; not simulation state. */
@@ -66,6 +66,7 @@ export function fxStats(fx) {
   return Object.freeze({ active: items.length, combatActive: items.filter(item => item.kind === 'combat').length,
     byPlane: Object.freeze(byPlane), combatByPlane: Object.freeze(combatByPlane),
     capacity: FX_CAP, combatCapacity: COMBAT_FX_CAP, combatPlaneCapacity: COMBAT_FX_PLANE_CAP,
+    combatReceived: fx?.combatReceived || 0, combatAccepted: fx?.combatAccepted || 0,
     combatMerged: fx?.combatMerged || 0, combatDropped: fx?.combatDropped || 0, combatEvicted: fx?.combatEvicted || 0 });
 }
 function validCombat(event) {
@@ -78,6 +79,7 @@ function validCombat(event) {
 function admitFx(fx, item) {
   const combat = item.kind === 'combat';
   if (combat) {
+    fx.combatReceived = (fx.combatReceived || 0) + 1;
     const match = fx.items.find(existing => existing.kind === 'combat' && existing.plane === item.plane
       && existing.subjectId === item.subjectId && existing.targetId === item.targetId && existing.data.style === item.data.style);
     if (match) {
@@ -94,6 +96,7 @@ function admitFx(fx, item) {
     else fx.items.shift(); // Preserve the existing oldest-first major-event behavior.
   }
   fx.items.push(item);
+  if (combat) fx.combatAccepted = (fx.combatAccepted || 0) + 1;
 }
 /**
  * 确定性视觉哈希：FNV-1a 之后再过一次 murmur3 finalizer，返回 [0,1)。
