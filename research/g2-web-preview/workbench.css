@@ -1,0 +1,17 @@
+body{margin:0;background:#e9e6dd;color:#333d39;font-family:"Songti SC","SimSun",serif}
+.g2-workbench{max-width:1160px;margin:0 auto;padding:clamp(16px,3vw,36px)}
+.g2-workbench__header{display:flex;align-items:start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.g2-workbench__header h1{font-weight:500;letter-spacing:.16em;font-size:clamp(22px,4vw,33px);margin:12px 0}
+.g2-workbench__header p,.g2-workbench__badge{font-size:12px;color:#777c72;line-height:1.6}
+.g2-workbench__mark{letter-spacing:.22em;font-size:10px;color:#8a5547}
+.g2-workbench__badge{border:1px solid #c8c7b9;padding:8px;background:#f5f2eb}
+.g2-workbench__nav{display:flex;gap:7px;overflow-x:auto;padding:16px 0;margin:8px 0}
+.g2-workbench__nav button,.g2-workbench__actions button{font:inherit;white-space:nowrap;background:#f4f2ea;border:1px solid #c6cabe;color:inherit;padding:10px 14px;cursor:pointer}
+.g2-workbench__nav button[aria-current="page"]{color:#f9f6ee;background:#3d6660;border-color:#3d6660}
+.g2-workbench__nav button:focus-visible,.g2-workbench__actions button:focus-visible{outline:2px solid #a04e42;outline-offset:2px}
+.g2-workbench__actions{display:flex;align-items:center;gap:10px;font-size:12px;min-height:24px;margin-bottom:10px}
+.g2-workbench__stage{min-height:450px}
+.g2-workbench__log{margin-top:24px;background:#f7f4ed;padding:16px;border:1px solid #d6d5c8}
+.g2-workbench__log strong{font-size:12px;font-weight:500;color:#7d6b5d}
+.g2-workbench__log pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.7 ui-monospace,Consolas,monospace;color:#5e6661}
+@media(max-width:540px){.g2-workbench__nav{gap:3px}.g2-workbench__nav button{padding:9px}}

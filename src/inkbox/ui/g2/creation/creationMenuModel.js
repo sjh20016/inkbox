@@ -3,12 +3,12 @@ export const WORLD_PRESETS = Object.freeze([
   { id: "small", label: "小景", width: 200, height: 128 },
   { id: "medium", label: "中堂", width: 288, height: 180 },
   { id: "large", label: "长卷", width: 384, height: 240 },
-  { id: "huge", label: "广境", width: 512, height: 320 },
+  { id: "expanse", label: "广境", width: 512, height: 320 },
 ]);
 export const TERRAIN_PRESETS = Object.freeze([
   { id: "standard", label: "标准", detail: "山水相宜" },
-  { id: "mountain", label: "群山", detail: "重峦叠嶂" },
-  { id: "wetland", label: "水泽", detail: "河湖纵横" },
+  { id: "mountains", label: "群山", detail: "重峦叠嶂" },
+  { id: "wetlands", label: "水泽", detail: "河湖纵横" },
 ]);
 export function parseCreationSeed(value) {
   const text = String(value ?? "").trim();

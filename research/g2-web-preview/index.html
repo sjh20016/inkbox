@@ -2,21 +2,30 @@
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>坐天观井 · G2-W 界面工坊</title>
 <link rel="stylesheet" href="../../src/inkbox/ui/g2/creation/creationMenu.css">
-<style>
-body{margin:0;background:#e8e5da;color:#34352f;font-family:"Songti SC","SimSun",serif}
-#workbench{max-width:1000px;margin:32px auto;padding:0 20px}
-header.workbench{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:14px}
-header.workbench small{color:#82604b}#log{padding:16px;background:#f7f5ef;font:12px/1.6 ui-monospace,monospace;white-space:pre-wrap}
-</style></head><body><main id="workbench"><header class="workbench"><h2>G2 · 界面工坊</h2><small>FIXTURE / 仅演示请求，不写入真实世界</small></header>
-<div id="stage"></div><pre id="log" aria-live="polite">预览已准备。</pre></main>
-<script type="module">
-import { createCreationMenuView } from "../../src/inkbox/ui/g2/creation/creationMenuView.js";
-import { creationFixture } from "./fixture.js";
-const log = document.querySelector("#log");
-const view = createCreationMenuView(document.querySelector("#stage"), {onAction(action) {
-  log.textContent = "宿主接收到请求（演示，不执行）：\n" + JSON.stringify(action.type === "import-save" ? {type:action.type,file:action.file.name}:action,null,2);
-  if (action.type === "request-random-seed") view.render({...creationFixture,seed:20260914,result:"seed"});
-  else view.render({...creationFixture,result:"ack"});
-}});
-view.render(creationFixture);
-</script></body></html>
+<link rel="stylesheet" href="../../src/inkbox/ui/g2/portraits/characterPortrait.css">
+<link rel="stylesheet" href="./portraitsDemo.css">
+<link rel="stylesheet" href="../../src/inkbox/ui/g2/combat/combatObserver.css">
+<link rel="stylesheet" href="../../src/inkbox/ui/g2/busanzi/busanziBridge.css">
+<link rel="stylesheet" href="../../src/inkbox/ui/g2/realm-edge/realmEdgePreview.css">
+<link rel="stylesheet" href="./workbench.css">
+</head><body>
+<main class="g2-workbench">
+  <header class="g2-workbench__header">
+    <div><span class="g2-workbench__mark">INKBOX · PRESENTATION LAB</span>
+    <h1>坐天观井 · 界面工坊</h1><p>G2-W 交互预览。所有姓名、对话、事件与存档均为演示 fixture。</p></div>
+    <span class="g2-workbench__badge">非正式世界 · 不读写存档</span>
+  </header>
+  <nav class="g2-workbench__nav" aria-label="预览模块">
+    <button data-mode="creation" aria-current="page">开天</button>
+    <button data-mode="portraits">众生面相</button>
+    <button data-mode="combat">山河交战</button>
+    <button data-mode="busanzi">卜算子</button>
+    <button data-mode="edge">界缘墨痕</button>
+  </nav>
+  <div class="g2-workbench__actions" id="extra-actions"></div>
+  <div id="stage" class="g2-workbench__stage"></div>
+  <section class="g2-workbench__log"><strong>宿主动作请求（演示，不执行）</strong>
+    <pre id="log" aria-live="polite">进入预览工作台。</pre></section>
+</main>
+<script type="module" src="./workbench.js"></script>
+</body></html>

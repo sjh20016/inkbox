@@ -103,6 +103,7 @@ export function createBusanziBridgeView(root,{onAction}={}){
         button.disabled=!available||current.busy;
       });
       put(journeyStatus,"行踪 · "+current.state+" / 所在 · "+current.location);
+      if(current.tasks.length && journeyList.children.length && journeyList.children[0].className==="g2-busanzi__hint") journeyList.replaceChildren();
       current.tasks.forEach((task,i)=>{
         let row=journeyList.children[i];
         if(!row){row=n(doc,"article","g2-busanzi__journey-item");row.append(n(doc,"strong"),n(doc,"span"),n(doc,"small"));journeyList.append(row);}
