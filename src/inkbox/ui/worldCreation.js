@@ -1,5 +1,5 @@
 import { generateWorld } from '../world/worldgen.js';
-import { createMapProgress, accessBounds, expandMap } from '../world/mapProgress.js';
+import { createMapProgress, accessBounds, expandMap, mapProgressSummary } from '../world/mapProgress.js';
 
 const element = id => globalThis.document?.getElementById(id);
 export function parseSeed(value) {
@@ -34,9 +34,10 @@ export function syncMapProgress(sandbox) {
   const world = sandbox.world;
   if (!world) return;
   const button = element('inkBtnExpand'), label = element('inkMapProgress');
-  const b = accessBounds(world), stage = world.mapProgress?.stage;
-  if (button) { button.hidden = stage === undefined; button.disabled = stage === undefined || stage >= 3; }
-  const text = stage === undefined ? '' : '已开放 ' + (b.x1-b.x0+1) + '×' + (b.y1-b.y0+1) + ' · ' + (stage+1) + '/4';
+  const progress = mapProgressSummary(world), b = progress.bounds, stage = progress.stage;
+  if (button) { button.hidden = !progress.enabled; button.disabled = !progress.enabled || stage >= 3; }
+  const next = progress.nextUnlockDay === null ? ' · 全境已开放' : ' · 距下次拓展 ' + Math.ceil(progress.daysRemaining) + ' 日';
+  const text = !progress.enabled ? '' : '已开放 ' + progress.percent + '% · ' + (b.x1-b.x0+1) + '×' + (b.y1-b.y0+1) + ' · ' + (stage+1) + '/4' + next;
   if (label && label.textContent !== text) label.textContent = text;
 }
 export function expandSandboxMap(sandbox, all = false) {

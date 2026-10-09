@@ -1,6 +1,12 @@
 # Inkbox 测试与验证入口
 
-## Current Truth · 2026-10-08
+## Current Truth · 2026-10-09 · G1 Runtime 分支
+
+G1-R 从共同 main 基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 在 `feat/g1-runtime-codex` 独立开发。人物真实身份、只读模型、三项敕令、记挂、地图成长和独立 Runtime 回归已接线，正式 Presentation 和 C5 视觉协调留待后续集成。接口、保存语义和后续步骤见 [G1 Runtime 交接](../G1_RUNTIME_HANDOFF.md)。
+
+`npm run test:g1` 进入 Fast（Runtime、宿主、地图三个入口），`npm run test:g1:longrun` 进入 Heavy（30 / 100 年观察纯度和敕令后确定性）。`npm run test:g1:browser` 使用已有 Edge CDP 对真实 Canvas / 3D 鼠标接线、敕令、记挂和产品存读档做六项工程验收；它也加入手动 Browser Smoke。本轮使用软件 D3D11，不能作为真实 GPU 性能证明，正式人物卡 Browser 验收仍在集成阶段。
+
+## 2026-10-08 历史基线
 
 当前 CI 基线是 GitHub `main` `1cd8d36`，M2-C2E 已合并。公开 run [37749151683](https://github.com/sjh20016/inkbox/actions/runs/37749151683) 的 Heavy Gate 通过；Fast Gate 仅因历史 C2D 水拓扑长度断言失败。整理分支修正该旧断言后，本机完整 Fast / Heavy Gate、build 和 package audit 均通过；集成后的新 run 才能确认公开门禁恢复。可选 Browser Smoke 在本机 Edge CDP 启动阶段失败，未到应用断言。
 
