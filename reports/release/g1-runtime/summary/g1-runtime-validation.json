@@ -1,0 +1,508 @@
+{
+  "schemaVersion": 1,
+  "stage": "G1-R Runtime & Simulation",
+  "branch": "feat/g1-runtime-codex",
+  "baseSHA": "fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff",
+  "recordedAt": "2026-10-09T00:21:02.812Z",
+  "localEnvironment": {
+    "node": "v24.11.1",
+    "npm": "11.6.2",
+    "platform": "win32"
+  },
+  "pass": true,
+  "gates": {
+    "fast": [
+      {
+        "command": "npm run test:vendor",
+        "exitCode": 0,
+        "elapsedSeconds": 0.85,
+        "log": "reports/g1-runtime-validation/vendor.log"
+      },
+      {
+        "command": "npm run test:core",
+        "exitCode": 0,
+        "elapsedSeconds": 2.41,
+        "log": "reports/g1-runtime-validation/core-final.log"
+      },
+      {
+        "command": "npm run test:view",
+        "exitCode": 0,
+        "elapsedSeconds": 1.11,
+        "log": "reports/g1-runtime-validation/view-final.log"
+      },
+      {
+        "command": "npm run test:presentation",
+        "exitCode": 0,
+        "elapsedSeconds": 0.77,
+        "log": "reports/g1-runtime-validation/presentation.log"
+      },
+      {
+        "command": "npm run test:qol",
+        "exitCode": 0,
+        "elapsedSeconds": 0.61,
+        "log": "reports/g1-runtime-validation/qol-final.log"
+      },
+      {
+        "command": "npm run test:g1",
+        "exitCode": 0,
+        "elapsedSeconds": 1.87,
+        "log": "reports/g1-runtime-validation/g1-final-latest.log"
+      },
+      {
+        "command": "npm run test:render3d",
+        "exitCode": 0,
+        "elapsedSeconds": 2.98,
+        "log": "reports/g1-runtime-validation/render3d.log"
+      },
+      {
+        "command": "npm run test:render3d:m1",
+        "exitCode": 0,
+        "elapsedSeconds": 1.35,
+        "log": "reports/g1-runtime-validation/render3d-m1.log"
+      },
+      {
+        "command": "npm run test:render3d:bridge",
+        "exitCode": 0,
+        "elapsedSeconds": 1.2,
+        "log": "reports/g1-runtime-validation/render3d-bridge.log"
+      },
+      {
+        "command": "npm run test:render3d:m2a",
+        "exitCode": 0,
+        "elapsedSeconds": 1.25,
+        "log": "reports/g1-runtime-validation/render3d-m2a.log"
+      },
+      {
+        "command": "npm run test:render3d:m2b",
+        "exitCode": 0,
+        "elapsedSeconds": 2.12,
+        "log": "reports/g1-runtime-validation/render3d-m2b.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2e",
+        "exitCode": 0,
+        "elapsedSeconds": 1.42,
+        "log": "reports/g1-runtime-validation/render3d-m2c2e.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c",
+        "exitCode": 0,
+        "elapsedSeconds": 1.26,
+        "log": "reports/g1-runtime-validation/render3d-m2c.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2a",
+        "exitCode": 0,
+        "elapsedSeconds": 3.5,
+        "log": "reports/g1-runtime-validation/render3d-m2c2a.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2a1:hlod",
+        "exitCode": 0,
+        "elapsedSeconds": 0.92,
+        "log": "reports/g1-runtime-validation/render3d-m2c2a1-hlod.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2b0",
+        "exitCode": 0,
+        "elapsedSeconds": 3.27,
+        "log": "reports/g1-runtime-validation/render3d-m2c2b0.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2b:sample",
+        "exitCode": 0,
+        "elapsedSeconds": 2.34,
+        "log": "reports/g1-runtime-validation/render3d-m2c2b-sample.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2b:content",
+        "exitCode": 0,
+        "elapsedSeconds": 0.58,
+        "log": "reports/g1-runtime-validation/render3d-m2c2b-content.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2b:decorations",
+        "exitCode": 0,
+        "elapsedSeconds": 0.59,
+        "log": "reports/g1-runtime-validation/render3d-m2c2b-decorations.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2b:artifacts",
+        "exitCode": 0,
+        "elapsedSeconds": 0.65,
+        "log": "reports/g1-runtime-validation/render3d-m2c2b-artifacts.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2b:purity",
+        "exitCode": 0,
+        "elapsedSeconds": 4.12,
+        "log": "reports/g1-runtime-validation/render3d-m2c2b-purity.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2b1",
+        "exitCode": 0,
+        "elapsedSeconds": 0.39,
+        "log": "reports/g1-runtime-validation/render3d-m2c2b1.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2c",
+        "exitCode": 0,
+        "elapsedSeconds": 0.75,
+        "log": "reports/g1-runtime-validation/render3d-m2c2c.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2c:sites",
+        "exitCode": 0,
+        "elapsedSeconds": 1.22,
+        "log": "reports/g1-runtime-validation/render3d-m2c2c-sites.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2c:leylines",
+        "exitCode": 0,
+        "elapsedSeconds": 0.58,
+        "log": "reports/g1-runtime-validation/render3d-m2c2c-leylines.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2c:fields",
+        "exitCode": 0,
+        "elapsedSeconds": 0.85,
+        "log": "reports/g1-runtime-validation/render3d-m2c2c-fields.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2c:rifts",
+        "exitCode": 0,
+        "elapsedSeconds": 0.97,
+        "log": "reports/g1-runtime-validation/render3d-m2c2c-rifts.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2c:purity",
+        "exitCode": 0,
+        "elapsedSeconds": 4.85,
+        "log": "reports/g1-runtime-validation/render3d-m2c2c-purity.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2d",
+        "exitCode": 0,
+        "elapsedSeconds": 1.15,
+        "log": "reports/g1-runtime-validation/render3d-m2c2d.log"
+      },
+      {
+        "command": "npm run test:render3d:m2c2d1",
+        "exitCode": 0,
+        "elapsedSeconds": 1.45,
+        "log": "reports/g1-runtime-validation/render3d-m2c2d1.log"
+      },
+      {
+        "command": "npm run build",
+        "exitCode": 0,
+        "elapsedSeconds": 7.67,
+        "log": "reports/g1-runtime-validation/build-final.log"
+      }
+    ],
+    "heavy": [
+      {
+        "command": "npm run test:regression",
+        "exitCode": 0,
+        "elapsedSeconds": 0.86,
+        "log": "reports/g1-runtime-validation/heavy-regression.log"
+      },
+      {
+        "command": "npm run test:three-realms",
+        "exitCode": 0,
+        "elapsedSeconds": 162.04,
+        "log": "reports/g1-runtime-validation/heavy-three-realms.log"
+      },
+      {
+        "command": "npm run test:save-equivalence",
+        "exitCode": 0,
+        "elapsedSeconds": 133.4,
+        "log": "reports/g1-runtime-validation/heavy-save-equivalence.log"
+      },
+      {
+        "command": "npm run test:g1:longrun",
+        "exitCode": 0,
+        "elapsedSeconds": 105.18,
+        "log": "reports/g1-runtime-validation/g1-longrun-final.log"
+      }
+    ],
+    "package": {
+      "command": "npm run test:package",
+      "exitCode": 0,
+      "elapsedSeconds": 0.64,
+      "log": "reports/g1-runtime-validation/package-final.log"
+    }
+  },
+  "g1Groups": {
+    "runtime": 20,
+    "host": 6,
+    "map": 6,
+    "browser": 6
+  },
+  "longrun": {
+    "years": [
+      30,
+      100
+    ],
+    "entry": "advanceWorld",
+    "fullThreeRealms": true,
+    "observerWorldEqualityExcludesOnlyWatch": true,
+    "lifeAndEcologyRNGEquality": true,
+    "intervenedReplayYears": 30,
+    "intervenedReplayDeterministic": true,
+    "intervenedReplayDiffersFromControl": true
+  },
+  "browser": {
+    "command": "npm run test:g1:browser",
+    "pass": true,
+    "environment": {
+      "browser": "Edg/154.0.4258.62",
+      "debugPort": 9444,
+      "width": 1440,
+      "height": 1000
+    },
+    "renderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "gpuPerformanceClaim": false,
+    "runtimeErrors": [],
+    "consoleErrors": [],
+    "checks": [
+      {
+        "name": "Canvas pointer chooses real overlapping people by ID",
+        "pass": true,
+        "evidence": {
+          "seed": 0,
+          "id": 1,
+          "otherId": 2,
+          "name": "玄隐摇",
+          "options": [
+            {
+              "value": "0",
+              "text": "玄隐摇 · #1"
+            },
+            {
+              "value": "1",
+              "text": "玄隐摇 · #2"
+            }
+          ],
+          "actual": {
+            "identity": {
+              "key": "mortal:1",
+              "id": 1,
+              "plane": "mortal",
+              "currentPlane": "mortal",
+              "status": "alive",
+              "name": "玄隐摇",
+              "canFocus": true
+            },
+            "key": "mortal:1",
+            "choicesOpen": false
+          }
+        }
+      },
+      {
+        "name": "Visible edict/watch buttons modify the current World and mark unsaved state",
+        "pass": true,
+        "evidence": {
+          "exp": 32,
+          "required": 128,
+          "fortune": 68,
+          "mind": 68,
+          "watched": true,
+          "dirty": true,
+          "ledger": [
+            {
+              "day": 0,
+              "year": 0,
+              "text": "天道敕令 · 灌顶：【玄隐摇】修为 0 → 32",
+              "kind": "intervention"
+            },
+            {
+              "day": 0,
+              "year": 0,
+              "text": "天道敕令 · 拨运：【玄隐摇】气运 60 → 68",
+              "kind": "intervention"
+            },
+            {
+              "day": 0,
+              "year": 0,
+              "text": "天道敕令 · 定心：【玄隐摇】道心 60 → 68",
+              "kind": "intervention"
+            }
+          ]
+        }
+      },
+      {
+        "name": "Product save/load restores real edits and rejects the pre-load DOM action",
+        "pass": true,
+        "evidence": {
+          "unchanged": true,
+          "cleared": true,
+          "opened": true,
+          "exp": 32,
+          "fortune": 68,
+          "mind": 68,
+          "watched": true
+        }
+      },
+      {
+        "name": "Canvas nether-window pointer reaches the ghost instead of the mortal at the same cell",
+        "pass": true,
+        "evidence": {
+          "id": 2000000,
+          "mortalId": 1,
+          "actual": {
+            "key": "nether:2000000",
+            "id": 2000000,
+            "plane": "nether",
+            "currentPlane": "nether",
+            "status": "alive",
+            "name": "孤魂",
+            "canFocus": true
+          },
+          "realm": "普通鬼魂",
+          "noInventedCultivation": true
+        }
+      },
+      {
+        "name": "3D visible PlanePicker hit and actual mouse route call main.inspectPlaneSubject",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 688.0818305216148,
+            "y": 473.27516030910533,
+            "id": 1,
+            "plane": "mortal",
+            "kind": "entity",
+            "diag": {
+              "meshes": 1,
+              "instances": 1,
+              "samples": 1,
+              "offscreen": 0,
+              "hits": {
+                "mortal:entity": 1
+              }
+            }
+          },
+          "actual": {
+            "identity": {
+              "key": "mortal:1",
+              "id": 1,
+              "plane": "mortal",
+              "currentPlane": "mortal",
+              "status": "alive",
+              "name": "玄隐摇",
+              "canFocus": true
+            },
+            "inspections": [
+              {
+                "plane": "mortal",
+                "id": 1,
+                "kind": "entity"
+              }
+            ],
+            "webglRenderer": "ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          }
+        }
+      },
+      {
+        "name": "3D nether-window visible ghost retains its plane through the main host",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 687.3571761378566,
+            "y": 472.2032806878982,
+            "id": 2000000,
+            "plane": "nether",
+            "kind": "entity",
+            "diag": {
+              "meshes": 1,
+              "instances": 1,
+              "samples": 1,
+              "offscreen": 0,
+              "hits": {
+                "nether:entity": 1
+              }
+            }
+          },
+          "actual": {
+            "identity": {
+              "key": "nether:2000000",
+              "id": 2000000,
+              "plane": "nether",
+              "currentPlane": "nether",
+              "status": "alive",
+              "name": "孤魂",
+              "canFocus": true
+            },
+            "inspections": [
+              {
+                "plane": "nether",
+                "id": 2000000,
+                "kind": "entity"
+              }
+            ],
+            "realm": "普通鬼魂",
+            "noInventedCultivation": true
+          }
+        }
+      }
+    ],
+    "golden": [
+      "reports/release/g1-runtime/golden/canvas-edicts.png",
+      "reports/release/g1-runtime/golden/3d-nether.png"
+    ],
+    "screenshotsInspected": true,
+    "routingFallback": {
+      "requestedTool": "Tabbit",
+      "diagnosticExitCode": 69,
+      "alternative": "repository-owned Edge CDP engineering regression"
+    }
+  },
+  "review": {
+    "independent": true,
+    "remainingP1P2": 0,
+    "fixed": [
+      "blessed ascension without fabricated death",
+      "cross-realm dead record same-ID replacement",
+      "ordinary ghost / ghost cultivator realm and facts export"
+    ]
+  },
+  "toolingErrors": [
+    {
+      "command": "npm run est:g1",
+      "exitCode": 1,
+      "impact": "verifier wrapper typo; no test started",
+      "correctedCommand": "npm run test:g1",
+      "correctedExitCode": 0
+    }
+  ],
+  "sourceHashMode": "SHA-256 of UTF-8 source normalized to LF",
+  "sourceHashes": {
+    "src/inkbox/main.js": "bf7e04b08bca1225619a507404f05af5fc97a849dc2916f72d9585283652e924",
+    "src/inkbox/ui/railPanels.js": "9bacb3e341f0928fa8aa34005756f830c16401444dc6a0230489899daefef4ef",
+    "src/inkbox/ui/worldCreation.js": "abd3f93aa3ebab4c07a5692290ebb96eb45b3bf9deaa545fcea54960d19e6f23",
+    "src/inkbox/world/mapProgress.js": "f2ee4d291cb4bd7c780c4903600663d0362211b810d888b918f566e8525874b7",
+    "src/inkbox/sim/advance.js": "ee223a0c4464a6d502c010325cdad8624170f7ea76c40448764e77c0a4d2afa4",
+    "src/inkbox/sim/heavenEdicts.js": "bc228d6abd690b39409a4d903211b60c82c71a5442f3895a95a7b8337573b303",
+    "src/inkbox/g1/characterIdentity.js": "bced6e47dd04041fa09cd8beb3361bb0a27e55c03c93e9b7468dc0e72aead9c2",
+    "src/inkbox/g1/characterMessages.js": "cb88b09133175d5715d660ca4f06411c7ece9a0bd8c1717fcc55a12c100b5f7e",
+    "src/inkbox/g1/characterRuntime.js": "67e0c896c7b30a893c49391b0a03e034e03faa1ec72ec17b805d33ba9b8aeaee",
+    "src/inkbox/g1/sandboxRuntime.js": "86930f8099b9f70bdb7bae715b697ff3779f71016c5544690e616ddd24ab7049",
+    "scripts/inkbox-g1-browser.mjs": "f73dbd39a431b893bc10349dc4bde28927bc474a8c87cc14459f42529765f459",
+    "scripts/inkbox-g1-fixtures.mjs": "43d47cf009e143445c3af733a921d1ee0c7501f93d2592a6a55c1becee829cbd",
+    "scripts/inkbox-g1-host.mjs": "69f45a878e8c7187ad2da5037bfb76c547c41bae5f1f87264f502dddf5a8e0fd",
+    "scripts/inkbox-g1-longrun.mjs": "e4166624242e743a492bca11dfd3c1c56ba436184088b01a2cc5f9f609873f56",
+    "scripts/inkbox-g1-map.mjs": "6ed7ebf959467aee6f1545ac2ccd31ac23eef0b002bf6c47dacc42a6aedf185d",
+    "scripts/inkbox-g1-runtime.mjs": "ee611a533bae9213c15f86f17937204bfacbcbebca02f318234533ee7022ce93",
+    "scripts/inkbox-qol-check.mjs": "3131f206683e35bfca682db01fb887ec162c14c49f6618721704261d21fbad2c",
+    "scripts/inkbox-package.mjs": "63d212a9c0f52ed5246123048f1603a50d06934f219e2c39fba26d62c9ef8377",
+    "package.json": "0bf0a237f96a5869a99f790ae6c82e5e2b293492eba8b416824222aea305c96b",
+    ".github/workflows/ci.yml": "376170e0d7865ed9734117b80681ec11b8af07093966649db618f2959ea9c21c"
+  },
+  "deferred": [
+    "formal Presentation component/CSS integration and UI acceptance",
+    "C5 visual asset coordination and corresponding real GPU acceptance"
+  ],
+  "mainMerged": false,
+  "presentationDirectoryModified": false,
+  "experimentalNumericsModified": false
+}

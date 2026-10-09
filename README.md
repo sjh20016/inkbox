@@ -1,5 +1,7 @@
 # 坐天观井 · Inkbox 1.0.0
 
+2026-10-09：G1-R Runtime 在 `feat/g1-runtime-codex` 独立交付，基线为 main `fc612ac9`。真实人物身份 / ViewModel、三项天道敕令、记挂与生命周期、正式世界日驱动的地图成长已接线；测试和接口见 [G1 Runtime 交接](./G1_RUNTIME_HANDOFF.md)。本分支保留旧人物展示，正式 Presentation 与 C5 视觉协调待后续集成；未合并 main。
+
 2026-10-08：M2-C2E 本地工程验收完成：44项CPU、108种子矩阵、14项真实产品GPU、十二镜同机对照和600/6000帧联合耐久通过。最终美术裁决与最大图性能边界见 [本轮就绪报告](./M2C2E_READINESS.md)。开发分支 `codex/m2-c2e-living-terrain`。3D 创建入口提供标准／群山／水泽、有效 seed 0、512×320 和渐进探索；雕刻支持山脊、盆地、Undo／Redo。
 
 2026-10-06：**M2-C2C Meaningful Geography 本地验收完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。**既有四类 Site、Leyline、Upper qi、Nether yin 与持久 Rift / 瞬时 FX 已接入六个只读表现开关。完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。 CPU 11 模式 × 600 日、11 RNG 与 49 save keys 一致，full SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`。C2B Pass 1 的远端封板基线仍是 main `e0a851c`：Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、Windows Browser [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功，不能充作 C2C 远端证据。C2C 入口：[就绪](./M2C2C_READINESS.md)、[工程与24项答复](./M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](./M2C2C_PERFORMANCE_REPORT.md)、[视觉](./M2C2C_VISUAL_ACCEPTANCE.md)。

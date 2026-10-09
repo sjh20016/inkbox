@@ -91,7 +91,13 @@
     "test:render3d:m2c2e": "node scripts/inkbox-render3d-m2c2e-geometry.mjs && node scripts/inkbox-m2c2e-creation.mjs && node scripts/inkbox-m2c2e-sculpt.mjs && node scripts/inkbox-m2c2e-expansion.mjs",
     "test:render3d:m2c2e:generation": "node scripts/inkbox-m2c2e-generation.mjs",
     "test:render3d:m2c2e:browser": "node scripts/inkbox-render3d-m2c2e-browser.mjs",
-    "test:render3d:m2c2e:soak": "node scripts/inkbox-render3d-m2c2e-soak.mjs"
+    "test:render3d:m2c2e:soak": "node scripts/inkbox-render3d-m2c2e-soak.mjs",
+    "test:g1:runtime": "node scripts/inkbox-g1-runtime.mjs",
+    "test:g1:host": "node scripts/inkbox-g1-host.mjs",
+    "test:g1:map": "node scripts/inkbox-g1-map.mjs",
+    "test:g1": "npm run test:g1:runtime && npm run test:g1:host && npm run test:g1:map",
+    "test:g1:longrun": "node scripts/inkbox-g1-longrun.mjs",
+    "test:g1:browser": "node scripts/inkbox-g1-browser.mjs"
   },
   "dependencies": {
     "three": "0.186.1"
