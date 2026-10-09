@@ -1,0 +1,3 @@
+.g2-portrait-v2{width:100%;height:auto;contain:layout style paint}
+.g2-portrait-v2__svg{display:block;width:100%;height:100%;aspect-ratio:1}
+.g2-portrait-v2 g[data-slot]{pointer-events:none}
