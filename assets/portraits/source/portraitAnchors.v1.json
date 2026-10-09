@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "profileId": "profile.front.v1",
+  "coordinateSystem": {
+    "viewBox": "0 0 100 100",
+    "masterPixelsPerLogicalUnit": 10.24,
+    "exportPixelsPerLogicalUnit": 5.12,
+    "masterSize": 1024,
+    "exportSize": 512,
+    "cropTransparentEdges": false,
+    "origin": "top-left"
+  },
+  "profiles": {
+    "profile.front.v1": {
+      "pose": "front",
+      "head": { "center": [50, 53], "axisX": 50, "crown": [50, 12], "jaw": [50, 84] },
+      "eyes": { "left": [40, 51], "right": [60, 51] },
+      "brows": { "left": [40, 44], "right": [60, 44] },
+      "noseTip": [50, 62],
+      "mouthCenter": [50, 70],
+      "ears": { "left": [30, 54], "right": [70, 54] },
+      "neckCenter": [50, 80],
+      "shoulders": { "left": [24, 98], "center": [50, 96], "right": [76, 98] },
+      "hairAlignment": {
+        "backHairSafeArea": [14, 8, 86, 91],
+        "frontHairSafeArea": [22, 10, 78, 57],
+        "earClearance": [[25, 46, 34, 62], [66, 46, 75, 62]]
+      },
+      "allowedFeatureOffsets": {
+        "eyes": { "dx": [-2, 2], "dy": [-2, 2] },
+        "brows": { "dx": [-2, 2], "dy": [-2, 2] },
+        "noseTip": { "dx": [-2, 2], "dy": [-2, 2] },
+        "mouthCenter": { "dx": [-3, 3], "dy": [-2, 2] },
+        "ears": { "dx": [-2, 2], "dy": [-3, 3] }
+      }
+    }
+  },
+  "occlusion": {
+    "slotOrderBottomToTop": [
+      "background", "backHair", "robe", "neck", "face", "ears", "eyes", "brows",
+      "nose", "mouth", "cheeks", "skinMarks", "frontHair", "ornament", "effects", "frame"
+    ],
+    "allowedRelations": [
+      { "behind": "backHair", "inFrontOf": "neck" },
+      { "behind": "face", "inFrontOf": "frontHair", "purpose": "front bangs cover forehead marks" },
+      { "behind": "ears", "inFrontOf": "ornament", "purpose": "earrings sit over the matching ear" },
+      { "behind": "skinMarks", "inFrontOf": "frontHair", "purpose": "scars remain naturally covered by bangs" },
+      { "behind": "effects.back", "inFrontOf": "backHair", "extension": "portrait-layering.v1" },
+      { "behind": "effects.front", "inFrontOf": "frontHair", "extension": "portrait-layering.v1" }
+    ],
+    "extensionRule": "Do not reorder the 16 runtime slots. Future deep interleaving uses a versioned extension and explicit before/after anchors."
+  },
+  "futureProfiles": [
+    { "profileId": "profile.threeQuarterLeft.v1", "status": "reserved", "rule": "Define new anchors; never change profile.front.v1 semantics." },
+    { "profileId": "profile.threeQuarterRight.v1", "status": "reserved", "rule": "Define new anchors; never change profile.front.v1 semantics." }
+  ]
+}

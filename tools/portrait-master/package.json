@@ -1,0 +1,15 @@
+{
+  "name": "inkbox-portrait-master-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node generate-master.mjs",
+    "export": "node export.mjs",
+    "check": "python check-master.py"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "1.0.10",
+    "ag-psd": "31.0.3",
+    "sharp": "0.35.5"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "master": "assets/portraits/source/inkbox_face_master_v1.psd",
+  "outputRoot": "assets/portraits/inkbox-face-v1/examples/master-demo",
+  "manifestOutput": "assets/portraits/inkbox-face-v1/manifest.example.json",
+  "slotsBottomToTop": [
+    "background", "backHair", "robe", "neck", "face", "ears", "eyes", "brows",
+    "nose", "mouth", "cheeks", "skinMarks", "frontHair", "ornament", "effects", "frame"
+  ],
+  "exports": [
+    { "slot": "background", "id": "round-01", "source": ["00_background", "variant-round-01"], "path": "background/round-01.png" },
+    { "slot": "backHair", "id": "loose-01", "source": ["01_backHair", "variant-loose-01"], "path": "backHair/loose-01.png" },
+    { "slot": "backHair", "id": "bun-01", "source": ["01_backHair", "variant-bun-01"], "path": "backHair/bun-01.png" },
+    { "slot": "robe", "id": "sage-01", "source": ["02_robe", "variant-sage-cross-01"], "path": "robe/sage-01.png", "notes": "Includes cross collar; collar is part of robe export." },
+    { "slot": "robe", "id": "paper-01", "source": ["02_robe", "variant-paper-scholar-01"], "path": "robe/paper-01.png", "notes": "Includes scholar collar; collar is part of robe export." },
+    { "slot": "neck", "id": "base", "source": ["03_neck", "neck-base"], "path": "neck/base.png" },
+    { "slot": "face", "id": "oval-01", "source": ["04_face", "variant-oval-01"], "path": "face/oval-01.png" },
+    { "slot": "face", "id": "round-01", "source": ["04_face", "variant-round-01"], "path": "face/round-01.png" },
+    { "slot": "ears", "id": "base", "source": ["05_ears", "ears-base"], "path": "ears/base.png" },
+    { "slot": "eyes", "id": "calm-01", "source": ["06_eyes", "variant-calm-01"], "path": "eyes/calm-01.png" },
+    { "slot": "eyes", "id": "round-01", "source": ["06_eyes", "variant-round-01"], "path": "eyes/round-01.png" },
+    { "slot": "brows", "id": "level-01", "source": ["07_brows", "variant-level-01"], "path": "brows/level-01.png" },
+    { "slot": "brows", "id": "sword-01", "source": ["07_brows", "variant-sword-01"], "path": "brows/sword-01.png" },
+    { "slot": "nose", "id": "dot-01", "source": ["08_nose", "nose-dot-01"], "path": "nose/dot-01.png" },
+    { "slot": "mouth", "id": "neutral-01", "source": ["09_mouth", "variant-neutral-01"], "path": "mouth/neutral-01.png" },
+    { "slot": "mouth", "id": "smile-01", "source": ["09_mouth", "variant-smile-01"], "path": "mouth/smile-01.png" },
+    { "slot": "cheeks", "id": "base", "source": ["10_cheeks", "cheeks-base"], "path": "cheeks/base.png" },
+    { "slot": "skinMarks", "id": "age-lines", "source": ["11_skinMarks", "age", "age-lines"], "path": "skinMarks/age-lines.png" },
+    { "slot": "skinMarks", "id": "bruise-small", "source": ["11_skinMarks", "injury", "bruise-small"], "path": "skinMarks/bruise-small.png" },
+    { "slot": "skinMarks", "id": "scar", "source": ["11_skinMarks", "scar", "permanent-scar"], "path": "skinMarks/scar.png" },
+    { "slot": "skinMarks", "id": "ghost", "source": ["11_skinMarks", "ghost", "ghost-wash"], "path": "skinMarks/ghost.png" },
+    { "slot": "skinMarks", "id": "corruption-1", "source": ["11_skinMarks", "corruption", "corruption-mark-1"], "path": "skinMarks/corruption-1.png" },
+    { "slot": "frontHair", "id": "part-01", "source": ["12_frontHair", "variant-part-01"], "path": "frontHair/part-01.png" },
+    { "slot": "frontHair", "id": "sweep-01", "source": ["12_frontHair", "variant-sweep-01"], "path": "frontHair/sweep-01.png" },
+    { "slot": "ornament", "id": "pin-01", "source": ["13_ornament", "ornament-pin-01"], "path": "ornament/pin-01.png" },
+    { "slot": "effects", "id": "technique-fire", "source": ["14_effects", "front", "technique-fire"], "path": "effects/technique-fire.png" },
+    { "slot": "effects", "id": "technique-frost", "source": ["14_effects", "front", "technique-frost"], "path": "effects/technique-frost.png" },
+    { "slot": "frame", "id": "base", "source": ["15_frame", "frame-base"], "path": "frame/base.png" }
+  ]
+}
