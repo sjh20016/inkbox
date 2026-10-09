@@ -1,0 +1,71 @@
+{
+  "id": "inkbox-face-master-demo-v1",
+  "schemaVersion": 1,
+  "canvas": {
+    "master": 1024,
+    "export": 512,
+    "viewBox": "0 0 100 100"
+  },
+  "slots": {
+    "background": {
+      "round-01": "examples/master-demo/background/round-01.png"
+    },
+    "backHair": {
+      "loose-01": "examples/master-demo/backHair/loose-01.png",
+      "bun-01": "examples/master-demo/backHair/bun-01.png"
+    },
+    "robe": {
+      "sage-01": "examples/master-demo/robe/sage-01.png",
+      "paper-01": "examples/master-demo/robe/paper-01.png"
+    },
+    "neck": {
+      "base": "examples/master-demo/neck/base.png"
+    },
+    "face": {
+      "oval-01": "examples/master-demo/face/oval-01.png",
+      "round-01": "examples/master-demo/face/round-01.png"
+    },
+    "ears": {
+      "base": "examples/master-demo/ears/base.png"
+    },
+    "eyes": {
+      "calm-01": "examples/master-demo/eyes/calm-01.png",
+      "round-01": "examples/master-demo/eyes/round-01.png"
+    },
+    "brows": {
+      "level-01": "examples/master-demo/brows/level-01.png",
+      "sword-01": "examples/master-demo/brows/sword-01.png"
+    },
+    "nose": {
+      "dot-01": "examples/master-demo/nose/dot-01.png"
+    },
+    "mouth": {
+      "neutral-01": "examples/master-demo/mouth/neutral-01.png",
+      "smile-01": "examples/master-demo/mouth/smile-01.png"
+    },
+    "cheeks": {
+      "base": "examples/master-demo/cheeks/base.png"
+    },
+    "skinMarks": {
+      "age-lines": "examples/master-demo/skinMarks/age-lines.png",
+      "bruise-small": "examples/master-demo/skinMarks/bruise-small.png",
+      "scar": "examples/master-demo/skinMarks/scar.png",
+      "ghost": "examples/master-demo/skinMarks/ghost.png",
+      "corruption-1": "examples/master-demo/skinMarks/corruption-1.png"
+    },
+    "frontHair": {
+      "part-01": "examples/master-demo/frontHair/part-01.png",
+      "sweep-01": "examples/master-demo/frontHair/sweep-01.png"
+    },
+    "ornament": {
+      "pin-01": "examples/master-demo/ornament/pin-01.png"
+    },
+    "effects": {
+      "technique-fire": "examples/master-demo/effects/technique-fire.png",
+      "technique-frost": "examples/master-demo/effects/technique-frost.png"
+    },
+    "frame": {
+      "base": "examples/master-demo/frame/base.png"
+    }
+  }
+}
