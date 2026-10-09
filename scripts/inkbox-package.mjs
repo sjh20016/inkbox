@@ -85,6 +85,7 @@ const FILES = [
   'scripts/inkbox-g1-web-check.mjs',
   'scripts/inkbox-g1-integration.mjs',
   'G1_RUNTIME_HANDOFF.md',
+  'G1_INTEGRATION_REPORT.md',
   'scripts/inkbox-render3d.mjs',
   'scripts/inkbox-render3d-browser.mjs',
   // ⚠️ 这个脚本用外部 Playwright（`INKBOX_PLAYWRIGHT`），本机默认装不到 ⇒ 它是**可选** QA。

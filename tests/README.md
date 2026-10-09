@@ -163,3 +163,7 @@ scripts/_*.mjs 是已入 Git 的 D8 / M1 一次性研究探针，不进 npm 门�
 新门禁/性能完整输出在忽略目录 reports/m2c2b0；Git仅保留 release/render3d-m2c2b0 的golden/summary，CI大图上传 reports/ci artifact。当前报告只说明本地结果；未push或触发远端Actions。
 
 M2-C2E本轮本机结果：44/44 CPU、108固定种子与120日实际三界/11RNG纯度、browser-optimized14/14、6行24GPU视角、final-canonical-r3十二镜及soak-optimized600/6000采样通过。完整数据与缓存源码SHA在release精简摘要；远端CI本分支未运行。GPU顺序独占，不把6000帧采样块之间的真实操作额外RAF计作连续持笔帧。
+
+G1-I 正式命簿/地图 VM：
+pm run test:g1:web、
+pm run test:g1:integration 已纳入 	est:g1 / CI Fast；Edge 	est:g1:browser 验收四卷、真实命令、文件导入、引导及渲染器切换。见 [集成报告](../G1_INTEGRATION_REPORT.md)。
