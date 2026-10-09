@@ -1,0 +1,28 @@
+.g2-busanzi{font-family:"Songti SC","SimSun",serif;--g2-b-ink:#343934;color:var(--g2-b-ink);max-width:540px}
+.g2-busanzi button{font-family:inherit;cursor:pointer}
+.g2-busanzi button:focus-visible{outline:2px solid #995349;outline-offset:2px}
+.g2-busanzi button:disabled{cursor:not-allowed;opacity:.48}
+.g2-busanzi__trigger{width:100%;background:#f5f0e6;border:1px solid #cac6b8;padding:13px;text-align:left;letter-spacing:.12em}
+.g2-busanzi__panel{border:1px solid #bbb9ad;background:#f6f3ed;padding:16px;margin-top:8px;box-shadow:0 8px 25px #2c302418}
+.g2-busanzi__panel[hidden],.g2-busanzi__page[hidden],.g2-busanzi__guide[hidden]{display:none!important}
+.g2-busanzi__head{display:flex;align-items:center;gap:14px}.g2-busanzi__portrait{width:100px;height:114px;object-fit:cover;border:1px solid #bcbbae;flex:none}
+.g2-busanzi__head h2{font-weight:500;font-size:20px;margin:0 0 7px}
+.g2-busanzi__head small{color:#858074}.g2-busanzi__affinity{font-size:12px;color:#6e766d;margin:9px 0}
+.g2-busanzi__close{margin-left:auto;align-self:start;border:0;background:transparent;color:#7b7770;padding:4px}
+.g2-busanzi__motto{color:#8a645a;font-size:12px;padding-left:11px;border-left:2px solid #a66055;line-height:1.6}
+.g2-busanzi__guide{display:flex;align-items:center;gap:8px;background:#ebe8dc;padding:10px;font-size:12px;line-height:1.6}
+.g2-busanzi__guide p{margin:0;flex:1}.g2-busanzi__guide button,.g2-busanzi__footer button{border:0;background:transparent;color:#9a5047;white-space:nowrap}
+.g2-busanzi__tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:14px 0}
+.g2-busanzi__tabs button{border:0;border-bottom:1px solid #c5c6b9;background:transparent;padding:8px 3px;font-size:12px}
+.g2-busanzi__tabs button[aria-pressed="true"]{border-bottom:2px solid #934d44;color:#8d4239}
+.g2-busanzi__page{max-height:310px;overflow:auto;min-height:100px}.g2-busanzi__dialogue{list-style:none;display:grid;gap:10px;padding:0;margin:0}
+.g2-busanzi__dialogue li{font-size:13px;line-height:1.7;padding:6px 10px;border-left:2px solid #bec6ba;background:#ebece6;overflow-wrap:anywhere}
+.g2-busanzi__hint{font-size:12px;color:#7b7a70;line-height:1.65}
+.g2-busanzi__tasks{display:grid;gap:8px}.g2-busanzi__task{display:flex;justify-content:space-between;gap:12px;padding:10px;background:#edeae2;border:1px solid #dad5c8}
+.g2-busanzi__task strong{font-size:13px}.g2-busanzi__task p{font-size:12px;color:#75786f;margin:6px 0}
+.g2-busanzi__task small{font-size:11px;color:#a0534c}.g2-busanzi__request{align-self:center;flex:none;border:1px solid #aeb6a8;background:#fbf8ef;padding:9px;font-size:11px}
+.g2-busanzi__journey{display:grid;gap:8px}.g2-busanzi__journey-item{display:grid;gap:4px;padding:11px;background:#edeae2;font-size:12px}
+.g2-busanzi__journey-item span,.g2-busanzi__journey-item small{color:#787b70}
+.g2-busanzi__error{font-size:12px;color:#a0534c}.g2-busanzi__error:empty{display:none}
+.g2-busanzi__footer{border-top:1px solid #d5d1c5;padding-top:10px;text-align:right}
+@media(max-width:460px){.g2-busanzi__head{gap:9px}.g2-busanzi__portrait{width:74px;height:84px}.g2-busanzi__task{display:grid}.g2-busanzi__request{justify-self:start}}
