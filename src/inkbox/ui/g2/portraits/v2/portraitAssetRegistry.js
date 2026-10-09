@@ -6,7 +6,7 @@ const SAFE_PATH=/^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))(?!.*[:\\?#])[a-zA-Z0-9_\-./]+
 function validPath(value){return typeof value==="string"&&value.length<=180&&SAFE_PATH.test(value);}
 function safeBase(baseUrl){
   // The runtime will resolve URLs against document baseURI; no protocols allowed in the manifest itself.
-  if(typeof baseUrl!=="string"||!baseUrl||baseUrl.startsWith("//")||/^https?:/i.test(baseUrl))return "./";
+  if(typeof baseUrl!=="string"||!baseUrl||!(/^(?!\/)(?!.*[:\\?#])[a-zA-Z0-9_./-]+$/.test(baseUrl)))return "./";
   return baseUrl.endsWith("/")?baseUrl:baseUrl+"/";
 }
 /** A pack is descriptive data only; never execute code stored in a manifest. */
