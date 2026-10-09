@@ -48,6 +48,8 @@ import {
 } from '../sim/busanzi.js';
 import { relationGraphSvg, RELATION_GRAPH_MAX } from '../render/relationGraph.js';
 import { spawnFocusPulse } from '../render/overlayLayer.js';
+import { createLayeredCharacterPortrait } from './g2/portraits/v2/portraitComposer.js';
+import { getPortraitRegistry } from './g2/portraits/v2/portraitRuntimeAssets.js';
 import { listSlots } from '../io/save.js';
 import {
   UI_PREFS_KEY, LIST_FOLD_LIMIT, foldRows, foldMoreLabel,
@@ -576,13 +578,39 @@ export function showPersonCardPanel(sb, id) {
     sb.notify?.('此人已不在此界', 2600);
     return;
   }
+  sb.personPortrait?.destroy();
+  sb.personPortrait = null;
   sb.personOpenId = id;
   const watched = isWatched(world, entity);
   const plane = planeTagOf('mortal');
+  const ageRatio = Number.isFinite(entity.lifespan) && entity.lifespan > 0
+    ? Math.max(0, (entity.age || 0) / entity.lifespan) : 0;
+  const ageStage = ageRatio < .18 ? 'youth' : ageRatio < .5 ? 'adult' : ageRatio < .75 ? 'middle' : 'elder';
+  const isGhost = entity.sp === 'ghost';
+  const portraitModel = {
+    identityKey: `mortal:${world.seed ?? 'unknown'}:${entity.id}`,
+    appearanceSeed: `mortal:${world.seed ?? 'unknown'}:${entity.id}`,
+    // Optional explicit appearance data is accepted for future saved profiles; opening a card
+    // never invents or writes genome data onto a simulated person.
+    genome: entity.portraitGenome,
+    style: entity.portraitStyle,
+    appearance: entity.appearance,
+    portraitState: { ageStage, ghost: isGhost },
+    status: isGhost ? 'nether' : 'alive',
+    alt: `${displayName(entity)}的人物面相`,
+  };
+  const ageYears = Math.floor((entity.age || 0) / 360);
+  const lifeStageLabel = { youth: '幼态', adult: '青年', middle: '中年', elder: '老年' }[ageStage];
   panel.dataset.plane = 'mortal';
   panel.innerHTML = `<div class="inspect-head">${displayName(entity)}的一生`
     + `<span class="plane-tag">${plane}</span>`
     + '<button class="ink-x" id="inkPersonClose">×</button></div>'
+    + '<div class="person-portrait-row">'
+    + '<div class="person-portrait-mount" data-person-portrait></div>'
+    + `<div class="person-portrait-summary"><b>${displayName(entity)}</b>`
+    + `<div>${realmLabel(entity.level || 0)} · ${ageYears} 岁</div>`
+    + `<div>${isGhost ? '幽冥形态' : lifeStageLabel}</div>`
+    + '<div class="person-portrait-caption">正面面相 · 程序素材</div></div></div>'
     + `<div class="necro-body">${renderBiographyHtml(compileBiography(world, entity))}</div>`
     + '<div class="inspect-actions">'
     + '<button class="btn" id="inkBtnPersonLocate">定位</button>'
@@ -591,6 +619,15 @@ export function showPersonCardPanel(sb, id) {
     + '<button class="btn" id="inkBtnPersonBio">导出传记</button>'
     + '</div>'
     + '<div id="inkPersonRel" style="text-align:center;padding:0 10px"></div>';
+  const portraitRoot = panel.querySelector('[data-person-portrait]');
+  sb.personPortrait = createLayeredCharacterPortrait(portraitRoot);
+  sb.personPortrait.render(portraitModel);
+  void getPortraitRegistry().then((registry) => {
+    if (sb.personOpenId !== id || !portraitRoot.isConnected) return;
+    sb.personPortrait?.destroy();
+    sb.personPortrait = createLayeredCharacterPortrait(portraitRoot, { registry });
+    sb.personPortrait.render(portraitModel);
+  });
   panel.classList.add('on');
   $('inkPersonClose').addEventListener('click', () => hidePersonCardPanel(sb));
   // 关系图开关。⚠️ 换人（点外圈节点）时 `relationOpen` 保持——于是能顺着关系网一路点下去。
@@ -666,6 +703,8 @@ export function showPersonCardPanel(sb, id) {
 export function hidePersonCardPanel(sb) {
   const panel = $('inkPersonDetail');
   if (panel) panel.classList.remove('on');
+  sb.personPortrait?.destroy();
+  sb.personPortrait = null;
   sb.personOpenId = null;
   sb.relationOpen = false;   // 收起卡片时也收起关系图（下次打开是干净状态）
 }
