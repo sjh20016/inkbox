@@ -128,7 +128,7 @@ import {
   bindRelationGraphPanel, refreshWatchPanel, openWatchRowPanel,
   refreshThreeRealmsPanel, refreshUpperRealmPanel, refreshNetherRealmPanel,
   refreshNecrologyPanel, setNecroSortPanel, showDeadBiographyPanel,
-  hideDeadBiographyPanel, downloadTextPanel, refreshBusanziPanel,
+  hideDeadBiographyPanel, downloadTextPanel, refreshBusanziPanel, bindBusanziTogglePanel,
   refreshSlotsPanel, setupSectionTogglesPanel, refreshRecentPanel,
   showCharacterChoicesPanel, showCharacterRelationsPanel,
 } from './ui/railPanels.js';
@@ -329,6 +329,7 @@ class Sandbox {
     this.showWarLines = false;
     this.focusedSectId = null;
     this.relationOpen = false;
+    this.busanziCollapsed = false; // Session UI choice survives World changes.
     /** 关系图的点击委托只挂一次（容器常驻，见 bindRelationGraph） */
     this.relationBound = false;
     this.clock = 0;
@@ -734,6 +735,7 @@ class Sandbox {
 
   // ── 事件 ────────────────────────────────────────────────
   bindEvents() {
+    bindBusanziTogglePanel(this);
     window.addEventListener('resize', () => this.resize());
 
     const canvas = this.canvas;

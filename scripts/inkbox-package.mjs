@@ -82,6 +82,8 @@ const FILES = [
   'scripts/inkbox-g1-longrun.mjs',
   'scripts/inkbox-g1-fixtures.mjs',
   'scripts/inkbox-g1-browser.mjs',
+  'scripts/inkbox-g1-web-check.mjs',
+  'scripts/inkbox-g1-integration.mjs',
   'G1_RUNTIME_HANDOFF.md',
   'scripts/inkbox-render3d.mjs',
   'scripts/inkbox-render3d-browser.mjs',

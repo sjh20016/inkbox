@@ -41,13 +41,15 @@ export function createWorldProgressView(root, { onAction } = {}) {
   track.append(fill);
   const meta = doc.createElement("p");
   meta.className = "g1-world-progress__meta";
+  const clock = doc.createElement("p");
+  clock.className = "g1-world-progress__note";
   const button = doc.createElement("button");
   button.type = "button";
   button.className = "g1-world-progress__button";
   button.textContent = "请求开拓";
   const reason = doc.createElement("p");
   reason.className = "g1-world-progress__reason";
-  section.append(eyebrow, title, note, track, meta, button, reason);
+  section.append(eyebrow, title, note, track, meta, clock, button, reason);
   root.replaceChildren(section);
   let current = null;
   let disposed = false;
@@ -72,6 +74,7 @@ export function createWorldProgressView(root, { onAction } = {}) {
       track.setAttribute("aria-valuetext", percent === null ? "开放比例未载" : percent + "%");
       meta.textContent = (percent === null ? "开放比例未载" : percent + "% 已开放") +
         "  ·  " + asText(current?.boundaryText, "边界未载");
+      clock.textContent = asText(current?.progressText, "");
       button.disabled = !entry || current?.canRequestExpand !== true;
       button.hidden = !current || current.stage === 100;
       reason.textContent = button.hidden || !button.disabled ? "" :

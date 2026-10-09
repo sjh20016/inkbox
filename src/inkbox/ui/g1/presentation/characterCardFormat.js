@@ -31,11 +31,11 @@ export function isReadonlyIdentity(identity = {}) {
 }
 
 export function statusLabel(status) {
-  return ({ alive: "在世", dead: "已故", ascended: "飞升", missing: "失踪",
+  return ({ alive: "在世", dead: "已故", ascended: "飞升", nether: "已落幽冥", missing: "失踪",
     unknown: "不可考" })[status] || "不可考";
 }
 
 export function safeStatus(status) {
-  return ["alive", "dead", "ascended", "missing", "unknown"].includes(status)
+  return ["alive", "dead", "ascended", "nether", "missing", "unknown"].includes(status)
     ? status : "unknown";
 }

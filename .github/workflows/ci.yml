@@ -60,7 +60,7 @@ jobs:
       - name: UX/QoL 填缝包回归（QOL_PASS1 · Escape 分层 / 折叠 / 偏好白名单 / 模拟纯度门禁）
         run: npm run test:qol
 
-      - name: G1 Runtime（身份 / 敕令 / 记挂 / Canvas和3D接线 / 地图成长）
+      - name: G1 正式集成（身份 / 命簿四卷 / 权限 / 地图成长 / Web 组件）
         run: npm run test:g1
 
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
@@ -188,7 +188,7 @@ jobs:
       - name: 安装依赖
         run: npm ci
 
-      - name: G1 旧展示宿主的 Canvas / 3D 真实身份、命令与存读档
+      - name: G1 正式命簿 Canvas / 3D 真实身份、命令与存读档
         run: npm run test:g1:browser
         env:
           INKBOX_REPORT_DIR: reports/ci/g1-browser

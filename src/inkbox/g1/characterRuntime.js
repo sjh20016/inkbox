@@ -2,7 +2,7 @@ import { ghostTierOf, GHOST_TIER_NAMES } from '../sim/netherLife.js';
 import { characterReason } from './characterMessages.js';
 import { expToNext, realmLabel } from '../core/cultivation.js';
 import { cultivationRate } from '../sim/cultivation.js';
-import { toggleWatch, removeWatch, WATCH_MAJOR_KINDS } from '../sim/watch.js';
+import { toggleWatch, removeWatch, WATCH_CAP, WATCH_MAJOR_KINDS } from '../sim/watch.js';
 import { compileBiography, importantRelations } from '../sim/biography.js';
 import { compileDeadBiography } from '../sim/necrology.js';
 import { HEAVEN_EDICTS, checkHeavenEdict, executeHeavenEdict } from '../sim/heavenEdicts.js';
@@ -47,6 +47,15 @@ export function compileCharacterFacts(viewModel) {
   if (!viewModel.history.length) lines.push('暂无保留的人物日志；不推断未记载的生平。');
   return lines.join('\n');
 }
+/** Permissions share the same fresh resolver and watch cap as command execution. */
+export function characterPermissions(world, resolved) {
+  const watched = (world.watch || []).some(entry => entry.key === resolved.key);
+  const watchReason = watched ? '' : resolved.plane !== 'mortal' || resolved.status !== 'alive' || !resolved.accessible
+    ? 'not-accessible-mortal' : (world.watch || []).length >= WATCH_CAP ? 'full' : '';
+  const canRead = !!resolved.entity && !(resolved.status === 'alive' && !resolved.accessible);
+  return { canWatch: !watchReason, watchReason, watchDisabledReason: watchReason ? characterReason(watchReason) : '',
+    canFocus: resolved.accessible === true, canExport: canRead, canShowRelations: canRead };
+}
 /** Snapshot values only. World and entity references never escape through the presenter. */
 export function buildCharacterViewModel(world,keyOrToken) {
   const token = typeof keyOrToken === 'object' ? keyOrToken : null;
@@ -60,8 +69,9 @@ export function buildCharacterViewModel(world,keyOrToken) {
   const affiliation = r.status === 'dead' || r.fateRecord ? shown(e.sectName) : e.faction ? (r.sourceWorld.factionById?.(e.faction)?.name || '所属宗门不可考') : e.sp === 'cultivator' ? '散修' : '无宗门';
   const history = (Array.isArray(e.log) ? e.log : []).map(row => ({day:numeric(row.day),kind:shown(row.kind),text:shown(row.text)}));
   const edictToken = token || createSelectionToken(world,key);
+  const permissions = characterPermissions(world,r);
   return freeze({
-    schemaVersion:1,
+    schemaVersion:1, permissions,
     identity:{key:r.key,id:r.id,plane:r.plane,currentPlane:r.currentPlane || r.plane,status:r.status,name:e.name || '不可考',canFocus:r.accessible},
     header:{realm:realmText(e),ageText:Number.isFinite(e.age) ? `${Math.floor(e.age / 360)} 岁` : '年龄不可考',affiliation,stateText:e.sp === 'ghost' && r.status === 'alive' ? '鬼魂存续' : r.status === 'ascended' && !r.arrival ? '已飞升 · 去向不可定位' : STATUS[r.status]},
     cultivation:{exp,required,percent:exp !== null && required !== null ? exp / required * 100 : null,rate,rateText:rate === null ? '修炼速度不可考' : `每日修为 ${rate.toFixed(3)}`,stateText:required === null || exp === null ? '修为不可考' : exp >= required ? '等待模拟突破' : '积累修为'},
@@ -121,12 +131,12 @@ export function createCharacterController({getWorld,onChange = () => {},presente
     if (action.type === 'edict') result = executeHeavenEdict(world,token,action.edictId);
     else if (action.type === 'watch') {
       if ((world.watch || []).some(w => w.key === token.key)) result = {ok:removeWatch(world,token.key),watched:false};
-      else if (r.plane !== 'mortal' || r.status !== 'alive' || !r.accessible) result = {ok:false,reason:'not-accessible-mortal'};
+      else if (!characterPermissions(world,r).canWatch) result = {ok:false,reason:characterPermissions(world,r).watchReason};
       else result = toggleWatch(world,r.entity,world.day);
-    } else if (action.type === 'focus') result = r.accessible ? {ok:true,effect:{type:'focus',plane:r.currentPlane || r.plane,x:r.entity.x,y:r.entity.y,entity:r.entity}} : {ok:false,reason:'cannot-focus'};
+    } else if (action.type === 'focus') result = r.accessible ? {ok:true,effect:{type:'focus',plane:r.currentPlane || r.plane,x:r.entity.x,y:r.entity.y}} : {ok:false,reason:'cannot-focus'};
     else if (action.type === 'export' || action.type === 'show-relations') {
       if (!r.entity || (r.status === 'alive' && !r.accessible)) result = {ok:false,reason:'unavailable-target'};
-      else if (action.type === 'show-relations') result = {ok:true,effect:{type:'show-relations',plane:r.currentPlane || r.plane,entity:r.entity}};
+      else if (action.type === 'show-relations') result = {ok:true,effect:{type:'show-relations',plane:r.currentPlane || r.plane,relations:buildCharacterViewModel(world,token).relations}};
       else result = {ok:true,effect:{type:'export',filename:`${r.plane}-${r.id}.md`,text:r.entity.sp !== 'cultivator' ? compileCharacterFacts(buildCharacterViewModel(world,token)) : r.status === 'dead' || r.fateRecord ? compileDeadBiography(r.sourceWorld,r.entity) : compileBiography(r.sourceWorld,r.entity)}};
     } else result = {ok:false,reason:'invalid-action'};
     return {...result,message:result.message || (result.reason ? characterReason(result.reason) : ''),viewModel:refresh()};

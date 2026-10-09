@@ -27,9 +27,10 @@
 //    它不抽 RNG、不改模拟、不进存档。
 
 import { realmLabel } from '../core/cultivation.js';
-import { compileCharacterFacts } from '../g1/characterRuntime.js';
+import { createCharacterCardView } from './g1/presentation/characterCardView.js';
+const characterViews = new WeakMap();
 import {
-  compileBiography, attentionOf, ATTENTION_NAMES, displayName, findEntity, biographyFileName,
+  attentionOf, ATTENTION_NAMES, displayName, findEntity, biographyFileName,
 } from '../sim/biography.js';
 import {
   necrologyList, necrologyStats, findDead, compileDeadBiography,
@@ -41,7 +42,7 @@ import {
 import { netherGhostStats, netherEcoStats, netherItemStats } from '../sim/netherLife.js';
 import { upperEcoStats } from '../world/planes.js';
 import {
-  WATCH_CAP, isWatched, toggleWatch, watchRows, ensureWatch,
+  WATCH_CAP, watchRows, ensureWatch,
   resolveWatch, markWatchRead, markAllWatchRead, watchNewsCount,
 } from '../sim/watch.js';
 import {
@@ -557,71 +558,25 @@ export function refreshNotablesPanel(sb) {
 }
 
 // ── 人物一生（Q9 / Q12 / Q13 / Q36 / Q37）───────────────────────────
-/**
- * 点开一个**活人**：把 `compileBiography` 那一整篇摊出来。
- *
- * Q12：顶部那一排小动作就是**统一操作条**——只显示当前目标**真的有**的能力：
- *   `定位` · `记挂 / 取消记挂` · `关系` · `导出传记`。
- *   （宗门那一条在凡间人物上没有对应能力，所以**不显示**，而不是显示一个灰按钮。）
- * Q13：每次主动检视都记进「最近看过」（`sb.qol.noteRecent`）。
- * Q36：目标已经不在世上时**明确说一句**，不留一张查不到的旧卡片。
- * Q37：卡片头带上**真实位面**（本方法只服务凡间，所以恒为「凡间」）。
- */
-export function showPersonCardPanel(sb, model, onAction) {
+// Official card consumes frozen snapshots; selection changes destroy all old DOM actions.
+export function showPersonCardPanel(sb, model, onAction, { revision } = {}) {
   const panel = $('inkPersonDetail');
   if (!panel || !model) return;
-  const esc = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
-  const r = sb.g1?.resolve(model.identity.key), entity = r?.entity;
-  const nativeCultivator = entity?.sp === 'cultivator' && Number.isFinite(entity.level) && entity.level > 0;
-  const biography = nativeCultivator && (r.status === 'dead' || r.fateRecord) ? compileDeadBiography(r.sourceWorld, entity)
-    : nativeCultivator && entity.hp > 0 ? compileBiography(r.sourceWorld, entity) : compileCharacterFacts(model);
-  const body = renderBiographyHtml(biography);
-  const summary = sb.g1?.summary();
-  const news = summary ? '<div class="inspect-note">重大近况 · 已保留 ' + summary.events.length + ' 条；人物日志最多保留 32 条。</div>'
-    + summary.events.map(row => '<div class="inspect-note">' + esc(row.text) + '</div>').join('') : '';
-  const rows = [model.header.realm, model.header.ageText, model.header.affiliation, model.header.stateText];
-  const cultivation = model.cultivation;
-  const numbers = ![cultivation.exp, cultivation.required, cultivation.percent].every(Number.isFinite) ? cultivation.stateText : '修为 ' + cultivation.exp.toFixed(2)
-    + ' / ' + cultivation.required + ' · ' + cultivation.percent.toFixed(1) + '%';
-  const scroll = panel.scrollTop, oldBodyScroll = panel.querySelector('.necro-body')?.scrollTop || 0;
+  let state = characterViews.get(sb);
+  if (state && (state.panel !== panel || state.key !== model.identity.key || state.revision !== revision)) {
+    state.action = null; state.view.destroy(); characterViews.delete(sb); state = null;
+  }
+  if (!state) {
+    state = { panel, key: model.identity.key, revision, action: onAction, view: null };
+    state.view = createCharacterCardView(panel, { onAction: action => state.action?.(action) });
+    characterViews.set(sb, state);
+  }
+  state.action = onAction;
   panel.dataset.plane = model.identity.currentPlane || model.identity.plane;
   panel.dataset.characterKey = model.identity.key;
-  panel.innerHTML = '<div class="inspect-head">' + esc(model.identity.name) + '的一生'
-    + '<span class="plane-tag">' + planeTagOf(model.identity.currentPlane || model.identity.plane) + '</span>'
-    + '<button class="ink-x" id="inkPersonClose">×</button></div>'
-    + '<div class="inspect-note">' + rows.map(esc).join(' · ') + '</div>'
-    + '<div class="inspect-note">' + esc(numbers) + ' · ' + esc(cultivation.rateText) + '</div>'
-    + model.cultivationRows.map(row => '<div class="inspect-row"><span>' + esc(row.label) + '</span><b>' + esc(row.value) + '</b></div>').join('')
-    + news + '<div class="necro-body">' + body + '</div>'
-    + '<div class="inspect-actions">'
-    + '<button class="btn" id="inkBtnPersonLocate"' + (model.identity.canFocus ? '' : ' disabled') + '>定位</button>'
-    + '<button class="btn" id="inkBtnPersonWatch"' + ((!model.watched && (model.identity.plane !== 'mortal'
-      || model.identity.status !== 'alive' || !model.identity.canFocus)) ? ' disabled' : '') + '>'
-    + (model.watched ? '★ 取消记挂' : '☆ 记挂此人') + '</button>'
-    + '<button class="btn" id="inkBtnPersonRel">查看关系</button>'
-    + '<button class="btn" id="inkBtnPersonBio">导出传记</button></div>'
-    + '<div class="inspect-actions">' + model.edicts.map(edict => '<button class="btn" data-g1-edict="' + esc(edict.id)
-      + '" title="' + esc(edict.enabled ? edict.description : edict.disabledReason) + '"' + (edict.enabled ? '' : ' disabled')
-      + '>' + esc(edict.title) + '</button>').join('') + '</div>'
-    + '<div id="inkPersonRel" style="text-align:center;padding:0 10px"></div>';
+  state.view.render(model);
   panel.classList.add('on');
-  const act = type => onAction({ type, targetKey: model.identity.key });
-  $('inkPersonClose').addEventListener('click', () => act('close'));
-  $('inkBtnPersonLocate').addEventListener('click', () => act('focus'));
-  $('inkBtnPersonWatch').addEventListener('click', () => act('watch'));
-  $('inkBtnPersonRel').addEventListener('click', () => act('show-relations'));
-  $('inkBtnPersonBio').addEventListener('click', () => act('export'));
-  panel.querySelectorAll('[data-g1-edict]').forEach(button => button.addEventListener('click', () =>
-    onAction({ type: 'edict', targetKey: model.identity.key, edictId: button.dataset.g1Edict })));
-  if (sb.relationOpen && entity && model.identity.currentPlane === 'mortal') {
-    $('inkPersonRel').innerHTML = buildRelationSvgPanel(sb, entity);
-    bindRelationGraphPanel(sb);
-  }
-  panel.scrollTop = scroll;
-  if (panel.querySelector('.necro-body')) panel.querySelector('.necro-body').scrollTop = oldBodyScroll;
 }
-
 export function showCharacterChoicesPanel(sb, candidates, choose) {
   const panel = $('inkInspect');
   if (!panel) return;
@@ -641,22 +596,20 @@ export function showCharacterChoicesPanel(sb, candidates, choose) {
 }
 
 export function showCharacterRelationsPanel(sb, effect) {
-  sb.relationOpen = !sb.relationOpen;
-  const box = $('inkPersonRel');
-  if (!box) return;
-  if (!sb.relationOpen) { box.innerHTML = ''; return; }
-  if (effect.plane === 'mortal') { box.innerHTML = buildRelationSvgPanel(sb, effect.entity); bindRelationGraphPanel(sb); }
-  else box.textContent = '跨界关系以当前命簿中已知记录为准';
+  // Relations are already displayed in the history volume; effects contain snapshot rows only.
+  const state = characterViews.get(sb);
+  if (state) state.view.showTab('history');
+  sb.relationOpen = true;
 }
-
 
 export function hidePersonCardPanel(sb) {
+  const state = characterViews.get(sb);
+  if (state) { state.action = null; state.view.destroy(); characterViews.delete(sb); }
   const panel = $('inkPersonDetail');
-  if (panel) panel.classList.remove('on');
+  if (panel) { panel.classList.remove('on'); delete panel.dataset.characterKey; delete panel.dataset.plane; }
   sb.personOpenId = null;
-  sb.relationOpen = false;   // 收起卡片时也收起关系图（下次打开是干净状态）
+  sb.relationOpen = false;
 }
-
 // ── 人物局部关系图 ───────────────────────────────────────────────────
 /**
  * 把中心人物的**一跳关系**喂给纯 SVG 生成器。
@@ -1079,7 +1032,27 @@ export function exportNecrologyPanel(sb) {
  * 每几秒翻一次，他那句话转眼就没了。所以这里把 kind === 'busanzi' 的条目
  * 单独拎出来显示——**不新增状态，纯筛选**。
  */
+export function syncBusanziCollapsedPanel(sb) {
+  const box = $('inkBusanzi'), button = $('inkBusanziToggle');
+  const collapsed = sb.busanziCollapsed === true;
+  box?.classList.toggle('is-collapsed', collapsed);
+  if (button) {
+    button.setAttribute('aria-expanded', String(!collapsed));
+    button.textContent = collapsed ? '展开引导' : '收起引导';
+  }
+}
+export function bindBusanziTogglePanel(sb) {
+  const button = $('inkBusanziToggle');
+  if (!button || button.dataset.busanziBound) return;
+  button.dataset.busanziBound = 'true';
+  button.addEventListener('click', () => {
+    sb.busanziCollapsed = !sb.busanziCollapsed;
+    syncBusanziCollapsedPanel(sb);
+  });
+  syncBusanziCollapsedPanel(sb);
+}
 export function refreshBusanziPanel(sb) {
+  syncBusanziCollapsedPanel(sb);
   const box = $('inkBusanzi');
   if (!box || !sb.world) return;
   const recent = busanziRecent(sb.world, 3);

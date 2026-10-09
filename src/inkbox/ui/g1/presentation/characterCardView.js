@@ -165,14 +165,22 @@ export function createCharacterCardView(root, { onAction } = {}) {
   const cultivation = node(doc, "dl", "g1-character__pairs");
   pages.cultivation.append(cultivationIntro, cultivation);
   section(doc, "天道敕令", pages.fate);
-  const fateIntro = node(doc, "p", "g1-character__prose", "敕令请求交由天道裁决，此处不直接改写人物命数。");
+  const fateIntro = node(doc, "p", "g1-character__prose", "敕令将作用于当前人物；修为达到门槛后由其自行突破。");
   const edicts = node(doc, "div", "g1-character__edicts");
   const edictEmpty = node(doc, "p", "g1-character__volume-empty", "暂无可颁之令");
   pages.fate.append(fateIntro, edicts, edictEmpty);
+  const observationBlock = node(doc, "section", "g1-character__observation");
+  section(doc, "记挂近况", observationBlock);
+  const observationCoverage = node(doc, "p", "g1-character__prose");
+  const observationHistory = node(doc, "ol", "g1-character__history");
+  const observationEmpty = node(doc, "p", "g1-character__volume-empty");
+  observationBlock.append(observationCoverage, observationHistory, observationEmpty);
+  pages.history.append(observationBlock);
   section(doc, "生平行迹", pages.history);
   const history = node(doc, "ol", "g1-character__history");
   const historyEmpty = node(doc, "p", "g1-character__volume-empty", "此人生平尚无可考之事");
-  pages.history.append(history, historyEmpty);
+  const coverage = node(doc, "p", "g1-character__prose");
+  pages.history.append(coverage, history, historyEmpty);
   section(doc, "人间牵系", pages.history);
   const relations = node(doc, "dl", "g1-character__pairs");
   const relationsAction = command(doc, "察看人物关系", "show-relations", "g1-character__section-action");
@@ -205,12 +213,12 @@ export function createCharacterCardView(root, { onAction } = {}) {
       return;
     }
     if (!validIdentity(identity)) return;
-    const alive = safeStatus(identity.status) === "alive";
-    if (type === "watch" && alive) onAction({ type, targetKey: identity.key, watched: !Boolean(model.watched) });
-    else if (type === "focus" && alive && identity.canFocus === true) onAction({ type, targetKey: identity.key });
-    else if (type === "export") onAction({ type, targetKey: identity.key });
-    else if (type === "show-relations") onAction({ type, targetKey: identity.key });
-    else if (type === "edict" && alive) {
+    const permissions = model?.permissions || {};
+    if (type === "watch" && permissions.canWatch === true) onAction({ type, targetKey: identity.key, watched: !Boolean(model.watched) });
+    else if (type === "focus" && permissions.canFocus === true) onAction({ type, targetKey: identity.key });
+    else if (type === "export" && permissions.canExport === true) onAction({ type, targetKey: identity.key });
+    else if (type === "show-relations" && permissions.canShowRelations === true) onAction({ type, targetKey: identity.key });
+    else if (type === "edict") {
       const entry = Array.isArray(model.edicts)
         ? model.edicts.find(item => item?.id === payload.edictId) : null;
       if (entry?.enabled === true && typeof entry.id === "string" && entry.id) {
@@ -261,7 +269,7 @@ export function createCharacterCardView(root, { onAction } = {}) {
     const info = next?.header || {};
     const cultivationModel = next?.cultivation || {};
     const progress = cultivationProgress(cultivationModel);
-    const alive = safeStatus(identity.status) === "alive";
+    const permissions = next?.permissions || {};
     card.dataset.status = safeStatus(identity.status);
     put(name, readable(identity.name, "无名之人"));
     put(status, statusLabel(identity.status));
@@ -284,29 +292,42 @@ export function createCharacterCardView(root, { onAction } = {}) {
       hasProgress && progress.percent >= 100 ? "修为已满" :
       readable(cultivationModel.stateText, "修行未载");
     put(growthState, growthStatus);
-    watch.hidden = !alive || !next;
+    watch.hidden = !next;
+    watch.disabled = permissions.canWatch !== true;
+    watch.title = readable(permissions.watchDisabledReason, "");
     watch.dataset.active = String(Boolean(next?.watched));
     put(watch, next?.watched ? "已记挂" : "记挂");
-    focus.hidden = !alive || !next || identity.canFocus !== true;
-    exportButton.hidden = !next;
+    focus.hidden = !next || permissions.canFocus !== true;
+    exportButton.hidden = !next || permissions.canExport !== true;
     // Actions are dispatched only after re-checking the latest model in emit().
     syncPairs(doc, overview, next?.overview);
     put(cultivationIntro, [cultivationModel.rateText, cultivationModel.stateText]
       .filter(Boolean).map(String).join(" · ") || "此人修行之路尚未明晰。");
     syncPairs(doc, cultivation, next?.cultivationRows);
-    const readonlyReason = !next ? "没有可考录的施令对象" :
+    const readonlyReason = next?.edicts?.find(edict => edict.disabledReason)?.disabledReason || (!next ? "没有可考录的施令对象" :
       identity.status === "dead" ? "此人已故，不可再施敕令" :
       identity.status === "ascended" ? "此人已飞升，凡间敕令不可施行" :
       identity.status === "missing" ? "踪迹未明，无法施行敕令" :
-      "身份不可考，无法施行敕令";
-    fateIntro.textContent = alive ? "敕令请求交由天道裁决，此处不直接改写人物命数。" :
+      "身份不可考，无法施行敕令");
+    fateIntro.textContent = next?.edicts?.some(edict => edict.enabled) ? "敕令将作用于当前人物；修为达到门槛后由其自行突破。" :
       readonlyReason;
-    syncEdicts(doc, edicts, next?.edicts, alive && !!next, readonlyReason);
+    syncEdicts(doc, edicts, next?.edicts, !!next, readonlyReason);
     edictEmpty.hidden = Array.isArray(next?.edicts) && next.edicts.length > 0;
+    put(coverage, "残卷 · " + (next?.historyCoverage?.description || "人物日志覆盖范围未载"));
+    const observation = next?.observation;
+    observationBlock.hidden = !observation;
+    const since = Number.isFinite(observation?.sinceDay) ? observation.sinceDay : "未载";
+    const through = Number.isFinite(observation?.throughDay) ? observation.throughDay : "未载";
+    const cap = Number.isFinite(observation?.coverage?.cap) ? observation.coverage.cap : "未载";
+    put(observationCoverage, observation
+      ? `第 ${since} 日至第 ${through} 日 · 仅显示保留的重大事件及可靠名录证据；人物日志最多 ${cap} 条，不是完整生平。` : "");
+    syncHistory(doc, observationHistory, observation?.events);
+    put(observationEmpty, observation && !observation.events?.length ? "这一观察区间暂无保留的重大近况" : "");
+    observationEmpty.hidden = !observation || !!observation.events?.length;
     syncHistory(doc, history, next?.history);
     historyEmpty.hidden = Array.isArray(next?.history) && next.history.length > 0;
     syncPairs(doc, relations, next?.relations);
-    relationsAction.hidden = !next || !Array.isArray(next.relations) || !next.relations.length;
+    relationsAction.hidden = !next || permissions.canShowRelations !== true || !Array.isArray(next.relations) || !next.relations.length;
   }
   function destroy() {
     if (disposed) return;
@@ -318,6 +339,6 @@ export function createCharacterCardView(root, { onAction } = {}) {
     card.remove();
   }
   showTab("overview");
-  return { render, destroy };
+  return { render, destroy, showTab };
 }
 createCharacterCardView.nextId = 0;

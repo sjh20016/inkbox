@@ -503,8 +503,11 @@ check('★ applyTool 用的两个事件名都在 DIRTY_EVENTS 白名单里',
   `terrain=${DIRTY_EVENTS.includes('terrain')} intervention=${DIRTY_EVENTS.includes('intervention')}`);
 
 const g1HostSrc = stripComments(findFile('g1/sandboxRuntime.js').src);
+const g1CardSrc = stripComments(findFile('ui/g1/presentation/characterCardView.js').src);
 check('★ 人物卡记挂经 G1 命令入口置 dirty（world.watch 随存档保存）',
-  railSrc.includes("act('watch')") && g1HostSrc.includes("action.type === 'watch'")
+  railSrc.includes('createCharacterCardView(panel') && railSrc.includes('state.action?.(action)')
+  && g1CardSrc.includes('type === "watch" && permissions.canWatch === true) onAction(')
+  && g1HostSrc.includes("action.type === 'watch'")
   && /markDirty\s*\(\s*['"]watch['"]/.test(g1HostSrc) && DIRTY_EVENTS.includes('watch'),
   DIRTY_EVENTS.includes('watch') ? '已接线' : 'watch 不在 DIRTY_EVENTS 里');
 

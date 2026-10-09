@@ -28,13 +28,16 @@ export function createSandboxCharacterRuntime(sb, views = {}) {
   const controller = createCharacterController({ getWorld: () => sb.world });
   let token = null, revision = 0, rendered = '', observationSince = null;
   function draw(force = false) {
-    const model = controller.current();
-    if (!model) return;
+    const current = controller.current();
+    if (!current) return;
+    const observation = token && observationSince !== null
+      ? summarizeCharacterObservation(sb.world, token, observationSince) : null;
+    const model = Object.freeze({ ...current, observation });
     const text = JSON.stringify(model);
     if (!force && text === rendered) return;
     rendered = text;
     const expectedToken = token, expectedRevision = revision;
-    views.render?.(sb, model, action => dispatch(action, expectedToken, expectedRevision));
+    views.render?.(sb, model, action => dispatch(action, expectedToken, expectedRevision), { revision: expectedRevision });
   }
   function open(keyOrPick, { focus = false, sinceDay = null } = {}) {
     const result = controller.select(keyOrPick);

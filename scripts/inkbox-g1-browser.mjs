@@ -1,4 +1,4 @@
-// Engineering acceptance of the existing G1 host; formal Presentation acceptance is deferred.
+// Formal G1 gameplay shell: real Canvas/PlanePicker input, four-tab card and commands.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,7 +11,7 @@ const port = Number(process.env.INKBOX_PORT || 4197);
 const base = process.env.INKBOX_URL || `http://127.0.0.1:${port}`;
 const output = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(root, 'reports/local/g1/browser'));
 const url = new URL('inkbox.html', base.endsWith('/') ? base : base + '/');
-const report = { startedAt: new Date().toISOString(), purpose: 'existing G1 host wiring',
+const report = { startedAt: new Date().toISOString(), purpose: 'formal G1 gameplay shell integration',
   gpuPerformanceClaim: false, checks: [], screenshots: [], pass: false };
 let server, browser;
 const page = body => browser.js(`return (async () => { ${body} })();`, { timeoutMs: 45000 });
@@ -33,7 +33,10 @@ async function startServer() {
 async function clickControl(selector) {
   const point = await page(`const el=document.querySelector(${JSON.stringify(selector)});
     if(!el||el.disabled)throw Error('Missing/enabled control '+${JSON.stringify(selector)});
-    el.scrollIntoView({block:'nearest'});const r=el.getBoundingClientRect();
+    // Scroll only the owning side rail or card page; absolute overlays must not scroll the playfield.
+    if(el.closest('.rail,.g1-character__body'))el.scrollIntoView({block:'nearest'});
+    await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);
+    const r=el.getBoundingClientRect();
     return {x:r.left+r.width/2,y:r.top+r.height/2};`);
   await browser.click(point.x, point.y);
 }
@@ -81,7 +84,7 @@ async function geometryPoint(plane, id) {
 try {
   fs.mkdirSync(output, { recursive: true });
   await startServer();
-  browser = await launch({ url: url.toString(), browser: findEdge(), width: 1440, height: 1000 });
+  browser = await launch({ url: url.toString(), browser: findEdge(), width: 1440, height: 1000, gpu: process.env.INKBOX_GPU !== '0' });
   report.browser = browser.meta;
   assert(await browser.waitFor('return !!window.inkbox?.g1', { timeoutMs: 30000 }));
   await check('Canvas pointer chooses real overlapping people by ID', async () => {
@@ -120,11 +123,12 @@ try {
   });
   await check('Visible edict/watch buttons modify the current World and mark unsaved state', async () => {
     await page(`window.inkbox.qol.markPersisted();return true;`);
-    await clickControl('#inkBtnPersonWatch');
-    for (const id of ['cultivation', 'fortune', 'mind']) await clickControl('[data-g1-edict="' + id + '"]');
+    await clickControl('[data-g1-action="watch"]');
+    await clickControl('[data-g1-action="tab"][data-tab="fate"]');
+    for (const id of ['cultivation', 'fortune', 'mind']) await clickControl('[data-g1-action="edict"][data-edict-id="' + id + '"]');
     const actual = await page(`const k=window.inkbox,e=window.__g1Entity,
       {expToNext}=await import('./src/inkbox/core/cultivation.js');
-      window.__g1OldButton=document.querySelector('[data-g1-edict="mind"]');
+      window.__g1OldButton=document.querySelector('[data-g1-action="edict"][data-edict-id="mind"]');
       return {exp:e.exp,required:expToNext(e.level),fortune:e.fortune,mind:e.mind,
         watched:k.world.watch.some(w=>w.key==='mortal:'+e.id),dirty:k.qol.isDirty(),
         ledger:k.world.chronicle.filter(r=>r.kind==='intervention').slice(-3),
@@ -137,6 +141,35 @@ try {
     await screenshot('canvas-edicts');
     return { exp:actual.exp, required:actual.required, fortune:actual.fortune, mind:actual.mind,
       watched:actual.watched, dirty:actual.dirty, ledger:actual.ledger };
+  });
+  await check('Four formal tabs show real cultivation, retained history, relationships and biography', async () => {
+    const initial=await page(`const k=window.inkbox;
+      return {tabs:[...document.querySelectorAll('#inkPersonDetail [role="tab"]')].map(el=>el.textContent),
+        percent:document.querySelector('#inkPersonDetail [role="progressbar"]').getAttribute('aria-valuenow'),
+        cardCount:document.querySelectorAll('#inkPersonDetail .g1-character').length};`);
+    assert.deepEqual(initial.tabs,['命簿','修行','改命','生平']);assert.equal(initial.cardCount,1);
+    assert.equal(Number(initial.percent),25);
+    await clickControl('[data-g1-action="tab"][data-tab="cultivation"]');
+    const cultivation=await page(`const k=window.inkbox;
+      return {text:document.querySelector('#inkPersonDetail [role="tabpanel"]:not([hidden])').textContent,
+        rate:k.g1.current().cultivation.rateText};`);
+    assert(cultivation.text.includes(cultivation.rate));
+    await clickControl('[data-g1-action="tab"][data-tab="history"]');
+    const history=await page(`return document.querySelector('#inkPersonDetail [role="tabpanel"]:not([hidden])').textContent;`);
+    assert(/残卷|部分|不能视为完整/.test(history));
+    assert(history.includes('天道敕令'));
+    await clickControl('[data-g1-action="show-relations"]');
+    assert(await page(`return document.querySelector('#inkPersonDetail [data-tab="history"]').getAttribute('aria-selected') === 'true';`));
+    await page(`const k=window.inkbox;k.g1.open('mortal:'+window.__g1Entity.id);
+      window.__g1Exports=[];const original=k.downloadText;
+      k.downloadText=function(filename,text){window.__g1Exports.push({filename,text});return original.call(this,filename,text);};
+      return true;`);
+    await browser.cdp.send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:path.join(output,'downloads')});
+    await clickControl('[data-g1-action="export"]');
+    const exports=await page(`return window.__g1Exports;`);assert.equal(exports.length,1);
+    assert(exports[0].text.length>100);
+    return { ...initial,cultivation,historyCoverage:true,relationsOpened:true,
+      exportFilename:exports[0].filename,exportBytes:exports[0].text.length };
   });
   await check('Product save/load restores real edits and rejects the pre-load DOM action', async () => {
     await page(`window.__g1BeforeLoad=window.inkbox.world;return true;`);
@@ -172,6 +205,44 @@ try {
     assert.equal(facts.realm,'普通鬼魂');assert(!/炼气|Lv1|散修/.test(facts.text));
     await screenshot('canvas-nether');
     return { ...setup, actual, realm:facts.realm, noInventedCultivation:true };
+  });
+
+  await check('Seed zero, real map-progress adapter, unsaved guard and help close/reopen', async () => {
+    await page(`const k=window.inkbox;k.qol.markPersisted();
+      document.querySelector('#inkPresetSelect').value='small';
+      document.querySelector('#inkTerrainSelect').value='mountains';
+      document.querySelector('#inkSeedInput').value='0';
+      document.querySelector('#inkProgressive').checked=true;return true;`);
+    await clickControl('#inkBtnRegen');
+    assert(await browser.waitFor('return window.inkbox.world.seed===0&&window.inkbox.world.mapProgress?.stage===0'));
+    const initial=await page(`const k=window.inkbox;return {seed:k.world.seed,w:k.world.w,h:k.world.h,
+      terrain:k.world.generation.terrainPreset,stage:k.world.mapProgress.stage,
+      creation:document.querySelector('#inkG1WorldCreationInfo').textContent,
+      percent:document.querySelector('#inkG1WorldProgress [role="progressbar"]').getAttribute('aria-valuenow'),
+      cardClosed:k.g1.current()===null};`);
+    assert.equal(initial.terrain,'mountains');assert.equal(Number(initial.percent),40);
+    assert(initial.creation.includes('0')&&initial.creation.includes('200 × 128')&&initial.cardClosed);
+    await clickControl('#inkG1WorldDetails summary');
+    await clickControl('#inkG1WorldProgress button');
+    const expanded=await page(`return {stage:window.inkbox.world.mapProgress.stage,
+      percent:document.querySelector('#inkG1WorldProgress [role="progressbar"]').getAttribute('aria-valuenow'),
+      dirty:window.inkbox.qol.isDirty()};`);
+    assert.equal(expanded.stage,1);assert.equal(Number(expanded.percent),60);assert(expanded.dirty);
+    await clickControl('#inkBtnRegen');
+    assert(await page(`return !document.querySelector('#inkConfirm').hidden;`));
+    await clickControl('#inkConfirmCancel');
+    assert.equal(await page(`return window.inkbox.world.mapProgress.stage;`),1);
+    await clickControl('#inkBusanziToggle');
+    assert(await page(`return document.querySelector('#inkBusanzi').classList.contains('is-collapsed');`));
+    await clickControl('#inkBusanziToggle');
+    assert(await page(`return !document.querySelector('#inkBusanzi').classList.contains('is-collapsed');`));
+    await clickControl('#inkBusanziToggle');
+    await clickControl('#inkBtnHelp');assert(await page(`return !document.querySelector('#inkHelp').hidden;`));
+    await clickControl('#inkHelpClose');assert(await page(`return document.querySelector('#inkHelp').hidden;`));
+    await clickControl('#inkBtnHelp');assert(await page(`return !document.querySelector('#inkHelp').hidden;`));
+    await browser.key('escape');assert(await page(`return document.querySelector('#inkHelp').hidden;`));
+    await screenshot('canvas-world-progress');
+    return {initial,expanded,unsavedGuard:true,helpReopened:true};
   });
 
   url.searchParams.set('renderer', '3d'); url.searchParams.set('assets', 'on');
@@ -236,6 +307,29 @@ try {
     actual.realm=facts.realm;actual.noInventedCultivation=true;
     await screenshot('3d-nether');
     return { point, actual };
+  });
+  await check('Actual file import clears stale card and Canvas/3D toggles retain fresh identity', async () => {
+    const save=await page(`const k=window.inkbox,io=await import('./src/inkbox/io/save.js');
+      k.g1.open('mortal:'+k.world.entities.find(e=>e.sp==='cultivator'&&e.hp>0).id);
+      window.__g1ImportWorld=k.world;window.__g1ImportButton=document.querySelector('[data-g1-action="watch"]');
+      k.qol.markPersisted();return io.serializeWorld(k.world);`);
+    const importFile=path.join(output,'import-fixture.json');fs.writeFileSync(importFile,JSON.stringify(save));
+    const dom=await browser.cdp.send('DOM.getDocument',{depth:0});
+    const input=await browser.cdp.send('DOM.querySelector',{nodeId:dom.root.nodeId,selector:'#inkImportFile'});
+    await browser.cdp.send('DOM.setFileInputFiles',{nodeId:input.nodeId,files:[importFile]});
+    assert(await browser.waitFor('return window.inkbox.world!==window.__g1ImportWorld',{timeoutMs:20000}));
+    const result=await page(`const k=window.inkbox,io=await import('./src/inkbox/io/save.js'),
+      before=JSON.stringify(io.serializeWorld(k.world));window.__g1ImportButton.click();
+      return {seed:k.world.seed,cleared:k.g1.current()===null,dirty:k.qol.isDirty(),
+        unchanged:before===JSON.stringify(io.serializeWorld(k.world))};`);
+    assert(result.cleared&&result.unchanged&&!result.dirty);assert.equal(result.seed,save.seed);
+    await page(`const k=window.inkbox;k.closeRealmView();k.g1.open('mortal:'+k.world.entities.find(e=>e.sp==='cultivator'&&e.hp>0).id);
+      window.__g1ToggleKey=k.g1.current().identity.key;return true;`);
+    await clickControl('#inkRender3DTools [data-action="toggle"]');
+    assert(await page(`return !window.inkbox.render3d.active&&window.inkbox.g1.current().identity.key===window.__g1ToggleKey;`));
+    await clickControl('#inkRender3DTools [data-action="toggle"]');
+    assert(await page(`return window.inkbox.render3d.active&&window.inkbox.g1.current().identity.key===window.__g1ToggleKey;`));
+    return {...result,actualFileInput:true,rendererToggles:2};
   });
   report.runtimeErrors = browser.errors();
   report.consoleErrors = browser.cdp.events.filter(e => e.method === 'Runtime.consoleAPICalled'

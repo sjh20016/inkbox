@@ -69,7 +69,7 @@ function match(root,predicate) {
 function actions(root,type) {return match(root,x=>x.dataset?.g1Action===type);}
 function person() {
  return {
-  schemaVersion:1,
+  schemaVersion:1, permissions:{canWatch:true,canFocus:true,canExport:true,canShowRelations:true},
   identity:{key:"mortal:123",id:123,plane:"mortal",status:"alive",name:"林照溪",canFocus:true},
   header:{realm:"炼气四层",ageText:"23 岁",affiliation:"青云门",stateText:"修行中"},
   cultivation:{exp:80,required:128,percent:62.5,rateText:"每日修为 0.2",stateText:"积累修为"},
@@ -134,8 +134,8 @@ eq(log.at(-1).targetKey,"mortal:999","never stale key");
 const empty=clone(changed); empty.history=[];empty.relations=[];card.render(empty);
 ok(root.textContent.includes("此人生平尚无可考之事"),"empty events");
 for(const status of ["dead","ascended","missing","unknown"]){
- const v=clone(base);v.identity.status=status;card.render(v);
- ok(actions(root,"watch")[0].hidden&&actions(root,"focus")[0].hidden,"readonly "+status);
+ const v=clone(base);v.identity.status=status;v.permissions.canWatch=false;v.permissions.canFocus=false;v.edicts.forEach(e=>e.enabled=false);card.render(v);
+ ok(actions(root,"watch")[0].disabled&&actions(root,"focus")[0].hidden,"readonly permission "+status);
  ok(actions(root,"edict")[0].disabled,"no edict "+status);
  ok(root.textContent.includes(statusLabel(status)),"status label "+status);
 }
