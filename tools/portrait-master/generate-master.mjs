@@ -6,6 +6,7 @@ import { writePsdBuffer } from 'ag-psd';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
+const LAYER_NAMES = JSON.parse(await readFile(resolve(HERE, 'layer-names.zh-CN.json'), 'utf8'));
 const WIDTH = 1024;
 const HEIGHT = 1024;
 const INK = '#293033';
@@ -76,6 +77,12 @@ function attachIccProfile(psd, profile) {
   return Buffer.concat([bytes.subarray(0, resourceLengthOffset), length, bytes.subarray(resourceStart, resourceEnd), record, bytes.subarray(resourceEnd)]);
 }
 
+function layerName(sourceName) {
+  const localized = LAYER_NAMES[sourceName];
+  if (!localized) throw new Error(`Missing Chinese display name for PSD layer: ${sourceName}`);
+  return localized;
+}
+
 function svg(inner = '') {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">${inner}</svg>`;
 }
@@ -90,12 +97,12 @@ async function pixel(name, art, hidden = false, opacity = 1) {
   if (info.width !== WIDTH || info.height !== HEIGHT || info.channels !== 4) {
     throw new Error(`Unexpected raster dimensions for ${name}: ${info.width}x${info.height}x${info.channels}`);
   }
-  return { name, hidden, opacity, imageData: { width: WIDTH, height: HEIGHT, data: new Uint8Array(data) } };
+  return { name: layerName(name), hidden, opacity, imageData: { width: WIDTH, height: HEIGHT, data: new Uint8Array(data) } };
 }
 
 // Builder declarations and PSD layer records use bottom-to-top order. Photoshop
 // displays those records top-to-bottom, so preserve sibling order in the tree.
-const group = (name, children = [], hidden = false) => ({ name, hidden, opened: true, children });
+const group = (name, children = [], hidden = false) => ({ name: layerName(name), hidden, opened: true, children });
 const placeholder = name => group(name);
 
 async function compositeVisible(tree) {
@@ -342,16 +349,16 @@ async function main() {
   const rootsBottomToTop = await makeMaster();
   const preview = await compositeVisible(rootsBottomToTop);
   const sealedPreview = await compositeVisible(visibilityVariant(rootsBottomToTop, {
-    'ornament-pin-01': false,
-    'busuanzi-talisman-sealed-01': true,
-    'busuanzi-talisman-wind-01': false,
-    'wind-gust-soft-01': false
+    [layerName('ornament-pin-01')]: false,
+    [layerName('busuanzi-talisman-sealed-01')]: true,
+    [layerName('busuanzi-talisman-wind-01')]: false,
+    [layerName('wind-gust-soft-01')]: false
   }));
   const windPreview = await compositeVisible(visibilityVariant(rootsBottomToTop, {
-    'ornament-pin-01': false,
-    'busuanzi-talisman-sealed-01': false,
-    'busuanzi-talisman-wind-01': true,
-    'wind-gust-soft-01': true
+    [layerName('ornament-pin-01')]: false,
+    [layerName('busuanzi-talisman-sealed-01')]: false,
+    [layerName('busuanzi-talisman-wind-01')]: true,
+    [layerName('wind-gust-soft-01')]: true
   }));
   const document = {
     width: WIDTH,

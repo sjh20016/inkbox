@@ -11,5 +11,5 @@
 7. 素材只引用包内相对 .png 路径，不允许网络 URL、绝对路径或父级目录。
 8. 状态素材可按 effect ID 覆盖，如 skinMarks.scar、skinMarks.age-lines、effects.ghost。
 
-固定底到顶图层：background / backHair / robe / neck / face / ears / eyes / brows / nose / mouth / cheeks / skinMarks / frontHair / ornament / effects / frame。
+固定底到顶运行时槽位为 `background / backHair / robe / neck / face / ears / eyes / brows / nose / mouth / cheeks / skinMarks / frontHair / ornament / effects / frame`；PSD 图层面板使用中文名称，并由 portrait-master 导出映射连接到这些稳定槽位。
 原稿 PSD/KRA/CLIP 由作者自行保存；运行包只需要 PNG + manifest。

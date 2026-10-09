@@ -12,6 +12,7 @@ initializeCanvas((width, height) => createCanvas(width, height), (width, height)
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
 const mapPath = resolve(HERE, 'export-map.v1.json');
+const layerNames = JSON.parse(await readFile(resolve(HERE, 'layer-names.zh-CN.json'), 'utf8'));
 const args = process.argv.slice(2);
 function arg(name, fallback) {
   const index = args.indexOf(name);
@@ -99,7 +100,7 @@ async function main() {
     return;
   }
   const config = JSON.parse(await readFile(arg('--map', mapPath), 'utf8'));
-  if (config.schemaVersion !== 1 || !Array.isArray(config.exports) || !Array.isArray(config.slotsBottomToTop)) {
+  if (config.schemaVersion !== 1 || !Array.isArray(config.exports) || !Array.isArray(config.slotsBottomToTop) || !Array.isArray(config.psdRootNames)) {
     throw new Error('Invalid export-map.v1.json.');
   }
   if (config.slotsBottomToTop.join('|') !== SLOT_ORDER.join('|')) {
@@ -129,11 +130,14 @@ async function main() {
   if (psd.width !== 1024 || psd.height !== 1024 || psd.bitsPerChannel !== 8 || psd.colorMode !== 3) {
     throw new Error(`Expected 1024x1024 RGB/8 PSD; read ${psd.width}x${psd.height}, mode=${psd.colorMode}, depth=${psd.bitsPerChannel}.`);
   }
+  const expectedRoots = SLOT_ORDER.map((slot, index) => layerNames[`${String(index).padStart(2, '0')}_${slot}`]);
+  if (expectedRoots.some(name => typeof name !== 'string') || config.psdRootNames.join('|') !== expectedRoots.join('|')) {
+    throw new Error('The Chinese PSD root-name mapping does not match the runtime SLOT_ORDER.');
+  }
   const roots = psd.children ?? [];
   const byName = new Map(roots.map(node => [node.name, node]));
-  const expectedRoots = config.slotsBottomToTop.map((slot, index) => `${String(index).padStart(2, '0')}_${slot}`);
   if (roots.length !== expectedRoots.length || roots.some((node, index) => node.name !== expectedRoots[index])) {
-    throw new Error(`PSD layer records must follow runtime bottom-to-top order: ${expectedRoots.join(', ')}.`);
+    throw new Error(`PSD layer groups must use the mapped Chinese runtime order: ${expectedRoots.join(', ')}.`);
   }
 
   let manifest = { id: 'inkbox-face-master-demo-v1', schemaVersion: 1, canvas: { master: 1024, export: 512, viewBox: '0 0 100 100' }, slots: {} };

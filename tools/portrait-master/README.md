@@ -16,6 +16,8 @@ py -3 tools/portrait-master/check-master.py
 
 `generate-master.mjs` creates the starter PSD and previews. It refuses to replace an existing source file unless `--force` is supplied. The default face is neutral; hidden PSD-only `busuanzi-talisman-sealed-01`, `busuanzi-talisman-wind-01`, and `wind-gust-soft-01` layers create a small occlusion/state proof based on the design discussion. Those story variants deliberately stay out of Manifest v1 because the current ornament IDs also feed the hereditary style roll. The tool embeds an installed system sRGB profile; if the system profile is stored elsewhere, pass `--icc path/to/sRGB.icc`.
 
+Every visible PSD group and layer uses a Chinese display name. The generator's source-name to Chinese-name table is `layer-names.zh-CN.json`; if a new generated layer is added, give it a Chinese label there. `export-map.v1.json` addresses the PSD by its visible Chinese names while keeping the runtime `SLOT_ORDER`, Manifest keys, and stable asset IDs unchanged. Avoid renaming mapped PSD groups in Photoshop unless you also update the corresponding `source` path in the export map.
+
 After hand editing and saving the PSD, run `export.mjs` to refresh the isolated starter package and `manifest.example.json`. The export map is `export-map.v1.json`. Every source entry points to an exact PSD group or pixel layer; the exporter reads the PSD tree, composes only that selected source, validates the slot and stable ID against the G2-P schema, preserves the common origin, and emits a 512×512 RGBA PNG. It never writes outside the portrait pack's `examples/` subdirectory by default.
 
 To publish reviewed artwork into the active pack, change the map to include only the approved slots and run, for example:

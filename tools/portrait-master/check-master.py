@@ -7,6 +7,7 @@ import argparse
 import io
 import json
 import math
+import re
 import struct
 import sys
 from pathlib import Path
@@ -22,13 +23,15 @@ ANCHORS = ROOT / "assets/portraits/source/portraitAnchors.v1.json"
 PACK = ROOT / "assets/portraits/inkbox-face-v1"
 EXAMPLE_MANIFEST = PACK / "manifest.example.json"
 MAP_FILE = ROOT / "tools/portrait-master/export-map.v1.json"
+NAME_FILE = ROOT / "tools/portrait-master/layer-names.zh-CN.json"
+LAYER_NAMES = json.loads(NAME_FILE.read_text(encoding="utf-8"))
 EXAMPLE_ROOT = PACK / "examples/master-demo"
 QA_ROOT = ROOT / "research/g2-portrait-preview"
 SLOT_ORDER = [
     "background", "backHair", "robe", "neck", "face", "ears", "eyes", "brows",
     "nose", "mouth", "cheeks", "skinMarks", "frontHair", "ornament", "effects", "frame",
 ]
-PSD_ROOT_ORDER = [f"{index:02d}_{slot}" for index, slot in enumerate(SLOT_ORDER)]
+PSD_ROOT_ORDER = [LAYER_NAMES[f"{index:02d}_{slot}"] for index, slot in enumerate(SLOT_ORDER)]
 DEFAULT_IDS = {
     "background": "round-01", "backHair": "loose-01", "robe": "sage-01", "neck": "base",
     "face": "oval-01", "ears": "base", "eyes": "calm-01", "brows": "level-01",
@@ -53,11 +56,19 @@ def children_by_name(layer):
 def get_path(root, names):
     layer = root
     for name in names:
-        match = next((child for child in layer if child.name == name), None)
+        display_name = LAYER_NAMES.get(name, name)
+        match = next((child for child in layer if child.name == display_name), None)
         if match is None:
-            fail(f"Missing PSD layer/group: {'/'.join(names)}")
+            fail(f"Missing PSD layer/group: {'/'.join(names)} (display path: {display_name})")
         layer = match
     return layer
+
+
+def all_layers(layers):
+    for layer in layers:
+        yield layer
+        if layer.is_group():
+            yield from all_layers(layer)
 
 
 def count_tree(psd):
@@ -221,6 +232,8 @@ def main():
     root_names = [layer.name for layer in roots]
     require(root_names == PSD_ROOT_ORDER, f"Runtime slot root groups/bottom-to-top order mismatch: {root_names}")
     require(all(layer.is_group() for layer in roots), "One or more runtime slots is not an editable PSD group.")
+    non_chinese_labels = [layer.name for layer in all_layers(psd) if re.search(r"[A-Za-z]", layer.name)]
+    require(not non_chinese_labels, f"PSD layer names still contain Latin characters: {non_chinese_labels[:12]}")
 
     resource = psd.image_resources.get_data(1039)
     require(resource is not None and len(resource) >= 128 and resource[36:40] == b"acsp", "PSD is missing a valid embedded ICC profile.")
