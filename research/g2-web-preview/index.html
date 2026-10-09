@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>坐天观井 · G2-W 界面工坊</title>
+<link rel="stylesheet" href="../../src/inkbox/ui/g2/creation/creationMenu.css">
+<style>
+body{margin:0;background:#e8e5da;color:#34352f;font-family:"Songti SC","SimSun",serif}
+#workbench{max-width:1000px;margin:32px auto;padding:0 20px}
+header.workbench{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+header.workbench small{color:#82604b}#log{padding:16px;background:#f7f5ef;font:12px/1.6 ui-monospace,monospace;white-space:pre-wrap}
+</style></head><body><main id="workbench"><header class="workbench"><h2>G2 · 界面工坊</h2><small>FIXTURE / 仅演示请求，不写入真实世界</small></header>
+<div id="stage"></div><pre id="log" aria-live="polite">预览已准备。</pre></main>
+<script type="module">
+import { createCreationMenuView } from "../../src/inkbox/ui/g2/creation/creationMenuView.js";
+import { creationFixture } from "./fixture.js";
+const log = document.querySelector("#log");
+const view = createCreationMenuView(document.querySelector("#stage"), {onAction(action) {
+  log.textContent = "宿主接收到请求（演示，不执行）：\n" + JSON.stringify(action.type === "import-save" ? {type:action.type,file:action.file.name}:action,null,2);
+  if (action.type === "request-random-seed") view.render({...creationFixture,seed:20260914,result:"seed"});
+  else view.render({...creationFixture,result:"ack"});
+}});
+view.render(creationFixture);
+</script></body></html>
