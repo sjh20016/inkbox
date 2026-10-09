@@ -297,7 +297,7 @@ export class Render3DHost {
     const totals = { bridgeScanMs: 0, terrainUpdateMs: 0, waterUpdateMs: 0, vegetationUpdateMs: 0, entityUpdateMs: 0, settlementUpdateMs: 0, markerUpdateMs: 0 };
     this.updatedPlanes = [];
     for (const [plane, stage] of this.stages) {
-      if (!stage.visible) continue;
+      if (!stage.visible) { stage.fxProbe.clear(); continue; }
       stage.update(dt, this.cameraRig.camera.zoom); this.updatedPlanes.push(plane);
       for (const key of Object.keys(totals)) totals[key] += stage.timings?.[key] || 0;
       // §65：depart 画在源 Stage、arrive 画在目标 Stage。**不再因为开窗就整层关掉**

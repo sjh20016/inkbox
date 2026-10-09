@@ -736,6 +736,11 @@ class Sandbox {
   // ── 事件 ────────────────────────────────────────────────
   bindEvents() {
     bindBusanziTogglePanel(this);
+    const combatFxControl = $('inkCombatFx');
+    if (combatFxControl) {
+      combatFxControl.checked = this.stage.combatEnabled;
+      combatFxControl.addEventListener('change', () => this.stage.setCombatEnabled(combatFxControl.checked));
+    }
     window.addEventListener('resize', () => this.resize());
 
     const canvas = this.canvas;
