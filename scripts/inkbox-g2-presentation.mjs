@@ -65,9 +65,13 @@ check('total64/combat32/plane16 caps and pair/style merge are bounded with reado
   for(const plane of ['mortal','upper','nether']) for(let i=1;i<=30;i++) ingestRuntimeEvents(fx,[event('blade',plane,i)]);
   const stats=fxStats(fx); assert.equal(stats.combatActive,COMBAT_FX_CAP); assert.equal(stats.active,32);
   assert.equal(stats.combatByPlane.mortal,COMBAT_FX_PLANE_CAP); assert.equal(stats.combatByPlane.upper,16); assert.equal(stats.combatByPlane.nether,0);
-  assert.equal(stats.combatDropped,58); assert.ok(Object.isFrozen(stats)); assert.ok(Object.isFrozen(stats.byPlane));
+  assert.equal(stats.combatDropped,58); assert.equal(stats.combatReceived,90); assert.equal(stats.combatAccepted,32);
+  assert.equal(stats.combatReceived,stats.combatAccepted+stats.combatMerged+stats.combatDropped);
+  assert.ok(Object.isFrozen(stats)); assert.ok(Object.isFrozen(stats.byPlane));
   const before=fx.items[0], update=event('blade','mortal',1); update.x=10; update.intensity=1; update.data.tier='mid';
   ingestRuntimeEvents(fx,[update]); assert.equal(fx.items[0],before); assert.equal(before.x,10); assert.equal(fxStats(fx).combatMerged,1); assert.equal(fx.items.length,32);
+  const mergedStats=fxStats(fx); assert.equal(mergedStats.combatReceived,91); assert.equal(mergedStats.combatAccepted,32);
+  assert.equal(mergedStats.combatReceived,mergedStats.combatAccepted+mergedStats.combatMerged+mergedStats.combatDropped);
   const isolated=createFxState(), given=event(); ingestRuntimeEvents(isolated,[given]); given.data.fromX=900; assert.equal(isolated.items[0].data.fromX,8.1);
 });
 check('combat never evicts major FX; arrivals evict combat before tribulation/ascension/rifts', () => {

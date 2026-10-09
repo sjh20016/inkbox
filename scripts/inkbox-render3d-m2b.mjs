@@ -1518,6 +1518,7 @@ check('T7 裂缝只经 riftViewModel 读取，界缘不持有 world.rifts（S6/�
 check('T8 跨界 FX：开窗时源 Stage 与目标 Stage 都能看到（§64/§65）', () => {
   const world = makeWorld();
   emitRuntimeEvent(world, 'rift-cross', { x: 24, y: 18, phase: 'depart' });
+  emitRuntimeEvent(world, 'rift-cross', { x: 12, y: 10, phase: 'depart' });
   emitRuntimeEvent(world.upper, 'rift-cross', { x: 26, y: 20, phase: 'arrive' });
   const presentation = new PresentationStage();
   presentation.ingestWorlds(world).update(0.016);
@@ -1532,10 +1533,15 @@ check('T8 跨界 FX：开窗时源 Stage 与目标 Stage 都能看到（§64/§6
   assert.equal(upper.root.visible, true);
   assert.equal(mortal.fxProbe.root.visible, true, '§65：源位面必须能看到 depart');
   assert.equal(upper.fxProbe.root.visible, true, '§65：目标位面必须能看到 arrive');
-  assert.equal(mortal.fxProbe.mesh.count, 1);
+  assert.equal(mortal.fxProbe.mesh.count, 1, 'submit the real depart outside the target window; its interior belongs to upper');
   assert.equal(upper.fxProbe.mesh.count, 1);
   // §67：其余 Stage 不提交绘制
   assert.equal(nether.root.visible, false);
+  host.setRealmViewState({ open: false, targetPlane: null, region: null });
+  host.update(0.016);
+  assert.equal(mortal.fxProbe.mesh.count, 2, 'no source event is lost: both draw again after closing the window');
+  assert.equal(upper.fxProbe.mesh.count, 0, 'hidden target submits no stale instances');
+  assert.deepEqual(drainRuntimeEvents(world), [], '3D still never consumes or re-emits events');
   host.dispose();
 });
 
