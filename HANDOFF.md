@@ -1,6 +1,12 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-## 当前交接 · 2026-10-08
+## 当前交接 · 2026-10-09 · G1-R Runtime
+
+产品主线仍为 GitHub main。Runtime 分支 `feat/g1-runtime-codex` 从双方共同基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 开工，独立交付人物真实身份、快照、敕令、记挂、地图成长和回归体系。正式人物卡仍归 `feat/g1-presentation-web`；Runtime 沿用旧展示，不修改 Presentation 目录或 B数值系统，不单独合并 main。用户明确发出“开始 G1 集成”后才进入双方集成和正式 UI 验收；C5 视觉协调已按委托书延期。
+
+优先阅读 [G1 Runtime 交接](./G1_RUNTIME_HANDOFF.md)，其中列明新增文件、ViewModel / controller 契约、地图保存语义和待集成清单。`test:g1` / `test:g1:longrun` 分别加入 Fast / Heavy；`test:g1:browser` 验证已有 Canvas / 3D 宿主和存读档，不能代替正式人物卡或真实 GPU 性能验收。
+
+## 2026-10-08 历史交接
 
 - 当前唯一产品主线：GitHub main。
 - 当前实验支线：B数值系统，是独立数值实验；不属于产品 main，其中实验参数不是 main 的正式数值。
