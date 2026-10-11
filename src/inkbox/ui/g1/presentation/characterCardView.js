@@ -114,7 +114,13 @@ export function createCharacterCardView(root, { onAction } = {}) {
   row.append(name, status);
   const realm = node(doc, "p", "g1-character__realm");
   const summary = node(doc, "p", "g1-character__summary");
-  header.append(top, row, realm, summary);
+  const identity = node(doc, "div", "g1-character__identity");
+  const portraitRoot = node(doc, "div", "g1-character__portrait");
+  portraitRoot.dataset.g1PortraitMount = "true";
+  const identityText = node(doc, "div", "g1-character__identity-text");
+  identityText.append(row, realm, summary);
+  identity.append(portraitRoot, identityText);
+  header.append(top, identity);
 
   const growth = node(doc, "section", "g1-character__growth");
   const growthHead = node(doc, "div", "g1-character__growth-heading");
@@ -339,6 +345,6 @@ export function createCharacterCardView(root, { onAction } = {}) {
     card.remove();
   }
   showTab("overview");
-  return { render, destroy, showTab };
+  return { render, destroy, showTab, portraitRoot };
 }
 createCharacterCardView.nextId = 0;

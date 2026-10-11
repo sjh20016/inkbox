@@ -113,13 +113,39 @@ try {
     const chosen = options.find(o => o.text.endsWith('#' + setup.id));
     await page(`document.querySelector('#inkG1Candidates').value=${JSON.stringify(chosen.value)};return true;`);
     await clickControl('#inkG1OpenCandidate');
-    const actual = await page(`return {identity:window.inkbox.g1.current()?.identity,
+    const actual = await page(`const svg=document.querySelector('#inkPersonDetail .g1-character__portrait .g2-portrait-v2__svg');
+      return {identity:window.inkbox.g1.current()?.identity,
       key:document.querySelector('#inkPersonDetail').dataset.characterKey,
-      choicesOpen:document.querySelector('#inkInspect').classList.contains('on')};`);
+      choicesOpen:document.querySelector('#inkInspect').classList.contains('on'),
+      portrait:svg?{viewBox:svg.getAttribute('viewBox'),slots:[...svg.querySelectorAll('g[data-slot]')]
+        .map(node=>({slot:node.dataset.slot,variant:node.dataset.variant})),images:svg.querySelectorAll('image').length}:null};`);
     assert.equal(actual.identity.id, setup.id); assert.equal(actual.key, 'mortal:' + setup.id);
     assert.equal(actual.choicesOpen, false);
+    assert.equal(actual.portrait?.viewBox, '0 0 100 100');
+    assert(actual.portrait.slots.some(item => item.slot === 'face'));
+    assert(actual.portrait.slots.some(item => item.slot === 'eyes'));
+    assert.equal(actual.portrait.images, 0, 'empty formal PNG pack must use procedural assets');
+    const firstPortrait = JSON.stringify(actual.portrait.slots);
+    const switchResult = await page(`const k=window.inkbox,old=document.querySelector('#inkPersonDetail .g2-portrait-v2__svg');
+      k.g1.open('mortal:'+window.__g1Other.id);
+      const next=document.querySelector('#inkPersonDetail .g2-portrait-v2__svg');
+      const other=JSON.stringify([...next.querySelectorAll('g[data-slot]')]
+        .map(node=>({slot:node.dataset.slot,variant:node.dataset.variant})));
+      const disconnected=!old.isConnected;
+      k.g1.open('mortal:'+window.__g1Entity.id);
+      const repeated=[...document.querySelectorAll('#inkPersonDetail .g2-portrait-v2__svg g[data-slot]')]
+        .map(node=>({slot:node.dataset.slot,variant:node.dataset.variant}));
+      return {different:other!==${JSON.stringify(firstPortrait)},disconnected,
+        stable:JSON.stringify(repeated)===${JSON.stringify(firstPortrait)}};`);
+    assert(switchResult.different, 'different character identities should usually resolve a different face');
+    assert(switchResult.disconnected, 'switching characters must detach the old portrait DOM');
+    assert(switchResult.stable, 'reopening the same character must preserve its portrait');
+    const closeResult = await page(`const k=window.inkbox,old=document.querySelector('#inkPersonDetail .g2-portrait-v2__svg');
+      k.g1.close();return {detached:!old.isConnected,cleared:!document.querySelector('#inkPersonDetail .g1-character')};`);
+    assert(closeResult.detached && closeResult.cleared, 'closing the G1 window must destroy its portrait DOM');
+    await page(`window.inkbox.g1.open('mortal:'+window.__g1Entity.id);return true;`);
     await screenshot('canvas-person');
-    return { ...setup, options, actual };
+    return { ...setup, options, actual, switchResult, closeResult };
   });
   await check('Visible edict/watch buttons modify the current World and mark unsaved state', async () => {
     await page(`window.inkbox.qol.markPersisted();return true;`);
@@ -172,6 +198,9 @@ try {
       exportFilename:exports[0].filename,exportBytes:exports[0].text.length };
   });
   await check('Product save/load restores real edits and rejects the pre-load DOM action', async () => {
+    await page(`const svg=document.querySelector('#inkPersonDetail .g2-portrait-v2__svg');
+      window.__g1PortraitBeforeSave=JSON.stringify([...svg.querySelectorAll('g[data-slot]')]
+        .map(node=>({slot:node.dataset.slot,variant:node.dataset.variant})));return true;`);
     await page(`window.__g1BeforeLoad=window.inkbox.world;return true;`);
     await clickControl('#inkBtnSave');
     assert(await browser.waitFor('return !window.inkbox.qol.isDirty()', { timeoutMs: 15000 }));
@@ -180,12 +209,18 @@ try {
     const result = await page(`const k=window.inkbox,w=k.world,io=await import('./src/inkbox/io/save.js'),
       key='mortal:'+window.__g1Entity.id,e=w.entities.find(e=>e.id===window.__g1Entity.id),
       before=JSON.stringify(io.serializeWorld(w));window.__g1OldButton.click();
-      const unchanged=before===JSON.stringify(io.serializeWorld(w)),cleared=k.g1.current()===null;
+      const unchanged=before===JSON.stringify(io.serializeWorld(w)),cleared=k.g1.current()===null,
+        portraitCleared=!document.querySelector('#inkPersonDetail .g2-portrait-v2__svg');
       const opened=k.g1.open(key).ok;return {unchanged,cleared,opened,exp:e.exp,fortune:e.fortune,mind:e.mind,
-        watched:w.watch.some(row=>row.key===key)};`);
-    assert(result.unchanged && result.cleared && result.opened && result.watched);
+        portraitCleared,watched:w.watch.some(row=>row.key===key)};`);
+    assert(result.unchanged && result.cleared && result.opened && result.portraitCleared && result.watched);
     assert.equal(result.fortune, 68); assert.equal(result.mind, 68);
-    return result;
+    const portraitAfterLoad=await page(`const svg=document.querySelector('#inkPersonDetail .g2-portrait-v2__svg');
+      return JSON.stringify([...svg.querySelectorAll('g[data-slot]')]
+        .map(node=>({slot:node.dataset.slot,variant:node.dataset.variant})));`);
+    assert.equal(portraitAfterLoad, await page(`return window.__g1PortraitBeforeSave;`),
+      'loading the same saved world must regenerate the same face');
+    return {...result, portraitStableAfterLoad:true};
   });
   await check('Canvas nether-window pointer reaches the ghost instead of the mortal at the same cell', async () => {
     const setup = await page(`const k=window.inkbox,w=k.world,e=w.entities.find(e=>e.id===window.__g1Entity.id),
@@ -279,8 +314,10 @@ try {
     const actual = await page(`const k=window.inkbox,r=k.render3d.renderer,gl=r.gpu.getContext(),
       ext=gl.getExtension('WEBGL_debug_renderer_info');
       return {identity:k.g1.current()?.identity,inspections:window.__g1Inspections,
+        portrait:!!document.querySelector('#inkPersonDetail .g1-character__portrait .g2-portrait-v2__svg'),
         webglRenderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER)};`);
     assert.equal(actual.identity?.plane, 'mortal'); assert.equal(actual.identity.id, point.id);
+    assert(actual.portrait, '3D-selected people must open the same portrait-enabled G1 card');
     assert(actual.inspections.some(row => row.id === point.id && row.kind === 'entity' && row.plane === 'mortal'));
     report.webglRenderer = actual.webglRenderer;
     await screenshot('3d-person');

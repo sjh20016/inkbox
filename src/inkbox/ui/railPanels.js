@@ -28,7 +28,9 @@
 
 import { realmLabel } from '../core/cultivation.js';
 import { createCharacterCardView } from './g1/presentation/characterCardView.js';
-const characterViews = new WeakMap();
+import { characterPortraitInput } from '../g1/characterPortraitInput.js';
+import { createLayeredCharacterPortrait } from './g2/portraits/v2/portraitComposer.js';
+import { getPortraitRegistry } from './g2/portraits/v2/portraitRuntimeAssets.js';
 import {
   attentionOf, ATTENTION_NAMES, displayName, findEntity, biographyFileName,
 } from '../sim/biography.js';
@@ -57,6 +59,7 @@ import {
   withFoldExpanded, slotLabel, slotMetaText, collapseAllMap,
 } from './qolState.js';
 
+const characterViews = new WeakMap();
 const $ = (id) => document.getElementById(id);
 
 // ── 共享 DOM 小工具 ──────────────────────────────────────────────────
@@ -564,17 +567,31 @@ export function showPersonCardPanel(sb, model, onAction, { revision } = {}) {
   if (!panel || !model) return;
   let state = characterViews.get(sb);
   if (state && (state.panel !== panel || state.key !== model.identity.key || state.revision !== revision)) {
-    state.action = null; state.view.destroy(); characterViews.delete(sb); state = null;
+    state.action = null; state.portrait?.destroy(); state.view.destroy(); characterViews.delete(sb); state = null;
   }
   if (!state) {
-    state = { panel, key: model.identity.key, revision, action: onAction, view: null };
+    state = { panel, key: model.identity.key, revision, action: onAction, view: null, portrait: null,
+      portraitModel: null, registryUpgradeRequested: false };
     state.view = createCharacterCardView(panel, { onAction: action => state.action?.(action) });
+    state.portrait = createLayeredCharacterPortrait(state.view.portraitRoot);
     characterViews.set(sb, state);
   }
   state.action = onAction;
   panel.dataset.plane = model.identity.currentPlane || model.identity.plane;
   panel.dataset.characterKey = model.identity.key;
   state.view.render(model);
+  const portraitModel = characterPortraitInput(sb.world?.seed, model.identity);
+  state.portraitModel = portraitModel;
+  if (portraitModel) state.portrait.render(portraitModel);
+  if (!state.registryUpgradeRequested) {
+    state.registryUpgradeRequested = true;
+    void getPortraitRegistry().then(registry => {
+      if (characterViews.get(sb) !== state || !state.view.portraitRoot.isConnected) return;
+      state.portrait?.destroy();
+      state.portrait = createLayeredCharacterPortrait(state.view.portraitRoot, { registry });
+      if (state.portraitModel) state.portrait.render(state.portraitModel);
+    });
+  }
   panel.classList.add('on');
 }
 export function showCharacterChoicesPanel(sb, candidates, choose) {
@@ -604,7 +621,7 @@ export function showCharacterRelationsPanel(sb, effect) {
 
 export function hidePersonCardPanel(sb) {
   const state = characterViews.get(sb);
-  if (state) { state.action = null; state.view.destroy(); characterViews.delete(sb); }
+  if (state) { state.action = null; state.portrait?.destroy(); state.view.destroy(); characterViews.delete(sb); }
   const panel = $('inkPersonDetail');
   if (panel) { panel.classList.remove('on'); delete panel.dataset.characterKey; delete panel.dataset.plane; }
   sb.personOpenId = null;

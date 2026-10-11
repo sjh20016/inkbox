@@ -17,6 +17,7 @@ class Element {
     this.parentNode = null; this.dataset = {}; this.style = {}; this.attributes = {};
     this.listeners = new Map(); this.hidden = false; this.disabled = false;
     this.className = ""; this._text = ""; this.scrollTop = 0;
+    this.classList = { add: value => { if (!this.className.split(/\s+/).includes(value)) this.className = [this.className, value].filter(Boolean).join(" "); } };
   }
   set textContent(value) {
     for (const item of this.children) item.parentNode = null;
@@ -27,7 +28,10 @@ class Element {
   setAttribute(k,v) { this.attributes[k] = String(v); }
   getAttribute(k) { return this.attributes[k] ?? null; }
   append(...items) {
-    for (const item of items) { if (item.parentNode) item.remove(); item.parentNode = this; this.children.push(item); }
+    for (const item of items) {
+      if (item._fragment) { this.append(...item.children.slice()); item.children = []; continue; }
+      if (item.parentNode) item.remove(); item.parentNode = this; this.children.push(item);
+    }
   }
   replaceChildren(...items) {
     for (const child of this.children) child.parentNode = null;
@@ -61,6 +65,8 @@ class Element {
   }
 }
 class Document { createElement(tag) { return new Element(this,tag); } }
+Document.prototype.createElementNS = function(_namespace, tag) { return this.createElement(tag); };
+Document.prototype.createDocumentFragment = function() { const fragment = this.createElement("fragment"); fragment._fragment = true; return fragment; };
 function match(root,predicate) {
   const result = [];
   function walk(x) { if(predicate(x)) result.push(x); for(const child of x.children) walk(child); }
@@ -90,6 +96,11 @@ check('actual host uses four-tab pure VM, patches same selection and destroys ol
   const { world, entity } = fixture(861); const { sb } = host(world), key = 'mortal:' + entity.id;
   sb.g1.open(key); assert.equal(panel.dataset.characterKey, key);
   const card = panel.children[0], tabs = actions(panel, 'tab'); assert.equal(tabs.length, 4);
+  const portrait = match(card, x => x.className === 'g1-character__portrait')[0];
+  const portraitSvg = match(portrait, x => x.className.includes('g2-portrait-v2__svg'))[0];
+  assert.ok(portraitSvg); assert.equal(portraitSvg.getAttribute('viewBox'), '0 0 100 100');
+  const visibleSlots = portraitSvg.children.map(slot => slot.getAttribute('data-slot'));
+  assert.equal(visibleSlots.length, 14); assert.ok(visibleSlots.includes('face') && visibleSlots.includes('eyes'));
   tabs[3].click(); const body = match(panel, x => x.className === 'g1-character__body')[0]; body.scrollTop = 55;
   world.day++; entity.exp++; sb.g1.refresh(); assert.equal(panel.children[0], card); assert.equal(body.scrollTop, 55);
   assert.equal(tabs[3].getAttribute('aria-selected'), 'true'); assert.match(panel.textContent, /残卷.*不能视为完整一生/);
