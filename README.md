@@ -1,6 +1,6 @@
 # 坐天观井 · Inkbox 1.0.0
 
-2026-10-09：G1-R Runtime 在 `feat/g1-runtime-codex` 独立交付，基线为 main `fc612ac9`。真实人物身份 / ViewModel、三项天道敕令、记挂与生命周期、正式世界日驱动的地图成长已接线；测试和接口见 [G1 Runtime 交接](./G1_RUNTIME_HANDOFF.md)。本分支保留旧人物展示，正式 Presentation 与 C5 视觉协调待后续集成；未合并 main。
+2026-10-12：G1 正式人物命簿、三项敕令、记挂与地图成长在 `integrate/g1-gameplay-shell` 集成并通过 CI。后续 `feat/g2-combat-presentation-codex` 接通真实命中的 Canvas / 3D 剑气、火痕和雷光，顶部“战斗墨痕”可关闭展示；模拟与存档保持。G2 功能浏览器、构建和包审计通过，两套完整性能对照各有一项 Canvas CPU 超预算，保留草稿 PR，暂未封板。顺序交付及证据见 [G1 集成报告](./G1_INTEGRATION_REPORT.md) 和 [G2.1 交付记录](./G2_COMBAT_REPORT.md)。
 
 2026-10-08：M2-C2E 本地工程验收完成：44项CPU、108种子矩阵、14项真实产品GPU、十二镜同机对照和600/6000帧联合耐久通过。最终美术裁决与最大图性能边界见 [本轮就绪报告](./M2C2E_READINESS.md)。开发分支 `codex/m2-c2e-living-terrain`。3D 创建入口提供标准／群山／水泽、有效 seed 0、512×320 和渐进探索；雕刻支持山脊、盆地、Undo／Redo。
 
