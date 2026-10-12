@@ -85,6 +85,12 @@ export const HELP_MOUSE = Object.freeze([
   ['滚轮', '缩放（只在图上；在右栏上是滚列表）'],
 ]);
 
+export const HELP_GUIDE = Object.freeze([
+  ['第一步', '用「检视」工具点开一处山河，看看地势与地气。'],
+  ['第二步', '在右栏「值得关注」里寻找真实人物，点开名字观察他的一生。'],
+  ['第三步', '让岁月推进一段，再回来看人物生平或大事记中的变化。'],
+]);
+
 // ── 控制器 ───────────────────────────────────────────────────────────
 
 /**
@@ -112,6 +118,28 @@ export function createQol(sb) {
   let toastTarget = null;
   /** 帮助层是否看过（Q29 的 helpSeen，用来少说一句废话） */
   let helpNudged = false;
+  /** 当前窄屏抽屉与打开前焦点；只属于 UI，不进入世界或存档。 */
+  let activeDrawer = null;
+  let drawerReturnFocus = null;
+  const drawerScrollTop = { left: null, right: null };
+
+  function drawerRail(side) { return $(side === 'left' ? 'inkToolRail' : 'inkInfoRail'); }
+  function drawerOpenButton(side) { return $(side === 'left' ? 'inkBtnOpenTools' : 'inkBtnOpenInfo'); }
+  function drawerMode(side) {
+    if (typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia(side === 'left' ? '(max-width: 720px)' : '(max-width: 1080px)').matches;
+  }
+  function syncDrawerState(side, open) {
+    const rail = drawerRail(side);
+    const trigger = drawerOpenButton(side);
+    const close = $(side === 'left' ? 'inkBtnCloseTools' : 'inkBtnCloseInfo');
+    if (rail) {
+      rail.setAttribute('aria-hidden', drawerMode(side) && !open ? 'true' : 'false');
+      rail.inert = drawerMode(side) && !open;
+    }
+    if (trigger) trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (close) close.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
 
   // ── 启动时把两份 localStorage 读进来 ──────────────────────────────
   // ⚠️ 旧键 `inkbox.sec` **只读一次**，用来把玩家已有的折叠习惯搬进新键。
@@ -180,6 +208,7 @@ export function createQol(sb) {
       const changed = next !== dirty;
       dirty = next;
       if (changed) api.syncUndoState();
+      api.syncSaveState();
       return dirty;
     },
     markPersisted(event) {
@@ -187,10 +216,20 @@ export function createQol(sb) {
       if (next === null) return dirty;
       dirty = next;
       api.syncUndoState();
+      api.syncSaveState();
       return dirty;
     },
-    resetDirty() { dirty = false; },
+    resetDirty() { dirty = false; api.syncSaveState(); },
     needsDiscardConfirm() { return needsDiscardConfirm(dirty); },
+    /** D1：顶栏直接读现有 dirty 判据，不另造状态。 */
+    syncSaveState() {
+      const el = $('inkSaveState');
+      if (!el) return;
+      const unsaved = api.isDirty();
+      el.dataset.dirty = unsaved ? '1' : '0';
+      setText(el, unsaved ? '未保存' : '已保存');
+      el.title = unsaved ? '当前世界有尚未保存的变化' : '当前世界已保存或已导出';
+    },
 
     /**
      * Q21：在「重新开天 / 读档 / 导入」之前问一句。
@@ -250,6 +289,80 @@ export function createQol(sb) {
       return Boolean(layer && !layer.hidden);
     },
 
+    // ── 窄屏抽屉（A1 / A2）─────────────────────────────────────
+    drawerOpen(side = activeDrawer) { return Boolean(side && activeDrawer === side); },
+    openDrawer(side, { focus = true } = {}) {
+      if (side !== 'left' && side !== 'right') return false;
+      if (!drawerMode(side)) return false;
+      const rail = drawerRail(side);
+      if (!rail) return false;
+      if (activeDrawer && activeDrawer !== side) api.closeDrawer({ restoreFocus: false });
+      if (activeDrawer !== side) drawerReturnFocus = document.activeElement;
+      const scrollTop = Number.isFinite(drawerScrollTop[side])
+        ? drawerScrollTop[side] : rail.scrollTop;
+      activeDrawer = side;
+      document.body.classList.toggle('drawer-left-open', side === 'left');
+      document.body.classList.toggle('drawer-right-open', side === 'right');
+      const scrim = $('inkDrawerScrim');
+      if (scrim) { scrim.hidden = false; scrim.setAttribute('aria-hidden', 'false'); }
+      syncDrawerState(side, true);
+      if (focus) $(side === 'left' ? 'inkBtnCloseTools' : 'inkBtnCloseInfo')?.focus({ preventScroll: true });
+      rail.scrollTop = scrollTop;
+      requestAnimationFrame(() => {
+        if (activeDrawer === side) rail.scrollTop = scrollTop;
+      });
+      return true;
+    },
+    closeDrawer({ restoreFocus = true } = {}) {
+      if (!activeDrawer) return false;
+      const side = activeDrawer;
+      const rail = drawerRail(side);
+      const scrollTop = rail?.scrollTop || 0;
+      drawerScrollTop[side] = scrollTop;
+      activeDrawer = null;
+      document.body.classList.remove('drawer-left-open', 'drawer-right-open');
+      for (const railSide of ['left', 'right']) syncDrawerState(railSide, false);
+      const scrim = $('inkDrawerScrim');
+      if (scrim) { scrim.hidden = true; scrim.setAttribute('aria-hidden', 'true'); }
+      const target = drawerReturnFocus || drawerOpenButton(side);
+      drawerReturnFocus = null;
+      if (restoreFocus && target?.isConnected && target.getClientRects().length) {
+        target.focus({ preventScroll: true });
+      }
+      // Focus movement can otherwise scroll the soon-to-be hidden rail back to its head.
+      if (rail) rail.scrollTop = scrollTop;
+      requestAnimationFrame(() => {
+        if (rail) rail.scrollTop = scrollTop;
+      });
+      return true;
+    },
+    /** B1 / C1：复用现有标题、折叠偏好与右栏滚动容器。 */
+    navigateSection(sectionKey) {
+      const wanted = String(sectionKey || '').trim();
+      const rail = document.querySelector('.rail.right');
+      if (!wanted || !rail) return false;
+      const title = [...rail.querySelectorAll('.sec-title')].find((node) => {
+        const key = String(node.dataset.secKey || node.textContent || '')
+          .replace(/\u25BE/g, '').trim().split('·')[0].trim();
+        return key === wanted;
+      });
+      if (!title) return false;
+      const body = title.nextElementSibling;
+      if (body?.classList.contains('sec-body') && body.classList.contains('collapsed')) title.click();
+      const reduced = typeof window.matchMedia === 'function'
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const railTop = rail.getBoundingClientRect().top;
+      const titleTop = title.getBoundingClientRect().top - railTop;
+      const stickyIndexOffset = rail.querySelector('[data-section-index]')?.getBoundingClientRect().height || 0;
+      const stickyHeadOffset = rail.querySelector('.rail-drawer-head')?.getBoundingClientRect().height || 0;
+      const topOffset = stickyIndexOffset + stickyHeadOffset + 12;
+      rail.scrollTo({
+        top: Math.max(0, rail.scrollTop + titleTop - topOffset),
+        behavior: reduced ? 'auto' : 'smooth',
+      });
+      return true;
+    },
+
     // ── 输入框保护（Q2）─────────────────────────────────────────
     // ⚠️ 包装一层是为了让 `main.js` **不必** import `qolState.js`——
     //    判定只在 qolState 里写一份（见该文件头的说明）。
@@ -281,7 +394,7 @@ export function createQol(sb) {
      */
     handleEscape() {
       const layer = nextEscapeAction(api.escLayers());
-      if (!layer) return false;
+      if (!layer) return api.closeDrawer();
       switch (layer) {
         case 'confirm': api.closeConfirm(false); break;
         case 'help': api.closeHelp(); break;
@@ -455,6 +568,28 @@ export function createQol(sb) {
       if (helpBtn) helpBtn.addEventListener('click', () => api.openHelp());
       const worldInfo = $('inkWorldInfo');
       if (worldInfo) worldInfo.addEventListener('click', () => { void api.copySeed(); });
+      const openTools = $('inkBtnOpenTools');
+      if (openTools) openTools.addEventListener('click', () => api.openDrawer('left'));
+      const openInfo = $('inkBtnOpenInfo');
+      if (openInfo) openInfo.addEventListener('click', () => api.openDrawer('right'));
+      const closeTools = $('inkBtnCloseTools');
+      if (closeTools) closeTools.addEventListener('click', () => api.closeDrawer());
+      const closeInfo = $('inkBtnCloseInfo');
+      if (closeInfo) closeInfo.addEventListener('click', () => api.closeDrawer());
+      const scrim = $('inkDrawerScrim');
+      if (scrim) scrim.addEventListener('click', () => api.closeDrawer());
+      const bottomMore = document.querySelector('.bottom-more');
+      if (bottomMore) bottomMore.addEventListener('toggle', () => {
+        // The canvas has explicit pixel dimensions; recalculate after the disclosure
+        // changes the footer height so the map cannot extend under the open controls.
+        if (typeof sb.resize === 'function') sb.resize();
+      });
+      for (const side of ['left', 'right']) syncDrawerState(side, false);
+      api.syncSaveState();
+      window.addEventListener('resize', () => {
+        if (activeDrawer && !drawerMode(activeDrawer)) api.closeDrawer({ restoreFocus: false });
+        else for (const side of ['left', 'right']) syncDrawerState(side, activeDrawer === side);
+      });
       // 点帮助层背景也能关（卡片本身不冒泡到背景）
       const layer = $('inkHelp');
       if (layer) {
@@ -478,6 +613,11 @@ export function createQol(sb) {
       if (lesson) {
         lesson.innerHTML = FIRST_LESSON
           .map((s) => `<div class="help-lesson"><b>${s.title}</b>${s.text}</div>`).join('');
+      }
+      const guide = $('inkHelpGuide');
+      if (guide) {
+        guide.innerHTML = HELP_GUIDE
+          .map(([step, text]) => `<div class="help-lesson"><b>${step}</b>${text}</div>`).join('');
       }
     },
 

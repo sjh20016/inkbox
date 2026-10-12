@@ -70,11 +70,17 @@
     font-variant-numeric: tabular-nums;
   }
   .pill b { color: var(--ink); font-weight: 700; }
+  .drawer-toggle { display: none; }
+  #inkSaveState[data-dirty="1"] { border-color: var(--cinnabar); color: var(--cinnabar); font-weight: 700; }
+  #inkMilestoneAlert { border-color: var(--gold); color: var(--ink); }
 
   /* ── 主体 ── */
   .main { display: grid; grid-template-columns: 178px minmax(0, 1fr) 236px; min-height: 0; }
   .rail { border-right: 1px solid var(--line-strong); overflow-y: auto; padding: 10px; background: rgba(255,255,255,.24); }
   .rail.right { border-right: 0; border-left: 1px solid var(--line-strong); }
+  .rail-drawer-head { display: none; align-items: center; justify-content: space-between; gap: 8px; margin: -10px -10px 10px; padding: 10px; border-bottom: 1px solid var(--line-strong); background: var(--paper); }
+  .rail-drawer-head b { letter-spacing: 2px; }
+  .drawer-scrim { display: none; }
   .rail::-webkit-scrollbar { width: 6px; }
   .rail::-webkit-scrollbar-thumb { background: var(--paper-3); border-radius: 3px; }
 
@@ -86,6 +92,7 @@
     transition: color .15s, border-color .15s;
   }
   .sec-title:hover { color: var(--ink-mid); border-bottom-color: var(--line-strong); }
+  .sec-title:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 2px; }
   .sec-title .chev {
     display: inline-block; width: 12px; margin-left: 4px;
     font-size: 9px; color: var(--ink-soft); transition: transform .25s ease;
@@ -193,6 +200,9 @@
     padding: 9px 16px; border-top: 1px solid var(--line-strong);
     background: linear-gradient(0deg, rgba(255,255,255,.44), rgba(233,224,205,.06));
   }
+  .bottom-more { display: contents; }
+  .bottom-more > summary { display: none; }
+  .bottom-more-body { display: contents; }
   .cluster { display: flex; align-items: center; gap: 6px; }
   .cluster > label { color: var(--ink-soft); letter-spacing: 1px; font-size: 11.5px; }
   button.btn {
@@ -236,6 +246,12 @@
   .faction em { color: var(--ink-soft); font-style: normal; font-size: 11px; }
   .faction u { color: var(--cinnabar); text-decoration: none; font-size: 11px; border: 1px solid var(--cinnabar); border-radius: 3px; padding: 0 3px; }
   .chronicle { display: grid; gap: 3px; }
+  .chronicle-filter { display: flex; align-items: center; gap: 7px; margin: 0 0 6px; color: var(--ink-soft); font-size: 11px; }
+  .chronicle-filter select { flex: 1; min-width: 0; }
+  .section-index { position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin: 0 0 9px; padding: 7px; border: 1px solid var(--line); border-radius: 5px; background: var(--paper); }
+  .section-index button { min-width: 0; border: 1px solid transparent; border-radius: 3px; padding: 4px 3px; color: var(--ink-mid); background: rgba(255,255,255,.35); font: inherit; font-size: 10.5px; cursor: pointer; white-space: nowrap; }
+  .section-index button:hover { border-color: var(--line-strong); background: #fff; }
+  .rail.right .sec-title { scroll-margin-top: 145px; }
   .ink-log {
     border-left: 2px solid var(--line-strong); padding: 2px 0 2px 7px;
     color: var(--ink-mid); line-height: 1.5; font-size: 11.5px;
@@ -279,6 +295,10 @@
     font-style: normal; color: var(--cinnabar); font-size: 10.5px;
     border: 1px solid var(--cinnabar); border-radius: 3px; padding: 0 3px; margin-right: 5px;
   }
+  .explore-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 3px 6px; }
+  .explore-row b { min-width: 0; overflow-wrap: anywhere; }
+  .explore-row > span { justify-self: end; }
+  .explore-row .log-view { grid-column: 2; }
   /* ── 传记正文的极简排版（见 main.js renderBiographyHtml）────────
      传记是 Markdown（`compileBiography` 的产物，导出按钮落盘用的就是原文）。
      面板里直接摊原文会满屏 `#` 和 `-`，所以这里把三种最常用的记号
@@ -465,13 +485,72 @@
   button.btn:disabled { opacity: .42; cursor: not-allowed; }
   button.btn[aria-busy="true"] { opacity: .55; cursor: progress; }
 
+  @media (max-width: 1366px) {
+    .bottom-more { display: flex; flex: 1 0 100%; flex-direction: column; align-items: flex-start; }
+    .bottom-more > summary { display: inline-flex; list-style: none; cursor: pointer; white-space: nowrap; }
+    .bottom-more > summary::-webkit-details-marker { display: none; }
+    .bottom-more-body { display: none; width: 100%; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 7px; }
+    .bottom-more[open] .bottom-more-body { display: flex; }
+    .bottom-more-body > .cluster { flex-wrap: wrap; }
+  }
   @media (max-width: 1080px) {
     .main { grid-template-columns: 156px minmax(0, 1fr); }
-    .rail.right { display: none; }
+    .drawer-toggle { display: inline-flex; }
+    .rail.right {
+      display: block; position: fixed; z-index: 21; inset: 0 0 0 auto;
+      width: min(88vw, 400px); height: 100dvh; max-height: 100dvh;
+      border: 0; border-left: 1px solid var(--line-strong); box-shadow: var(--shadow);
+      background: var(--paper); transform: translateX(102%); visibility: hidden;
+      pointer-events: none; transition: transform .22s ease, visibility 0s linear .22s;
+    }
+    body.drawer-right-open .rail.right {
+      transform: translateX(0); visibility: visible; pointer-events: auto;
+      transition: transform .22s ease;
+    }
+    .rail.right .rail-drawer-head { position: sticky; top: -10px; z-index: 3; display: flex; }
+    .rail.right .section-index { top: 40px; }
+    .drawer-scrim {
+      display: block; position: fixed; z-index: 20; inset: 0;
+      background: rgba(24, 22, 18, .34); backdrop-filter: blur(1px);
+    }
+    .drawer-scrim[hidden] { display: none; }
+    .bottom { gap: 8px; padding: 6px 12px; }
+    .bottom > .cluster:first-child { flex-wrap: wrap; gap: 5px; }
+    .bottom-more { flex-basis: 100%; }
   }
   @media (max-width: 720px) {
     .main { grid-template-columns: minmax(0, 1fr); }
-    .rail { display: none; }
+    .rail.left {
+      display: block; position: fixed; z-index: 21; inset: 0 auto 0 0;
+      width: min(86vw, 330px); height: 100dvh; max-height: 100dvh;
+      border: 0; border-right: 1px solid var(--line-strong); box-shadow: var(--shadow);
+      background: var(--paper); transform: translateX(-102%); visibility: hidden;
+      pointer-events: none; transition: transform .22s ease, visibility 0s linear .22s;
+    }
+    body.drawer-left-open .rail.left {
+      transform: translateX(0); visibility: visible; pointer-events: auto;
+      transition: transform .22s ease;
+    }
+    .rail.left .rail-drawer-head { position: sticky; top: -10px; z-index: 3; display: flex; }
+    .top { gap: 8px; padding: 7px 9px; }
+    .brand h1 { font-size: 16px; letter-spacing: 2px; }
+    .brand small { display: none; }
+    .pills { gap: 5px; }
+    .pill { padding: 4px 7px; font-size: 11px; }
+    .bottom { align-items: flex-start; gap: 6px; padding: 5px 8px; }
+    .bottom > .cluster:first-child { flex-basis: 100%; }
+    #inkSpeedBar .btn { padding: 5px 7px; }
+    .bottom-more-body { max-height: 32vh; overflow-y: auto; }
+    .bottom-more-body > .cluster { gap: 4px; }
+    .bottom-more-body input[type=number] { width: 82px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sec-title, .sec-title .chev, .sec-body, .ink-tool, button.btn,
+    .busanzi, .busanzi-meter i, .drawer-scrim {
+      scroll-behavior: auto !important;
+      transition-duration: .01ms !important;
+      transition-delay: 0ms !important;
+    }
   }
 </style>
 </head>
@@ -493,14 +572,19 @@
       </div>
       <div class="pill" id="inkTimePill">仙历 1 年 · 第 1 日</div>
       <div class="pill" id="inkSpeedPill">常速 ×2</div>
+      <span class="pill" id="inkSaveState" data-dirty="0" aria-live="polite">已保存</span>
+      <button class="btn" id="inkMilestoneAlert" hidden aria-live="polite">新近要事</button>
       <div class="pill" id="inkFpsPill">-- FPS</div>
+      <button class="btn drawer-toggle" id="inkBtnOpenTools" aria-controls="inkToolRail" aria-expanded="false">神力</button>
+      <button class="btn drawer-toggle" id="inkBtnOpenInfo" aria-controls="inkInfoRail" aria-expanded="false">观世</button>
       <!-- Q31：帮助入口。与键盘 `?` 走**同一条**路径（`qol.openHelp()`）。 -->
       <button class="btn" id="inkBtnHelp" title="快捷键与门道（按 ?）">? 帮助</button>
     </div>
   </header>
 
   <div class="main">
-    <aside class="rail left">
+    <aside class="rail left" id="inkToolRail" aria-label="神力工具">
+      <div class="rail-drawer-head"><b>神力工具</b><button class="btn" id="inkBtnCloseTools" type="button">关闭</button></div>
       <div class="sec-title">神格</div>
       <div class="groups" id="inkGroups"></div>
       <div class="tools" id="inkTools"></div>
@@ -545,7 +629,8 @@
       </div>
     </section>
 
-    <aside class="rail right">
+    <aside class="rail right" id="inkInfoRail" aria-label="世界信息">
+      <div class="rail-drawer-head"><b>观世信息</b><button class="btn" id="inkBtnCloseInfo" type="button">关闭</button></div>
       <!-- Q30：一次收起右栏。放在**第一个 sec-title 之前**是有意的——
            setupSectionTogglesPanel 把每个 sec-title 之后的兄弟收进 .sec-body，
            所以它不会被折进任何一节里，永远留在最上面。
@@ -625,6 +710,8 @@
 
       <div class="sec-title">值得关注</div>
       <div class="chronicle" id="inkNotables"></div>
+      <div class="sec-title">值得探索</div>
+      <div class="chronicle" id="inkExplore"></div>
       <!-- ── 天道记挂（D7-E，见 sim/watch.js）──────────────────────────
            玩家「指着一个人说：这个人我想继续看」的观察列表。**不是世界规律**——
            它存在 `world.watch`，不进三界人口守恒、不抽 RNG、不给任何数值 buff、
@@ -640,6 +727,17 @@
       <div class="chronicle" id="inkWatch"></div>
 
       <div class="sec-title">编年</div>
+      <label class="chronicle-filter" for="inkChronicleFilter">筛选
+        <select id="inkChronicleFilter" aria-label="编年筛选">
+          <option value="all">全部记录</option>
+          <option value="genesis">开天</option>
+          <option value="settle">聚落</option>
+          <option value="sect">宗门</option>
+          <option value="war">战事</option>
+          <option value="cultivate">修行</option>
+          <option value="death">离世</option>
+        </select>
+      </label>
       <div class="chronicle" id="inkChronicle"></div>
       <button class="btn" id="inkBtnChronicle" style="width:100%;margin-top:6px">导出编年史（Markdown）</button>
 
@@ -724,6 +822,9 @@
       <span class="speed-state" id="inkSpeedState">岁月 · 常</span>
     </div>
 
+    <details class="bottom-more">
+      <summary class="btn">更多操作 ▾</summary>
+      <div class="bottom-more-body">
     <div class="cluster">
       <label for="inkBrushRange">笔刷</label>
       <input type="range" id="inkBrushRange" min="0" max="6" step="1" value="3" />
@@ -754,7 +855,7 @@
       </select>
       <input type="number" id="inkSeedInput" min="0" max="4294967295" step="1" placeholder="种子" aria-label="世界种子" />
       <button class="btn" id="inkBtnRegen">重新开天</button>
-      <button class="btn danger" id="inkBtnClear">随机种子</button>
+      <button class="btn danger" id="inkBtnClear" title="随机生成种子并重新开天">随机开天</button>
       <label title="完整世界持续模拟，按阶段开放观察和编辑范围"><input id="inkProgressive" type="checkbox" /> 渐进探索</label>
       <button class="btn" id="inkBtnExpand" hidden>拓展地图</button>
       <span id="inkMapProgress" aria-live="polite"></span>
@@ -768,7 +869,11 @@
       <button class="btn" id="inkBtnImport">导入</button>
       <input type="file" id="inkImportFile" accept=".json" style="display:none" />
     </div>
+      </div>
+    </details>
   </footer>
+
+  <div class="drawer-scrim" id="inkDrawerScrim" hidden aria-hidden="true"></div>
 
   <!-- ── 帮助层（Q31 / Q32 / Q33，见 ui/qol.js）────────────────────────
        键位表的事实来源是 PLAYER_GUIDE.md 与 main.js 的 keydown 实现
@@ -795,6 +900,10 @@
       <div class="help-sec">
         <h3>观井初课</h3>
         <div id="inkHelpLesson"></div>
+      </div>
+      <div class="help-sec">
+        <h3>观测三步</h3>
+        <div id="inkHelpGuide"></div>
       </div>
     </div>
   </div>
