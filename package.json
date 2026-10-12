@@ -99,7 +99,12 @@
     "test:g1:web": "node scripts/inkbox-g1-web-check.mjs",
     "test:g1:integration": "node scripts/inkbox-g1-integration.mjs",
     "test:g1:longrun": "node scripts/inkbox-g1-longrun.mjs",
-    "test:g1:browser": "node scripts/inkbox-g1-browser.mjs"
+    "test:g1:browser": "node scripts/inkbox-g1-browser.mjs",
+    "test:g2:combat": "node scripts/inkbox-g2-combat.mjs",
+    "test:g2:presentation": "node scripts/inkbox-g2-presentation.mjs && node scripts/inkbox-g2-three.mjs",
+    "test:g2": "npm run test:g2:combat && npm run test:g2:presentation",
+    "test:g2:browser": "node scripts/inkbox-g2-browser.mjs",
+    "test:g2:performance": "node scripts/inkbox-g2-performance.mjs"
   },
   "dependencies": {
     "three": "0.186.1"
