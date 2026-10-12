@@ -1,0 +1,455 @@
+{
+  "stage": "G1-I",
+  "baseSha": "fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff",
+  "validatedCodeCommit": "732a94b",
+  "checkedAt": "2026-10-09T05:47:19.350Z",
+  "pass": true,
+  "gates": [
+    {
+      "command": "npm run test:vendor",
+      "exitCode": 0,
+      "elapsedSeconds": 0.58
+    },
+    {
+      "command": "npm run test:core",
+      "exitCode": 0,
+      "elapsedSeconds": 3.45
+    },
+    {
+      "command": "npm run test:view",
+      "exitCode": 0,
+      "elapsedSeconds": 1.47
+    },
+    {
+      "command": "npm run test:presentation",
+      "exitCode": 0,
+      "elapsedSeconds": 0.89
+    },
+    {
+      "command": "npm run test:qol",
+      "exitCode": 0,
+      "elapsedSeconds": 0.88
+    },
+    {
+      "command": "npm run test:g1",
+      "exitCode": 0,
+      "elapsedSeconds": 5.66
+    },
+    {
+      "command": "npm run test:render3d",
+      "exitCode": 0,
+      "elapsedSeconds": 3.45
+    },
+    {
+      "command": "npm run test:render3d:m1",
+      "exitCode": 0,
+      "elapsedSeconds": 1.69
+    },
+    {
+      "command": "npm run test:render3d:bridge",
+      "exitCode": 0,
+      "elapsedSeconds": 1.54
+    },
+    {
+      "command": "npm run test:render3d:m2a",
+      "exitCode": 0,
+      "elapsedSeconds": 1.53
+    },
+    {
+      "command": "npm run test:render3d:m2b",
+      "exitCode": 0,
+      "elapsedSeconds": 2.46
+    },
+    {
+      "command": "npm run test:render3d:m2c2e",
+      "exitCode": 0,
+      "elapsedSeconds": 1.62
+    },
+    {
+      "command": "npm run test:render3d:m2c",
+      "exitCode": 0,
+      "elapsedSeconds": 1.29
+    },
+    {
+      "command": "npm run test:render3d:m2c2a",
+      "exitCode": 0,
+      "elapsedSeconds": 4.19
+    },
+    {
+      "command": "npm run test:render3d:m2c2a1:hlod",
+      "exitCode": 0,
+      "elapsedSeconds": 1.07
+    },
+    {
+      "command": "npm run test:render3d:m2c2b0",
+      "exitCode": 0,
+      "elapsedSeconds": 3.72
+    },
+    {
+      "command": "npm run test:render3d:m2c2b:sample",
+      "exitCode": 0,
+      "elapsedSeconds": 2.68
+    },
+    {
+      "command": "npm run test:render3d:m2c2b:content",
+      "exitCode": 0,
+      "elapsedSeconds": 0.66
+    },
+    {
+      "command": "npm run test:render3d:m2c2b:decorations",
+      "exitCode": 0,
+      "elapsedSeconds": 0.77
+    },
+    {
+      "command": "npm run test:render3d:m2c2b:artifacts",
+      "exitCode": 0,
+      "elapsedSeconds": 0.92
+    },
+    {
+      "command": "npm run test:render3d:m2c2b:purity",
+      "exitCode": 0,
+      "elapsedSeconds": 5.47
+    },
+    {
+      "command": "npm run test:render3d:m2c2b1",
+      "exitCode": 0,
+      "elapsedSeconds": 0.38
+    },
+    {
+      "command": "npm run test:render3d:m2c2c",
+      "exitCode": 0,
+      "elapsedSeconds": 0.94
+    },
+    {
+      "command": "npm run test:render3d:m2c2c:sites && npm run test:render3d:m2c2c:leylines",
+      "exitCode": 0,
+      "elapsedSeconds": 1.34
+    },
+    {
+      "command": "npm run test:render3d:m2c2c:fields",
+      "exitCode": 0,
+      "elapsedSeconds": 0.93
+    },
+    {
+      "command": "npm run test:render3d:m2c2c:rifts",
+      "exitCode": 0,
+      "elapsedSeconds": 0.93
+    },
+    {
+      "command": "npm run test:render3d:m2c2c:purity",
+      "exitCode": 0,
+      "elapsedSeconds": 5.33
+    },
+    {
+      "command": "npm run test:render3d:m2c2d",
+      "exitCode": 0,
+      "elapsedSeconds": 0.88
+    },
+    {
+      "command": "npm run test:render3d:m2c2d1",
+      "exitCode": 0,
+      "elapsedSeconds": 1.76
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "elapsedSeconds": 9.19
+    },
+    {
+      "command": "npm run test:package",
+      "exitCode": 0,
+      "elapsedSeconds": 0.58
+    },
+    {
+      "command": "npm run test:regression",
+      "exitCode": 0,
+      "elapsedSeconds": 0.98
+    },
+    {
+      "command": "npm run test:three-realms",
+      "exitCode": 0,
+      "elapsedSeconds": 158.44
+    },
+    {
+      "command": "npm run test:save-equivalence",
+      "exitCode": 0,
+      "elapsedSeconds": 123.16
+    },
+    {
+      "command": "npm run test:g1:longrun",
+      "exitCode": 0,
+      "elapsedSeconds": 95.94
+    }
+  ],
+  "repairedFailures": [
+    "QoL old watch wiring assertion",
+    "browser test duplicate guide toggle sequence",
+    "review P2 watch observation summary"
+  ],
+  "browser": {
+    "browser": "Edg/154.0.4258.62",
+    "viewport": [
+      1440,
+      1000
+    ],
+    "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "driver": "32.0.101.7088",
+    "errors": [],
+    "consoleErrors": [],
+    "checks": [
+      {
+        "name": "Canvas pointer chooses real overlapping people by ID",
+        "pass": true,
+        "evidence": {
+          "seed": 0,
+          "id": 1,
+          "otherId": 2,
+          "name": "玄隐摇",
+          "options": [
+            {
+              "value": "0",
+              "text": "玄隐摇 · #1"
+            },
+            {
+              "value": "1",
+              "text": "玄隐摇 · #2"
+            }
+          ],
+          "actual": {
+            "identity": {
+              "key": "mortal:1",
+              "id": 1,
+              "plane": "mortal",
+              "currentPlane": "mortal",
+              "status": "alive",
+              "name": "玄隐摇",
+              "canFocus": true
+            },
+            "key": "mortal:1",
+            "choicesOpen": false
+          }
+        }
+      },
+      {
+        "name": "Visible edict/watch buttons modify the current World and mark unsaved state",
+        "pass": true,
+        "evidence": {
+          "exp": 32,
+          "required": 128,
+          "fortune": 68,
+          "mind": 68,
+          "watched": true,
+          "dirty": true,
+          "ledger": [
+            {
+              "day": 0,
+              "year": 0,
+              "text": "天道敕令 · 灌顶：【玄隐摇】修为 0 → 32",
+              "kind": "intervention"
+            },
+            {
+              "day": 0,
+              "year": 0,
+              "text": "天道敕令 · 拨运：【玄隐摇】气运 60 → 68",
+              "kind": "intervention"
+            },
+            {
+              "day": 0,
+              "year": 0,
+              "text": "天道敕令 · 定心：【玄隐摇】道心 60 → 68",
+              "kind": "intervention"
+            }
+          ]
+        }
+      },
+      {
+        "name": "Four formal tabs show real cultivation, retained history, relationships and biography",
+        "pass": true,
+        "evidence": {
+          "tabs": [
+            "命簿",
+            "修行",
+            "改命",
+            "生平"
+          ],
+          "percent": "25",
+          "cardCount": 1,
+          "cultivation": {
+            "text": "修行之势每日修为 0.736 · 积累修为气运68心境68",
+            "rate": "每日修为 0.736"
+          },
+          "historyCoverage": true,
+          "relationsOpened": true,
+          "exportFilename": "mortal-1.md",
+          "exportBytes": 345
+        }
+      },
+      {
+        "name": "Product save/load restores real edits and rejects the pre-load DOM action",
+        "pass": true,
+        "evidence": {
+          "unchanged": true,
+          "cleared": true,
+          "opened": true,
+          "exp": 32,
+          "fortune": 68,
+          "mind": 68,
+          "watched": true
+        }
+      },
+      {
+        "name": "Canvas nether-window pointer reaches the ghost instead of the mortal at the same cell",
+        "pass": true,
+        "evidence": {
+          "id": 2000000,
+          "mortalId": 1,
+          "actual": {
+            "key": "nether:2000000",
+            "id": 2000000,
+            "plane": "nether",
+            "currentPlane": "nether",
+            "status": "alive",
+            "name": "孤魂",
+            "canFocus": true
+          },
+          "realm": "普通鬼魂",
+          "noInventedCultivation": true
+        }
+      },
+      {
+        "name": "Seed zero, real map-progress adapter, unsaved guard and help close/reopen",
+        "pass": true,
+        "evidence": {
+          "initial": {
+            "seed": 0,
+            "w": 200,
+            "h": 128,
+            "terrain": "mountains",
+            "stage": 0,
+            "creation": "天地初定世界种子0地貌群山世界天地幅员200 × 128渐进开放已启用已开放范围40% · 80 × 52",
+            "percent": "40",
+            "cardClosed": true
+          },
+          "expanded": {
+            "stage": 1,
+            "percent": "60",
+            "dirty": true
+          },
+          "unsavedGuard": true,
+          "helpReopened": true
+        }
+      },
+      {
+        "name": "3D visible PlanePicker hit and actual mouse route call main.inspectPlaneSubject",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 688.0818305216148,
+            "y": 473.27516030910533,
+            "id": 1,
+            "plane": "mortal",
+            "kind": "entity",
+            "diag": {
+              "meshes": 1,
+              "instances": 1,
+              "samples": 1,
+              "offscreen": 0,
+              "hits": {
+                "mortal:entity": 1
+              }
+            }
+          },
+          "actual": {
+            "identity": {
+              "key": "mortal:1",
+              "id": 1,
+              "plane": "mortal",
+              "currentPlane": "mortal",
+              "status": "alive",
+              "name": "玄隐摇",
+              "canFocus": true
+            },
+            "inspections": [
+              {
+                "plane": "mortal",
+                "id": 1,
+                "kind": "entity"
+              }
+            ],
+            "webglRenderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+          }
+        }
+      },
+      {
+        "name": "3D nether-window visible ghost retains its plane through the main host",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 687.3571761378566,
+            "y": 472.2032806878982,
+            "id": 2000000,
+            "plane": "nether",
+            "kind": "entity",
+            "diag": {
+              "meshes": 1,
+              "instances": 1,
+              "samples": 1,
+              "offscreen": 0,
+              "hits": {
+                "nether:entity": 1
+              }
+            }
+          },
+          "actual": {
+            "identity": {
+              "key": "nether:2000000",
+              "id": 2000000,
+              "plane": "nether",
+              "currentPlane": "nether",
+              "status": "alive",
+              "name": "孤魂",
+              "canFocus": true
+            },
+            "inspections": [
+              {
+                "plane": "nether",
+                "id": 2000000,
+                "kind": "entity"
+              }
+            ],
+            "realm": "普通鬼魂",
+            "noInventedCultivation": true
+          }
+        }
+      },
+      {
+        "name": "Actual file import clears stale card and Canvas/3D toggles retain fresh identity",
+        "pass": true,
+        "evidence": {
+          "seed": 0,
+          "cleared": true,
+          "dirty": false,
+          "unchanged": true,
+          "actualFileInput": true,
+          "rendererToggles": 2
+        }
+      }
+    ]
+  },
+  "screenshots": [
+    "canvas-edicts.png",
+    "canvas-world-progress.png",
+    "3d-nether.png"
+  ],
+  "sourceSha256": {
+    "src/inkbox/g1/characterRuntime.js": "23c3e6209492b033500dc101f4a6b42a496e3893f8df25e57d8aca99a8420f6d",
+    "src/inkbox/g1/sandboxRuntime.js": "3974d07a127169b781a09e445889c6ebbf1c447266f48b4d2a89cd9b1f7c4ba9",
+    "src/inkbox/g1/worldRuntime.js": "e311ab9263eb98b97fe5a1bba4ea0cf0d59061040fa7feb93987e005630db632",
+    "src/inkbox/ui/g1/presentation/characterCardView.js": "df1466919e450f78122ce220b4d5a69702f1089cce523e9d5ad9ecbd139d7461",
+    "src/inkbox/ui/railPanels.js": "37cfb07698fc4404838ff75cc29eba36b5563768bfd584a9ebbc11f4bed1819a",
+    "src/inkbox/ui/worldCreation.js": "f991a8c5c1566f2177aecf9ac6e3978ea74c6c3b23b2fec94ba7051a6a777425",
+    "src/inkbox/main.js": "a65f6d0e5bfb94ad7fac363310541aab159bdf7f563427705f77a5f2d85deaad",
+    "inkbox.html": "41735108242f3c5f03d6596abb516d81086b4d4cb932cca58ee5d02cb662d670",
+    "scripts/inkbox-g1-browser.mjs": "f0306df90737e76e18ec617873798524009d7d33f5eabb2e8dbff42cd517ea1f"
+  }
+}

@@ -10,6 +10,7 @@ import { mulberry32 } from './core/noise.js';
 import { generateWorld } from './world/worldgen.js';
 import { createSandboxWorld, creationOptions, parseSeed, syncCreationControls, syncMapProgress, expandSandboxMap } from './ui/worldCreation.js';
 import { accessBounds, canAccess } from './world/mapProgress.js';
+import { createSandboxCharacterRuntime } from './g1/sandboxRuntime.js';
 // 上界：`generateUpperWorld` 的 seed 收的是**凡间种子**，内部自己派生上界 seed
 // （所以这里绝不能先 xor 一次再传进去，那会双重派生）。
 // `recomputeUpperQi` 是上界专用的灵气补算——**不能用凡间的 `recomputeQi`**：
@@ -127,8 +128,9 @@ import {
   bindRelationGraphPanel, refreshWatchPanel, openWatchRowPanel,
   refreshThreeRealmsPanel, refreshUpperRealmPanel, refreshNetherRealmPanel,
   refreshNecrologyPanel, setNecroSortPanel, showDeadBiographyPanel,
-  hideDeadBiographyPanel, downloadTextPanel, refreshBusanziPanel,
+  hideDeadBiographyPanel, downloadTextPanel, refreshBusanziPanel, bindBusanziTogglePanel,
   refreshSlotsPanel, setupSectionTogglesPanel, refreshRecentPanel,
+  showCharacterChoicesPanel, showCharacterRelationsPanel,
 } from './ui/railPanels.js';
 // QoL 控制器（DOM 侧）：Escape 分层 / UI 偏好 / 最近看过 / dirty / 确认条 /
 // Toast 定位 / 忙碌按钮 / 世界信息。**判定**在 `ui/qolState.js`（零 import 纯逻辑），
@@ -311,6 +313,8 @@ class Sandbox {
     // 只存 id 不抱对象——活人会死、会被 `world.entities` 就地压掉，
     // 抱着一个已经不在世上的对象会让面板一直显示一份查不到的旧卡片。
     this.personOpenId = null;
+    this.g1 = createSandboxCharacterRuntime(this, { render: showPersonCardPanel, hide: hidePersonCardPanel,
+      candidates: showCharacterChoicesPanel, relations: showCharacterRelationsPanel });
     /** 活人榜的点击委托只挂一次（同上） */
     this.notablesBound = false;
     /** 「天道记挂」的点击委托只挂一次（同上，D7-E） */
@@ -325,6 +329,7 @@ class Sandbox {
     this.showWarLines = false;
     this.focusedSectId = null;
     this.relationOpen = false;
+    this.busanziCollapsed = false; // Session UI choice survives World changes.
     /** 关系图的点击委托只挂一次（容器常驻，见 bindRelationGraph） */
     this.relationBound = false;
     this.clock = 0;
@@ -730,6 +735,7 @@ class Sandbox {
 
   // ── 事件 ────────────────────────────────────────────────
   bindEvents() {
+    bindBusanziTogglePanel(this);
     window.addEventListener('resize', () => this.resize());
 
     const canvas = this.canvas;
@@ -770,7 +776,7 @@ class Sandbox {
         return;
       }
       if (tool.readonly) {
-        this.inspectAt(this.hoverTile.x, this.hoverTile.y);
+        if (!this.g1.inspectCanvas(this.pointer.x, this.pointer.y)) this.inspectAt(this.hoverTile.x, this.hoverTile.y);
         return;
       }
       this.history.begin();
@@ -1598,7 +1604,9 @@ class Sandbox {
    * @param {number} y 世界格 y
    */
   inspectRealmAt(x, y) {
-    return this.inspectPlaneAt(this.getRealmViewState().targetPlane, x, y);
+    const plane = this.getRealmViewState().targetPlane;
+    if (this.g1.inspectCanvas(this.pointer.x, this.pointer.y, plane)) return;
+    return this.inspectPlaneAt(plane, x, y);
   }
 
   /** Inspect the World identity carried by a submitted 3D instance. */
@@ -1606,6 +1614,10 @@ class Sandbox {
     if (!['mortal', 'upper', 'nether'].includes(planeId)) return;
     ref ||= {};
     const world = planeId === 'mortal' ? this.world : this.world?.[planeId];
+    if (ref.kind === 'entity' && ref.entityContainer !== 'wraiths') {
+      const entity = world?.entities.find(e => e.id === ref.entityId);
+      if (entity && ['human', 'cultivator', 'ghost'].includes(entity.sp)) return this.g1.open({ plane: planeId, entityId: ref.entityId });
+    }
     const picked = resolvePlaneSubject(world, planeId, ref);
     const card = planeSubjectInspectRows(picked, {
       day: this.world?.day || 0, watch: this.world?.watch,
@@ -1634,6 +1646,7 @@ class Sandbox {
   inspectPlaneAt(planeId, x, y) {
     if (planeId === 'mortal') return this.inspectAt(x, y);
     if (planeId !== 'upper' && planeId !== 'nether') return;
+    if (!canAccess(this.world, x, y)) { this.notify('此处尚未开放 · 请先拓展地图', 2400); return; }
     const nether = planeId === 'nether';
     const plane = {
       plane: planeId,
@@ -1697,7 +1710,7 @@ class Sandbox {
     let strongest = null;
     for (let k = 0; k < world.entities.length; k += 1) {
       const e = world.entities[k];
-      if (Math.hypot(e.x - x, e.y - y) >= 5) continue;
+      if (!(e.hp > 0) || !canAccess(world, e.x, e.y) || Math.hypot(e.x - x, e.y - y) >= 5) continue;
       people += 1;
       // ⚠️ 这里原来是 `(e.level || 0) > (strongest ? strongest.level : 0)`——
       // 全是凡人的格子上 `0 > 0` 永远为假，于是 `strongest` 一直是 null，
@@ -2004,6 +2017,10 @@ class Sandbox {
       // ⚠️ 凡间鬼影（`fired.wraith`）同理**不置** `dirty`：它们画在每帧重绘的
       //    叠加层上（`drawWraiths`，与 `drawEntities` 同层），地形位图不受影响。
       if (fired.eco || fired.fire) this.dirty = true;
+      if (fired.mapProgress) {
+        this.terrain?.invalidate(); this.dirty = true; this.qol?.markDirty('terrain');
+        syncMapProgress(this); this.notify('山河渐展 · 新区域已开放', 2600);
+      }
     }
     return fired;
   }
@@ -2271,6 +2288,8 @@ class Sandbox {
   updateHud() {
     const world = this.world;
     if (!world) return;
+    syncMapProgress(this);
+    this.g1.refresh();
     const stats = world.stats();
     const day = Math.floor(world.day);
     const year = Math.floor(day / TIME.daysPerYear) + 1;
@@ -2417,9 +2436,9 @@ class Sandbox {
   refreshNotables() { return refreshNotablesPanel(this); }
 
   /** 点开一个**活人**：把 `compileBiography` 那一整篇摊出来 */
-  showPersonCard(id) { return showPersonCardPanel(this, id); }
+  showPersonCard(id) { return this.g1.open({ plane: 'mortal', entityId: id }, { focus: true }); }
 
-  hidePersonCard() { return hidePersonCardPanel(this); }
+  hidePersonCard() { return this.g1.close(); }
 
   // ── 人物局部关系图（D7-F，见 render/relationGraph.js）────────
   /**

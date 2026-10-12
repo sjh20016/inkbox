@@ -49,6 +49,7 @@ import { stepNether } from './netherLife.js';
 import { stepRifts, RIFT_PERIOD_DAYS } from './rifts.js';
 import { stepMortalWraiths, WRAITH_PERIOD_DAYS } from './wraiths.js';
 import { stepVegetation, stepFire } from './ecology.js';
+import { updateMapProgress } from '../world/mapProgress.js';
 
 /**
  * 各低频时钟的节拍（游戏日）。
@@ -98,7 +99,7 @@ export function createAdvanceState() {
  *                   ——契约 C1.1「视界关着就冻结」在**推进侧**的唯一兑现处。
  *   · `nether`      显式 `false` 关闭幽冥 tick（默认：`world.nether` 存在就 tick）。
  *   · `wraith`      显式 `false` 关闭凡间鬼影 tick（默认：`world.wraiths` 存在就 tick）。
- * @returns {object|null} 这一拍各时钟跑了没有：`{ upper, nether, rift, wraith, eco, fire }`。
+ * @returns {object|null} 这一拍各时钟跑了没有：`{ upper, nether, rift, wraith, eco, fire, mapProgress }`。
  *   调用方据此置 `dirty` 位（`main.js` 就是这么用的）。
  */
 export function advanceWorld(world, days, deps = {}) {
@@ -226,5 +227,7 @@ export function advanceWorld(world, days, deps = {}) {
     }
   }
 
+  // Access grows only after the simulation succeeds, independently of all streams.
+  fired.mapProgress = updateMapProgress(world);
   return fired;
 }

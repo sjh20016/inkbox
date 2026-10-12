@@ -1,6 +1,12 @@
 # Inkbox 测试与验证入口
 
-## Current Truth · 2026-10-08
+## Current Truth · 2026-10-09 · G1 Runtime 分支
+
+G1-R 从共同 main 基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 在 `feat/g1-runtime-codex` 独立开发。人物真实身份、只读模型、三项敕令、记挂、地图成长和独立 Runtime 回归已接线，正式 Presentation 和 C5 视觉协调留待后续集成。接口、保存语义和后续步骤见 [G1 Runtime 交接](../G1_RUNTIME_HANDOFF.md)。
+
+`npm run test:g1` 进入 Fast（Runtime、宿主、地图三个入口），`npm run test:g1:longrun` 进入 Heavy（30 / 100 年观察纯度和敕令后确定性）。`npm run test:g1:browser` 使用已有 Edge CDP 对真实 Canvas / 3D 鼠标接线、敕令、记挂和产品存读档做六项工程验收；它也加入手动 Browser Smoke。本轮使用软件 D3D11，不能作为真实 GPU 性能证明，正式人物卡 Browser 验收仍在集成阶段。
+
+## 2026-10-08 历史基线
 
 当前 CI 基线是 GitHub `main` `1cd8d36`，M2-C2E 已合并。公开 run [37749151683](https://github.com/sjh20016/inkbox/actions/runs/37749151683) 的 Heavy Gate 通过；Fast Gate 仅因历史 C2D 水拓扑长度断言失败。整理分支修正该旧断言后，本机完整 Fast / Heavy Gate、build 和 package audit 均通过；集成后的新 run 才能确认公开门禁恢复。可选 Browser Smoke 在本机 Edge CDP 启动阶段失败，未到应用断言。
 
@@ -157,3 +163,5 @@ scripts/_*.mjs 是已入 Git 的 D8 / M1 一次性研究探针，不进 npm 门�
 新门禁/性能完整输出在忽略目录 reports/m2c2b0；Git仅保留 release/render3d-m2c2b0 的golden/summary，CI大图上传 reports/ci artifact。当前报告只说明本地结果；未push或触发远端Actions。
 
 M2-C2E本轮本机结果：44/44 CPU、108固定种子与120日实际三界/11RNG纯度、browser-optimized14/14、6行24GPU视角、final-canonical-r3十二镜及soak-optimized600/6000采样通过。完整数据与缓存源码SHA在release精简摘要；远端CI本分支未运行。GPU顺序独占，不把6000帧采样块之间的真实操作额外RAF计作连续持笔帧。
+
+G1-I 正式命簿/地图 VM：`npm run test:g1:web`、`npm run test:g1:integration` 已纳入 `test:g1` / CI Fast；Edge `test:g1:browser` 验收四卷、真实命令、文件导入、引导及渲染器切换。见 [集成报告](../G1_INTEGRATION_REPORT.md)。

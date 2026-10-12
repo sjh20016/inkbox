@@ -502,8 +502,13 @@ check('★ applyTool 用的两个事件名都在 DIRTY_EVENTS 白名单里',
   && DIRTY_EVENTS.includes('terrain') && DIRTY_EVENTS.includes('intervention'),
   `terrain=${DIRTY_EVENTS.includes('terrain')} intervention=${DIRTY_EVENTS.includes('intervention')}`);
 
-check('★ railPanels 的「☆ 记挂」也要置 dirty（world.watch 是随存档走的世界字段）',
-  /markDirty\s*\(\s*['"]watch['"]/.test(railSrc) && DIRTY_EVENTS.includes('watch'),
+const g1HostSrc = stripComments(findFile('g1/sandboxRuntime.js').src);
+const g1CardSrc = stripComments(findFile('ui/g1/presentation/characterCardView.js').src);
+check('★ 人物卡记挂经 G1 命令入口置 dirty（world.watch 随存档保存）',
+  railSrc.includes('createCharacterCardView(panel') && railSrc.includes('state.action?.(action)')
+  && g1CardSrc.includes('type === "watch" && permissions.canWatch === true) onAction(')
+  && g1HostSrc.includes("action.type === 'watch'")
+  && /markDirty\s*\(\s*['"]watch['"]/.test(g1HostSrc) && DIRTY_EVENTS.includes('watch'),
   DIRTY_EVENTS.includes('watch') ? '已接线' : 'watch 不在 DIRTY_EVENTS 里');
 
 // 反查：源码里**字面量发出**的事件名，每一个都必须在白名单里。

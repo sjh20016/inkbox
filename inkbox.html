@@ -156,6 +156,10 @@
     pointer-events: none;
   }
   .busanzi.on { opacity: 1; transform: none; }
+  .busanzi button { pointer-events: auto; border: 1px solid var(--line); border-radius: 3px; background: var(--paper); color: var(--ink-mid); font: inherit; font-size: 10px; padding: 2px 4px; cursor: pointer; }
+  .busanzi.is-collapsed .busanzi-meter, .busanzi.is-collapsed #inkBusanziLines { display: none; }
+  .busanzi.is-collapsed .busanzi-head { margin-bottom: 0; }
+  .busanzi.is-collapsed { width: auto; }
   .busanzi-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
   .busanzi-mark { font-size: 14px; color: var(--ink-mid); }
   .busanzi-name { font-weight: 700; letter-spacing: 2px; font-size: 12.5px; }
@@ -531,6 +535,7 @@
           <span class="busanzi-mark">☲</span>
           <span class="busanzi-name">卜算子</span>
           <span class="busanzi-tier" id="inkBusanziTier">井外生客</span>
+          <button type="button" id="inkBusanziToggle" aria-expanded="true" aria-controls="inkBusanziLines">收起引导</button>
         </div>
         <div class="busanzi-meter"><i id="inkBusanziMeter" style="width:0%"></i></div>
         <div id="inkBusanziLines"></div>
@@ -560,6 +565,11 @@
         <div class="stat"><span>陆地</span><b id="inkStatLand">0%</b></div>
       </div>
       <div class="stat" style="margin-top:5px"><span>最高峰（高程）</span><b id="inkStatPeak">0.00</b></div>
+      <details id="inkG1WorldDetails" style="margin-top:8px">
+        <summary>观天地 · 创世信息</summary>
+        <div id="inkG1WorldProgress"></div>
+        <div id="inkG1WorldCreationInfo"></div>
+      </details>
 
       <!-- ── 最近看过（Q13，见 railPanels.js refreshRecentPanel）──────────
            最多 5 条，重复看的会**上浮**。数据只在 UI runtime（`sb.qol.recent()`），
@@ -799,6 +809,8 @@
     </div>
   </div>
 </div>
+<link rel="stylesheet" href="./src/inkbox/ui/g1/presentation/characterCard.css" />
+<link rel="stylesheet" href="./src/inkbox/ui/g1/presentation/worldProgress.css" />
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
 <script type="module" src="./src/inkbox/main.js"></script>
 </body>

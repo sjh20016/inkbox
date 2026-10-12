@@ -60,6 +60,9 @@ jobs:
       - name: UX/QoL 填缝包回归（QOL_PASS1 · Escape 分层 / 折叠 / 偏好白名单 / 模拟纯度门禁）
         run: npm run test:qol
 
+      - name: G1 正式集成（身份 / 命簿四卷 / 权限 / 地图成长 / Web 组件）
+        run: npm run test:g1
+
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
         run: npm run test:render3d
 
@@ -156,6 +159,9 @@ jobs:
       - name: 存读档分叉等价
         run: npm run test:save-equivalence
 
+      - name: G1 三界30年与100年观察纯度 / 敕令确定性
+        run: npm run test:g1:longrun
+
   # ── 浏览器探针：**手动触发**，不是普通 CI 硬门槛（D3.4）─────────────────
   #
   # 为什么不放在 push / PR：
@@ -181,6 +187,11 @@ jobs:
 
       - name: 安装依赖
         run: npm ci
+
+      - name: G1 正式命簿 Canvas / 3D 真实身份、命令与存读档
+        run: npm run test:g1:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g1-browser
 
       - name: Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0 Edge（共享服务器生命周期）
         run: node scripts/inkbox-browser-smoke.mjs
