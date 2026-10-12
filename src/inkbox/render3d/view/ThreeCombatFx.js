@@ -112,12 +112,12 @@ export class ThreeCombatFx{
       if(![ax,ay].every(Number.isFinite))continue;
       if(this.stats.active>=COMBAT_3D_CAP){this.stats.overflow++;continue;}
       const tier=lightning?'high':data.tier,progress=item.age/item.ttl;
-      const width=(tier==='high'?.13:tier==='mid'?.095:.065)*(1-.3*progress);
+      const width=(lightning?.13:tier==='high'?.55:tier==='mid'?.4:.25)*(1-.3*progress);
       const dx=bx-ax,dy=by-ay,distance=Math.hypot(dx,dy),f=this.footprint;
       // The entire submitted brush footprint uses PlaneStage's access/window geometry.
       f.x=(ax+bx)/2;f.y=(ay+by)/2;
       f.width=Math.abs(dx)+width*2;f.depth=Math.abs(dy)+width*2;
-      if(!lightning && distance<=1e-6)f.width=f.depth=width*3;
+      if(!lightning && distance<=.35)f.width=f.depth=width*3;
       if(!decorationFootprintOwned(world,region,inside,f)){this.stats.regionRejected++;continue;}
       const az=this.elevation.at(ax,ay)+.17,bz=this.elevation.at(bx,by)+.17;
       if(![az,bz].every(Number.isFinite))continue;
@@ -125,12 +125,13 @@ export class ThreeCombatFx{
         this.axis.set(0,.8,0);
         const angle=(Number.isFinite(item.seed)?item.seed:0)*Math.PI*2;
         this.widthAxis.set(Math.cos(angle)*width,0,Math.sin(angle)*width);
-      }else if(distance>1e-6){
+      }else if(distance>.35){
         this.axis.set(dx,bz-az,dy);
         this.widthAxis.set(-dy/distance*width,0,dx/distance*width);
       }else{
-        // Coincident true hits are represented by a small local impact, not a fake beam.
-        const angle=(Number.isFinite(item.seed)?item.seed:0)*Math.PI*2;
+        // Near-contact hits spread a local impact around their true midpoint.
+        // A sub-pixel ground segment would be entirely hidden below overlapping feet.
+        const angle=distance>1e-6?Math.atan2(dy,dx):(Number.isFinite(item.seed)?item.seed:0)*Math.PI*2;
         this.axis.set(Math.cos(angle)*width,0,Math.sin(angle)*width);
         this.widthAxis.set(-Math.sin(angle)*width,0,Math.cos(angle)*width);
       }

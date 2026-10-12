@@ -48,6 +48,20 @@ check('three styles submit distinct shared geometry at actual entity coordinates
   }finally{fx.dispose();}
 });
 
+check('near-contact hit remains visible-sized, at the true midpoint, with conservative ownership',()=>{
+  const fx=new ThreeCombatFx(options),item=combat('thunder',{x:24.775,y:22,data:{style:'thunder',fromX:24.725,fromY:22,tier:'high'}});
+  try{
+    const before=sha(world);fx.update([item],world);assert.equal(fx.stats.active,1);
+    const m=fx.batches.thunder.mesh.instanceMatrix.array;
+    assert(Math.abs(m[12]-(24.75-(world.w-1)/2))<1e-5);
+    assert(Math.abs(m[14]-(22-(world.h-1)/2))<1e-5);
+    assert(Math.hypot(m[0],m[2])>.4,'near-contact glyph must not collapse below overlapping character feet');
+    const region=new RegionGeometry(world,new RegionMask(normalizeRegion([[24,20],[28,20],[28,26],[24,26]],world,.45)));
+    fx.update([item],world,region,true);
+    assert.equal(fx.stats.active,0,'true center inside does not permit the expanded brush to cross a window edge');
+    assert.equal(fx.stats.regionRejected,1);assert.equal(sha(world),before);
+  }finally{fx.dispose();}
+});
 check('single immutable snapshot read leaves the runtime queue untouched',()=>{
   const stage=new PresentationStage();
   for(const style of ['blade','fire','thunder'])assert(emitPresentation(world,'combat-hit',{
