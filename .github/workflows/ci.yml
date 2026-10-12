@@ -63,6 +63,9 @@ jobs:
       - name: G1 正式集成（身份 / 命簿四卷 / 权限 / 地图成长 / Web 组件）
         run: npm run test:g1
 
+      - name: G2 真实命中、预算保护、Canvas / 3D 快照及资源生命周期
+        run: npm run test:g2
+
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
         run: npm run test:render3d
 
@@ -192,6 +195,12 @@ jobs:
         run: npm run test:g1:browser
         env:
           INKBOX_REPORT_DIR: reports/ci/g1-browser
+
+      - name: G2 正式 Canvas / 3D 真实交战与三界生命周期 Edge
+        run: npm run test:g2:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g2-browser
+          INKBOX_GPU: '0'
 
       - name: Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0 Edge（共享服务器生命周期）
         run: node scripts/inkbox-browser-smoke.mjs
