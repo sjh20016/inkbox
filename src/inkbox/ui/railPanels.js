@@ -49,6 +49,7 @@ import {
 } from '../sim/busanzi.js';
 import { relationGraphSvg, RELATION_GRAPH_MAX } from '../render/relationGraph.js';
 import { spawnFocusPulse } from '../render/overlayLayer.js';
+import { canAccess } from '../world/mapProgress.js';
 import { listSlots } from '../io/save.js';
 import {
   UI_PREFS_KEY, LIST_FOLD_LIMIT, foldRows, foldMoreLabel,
@@ -71,6 +72,12 @@ export function setPeriodicMarkup(element, markup) {
 
 export function setTextIfChanged(element, text) {
   if (element && element.textContent !== text) element.textContent = text;
+}
+
+function escapeText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[char]);
 }
 
 /** 某一块面板上一次渲染的整段 markup（测试与折叠状态用）。 */
@@ -381,7 +388,19 @@ function foldState(sb, key, total, unit = '条', limit = LIST_FOLD_LIMIT) {
 export function refreshChroniclePanel(sb) {
   const list = $('inkChronicle');
   if (!list || !sb.world) return;
-  const all = sb.world.chronicle.slice(-40).reverse();
+  const filter = $('inkChronicleFilter');
+  if (filter && filter.dataset.filterBound !== '1') {
+    filter.dataset.filterBound = '1';
+    filter.addEventListener('change', () => sb.refreshChronicle?.());
+  }
+  const selectedKind = filter?.value || 'all';
+  // These values are verified against current world.record() writers.
+  // Unknown kinds remain visible under “全部记录”.
+  const knownKinds = new Set(['genesis', 'settle', 'sect', 'war', 'cultivate', 'death']);
+  const filtered = selectedKind !== 'all' && knownKinds.has(selectedKind)
+    ? sb.world.chronicle.filter((entry) => entry.kind === selectedKind)
+    : sb.world.chronicle;
+  const all = filtered.slice(-40).reverse();
   const { expanded, hidden } = foldState(sb, 'chronicle', all.length, '条', CHRONICLE_PANEL_LIMIT);
   const shown = expanded ? all : all.slice(0, CHRONICLE_PANEL_LIMIT);
   const rail = document.querySelector('.rail.right');
@@ -437,6 +456,13 @@ export function chronicleLocation(record) {
   return null;
 }
 
+function worldPoint(world, source) {
+  const x = Number(source?.x), y = Number(source?.y);
+  if (!world || !Number.isFinite(x) || !Number.isFinite(y)
+    || x < 0 || y < 0 || x >= world.w || y >= world.h) return null;
+  return { x, y, accessible: canAccess(world, x, y) };
+}
+
 /**
  * 替换 innerHTML 时保住玩家的阅读位置。
  *
@@ -484,14 +510,19 @@ export function refreshMilestonesPanel(sb) {
   // 被折进「另有 N 条」里就等于告诉玩家「这场灾已经过去了」。
   const activeRows = active.map((event) => {
     const village = world.villageById(event.villageId);
+    const point = village ? worldPoint(world, village) : null;
+    const crisisId = Number(event.id);
+    const view = point && Number.isFinite(crisisId)
+      ? `<button class="btn log-view" data-goto-crisis="${escapeText(crisisId)}">前往</button>`
+      : '';
     const yearsLeft = Math.max(0, Math.ceil(
       ((event.startedDay || 0) + (event.durationDays || 0) - world.day) / 360,
     ));
     const impact = village
       ? `聚落元气 ${Math.max(0, village.hp || 0).toFixed(0)} · 粮食 ${Math.max(0, village.food || 0).toFixed(0)}`
       : '受灾聚落已不在';
-    return `<div class="ink-log crisis-active"><b>进行中 · 事件 #${event.id}「${event.name}」</b>`
-      + `${event.villageName || '受灾聚落'} · 约 ${yearsLeft} 年后结算 · ${impact}</div>`;
+    return `<div class="ink-log crisis-active"><b>进行中 · 事件 #${escapeText(event.id)}「${escapeText(event.name)}」</b>`
+      + `${escapeText(event.villageName || '受灾聚落')} · 约 ${yearsLeft} 年后结算 · ${impact}${view}</div>`;
   });
   const milestoneRows = shown.map((m) => {
     const year = Math.floor((m.day || 0) / 360) + 1;
@@ -505,6 +536,118 @@ export function refreshMilestonesPanel(sb) {
   preserveRailScroll(rail, () => setPeriodicMarkup(box,
     body + foldControl(sb, 'milestones', hidden, expanded, '条')));
   bindFold(box, sb);
+  if (box.dataset.crisisBound !== '1') {
+    box.dataset.crisisBound = '1';
+    box.addEventListener('click', (ev) => {
+      const button = ev.target.closest('[data-goto-crisis]');
+      if (!button) return;
+      const currentWorld = sb.world;
+      const life = sb.life;
+      const id = String(button.dataset.gotoCrisis);
+      if (!currentWorld || (life?.world && life.world !== currentWorld)) {
+        sb.notify?.('世界已切换，这场灾祸无法再定位', 3000);
+        return;
+      }
+      const current = life?.events?.activeCrises?.find((row) => String(row.id) === id);
+      if (!current) {
+        sb.notify?.('这场灾祸已结束，无法前往', 3000);
+        return;
+      }
+      const village = currentWorld.villageById(current.villageId);
+      if (!village) {
+        sb.notify?.('受灾聚落已不在，无法前往', 3000);
+        return;
+      }
+      const point = worldPoint(currentWorld, village);
+      if (!point) {
+        sb.notify?.('受灾聚落坐标无效，无法前往', 3000);
+        return;
+      }
+      if (!point.accessible || (sb.camera?.canAccess && !sb.camera.canAccess(point.x, point.y))) {
+        sb.notify?.('受灾聚落尚未开放，请先拓展地图', 3200);
+        return;
+      }
+      sb.camera.focusOn(point.x, point.y, { zoom: Math.max(sb.camera.zoom, 7), duration: 0.75 });
+      spawnFocusPulse(sb.focusPulses, point.x, point.y);
+      sb.inspectAt?.(Math.round(point.x), Math.round(point.y));
+      sb.dirty = true;
+    });
+  }
+}
+
+const SITE_KIND_LABEL = Object.freeze({ secret: '秘境', cave: '洞府', formation: '阵法', ruin: '遗址' });
+
+/** C2：只从现存的地点 / 灵脉数组读取固定上限的真实条目。 */
+export function refreshExplorePanel(sb) {
+  const box = $('inkExplore');
+  const world = sb.world;
+  if (!box || !world) return;
+  sb.exploreWorldRef = world;
+  const candidates = [];
+  const seen = new Set();
+  const add = (kind, index, source, name, type) => {
+    const point = worldPoint(world, source);
+    if (!point) return;
+    const key = `${point.x},${point.y}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    candidates.push({ kind, index, point, name: name || type, type });
+  };
+  const sites = Array.isArray(world.sites) ? world.sites.slice(0, 24) : [];
+  for (let index = 0; index < sites.length; index += 1) {
+    const site = sites[index];
+    if (!site) continue;
+    const type = SITE_KIND_LABEL[site.kind] || String(site.kind || '地点');
+    add('site', index, site, site.name, type);
+  }
+  const leylines = Array.isArray(world.leylines) ? world.leylines.slice(0, 24) : [];
+  for (let index = 0; index < leylines.length; index += 1) {
+    const line = leylines[index];
+    if (!line) continue;
+    const type = line.element ? `灵脉 · ${line.element}` : '灵脉';
+    add('leyline', index, line, line.name || '灵脉', type);
+  }
+  const shown = candidates.slice(0, 3);
+  const markup = shown.length ? shown.map((row) => {
+    const { x, y, accessible } = row.point;
+    const action = accessible
+      ? `<button class="btn log-view" data-explore-kind="${row.kind}" data-explore-index="${row.index}">前往</button>`
+      : '<span class="notable-reason">未开放 · 不可前往</span>';
+    return `<div class="ink-log explore-row"><b>${escapeText(row.name)}</b>`
+      + `<span class="notable-reason">${escapeText(row.type)}</span>`
+      + `<span>(${x.toFixed(1)}, ${y.toFixed(1)})</span>${action}</div>`;
+  }).join('') : '<div class="ink-empty">当前没有可速览的地点。</div>';
+  setPeriodicMarkup(box, markup);
+  if (box.dataset.exploreBound === '1') return;
+  box.dataset.exploreBound = '1';
+  box.addEventListener('click', (ev) => {
+    const button = ev.target.closest('[data-explore-kind]');
+    if (!button) return;
+    const currentWorld = sb.world;
+    if (!currentWorld || sb.exploreWorldRef !== currentWorld) {
+      sb.notify?.('世界已切换，请重新查看地点', 3000);
+      sb.refreshExplore?.();
+      return;
+    }
+    const index = Number(button.dataset.exploreIndex);
+    const source = button.dataset.exploreKind === 'site'
+      ? currentWorld.sites?.[index]
+      : currentWorld.leylines?.[index];
+    const point = worldPoint(currentWorld, source);
+    if (!point) {
+      sb.notify?.('这个地点已不可考', 3000);
+      sb.refreshExplore?.();
+      return;
+    }
+    if (!point.accessible || (sb.camera?.canAccess && !sb.camera.canAccess(point.x, point.y))) {
+      sb.notify?.('这个地点尚未开放，请先拓展地图', 3200);
+      return;
+    }
+    sb.camera.focusOn(point.x, point.y, { zoom: Math.max(sb.camera.zoom, 7), duration: 0.75 });
+    spawnFocusPulse(sb.focusPulses, point.x, point.y);
+    sb.inspectAt?.(Math.round(point.x), Math.round(point.y));
+    sb.dirty = true;
+  });
 }
 
 // ── 值得关注（Q9 / Q13 / Q28 / Q36）─────────────────────────────────
@@ -1183,6 +1326,23 @@ export function setupSectionTogglesPanel(sb) {
   if (!rail) return;
   const qol = sb.qol;
   const stored = qol ? qol.prefs() : sanitizeUiPrefs(null);
+  let index = rail.querySelector('[data-section-index]');
+  if (!index) {
+    index = document.createElement('nav');
+    index.className = 'section-index';
+    index.dataset.sectionIndex = '1';
+    index.setAttribute('aria-label', '右栏快速跳转');
+    const keys = ['世界', '势力', '大事记', '仙道', '三界', '值得关注', '值得探索', '记挂', '编年', '史册', '门道', '图例', '操作'];
+    index.innerHTML = keys.map((key) => `<button type="button" data-section-key="${key}">${key}</button>`).join('');
+    const firstTitle = rail.querySelector('.sec-title');
+    if (firstTitle) rail.insertBefore(index, firstTitle);
+    else rail.appendChild(index);
+    index.addEventListener('click', (ev) => {
+      const button = ev.target.closest('[data-section-key]');
+      if (!button) return;
+      if (qol?.navigateSection) qol.navigateSection(button.dataset.sectionKey);
+    });
+  }
   const titles = rail.querySelectorAll('.sec-title');
   for (const title of titles) {
     const key = sectionKey(title);
@@ -1206,15 +1366,23 @@ export function setupSectionTogglesPanel(sb) {
     const initialCollapsed = stored.collapsed[key] !== undefined
       ? stored.collapsed[key]
       : title.dataset.defaultCollapsed === '1';
-    if (initialCollapsed) {
-      body.classList.add('collapsed');
-      title.classList.add('collapsed');
-    }
-    title.addEventListener('click', () => {
-      const collapsed = !body.classList.contains('collapsed');
+    const applyCollapsed = (collapsed) => {
       body.classList.toggle('collapsed', collapsed);
       title.classList.toggle('collapsed', collapsed);
+      title.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    };
+    title.setAttribute('role', 'button');
+    title.setAttribute('tabindex', '0');
+    applyCollapsed(initialCollapsed);
+    title.addEventListener('click', () => {
+      const collapsed = !body.classList.contains('collapsed');
+      applyCollapsed(collapsed);
       if (qol) qol.setSectionCollapsed(key, collapsed);
+    });
+    title.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Enter' && ev.key !== ' ' && ev.code !== 'Space') return;
+      ev.preventDefault();
+      title.click();
     });
   }
   // Q30：「收起」一次折起全部非核心区（核心 = 「世界」那一节）。
@@ -1231,6 +1399,7 @@ export function setupSectionTogglesPanel(sb) {
         if (!body || !body.classList.contains('sec-body')) continue;
         body.classList.toggle('collapsed', want);
         title.classList.toggle('collapsed', want);
+        title.setAttribute('aria-expanded', want ? 'false' : 'true');
         if (qol) qol.setSectionCollapsed(key, want);
       }
       sb.notify?.('已收起右栏（点分区标题可再展开）', 2400);

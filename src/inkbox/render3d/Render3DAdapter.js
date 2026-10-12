@@ -222,6 +222,7 @@ export class Render3DAdapter {
     for (const id of ['inkBrushRange', 'inkBtnRelief', 'inkBtnGrid']) document.getElementById(id).disabled = active;
     document.getElementById('inkHint').style.visibility = active ? 'hidden' : '';
     this.sandbox.pointer.painting = false; this.sandbox.pointer.down = false; this.sandbox.pointer.panning = false;
+    this.sandbox.qol?.syncWorldInfo(active ? '3D' : 'Canvas');
     this.sandbox.dirty = true;
   }
   hit(e) { const rect = this.canvas.getBoundingClientRect(); return this.renderer.pick(e.clientX - rect.left, e.clientY - rect.top); }

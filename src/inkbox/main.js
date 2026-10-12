@@ -123,7 +123,7 @@ import {
 // ⚠️ 这是本轮唯一「顺手做」的重构，而它本身不是新功能：
 //    删掉 `ui/railPanels.js`、把这些函数贴回本文件，就等于回到改动前。
 import {
-  refreshChroniclePanel, refreshMilestonesPanel, refreshNotablesPanel,
+  refreshChroniclePanel, refreshMilestonesPanel, refreshExplorePanel, refreshNotablesPanel,
   showPersonCardPanel, hidePersonCardPanel, buildRelationSvgPanel,
   bindRelationGraphPanel, refreshWatchPanel, openWatchRowPanel,
   refreshThreeRealmsPanel, refreshUpperRealmPanel, refreshNetherRealmPanel,
@@ -226,6 +226,10 @@ class Sandbox {
     this.life = null;
     this.terrain = null;
     this.rng = mulberry32(12345);
+    // C1：阅读游标只保留在当前 Sandbox 的 UI 内存，不写 World / 存档。
+    this.milestoneNoticeWorld = null;
+    this.milestoneNoticeLatest = null;
+    this.milestoneNoticeUnread = false;
 
     // ── 上界（另一个 world，同尺寸的另一张地图）─────────────
     // 它与凡间共用一条时间轴（day 由凡间赋值，见 update），但渲染、模拟各走各的。
@@ -360,6 +364,8 @@ class Sandbox {
     this.setupSectionToggles();
     this.resize();
     this.newWorld(this.presetKey, this.seed);
+    // 开天会更新顶栏信息，窄屏可能因此换行并改变舞台高度；再按最终布局校准画布。
+    this.resize();
     this.refreshRecent();
     // Q31 / Q33：第一次打开时提示一次「按 ? 看快捷键」（看过一次就不再念，
     // 见 `ui/qol.js` 的 `nudgeHelpOnce` / `helpSeen`）。
@@ -376,6 +382,7 @@ class Sandbox {
     this.presetKey = presetKey;
     this.seed = seed >>> 0;
     this.world = createSandboxWorld(preset, this.seed, options);
+    this.resetMilestoneNotice();
     this.life = new Life(this.world, mulberry32(this.seed ^ 0xa5a5a5a5));
     this.terrain = new TerrainLayer(this.world, { relief: this.camera.relief });
     // 上界：与凡间同尺寸的另一张地图 + 第二个 TerrainLayer。
@@ -412,6 +419,7 @@ class Sandbox {
     this.refreshNecrology();
     // 三界：换世界之后上界/幽冥也整个换了，面板不刷就是开在别人图上的窗
     this.refreshThreeRealms();
+    this.refreshExplore();
     // 天道记挂（D7-E）：换世界后 `world.watch` 也换了，不刷就是上一个世界的列表。
     this.refreshWatch();
     // 卜算子登场。台词只在「第一次见面」时说一次（met 存在世界里，读档不会重说）。
@@ -1049,6 +1057,7 @@ class Sandbox {
             return;
           }
           this.world = world;
+          this.resetMilestoneNotice();
           this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
           this.terrain.setWorld(this.world);
           // 上界也要跟着换：存档里带 upper 就复用，没带就按凡间 seed 重新派生
@@ -1080,6 +1089,7 @@ class Sandbox {
           this.refreshChronicle();
           this.refreshNecrology();
           this.refreshThreeRealms();
+          this.refreshExplore();
           this.refreshBusanzi();
         });
       });
@@ -1135,6 +1145,7 @@ class Sandbox {
       try {
         const world = await importFile(file);
         this.world = world;
+        this.resetMilestoneNotice();
         this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
         this.terrain.setWorld(this.world);
         // 同读档：导入的世界也要挂上它自己的上界，否则视界贴的是上一个世界的上界。
@@ -1164,6 +1175,7 @@ class Sandbox {
         this.refreshChronicle();
         this.refreshNecrology();
         this.refreshThreeRealms();
+        this.refreshExplore();
         this.refreshBusanzi();
       } catch (error) {
         // Q22：说清「哪一步坏了」而不是只写 console。
@@ -1183,6 +1195,8 @@ class Sandbox {
         });
       });
     });
+    const milestoneAlert = $('inkMilestoneAlert');
+    if (milestoneAlert) milestoneAlert.addEventListener('click', () => this.openMilestonesFromNotice());
     // Q8：视界附近那颗「关闭视界」。它只调**既有**的关闭逻辑。
     const closeView = $('inkBtnCloseView');
     if (closeView) closeView.addEventListener('click', () => this.closeRealmView('button'));
@@ -2420,7 +2434,45 @@ class Sandbox {
    * 刷新节奏与编年史一致（挂 2.5 秒那个定时器，不在 rAF 里）——
    * 每帧把 600 条重排一遍是白烧 CPU。
    */
-  refreshMilestones() { return refreshMilestonesPanel(this); }
+  resetMilestoneNotice() {
+    this.milestoneNoticeWorld = this.world;
+    const list = Array.isArray(this.world?.milestones) ? this.world.milestones : [];
+    this.milestoneNoticeLatest = list.length ? list[list.length - 1] : null;
+    this.milestoneNoticeUnread = false;
+    this.syncMilestoneNotice();
+  }
+
+  syncMilestoneNotice() {
+    const button = $('inkMilestoneAlert');
+    if (!button) return;
+    button.hidden = !this.milestoneNoticeUnread;
+    button.textContent = '新近要事';
+    button.title = this.milestoneNoticeUnread ? '世界出现了新的大事，点击打开大事记' : '';
+  }
+
+  openMilestonesFromNotice() {
+    this.milestoneNoticeUnread = false;
+    const list = Array.isArray(this.world?.milestones) ? this.world.milestones : [];
+    this.milestoneNoticeLatest = list.length ? list[list.length - 1] : null;
+    this.syncMilestoneNotice();
+    this.qol?.openDrawer('right');
+    this.qol?.navigateSection('大事记');
+  }
+
+  refreshMilestones() {
+    const list = Array.isArray(this.world?.milestones) ? this.world.milestones : [];
+    if (this.milestoneNoticeWorld !== this.world) {
+      this.resetMilestoneNotice();
+    } else {
+      const latest = list.length ? list[list.length - 1] : null;
+      if (latest && latest !== this.milestoneNoticeLatest) this.milestoneNoticeUnread = true;
+      this.milestoneNoticeLatest = latest;
+      this.syncMilestoneNotice();
+    }
+    return refreshMilestonesPanel(this);
+  }
+
+  refreshExplore() { return refreshExplorePanel(this); }
 
   // ── 值得关注的人物（见本文件顶部的 notablePeople）────────────────
   /**
@@ -2575,6 +2627,7 @@ setInterval(() => {
   // 大事记 / 活人榜同理：它们只在「又发生了一件大事」「又有人觉醒」时才变，
   // 挂 2.5 秒这个节奏足够，而且**不在 rAF 里**（否则每帧重排 600 条大事）。
   sandbox.refreshMilestones();
+  sandbox.refreshExplore();
   sandbox.refreshNotables();
   // 三界同理，而且**尤其**该走这个定时器：上界与幽冥是玩家看不见的地方，
   // 上面发生的事（有人飞升上来、某个魂排到了队）都不是玩家按出来的。
