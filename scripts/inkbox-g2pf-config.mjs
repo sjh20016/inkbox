@@ -1,5 +1,15 @@
 import assert from 'node:assert/strict';
 
+// CDP Session.errors() covers exceptions and Log errors, but console.error is
+// a separate Runtime event. A release run must fail for either kind.
+export function collectBrowserErrors(session) {
+  const consoleErrors = (session?.cdp?.events || [])
+    .filter(event => event.method === 'Runtime.consoleAPICalled' && event.params?.type === 'error')
+    .map(event => ({ type: 'console.error', timestamp: event.params.timestamp,
+      text: event.params.args?.map(arg => String(arg.description ?? arg.value ?? arg.type)).join(' ') || 'console.error()' }));
+  return [...(session?.errors() || []), ...consoleErrors];
+}
+
 export function selectCases(cases, selection) {
   if (selection === undefined) return cases;
   assert.match(selection, /^\d+(,\d+)*$/, 'INKBOX_PERF_CASE must be a nonempty comma-separated list of case indices');
@@ -35,6 +45,10 @@ export function scenarioSetup(c) {
 }
 
 if (process.argv.includes('--check')) {
+  const consoleEvent = { method: 'Runtime.consoleAPICalled', params: { type: 'error', args: [{ value: 'app failure' }] } };
+  assert.equal(collectBrowserErrors({ errors: () => [], cdp: { events: [consoleEvent] } }).length, 1);
+  assert.equal(collectBrowserErrors({ errors: () => ['exception'], cdp: { events: [consoleEvent] } }).length, 2);
+  assert.equal(collectBrowserErrors({ errors: () => [], cdp: { events: [{ ...consoleEvent, params: { type: 'warn' } }] } }).length, 0);
   const cases = Array.from({ length: 12 }, (_, caseIndex) => ({ caseIndex }));
   assert.equal(selectCases(cases, undefined).length, 12);
   assert.deepEqual(selectCases(cases, '1,7').map(c => c.caseIndex), [1, 7]);
