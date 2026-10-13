@@ -1,0 +1,1188 @@
+{
+  "schemaVersion": 1,
+  "stage": "G2.2",
+  "date": "2026-10-13",
+  "branch": "codex/g2.2-combat-observation-runtime",
+  "base": "b9ee2dfae24619b43e8a739ce704b2268e657387",
+  "upstreamDraftPr": "https://github.com/sjh20016/inkbox/pull/4",
+  "status": "draft-functional-verified-performance-open",
+  "performancePass": false,
+  "inheritedPerformanceRisk": "G2.1 native full matrix 7/12; controlled full matrix 11/12; both exit 1. User authorized continuing G2.2 with Draft risks. No main merge.",
+  "commands": [
+    {
+      "command": "npm run test:g22",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-g22.log"
+    },
+    {
+      "command": "npm run test:g1",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-g1.log"
+    },
+    {
+      "command": "npm run test:g2",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-g2.log"
+    },
+    {
+      "command": "npm run test:core",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-core.log"
+    },
+    {
+      "command": "npm run test:presentation",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-presentation.log"
+    },
+    {
+      "command": "npm run test:g21:terrain",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-g21-terrain.log"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\build.log"
+    },
+    {
+      "command": "npm run test:package",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-package.log"
+    }
+  ],
+  "golden": [
+    {
+      "path": "reports/release/g2.2-feedback/golden/canvas-health-news.png",
+      "sha256": "596d82a70c98490df98158764cbe9f36c5934c834096a549a2ce49b3a6a5c9aa"
+    },
+    {
+      "path": "reports/release/g2.2-feedback/golden/canvas-recovering.png",
+      "sha256": "76ccc9d8e86690df243b7929f6c7284ce638c4672fdbbdfd896579efbdfee8fe"
+    },
+    {
+      "path": "reports/release/g2.2-feedback/golden/three-health-news.png",
+      "sha256": "71b1c828db611236b6bc3a0dc483cf26f34f45625cac75a3320ab431612d6333"
+    }
+  ],
+  "upstreamValidation": {
+    "head": "b9ee2dfae24619b43e8a739ce704b2268e657387",
+    "ci": {
+      "url": "https://github.com/sjh20016/inkbox/actions/runs/38330676693",
+      "conclusion": "success",
+      "fast": "success",
+      "heavy": "success",
+      "browserSmoke": "skipped (manual workflow)"
+    },
+    "shallowClone": {
+      "shallow": "true",
+      "head": "b9ee2dfae24619b43e8a739ce704b2268e657387",
+      "headSubject": "fix(g21): preserve terrain pixels and archive unresolved hardware budgets",
+      "baseCommitObjectPresent": false,
+      "baseObjectCheckExitCode": 128,
+      "commands": [
+        {
+          "command": "git clone --depth 1 --no-local --branch codex/g2.1-combat-hardening-integration <local-root> <clean-clone>",
+          "exitCode": 0
+        },
+        {
+          "command": "npm ci",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run test:g21:terrain",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run build",
+          "exitCode": 0
+        },
+        {
+          "command": "npm run test:package",
+          "exitCode": 0
+        }
+      ],
+      "rawReportSha256": "9f068210816136dc0dad806bc711335664d9f2c8fd56f3cb9f2bb3b0da268564"
+    }
+  },
+  "browser": {
+    "startedAt": "2026-10-13T06:23:50.769Z",
+    "pass": true,
+    "backend": "Repository-owned Microsoft Edge/CDP",
+    "fallbackReason": "Tabbit could not connect in this task; formal repository Edge regressions used",
+    "sourceFlow": "Life.spawn -> normal advanceDays -> Life.attack -> shared Stage -> observation",
+    "performanceClaim": false,
+    "checks": [
+      {
+        "name": "Canvas real AI hit shows fact-only health and near news",
+        "pass": true,
+        "evidence": {
+          "fixture": {
+            "seed": 673231,
+            "count": 6,
+            "pairs": 3,
+            "actors": [
+              {
+                "id": 1,
+                "sp": "cultivator",
+                "x": 184.15,
+                "y": 46.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "blade",
+                "side": 0
+              },
+              {
+                "id": 2,
+                "sp": "cultivator",
+                "x": 184.95,
+                "y": 46.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "blade",
+                "side": 1
+              },
+              {
+                "id": 3,
+                "sp": "cultivator",
+                "x": 82.15,
+                "y": 18.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "fire",
+                "side": 0
+              },
+              {
+                "id": 4,
+                "sp": "cultivator",
+                "x": 82.95,
+                "y": 18.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "blade",
+                "side": 1
+              },
+              {
+                "id": 5,
+                "sp": "cultivator",
+                "x": 90.15,
+                "y": 10.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "thunder",
+                "side": 0
+              },
+              {
+                "id": 6,
+                "sp": "cultivator",
+                "x": 90.95,
+                "y": 10.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "blade",
+                "side": 1
+              }
+            ],
+            "originalEntityCount": 0,
+            "originalEntitiesRetained": true,
+            "newEntityCount": 6,
+            "world": [
+              200,
+              128
+            ],
+            "day": 0,
+            "spawnCalls": 6,
+            "spawnMisses": 0,
+            "sites": [
+              {
+                "x": 184,
+                "y": 46,
+                "visualCost": 0.684758186340332,
+                "spawnSupport": 42,
+                "nearestNpc": null
+              },
+              {
+                "x": 82,
+                "y": 18,
+                "visualCost": 2.5669301986694335,
+                "spawnSupport": 37,
+                "nearestNpc": null
+              },
+              {
+                "x": 90,
+                "y": 10,
+                "visualCost": 2.677244186401367,
+                "spawnSupport": 29,
+                "nearestNpc": null
+              }
+            ],
+            "rootNames": {
+              "blade": "木主杂灵根",
+              "fire": "水主杂灵根",
+              "thunder": "雷灵根"
+            }
+          },
+          "actual": {
+            "renderer": "canvas",
+            "day": 0.2,
+            "event": {
+              "id": "combat-3-1",
+              "day": 0.2,
+              "type": "damage",
+              "title": "交手留痕",
+              "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+              "plane": "mortal",
+              "actor": "陆景光",
+              "target": "苏星昭",
+              "timeLabel": "第 0.2 日",
+              "x": 184.95,
+              "y": 46.5,
+              "canObserve": true
+            },
+            "identity": {
+              "key": "mortal:2",
+              "id": 2,
+              "plane": "mortal",
+              "currentPlane": "mortal",
+              "status": "alive",
+              "name": "苏星昭",
+              "canFocus": true
+            },
+            "health": {
+              "hp": 3836.910706432872,
+              "maxHp": 3850,
+              "restUntil": 0,
+              "restRemaining": 0,
+              "day": 0.2,
+              "state": "wounded",
+              "hpText": "3836.91 / 3850",
+              "restText": "当前无养伤期限"
+            },
+            "hp": 3836.910706432872,
+            "maxHp": 3850,
+            "card": "坐天观井  /  人物命簿记挂寻踪传记收起苏星昭在世元婴0 岁 · 散修 · 在世修为积累15.6%150.17824281979935 / 960积累修为命簿修行改命生平命里所载气血3836.91 / 3850养伤当前无养伤期限灵根木主杂灵根位置凡间 (184.95, 46.5)修行之势每日修为 0.920 · 积累修为气运35心境68.0008天道敕令敕令将作用于当前人物；修为达到门槛后由其自行突破。灌顶敕令增加下一层需求25%的修为，突破由模拟判定拨运敕令气运增加8，上限100定心敕令心境增加8，上限100暂无可颁之令记挂近况生平行迹残卷 · 仅显示正式人物日志保留的事件，不能视为完整一生第 0 日苏星昭 生而有灵根，未及修行便已是修士之身。第 0.2 日【苏星昭】遇道心试炼，被问「长生是否值得？」。道心蜕变，更上一层。（因修行百年）此人生平尚无可考之事人间牵系所属宗门散修察看人物关系观其所历，不代其所行",
+            "news": "山河有声6 则近讯苏星昭 · 负伤气血：3836.91 / 3850；当前无养伤期限。近讯只显示眼下可观测的交手动静，可能有所遗漏；气血与生平以命簿保留记录为准。墨痕散去不说明胜负。交手留痕第 0.2 日 · 陆景光 · 苏星昭眼下的命中动静，不说明持续交战、胜败或伤因。前往观战交手留痕第 0.2 日 · 苏星昭 · 陆景光眼下的命中动静，不说明持续交战、胜败或伤因。前往观战交手留痕第 0.2 日 · 宁霜河 · 洛紫霜眼下的命中动静，不说明持续交战、胜败或伤因。前往观战交手留痕第 0.2 日 · 洛紫霜 · 宁霜河眼下的命中动静，不说明持续交战、胜败或伤因。前往观战交手留痕第 0.2 日 · 洛逐止 · 孟沧辰眼下的命中动静，不说明持续交战、胜败或伤因。前往观战交手留痕第 0.2 日 · 孟沧辰 · 洛逐止眼下的命中动静，不说明持续交战、胜败或伤因。前往观战眼下未见交手之声",
+            "queue": {
+              "queued": 0,
+              "combatQueued": 0,
+              "combatDropped": 0,
+              "combatEvicted": 0
+            },
+            "source": {
+              "attempts": 6,
+              "hits": 6,
+              "sampled": 6,
+              "emitted": 6,
+              "pairSkipped": 0,
+              "budgetSkipped": 0,
+              "disabled": 0,
+              "sourceOff": 0,
+              "invalid": 0,
+              "queueDropped": 0,
+              "dayBucket": 0,
+              "bucketPairs": 6,
+              "bucketSampled": 6,
+              "bucketEmitted": 6
+            }
+          },
+          "screenshot": "E:\\world4\\坐天观井-实验分支D1\\.worktrees\\g2.2\\reports\\release\\g2.2-feedback\\proof\\browser-final-verified\\canvas-health-news.png"
+        }
+      },
+      {
+        "name": "Canvas semantic locate button routes fresh coordinates exactly once",
+        "pass": true,
+        "evidence": {
+          "calls": [
+            [
+              184.95,
+              46.5,
+              {
+                "zoom": 7,
+                "duration": 0.75
+              }
+            ]
+          ],
+          "actions": [
+            {
+              "args": [
+                {
+                  "type": "locate-combat",
+                  "eventId": "combat-3-1",
+                  "plane": "mortal",
+                  "x": 184.95,
+                  "y": 46.5
+                }
+              ],
+              "result": {
+                "ok": true,
+                "effect": {
+                  "type": "focus",
+                  "plane": "mortal",
+                  "x": 184.95,
+                  "y": 46.5
+                }
+              }
+            }
+          ],
+          "target": {
+            "x": 184.95,
+            "y": 46.5
+          },
+          "event": "combat-3-1",
+          "items": [
+            {
+              "age": 0.016699999999999715,
+              "ttl": 0.35,
+              "day": 0.2
+            },
+            {
+              "age": 0.016699999999999715,
+              "ttl": 0.35,
+              "day": 0.2
+            },
+            {
+              "age": 0.016699999999999715,
+              "ttl": 0.5,
+              "day": 0.2
+            },
+            {
+              "age": 0.016699999999999715,
+              "ttl": 0.35,
+              "day": 0.2
+            },
+            {
+              "age": 0.016699999999999715,
+              "ttl": 0.7,
+              "day": 0.2
+            },
+            {
+              "age": 0.016699999999999715,
+              "ttl": 0.35,
+              "day": 0.2
+            }
+          ]
+        }
+      },
+      {
+        "name": "FX off retains current health and formal history; expired callback fails",
+        "pass": true,
+        "evidence": {
+          "before": {
+            "hp": 3836.910706432872,
+            "log": "[{\"day\":0,\"year\":0,\"kind\":\"cultivate\",\"text\":\"苏星昭 生而有灵根，未及修行便已是修士之身。\",\"key\":\"cultivate:苏星昭生而有灵根未及修行便已是修士之身\",\"importance\":35},{\"day\":0.2,\"year\":0,\"kind\":\"daotrial\",\"text\":\"【苏星昭】遇道心试炼，被问「长生是否值得？」。道心蜕变，更上一层。（因修行百年）\",\"key\":\"daotrial:苏星昭遇道心试炼被问「长生是否值得？」道心蜕变更上一层（因修行百年）\",\"importance\":35}]",
+            "id": "combat-3-1"
+          },
+          "after": {
+            "enabled": false,
+            "events": [],
+            "health": {
+              "hp": 3836.910706432872,
+              "maxHp": 3850,
+              "restUntil": 0,
+              "restRemaining": 0,
+              "day": 0.2,
+              "state": "wounded",
+              "hpText": "3836.91 / 3850",
+              "restText": "当前无养伤期限"
+            },
+            "log": "[{\"day\":0,\"year\":0,\"kind\":\"cultivate\",\"text\":\"苏星昭 生而有灵根，未及修行便已是修士之身。\",\"key\":\"cultivate:苏星昭生而有灵根未及修行便已是修士之身\",\"importance\":35},{\"day\":0.2,\"year\":0,\"kind\":\"daotrial\",\"text\":\"【苏星昭】遇道心试炼，被问「长生是否值得？」。道心蜕变，更上一层。（因修行百年）\",\"key\":\"daotrial:苏星昭遇道心试炼被问「长生是否值得？」道心蜕变更上一层（因修行百年）\",\"importance\":35}]",
+            "old": {
+              "ok": false,
+              "reason": "stale-or-inaccessible-event"
+            }
+          }
+        }
+      },
+      {
+        "name": "Normal AI mercy produces real healing deadline and retained duel history",
+        "pass": true,
+        "evidence": {
+          "day": 0.30000000000000004,
+          "hp": 192.36525,
+          "maxHp": 3850,
+          "restUntil": 1080.3,
+          "health": {
+            "hp": 192.36525,
+            "maxHp": 3850,
+            "restUntil": 1080.3,
+            "restRemaining": 1080,
+            "day": 0.30000000000000004,
+            "state": "recovering",
+            "hpText": "192.37 / 3850",
+            "restText": "养伤中 · 尚余 1080.00 日"
+          },
+          "duel": [
+            {
+              "day": 0.30000000000000004,
+              "year": 0,
+              "kind": "duel",
+              "text": "【苏星昭】与【陆景光】在水边沙洲交手，倒下去又爬起来。苏星昭说，那一下再深半寸，就没他这个人了。",
+              "key": "duel:苏星昭与陆景光在水边沙洲交手倒下去又爬起来苏星昭说那一下再深半寸就没他这个人了",
+              "importance": 30
+            }
+          ],
+          "card": "坐天观井  /  人物命簿记挂寻踪传记收起苏星昭在世元婴0 岁 · 散修 · 在世修为积累15.7%150.27024573393206 / 960积累修为命簿修行改命生平命里所载气血192.37 / 3850养伤养伤中 · 尚余 1080.00 日灵根木主杂灵根位置凡间 (184.95, 46.5)修行之势每日修为 0.920 · 积累修为气运35心境68.0012天道敕令敕令将作用于当前人物；修为达到门槛后由其自行突破。灌顶敕令增加下一层需求25%的修为，突破由模拟判定拨运敕令气运增加8，上限100定心敕令心境增加8，上限100暂无可颁之令记挂近况生平行迹残卷 · 仅显示正式人物日志保留的事件，不能视为完整一生第 0 日苏星昭 生而有灵根，未及修行便已是修士之身。第 0.2 日【苏星昭】遇道心试炼，被问「长生是否值得？」。道心蜕变，更上一层。（因修行百年）第 0.30000000000000004 日【苏星昭】与【陆景光】在水边沙洲交手，倒下去又爬起来。苏星昭说，那一下再深半寸，就没他这个人了。此人生平尚无可考之事人间牵系所属宗门散修察看人物关系观其所历，不代其所行",
+          "screenshot": "E:\\world4\\坐天观井-实验分支D1\\.worktrees\\g2.2\\reports\\release\\g2.2-feedback\\proof\\browser-final-verified\\canvas-recovering.png"
+        }
+      },
+      {
+        "name": "Renderer switch preserves observation runtime and formal selected identity",
+        "pass": true,
+        "evidence": {
+          "same": true,
+          "key": "mortal:2",
+          "webgl": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+        }
+      },
+      {
+        "name": "Three real AI hit, health card and semantic locate button",
+        "pass": true,
+        "evidence": {
+          "fixture": {
+            "seed": 673231,
+            "count": 6,
+            "pairs": 3,
+            "actors": [
+              {
+                "id": 1,
+                "sp": "cultivator",
+                "x": 184.15,
+                "y": 46.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "blade",
+                "side": 0
+              },
+              {
+                "id": 2,
+                "sp": "cultivator",
+                "x": 184.95,
+                "y": 46.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "blade",
+                "side": 1
+              },
+              {
+                "id": 3,
+                "sp": "cultivator",
+                "x": 82.15,
+                "y": 18.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "fire",
+                "side": 0
+              },
+              {
+                "id": 4,
+                "sp": "cultivator",
+                "x": 82.95,
+                "y": 18.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "blade",
+                "side": 1
+              },
+              {
+                "id": 5,
+                "sp": "cultivator",
+                "x": 90.15,
+                "y": 10.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "thunder",
+                "side": 0
+              },
+              {
+                "id": 6,
+                "sp": "cultivator",
+                "x": 90.95,
+                "y": 10.5,
+                "level": 30,
+                "hp": 3850,
+                "maxHp": 3850,
+                "style": "blade",
+                "side": 1
+              }
+            ],
+            "originalEntityCount": 0,
+            "originalEntitiesRetained": true,
+            "newEntityCount": 6,
+            "world": [
+              200,
+              128
+            ],
+            "day": 0,
+            "spawnCalls": 6,
+            "spawnMisses": 0,
+            "sites": [
+              {
+                "x": 184,
+                "y": 46,
+                "visualCost": 0.684758186340332,
+                "spawnSupport": 42,
+                "nearestNpc": null
+              },
+              {
+                "x": 82,
+                "y": 18,
+                "visualCost": 2.5669301986694335,
+                "spawnSupport": 37,
+                "nearestNpc": null
+              },
+              {
+                "x": 90,
+                "y": 10,
+                "visualCost": 2.677244186401367,
+                "spawnSupport": 29,
+                "nearestNpc": null
+              }
+            ],
+            "rootNames": {
+              "blade": "木主杂灵根",
+              "fire": "水主杂灵根",
+              "thunder": "雷灵根"
+            }
+          },
+          "actual": {
+            "renderer": "3d",
+            "day": 0.2,
+            "event": {
+              "id": "combat-4-1",
+              "day": 0.2,
+              "type": "damage",
+              "title": "交手留痕",
+              "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+              "plane": "mortal",
+              "actor": "陆景光",
+              "target": "苏星昭",
+              "timeLabel": "第 0.2 日",
+              "x": 184.95,
+              "y": 46.5,
+              "canObserve": true
+            },
+            "identity": {
+              "key": "mortal:2",
+              "id": 2,
+              "plane": "mortal",
+              "currentPlane": "mortal",
+              "status": "alive",
+              "name": "苏星昭",
+              "canFocus": true
+            },
+            "health": {
+              "hp": 3836.910706432872,
+              "maxHp": 3850,
+              "restUntil": 0,
+              "restRemaining": 0,
+              "day": 0.2,
+              "state": "wounded",
+              "hpText": "3836.91 / 3850",
+              "restText": "当前无养伤期限"
+            },
+            "hp": 3836.910706432872,
+            "maxHp": 3850,
+            "card": "坐天观井  /  人物命簿记挂寻踪传记收起苏星昭在世元婴0 岁 · 散修 · 在世修为积累15.6%150.17824281979935 / 960积累修为命簿修行改命生平命里所载气血3836.91 / 3850养伤当前无养伤期限灵根木主杂灵根位置凡间 (184.95, 46.5)修行之势每日修为 0.920 · 积累修为气运35心境68.0008天道敕令敕令将作用于当前人物；修为达到门槛后由其自行突破。灌顶敕令增加下一层需求25%的修为，突破由模拟判定拨运敕令气运增加8，上限100定心敕令心境增加8，上限100暂无可颁之令记挂近况生平行迹残卷 · 仅显示正式人物日志保留的事件，不能视为完整一生第 0 日苏星昭 生而有灵根，未及修行便已是修士之身。第 0.2 日【苏星昭】遇道心试炼，被问「长生是否值得？」。道心蜕变，更上一层。（因修行百年）此人生平尚无可考之事人间牵系所属宗门散修察看人物关系观其所历，不代其所行",
+            "news": "山河有声6 则近讯苏星昭 · 负伤气血：3836.91 / 3850；当前无养伤期限。近讯只显示眼下可观测的交手动静，可能有所遗漏；气血与生平以命簿保留记录为准。墨痕散去不说明胜负。交手留痕第 0.2 日 · 陆景光 · 苏星昭眼下的命中动静，不说明持续交战、胜败或伤因。前往观战交手留痕第 0.2 日 · 苏星昭 · 陆景光眼下的命中动静，不说明持续交战、胜败或伤因。前往观战交手留痕第 0.2 日 · 宁霜河 · 洛紫霜眼下的命中动静，不说明持续交战、胜败或伤因。前往观战交手留痕第 0.2 日 · 洛紫霜 · 宁霜河眼下的命中动静，不说明持续交战、胜败或伤因。前往观战交手留痕第 0.2 日 · 洛逐止 · 孟沧辰眼下的命中动静，不说明持续交战、胜败或伤因。前往观战交手留痕第 0.2 日 · 孟沧辰 · 洛逐止眼下的命中动静，不说明持续交战、胜败或伤因。前往观战眼下未见交手之声",
+            "queue": {
+              "queued": 0,
+              "combatQueued": 0,
+              "combatDropped": 0,
+              "combatEvicted": 0
+            },
+            "source": {
+              "attempts": 6,
+              "hits": 6,
+              "sampled": 6,
+              "emitted": 6,
+              "pairSkipped": 0,
+              "budgetSkipped": 0,
+              "disabled": 0,
+              "sourceOff": 0,
+              "invalid": 0,
+              "queueDropped": 0,
+              "dayBucket": 0,
+              "bucketPairs": 6,
+              "bucketSampled": 6,
+              "bucketEmitted": 6
+            }
+          },
+          "focus": {
+            "calls": [
+              [
+                184.95,
+                46.5,
+                {
+                  "duration": 0.75
+                },
+                "mortal"
+              ]
+            ],
+            "actions": [
+              {
+                "args": [
+                  {
+                    "type": "locate-combat",
+                    "eventId": "combat-4-1",
+                    "plane": "mortal",
+                    "x": 184.95,
+                    "y": 46.5
+                  }
+                ],
+                "result": {
+                  "ok": true,
+                  "effect": {
+                    "type": "focus",
+                    "plane": "mortal",
+                    "x": 184.95,
+                    "y": 46.5
+                  }
+                }
+              }
+            ],
+            "target": {
+              "x": 184.95,
+              "y": 46.5
+            },
+            "event": "combat-4-1",
+            "items": [
+              {
+                "age": 0.016799999999999926,
+                "ttl": 0.35,
+                "day": 0.2
+              },
+              {
+                "age": 0.016799999999999926,
+                "ttl": 0.35,
+                "day": 0.2
+              },
+              {
+                "age": 0.016799999999999926,
+                "ttl": 0.5,
+                "day": 0.2
+              },
+              {
+                "age": 0.016799999999999926,
+                "ttl": 0.35,
+                "day": 0.2
+              },
+              {
+                "age": 0.016799999999999926,
+                "ttl": 0.7,
+                "day": 0.2
+              },
+              {
+                "age": 0.016799999999999926,
+                "ttl": 0.35,
+                "day": 0.2
+              }
+            ]
+          },
+          "screenshot": "E:\\world4\\坐天观井-实验分支D1\\.worktrees\\g2.2\\reports\\release\\g2.2-feedback\\proof\\browser-final-verified\\three-health-news.png"
+        }
+      },
+      {
+        "name": "Real-time expiry clears short news without manufacturing history",
+        "pass": true,
+        "evidence": {
+          "before": {
+            "day": 0.2,
+            "log": "[{\"day\":0,\"year\":0,\"kind\":\"cultivate\",\"text\":\"苏星昭 生而有灵根，未及修行便已是修士之身。\",\"key\":\"cultivate:苏星昭生而有灵根未及修行便已是修士之身\",\"importance\":35},{\"day\":0.2,\"year\":0,\"kind\":\"daotrial\",\"text\":\"【苏星昭】遇道心试炼，被问「长生是否值得？」。道心蜕变，更上一层。（因修行百年）\",\"key\":\"daotrial:苏星昭遇道心试炼被问「长生是否值得？」道心蜕变更上一层（因修行百年）\",\"importance\":35}]",
+            "hp": 3836.910706432872,
+            "id": "combat-4-1"
+          },
+          "after": {
+            "day": 0.2,
+            "log": "[{\"day\":0,\"year\":0,\"kind\":\"cultivate\",\"text\":\"苏星昭 生而有灵根，未及修行便已是修士之身。\",\"key\":\"cultivate:苏星昭生而有灵根未及修行便已是修士之身\",\"importance\":35},{\"day\":0.2,\"year\":0,\"kind\":\"daotrial\",\"text\":\"【苏星昭】遇道心试炼，被问「长生是否值得？」。道心蜕变，更上一层。（因修行百年）\",\"key\":\"daotrial:苏星昭遇道心试炼被问「长生是否值得？」道心蜕变更上一层（因修行百年）\",\"importance\":35}]",
+            "hp": 3836.910706432872,
+            "old": {
+              "ok": false,
+              "reason": "stale-or-inaccessible-event"
+            }
+          }
+        }
+      },
+      {
+        "name": "Formal save/load and ID reuse reject stale news across repeated refreshes",
+        "pass": true,
+        "evidence": {
+          "evidence": {
+            "targetId": 2,
+            "event": {
+              "id": "combat-5-1",
+              "day": 0.2,
+              "type": "damage",
+              "title": "交手留痕",
+              "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+              "plane": "mortal",
+              "actor": "陆景光",
+              "target": "苏星昭",
+              "timeLabel": "第 0.2 日",
+              "x": 184.95,
+              "y": 46.5,
+              "canObserve": true
+            },
+            "first": [
+              {
+                "id": "combat-5-3",
+                "day": 0.2,
+                "type": "damage",
+                "title": "交手留痕",
+                "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+                "plane": "mortal",
+                "actor": "宁霜河",
+                "target": "洛紫霜",
+                "timeLabel": "第 0.2 日",
+                "x": 82.95,
+                "y": 18.5,
+                "canObserve": true
+              },
+              {
+                "id": "combat-5-4",
+                "day": 0.2,
+                "type": "damage",
+                "title": "交手留痕",
+                "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+                "plane": "mortal",
+                "actor": "洛紫霜",
+                "target": "宁霜河",
+                "timeLabel": "第 0.2 日",
+                "x": 82.91629,
+                "y": 18.5,
+                "canObserve": true
+              },
+              {
+                "id": "combat-5-5",
+                "day": 0.2,
+                "type": "damage",
+                "title": "交手留痕",
+                "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+                "plane": "mortal",
+                "actor": "洛逐止",
+                "target": "孟沧辰",
+                "timeLabel": "第 0.2 日",
+                "x": 90.95,
+                "y": 10.5,
+                "canObserve": true
+              },
+              {
+                "id": "combat-5-6",
+                "day": 0.2,
+                "type": "damage",
+                "title": "交手留痕",
+                "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+                "plane": "mortal",
+                "actor": "孟沧辰",
+                "target": "洛逐止",
+                "timeLabel": "第 0.2 日",
+                "x": 90.91629,
+                "y": 10.5,
+                "canObserve": true
+              }
+            ],
+            "second": [
+              {
+                "id": "combat-5-3",
+                "day": 0.2,
+                "type": "damage",
+                "title": "交手留痕",
+                "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+                "plane": "mortal",
+                "actor": "宁霜河",
+                "target": "洛紫霜",
+                "timeLabel": "第 0.2 日",
+                "x": 82.95,
+                "y": 18.5,
+                "canObserve": true
+              },
+              {
+                "id": "combat-5-4",
+                "day": 0.2,
+                "type": "damage",
+                "title": "交手留痕",
+                "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+                "plane": "mortal",
+                "actor": "洛紫霜",
+                "target": "宁霜河",
+                "timeLabel": "第 0.2 日",
+                "x": 82.91629,
+                "y": 18.5,
+                "canObserve": true
+              },
+              {
+                "id": "combat-5-5",
+                "day": 0.2,
+                "type": "damage",
+                "title": "交手留痕",
+                "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+                "plane": "mortal",
+                "actor": "洛逐止",
+                "target": "孟沧辰",
+                "timeLabel": "第 0.2 日",
+                "x": 90.95,
+                "y": 10.5,
+                "canObserve": true
+              },
+              {
+                "id": "combat-5-6",
+                "day": 0.2,
+                "type": "damage",
+                "title": "交手留痕",
+                "detail": "眼下的命中动静，不说明持续交战、胜败或伤因。",
+                "plane": "mortal",
+                "actor": "孟沧辰",
+                "target": "洛逐止",
+                "timeLabel": "第 0.2 日",
+                "x": 90.91629,
+                "y": 10.5,
+                "canObserve": true
+              }
+            ],
+            "stale": {
+              "ok": false,
+              "reason": "stale-or-inaccessible-event"
+            },
+            "saveFields": [
+              "v",
+              "app",
+              "w",
+              "h",
+              "seed",
+              "day",
+              "year",
+              "nextEntityId",
+              "nextVillageId",
+              "nextFactionId",
+              "terrain",
+              "entities",
+              "villages",
+              "factions",
+              "leylines",
+              "nextLeylineId",
+              "sites",
+              "nextSiteId",
+              "artifacts",
+              "nextArtifactId",
+              "artifactLog",
+              "ascended",
+              "plane",
+              "souls",
+              "nextSoulId",
+              "clans",
+              "nextClanId",
+              "clanLog",
+              "lastClanFoundDay",
+              "wars",
+              "nextWarId",
+              "warLog",
+              "rifts",
+              "nextRiftId",
+              "riftLog",
+              "wraiths",
+              "wraithLog",
+              "soulLog",
+              "possessionLog",
+              "dead",
+              "deadLog",
+              "busanzi",
+              "chronicle",
+              "milestones",
+              "watch",
+              "worldEvents",
+              "upper",
+              "nether",
+              "generation",
+              "meta"
+            ]
+          },
+          "loaded": {
+            "worldChanged": true,
+            "restoredHp": 3836.910706432872,
+            "old": {
+              "ok": false,
+              "reason": "stale-or-inaccessible-event"
+            },
+            "events": []
+          }
+        }
+      }
+    ],
+    "screenshots": [
+      "E:\\world4\\坐天观井-实验分支D1\\.worktrees\\g2.2\\reports\\release\\g2.2-feedback\\proof\\browser-final-verified\\canvas-health-news.png",
+      "E:\\world4\\坐天观井-实验分支D1\\.worktrees\\g2.2\\reports\\release\\g2.2-feedback\\proof\\browser-final-verified\\canvas-recovering.png",
+      "E:\\world4\\坐天观井-实验分支D1\\.worktrees\\g2.2\\reports\\release\\g2.2-feedback\\proof\\browser-final-verified\\three-health-news.png"
+    ],
+    "edge": {
+      "browser": "Edg/155.0.4283.45",
+      "debugPort": 9538,
+      "width": 1440,
+      "height": 1000
+    },
+    "lastClick": {
+      "x": 1050.75,
+      "y": 978,
+      "hit": "<button class=\"btn\" id=\"inkBtnLoad\" data-force-disabled=\"0\" title=\"读取「自动」\">读档</button>"
+    },
+    "webgl": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "runtimeErrors": [],
+    "consoleErrors": [],
+    "cleanup": {
+      "edgeExited": true,
+      "profileRemoved": true,
+      "serverExited": true
+    },
+    "finishedAt": "2026-10-13T06:24:00.730Z",
+    "rawReport": "reports/release/g2.2-feedback/proof/browser-final-verified/g22-browser.json",
+    "rawReportSha256": "c74573da906aeeffe752674efe0d92a77efdeddd11c6c54155af6e13ac22598f"
+  },
+  "browserAttempts": [
+    {
+      "name": "browser-first",
+      "pass": false,
+      "processExitCode": 1,
+      "completedChecks": 0,
+      "error": "Error: 页面内脚本抛错: ReferenceError: renderer is not defined\n    at <anonymous>:1:709\n    at <anonymous>:1:1136\n    at <anonymous>:1:1141\n    at Session.js (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/cdp.mjs:186:13)\n    at async freshHit (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:31:16)\n    at async file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:47:20\n    at async check (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:16:46)\n    at async file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:46:3",
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true
+      },
+      "rawReport": "reports/release/g2.2-feedback/proof/browser-first/g22-browser.json",
+      "rawReportSha256": "fcaf0db26481e57c7d8e752e0f9d3e9a95a6a1a43d2b2de83bdd03b33a9ee410"
+    },
+    {
+      "name": "browser-second",
+      "pass": false,
+      "processExitCode": 1,
+      "completedChecks": 4,
+      "error": "Error: 页面内脚本抛错: Error: Missing enabled control #ink3DToggle\n    at <anonymous>:1:99\n    at <anonymous>:1:349\n    at <anonymous>:1:354\n    at Session.js (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/cdp.mjs:186:13)\n    at async click (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:20:11)\n    at async file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:60:147\n    at async check (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:16:46)\n    at async file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:59:3",
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true
+      },
+      "rawReport": "reports/release/g2.2-feedback/proof/browser-second/g22-browser.json",
+      "rawReportSha256": "dfd77e4e45f9a01a3771b32dcac134de20562806946be6691ce382cf9493c869"
+    },
+    {
+      "name": "browser-third",
+      "pass": false,
+      "processExitCode": 1,
+      "completedChecks": 4,
+      "error": "AssertionError [ERR_ASSERTION]: Three did not activate\n    at file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:64:5\n    at async check (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:16:46)\n    at async file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:62:3",
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true
+      },
+      "rawReport": "reports/release/g2.2-feedback/proof/browser-third/g22-browser.json",
+      "rawReportSha256": "96d5b6ce2403ab38c5b0f728fc3bcd05c957480c0e451f4855dc41bc09b1cb34"
+    },
+    {
+      "name": "browser-fourth",
+      "pass": false,
+      "processExitCode": 1,
+      "completedChecks": 5,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at focusByButton (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:39:10)\n    at async file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:68:56\n    at async check (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:16:46)\n    at async file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:67:3",
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true
+      },
+      "rawReport": "reports/release/g2.2-feedback/proof/browser-fourth/g22-browser.json",
+      "rawReportSha256": "0b7f69e85e916e84d4dab4790b24384ac3e4686b5a7617dc1245d458ef5e0260"
+    },
+    {
+      "name": "browser-fifth",
+      "pass": false,
+      "processExitCode": 1,
+      "completedChecks": 7,
+      "error": "Error: 页面内脚本抛错: Error: Missing enabled control #inkSave\n    at <anonymous>:1:95\n    at <anonymous>:1:423\n    at <anonymous>:1:428\n    at Session.js (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/cdp.mjs:186:13)\n    at async click (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:20:11)\n    at async file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:80:21\n    at async check (file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:16:46)\n    at async file:///E:/world4/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95-%E5%AE%9E%E9%AA%8C%E5%88%86%E6%94%AFD1/.worktrees/g2.2/scripts/inkbox-g22-browser.mjs:76:3",
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true
+      },
+      "rawReport": "reports/release/g2.2-feedback/proof/browser-fifth/g22-browser.json",
+      "rawReportSha256": "c287825b8a9ed9a01d48f3b8b0b638dc4a2269e60d3c5956e46beb80d9881c73"
+    },
+    {
+      "name": "browser-final",
+      "pass": true,
+      "processExitCode": 0,
+      "completedChecks": 8,
+      "error": null,
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true
+      },
+      "rawReport": "reports/release/g2.2-feedback/proof/browser-final/g22-browser.json",
+      "rawReportSha256": "e060a1aa828fb4d63e8e79df497ae8a4693b66d02b39511599ad872091bb2d2d"
+    },
+    {
+      "name": "browser-final-verified",
+      "pass": true,
+      "processExitCode": 0,
+      "completedChecks": 8,
+      "error": null,
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true
+      },
+      "rawReport": "reports/release/g2.2-feedback/proof/browser-final-verified/g22-browser.json",
+      "rawReportSha256": "c74573da906aeeffe752674efe0d92a77efdeddd11c6c54155af6e13ac22598f"
+    }
+  ],
+  "sourceHashes": {
+    "src/inkbox/g1/characterRuntime.js": "da953684fc33b8716adfdd42344e2883872ef4bd157e6e6554c693495887fd68",
+    "src/inkbox/g2/combatObservationRuntime.js": "e4b5ac3b8801f87a068a2706837a6bb86ee5697687a4d7495760043b88e60208",
+    "src/inkbox/render/fxLayer.js": "52eb46d8e0259a8485a31a23d04a95934ed94226784fef3c09b3387c8afb4d10",
+    "src/inkbox/main.js": "91a2a57891ad4477e3dbaaead4d144a74985e13e6d360d6540e1222119f82991",
+    "inkbox.html": "0b68b92652c969135b647d0a73b95a937bd15c1b243aaee8dca3d38b34e74c25",
+    "src/inkbox/ui/g2/combat/combatObserverModel.js": "c7f61931fbb47f6261e4223f0146e7ef0f8e56663473b8eaab90e5b08a7069b8",
+    "src/inkbox/ui/g2/combat/combatObserverView.js": "2340dd8d550596b65e6e889beeb684bc2200d60fb861271badd8ad6a838a83ba",
+    "src/inkbox/ui/g2/combat/combatObserver.css": "5c9bd24b157f1d6fd5556422580794a063393b31345eee3aa2b1bb65d1a9d01e",
+    "scripts/inkbox-g22-runtime.mjs": "c21460538e35435c8cf00bfb06f40b9fdad99101be71d4688239c8a2d7556c3f",
+    "scripts/inkbox-g22-web.mjs": "c9a7bc5b3691767b8f03a32629c442693bf8664c6fbd8730317c2fa6c88f4a8b",
+    "scripts/inkbox-g22-browser.mjs": "34105db0f640206faf06fb3cf200c9d90ba5eaca8c9e2c8aa6750cb18de4ae10"
+  },
+  "contract": {
+    "health": "Frozen raw hp/maxHp/restUntil from the current resolved entity. restRemaining uses absolute root day. Text rounds HP to two decimals; raw scalars unchanged. Missing/dead-record fields remain unknown.",
+    "news": "Only living bound identities in currently visible accessible plane/region. Original event.day. Stage remains the sole drain. 4Hz presentation; per-frame ingestion readiness only.",
+    "sourceScope": "Current official combat-hit emitter admits mortal only. Upper tests prove actual regular advance/death/health facts, not invented upper combat.",
+    "history": "Existing G1 retained logs, death/arrival/ghost evidence and existing coverage limits. No permanent battle history or new save fields.",
+    "actions": "Fresh opaque event ID, original World/source/entity bindings retained through snapshot lifetime; recheck current snapshots and both visible identities. Host current coordinates, ignore UI coordinates.",
+    "limits": "Short news can merge, miss, expire or be disabled. No inference of fighting/victory/killer from hit/FX. Inherited hardware CPU/RAF failures remain Draft; new UI whole-product performance not claimed."
+  },
+  "independentReview": {
+    "status": "No P1/P2 found in final core and tests",
+    "reviewedBy": "g21_integration_reviewer",
+    "scope": "Read-only runtime, health, main wiring, FX day, lifecycle and tests; UI text/scalar precision and full-pool tombstone clipping checked",
+    "performanceClaim": false
+  },
+  "visualInspection": {
+    "passed": true,
+    "canvas": "Real HP loss and healing deadline fit existing four-tab card. Near news uses the right rail and readable stacked rows.",
+    "three": "Same formal health model and current visible news; renderer routes camera focus through the existing host.",
+    "goldenCount": 3
+  },
+  "independentVerification": {
+    "branch": "codex/g2.2-combat-observation-runtime",
+    "head": "b9ee2dfae24619b43e8a739ce704b2268e657387",
+    "createdAt": "2026-10-13T06:31:02.1890427Z",
+    "npmCiAlreadyPresent": true,
+    "sourceHashes": [
+      {
+        "path": "src/inkbox/g2/combatObservationRuntime.js",
+        "sha256": "e4b5ac3b8801f87a068a2706837a6bb86ee5697687a4d7495760043b88e60208"
+      },
+      {
+        "path": "src/inkbox/g1/characterRuntime.js",
+        "sha256": "da953684fc33b8716adfdd42344e2883872ef4bd157e6e6554c693495887fd68"
+      },
+      {
+        "path": "scripts/inkbox-g22-browser.mjs",
+        "sha256": "34105db0f640206faf06fb3cf200c9d90ba5eaca8c9e2c8aa6750cb18de4ae10"
+      },
+      {
+        "path": "scripts/inkbox-g22-runtime.mjs",
+        "sha256": "c21460538e35435c8cf00bfb06f40b9fdad99101be71d4688239c8a2d7556c3f"
+      },
+      {
+        "path": "scripts/inkbox-g22-web.mjs",
+        "sha256": "c9a7bc5b3691767b8f03a32629c442693bf8664c6fbd8730317c2fa6c88f4a8b"
+      },
+      {
+        "path": "src/inkbox/main.js",
+        "sha256": "91a2a57891ad4477e3dbaaead4d144a74985e13e6d360d6540e1222119f82991"
+      },
+      {
+        "path": "inkbox.html",
+        "sha256": "0b68b92652c969135b647d0a73b95a937bd15c1b243aaee8dca3d38b34e74c25"
+      }
+    ],
+    "commands": [
+      {
+        "command": "npm run test:g22",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-g22.log"
+      },
+      {
+        "command": "npm run test:g1",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-g1.log"
+      },
+      {
+        "command": "npm run test:g2",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-g2.log"
+      },
+      {
+        "command": "npm run test:core",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-core.log"
+      },
+      {
+        "command": "npm run test:presentation",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-presentation.log"
+      },
+      {
+        "command": "npm run test:g21:terrain",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-g21-terrain.log"
+      },
+      {
+        "command": "npm run build",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\build.log"
+      },
+      {
+        "command": "npm run test:package",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-package.log"
+      }
+    ],
+    "notRun": [
+      "npm run test:save-equivalence",
+      "performance matrix",
+      "npm run test:g22:browser"
+    ],
+    "packageVerification": {
+      "fileCount": 432,
+      "packageJsonLocalScriptTargets": 94,
+      "buildExitCode": 0,
+      "packageAuditExitCode": 0,
+      "outputDirectory": "dist/zuotian-guan-jing-inkbox-1.0.0",
+      "archive": "dist/zuotian-guan-jing-inkbox-1.0.0.zip"
+    }
+  },
+  "packageVerification": {
+    "pass": true,
+    "commands": [
+      {
+        "command": "npm run build",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\build.log"
+      },
+      {
+        "command": "npm run test:package",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.2-feedback\\proof\\final-verification\\test-package.log"
+      }
+    ],
+    "metadata": null
+  }
+}

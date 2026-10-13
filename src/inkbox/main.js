@@ -10,6 +10,7 @@ import { mulberry32 } from './core/noise.js';
 import { generateWorld } from './world/worldgen.js';
 import { createSandboxWorld, creationOptions, parseSeed, syncCreationControls, syncMapProgress, expandSandboxMap } from './ui/worldCreation.js';
 import { accessBounds, canAccess } from './world/mapProgress.js';
+import { createSandboxCombatObservation } from './g2/combatObservationRuntime.js';
 import { createSandboxCharacterRuntime } from './g1/sandboxRuntime.js';
 // 上界：`generateUpperWorld` 的 seed 收的是**凡间种子**，内部自己派生上界 seed
 // （所以这里绝不能先 xor 一次再传进去，那会双重派生）。
@@ -356,6 +357,7 @@ class Sandbox {
   // ── 启动 ────────────────────────────────────────────────
   boot() {
     this.qol = createQol(this);
+    this.combatObservation = createSandboxCombatObservation(this, $('inkCombatObserver'));
     this.buildToolPanel();
     this.bindEvents();
     this.setupSectionToggles();
@@ -377,6 +379,7 @@ class Sandbox {
     this.presetKey = presetKey;
     this.seed = seed >>> 0;
     this.world = createSandboxWorld(preset, this.seed, options);
+    this.combatObservation?.reset();
     this.life = new Life(this.world, mulberry32(this.seed ^ 0xa5a5a5a5));
     this.terrain = new TerrainLayer(this.world, { relief: this.camera.relief });
     // 上界：与凡间同尺寸的另一张地图 + 第二个 TerrainLayer。
@@ -1056,6 +1059,7 @@ class Sandbox {
             return;
           }
           this.world = world;
+          this.combatObservation?.reset();
           this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
           this.terrain.setWorld(this.world);
           // 上界也要跟着换：存档里带 upper 就复用，没带就按凡间 seed 重新派生
@@ -1142,6 +1146,7 @@ class Sandbox {
       try {
         const world = await importFile(file);
         this.world = world;
+          this.combatObservation?.reset();
         this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
         this.terrain.setWorld(this.world);
         // 同读档：导入的世界也要挂上它自己的上界，否则视界贴的是上一个世界的上界。
@@ -2056,6 +2061,7 @@ class Sandbox {
     // ⚠️ 收队列这一步收进 `PresentationStage`——本文件**不**写三遍
     //    `drainRuntimeEvents(world / world.upper / world.nether)`（那是「加一界改 N 处」）。
     this.stage.ingestWorlds(world).update(dt);
+    this.combatObservation?.refresh({ ingestedWorld: world, readyOnly: true });
 
     const speed = TIME.speeds[this.speedIndex].mult;
     const paused = this.speedIndex === 0 || editingTerrain;
@@ -2295,6 +2301,7 @@ class Sandbox {
     if (!world) return;
     syncMapProgress(this);
     this.g1.refresh();
+    this.combatObservation?.refresh();
     const stats = world.stats();
     const day = Math.floor(world.day);
     const year = Math.floor(day / TIME.daysPerYear) + 1;

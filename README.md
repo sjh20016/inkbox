@@ -2,6 +2,8 @@
 
 2026-10-13：本地更新到已合并 G1 的主线 `e1e5503`，G2.1 七个有效提交在 `codex/g2.1-combat-hardening-integration` 恢复。真实命中的 Canvas / 3D 剑气、火痕和雷光共用表现舞台，顶部“战斗墨痕”可关闭展示。地形局部优化保留固定历史 RGBA 门禁；完整硬件矩阵仍有 CPU / 帧间隔超预算，性能未封板。用户已允许在功能验证基线上继续 G2.2，两阶段保留 Draft，不合 main。证据见 [G2.1 恢复与收束报告](./G21_HARDENING_REPORT.md)；原始交付结论保留在 [G1 集成报告](./G1_INTEGRATION_REPORT.md) 和 [G2.1 历史记录](./G2_COMBAT_REPORT.md)。
 
+G2.2 在 `codex/g2.2-combat-observation-runtime` 接入命簿的真实气血与养伤、右栏“山河有声”交手近讯，以及宿主重新核验后的定位。近讯来自短命表现，生平继续读取正式保留历史；不把命中或墨痕消失解释为持续交战、胜负或死亡。交付与验收见 [G2.2 真实世界反馈报告](./G22_REAL_WORLD_FEEDBACK_REPORT.md)。
+
 2026-10-08：M2-C2E 本地工程验收完成：44项CPU、108种子矩阵、14项真实产品GPU、十二镜同机对照和600/6000帧联合耐久通过。最终美术裁决与最大图性能边界见 [本轮就绪报告](./M2C2E_READINESS.md)。开发分支 `codex/m2-c2e-living-terrain`。3D 创建入口提供标准／群山／水泽、有效 seed 0、512×320 和渐进探索；雕刻支持山脊、盆地、Undo／Redo。
 
 2026-10-06：**M2-C2C Meaningful Geography 本地验收完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。**既有四类 Site、Leyline、Upper qi、Nether yin 与持久 Rift / 瞬时 FX 已接入六个只读表现开关。完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。 CPU 11 模式 × 600 日、11 RNG 与 49 save keys 一致，full SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`。C2B Pass 1 的远端封板基线仍是 main `e0a851c`：Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、Windows Browser [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功，不能充作 C2C 远端证据。C2C 入口：[就绪](./M2C2C_READINESS.md)、[工程与24项答复](./M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](./M2C2C_PERFORMANCE_REPORT.md)、[视觉](./M2C2C_VISUAL_ACCEPTANCE.md)。

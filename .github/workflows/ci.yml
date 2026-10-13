@@ -69,6 +69,9 @@ jobs:
       - name: G2.1 地形像素回归（固定历史 RGBA 基准，无 Git 历史依赖）
         run: npm run test:g21:terrain
 
+      - name: G2.2 真实气血、养伤、观察纯度与短讯生命周期
+        run: npm run test:g22
+
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
         run: npm run test:render3d
 
@@ -203,6 +206,12 @@ jobs:
         run: npm run test:g2:browser
         env:
           INKBOX_REPORT_DIR: reports/ci/g2-browser
+          INKBOX_GPU: '0'
+
+      - name: G2.2 正式 Canvas / Three 命簿健康事实与真实交手近讯
+        run: npm run test:g22:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g22-browser
           INKBOX_GPU: '0'
 
       - name: Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0 Edge（共享服务器生命周期）
