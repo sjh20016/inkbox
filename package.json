@@ -111,7 +111,8 @@
     "test:g22": "npm run test:g22:runtime && npm run test:g22:web",
     "test:g22:browser": "node scripts/inkbox-g22-browser.mjs",
     "test:g23": "node scripts/inkbox-g23-observation.mjs && node scripts/inkbox-g23-runtime.mjs && node scripts/inkbox-g23-terrain.mjs",
-    "test:g23:browser": "node scripts/inkbox-g23-browser.mjs && node scripts/inkbox-g23-render-browser.mjs"
+    "test:g23:browser": "node scripts/inkbox-g23-browser.mjs && node scripts/inkbox-g23-render-browser.mjs",
+    "test:g2pf:instrumentation": "node scripts/inkbox-g2pf-config.mjs --check && node scripts/inkbox-g2-performance.mjs --check"
   },
   "dependencies": {
     "three": "0.186.1"

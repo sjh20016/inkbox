@@ -75,6 +75,9 @@ jobs:
       - name: G2.3 火灾灾迹、会话对照、权限与地表恢复
         run: npm run test:g23
 
+      - name: G2-PF 性能仪器参数及正式矩阵程序
+        run: npm run test:g2pf:instrumentation
+
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
         run: npm run test:render3d
 
