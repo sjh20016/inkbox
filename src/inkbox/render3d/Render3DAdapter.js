@@ -4,7 +4,7 @@ import { artDebugOptions } from './art/ArtDiagnostics.js';
 import { sculpt, strokeSamples, restoreHeights } from './terrain/sculpt.js';
 import { TerrainStroke, restoreTerrainStroke } from './terrain/sculpt.js';
 import { accessBounds, canAccess } from '../world/mapProgress.js';
-import { isViewTool } from '../ui/realmView.js';
+import { isViewTool, VIEW_CLICK_PX } from '../ui/realmView.js';
 
 /**
  * M2-B B4（§63）：界缘检视的文案。
@@ -95,10 +95,19 @@ export class Render3DAdapter {
       // 屏幕轨迹**只用于采样**；记下来的一律是 world x/y ⇒ 相机转了也不漂（§51）。
       // 开窗动作仍然只由 `Sandbox.commitSelection` 在 pointerup 一次成型（§49 / S9）。
       if (this.isViewMode()) {
+        const view = this.sandbox.getRealmViewState();
+        const visible = view.open ? this.hit(e) : null;
+        const inspectable = visible?.plane === view.targetPlane && view.region?.contains(visible.x + .5, visible.y + .5)
+          && canAccess(this.sandbox.world, visible.x, visible.y);
         const hit = this.hitMortal(e);
-        if (!hit) return;
+        if (!hit && !inspectable) return;
         this.canvas.setPointerCapture(e.pointerId);
-        this.realmDraw = { path: [[hit.world.x, hit.world.y]], last: hit.world };
+        // The target surface is pickable even when its mortal quad is masked.
+        // It can start a read-only click; drag samples still use mortal terrain.
+        this.realmDraw = { path: hit ? [[hit.world.x, hit.world.y]] : [], last: hit?.world || null,
+          world: this.sandbox.world, press: { x: e.clientX, y: e.clientY },
+          viewRegion: view.region, targetPlane: view.targetPlane, source: this.sandbox.world?.[view.targetPlane],
+          mode: this.mode, toolId: this.sandbox.toolId };
         this.renderer.setDraftPath(this.realmDraw.path);
         return;
       }
@@ -113,18 +122,12 @@ export class Render3DAdapter {
         return;
       }
       this.selectedBoundary = null;
-      this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y, kind: hit.kind, settlementId: hit.settlementId,
-        entityId: hit.entityId, artifactId: hit.artifactId, siteId: hit.siteId, leylineId: hit.leylineId, riftId: hit.riftId,
-        entityContainer: hit.entityContainer,
-        houseKey: hit.houseKey, houseX: hit.houseX, houseY: hit.houseY };
+      this.selectPicked(hit);
       // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
       this.renderer.setSelection(hit.x, hit.y, hit.plane);
       if (this.mode === 'burn') { this.burnAt(hit); return; }
       if (this.mode === 'inspect') {
-        sandbox.environmentObservation?.select({ plane: hit.plane, x: hit.x, y: hit.y });
-        if (['entity', 'house', 'settlement', 'artifact', 'site', 'leyline', 'rift'].includes(hit.kind))
-          sandbox.inspectPlaneSubject(hit.plane, this.selectedCell);
-        else sandbox.inspectPlaneAt(hit.plane, hit.x, hit.y);
+        this.inspectPicked(hit);
         return;
       }
       if (!this.canSculpt(hit)) {this.sandbox.notify(this.editReason(hit),2400);return;}
@@ -144,7 +147,7 @@ export class Render3DAdapter {
     // ⚠️ 只有 pointerup 才**提交**；pointercancel / lostpointercapture 一律**取消**
     //    （拖动被打断不该开出一扇玩家没画完的窗）。
     this.listen(this.canvas, 'pointerup', e => { if(this.stroke){const hit=this.hit(e);if(this.canSculpt(hit))this.stroke.sample(hit.world);}});
-    this.listen(this.canvas, 'pointerup', () => { this.commitRealmDraw(); this.endStroke(); });
+    this.listen(this.canvas, 'pointerup', e => { this.commitRealmDraw(e); this.endStroke(); });
     for (const event of ['pointercancel', 'lostpointercapture']) this.listen(this.canvas, event, () => this.endStroke());
     this.listen(this.canvas, 'pointerleave', () => { this.pointer = null; this.renderer.brush(null); });
     this.listen(window, 'blur', () => { this.endStroke(); this.pointer = null; });
@@ -231,6 +234,20 @@ export class Render3DAdapter {
   /** §52：划窗只 raycast **凡间** terrain —— 鼠标经过已经开着的目标界不参与。 */
   hitMortal(e) { const rect = this.canvas.getBoundingClientRect(); return this.renderer.pickPlane(e.clientX - rect.left, e.clientY - rect.top, 'mortal'); }
   isViewMode() { return isViewTool(this.mode); }
+  selectPicked(hit) {
+    this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y, kind: hit.kind, settlementId: hit.settlementId,
+      entityId: hit.entityId, artifactId: hit.artifactId, siteId: hit.siteId, leylineId: hit.leylineId, riftId: hit.riftId,
+      entityContainer: hit.entityContainer, houseKey: hit.houseKey, houseX: hit.houseX, houseY: hit.houseY };
+  }
+  inspectPicked(hit) {
+    this.selectedBoundary = null;
+    this.selectPicked(hit);
+    this.renderer.setSelection(hit.x, hit.y, hit.plane);
+    this.sandbox.environmentObservation?.select({ plane: hit.plane, x: hit.x, y: hit.y });
+    if (['entity', 'house', 'settlement', 'artifact', 'site', 'leyline', 'rift'].includes(hit.kind))
+      return this.sandbox.inspectPlaneSubject(hit.plane, this.selectedCell);
+    return this.sandbox.inspectPlaneAt(hit.plane, hit.x, hit.y);
+  }
   brushAccessBounds(){return accessBounds(this.sandbox.world);}
   editReason(hit){
     if(this.isViewMode())return '视界工具不修改地形';
@@ -332,12 +349,30 @@ export class Render3DAdapter {
    * 退化路径（点一下 / 只划一条线）也照样交出去：`commitSelection` 会用既有的
    *    「点一下 = 收起视界 / 太小 = 拒绝并发声」出口（不许静默）。
    */
-  commitRealmDraw() {
+  commitRealmDraw(event) {
     const draw = this.realmDraw;
     if (!draw) return null;
     this.realmDraw = null;
     this.renderer.setDraftPath(null);
+    if (draw.world && (draw.world !== this.sandbox.world || this.renderer.world !== draw.world)) return null;
+    const view = this.sandbox.getRealmViewState?.();
+    if (draw.mode !== undefined && draw.mode !== this.mode) return null;
+    if ('toolId' in draw && draw.toolId !== this.sandbox.toolId) return null;
+    if ('viewRegion' in draw && (draw.viewRegion !== view?.region || draw.targetPlane !== view?.targetPlane)) return null;
+    if ('source' in draw && draw.source !== this.sandbox.world?.[draw.targetPlane]) return null;
+    if (event && draw.press && view?.open && draw.viewRegion === view.region
+      && draw.targetPlane === view.targetPlane
+      && Math.hypot(event.clientX - draw.press.x, event.clientY - draw.press.y) < VIEW_CLICK_PX) {
+      const hit = this.hit(event), source = hit?.plane === 'mortal' ? this.sandbox.world : this.sandbox.world?.[hit?.plane];
+      if (hit?.plane === view.targetPlane && source === this.renderer.stages?.get(hit.plane)?.world
+        && canAccess(this.sandbox.world, hit.x, hit.y) && view.region.contains(hit.x + .5, hit.y + .5)) {
+        // A short click observes the actual visible plane without re-opening rifts.
+        this.inspectPicked(hit);
+        return { inspected: true, plane: hit.plane, x: hit.x, y: hit.y };
+      }
+    }
     const path = draw.path;
+    if (!path.length) return null;
     this.sandbox.commitSelection(path);
     this.sandbox.dirty = true;
     return path;

@@ -31,7 +31,7 @@ export const environmentPointVisible = (sb, plane, x, y) => createEnvironmentVis
 export function createEnvironmentObservationRuntime({ getWorld, getContext = () => ({}),
   isVisible = () => false, onFocus = () => {}, view } = {}) {
   let world, context, epoch = 0, sequence = 0, selected = null, baseline = null;
-  let findings = new Map(), search = null, vm = null, rendered = '', destroyed = false, message = '';
+  let findings = new Map(), search = null, vm = null, rendered = '', destroyed = false, message = '', invalidationNotice = '';
   function contextMatches(next) { return context?.key === next?.key && context?.region === next?.region; }
   function publish(observation = null, comparison = null) {
     vm = freeze({ schemaVersion: 1, contextId: `environment-context-${epoch}`, observationId: selected?.id || null,
@@ -46,9 +46,12 @@ export function createEnvironmentObservationRuntime({ getWorld, getContext = () 
     const hadObservation = !!selected || !!baseline || !!findings.size;
     world = getWorld?.(); context = getContext(); epoch++; selected = null; baseline = null;
     findings.clear(); search = null;
-    message = hadObservation ? (reason === 'access-changed'
+    if (hadObservation) invalidationNotice = reason === 'access-changed'
       ? '位面或访问范围已变化，会话对照已清除；请重新检视。'
-      : '世界已替换，会话对照已清除；它未作为长期史料存档。') : '';
+      : '世界已替换，会话对照已清除；它未作为长期史料存档。';
+    // Load also closes the old Region. Preserve the explanation across that
+    // second context reset until the player starts a fresh observation.
+    message = invalidationNotice;
     return publish();
   }
   function sync() {
@@ -96,6 +99,7 @@ export function createEnvironmentObservationRuntime({ getWorld, getContext = () 
     sync();
     const observation = observeEnvironment(world, { plane, x, y, radius, isVisible });
     if (!observation.ok) return { ok: false, reason: observation.reason, observation };
+    invalidationNotice = '';
     if (!sameArea(vm?.observation, observation) || !valid(selected)) selected = bind(observation);
     if (baseline && (!sameArea(baseline.observation, observation) || !valid(baseline.binding))) {
       baseline = null; message = '观察地点已变化，请在此地重新记下基线。';
@@ -109,6 +113,7 @@ export function createEnvironmentObservationRuntime({ getWorld, getContext = () 
     if (!action || action.contextId !== `environment-context-${epoch}`)
       return { ok: false, reason: 'stale-context' };
     if (action.type === 'find-fires') {
+      invalidationNotice = '';
       const result = findCurrentFires(world, { plane: context?.plane || 'mortal', isVisible });
       findings.clear();
       const items = result.items.map(item => {
@@ -158,7 +163,14 @@ export function createEnvironmentObservationRuntime({ getWorld, getContext = () 
 
 export function createSandboxEnvironmentObservation(sb, root) {
   let runtime, visible = () => false;
-  const view = root ? createEnvironmentObserverView(root, { onAction: action => runtime.handleAction(action) }) : null;
+  const view = root ? createEnvironmentObserverView(root, { onAction: action => {
+    const result = runtime.handleAction(action);
+    if (!result.ok) {
+      runtime.refresh();
+      sb.notify?.('这次观察请求已失效或位置不可访问，请重新检视或查找火情。', 2600);
+    }
+    return result;
+  } }) : null;
   runtime = createEnvironmentObservationRuntime({ getWorld: () => sb.world, view,
     isVisible: (plane, x, y) => visible(plane, x, y),
     getContext: () => {
