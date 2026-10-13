@@ -1353,7 +1353,7 @@ check('T6 结构：唯一提交点、无第二套选择状态、不碰 openRifts
   assert.match(source, /pickPlane\([^)]*'mortal'\)/, '划窗必须只拾凡间（§52）');
   // 打断路径必须取消而不是提交
   assert.match(source, /endStroke\(\)\s*\{[\s\S]{0,200}?cancelRealmDraw\(\)/, 'endStroke 必须先取消未完成的划窗');
-  assert.match(source, /'pointerup', \(\) => \{ this\.commitRealmDraw\(\); this\.endStroke\(\); \}/);
+  assert.match(source, /'pointerup', e => \{ this\.commitRealmDraw\(e\); this\.endStroke\(\); \}/);
 });
 
 check('T6 结构：视界工具并进正式工具表、共用同一个 toolId（§48/§54）', () => {

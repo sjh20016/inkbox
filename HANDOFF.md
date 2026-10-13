@@ -1,5 +1,11 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 当前开发增量 · 2026-10-13 · G2.3「山河有痕」
+
+G2.3 在 G2.2 验收 head `9cbd0d83948bd0ca91df613af2dba1a1688cf9f3` 上以独立分支 `codex/g2.3-real-environment-aftermath` 开发。正式焚林、World 灾迹、地点检视、会话对照和 Three 地表读取已经接通；最终验收与接口见 [G2.3 交付](./G23_ENVIRONMENT_AFTERMATH_REPORT.md)。上游 G2.1 完整硬件 CPU / RAF 失败继续保留；本分支保持 Draft，不合 main，不拉取或修改 B数值系统。G2.4 只有 [候选设计](./G23_FUTURE_FIRE_ABILITY_DESIGN.md)，未接入模拟。
+
+本地根工作文件夹同步有效产品代码，施工和原始验收材料位于独立 `.g23-worktree`。后续接手以当前实际分支、源码和 G2.3 报告为准，下面段落保留各阶段当时状态。
+
 ## 当前交接 · 2026-10-09 · G1-R Runtime
 
 产品主线仍为 GitHub main。Runtime 分支 `feat/g1-runtime-codex` 从双方共同基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 开工，独立交付人物真实身份、快照、敕令、记挂、地图成长和回归体系。正式人物卡仍归 `feat/g1-presentation-web`；Runtime 沿用旧展示，不修改 Presentation 目录或 B数值系统，不单独合并 main。用户明确发出“开始 G1 集成”后才进入双方集成和正式 UI 验收；C5 视觉协调已按委托书延期。

@@ -72,6 +72,9 @@ jobs:
       - name: G2.2 真实气血、养伤、观察纯度与短讯生命周期
         run: npm run test:g22
 
+      - name: G2.3 火灾灾迹、会话对照、权限与地表恢复
+        run: npm run test:g23
+
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
         run: npm run test:render3d
 
@@ -212,6 +215,12 @@ jobs:
         run: npm run test:g22:browser
         env:
           INKBOX_REPORT_DIR: reports/ci/g22-browser
+          INKBOX_GPU: '0'
+
+      - name: G2.3 正式 Canvas / Three 焚林、灾迹、恢复与存读档
+        run: npm run test:g23:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g23-browser
           INKBOX_GPU: '0'
 
       - name: Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0 Edge（共享服务器生命周期）
