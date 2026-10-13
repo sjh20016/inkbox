@@ -100,6 +100,14 @@ const FILES = [
   'scripts/inkbox-g22-web.mjs',
   'scripts/inkbox-g22-browser.mjs',
   'G22_REAL_WORLD_FEEDBACK_REPORT.md',
+  'scripts/inkbox-g23-observation.mjs',
+  'scripts/inkbox-g23-runtime.mjs',
+  'scripts/inkbox-g23-terrain.mjs',
+  'scripts/inkbox-g23-browser.mjs',
+  'scripts/inkbox-g23-render-browser.mjs',
+  'G23_ENVIRONMENT_AUDIT.md',
+  'G23_ENVIRONMENT_AFTERMATH_REPORT.md',
+  'G23_FUTURE_FIRE_ABILITY_DESIGN.md',
   'LONG_TERM_DIRECTION.md',
   'scripts/inkbox-render3d.mjs',
   'scripts/inkbox-render3d-browser.mjs',
@@ -298,6 +306,7 @@ const DIRECTORIES = [
 ];
 const RELEASE_SUMMARIES = [
   'reports/release/g2.2-feedback/summary/acceptance-summary.json',
+  'reports/release/g2.3-aftermath/summary/acceptance-summary.json',
   'reports/release/g2.1-hardening/summary/acceptance-summary.json',
   'reports/release/g2.1-hardening/summary/recovery.json',
   'reports/release/render3d-m2c2e/summary/acceptance-summary.json',
