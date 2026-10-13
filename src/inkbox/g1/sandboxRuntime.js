@@ -91,6 +91,9 @@ export function createSandboxCharacterRuntime(sb, views = {}) {
     if (candidate.world !== sb.world || now?.entity !== candidate.entity) {
       sb.notify?.('人物选择已失效', 2600); return { ok: false, reason: 'stale-selection' };
     }
+    // Entity picks use floor in the formal Three PlanePicker; share its cell identity.
+    sb.environmentObservation?.select({ plane: now.currentPlane || now.plane,
+      x: Math.floor(now.entity.x), y: Math.floor(now.entity.y) });
     return open(candidate.key);
   }
   function inspectCanvas(sx, sy, plane = 'mortal') {

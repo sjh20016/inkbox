@@ -31,8 +31,9 @@ export function gridGeometry(world, coordinates) {
 
 export class TerrainMesh {
   // `elevation` 缺省只为**测试 / 历史调用**保留（等价 RAW）；生产路径由 PlaneStage 显式传入。
-  constructor(world, coordinates, elevation = new ElevationField(world)) {
+  constructor(world, coordinates, elevation = new ElevationField(world), fireEnabled = false) {
     this.world = world;
+    this.fireEnabled = fireEnabled;
     this.elevation = elevation;
     this.regionGeometry = null;
     this.regionMask = null;
@@ -52,7 +53,7 @@ export class TerrainMesh {
     const wasEnabled = !!this.artProfile;
     this.artProfile = profile || null;
     if (profile) {
-      if (!this.artData) this.artData = new TerrainDataTextures(this.world, this.elevation);
+      if (!this.artData) this.artData = new TerrainDataTextures(this.world, this.elevation, this.fireEnabled);
       else if (!wasEnabled) {
         this.artData.heightTexture.clearUpdateRanges(); this.artData.typeTexture.clearUpdateRanges();
         this.artData.update({ x0: 0, y0: 0, x1: this.world.w - 1, y1: this.world.h - 1 });
@@ -105,17 +106,28 @@ export class TerrainMesh {
     if (!region) return;
     const writeHeight = options.height !== false;
     const writeType = options.type !== false;
-    if (!writeHeight && !writeType) return;
+    const writeFire = this.fireEnabled && options.fire === true;
+    const writeColor = writeType || writeFire;
+    if (!writeHeight && !writeColor) return;
     const { position, color } = this.geometry.attributes, w = this.world;
     for (let y = region.y0; y <= region.y1; y++) {
       for (let x = region.x0; x <= region.x1; x++) {
         const i = y * w.w + x;
         if (writeHeight) position.setY(i, this.elevation.node(x, y));
-        if (writeType) { const c = this.palette[w.type[i]] || this.palette[5]; color.setXYZ(i, c.r, c.g, c.b); }
+        if (writeColor) {
+          const c = this.palette[w.type[i]] || this.palette[5];
+          const fire = this.fireEnabled ? w.fire[i] : 0;
+          if (fire > 0.02) {
+            const heat = Math.min(1, fire * 1.15), mix = heat * 0.86;
+            color.setXYZ(i, c.r * (1 - mix) + mix,
+              c.g * (1 - mix) + (214 - heat * 70) / 255 * mix,
+              c.b * (1 - mix) + (120 - heat * 90) / 255 * mix);
+          } else color.setXYZ(i, c.r, c.g, c.b);
+        }
       }
       const start = (y * w.w + region.x0) * 3, count = (region.x1 - region.x0 + 1) * 3;
       if (writeHeight) position.addUpdateRange(start, count);
-      if (writeType) color.addUpdateRange(start, count);
+      if (writeColor) color.addUpdateRange(start, count);
     }
     if (writeHeight) {
       position.needsUpdate = true;
@@ -131,7 +143,7 @@ export class TerrainMesh {
           regionGeometry:this.regionGeometry,inside:this.regionInside,quadW:qw,quadH:w.h-1});
       }
     }
-    if (writeType) color.needsUpdate = true;
+    if (writeColor) color.needsUpdate = true;
     // The existing dirty channels are also the only GPU snapshot update source.
     // Disabled art does not collect unbounded upload ranges; re-enable performs a full sync.
     if (this.artProfile) this.artData.update(region, options);

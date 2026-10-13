@@ -57,7 +57,7 @@ export class Render3DAdapter {
     });
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
     Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
-    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="ridge">山脊</option><option value="basin">盆地</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"><output data-radius>6</output></label><label>强度 <input aria-label="笔刷强度" type="range" min="0.005" max="0.12" step="0.005" value="0.035" style="width:65px"><output data-strength>0.035</output></label><button data-action="undo">撤销雕刻</button><button data-action="redo">重做雕刻</button><span data-edit-state></span><button data-action="fit">全图</button><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><details><summary>操作 / 性能</summary><div>撤销/重做仅限当前 3D 会话；创建、加载世界或切回 Canvas 会清除。</div><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
+    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="burn">焚林</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="ridge">山脊</option><option value="basin">盆地</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"><output data-radius>6</output></label><label>强度 <input aria-label="笔刷强度" type="range" min="0.005" max="0.12" step="0.005" value="0.035" style="width:65px"><output data-strength>0.035</output></label><button data-action="undo">撤销雕刻</button><button data-action="redo">重做雕刻</button><span data-edit-state></span><button data-action="fit">全图</button><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><details><summary>操作 / 性能</summary><div>撤销/重做仅限当前 3D 会话；创建、加载世界或切回 Canvas 会清除。</div><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
     stage.append(this.panel);
     this.readout = document.createElement('div'); this.readout.id = 'inkRender3DReadout';
     Object.assign(this.readout.style, { position: 'absolute', bottom: '12px', left: '12px', zIndex: '3', padding: '6px 10px', background: '#eee5d3eb', borderRadius: '4px', fontSize: '12px', pointerEvents: 'none' });
@@ -72,6 +72,7 @@ export class Render3DAdapter {
       // M2-B B3（§48）：视界是**正式工具**，与 Canvas 工具表共用同一个 toolId ——
       // 目标位面、门控、V7 语义全部由 `viewPlaneForTool` 一处决定。
       if (isViewTool(next)) this.sandbox.selectTool(next);
+      if (next === 'burn' || next === 'inspect') this.sandbox.selectTool(next);
     });
     this.listen(this.panel.querySelector('[aria-label="笔刷半径"]'), 'input', e => { this.endStroke();this.radius = Number(e.target.value);this.panel.querySelector('[data-radius]').textContent=this.radius; });
     this.listen(this.panel.querySelector('[aria-label="笔刷强度"]'), 'input', e => { this.endStroke();this.strength = Number(e.target.value);this.panel.querySelector('[data-strength]').textContent=this.strength.toFixed(3); });
@@ -118,7 +119,9 @@ export class Render3DAdapter {
         houseKey: hit.houseKey, houseX: hit.houseX, houseY: hit.houseY };
       // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
       this.renderer.setSelection(hit.x, hit.y, hit.plane);
+      if (this.mode === 'burn') { this.burnAt(hit); return; }
       if (this.mode === 'inspect') {
+        sandbox.environmentObservation?.select({ plane: hit.plane, x: hit.x, y: hit.y });
         if (['entity', 'house', 'settlement', 'artifact', 'site', 'leyline', 'rift'].includes(hit.kind))
           sandbox.inspectPlaneSubject(hit.plane, this.selectedCell);
         else sandbox.inspectPlaneAt(hit.plane, hit.x, hit.y);
@@ -241,6 +244,23 @@ export class Render3DAdapter {
   }
   withinBrushBounds(bounds,x,y){return !bounds||x>=bounds.x0&&y>=bounds.y0&&x<=bounds.x1&&y<=bounds.y1;}
   canSculpt(hit) {return !this.editReason(hit);}
+  /** The existing burn tool owns World mutation; this adapter only supplies an authorized pick. */
+  burnAt(hit) {
+    if (!this.active || this.mode !== 'burn' || this.renderer.world !== this.sandbox.world
+      || this.sandbox.getRealmViewState?.().open
+      || !hit || !this.canSculpt(hit) || !Number.isFinite(hit.x) || !Number.isFinite(hit.y)) {
+      this.sandbox.notify('请在当前已开放的凡间地表焚林，先关闭视界与调试面片。', 2400);
+      return false;
+    }
+    const sandbox = this.sandbox;
+    sandbox.selectTool('burn');
+    sandbox.history.begin();
+    sandbox.applyTool(true, { point: { x: Math.round(hit.x), y: Math.round(hit.y) }, radius: this.radius });
+    const changed = sandbox.history.end('焚林');
+    sandbox.qol.syncUndoState();
+    if (changed) sandbox.notify('焚林已落笔 · 火势与灾迹可用检视观察。', 2600);
+    return !!changed;
+  }
   stamp(point, plane) {
     if(plane!=='mortal'||!this.stroke||this.stroke.plane!=='mortal'||this.stroke.world!==this.sandbox.world||!this.canSculpt({plane,world:point}))return;
     if(typeof this.stroke.sample==='function'){this.stroke.sample(point);return;}
