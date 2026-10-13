@@ -1,6 +1,12 @@
 # Inkbox 测试与验证入口
 
-## Current Truth · 2026-10-13 · G2.1 恢复与未封板性能
+## Current Truth · 2026-10-13 · G2.2 真实世界反馈
+
+G2.2 基于已验证的 G2.1 `b9ee2df`，继续保留 Draft 性能风险。`npm run test:g22` 检查真实人物健康事实、只读短讯、身份/世界代次、视界权限及观察纯度，进入 CI Fast；`npm run test:g22:browser` 检查正式 Canvas / Three 健康显示与交手近讯，进入手动 Browser Smoke。报告见 [G2.2 交付记录](../G22_REAL_WORLD_FEEDBACK_REPORT.md) 和 [compact 摘要](../reports/release/g2.2-feedback/summary/acceptance-summary.json)。新增反馈不写 World、RNG、存档或永久战斗史。
+
+本轮 Runtime 8 组、Web 6 组、实际 Edge 8/8 通过，真实 AI/mercy/存读档路径与只读事实均已验证；独立复验 G22、G1、G2、core、presentation 和 324 项地形像素门禁全部 exit 0。当前正式 combat 源仅凡间，未制造子界交手；上界健康/离世使用正式推进和名录验证。前期验收脚本调试失败保留，不能由功能通过推导完整硬件预算通过。
+
+## G2.1 恢复与未封板性能
 
 主线 BASE 为 `e1e5503`。G2.1 七个有效增量已在 `codex/g2.1-combat-hardening-integration` 恢复；本轮恢复门禁及全部失败矩阵见 [G2.1 收束报告](../G21_HARDENING_REPORT.md) 和 [compact 摘要](../reports/release/g2.1-hardening/summary/acceptance-summary.json)。用户允许先接入 G2.2，保留 Draft 性能风险；这不等于性能预算通过。
 

@@ -96,6 +96,10 @@ const FILES = [
   'scripts/inkbox-g21-terrain-equivalence.mjs',
   'tests/fixtures/g21-terrain-rgba.json',
   'G21_HARDENING_REPORT.md',
+  'scripts/inkbox-g22-runtime.mjs',
+  'scripts/inkbox-g22-web.mjs',
+  'scripts/inkbox-g22-browser.mjs',
+  'G22_REAL_WORLD_FEEDBACK_REPORT.md',
   'LONG_TERM_DIRECTION.md',
   'scripts/inkbox-render3d.mjs',
   'scripts/inkbox-render3d-browser.mjs',
@@ -293,6 +297,7 @@ const DIRECTORIES = [
   'assets/environment/docs',
 ];
 const RELEASE_SUMMARIES = [
+  'reports/release/g2.2-feedback/summary/acceptance-summary.json',
   'reports/release/g2.1-hardening/summary/acceptance-summary.json',
   'reports/release/g2.1-hardening/summary/recovery.json',
   'reports/release/render3d-m2c2e/summary/acceptance-summary.json',

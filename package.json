@@ -105,7 +105,11 @@
     "test:g2": "npm run test:g2:combat && npm run test:g2:presentation",
     "test:g2:browser": "node scripts/inkbox-g2-browser.mjs",
     "test:g2:performance": "node scripts/inkbox-g2-performance.mjs",
-    "test:g21:terrain": "node scripts/inkbox-g21-terrain-equivalence.mjs"
+    "test:g21:terrain": "node scripts/inkbox-g21-terrain-equivalence.mjs",
+    "test:g22:runtime": "node scripts/inkbox-g22-runtime.mjs",
+    "test:g22:web": "node scripts/inkbox-g22-web.mjs",
+    "test:g22": "npm run test:g22:runtime && npm run test:g22:web",
+    "test:g22:browser": "node scripts/inkbox-g22-browser.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

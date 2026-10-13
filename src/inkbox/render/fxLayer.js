@@ -145,6 +145,7 @@ export function ingestRuntimeEvents(fx, events, world) {
     const item = {
       plane,
       kind,
+      day: Number.isFinite(event.day) ? event.day : null,
       x: event.x,
       y: event.y,
       ttl,
