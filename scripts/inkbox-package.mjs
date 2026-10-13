@@ -86,6 +86,17 @@ const FILES = [
   'scripts/inkbox-g1-integration.mjs',
   'G1_RUNTIME_HANDOFF.md',
   'G1_INTEGRATION_REPORT.md',
+  'scripts/inkbox-g2-combat.mjs',
+  'scripts/inkbox-g2-presentation.mjs',
+  'scripts/inkbox-g2-three.mjs',
+  'scripts/inkbox-g2-browser.mjs',
+  'scripts/inkbox-g2-performance.mjs',
+  'scripts/inkbox-g2-fixtures.mjs',
+  'G2_COMBAT_REPORT.md',
+  'scripts/inkbox-g21-terrain-equivalence.mjs',
+  'tests/fixtures/g21-terrain-rgba.json',
+  'G21_HARDENING_REPORT.md',
+  'LONG_TERM_DIRECTION.md',
   'scripts/inkbox-render3d.mjs',
   'scripts/inkbox-render3d-browser.mjs',
   // ⚠️ 这个脚本用外部 Playwright（`INKBOX_PLAYWRIGHT`），本机默认装不到 ⇒ 它是**可选** QA。
@@ -282,6 +293,8 @@ const DIRECTORIES = [
   'assets/environment/docs',
 ];
 const RELEASE_SUMMARIES = [
+  'reports/release/g2.1-hardening/summary/acceptance-summary.json',
+  'reports/release/g2.1-hardening/summary/recovery.json',
   'reports/release/render3d-m2c2e/summary/acceptance-summary.json',
   'reports/release/render3d-m2c2d/summary/acceptance-summary.json',
   'reports/release/render3d-m2c2d1/summary/acceptance-summary.json',

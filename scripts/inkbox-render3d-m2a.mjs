@@ -185,7 +185,7 @@ check('Canvas、Render3D 与裂缝视界共享唯一派生 RealmViewState', () =
 
 check('三界 runtime event 只由 PresentationStage 消费，Canvas/Three 共用同一 FX state', () => {
   const world = makeWorld();
-  emitRuntimeEvent(world, 'rift-open', { x: 2, y: 3 });
+  emitRuntimeEvent(world, 'rift-open', { x: 45, y: 38 });
   emitRuntimeEvent(world.upper, 'ascension', { x: 4, y: 5 });
   emitRuntimeEvent(world.nether, 'major-death', { x: 6, y: 7 });
   const presentation = new PresentationStage();
@@ -198,6 +198,8 @@ check('三界 runtime event 只由 PresentationStage 消费，Canvas/Three 共�
   host.setPresentation(presentation);
   const selection = { path: [[1, 1], [40, 1], [40, 35], [1, 35]], x0: 1, y0: 1, x1: 40, y1: 35, area: 1326 };
   host.setRealmViewState(getRealmViewState({ selection, toolId: 'viewUpper' }));
+  emitRuntimeEvent(world, 'rift-open', { x: 2, y: 3 });
+  presentation.ingestWorld(world);
   host.update(0.016);
   assert.equal(host.presentation, presentation);
   assert.equal(host.stages.get('mortal').fxProbe.mesh.count, 1);
@@ -205,9 +207,14 @@ check('三界 runtime event 只由 PresentationStage 消费，Canvas/Three 共�
   host.setRealmViewState(getRealmViewState({ selection, toolId: 'viewNether' }));
   host.update(0.016);
   assert.equal(host.stages.get('nether').fxProbe.mesh.count, 1);
+  assert.equal(host.stages.get('upper').fxProbe.mesh.count, 0, 'closed target clears submitted FX');
+  assert.equal(host.stages.get('mortal').fxProbe.mesh.count, 1, 'only the mortal footprint outside the window is submitted');
+  host.setRealmViewState(getRealmViewState({ selection: null, toolId: 'inspect' }));
+  host.update(0.016);
+  assert.equal(host.stages.get('mortal').fxProbe.mesh.count, 2, 'closing the window restores both still-live mortal events');
   for (const plane of ['mortal', 'upper', 'nether']) {
     const snapshot = presentation.snapshotPlane(plane);
-    assert.equal(snapshot.items.length, 1);
+    assert.equal(snapshot.items.length, plane === 'mortal' ? 2 : 1);
     assert.equal(snapshot.plane, plane);
     assert.notEqual(snapshot.items[0], presentation.fx.items.find(item => item.plane === plane));
     assert.throws(() => { snapshot.items[0].x = -1; }, TypeError);

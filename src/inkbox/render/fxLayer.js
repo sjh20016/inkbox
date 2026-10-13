@@ -18,8 +18,11 @@
 //    （D7 时这里只演凡间；D8-C 起上界 / 幽冥的事件也会入队，由 `presentationStage.js`
 //     统一收齐、再分发给主画布与视界窗。）
 
-/** 同时活跃的 FX 上限。超了丢**最老的**——它们只是视觉反馈，不是历史。 */
+/** Total visual budget. Major events evict combat first; combat cannot evict major events. */
 export const FX_CAP = 64;
+export const COMBAT_FX_CAP = 32;
+export const COMBAT_FX_PLANE_CAP = 16;
+const COMBAT_TTL = Object.freeze({ blade: 0.35, fire: 0.5, thunder: 0.7 });
 
 /** 各事件类型的默认时长（秒）。 */
 const FX_TTL = Object.freeze({
@@ -37,6 +40,7 @@ const FX_TTL = Object.freeze({
 
 /** runtime event type → fx kind（只有列出的类型会被演出）。 */
 const EVENT_TO_FX = Object.freeze({
+  'combat-hit': 'combat',
   tribulation: 'lightning',
   ascension: 'ascension',
   'rift-open': 'rift',
@@ -49,9 +53,51 @@ const EVENT_TO_FX = Object.freeze({
 });
 
 export function createFxState() {
-  return { items: [] };
+  return { items: [], combatReceived: 0, combatAccepted: 0, combatMerged: 0, combatDropped: 0, combatEvicted: 0 };
 }
 
+/** Isolated counters for budgeting and diagnostics; not simulation state. */
+export function fxStats(fx) {
+  const items = fx?.items || [], byPlane = {}, combatByPlane = {};
+  for (const plane of ['mortal', 'upper', 'nether']) {
+    byPlane[plane] = items.filter(item => item.plane === plane).length;
+    combatByPlane[plane] = items.filter(item => item.plane === plane && item.kind === 'combat').length;
+  }
+  return Object.freeze({ active: items.length, combatActive: items.filter(item => item.kind === 'combat').length,
+    byPlane: Object.freeze(byPlane), combatByPlane: Object.freeze(combatByPlane),
+    capacity: FX_CAP, combatCapacity: COMBAT_FX_CAP, combatPlaneCapacity: COMBAT_FX_PLANE_CAP,
+    combatReceived: fx?.combatReceived || 0, combatAccepted: fx?.combatAccepted || 0,
+    combatMerged: fx?.combatMerged || 0, combatDropped: fx?.combatDropped || 0, combatEvicted: fx?.combatEvicted || 0 });
+}
+function validCombat(event) {
+  return ['mortal', 'upper', 'nether'].includes(event.plane) && Number.isFinite(event.day)
+    && Number.isSafeInteger(event.subjectId) && event.subjectId > 0
+    && Number.isSafeInteger(event.targetId) && event.targetId > 0 && event.subjectId !== event.targetId
+    && Number.isFinite(event.intensity) && Number.isFinite(event.data?.fromX) && Number.isFinite(event.data?.fromY)
+    && Object.hasOwn(COMBAT_TTL, event.data?.style) && ['low', 'mid', 'high'].includes(event.data?.tier);
+}
+function admitFx(fx, item) {
+  const combat = item.kind === 'combat';
+  if (combat) {
+    fx.combatReceived = (fx.combatReceived || 0) + 1;
+    const match = fx.items.find(existing => existing.kind === 'combat' && existing.plane === item.plane
+      && existing.subjectId === item.subjectId && existing.targetId === item.targetId && existing.data.style === item.data.style);
+    if (match) {
+      // Refresh one existing short-lived feedback instead of stacking marks for the same pair.
+      Object.assign(match, item); fx.combatMerged = (fx.combatMerged || 0) + 1; return;
+    }
+    const count = fx.items.filter(existing => existing.kind === 'combat');
+    if (count.length >= COMBAT_FX_CAP || count.filter(existing => existing.plane === item.plane).length >= COMBAT_FX_PLANE_CAP || fx.items.length >= FX_CAP) {
+      fx.combatDropped = (fx.combatDropped || 0) + 1; return;
+    }
+  } else if (fx.items.length >= FX_CAP) {
+    const combatIndex = fx.items.findIndex(existing => existing.kind === 'combat');
+    if (combatIndex >= 0) { fx.items.splice(combatIndex, 1); fx.combatEvicted = (fx.combatEvicted || 0) + 1; }
+    else fx.items.shift(); // Preserve the existing oldest-first major-event behavior.
+  }
+  fx.items.push(item);
+  if (combat) fx.combatAccepted = (fx.combatAccepted || 0) + 1;
+}
 /**
  * 确定性视觉哈希：FNV-1a 之后再过一次 murmur3 finalizer，返回 [0,1)。
  * ⚠️ 直接用 FNV-1a 的高位当均匀数会有偏置（见项目故障类「哈希当均匀分布用」），
@@ -93,7 +139,8 @@ export function ingestRuntimeEvents(fx, events, world) {
     }
     if (!kind) continue;
 
-    const ttl = FX_TTL[kind] ?? 0.8;
+    if (kind === 'combat' && !validCombat(event)) continue;
+    const ttl = kind === 'combat' ? COMBAT_TTL[event.data.style] : FX_TTL[kind] ?? 0.8;
     const seed = visualHash(event.type, event.day ?? 0, event.x, event.y, event.subjectId ?? 0);
     const item = {
       plane,
@@ -103,13 +150,14 @@ export function ingestRuntimeEvents(fx, events, world) {
       ttl,
       age: 0,
       seed,
-      data: event.data || null,
+      data: kind === 'combat' ? { style: event.data.style, fromX: event.data.fromX, fromY: event.data.fromY, tier: event.data.tier } : event.data || null,
+      intensity: kind === 'combat' ? Math.max(0.2, Math.min(1, event.intensity)) : event.intensity ?? null,
       subjectId: event.subjectId ?? null,
       targetId: event.targetId ?? null,
     };
-    fx.items.push(item);
+    admitFx(fx, item);
   }
-  if (fx.items.length > FX_CAP) fx.items.splice(0, fx.items.length - FX_CAP);
+
   return fx;
 }
 
@@ -150,6 +198,7 @@ export function drawFx(ctx, camera, world, fx, plane = 'mortal') {
     const k = item.ttl > 0 ? Math.min(1, item.age / item.ttl) : 1;
     const zoom = camera.zoom;
     switch (item.kind) {
+      case 'combat': drawCombat(ctx, camera, world, item, k, zoom); break;
       case 'lightning': drawLightning(ctx, camera, world, item, k, zoom); break;
       case 'meteor': drawMeteor(ctx, camera, world, item, k, zoom); break;
       case 'ascension': drawAscension(ctx, camera, world, item, k, zoom); break;
@@ -166,6 +215,49 @@ export function drawFx(ctx, camera, world, fx, plane = 'mortal') {
   ctx.restore();
 }
 
+// Entity coordinates are already world XY, unlike the tile-centered major effects.
+function projectEntity(camera, world, x, y) {
+  const cx = Math.max(0, Math.min(world.w - 1, Math.floor(x))), cy = Math.max(0, Math.min(world.h - 1, Math.floor(y)));
+  return camera.tileScreen(x, y, world.height[world.idx(cx, cy)]);
+}
+function drawCombat(ctx, camera, world, item, k, zoom) {
+  const d = item.data;
+  if (camera.canAccess && !camera.canAccess(d.fromX, d.fromY)) return;
+  if (![item.x, item.y, d.fromX, d.fromY].every(Number.isFinite)
+    || item.x < 0 || item.y < 0 || item.x >= world.w || item.y >= world.h
+    || d.fromX < 0 || d.fromY < 0 || d.fromX >= world.w || d.fromY >= world.h) return;
+  const [sx, sy] = projectEntity(camera, world, d.fromX, d.fromY), [tx, ty] = projectEntity(camera, world, item.x, item.y);
+  if (![sx, sy, tx, ty].every(Number.isFinite)) return;
+  const width = camera.viewW ?? ctx.canvas?.width, height = camera.viewH ?? ctx.canvas?.height;
+  const margin = 12;
+  if (Number.isFinite(width) && Number.isFinite(height)
+    && (Math.max(sx, tx) < -margin || Math.min(sx, tx) > width + margin || Math.max(sy, ty) < -margin || Math.min(sy, ty) > height + margin)) return;
+  const scale = Math.max(0.5, Math.min(6, zoom || 1));
+  const tier = d.tier === 'high' ? 1.2 : d.tier === 'mid' ? 1 : 0.8;
+  const alpha = (1 - k) * item.intensity * 0.85;
+  const dx = tx - sx, dy = ty - sy, length = Math.hypot(dx, dy) || 1;
+  const nx = -dy / length, ny = dx / length;
+  ctx.strokeStyle = `rgba(${d.style === 'fire' ? '156,65,48' : d.style === 'thunder' ? COLD_STROKE : INK_STROKE},${alpha.toFixed(3)})`;
+  ctx.lineWidth = Math.max(0.8, Math.min(2, scale * 0.2)) * tier;
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  if (d.style === 'thunder') {
+    for (let i = 1; i < 4; i++) {
+      const f = i / 4, jitter = (visualHash(item.seed, i, 'combat') - 0.5) * (2 + scale * 0.4) * tier;
+      ctx.lineTo(sx + dx * f + nx * jitter, sy + dy * f + ny * jitter);
+    }
+  } else if (d.style === 'fire') {
+    const ember = Math.min(4, scale * 0.5) * tier;
+    ctx.lineTo(tx - dx * 0.25 + nx * ember, ty - dy * 0.25 + ny * ember);
+  }
+  ctx.lineTo(tx, ty);
+  ctx.stroke();
+  // A tiny contact mark, never a column, screen flash or expanding particle burst.
+  if (d.style !== 'thunder') {
+    const mark = Math.min(4, 1.4 + scale * 0.35) * tier * (1 - k * 0.5);
+    ctx.beginPath(); ctx.moveTo(tx - nx * mark, ty - ny * mark); ctx.lineTo(tx + nx * mark, ty + ny * mark); ctx.stroke();
+  }
+}
 // ── 雷霆 / 渡劫 ─────────────────────────────────────────────
 // 落点上方到目标之间一条快速折线：前 35% 强亮，之后淡出。不做屏幕闪白。
 function drawLightning(ctx, camera, world, item, k, zoom) {

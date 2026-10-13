@@ -1,0 +1,3722 @@
+{
+  "schemaVersion": 1,
+  "stage": "G2.1",
+  "date": "2026-10-13",
+  "branch": "codex/g2.1-combat-hardening-integration",
+  "base": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "recoveredHead": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+  "status": "draft-performance-open",
+  "performancePass": false,
+  "userDecision": "User explicitly authorized G2.2 on the verified functional baseline; unresolved performance stays in Draft PRs. No main merge.",
+  "recovery": {
+    "base": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+    "head": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+    "transplantedCommitMap": [
+      {
+        "commit": "d6eb6616f2986c488d12190cea42f25e6cc0f757",
+        "subject": "feat(g2): emit bounded presentation events from real combat hits"
+      },
+      {
+        "commit": "9e1571db17b4a098bb9febb4120530b2cddbc226",
+        "subject": "feat(g2): show bounded ink combat effects on the shared Canvas stage"
+      },
+      {
+        "commit": "70915c389710234450943d43b2beb98721b90bc6",
+        "subject": "feat(g2): render pooled combat brushes in 3D realm stages"
+      },
+      {
+        "commit": "3b5efa2365a3c2a7eb1c2bfbcfa3e12d4371502e",
+        "subject": "test(g2): audit FX admissions and complete realm window ownership"
+      },
+      {
+        "commit": "6c9025d3e0e8bd958d40416f84bfcb5dd65fa97c",
+        "subject": "fix(g2): keep near-contact combat brushes readable at true hit points"
+      },
+      {
+        "commit": "cda443561d6f69596be80c4fc5745298fbdf3fbb",
+        "subject": "test(g2): verify real combat in Edge and retain full hardware budget failures"
+      },
+      {
+        "commit": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+        "subject": "docs(g2): record complete GPU matrices and unresolved Canvas CPU budgets"
+      }
+    ],
+    "install": {
+      "command": "npm ci",
+      "exitCode": 0,
+      "log": "reports/release/g2.1-hardening/proof/baseline/npm-ci.log",
+      "lockfileChanged": false
+    },
+    "commands": [
+      {
+        "command": "npm run test:g1",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-g1.log"
+      },
+      {
+        "command": "npm run test:presentation",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-presentation.log"
+      },
+      {
+        "command": "npm run test:runtime-events",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-runtime-events.log"
+      },
+      {
+        "command": "npm run test:g2",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-g2.log"
+      },
+      {
+        "command": "npm run test:save-equivalence",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-save-equivalence.log"
+      },
+      {
+        "command": "npm run build",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\build.log"
+      },
+      {
+        "command": "npm run test:package",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-package.log"
+      }
+    ],
+    "buildOutputs": [
+      "dist/zuotian-guan-jing-inkbox-1.0.0",
+      "dist/zuotian-guan-jing-inkbox-1.0.0.zip"
+    ],
+    "ignoredArtifacts": [
+      "node_modules/",
+      "dist/",
+      "reports/release/g2.1-hardening/proof/"
+    ],
+    "packageSourceScope": "scripts/inkbox-package.mjs copies explicit FILES and RELEASE_SUMMARIES entries into dist staging; it does not walk the checkout or include nested .worktrees.",
+    "coverage": {
+      "browser": false,
+      "soak": false,
+      "performance": false,
+      "backgroundServices": false
+    },
+    "observations": [
+      "Initial restoration worktree status was clean. Performance instrumentation was subsequently edited by the assigned performance builder; production source remained at the restored checkpoint throughout the seven baseline gates. The final baseline build/package audit included that instrumentation."
+    ]
+  },
+  "functionalVerification": {
+    "base": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+    "head": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+    "sourceHashes": [
+      {
+        "path": "src/inkbox/render/terrainLayer.js",
+        "sha256": "812ad914792436521dd2a791868fca7b9d83b2eb3277a0933d2a736f8a4cd3fa"
+      },
+      {
+        "path": "scripts/inkbox-g21-terrain-equivalence.mjs",
+        "sha256": "09f661c3c380b93425b8ad4f301bd043f295e21d15b1e12f8b9fb4c43e4f4e15"
+      },
+      {
+        "path": "scripts/inkbox-g1-browser.mjs",
+        "sha256": "90fea24d3e21d17a4ad1110a177c3f4d24bf9c1eb5f691dbc4d6b6fa00f62d2c"
+      },
+      {
+        "path": "scripts/inkbox-g2-browser.mjs",
+        "sha256": "d0bb94e49dd02cd942792b550a357c6961528787564612407c78ab1bfda955ae"
+      },
+      {
+        "path": "tests/fixtures/g21-terrain-rgba.json",
+        "sha256": "134243596edf0f9402545995f110214733ff9cda5f11e4b9bf10b17f9a0cd36d"
+      }
+    ],
+    "commands": [
+      {
+        "command": "npm run test:g1",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\final-verification\\test-g1.log"
+      },
+      {
+        "command": "npm run test:g2",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\final-verification\\test-g2.log"
+      },
+      {
+        "command": "npm run test:presentation",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\final-verification\\test-presentation.log"
+      },
+      {
+        "command": "npm run test:runtime-events",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\final-verification\\test-runtime-events.log"
+      },
+      {
+        "command": "npm run test:g21:terrain",
+        "exitCode": 0,
+        "log": "reports\\release\\g2.1-hardening\\proof\\final-verification\\test-g21-terrain.log"
+      },
+      {
+        "command": "npm run test:g1:browser (sandbox)",
+        "exitCode": 1,
+        "log": "reports/release/g2.1-hardening/proof/final-verification/test-g1-browser.log"
+      },
+      {
+        "command": "npm run test:g1:browser (escalated)",
+        "exitCode": 0,
+        "log": "reports/release/g2.1-hardening/proof/final-verification/test-g1-browser-escalated.log"
+      },
+      {
+        "command": "npm run test:g2:browser (escalated)",
+        "exitCode": 0,
+        "log": "reports/release/g2.1-hardening/proof/final-verification/test-g2-browser.log"
+      },
+      {
+        "command": "npm run build",
+        "exitCode": 0,
+        "log": "reports/release/g2.1-hardening/proof/final-verification/npm-run-build-final.log"
+      },
+      {
+        "command": "npm run test:package",
+        "exitCode": 0,
+        "log": "reports/release/g2.1-hardening/proof/final-verification/npm-run-test-package-final.log"
+      }
+    ],
+    "browser": {
+      "backend": "Microsoft Edge via scripts/cdp.mjs",
+      "fallbackReason": "Tabbit could not connect in this task; repository-owned Edge/CDP fallback used",
+      "g1": {
+        "pass": true,
+        "checks": 9,
+        "passed": 9,
+        "browserVersion": "Edg/155.0.4283.45",
+        "screenshots": [
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\canvas-person.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\canvas-edicts.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\canvas-nether.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\canvas-world-progress.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\3d-person.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\3d-nether.png"
+        ],
+        "report": "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\g1-browser.json"
+      },
+      "g2": {
+        "pass": true,
+        "checks": 12,
+        "passed": 12,
+        "gpuMode": "hardwareRequired (local Edge GPU)",
+        "webglRenderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "runtimeErrors": 0,
+        "consoleErrors": 0,
+        "screenshots": [
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\canvas-combat-blade.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\canvas-combat-fire.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\canvas-combat-thunder.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\beast-combat.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\upper-tribulation.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\3d-combat-blade.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\3d-combat-fire.png",
+          "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\3d-combat-thunder.png"
+        ],
+        "report": "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\g2-browser.json"
+      }
+    },
+    "firstG1SandboxFailure": "CDP WebSocket connection error before any checks; no screenshots; escalated run passed.",
+    "cleanup": {
+      "ownedEdgeProfile": "scripts/cdp.mjs closes owned Edge process tree and removes isolated cdp-* temp profile on Session.close/failure",
+      "localServerPorts": {
+        "g1": 4197,
+        "g2": 4217
+      },
+      "listenersRemaining": [],
+      "backgroundServerRemaining": false
+    },
+    "workingTreeShortStatus": [
+      " M .github/workflows/ci.yml",
+      " M README.md",
+      " M package.json",
+      " M scripts/inkbox-g2-browser.mjs",
+      " M scripts/inkbox-g2-performance.mjs",
+      " M scripts/inkbox-package-audit.mjs",
+      " M scripts/inkbox-package.mjs",
+      " M src/inkbox/render/terrainLayer.js",
+      " M tests/README.md",
+      "?? G21_HARDENING_REPORT.md",
+      "?? reports/release/g2.1-hardening/",
+      "?? scripts/inkbox-g21-terrain-equivalence.mjs",
+      "?? tests/fixtures/"
+    ],
+    "notRun": [
+      "save-equivalence",
+      "performance matrix"
+    ]
+  },
+  "terrain": {
+    "comparisons": 324,
+    "baselineSourceSha256": "c72a14a82bc5c98319ca485eeb28e74bf38c7aaca1660c365d465fd47f36a86a",
+    "candidateSourceSha256": "812ad914792436521dd2a791868fca7b9d83b2eb3277a0933d2a736f8a4cd3fa",
+    "fixture": "tests/fixtures/g21-terrain-rgba.json",
+    "scope": "Fixed historical production RGBA; no color/RNG/cadence changes; default mode requires no Git history"
+  },
+  "matrices": [
+    {
+      "name": "performance-restored-native",
+      "startedAt": "2026-10-12T23:54:54.805Z",
+      "finishedAt": "2026-10-13T00:00:25.757Z",
+      "processExitCode": 1,
+      "pass": false,
+      "rawReport": "reports/release/g2.1-hardening/proof/performance-restored-native/metrics.json",
+      "rawReportSha256": "f85a7bf2aab03c0d1449185ca695623c25628e14f22cd57e5b4f97dc4f3e67a8",
+      "productionHead": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+      "sourceHashes": null,
+      "method": {
+        "frames": 90,
+        "warmFrames": 120,
+        "order": [
+          "off",
+          "on",
+          "on",
+          "off"
+        ],
+        "clock": "native",
+        "budget": "baseline p95 * 1.08 + 1.5 ms",
+        "sourceScope": "Current formal runtime with Stage combat FX disabled; source emission remains enabled in both modes. No historical G1 CPU claim."
+      },
+      "caseCount": 12,
+      "runCount": 48,
+      "cases": [
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 25.99999999953434,
+              "actual": 21.699999999720603,
+              "limit": 29.579999999497087,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 17,
+              "limit": 19.86,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 26.09999999962747,
+              "actual": 21.700000000186265,
+              "limit": 29.68799999959767,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 19.399999999906868,
+              "actual": 22.299999999813735,
+              "limit": 22.451999999899417,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.90000000000009,
+              "actual": 16.90000000000009,
+              "limit": 19.7520000000001,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 19.5,
+              "actual": 22.399999999906868,
+              "limit": 22.560000000000002,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 24.5,
+              "actual": 21.600000000093132,
+              "limit": 27.96,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.20000000000073,
+              "actual": 16.800000000000182,
+              "limit": 37.35600000000079,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 24.5,
+              "actual": 21.600000000093132,
+              "limit": 27.96,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 14.299999999813735,
+              "actual": 12.300000000279397,
+              "limit": 16.943999999798834,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 17.000000000000455,
+              "limit": 19.86,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 14.399999999906868,
+              "actual": 12.400000000372529,
+              "limit": 17.05199999989942,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "upper",
+          "count": 100,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 19.700000000186265,
+              "actual": 25.800000000279397,
+              "limit": 22.77600000020117,
+              "pass": false
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.400000000000546,
+              "actual": 34.09999999999991,
+              "limit": 37.57200000000059,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 19.700000000186265,
+              "actual": 25.90000000037253,
+              "limit": 22.77600000020117,
+              "pass": false
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "nether",
+          "count": 2,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 14.000000000465661,
+              "actual": 20.5,
+              "limit": 16.620000000502916,
+              "pass": false
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.90000000000009,
+              "actual": 17.399999999999636,
+              "limit": 19.7520000000001,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 14.100000000093132,
+              "actual": 20.600000000093132,
+              "limit": 16.728000000100586,
+              "pass": false
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 18.299999999813735,
+              "actual": 17,
+              "limit": 21.263999999798834,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.69999999999982,
+              "actual": 33.600000000000364,
+              "limit": 37.89599999999981,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 18.399999999906868,
+              "actual": 17,
+              "limit": 21.37199999989942,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 21.399999999906868,
+              "actual": 15.600000000558794,
+              "limit": 24.611999999899417,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 33.5,
+              "limit": 37.788000000000395,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 21.399999999906868,
+              "actual": 15.700000000186265,
+              "limit": 24.611999999899417,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 18.40000000037253,
+              "actual": 16.90000000037253,
+              "limit": 21.372000000402334,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 33.600000000000364,
+              "limit": 37.788000000000395,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 18.40000000037253,
+              "actual": 17,
+              "limit": 21.372000000402334,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11,
+              "actual": 11.299999999813735,
+              "limit": 13.38,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.899999999999636,
+              "actual": 33.30000000000018,
+              "limit": 19.751999999999608,
+              "pass": false
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11,
+              "actual": 11.399999999906868,
+              "limit": 13.38,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "upper",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11,
+              "actual": 10.5,
+              "limit": 13.38,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.5,
+              "actual": 33.5,
+              "limit": 37.68,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11,
+              "actual": 10.5,
+              "limit": 13.38,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.699999999720603,
+              "actual": 12.199999999720603,
+              "limit": 14.135999999698253,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.800000000000182,
+              "actual": 16.800000000000182,
+              "limit": 19.644000000000197,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.699999999720603,
+              "actual": 12.199999999720603,
+              "limit": 14.135999999698253,
+              "pass": true
+            }
+          ]
+        }
+      ],
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true,
+        "cleanupRecovery": null
+      },
+      "failure": {
+        "message": "One or more case performance budgets failed; all cases retained",
+        "cases": [
+          {
+            "preset": "large",
+            "renderer": "canvas",
+            "view": "upper",
+            "count": 100,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 19.700000000186265,
+                "actual": 25.800000000279397,
+                "limit": 22.77600000020117,
+                "pass": false
+              },
+              {
+                "kind": "raf",
+                "baseline": 33.400000000000546,
+                "actual": 34.09999999999991,
+                "limit": 37.57200000000059,
+                "pass": true
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "canvas",
+            "view": "nether",
+            "count": 2,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 14.000000000465661,
+                "actual": 20.5,
+                "limit": 16.620000000502916,
+                "pass": false
+              },
+              {
+                "kind": "raf",
+                "baseline": 16.90000000000009,
+                "actual": 17.399999999999636,
+                "limit": 19.7520000000001,
+                "pass": true
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "3d",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 11,
+                "actual": 11.299999999813735,
+                "limit": 13.38,
+                "pass": true
+              },
+              {
+                "kind": "raf",
+                "baseline": 16.899999999999636,
+                "actual": 33.30000000000018,
+                "limit": 19.751999999999608,
+                "pass": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "performance-restored-controlled",
+      "startedAt": "2026-10-13T00:00:49.965Z",
+      "finishedAt": "2026-10-13T00:06:09.105Z",
+      "processExitCode": 1,
+      "pass": false,
+      "rawReport": "reports/release/g2.1-hardening/proof/performance-restored-controlled/metrics.json",
+      "rawReportSha256": "6804d986ac3073d99ada9410c99db3ccdfa288a09a2d23865d8743a9a12d6ccd",
+      "productionHead": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+      "sourceHashes": {
+        "scripts/inkbox-g2-performance.mjs": "92bf1b08a77e0dfbfcbf806f4eaf9265226a7508ef8be2972e124c16a5e78487",
+        "src/inkbox/render/terrainLayer.js": "0b97755062536ad506dcee20b4a849983574701fb8e893370aa9695ac1611f97"
+      },
+      "method": {
+        "acceptanceRun": true,
+        "frames": 90,
+        "warmFrames": 120,
+        "order": [
+          "off",
+          "on",
+          "on",
+          "off"
+        ],
+        "clock": "controlled",
+        "budget": "baseline p95 * 1.08 + 1.5 ms",
+        "sourceScope": "Current formal runtime with Stage combat FX disabled; source emission remains enabled in both modes. No historical G1 CPU claim."
+      },
+      "caseCount": 12,
+      "runCount": 48,
+      "cases": [
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 20.90000000037253,
+              "actual": 19.100000000093132,
+              "limit": 24.072000000402333,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 20.90000000037253,
+              "actual": 19.100000000093132,
+              "limit": 24.072000000402333,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.900000000000546,
+              "actual": 16.900000000000546,
+              "limit": 19.752000000000592,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 22.09999999962747,
+              "actual": 19.300000000279397,
+              "limit": 25.36799999959767,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 22.199999999720603,
+              "actual": 19.399999999906868,
+              "limit": 25.475999999698253,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.90000000000009,
+              "actual": 16.90000000000009,
+              "limit": 19.7520000000001,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 31.49999999953434,
+              "actual": 25.200000000186265,
+              "limit": 35.51999999949709,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 31.699999999720603,
+              "actual": 25.200000000186265,
+              "limit": 35.73599999969825,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.80000000000018,
+              "actual": 33.5,
+              "limit": 38.0040000000002,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 12,
+              "actual": 18.200000000186265,
+              "limit": 14.46,
+              "pass": false
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 12,
+              "actual": 18.699999999720603,
+              "limit": 14.46,
+              "pass": false
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 16.90000000000009,
+              "limit": 19.86,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "upper",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 19.40000000037253,
+              "actual": 21.399999999906868,
+              "limit": 22.452000000402332,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 19.40000000037253,
+              "actual": 21.5,
+              "limit": 22.452000000402332,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.30000000000018,
+              "actual": 33.600000000000364,
+              "limit": 37.4640000000002,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 14.600000000093132,
+              "actual": 13.399999999906868,
+              "limit": 17.268000000100585,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 14.600000000093132,
+              "actual": 13.399999999906868,
+              "limit": 17.268000000100585,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.800000000000182,
+              "actual": 16.800000000000182,
+              "limit": 19.644000000000197,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 15.899999999906868,
+              "actual": 15.899999999906868,
+              "limit": 18.67199999989942,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 16,
+              "actual": 16,
+              "limit": 18.78,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.599999999999454,
+              "actual": 33.600000000000364,
+              "limit": 37.787999999999414,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 15.799999999813735,
+              "actual": 16.700000000186265,
+              "limit": 18.563999999798835,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 15.799999999813735,
+              "actual": 16.700000000186265,
+              "limit": 18.563999999798835,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 33.599999999999454,
+              "limit": 37.788000000000395,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 17.600000000093132,
+              "actual": 16.09999999962747,
+              "limit": 20.508000000100584,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 17.600000000093132,
+              "actual": 16.09999999962747,
+              "limit": 20.508000000100584,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 33.5,
+              "limit": 37.788000000000395,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.199999999720603,
+              "actual": 12,
+              "limit": 13.595999999698252,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.199999999720603,
+              "actual": 12,
+              "limit": 13.595999999698252,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.800000000000182,
+              "actual": 16.800000000000182,
+              "limit": 19.644000000000197,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "upper",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 12.100000000093132,
+              "actual": 12.300000000279397,
+              "limit": 14.568000000100584,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 12.100000000093132,
+              "actual": 12.300000000279397,
+              "limit": 14.568000000100584,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.799999999999272,
+              "actual": 16.800000000000182,
+              "limit": 19.643999999999217,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.199999999720603,
+              "actual": 11.100000000093132,
+              "limit": 13.595999999698252,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.299999999813735,
+              "actual": 11.199999999720603,
+              "limit": 13.703999999798835,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.5,
+              "actual": 33.400000000000546,
+              "limit": 37.68,
+              "pass": true
+            }
+          ]
+        }
+      ],
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true,
+        "cleanupRecovery": null
+      },
+      "failure": {
+        "message": "One or more case performance budgets failed; all cases retained",
+        "cases": [
+          {
+            "preset": "large",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 12,
+                "actual": 18.200000000186265,
+                "limit": 14.46,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 12,
+                "actual": 18.699999999720603,
+                "limit": 14.46,
+                "pass": false
+              },
+              {
+                "kind": "raf",
+                "baseline": 17,
+                "actual": 16.90000000000009,
+                "limit": 19.86,
+                "pass": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "performance-final-native",
+      "startedAt": "2026-10-13T00:10:43.132Z",
+      "finishedAt": "2026-10-13T00:16:39.021Z",
+      "processExitCode": 1,
+      "pass": false,
+      "rawReport": "reports/release/g2.1-hardening/proof/performance-final-native/metrics.json",
+      "rawReportSha256": "3129b8599085b1eb1b84e22f7bf0de3713835b868ccb7ce9d895cc7525d6eb1d",
+      "productionHead": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+      "sourceHashes": {
+        "scripts/inkbox-g2-performance.mjs": "9b7907ea5d11adfb16dcc7429daf0b7eb421a5bd7be4e96a5da2f6aecb70aa50",
+        "src/inkbox/render/terrainLayer.js": "c8f15e47f5a13224bd3779816207afc0aa30c27d5d214de4eb188da50dad5687"
+      },
+      "method": {
+        "acceptanceRun": true,
+        "frames": 90,
+        "warmFrames": 120,
+        "order": [
+          "off",
+          "on",
+          "on",
+          "off"
+        ],
+        "clock": "native",
+        "budget": "baseline p95 * 1.08 + 1.5 ms",
+        "sourceScope": "Current formal runtime with Stage combat FX disabled; source emission remains enabled in both modes. No historical G1 CPU claim."
+      },
+      "caseCount": 12,
+      "runCount": 48,
+      "cases": [
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 27.300000000279397,
+              "actual": 25.600000000558794,
+              "limit": 30.98400000030175,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 27.5,
+              "actual": 25.700000000186265,
+              "limit": 31.200000000000003,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.20000000000073,
+              "actual": 17.199999999999818,
+              "limit": 37.35600000000079,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 18.00000000046566,
+              "actual": 25.40000000037253,
+              "limit": 20.940000000502916,
+              "pass": false
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 18.100000000093132,
+              "actual": 25.5,
+              "limit": 21.048000000100583,
+              "pass": false
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 17.100000000000364,
+              "limit": 19.86,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 100,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 20.399999999906868,
+              "actual": 24.899999999906868,
+              "limit": 23.53199999989942,
+              "pass": false
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 20.5,
+              "actual": 25,
+              "limit": 23.64,
+              "pass": false
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.400000000000546,
+              "actual": 33.69999999999982,
+              "limit": 37.57200000000059,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 10.300000000279397,
+              "actual": 18.899999999906868,
+              "limit": 12.624000000301749,
+              "pass": false
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 10.300000000279397,
+              "actual": 19,
+              "limit": 12.624000000301749,
+              "pass": false
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 17.09999999999991,
+              "limit": 19.86,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "upper",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 76,
+              "actual": 19.699999999720603,
+              "limit": 83.58000000000001,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 76,
+              "actual": 19.699999999720603,
+              "limit": 83.58000000000001,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 100,
+              "actual": 33.69999999999982,
+              "limit": 109.5,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 10.799999999813735,
+              "actual": 12.600000000093132,
+              "limit": 13.163999999798834,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 10.899999999906868,
+              "actual": 12.600000000093132,
+              "limit": 13.271999999899418,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.899999999999636,
+              "actual": 16.899999999999636,
+              "limit": 19.751999999999608,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 15.600000000093132,
+              "actual": 16,
+              "limit": 18.348000000100583,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 15.600000000093132,
+              "actual": 16,
+              "limit": 18.348000000100583,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.599999999999454,
+              "actual": 33.600000000000364,
+              "limit": 37.787999999999414,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 16.200000000186265,
+              "actual": 23.899999999906868,
+              "limit": 18.996000000201168,
+              "pass": false
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 16.200000000186265,
+              "actual": 24,
+              "limit": 18.996000000201168,
+              "pass": false
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.599999999999454,
+              "actual": 33.600000000000364,
+              "limit": 37.787999999999414,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 19.200000000186265,
+              "actual": 17.09999999962747,
+              "limit": 22.236000000201166,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 19.299999999813735,
+              "actual": 17.09999999962747,
+              "limit": 22.343999999798836,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 33.600000000000364,
+              "limit": 37.788000000000395,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 10.399999999906868,
+              "actual": 11.5,
+              "limit": 12.731999999899418,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 10.5,
+              "actual": 11.600000000093132,
+              "limit": 12.84,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.5,
+              "actual": 33.30000000000018,
+              "limit": 37.68,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "upper",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.300000000279397,
+              "actual": 12.899999999906868,
+              "limit": 13.704000000301749,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.300000000279397,
+              "actual": 12.899999999906868,
+              "limit": 13.704000000301749,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.400000000000546,
+              "actual": 33.5,
+              "limit": 37.57200000000059,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11,
+              "actual": 10.600000000093132,
+              "limit": 13.38,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.100000000093132,
+              "actual": 10.799999999813735,
+              "limit": 13.488000000100584,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.399999999999636,
+              "actual": 33.30000000000018,
+              "limit": 37.57199999999961,
+              "pass": true
+            }
+          ]
+        }
+      ],
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": false,
+        "serverExited": true,
+        "cleanupRecovery": {
+          "at": "2026-10-13T00:51:16.353Z",
+          "profile": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\cdp-TPEGcd",
+          "profileRemoved": true,
+          "evidence": "Exact Temp/cdp-TPEGcd target verified; elevated Win32_Process inventory found no Edge using that profile; native PowerShell Remove-Item completed. Original exit1/cleanup failure retained."
+        }
+      },
+      "failure": {
+        "message": "One or more case performance budgets failed; all cases retained",
+        "cases": [
+          {
+            "preset": "expanse",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 18.00000000046566,
+                "actual": 25.40000000037253,
+                "limit": 20.940000000502916,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 18.100000000093132,
+                "actual": 25.5,
+                "limit": 21.048000000100583,
+                "pass": false
+              },
+              {
+                "kind": "raf",
+                "baseline": 17,
+                "actual": 17.100000000000364,
+                "limit": 19.86,
+                "pass": true
+              }
+            ]
+          },
+          {
+            "preset": "expanse",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 100,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 20.399999999906868,
+                "actual": 24.899999999906868,
+                "limit": 23.53199999989942,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 20.5,
+                "actual": 25,
+                "limit": 23.64,
+                "pass": false
+              },
+              {
+                "kind": "raf",
+                "baseline": 33.400000000000546,
+                "actual": 33.69999999999982,
+                "limit": 37.57200000000059,
+                "pass": true
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 10.300000000279397,
+                "actual": 18.899999999906868,
+                "limit": 12.624000000301749,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 10.300000000279397,
+                "actual": 19,
+                "limit": 12.624000000301749,
+                "pass": false
+              },
+              {
+                "kind": "raf",
+                "baseline": 17,
+                "actual": 17.09999999999991,
+                "limit": 19.86,
+                "pass": true
+              }
+            ]
+          },
+          {
+            "preset": "expanse",
+            "renderer": "3d",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 16.200000000186265,
+                "actual": 23.899999999906868,
+                "limit": 18.996000000201168,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 16.200000000186265,
+                "actual": 24,
+                "limit": 18.996000000201168,
+                "pass": false
+              },
+              {
+                "kind": "raf",
+                "baseline": 33.599999999999454,
+                "actual": 33.600000000000364,
+                "limit": 37.787999999999414,
+                "pass": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "performance-final-controlled",
+      "startedAt": "2026-10-13T00:17:07.274Z",
+      "finishedAt": "2026-10-13T00:22:45.602Z",
+      "processExitCode": 1,
+      "pass": false,
+      "rawReport": "reports/release/g2.1-hardening/proof/performance-final-controlled/metrics.json",
+      "rawReportSha256": "71cfabb2836e4fd597260a68fdf3525f8ada5955cebd0c203d28b22a629a8221",
+      "productionHead": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+      "sourceHashes": {
+        "scripts/inkbox-g2-performance.mjs": "409283e2a7c16627600c8727b208cebd852560c594f66720bf6a47cb4ceee513",
+        "src/inkbox/render/terrainLayer.js": "c8f15e47f5a13224bd3779816207afc0aa30c27d5d214de4eb188da50dad5687"
+      },
+      "method": {
+        "acceptanceRun": true,
+        "frames": 90,
+        "warmFrames": 120,
+        "order": [
+          "off",
+          "on",
+          "on",
+          "off"
+        ],
+        "clock": "controlled",
+        "budget": "baseline p95 * 1.08 + 1.5 ms",
+        "sourceScope": "Current formal runtime with Stage combat FX disabled; source emission remains enabled in both modes. No historical G1 CPU claim."
+      },
+      "caseCount": 12,
+      "runCount": 48,
+      "cases": [
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 18,
+              "actual": 18.200000000186265,
+              "limit": 20.94,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 18.09999999962747,
+              "actual": 18.200000000186265,
+              "limit": 21.04799999959767,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17.100000000000364,
+              "actual": 17,
+              "limit": 19.968000000000394,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 19.5,
+              "actual": 16.5,
+              "limit": 22.560000000000002,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 19.5,
+              "actual": 16.600000000093132,
+              "limit": 22.560000000000002,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 16.90000000000009,
+              "limit": 19.86,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 22.5,
+              "actual": 19.200000000186265,
+              "limit": 25.8,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 22.5,
+              "actual": 19.299999999813735,
+              "limit": 25.8,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.30000000000018,
+              "actual": 16.90000000000009,
+              "limit": 37.4640000000002,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 14.399999999906868,
+              "actual": 11.899999999906868,
+              "limit": 17.05199999989942,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 14.399999999906868,
+              "actual": 12,
+              "limit": 17.05199999989942,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 17,
+              "limit": 19.86,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "upper",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 16.600000000093132,
+              "actual": 15.600000000093132,
+              "limit": 19.428000000100585,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 16.600000000093132,
+              "actual": 15.600000000093132,
+              "limit": 19.428000000100585,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.80000000000018,
+              "actual": 33.80000000000018,
+              "limit": 38.0040000000002,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.899999999906868,
+              "actual": 12.299999999813735,
+              "limit": 14.351999999899418,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 12,
+              "actual": 12.299999999813735,
+              "limit": 14.46,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17.199999999999818,
+              "actual": 17,
+              "limit": 20.075999999999805,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 15.400000000372529,
+              "actual": 17.300000000279397,
+              "limit": 18.132000000402332,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 15.400000000372529,
+              "actual": 17.5,
+              "limit": 18.132000000402332,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 50.099999999999454,
+              "actual": 33.599999999999454,
+              "limit": 55.607999999999414,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 16.199999999720603,
+              "actual": 17.09999999962747,
+              "limit": 18.995999999698252,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 16.399999999906868,
+              "actual": 17.09999999962747,
+              "limit": 19.21199999989942,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 33.69999999999982,
+              "limit": 37.788000000000395,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 20,
+              "actual": 15.100000000093132,
+              "limit": 23.1,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 20.100000000093132,
+              "actual": 15.200000000186265,
+              "limit": 23.208000000100583,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 33.600000000000364,
+              "limit": 37.788000000000395,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 10.800000000279397,
+              "actual": 10.100000000093132,
+              "limit": 13.16400000030175,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 10.800000000279397,
+              "actual": 10.299999999813735,
+              "limit": 13.16400000030175,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.5,
+              "actual": 33.80000000000018,
+              "limit": 37.68,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "upper",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.899999999906868,
+              "actual": 12.100000000093132,
+              "limit": 14.351999999899418,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.899999999906868,
+              "actual": 12.200000000186265,
+              "limit": 14.351999999899418,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.5,
+              "actual": 16.900000000000546,
+              "limit": 37.68,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.399999999906868,
+              "actual": 10.899999999906868,
+              "limit": 13.811999999899419,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.399999999906868,
+              "actual": 11.099999999627471,
+              "limit": 13.811999999899419,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.400000000000546,
+              "actual": 16.800000000000182,
+              "limit": 37.57200000000059,
+              "pass": true
+            }
+          ]
+        }
+      ],
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": false,
+        "serverExited": true,
+        "cleanupRecovery": {
+          "at": "2026-10-13T00:25:41.377Z",
+          "profile": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\cdp-ZziSkt",
+          "profileRemoved": true,
+          "evidence": "Exact Temp/cdp-ZziSkt target resolved and checked; elevated Win32_Process inventory found no Edge using that profile; native PowerShell Remove-Item completed. Original exit1/cleanup failure retained."
+        }
+      },
+      "failure": {
+        "message": "Owned Edge process/profile cleanup incomplete"
+      }
+    },
+    {
+      "name": "performance-small-native",
+      "startedAt": "2026-10-13T00:29:49.505Z",
+      "finishedAt": "2026-10-13T00:35:22.974Z",
+      "processExitCode": 1,
+      "pass": false,
+      "rawReport": "reports/release/g2.1-hardening/proof/performance-small-native/metrics.json",
+      "rawReportSha256": "74ef36fe8e79e57ff5f32287407f731f6c510b1e502816423e953f69f7d7f54b",
+      "productionHead": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+      "sourceHashes": {
+        "scripts/inkbox-g2-performance.mjs": "0ff1e0faa35a4a9d5733050d2b3c30df991b62802ea51722705012eeae89d15d",
+        "src/inkbox/render/terrainLayer.js": "812ad914792436521dd2a791868fca7b9d83b2eb3277a0933d2a736f8a4cd3fa"
+      },
+      "method": {
+        "acceptanceRun": true,
+        "frames": 90,
+        "warmFrames": 120,
+        "order": [
+          "off",
+          "on",
+          "on",
+          "off"
+        ],
+        "clock": "native",
+        "budget": "baseline p95 * 1.08 + 1.5 ms",
+        "sourceScope": "Current formal runtime with Stage combat FX disabled; source emission remains enabled in both modes. No historical G1 CPU claim."
+      },
+      "caseCount": 12,
+      "runCount": 48,
+      "cases": [
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 20.399999999441206,
+              "actual": 17.09999999962747,
+              "limit": 23.531999999396504,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 20.399999999441206,
+              "actual": 17.09999999962747,
+              "limit": 23.531999999396504,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17.100000000000364,
+              "actual": 17.100000000000364,
+              "limit": 19.968000000000394,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 23.200000000186265,
+              "actual": 27.299999999813735,
+              "limit": 26.556000000201166,
+              "pass": false
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 23.200000000186265,
+              "actual": 27.299999999813735,
+              "limit": 26.556000000201166,
+              "pass": false
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 32.80000000000018,
+              "limit": 19.86,
+              "pass": false
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 22.399999999441206,
+              "actual": 22.800000000745058,
+              "limit": 25.691999999396504,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 22.399999999441206,
+              "actual": 22.90000000037253,
+              "limit": 25.691999999396504,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.599999999999454,
+              "actual": 33.70000000000073,
+              "limit": 37.787999999999414,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 10.699999999254942,
+              "actual": 10.799999999813735,
+              "limit": 13.055999999195338,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 10.699999999254942,
+              "actual": 11.299999999813735,
+              "limit": 13.055999999195338,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.900000000000546,
+              "actual": 16.900000000000546,
+              "limit": 19.752000000000592,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "upper",
+          "count": 100,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 12.600000000558794,
+              "actual": 17.600000000558794,
+              "limit": 15.108000000603498,
+              "pass": false
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 12.600000000558794,
+              "actual": 17.600000000558794,
+              "limit": 15.108000000603498,
+              "pass": false
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.399999999999636,
+              "actual": 33.5,
+              "limit": 37.57199999999961,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.600000000558794,
+              "actual": 10.899999999441206,
+              "limit": 14.028000000603498,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.600000000558794,
+              "actual": 10.899999999441206,
+              "limit": 14.028000000603498,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.900000000000546,
+              "actual": 16.900000000000546,
+              "limit": 19.752000000000592,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 2,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 18.999999999068677,
+              "actual": 17.899999999441206,
+              "limit": 22.019999998994173,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 19.09999999962747,
+              "actual": 17.899999999441206,
+              "limit": 22.12799999959767,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 49.899999999999636,
+              "limit": 37.788000000000395,
+              "pass": false
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 17.200000000186265,
+              "actual": 18.5,
+              "limit": 20.076000000201166,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 17.200000000186265,
+              "actual": 18.5,
+              "limit": 20.076000000201166,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 33.600000000000364,
+              "limit": 37.788000000000395,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 19.799999998882413,
+              "actual": 17.700000000186265,
+              "limit": 22.88399999879301,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 19.899999999441206,
+              "actual": 17.700000000186265,
+              "limit": 22.991999999396505,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 33.600000000000364,
+              "limit": 37.788000000000395,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.400000000372529,
+              "actual": 11.700000000186265,
+              "limit": 13.812000000402332,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.5,
+              "actual": 11.799999999813735,
+              "limit": 13.920000000000002,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 33.29999999999973,
+              "limit": 19.86,
+              "pass": false
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "upper",
+          "count": 100,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 12.799999999813735,
+              "actual": 11.799999999813735,
+              "limit": 15.323999999798835,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 12.799999999813735,
+              "actual": 11.799999999813735,
+              "limit": 15.323999999798835,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.800000000000182,
+              "actual": 33.400000000000546,
+              "limit": 19.644000000000197,
+              "pass": false
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.700000000186265,
+              "actual": 11.700000000186265,
+              "limit": 14.136000000201166,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.700000000186265,
+              "actual": 11.799999998882413,
+              "limit": 14.136000000201166,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.799999999999272,
+              "actual": 16.800000000000182,
+              "limit": 19.643999999999217,
+              "pass": true
+            }
+          ]
+        }
+      ],
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true,
+        "cleanupRecovery": null
+      },
+      "failure": {
+        "message": "One or more case performance budgets failed; all cases retained",
+        "cases": [
+          {
+            "preset": "expanse",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 23.200000000186265,
+                "actual": 27.299999999813735,
+                "limit": 26.556000000201166,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 23.200000000186265,
+                "actual": 27.299999999813735,
+                "limit": 26.556000000201166,
+                "pass": false
+              },
+              {
+                "kind": "raf",
+                "baseline": 17,
+                "actual": 32.80000000000018,
+                "limit": 19.86,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "canvas",
+            "view": "upper",
+            "count": 100,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 12.600000000558794,
+                "actual": 17.600000000558794,
+                "limit": 15.108000000603498,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 12.600000000558794,
+                "actual": 17.600000000558794,
+                "limit": 15.108000000603498,
+                "pass": false
+              },
+              {
+                "kind": "raf",
+                "baseline": 33.399999999999636,
+                "actual": 33.5,
+                "limit": 37.57199999999961,
+                "pass": true
+              }
+            ]
+          },
+          {
+            "preset": "expanse",
+            "renderer": "3d",
+            "view": "full",
+            "count": 2,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 18.999999999068677,
+                "actual": 17.899999999441206,
+                "limit": 22.019999998994173,
+                "pass": true
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 19.09999999962747,
+                "actual": 17.899999999441206,
+                "limit": 22.12799999959767,
+                "pass": true
+              },
+              {
+                "kind": "raf",
+                "baseline": 33.600000000000364,
+                "actual": 49.899999999999636,
+                "limit": 37.788000000000395,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "3d",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 11.400000000372529,
+                "actual": 11.700000000186265,
+                "limit": 13.812000000402332,
+                "pass": true
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 11.5,
+                "actual": 11.799999999813735,
+                "limit": 13.920000000000002,
+                "pass": true
+              },
+              {
+                "kind": "raf",
+                "baseline": 17,
+                "actual": 33.29999999999973,
+                "limit": 19.86,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "3d",
+            "view": "upper",
+            "count": 100,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 12.799999999813735,
+                "actual": 11.799999999813735,
+                "limit": 15.323999999798835,
+                "pass": true
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 12.799999999813735,
+                "actual": 11.799999999813735,
+                "limit": 15.323999999798835,
+                "pass": true
+              },
+              {
+                "kind": "raf",
+                "baseline": 16.800000000000182,
+                "actual": 33.400000000000546,
+                "limit": 19.644000000000197,
+                "pass": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "performance-small-controlled",
+      "startedAt": "2026-10-13T00:35:58.394Z",
+      "finishedAt": "2026-10-13T00:41:16.414Z",
+      "processExitCode": 1,
+      "pass": false,
+      "rawReport": "reports/release/g2.1-hardening/proof/performance-small-controlled/metrics.json",
+      "rawReportSha256": "f161602ef42a1ff143b3bac926c5c5c22793b257bf0af6c57156d9788f503903",
+      "productionHead": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+      "sourceHashes": {
+        "scripts/inkbox-g2-performance.mjs": "0ff1e0faa35a4a9d5733050d2b3c30df991b62802ea51722705012eeae89d15d",
+        "src/inkbox/render/terrainLayer.js": "812ad914792436521dd2a791868fca7b9d83b2eb3277a0933d2a736f8a4cd3fa"
+      },
+      "method": {
+        "acceptanceRun": true,
+        "frames": 90,
+        "warmFrames": 120,
+        "order": [
+          "off",
+          "on",
+          "on",
+          "off"
+        ],
+        "clock": "controlled",
+        "budget": "baseline p95 * 1.08 + 1.5 ms",
+        "sourceScope": "Current formal runtime with Stage combat FX disabled; source emission remains enabled in both modes. No historical G1 CPU claim."
+      },
+      "caseCount": 12,
+      "runCount": 48,
+      "cases": [
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 18.299999999813735,
+              "actual": 14.700000000186265,
+              "limit": 21.263999999798834,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 18.399999999441206,
+              "actual": 14.700000000186265,
+              "limit": 21.371999999396504,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17.100000000000364,
+              "actual": 16.800000000000182,
+              "limit": 19.968000000000394,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 15.200000000186265,
+              "actual": 15.5,
+              "limit": 17.916000000201166,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 15.299999999813735,
+              "actual": 15.5,
+              "limit": 18.023999999798836,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.899999999999636,
+              "actual": 16.899999999999636,
+              "limit": 19.751999999999608,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 100,
+          "pass": false,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 17.399999999441206,
+              "actual": 18.200000000186265,
+              "limit": 20.291999999396506,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 17.399999999441206,
+              "actual": 18.200000000186265,
+              "limit": 20.291999999396506,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.899999999999636,
+              "actual": 33.5,
+              "limit": 19.751999999999608,
+              "pass": false
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 10.700000000186265,
+              "actual": 10.899999999441206,
+              "limit": 13.056000000201166,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 10.700000000186265,
+              "actual": 11,
+              "limit": 13.056000000201166,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 17.09999999999991,
+              "limit": 19.86,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "upper",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.5,
+              "actual": 12,
+              "limit": 13.920000000000002,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.5,
+              "actual": 12,
+              "limit": 13.920000000000002,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.5,
+              "actual": 16.800000000000182,
+              "limit": 37.68,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "canvas",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.499999999068677,
+              "actual": 11.299999999813735,
+              "limit": 13.919999998994172,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.799999999813735,
+              "actual": 11.400000000372529,
+              "limit": 14.243999999798834,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 17,
+              "actual": 17,
+              "limit": 19.86,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 21.09999999962747,
+              "actual": 16.200000000186265,
+              "limit": 24.28799999959767,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 21.09999999962747,
+              "actual": 16.200000000186265,
+              "limit": 24.28799999959767,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.599999999999454,
+              "actual": 33.599999999999454,
+              "limit": 37.787999999999414,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 16.499999999068677,
+              "actual": 16,
+              "limit": 19.319999998994174,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 16.499999999068677,
+              "actual": 16,
+              "limit": 19.319999998994174,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.599999999999454,
+              "actual": 33.600000000000364,
+              "limit": 37.787999999999414,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "expanse",
+          "renderer": "3d",
+          "view": "full",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 15.600000000558794,
+              "actual": 17.600000000558794,
+              "limit": 18.3480000006035,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 15.600000000558794,
+              "actual": 17.700000000186265,
+              "limit": 18.3480000006035,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 33.600000000000364,
+              "actual": 33.599999999999454,
+              "limit": 37.788000000000395,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "full",
+          "count": 32,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 11.200000000186265,
+              "actual": 11.399999999441206,
+              "limit": 13.596000000201167,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 11.299999999813735,
+              "actual": 11.5,
+              "limit": 13.703999999798835,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.899999999999636,
+              "actual": 16.800000000000182,
+              "limit": 19.751999999999608,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "upper",
+          "count": 100,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 12.399999999441206,
+              "actual": 13.299999999813735,
+              "limit": 14.891999999396504,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 12.399999999441206,
+              "actual": 13.400000000372529,
+              "limit": 14.891999999396504,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.800000000000182,
+              "actual": 16.800000000000182,
+              "limit": 19.644000000000197,
+              "pass": true
+            }
+          ]
+        },
+        {
+          "preset": "large",
+          "renderer": "3d",
+          "view": "nether",
+          "count": 2,
+          "pass": true,
+          "checks": [
+            {
+              "kind": "cpu",
+              "baseline": 12.700000000186265,
+              "actual": 11.5,
+              "limit": 15.216000000201166,
+              "pass": true
+            },
+            {
+              "kind": "conservativeWrapperCpu",
+              "baseline": 12.700000000186265,
+              "actual": 11.5,
+              "limit": 15.216000000201166,
+              "pass": true
+            },
+            {
+              "kind": "raf",
+              "baseline": 16.800000000000182,
+              "actual": 16.800000000000182,
+              "limit": 19.644000000000197,
+              "pass": true
+            }
+          ]
+        }
+      ],
+      "cleanup": {
+        "edgeExited": true,
+        "profileRemoved": true,
+        "serverExited": true,
+        "cleanupRecovery": null
+      },
+      "failure": {
+        "message": "One or more case performance budgets failed; all cases retained",
+        "cases": [
+          {
+            "preset": "expanse",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 100,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 17.399999999441206,
+                "actual": 18.200000000186265,
+                "limit": 20.291999999396506,
+                "pass": true
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 17.399999999441206,
+                "actual": 18.200000000186265,
+                "limit": 20.291999999396506,
+                "pass": true
+              },
+              {
+                "kind": "raf",
+                "baseline": 16.899999999999636,
+                "actual": 33.5,
+                "limit": 19.751999999999608,
+                "pass": false
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "diagnosticLimits": [
+    "Node Canvas adapter timings exclude driver upload and are diagnostic only.",
+    "GC/thread CPU/TRACE and GPU queries are diagnostics, never replacements for full matrices.",
+    "off/on both retain combat source emission; only Stage combat display increment is measured.",
+    "Earlier GPU queries enclosing the whole render included update/CPU idle; corrected queries enclose r.gpu.render and remain inclusive WebGL render intervals.",
+    "Controlled scalar matrix had all budgets pass but process exit 1 because original profile cleanup failed; later manual cleanup recovery does not change that result."
+  ],
+  "performanceEvidenceIndex": {
+    "at": "2026-10-13T00:53:53.881Z",
+    "status": "Draft; hardware budget failures remain hard gates. Product frozen by user authorization to proceed to G2.2.",
+    "frozenProductSha256": "812ad914792436521dd2a791868fca7b9d83b2eb3277a0933d2a736f8a4cd3fa",
+    "finalHarnessSha256": "8cd6c5f7318bf2c58f62384120e241644e0890eff1ee05214a79ff3908380fff",
+    "fixture": {
+      "file": "tests/fixtures/g21-terrain-rgba.json",
+      "comparisons": 324,
+      "baseline": "e1e5503",
+      "sourceSha256": "c72a14a82bc5c98319ca485eeb28e74bf38c7aaca1660c365d465fd47f36a86a",
+      "default": "Current vs fixed RGBA SHA256; no Git access",
+      "historical": "Explicit --historical or --benchmark requires e1e5503 Git object; never silently skipped"
+    },
+    "scope": "Source emission enabled both off/on. Raw CPU=one fixed advanceDays + one original update + one original render. Additional conservative wrapper CPU includes measured outside-call ledger costs; nested timers not double counted. ABBA12x4,90samples,120warm,DPR2 and budgets unchanged.",
+    "formalRuns": [
+      {
+        "directory": "performance-restored-native",
+        "originalProcessExitCode": 1,
+        "passCases": 9,
+        "totalCases": 12,
+        "totalRuns": 48,
+        "sourceHashes": null,
+        "sourceHashNote": "Initial restored native launch predates source hash instrumentation; conservative gate postprocessed from complete saved frameTimings.",
+        "failedCases": [
+          {
+            "preset": "large",
+            "renderer": "canvas",
+            "view": "upper",
+            "count": 100,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 19.700000000186265,
+                "actual": 25.800000000279397,
+                "limit": 22.77600000020117,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 19.700000000186265,
+                "actual": 25.90000000037253,
+                "limit": 22.77600000020117,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "canvas",
+            "view": "nether",
+            "count": 2,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 14.000000000465661,
+                "actual": 20.5,
+                "limit": 16.620000000502916,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 14.100000000093132,
+                "actual": 20.600000000093132,
+                "limit": 16.728000000100586,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "3d",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "raf",
+                "baseline": 16.899999999999636,
+                "actual": 33.30000000000018,
+                "limit": 19.751999999999608,
+                "pass": false
+              }
+            ]
+          }
+        ],
+        "originalCleanupPass": true,
+        "cleanupRecovery": null
+      },
+      {
+        "directory": "performance-restored-controlled",
+        "originalProcessExitCode": 1,
+        "passCases": 11,
+        "totalCases": 12,
+        "totalRuns": 48,
+        "sourceHashes": {
+          "scripts/inkbox-g2-performance.mjs": "92bf1b08a77e0dfbfcbf806f4eaf9265226a7508ef8be2972e124c16a5e78487",
+          "src/inkbox/render/terrainLayer.js": "0b97755062536ad506dcee20b4a849983574701fb8e893370aa9695ac1611f97"
+        },
+        "sourceHashNote": null,
+        "failedCases": [
+          {
+            "preset": "large",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 12,
+                "actual": 18.200000000186265,
+                "limit": 14.46,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 12,
+                "actual": 18.699999999720603,
+                "limit": 14.46,
+                "pass": false
+              }
+            ]
+          }
+        ],
+        "originalCleanupPass": true,
+        "cleanupRecovery": null
+      },
+      {
+        "directory": "performance-final-native",
+        "originalProcessExitCode": 1,
+        "passCases": 8,
+        "totalCases": 12,
+        "totalRuns": 48,
+        "sourceHashes": {
+          "scripts/inkbox-g2-performance.mjs": "9b7907ea5d11adfb16dcc7429daf0b7eb421a5bd7be4e96a5da2f6aecb70aa50",
+          "src/inkbox/render/terrainLayer.js": "c8f15e47f5a13224bd3779816207afc0aa30c27d5d214de4eb188da50dad5687"
+        },
+        "sourceHashNote": null,
+        "failedCases": [
+          {
+            "preset": "expanse",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 18.00000000046566,
+                "actual": 25.40000000037253,
+                "limit": 20.940000000502916,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 18.100000000093132,
+                "actual": 25.5,
+                "limit": 21.048000000100583,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "expanse",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 100,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 20.399999999906868,
+                "actual": 24.899999999906868,
+                "limit": 23.53199999989942,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 20.5,
+                "actual": 25,
+                "limit": 23.64,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 10.300000000279397,
+                "actual": 18.899999999906868,
+                "limit": 12.624000000301749,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 10.300000000279397,
+                "actual": 19,
+                "limit": 12.624000000301749,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "expanse",
+            "renderer": "3d",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 16.200000000186265,
+                "actual": 23.899999999906868,
+                "limit": 18.996000000201168,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 16.200000000186265,
+                "actual": 24,
+                "limit": 18.996000000201168,
+                "pass": false
+              }
+            ]
+          }
+        ],
+        "originalCleanupPass": false,
+        "cleanupRecovery": {
+          "at": "2026-10-13T00:51:16.353Z",
+          "profile": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\cdp-TPEGcd",
+          "profileRemoved": true,
+          "evidence": "Exact Temp/cdp-TPEGcd target verified; elevated Win32_Process inventory found no Edge using that profile; native PowerShell Remove-Item completed. Original exit1/cleanup failure retained."
+        }
+      },
+      {
+        "directory": "performance-final-controlled",
+        "originalProcessExitCode": 1,
+        "passCases": 12,
+        "totalCases": 12,
+        "totalRuns": 48,
+        "sourceHashes": {
+          "scripts/inkbox-g2-performance.mjs": "409283e2a7c16627600c8727b208cebd852560c594f66720bf6a47cb4ceee513",
+          "src/inkbox/render/terrainLayer.js": "c8f15e47f5a13224bd3779816207afc0aa30c27d5d214de4eb188da50dad5687"
+        },
+        "sourceHashNote": null,
+        "failedCases": [],
+        "originalCleanupPass": false,
+        "cleanupRecovery": {
+          "at": "2026-10-13T00:25:41.377Z",
+          "profile": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\cdp-ZziSkt",
+          "profileRemoved": true,
+          "evidence": "Exact Temp/cdp-ZziSkt target resolved and checked; elevated Win32_Process inventory found no Edge using that profile; native PowerShell Remove-Item completed. Original exit1/cleanup failure retained."
+        }
+      },
+      {
+        "directory": "performance-small-native",
+        "originalProcessExitCode": 1,
+        "passCases": 7,
+        "totalCases": 12,
+        "totalRuns": 48,
+        "sourceHashes": {
+          "scripts/inkbox-g2-performance.mjs": "0ff1e0faa35a4a9d5733050d2b3c30df991b62802ea51722705012eeae89d15d",
+          "src/inkbox/render/terrainLayer.js": "812ad914792436521dd2a791868fca7b9d83b2eb3277a0933d2a736f8a4cd3fa"
+        },
+        "sourceHashNote": null,
+        "failedCases": [
+          {
+            "preset": "expanse",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 23.200000000186265,
+                "actual": 27.299999999813735,
+                "limit": 26.556000000201166,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 23.200000000186265,
+                "actual": 27.299999999813735,
+                "limit": 26.556000000201166,
+                "pass": false
+              },
+              {
+                "kind": "raf",
+                "baseline": 17,
+                "actual": 32.80000000000018,
+                "limit": 19.86,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "canvas",
+            "view": "upper",
+            "count": 100,
+            "checks": [
+              {
+                "kind": "cpu",
+                "baseline": 12.600000000558794,
+                "actual": 17.600000000558794,
+                "limit": 15.108000000603498,
+                "pass": false
+              },
+              {
+                "kind": "conservativeWrapperCpu",
+                "baseline": 12.600000000558794,
+                "actual": 17.600000000558794,
+                "limit": 15.108000000603498,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "expanse",
+            "renderer": "3d",
+            "view": "full",
+            "count": 2,
+            "checks": [
+              {
+                "kind": "raf",
+                "baseline": 33.600000000000364,
+                "actual": 49.899999999999636,
+                "limit": 37.788000000000395,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "3d",
+            "view": "full",
+            "count": 32,
+            "checks": [
+              {
+                "kind": "raf",
+                "baseline": 17,
+                "actual": 33.29999999999973,
+                "limit": 19.86,
+                "pass": false
+              }
+            ]
+          },
+          {
+            "preset": "large",
+            "renderer": "3d",
+            "view": "upper",
+            "count": 100,
+            "checks": [
+              {
+                "kind": "raf",
+                "baseline": 16.800000000000182,
+                "actual": 33.400000000000546,
+                "limit": 19.644000000000197,
+                "pass": false
+              }
+            ]
+          }
+        ],
+        "originalCleanupPass": true,
+        "cleanupRecovery": null
+      },
+      {
+        "directory": "performance-small-controlled",
+        "originalProcessExitCode": 1,
+        "passCases": 11,
+        "totalCases": 12,
+        "totalRuns": 48,
+        "sourceHashes": {
+          "scripts/inkbox-g2-performance.mjs": "0ff1e0faa35a4a9d5733050d2b3c30df991b62802ea51722705012eeae89d15d",
+          "src/inkbox/render/terrainLayer.js": "812ad914792436521dd2a791868fca7b9d83b2eb3277a0933d2a736f8a4cd3fa"
+        },
+        "sourceHashNote": null,
+        "failedCases": [
+          {
+            "preset": "expanse",
+            "renderer": "canvas",
+            "view": "full",
+            "count": 100,
+            "checks": [
+              {
+                "kind": "raf",
+                "baseline": 16.899999999999636,
+                "actual": 33.5,
+                "limit": 19.751999999999608,
+                "pass": false
+              }
+            ]
+          }
+        ],
+        "originalCleanupPass": true,
+        "cleanupRecovery": null
+      }
+    ],
+    "diagnostics": [
+      {
+        "directory": "performance-node-incremental",
+        "files": [
+          {
+            "file": "metrics.json",
+            "bytes": 11352
+          }
+        ]
+      },
+      {
+        "directory": "performance-node-scalar-reference",
+        "files": [
+          {
+            "file": "terrainLayer.js",
+            "bytes": 18618
+          }
+        ]
+      },
+      {
+        "directory": "performance-profile-scalar-canvas",
+        "files": [
+          {
+            "file": "metrics.json",
+            "bytes": 1482351
+          },
+          {
+            "file": "profile-expanse-canvas-full-32-0-off.json",
+            "bytes": 73371
+          },
+          {
+            "file": "profile-expanse-canvas-full-32-1-on.json",
+            "bytes": 65967
+          },
+          {
+            "file": "profile-expanse-canvas-full-32-2-on.json",
+            "bytes": 69781
+          },
+          {
+            "file": "profile-expanse-canvas-full-32-3-off.json",
+            "bytes": 68162
+          },
+          {
+            "file": "trace-expanse-canvas-full-32-0-off.json",
+            "bytes": 1404501
+          },
+          {
+            "file": "trace-expanse-canvas-full-32-1-on.json",
+            "bytes": 1544638
+          },
+          {
+            "file": "trace-expanse-canvas-full-32-2-on.json",
+            "bytes": 1556267
+          },
+          {
+            "file": "trace-expanse-canvas-full-32-3-off.json",
+            "bytes": 1324373
+          }
+        ]
+      },
+      {
+        "directory": "performance-profile-small-3d",
+        "files": [
+          {
+            "file": "metrics.json",
+            "bytes": 1793561
+          },
+          {
+            "file": "profile-large-3d-full-32-0-off.json",
+            "bytes": 99364
+          },
+          {
+            "file": "profile-large-3d-full-32-1-on.json",
+            "bytes": 101159
+          },
+          {
+            "file": "profile-large-3d-full-32-2-on.json",
+            "bytes": 102678
+          },
+          {
+            "file": "profile-large-3d-full-32-3-off.json",
+            "bytes": 99727
+          },
+          {
+            "file": "trace-large-3d-full-32-0-off.json",
+            "bytes": 1552758
+          },
+          {
+            "file": "trace-large-3d-full-32-1-on.json",
+            "bytes": 1687647
+          },
+          {
+            "file": "trace-large-3d-full-32-2-on.json",
+            "bytes": 1621678
+          },
+          {
+            "file": "trace-large-3d-full-32-3-off.json",
+            "bytes": 1477668
+          }
+        ]
+      },
+      {
+        "directory": "performance-terrain-equivalence",
+        "files": [
+          {
+            "file": "metrics.json",
+            "bytes": 73364
+          }
+        ]
+      },
+      {
+        "directory": "performance-terrain-fixture",
+        "files": [
+          {
+            "file": "metrics.json",
+            "bytes": 67881
+          }
+        ]
+      },
+      {
+        "directory": "performance-terrain-scratch-diagnostic",
+        "files": [
+          {
+            "file": "metrics.json",
+            "bytes": 73244
+          }
+        ]
+      },
+      {
+        "directory": "performance-trace-restored-3d",
+        "files": [
+          {
+            "file": "metrics.json",
+            "bytes": 1266904
+          },
+          {
+            "file": "trace-large-3d-full-32-0-off.json",
+            "bytes": 1522137
+          },
+          {
+            "file": "trace-large-3d-full-32-1-on.json",
+            "bytes": 1557756
+          },
+          {
+            "file": "trace-large-3d-full-32-2-on.json",
+            "bytes": 1761330
+          },
+          {
+            "file": "trace-large-3d-full-32-3-off.json",
+            "bytes": 1435261
+          }
+        ]
+      },
+      {
+        "directory": "performance-trace-restored-canvas",
+        "files": [
+          {
+            "file": "metrics.json",
+            "bytes": 1855528
+          },
+          {
+            "file": "trace-large-canvas-full-32-0-off.json",
+            "bytes": 2057332
+          },
+          {
+            "file": "trace-large-canvas-full-32-1-on.json",
+            "bytes": 1551761
+          },
+          {
+            "file": "trace-large-canvas-full-32-2-on.json",
+            "bytes": 1549111
+          },
+          {
+            "file": "trace-large-canvas-full-32-3-off.json",
+            "bytes": 1357837
+          }
+        ]
+      }
+    ],
+    "interpretation": "Node arithmetic gains and trace/profiler/GPU intervals are diagnostics, never formal release acceptance. Earlier GPU queries spanned Inkbox.render including 3D CPU update gaps; latest profile-small-3d narrows to WebGLRenderer.render inclusive GPU interval, not exclusive shader/FX GPU cost. All measured queries valid with no disjoint; disjoint/pending and cleanup retry mocks pass.",
+    "finalHarnessFastChecks": {
+      "inlinePrograms": true,
+      "gpuDisjointPendingMock": true,
+      "ownedProfileRetryMock": true,
+      "serverExitSignalAndTimeoutMock": true,
+      "cleanupLimit": "Owned profile retry and owned process polling are bounded; shared browser.close/taskkill has no explicit timeout, so total cleanup is not claimed absolutely bounded."
+    },
+    "rawLedgerNote": "Archived formal matrices retain all 90 CPU/phase frameTimings and RAF n=90 summaries, but the prior reporter removed per-sample RAF/addon arrays. Final harness now retains these existing measured values in frameTimings for future replay; archived sample values are not reconstructed or fabricated."
+  },
+  "currentInstrumentSha256": "8cd6c5f7318bf2c58f62384120e241644e0890eff1ee05214a79ff3908380fff",
+  "packageVerification": {
+    "status": "pass",
+    "build": {
+      "command": "npm run build",
+      "exitCode": 0,
+      "log": "reports/release/g2.1-hardening/proof/final-verification/npm-run-build-final.log"
+    },
+    "audit": {
+      "command": "npm run test:package",
+      "exitCode": 0,
+      "log": "reports/release/g2.1-hardening/proof/final-verification/npm-run-test-package-final.log"
+    },
+    "artifact": "dist/zuotian-guan-jing-inkbox-1.0.0.zip",
+    "artifactBytes": 3253580,
+    "packageFiles": 423,
+    "packageScripts": 91,
+    "markdownDocuments": 104
+  },
+  "golden": [
+    {
+      "path": "reports/release/g2.1-hardening/golden/g1-canvas-person.png",
+      "sha256": "6113ceebbe1c2878babc2cefa57afaba23561220c55bdb093db23e27f2e08270"
+    },
+    {
+      "path": "reports/release/g2.1-hardening/golden/g1-3d-person.png",
+      "sha256": "cda38fe4bedec9426202334d4f4c420a63389b8e31fde80c603e403e74af86de"
+    },
+    {
+      "path": "reports/release/g2.1-hardening/golden/g2-canvas-combat-blade.png",
+      "sha256": "cb29016e62966c28903f26078ad1d51d5d79bcb86e1361ac01258f5dd2d5dce9"
+    },
+    {
+      "path": "reports/release/g2.1-hardening/golden/g2-canvas-combat-fire.png",
+      "sha256": "01f50f46779ddc0821347e4b4a0989634176ff8242ad844ef6bf8d7cb617559d"
+    },
+    {
+      "path": "reports/release/g2.1-hardening/golden/g2-canvas-combat-thunder.png",
+      "sha256": "19cfe42d9a7c614fcce867e37e1c46c35b2f845bfc74794a8fbbcf9f05aeb087"
+    },
+    {
+      "path": "reports/release/g2.1-hardening/golden/g2-3d-combat-blade.png",
+      "sha256": "22ee2a2aa1b591b93ffb07c114e4d0a68cd4c06279f2b656b9bf270122b8b1e0"
+    },
+    {
+      "path": "reports/release/g2.1-hardening/golden/g2-3d-combat-fire.png",
+      "sha256": "4a694eb724607b8261dd029c9ad2537c9c3d3257cdcfee60f202727f69660e8d"
+    },
+    {
+      "path": "reports/release/g2.1-hardening/golden/g2-3d-combat-thunder.png",
+      "sha256": "e44b751dc30260d894e177016462679150dd99153bb22c3e5afd54758ef05e3f"
+    }
+  ],
+  "visualInspection": {
+    "canvasPerson": "Actual formal G1 card renders all four tabs and the same selected identity.",
+    "threePerson": "Actual Three path keeps the same formal G1 card and world.",
+    "canvasCombat": "Shipping canvas scene captured with real hit source, no new visual palette.",
+    "threeCombat": "Shipping Three scene captured with fixed pool path; screenshots alone do not prove frame budgets."
+  }
+}
