@@ -1,6 +1,12 @@
 # Inkbox 测试与验证入口
 
-## Current Truth · 2026-10-12 · G1 正式集成与 G2.1
+## Current Truth · 2026-10-13 · G2.1 恢复与未封板性能
+
+主线 BASE 为 `e1e5503`。G2.1 七个有效增量已在 `codex/g2.1-combat-hardening-integration` 恢复；本轮恢复门禁及全部失败矩阵见 [G2.1 收束报告](../G21_HARDENING_REPORT.md) 和 [compact 摘要](../reports/release/g2.1-hardening/summary/acceptance-summary.json)。用户允许先接入 G2.2，保留 Draft 性能风险；这不等于性能预算通过。
+
+新增 `npm run test:g21:terrain` 逐项核对 324 幅固定历史 RGBA SHA256，默认无 Git 历史依赖，进入 CI Fast 并随包出货。`node scripts/inkbox-g21-terrain-equivalence.mjs --historical` 只用于逐字节历史诊断，`--benchmark` 的 Node 算术数据不代表完整产品性能。本轮原生与受控完整 12×4 硬件矩阵全部保留，raw CPU、保守 CPU、RAF 任一失败仍 exit 1，预算保持 off 最坏 P95 ×1.08+1.5 ms。
+
+下文 2026-10-12 的计数及性能结论为原交付历史记录。
 
 G1 Runtime 与 Presentation 从共同 main 基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 完整合流；代码验收 SHA `5f13f038c37a36529d5aa788164df76555a498fb`，最终 G1 head `a462632430898271e4c911c2955ff6835b9dbad2` 只追加方向文档，Fast / Heavy 通过。G2 生产代码 `8ef436b` 在此基线上独立接入真实战斗表现。接口和完整证据见 [G1 集成报告](../G1_INTEGRATION_REPORT.md) 与 [G2.1 交付记录](../G2_COMBAT_REPORT.md)。
 

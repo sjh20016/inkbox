@@ -66,6 +66,9 @@ jobs:
       - name: G2 真实命中、预算保护、Canvas / 3D 快照及资源生命周期
         run: npm run test:g2
 
+      - name: G2.1 地形像素回归（固定历史 RGBA 基准，无 Git 历史依赖）
+        run: npm run test:g21:terrain
+
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
         run: npm run test:render3d
 

@@ -1,6 +1,6 @@
 # 坐天观井 · Inkbox 1.0.0
 
-2026-10-12：G1 正式人物命簿、三项敕令、记挂与地图成长在 `integrate/g1-gameplay-shell` 集成并通过 CI。后续 `feat/g2-combat-presentation-codex` 接通真实命中的 Canvas / 3D 剑气、火痕和雷光，顶部“战斗墨痕”可关闭展示；模拟与存档保持。G2 功能浏览器、构建和包审计通过，两套完整性能对照各有一项 Canvas CPU 超预算，保留草稿 PR，暂未封板。顺序交付及证据见 [G1 集成报告](./G1_INTEGRATION_REPORT.md) 和 [G2.1 交付记录](./G2_COMBAT_REPORT.md)。
+2026-10-13：本地更新到已合并 G1 的主线 `e1e5503`，G2.1 七个有效提交在 `codex/g2.1-combat-hardening-integration` 恢复。真实命中的 Canvas / 3D 剑气、火痕和雷光共用表现舞台，顶部“战斗墨痕”可关闭展示。地形局部优化保留固定历史 RGBA 门禁；完整硬件矩阵仍有 CPU / 帧间隔超预算，性能未封板。用户已允许在功能验证基线上继续 G2.2，两阶段保留 Draft，不合 main。证据见 [G2.1 恢复与收束报告](./G21_HARDENING_REPORT.md)；原始交付结论保留在 [G1 集成报告](./G1_INTEGRATION_REPORT.md) 和 [G2.1 历史记录](./G2_COMBAT_REPORT.md)。
 
 2026-10-08：M2-C2E 本地工程验收完成：44项CPU、108种子矩阵、14项真实产品GPU、十二镜同机对照和600/6000帧联合耐久通过。最终美术裁决与最大图性能边界见 [本轮就绪报告](./M2C2E_READINESS.md)。开发分支 `codex/m2-c2e-living-terrain`。3D 创建入口提供标准／群山／水泽、有效 seed 0、512×320 和渐进探索；雕刻支持山脊、盆地、Undo／Redo。
 

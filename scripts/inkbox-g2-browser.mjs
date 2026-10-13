@@ -15,7 +15,8 @@ const BASE = process.env.INKBOX_URL || `http://127.0.0.1:${PORT}`;
 const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(ROOT, 'reports/g2-local/browser'));
 const APP = new URL('inkbox.html', BASE.endsWith('/') ? BASE : `${BASE}/`);
 const roots = findCombatRoots();
-const report = { startedAt: new Date().toISOString(), pass: false, browser: 'Microsoft Edge via repo scripts/cdp.mjs; previous Tabbit diagnose exited 69 before connection, user specified Edge',
+const report = { startedAt: new Date().toISOString(), pass: false, browser: 'Microsoft Edge via repository-owned scripts/cdp.mjs',
+  browserBackendReason: process.env.INKBOX_BROWSER_BACKEND_REASON || 'Repository Edge regression for the formal Canvas and Three product paths',
   sourceFlow: 'Life.spawn -> Life.stepEntity/attack -> advanceDays; no injected combat events',
   gpuMode:process.env.INKBOX_GPU==='0'?'functionalOnly (CI software D3D)':'hardwareRequired (local Edge GPU)',checks: [], screenshots: [],
   fixtureRoots: Object.fromEntries(Object.entries(roots).map(([style, item]) => [style, item.root.rootName])), errors: [] };
