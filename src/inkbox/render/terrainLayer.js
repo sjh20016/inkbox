@@ -256,12 +256,10 @@ export class TerrainLayer {
           if (slope > 0.062 && hv > seaLevel) {
             const rockMix = Math.min(0.8, (slope - 0.062) * 5.4);
             const rock = hv > 0.78 ? TERRAIN_RGB[TERRAIN.PEAK] : TERRAIN_RGB[TERRAIN.ROCK];
-            {
-              const blendTint = rock, blendAmount = rockMix;
-              r = r + (blendTint[0] - r) * blendAmount;
-              g = g + (blendTint[1] - g) * blendAmount;
-              b = b + (blendTint[2] - b) * blendAmount;
-            }
+            mixCellRgb(r, g, b, rock, rockMix, tmpA);
+            r = tmpA[0];
+            g = tmpA[1];
+            b = tmpA[2];
           }
 
           // 墨韵浓淡：让整片地表的墨色不匀，像分几次染的
@@ -278,12 +276,10 @@ export class TerrainLayer {
           // 植被深浅：同一片林子也有浓淡
           const v = veg[i];
           if (v > 0.12 && t !== TERRAIN.DESERT && t !== TERRAIN.SNOW) {
-            {
-              const blendTint = TERRAIN_RGB[TERRAIN.JUNGLE], blendAmount = Math.min(0.4, v * 0.38);
-              r = r + (blendTint[0] - r) * blendAmount;
-              g = g + (blendTint[1] - g) * blendAmount;
-              b = b + (blendTint[2] - b) * blendAmount;
-            }
+            mixCellRgb(r, g, b, TERRAIN_RGB[TERRAIN.JUNGLE], Math.min(0.4, v * 0.38), tmpA);
+            r = tmpA[0];
+            g = tmpA[1];
+            b = tmpA[2];
           }
 
           // ── 雪顶与石骨 ────────────────────────────────
@@ -300,12 +296,10 @@ export class TerrainLayer {
           } else if (hv > ROCKLINE) {
             // 高处露岩：越接近雪线越秃
             const bare = Math.min(1, (hv - ROCKLINE) / (SNOWLINE - ROCKLINE));
-            {
-              const blendTint = TERRAIN_RGB[TERRAIN.ROCK], blendAmount = bare * 0.5;
-              r = r + (blendTint[0] - r) * blendAmount;
-              g = g + (blendTint[1] - g) * blendAmount;
-              b = b + (blendTint[2] - b) * blendAmount;
-            }
+            mixCellRgb(r, g, b, TERRAIN_RGB[TERRAIN.ROCK], bare * 0.5, tmpA);
+            r = tmpA[0];
+            g = tmpA[1];
+            b = tmpA[2];
           }
 
           // 云气留白：只在山腰的背风侧起一层薄雾。
@@ -315,12 +309,10 @@ export class TerrainLayer {
             const drop = northH - hv;
             if (drop > 0.07 && drop < 0.24) {
               const mist = Math.min(0.22, (drop - 0.07) * 1.2);
-              {
-                const blendTint = INK_RGB.mist, blendAmount = mist;
-                r = r + (blendTint[0] - r) * blendAmount;
-                g = g + (blendTint[1] - g) * blendAmount;
-                b = b + (blendTint[2] - b) * blendAmount;
-              }
+              mixCellRgb(r, g, b, INK_RGB.mist, mist, tmpA);
+              r = tmpA[0];
+              g = tmpA[1];
+              b = tmpA[2];
             }
           }
 
@@ -328,21 +320,17 @@ export class TerrainLayer {
           // 而是「留白」。这是整张图看起来像水墨而不是像卫星图的关键。
           const shade = (0.5 - dot) * 1.2;
           if (shade > 0.012) {
-            {
-              const blendTint = INK_RGB.shadow, blendAmount = shade > 0.62 ? 0.62 : shade;
-              r = r + (blendTint[0] - r) * blendAmount;
-              g = g + (blendTint[1] - g) * blendAmount;
-              b = b + (blendTint[2] - b) * blendAmount;
-            }
+            mixCellRgb(r, g, b, INK_RGB.shadow, shade > 0.62 ? 0.62 : shade, tmpA);
+            r = tmpA[0];
+            g = tmpA[1];
+            b = tmpA[2];
           }
           const glow = (dot - 0.62) * 0.85;
           if (glow > 0.012) {
-            {
-              const blendTint = INK_RGB.mist, blendAmount = glow > 0.32 ? 0.32 : glow;
-              r = r + (blendTint[0] - r) * blendAmount;
-              g = g + (blendTint[1] - g) * blendAmount;
-              b = b + (blendTint[2] - b) * blendAmount;
-            }
+            mixCellRgb(r, g, b, INK_RGB.mist, glow > 0.32 ? 0.32 : glow, tmpA);
+            r = tmpA[0];
+            g = tmpA[1];
+            b = tmpA[2];
           }
 
           // ── 山脊留白 ─────────────────────────────────
@@ -352,12 +340,10 @@ export class TerrainLayer {
             const hUp = height[ym * w + xm];
             const hDn = height[yp * w + xp];
             if (hv > hUp + 0.010 && hv > hDn + 0.004) {
-              {
-                const blendTint = INK_RGB.mist, blendAmount = 0.26;
-                r = r + (blendTint[0] - r) * blendAmount;
-                g = g + (blendTint[1] - g) * blendAmount;
-                b = b + (blendTint[2] - b) * blendAmount;
-              }
+              mixCellRgb(r, g, b, INK_RGB.mist, 0.26, tmpA);
+              r = tmpA[0];
+              g = tmpA[1];
+              b = tmpA[2];
             }
           }
 
@@ -387,12 +373,10 @@ export class TerrainLayer {
 
           // 雪线：高处带一点冷调，避免纯白死板
           if (t === TERRAIN.SNOW && temp[i] < 0.3) {
-            {
-              const blendTint = INK_RGB.azurite, blendAmount = 0.1;
-              r = r + (blendTint[0] - r) * blendAmount;
-              g = g + (blendTint[1] - g) * blendAmount;
-              b = b + (blendTint[2] - b) * blendAmount;
-            }
+            mixCellRgb(r, g, b, INK_RGB.azurite, 0.1, tmpA);
+            r = tmpA[0];
+            g = tmpA[1];
+            b = tmpA[2];
           }
 
           // ── 云雾带 ───────────────────────────────────
@@ -403,12 +387,10 @@ export class TerrainLayer {
             const alt = Math.min(1, (hv - seaLevel - 0.16) / 0.5);
             const amount = Math.max(0, m - 0.5) * 1.7 * alt * 0.6;
             if (amount > 0.012) {
-              {
-                const blendTint = INK_RGB.mist, blendAmount = amount > 0.4 ? 0.4 : amount;
-                r = r + (blendTint[0] - r) * blendAmount;
-                g = g + (blendTint[1] - g) * blendAmount;
-                b = b + (blendTint[2] - b) * blendAmount;
-              }
+              mixCellRgb(r, g, b, INK_RGB.mist, amount > 0.4 ? 0.4 : amount, tmpA);
+              r = tmpA[0];
+              g = tmpA[1];
+              b = tmpA[2];
             }
           }
 
@@ -419,12 +401,10 @@ export class TerrainLayer {
           const q = qi[i];
           if (q > 0.6) {
             const qg = Math.min(0.16, (q - 0.6) * 0.42);
-            {
-              const blendTint = QI_TINT, blendAmount = qg;
-              r = r + (blendTint[0] - r) * blendAmount;
-              g = g + (blendTint[1] - g) * blendAmount;
-              b = b + (blendTint[2] - b) * blendAmount;
-            }
+            mixCellRgb(r, g, b, QI_TINT, qg, tmpA);
+            r = tmpA[0];
+            g = tmpA[1];
+            b = tmpA[2];
           }
         }
 
@@ -434,12 +414,10 @@ export class TerrainLayer {
           const heat = Math.min(1, f * 1.15);
           tmpHeat[1] = 214 - heat * 70;
           tmpHeat[2] = 120 - heat * 90;
-          {
-            const blendTint = tmpHeat, blendAmount = heat * 0.86;
-            r = r + (blendTint[0] - r) * blendAmount;
-            g = g + (blendTint[1] - g) * blendAmount;
-            b = b + (blendTint[2] - b) * blendAmount;
-          }
+          mixCellRgb(r, g, b, tmpHeat, heat * 0.86, tmpA);
+          r = tmpA[0];
+          g = tmpA[1];
+          b = tmpA[2];
         }
 
         // 立体视图的崖面：当前格比上一行低很多时，把落差补成一道阴影，
