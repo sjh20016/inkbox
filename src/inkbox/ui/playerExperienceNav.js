@@ -101,3 +101,8 @@ export function bindPlayerExperienceNav(doc = document, win = window) {
 
   return () => { close({ restoreFocus: false }); listeners.forEach(remove => remove()); };
 }
+
+// 主程序完成 boot / 正式分区包装之后再绑定；不改变 main.js 或模拟时序。
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  window.addEventListener('load', () => bindPlayerExperienceNav(), { once: true });
+}
