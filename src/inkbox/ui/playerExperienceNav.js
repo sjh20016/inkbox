@@ -53,7 +53,20 @@ export function bindPlayerExperienceNav(doc = document, win = window) {
     const body = target.nextElementSibling;
     // 原折叠监听是唯一的状态/偏好写入者；不要直接强改 collapsed 类。
     if (target.classList.contains('collapsed') || body?.classList.contains('collapsed')) target.click();
-    target.scrollIntoView({ block: 'start', inline: 'nearest' });
+    target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    // scroll-margin is insufficient across old/new 3D canvases: sticky shortcut bar
+    // can overlap the section title after a layout refresh. Correct the actual rail
+    // scroll position by the measured toolbar height, never by a fixed pixel guess.
+    if (typeof right.getBoundingClientRect === 'function'
+      && typeof target.getBoundingClientRect === 'function') {
+      const railBox = right.getBoundingClientRect();
+      const bar = right.querySelector?.('.p1-observe-nav');
+      const barHeight = bar?.getBoundingClientRect?.().height || 0;
+      const headBox = target.getBoundingClientRect();
+      const desiredTop = railBox.top + barHeight + 8;
+      if (headBox.top < desiredTop || headBox.bottom > railBox.bottom - 6)
+        right.scrollTop += headBox.top - desiredTop;
+    }
     target.focus({ preventScroll: true });
   }
 
