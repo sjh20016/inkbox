@@ -51,21 +51,31 @@ export function bindPlayerExperienceNav(doc = document, win = window) {
   function reveal(target) {
     if (!target) return;
     const body = target.nextElementSibling;
-    // 原折叠监听是唯一的状态/偏好写入者；不要直接强改 collapsed 类。
-    if (target.classList.contains('collapsed') || body?.classList.contains('collapsed')) target.click();
-    target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    // scroll-margin is insufficient across old/new 3D canvases: sticky shortcut bar
-    // can overlap the section title after a layout refresh. Correct the actual rail
-    // scroll position by the measured toolbar height, never by a fixed pixel guess.
+    // Preserve the original section-state/prefs listener. A fast-jump must not race
+    // against its 350ms max-height animation, otherwise Three can land a heading
+    // ABOVE the sticky toolbar even while DOM focus is correct.
+    if (target.classList.contains('collapsed') || body?.classList.contains('collapsed')) {
+      const style = body?.style;
+      const previous = style?.transition;
+      if (style) style.transition = 'none';
+      target.click();
+      if (style) {
+        void body.offsetHeight; // settle the opened section before measuring geometry
+        style.transition = previous;
+      }
+    }
     if (typeof right.getBoundingClientRect === 'function'
       && typeof target.getBoundingClientRect === 'function') {
+      // Scroll ONLY the actual right rail, not every scrollable ancestor.
+      // Browser scrollIntoView may complete asynchronously after a Three resize.
       const railBox = right.getBoundingClientRect();
       const bar = right.querySelector?.('.p1-observe-nav');
       const barHeight = bar?.getBoundingClientRect?.().height || 0;
       const headBox = target.getBoundingClientRect();
-      const desiredTop = railBox.top + barHeight + 8;
-      if (headBox.top < desiredTop || headBox.bottom > railBox.bottom - 6)
-        right.scrollTop += headBox.top - desiredTop;
+      right.scrollTop = Math.max(0, right.scrollTop + headBox.top - railBox.top - barHeight - 8);
+    } else {
+      // Lightweight DOM contract runner has no geometry engine.
+      target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
     target.focus({ preventScroll: true });
   }
