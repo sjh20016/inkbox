@@ -1,5 +1,9 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 当前开发增量 · 2026-10-14 · G2-P0
+
+从 PR #8 的 `9a04236950c9f458382f4c2b4b0ed1b1f9cbe353` 建立 `codex/g2-p0-performance-ecology`，在独立 `.g2-p0-worktree` 施工。生态修改集中在正式 `ecology.js`；Canvas 缓存仅复用云雾前的陆地颜色，不改变重绘节拍、水面、云雾、火势、灵气或模拟。新增 `test:g2p0` 覆盖缓存失效与真实生态长局；进入 CI Fast。实际性能、前台/无头环境区别、旧档限制及合流建议见 [本轮交付报告](./G2_P0_PERFORMANCE_ECOLOGY_REPORT.md)。下列历史阶段结论与原始失败证据保留。
+
 ## 当前交接 · 2026-10-14 · G2-PF BLOCKED
 
 **最终结论：G2-PF BLOCKED。**正式完整矩阵 Native **10/12，exit 1**，Controlled **11/12，exit 1**；本地 54 条 Fast 命令全部 exit 0，真实 Edge GPU 产品浏览器 45 项检查通过，整机 10 场景契约通过。最新事实与失败项目见 [G2-PF 性能收束与集成报告](./G2_PERFORMANCE_FINALIZATION_REPORT.md)。

@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ALLOWED_RELEASE_JSON = new Set([
+  'reports/release/g2p0/summary/acceptance-summary.json',
+  'reports/release/g2p0/summary/ecology.json',
   'reports/release/g2pf/summary/acceptance-summary.json',
   'reports/release/g2.3-aftermath/summary/acceptance-summary.json',
   'reports/release/g2.2-feedback/summary/acceptance-summary.json',

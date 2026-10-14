@@ -1,5 +1,7 @@
 # 坐天观井 · Inkbox 1.0.0
 
+2026-10-14：G2-P0 在 `integrate/g2-release-candidate` 的 `9a04236` 上修复真实生态通知、水域植被与火势残值，并加入保持历史像素的 Canvas 陆地颜色缓存。施工分支为 `codex/g2-p0-performance-ecology`；同机前后数据、真实前台证据、完整性能失败和生态因果回归见 [性能与生态交付报告](./G2_P0_PERFORMANCE_ECOLOGY_REPORT.md)。整体合流结论以该报告与施工 PR 为准。
+
 ## 2026-10-14 · G2-PF BLOCKED
 
 **最终结论：G2-PF BLOCKED。**正式完整矩阵 Native **10/12，exit 1**，Controlled **11/12，exit 1**；本地 54 条 Fast 命令全部 exit 0，真实 Edge GPU 产品浏览器 45 项检查通过，整机 10 场景契约通过。最新事实与失败项目见 [G2-PF 性能收束与集成报告](./G2_PERFORMANCE_FINALIZATION_REPORT.md)。
