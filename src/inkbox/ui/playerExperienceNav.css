@@ -58,3 +58,10 @@
   .rail.left.p1-open .p1-tools-close { display: block; width: 100%; margin-bottom: 8px; }
   .stage-hint { max-width: calc(100% - 180px); }
 }
+
+/* 外层分区已写明标题；卡片只保留真正有用的状态、日期与操作。 */
+#inkCombatObserver .g2-combat__header h3,
+#inkEnvironmentObserver .g23-environment > h3 { display: none; }
+#inkCombatObserver .g2-combat__header { justify-content: flex-end; }
+#inkCombatObserver .g2-combat__list { max-height: min(245px, 35vh); }
+#inkEnvironmentObserver .g23-environment__fires { max-height: min(155px, 24vh); }
