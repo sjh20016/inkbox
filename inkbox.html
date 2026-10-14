@@ -660,7 +660,7 @@
            未读数（「天道记挂 · 3」），拿 textContent 当折叠键的话键会随计数变，
            表现为「折起来、刷新一次又展开了」，而且偏好里会攒下一串只差一个
            数字的垃圾键（见 railPanels.js 的 sectionKey）。 -->
-      <div class="sec-title p1-target" id="inkWatchTitle" tabindex="-1" data-sec-key="记挂">天道记挂 · <span id="inkWatchCount">0</span><span id="inkWatchDot" style="display:none;color:var(--cinnabar)"> ●</span></div>
+      <div class="sec-title p1-target" id="inkWatchTitle" tabindex="-1" data-sec-key="记挂">天道<span id="inkWatchCount">记挂 · 0</span><span id="inkWatchDot" style="display:none;color:var(--cinnabar)"> ●</span></div>
       <div class="chronicle" id="inkWatch"></div>
 
       <div class="sec-title">编年</div>
@@ -831,5 +831,6 @@
 <link rel="stylesheet" href="./src/inkbox/ui/g1/presentation/worldProgress.css" />
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
 <script type="module" src="./src/inkbox/main.js"></script>
+<script type="module" src="./src/inkbox/ui/playerExperienceNav.js"></script>
 </body>
 </html>
