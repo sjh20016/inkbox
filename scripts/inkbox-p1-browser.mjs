@@ -28,7 +28,7 @@ async function clickControl(selector) {
     const style=getComputedStyle(e),r=e.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
     const hit=document.elementFromPoint(x,y);
     if(style.display==='none'||style.visibility==='hidden'||r.width===0||r.height===0||(!e.contains(hit)&&e!==hit))
-      throw Error('Hidden/clipped/intercepted '+${JSON.stringify(selector)}+': '+JSON.stringify({rect:{x:r.x,y:r.y,w:r.width,h:r.height},hit:hit?.id}));
+      throw Error('Hidden/clipped/intercepted '+${JSON.stringify(selector)}+': '+JSON.stringify({rect:{x:r.x,y:r.y,w:r.width,h:r.height},hit:hit?.id,stack:document.elementsFromPoint(x,y).slice(0,8).map(v=>({id:v.id,cls:v.className,z:getComputedStyle(v).zIndex,pointer:getComputedStyle(v).pointerEvents,pos:getComputedStyle(v).position})),left:(()=>{const a=document.getElementById('inkToolsRail');return{cls:a.className,display:getComputedStyle(a).display,pos:getComputedStyle(a).position,z:getComputedStyle(a).zIndex,pointer:getComputedStyle(a).pointerEvents}})(),scrim:(()=>{const a=document.getElementById('inkExperienceScrim');return{hidden:a.hidden,z:getComputedStyle(a).zIndex,pos:getComputedStyle(a).position}})()}));
     return{x,y};`);
   await browser.click(point.x,point.y);
 }
