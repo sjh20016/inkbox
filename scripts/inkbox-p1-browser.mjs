@@ -52,9 +52,12 @@ async function exerciseDesktop(renderer,w,h) {
   assert.notEqual(before.railDisplay,'none');assert(before.stageWidth>350);
   for(const [key,id] of [['combat','inkCombatTitle'],['environment','inkEnvironmentTitle'],['watch','inkWatchTitle']]){
     await clickControl(`[data-experience-target="${key}"]`);
+    await frames();
     const value=await page(`const t=document.getElementById(${JSON.stringify(id)}),r=t.getBoundingClientRect(),
-      b=document.getElementById('inkExperienceRail').getBoundingClientRect();
-      return{visible:r.height>0&&r.top>=b.top-1&&r.top<b.bottom,
+      rail=document.getElementById('inkExperienceRail'),b=rail.getBoundingClientRect(),
+      nav=rail.querySelector('.p1-observe-nav').getBoundingClientRect();
+      return{visible:r.height>0&&r.top>=nav.bottom-2&&r.bottom<b.bottom,
+        titleTop:r.top,navBottom:nav.bottom,railBottom:b.bottom,railScrollTop:rail.scrollTop,
         collapsed:t.classList.contains('collapsed'),focused:document.activeElement===t};`);
     assert(value.visible && !value.collapsed && value.focused,`${renderer} ${w}x${h} ${key}: ${JSON.stringify(value)}`);
   }
