@@ -51,6 +51,25 @@ function stopOwnedBrowser(child) {
   try { child.kill(); } catch { /* already exited */ }
 }
 
+// Edge can release its profile handles after Browser.close has returned.
+// Retry only the isolated profile created by launch(), with a bounded wait.
+async function removeOwnedProfile(profile) {
+  const target = path.resolve(profile);
+  if (path.dirname(target).toLowerCase() !== path.resolve(os.tmpdir()).toLowerCase()
+    || !/^cdp-[a-z0-9]{6}$/i.test(path.basename(target))) {
+    throw new Error('Refusing cleanup outside an owned temporary CDP profile');
+  }
+  let lastError;
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    if (!fs.existsSync(target)) return { removed: true, attempts: attempt };
+    try { fs.rmSync(target, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 }); }
+    catch (error) { lastError = error.code || error.message; }
+    if (!fs.existsSync(target)) return { removed: true, attempts: attempt + 1 };
+    await sleep(200);
+  }
+  return { removed: false, attempts: 10, lastError };
+}
+
 // CDP 的修饰键是位掩码，不是布尔
 export const input = {
   ALT: 1,
@@ -303,7 +322,14 @@ export class Session {
     try { this.cdp.ws.close(); } catch { /* ignore */ }
     stopOwnedBrowser(this.child);
     await sleep(400);
-    try { fs.rmSync(this.userDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    this.meta.profileCleanup = await removeOwnedProfile(this.userDataDir);
+    if (!this.meta.profileCleanup.removed) {
+      // Keep callers' finally blocks running so their servers also close, but
+      // never let a CLI gate exit successfully after owned-profile cleanup fails.
+      process.exitCode = 1;
+      console.error('Owned CDP profile cleanup failed: ' + JSON.stringify(this.meta.profileCleanup));
+    }
+    return this.meta.profileCleanup;
   }
 }
 
@@ -322,6 +348,7 @@ export class Session {
  *   `Microsoft Basic Render Driver` 之类），但它**不是**真实 GPU 性能。
  *   传 `true` 会去掉这个开关去试真显卡——⚠️ 只在做「真实 GPU 基线」时用，
  *   而且**必须如实标注渲染器名**：换开关会让历史读数不再可比（M1.1D D5.3/D5.4）。
+ * @param {boolean} [options.headless]   默认 `true`；false 时创建可见浏览器窗口。
  */
 export async function launch({
   url = 'about:blank',
@@ -331,14 +358,16 @@ export async function launch({
   browser,
   timeoutMs = 15000,
   gpu = false,
+  headless = true,
 } = {}) {
+  if (typeof headless !== 'boolean') throw new TypeError('headless must be a boolean');
   const executable = browser || findBrowser();
   if (!executable) throw new Error('找不到 Edge / Chrome，请显式传 browser 路径');
 
   const debugPort = port || (9300 + Math.floor(Math.random() * 500));
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cdp-'));
   const child = spawn(executable, [
-    '--headless=new',
+    ...(headless ? ['--headless=new'] : []),
     ...(gpu ? [] : ['--disable-gpu']),
     '--no-first-run',
     '--no-default-browser-check',
@@ -349,7 +378,7 @@ export async function launch({
     `--user-data-dir=${userDataDir}`,
     `--window-size=${width},${height}`,
     'about:blank',
-  ], { stdio: 'ignore', detached: false, windowsHide: true });
+  ], { stdio: 'ignore', detached: false, windowsHide: headless });
 
   const base = `http://127.0.0.1:${debugPort}`;
   let cdp = null;
@@ -382,7 +411,10 @@ export async function launch({
     }
     stopOwnedBrowser(child);
     await sleep(300);
-    try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    const cleanup = await removeOwnedProfile(userDataDir);
+    if (!cleanup.removed) throw new AggregateError([error,
+      new Error('Owned CDP profile cleanup failed: ' + JSON.stringify(cleanup))],
+    'CDP launch and owned profile cleanup failed');
     throw error;
   }
 }

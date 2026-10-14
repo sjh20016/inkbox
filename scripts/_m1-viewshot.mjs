@@ -414,4 +414,4 @@ console.log('\n═════════════════════�
 console.log(failed === 0 ? 'M1 浏览器探针：全部通过' : `M1 浏览器探针：${failed} 项未通过`);
 console.log('══════════════════════════════════════════════════════════════');
 fs.writeFileSync(path.join(OUT_DIR, 'm1-probe.json'), JSON.stringify({ failed, results }, null, 2));
-process.exitCode = failed === 0 ? 0 : 1;
+if (failed > 0) process.exitCode = 1;
