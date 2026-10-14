@@ -18,7 +18,7 @@ import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
 import { normalizeRegion } from '../src/inkbox/ui/tools.js';
 
 assert.equal(THREE.REVISION, '186', 'Test requires shipped Three 0.186.1');
-assert.equal(JSON.parse(fs.readFileSync(new URL('../node_modules/three/package.json', import.meta.url))).version, '0.186.1');
+assert.equal(JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.resolve('three')))).version, '0.186.1');
 const file = 'src/inkbox/render3d/vegetation/VegetationLayer.js';
 // Frozen minimal writer oracle; release bundles and shallow CI need no Git history.
 const baselineSourceHash='42e1fe322e023f749a0e27ee21c93981d5159d2de31a990c987accf66a8e9ee8';
