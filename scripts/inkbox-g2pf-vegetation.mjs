@@ -88,6 +88,7 @@ const candidate = make(candidateWriter), baseline = make(legacyWriter);
 const profile = { ...ART_PROFILES.pilot, realmStyle: REALM_STYLES.mortal };
 const bytePrefix = (attribute, count, width) => attribute ? Buffer.from(attribute.array.buffer, attribute.array.byteOffset, count * width * attribute.array.BYTES_PER_ELEMENT) : null;
 function compare(label) {
+  assertIdentity(candidate,fixedIdentity);
   assert.deepEqual(candidate.stats, baseline.stats, label + ' stats');
   assert.deepEqual(candidate.trees, baseline.trees, label + ' derived facts');
   assert.deepEqual([...candidate._lodByTree], [...baseline._lodByTree], label + ' LOD states');
@@ -104,7 +105,11 @@ function compare(label) {
     candidate._writeMatrices(); baseline._writeMatrices();
   }
 }
-const identity = layer => layer.lodMeshes.map(mesh => ({ mesh, matrix: mesh.instanceMatrix, matrixArray: mesh.instanceMatrix.array, capacity: mesh.instanceMatrix.count }));
+const identity = layer => layer.lodMeshes.map(mesh => ({ mesh, matrix: mesh.instanceMatrix, matrixArray: mesh.instanceMatrix.array, color:mesh.instanceColor,colorArray:mesh.instanceColor?.array,capacity:mesh.instanceMatrix.count,colorCapacity:mesh.instanceColor?.count }));
+function assertIdentity(layer,reference){for(let lod=0;lod<layer.lodMeshes.length;lod++){const mesh=layer.lodMeshes[lod],before=reference[lod];assert.equal(mesh,before.mesh,'LOD'+lod+' mesh reference');assert.equal(mesh.instanceMatrix,before.matrix,'LOD'+lod+' matrix attribute reference');assert.equal(mesh.instanceMatrix.array,before.matrixArray,'LOD'+lod+' matrix array reference');assert.equal(mesh.instanceMatrix.count,before.capacity,'LOD'+lod+' matrix capacity');
+  // setColorAt creates this attribute lazily. Bind its first real allocation;
+  // after that, contents cannot substitute for attribute/array identity.
+  if(!before.color&&mesh.instanceColor){before.color=mesh.instanceColor;before.colorArray=mesh.instanceColor.array;before.colorCapacity=mesh.instanceColor.count;}assert.equal(mesh.instanceColor,before.color,'LOD'+lod+' color attribute reference');assert.equal(mesh.instanceColor?.array,before.colorArray,'LOD'+lod+' color array reference');assert.equal(mesh.instanceColor?.count,before.colorCapacity,'LOD'+lod+' color capacity');}}
 const fixedIdentity = identity(candidate);
 check('BASE legacy crossed-plane effective matrix/color bytes, counts, stats and bounds', () => { compare('legacy'); assert.equal(candidate.mesh.count, candidate.trees.length * 2); });
 for (const [label, ppu, expectedLod] of [['near', 100, 0], ['middle', 5, 1], ['far', .5, 2]]) check(`pilot ${label} LOD${expectedLod} equivalence`, () => {
@@ -119,7 +124,11 @@ for (const inside of [true, false]) check(`real RegionGeometry ${inside ? 'insid
   for (const layer of [candidate, baseline]) { layer.setRegionGeometry(region, inside); layer.update(); }
   compare('region/' + inside); assert.equal(candidate.regionGeometry, region);
 });
-check('fixed mesh/attribute/array identities and capacities survive all transitions', () => assert.deepEqual(identity(candidate), fixedIdentity));
+check('fixed mesh/attribute/array identities and capacities survive all transitions', () => {assertIdentity(candidate,fixedIdentity);
+  const mesh=candidate.mesh,matrixArray=mesh.instanceMatrix.array,color=mesh.instanceColor,colorArray=color.array;
+  try{mesh.instanceMatrix.array=matrixArray.slice();assert.deepEqual(mesh.instanceMatrix.array,matrixArray);assert.throws(()=>assertIdentity(candidate,fixedIdentity),/matrix array reference/);}finally{mesh.instanceMatrix.array=matrixArray;}
+  try{color.array=colorArray.slice();assert.deepEqual(color.array,colorArray);assert.throws(()=>assertIdentity(candidate,fixedIdentity),/color array reference/);}finally{color.array=colorArray;}
+  try{mesh.instanceColor=new THREE.InstancedBufferAttribute(colorArray.slice(),3);assert.deepEqual(mesh.instanceColor.array,colorArray);assert.throws(()=>assertIdentity(candidate,fixedIdentity),/color attribute reference/);}finally{mesh.instanceColor=color;}assertIdentity(candidate,fixedIdentity);});
 
 // fakeGL records actual real-engine upload calls, including element offsets/lengths.
 const uploads = [];
