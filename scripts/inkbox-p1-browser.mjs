@@ -100,7 +100,7 @@ try {
   report.edge=browser.meta;
   for(const renderer of ['canvas','3d']){
     await browser.cdp.send('Page.navigate',{url:BASE+'/inkbox.html'+(renderer==='3d'?'?renderer=3d':'')});
-    assert(await browser.waitFor('return !!window.inkbox?.world && !!document.querySelector("[data-experience-target]")',{timeoutMs:90000}),renderer+' boot failed');
+    assert(await browser.waitFor('return document.readyState === "complete" && !!window.inkbox?.world && !!document.querySelector("[data-experience-target]")',{timeoutMs:90000}),renderer+' boot failed');
     if(renderer==='3d')assert(await browser.waitFor('return !!window.inkbox?.render3d?.active',{timeoutMs:90000}),'Three not active');
     await frames();
     for(const [w,h] of [[1366,768],[1280,720]])await check(renderer+' '+w+'x'+h,()=>exerciseDesktop(renderer,w,h));
