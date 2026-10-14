@@ -49,6 +49,7 @@ npm-debug.log*
 .workbuddy-ai/
 .local-backups/
 .g23-worktree/
+.g2-p0-worktree/
 # Blender's automatic previous-version backup is local recovery state, not a source asset.
 *.blend1
 
@@ -59,3 +60,7 @@ Thumbs.db
 # 第三方完整参考包保留本地，设计说明随仓库。
 美术素材/范式素材参考/*
 !美术素材/范式素材参考/《坐天观井》视觉参考说明文档.md
+
+# G2-P0 raw evidence can contain nested historical golden/summary paths.
+# Keep this rule after the general release-summary exceptions.
+/reports/release/g2p0/proof/
