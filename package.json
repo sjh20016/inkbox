@@ -113,7 +113,8 @@
     "test:g23": "node scripts/inkbox-g23-observation.mjs && node scripts/inkbox-g23-runtime.mjs && node scripts/inkbox-g23-terrain.mjs",
     "test:g23:browser": "node scripts/inkbox-g23-browser.mjs && node scripts/inkbox-g23-render-browser.mjs",
     "test:g2pf:instrumentation": "node scripts/inkbox-g2pf-config.mjs --check && node scripts/inkbox-g2-performance.mjs --check && node scripts/inkbox-g2pf-soak.mjs --check",
-    "test:g2pf:soak": "node scripts/inkbox-g2pf-soak.mjs"
+    "test:g2pf:soak": "node scripts/inkbox-g2pf-soak.mjs",
+    "test:g2pf:vegetation": "node scripts/inkbox-g2pf-vegetation.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

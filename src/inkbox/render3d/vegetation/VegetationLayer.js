@@ -220,6 +220,7 @@ export class VegetationLayer {
     this._updateStats();
     if (probe) {
       probe.calls++;
+      const matrixNeedsUpdateMarks = uploaded ? this._batchCounts.reduce((count, instances) => count + (instances > 0 ? 1 : 0), 0) : 0;
       const partitionElementsProcessed = partitioned ? this._visibleBudgetTrees.length + this._outsideBudgetTrees.length : 0;
       probe.partitionElementsProcessed += partitionElementsProcessed;
       probe.concatTemporaryElementsAvoided += partitionElementsProcessed;
@@ -227,7 +228,7 @@ export class VegetationLayer {
       if (uploaded) {
         probe.matrixUploadCount++;
         probe.matrixInstancesWritten += matrixInstancesWritten;
-        probe.matrixNeedsUpdateMarks += this.lodMeshes.length;
+        probe.matrixNeedsUpdateMarks += matrixNeedsUpdateMarks;
       }
       probe.last = {
         treeCount: this.trees.length, enabled, forceUpload: !!forceUpload, changed, uploaded,
@@ -236,7 +237,7 @@ export class VegetationLayer {
         crowded: this._budgetCrowded, requestedLOD: [...desiredCounts], assignedLOD: [...this._lodCounts],
         budgetDemotions: this._budgetDemotions, concatTemporaryArrays: 0, concatTemporaryElements: 0,
         concatTemporaryElementsAvoided: partitionElementsProcessed, partitionElementsProcessed,
-        matrixInstancesWritten, matrixNeedsUpdateMarks: uploaded ? this.lodMeshes.length : 0,
+        matrixInstancesWritten, matrixNeedsUpdateMarks,
       };
     }
   }
@@ -274,8 +275,17 @@ export class VegetationLayer {
     }
     for (let lod = 0; lod < 3; lod++) {
       const mesh = this.lodMeshes[lod];
-      mesh.count = counts[lod]; mesh.instanceMatrix.needsUpdate = true;
-      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      mesh.count = counts[lod];
+      if (counts[lod] > 0) {
+        // Keep earlier pending ranges until Three submits their union. Hidden
+        // empty batches need no new upload; fixed-capacity tail is not drawn.
+        mesh.instanceMatrix.addUpdateRange(0, counts[lod] * 16);
+        mesh.instanceMatrix.needsUpdate = true;
+        if (mesh.instanceColor) {
+          mesh.instanceColor.addUpdateRange(0, counts[lod] * 3);
+          mesh.instanceColor.needsUpdate = true;
+        }
+      }
       mesh.boundingBox = null; mesh.boundingSphere = null;
       mesh.visible = counts[lod] > 0;
     }

@@ -93,6 +93,7 @@ const FILES = [
   'scripts/inkbox-g2-performance.mjs',
   'scripts/inkbox-g2pf-config.mjs',
   'scripts/inkbox-g2pf-soak.mjs',
+  'scripts/inkbox-g2pf-vegetation.mjs',
   'scripts/inkbox-g2-fixtures.mjs',
   'G2_COMBAT_REPORT.md',
   'scripts/inkbox-g21-terrain-equivalence.mjs',
