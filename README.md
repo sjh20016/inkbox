@@ -1,6 +1,6 @@
 # 坐天观井 · Inkbox 1.0.0
 
-2026-10-14：G2-P0 在 `integrate/g2-release-candidate` 的 `9a04236` 上修复真实生态通知、水域植被与火势残值，并加入保持历史像素的 Canvas 陆地颜色缓存。施工分支为 `codex/g2-p0-performance-ecology`；同机前后数据、真实前台证据、完整性能失败和生态因果回归见 [性能与生态交付报告](./G2_P0_PERFORMANCE_ECOLOGY_REPORT.md)。整体合流结论以该报告与施工 PR 为准。
+2026-10-14：G2-P0 本轮结论为 **PERF BLOCKED / ECO PASS**，完整 Native 与 Controlled 均为 **10/12、exit 1**。在 `integrate/g2-release-candidate` 的 `9a04236` 上修复真实生态通知、水域植被与火势残值，并加入保持历史像素的 Canvas 陆地颜色缓存。施工分支为 `codex/g2-p0-performance-ecology`；同机前后数据、真实前台证据、完整性能失败和生态因果回归见 [性能与生态交付报告](./G2_P0_PERFORMANCE_ECOLOGY_REPORT.md)。建议 PR #8 继续 Draft。
 
 ## 2026-10-14 · G2-PF BLOCKED
 

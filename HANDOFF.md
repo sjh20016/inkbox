@@ -2,6 +2,8 @@
 
 ## 当前开发增量 · 2026-10-14 · G2-P0
 
+**PERF BLOCKED / ECO PASS**。本机 AMD 硬件完整 Native/Controlled 均 10/12、exit 1；真实前台无输入对照通过正确性但 RAF 超限。45 项产品浏览器与 600+6000 帧耐久、build/package 通过；历史 Intel 环境与真实旧档样本仍不可用。PR #8 继续 Draft。
+
 从 PR #8 的 `9a04236950c9f458382f4c2b4b0ed1b1f9cbe353` 建立 `codex/g2-p0-performance-ecology`，在独立 `.g2-p0-worktree` 施工。生态修改集中在正式 `ecology.js`；Canvas 缓存仅复用云雾前的陆地颜色，不改变重绘节拍、水面、云雾、火势、灵气或模拟。新增 `test:g2p0` 覆盖缓存失效与真实生态长局；进入 CI Fast。实际性能、前台/无头环境区别、旧档限制及合流建议见 [本轮交付报告](./G2_P0_PERFORMANCE_ECOLOGY_REPORT.md)。下列历史阶段结论与原始失败证据保留。
 
 ## 当前交接 · 2026-10-14 · G2-PF BLOCKED
