@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { World } from '../src/inkbox/world/world.js';
+import { World } from '../src/inkbox/world/World.js';
 import { TERRAIN } from '../src/inkbox/core/config.js';
 import { OVER, classify, qiAt, recomputeAll, decayOverlay } from '../src/inkbox/world/terrain.js';
 import { stepVegetation, stepFire, ignite, extinguish } from '../src/inkbox/sim/ecology.js';
