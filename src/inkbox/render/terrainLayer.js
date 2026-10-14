@@ -74,6 +74,13 @@ export class TerrainLayer {
     this.image = this.ctx.createImageData(w, this.bufferH);
     this.data = this.image.data;
     this.words = new Uint32Array(this.data.buffer, this.data.byteOffset, this.data.byteLength / 4);
+    // Cache only the land color prefix before animated mist. Float64 preserves
+    // the original Number arithmetic; water, mist, qi, fire and relief still draw.
+    // The Three host also constructs TerrainLayers, but never needs this cache.
+    this.landColor = null;
+    this.landValid = null;
+    this.landInputs = null;
+    this.landPalette = null;
     this.lastRender = -1e9;
     this.buildWash();
   }
@@ -147,6 +154,45 @@ export class TerrainLayer {
     return dirty || now - this.lastRender > 0.11;
   }
 
+  prepareLandCache() {
+    const { world, wash, w, h } = this;
+    if (!this.landInputs) {
+      const size = w * h;
+      this.landColor = new Float64Array(size * 3);
+      this.landValid = new Uint8Array(size);
+      this.landInputs = {
+        height: new Float32Array(size), water: new Float32Array(size),
+        veg: new Float32Array(size), temp: new Float32Array(size),
+        type: new Uint8Array(size), wash: new Float32Array(size),
+      };
+    }
+    const old = this.landInputs, valid = this.landValid;
+    // Palette vectors are mutable even though INK_RGB's outer object is frozen.
+    const palette = [...TERRAIN_RGB.flat(), ...INK_RGB.paper,
+      ...INK_RGB.shadow, ...INK_RGB.mist, ...INK_RGB.azurite].join(',');
+    if (palette !== this.landPalette) {
+      valid.fill(0);
+      this.landPalette = palette;
+    } else {
+      for (let y = 0, i = 0; y < h; y += 1) {
+        for (let x = 0; x < w; x += 1, i += 1) {
+          if (world.height[i] !== old.height[i] || world.water[i] !== old.water[i]) {
+            // Slopes, ridges and shoreline ink read neighbouring height/water.
+            for (let ny = Math.max(0, y - 1); ny <= Math.min(h - 1, y + 1); ny += 1) {
+              for (let nx = Math.max(0, x - 1); nx <= Math.min(w - 1, x + 1); nx += 1) {
+                valid[ny * w + nx] = 0;
+              }
+            }
+          }
+          if (world.type[i] !== old.type[i] || world.veg[i] !== old.veg[i]
+            || world.temp[i] !== old.temp[i] || wash[i] !== old.wash[i]) valid[i] = 0;
+        }
+      }
+    }
+    for (const key of ['height', 'water', 'veg', 'temp', 'type']) old[key].set(world[key]);
+    old.wash.set(wash);
+  }
+
   render(time, force = false) {
     this.time = time;
     const world = this.world;
@@ -191,6 +237,9 @@ export class TerrainLayer {
     const prevR = this._prevR;
     const prevG = this._prevG;
     const prevB = this._prevB;
+    this.prepareLandCache();
+    const landColor = this.landColor;
+    const landValid = this.landValid;
 
     for (let y = bounds.y0; y <= bounds.y1; y += 1) {
       for (let x = bounds.x0; x <= bounds.x1; x += 1) {
@@ -239,6 +288,12 @@ export class TerrainLayer {
           b = tmpA[2] * lum;
         } else {
           // ── 陆地 ───────────────────────────────────────
+          const colorOffset = i * 3;
+          if (landValid[i]) {
+            r = landColor[colorOffset];
+            g = landColor[colorOffset + 1];
+            b = landColor[colorOffset + 2];
+          } else {
         const xm = x > 0 ? x - 1 : x;
         const xp = x < w - 1 ? x + 1 : x;
         const ym = y > 0 ? y - 1 : y;
@@ -377,6 +432,12 @@ export class TerrainLayer {
             r = tmpA[0];
             g = tmpA[1];
             b = tmpA[2];
+          }
+
+          landColor[colorOffset] = r;
+          landColor[colorOffset + 1] = g;
+          landColor[colorOffset + 2] = b;
+          landValid[i] = 1;
           }
 
           // ── 云雾带 ───────────────────────────────────
