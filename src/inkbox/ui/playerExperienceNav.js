@@ -62,6 +62,8 @@ export function bindPlayerExperienceNav(doc = document, win = window) {
     else show('right', observeOpen);
   });
   listen(toolsOpen, 'click', () => {
+    // Three 的正式工具栏另有入口；不可打开被引擎主动设为 inert 的 Canvas 神力栏。
+    if (left.inert) return;
     if (openSide === 'left') close();
     else show('left', toolsOpen);
   });
@@ -99,7 +101,10 @@ export function bindPlayerExperienceNav(doc = document, win = window) {
     if ((openSide === 'right' && !atMost(1080)) || (openSide === 'left' && !atMost(720))) close();
   });
 
-  return () => { close({ restoreFocus: false }); listeners.forEach(remove => remove()); };
+  const inertObserver = typeof win.MutationObserver === 'function'
+    ? new win.MutationObserver(() => { if (left.inert && openSide === 'left') close(); }) : null;
+  inertObserver?.observe(left, { attributes: true, attributeFilter: ['inert'] });
+  return () => { close({ restoreFocus: false }); inertObserver?.disconnect(); listeners.forEach(remove => remove()); };
 }
 
 // 主程序完成 boot / 正式分区包装之后再绑定；不改变 main.js 或模拟时序。
