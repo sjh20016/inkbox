@@ -49,6 +49,8 @@
 }
 @media (max-width: 720px) {
   .p1-launcher-tools { display: block; }
+  /* Three 使用独立原生工具栏，旧 Canvas 神力栏被正式设为 inert。 */
+  .rail.left[inert] + .stage .p1-launcher-tools { display: none; }
   .rail.left.p1-open {
     display: block; position: absolute; left: 0; top: 0; bottom: 0;
     width: min(255px, 90vw); z-index: 18; background: var(--paper);
