@@ -81,12 +81,26 @@ async function exerciseDrawer(renderer) {
   await browser.cdp.send('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27,nativeVirtualKeyCode:27});
   assert(await page('return !document.getElementById("inkExperienceRail").classList.contains("p1-open")'),'Escape should close only drawer');
   await viewport(680,720);
-  await clickControl('#inkToolsOpen');
-  assert(await page('return document.getElementById("inkToolsRail").classList.contains("p1-open")'),'left tools drawer not reachable');
-  await shot(renderer+'-680x720');
-  await clickControl('#inkToolsClose');
-  assert(await page('return document.getElementById("inkExperienceScrim").hidden'),'scrim should clear');
-  return{opened,reachable};
+  let toolState;
+  if (renderer === 'canvas') {
+    await clickControl('#inkToolsOpen');
+    assert(await page('return document.getElementById("inkToolsRail").classList.contains("p1-open")'),'Canvas tool drawer not reachable');
+    await shot(renderer+'-680x720');
+    await clickControl('#inkToolsClose');
+    assert(await page('return document.getElementById("inkExperienceScrim").hidden'),'Canvas scrim should clear');
+    toolState = { canvasDrawer: true };
+  } else {
+    toolState = await page(`const left=document.getElementById('inkToolsRail'),
+      launcher=document.getElementById('inkToolsOpen'),native=document.getElementById('inkRender3DTools'),
+      r=native.getBoundingClientRect();
+      return { leftInert:left.inert,launcherHidden:getComputedStyle(launcher).display==='none',
+        nativeVisible:r.width>0&&r.height>0&&getComputedStyle(native).display!=='none',
+        nativeText:native.innerText.slice(0,140) };`);
+    assert(toolState.leftInert && toolState.launcherHidden && toolState.nativeVisible,
+      'Three must retain its own formal tools, not reactivate inert Canvas tools: '+JSON.stringify(toolState));
+    await shot(renderer+'-680x720');
+  }
+  return{opened,reachable,toolState};
 }
 try {
   fs.mkdirSync(OUT,{recursive:true});
