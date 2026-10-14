@@ -5,7 +5,7 @@
 ## 工程身份与范围
 
 - BASE_SHA：`9a04236950c9f458382f4c2b4b0ed1b1f9cbe353`，已从远端确认的 `integrate/g2-release-candidate`。
-- 实现 HEAD_SHA：`823a38c978e4735b5d22362a26dab740077e6afa`；15 个实现文件的 Git blob SHA 与规范化 SHA256 见 compact summary，文档/证据提交在其后。
+- 产品与首次验证接线 HEAD_SHA：`823a38c978e4735b5d22362a26dab740077e6afa`；该时点 15 个文件的 Git blob SHA 与规范化 SHA256 见 compact summary。后续文档和 Linux 验证脚本修正在其后，产品文件保持不变。
 - 施工分支：`codex/g2-p0-performance-ecology`；目标增量 PR 的 base 为集成候选。最终 HEAD_SHA 由本轮 PR 的 `head.sha` 和 PR 正文固定记录；本报告属于文档提交，不将自己的提交 SHA 嵌入自身。
 - 测量时 Git HEAD 为 BASE，测试的是工作区修改；下列两份产品文件的 SHA256 在全部最终 CPU、硬件矩阵、浏览器和耐久运行中保持一致。上传后实现 commit 与这些文件逐字匹配（Git 行尾规范化另行记录）。
 - main 接手时为 `e1e55039bb56efda7a307513ede07a9fab3bf534`。PR #4 → #5 → #6 → #7 → #8 均为 Open Draft；具体 head/base 在 compact summary 中记录。没有改写它们或并入 B 分支。
@@ -190,3 +190,11 @@ cleanup-failure-probe 是本地模拟自有 profile 被锁的负向检查，**�
 保留 3D 首次短命刀光像素检查的波动风险和真实旧档样本缺失。新增静态缓存有明确外部内存成本，后续硬件验证应继续观察资源与内存。
 
 **建议：生态修复可独立评审，PR #8 保持 Draft。** 本轮增量 PR 对准集成候选；不自动合并 main、不关闭历史 PR，不把当前性能状态标记为 PASS。
+
+## 2026-10-15 · Linux CI 跟进
+
+[本轮 Draft PR #9](https://github.com/sjh20016/inkbox/pull/9) 已通过插件上传。首次 [CI #139](https://github.com/sjh20016/inkbox/actions/runs/38572459851) 的 Heavy Gate 通过；Fast Gate 在新增 `test:g2p0` 中失败：测试导入写成 `world/world.js`，Git 跟踪的文件名实际为 `world/World.js`。Windows 路径解析容忍该大小写，Ubuntu 报 `ERR_MODULE_NOT_FOUND`，后续 Fast 步骤因此跳过。
+
+已将该导入修正为精确的 `World.js`，并核对本轮其他静态与字面量动态相对导入。定向重跑 `npm run test:g2p0` exit 0：294 个缓存对比、16 项生态长局与环境检查通过。未改测试断言、性能预算、模拟输入或产品文件，原硬件证据仍按相同产品 SHA256 复用。原失败日志在 ignored `proof/ci-139-fast.log`，CI 原始失败没有删除。
+
+修复后的 Linux 结果由 [PR #9 检查](https://github.com/sjh20016/inkbox/pull/9/checks) 与 PR 正文记录，不将这次本机执行写成 CI 通过。PERF BLOCKED / ECO PASS 及 PR #8 继续 Draft 的结论保持。
