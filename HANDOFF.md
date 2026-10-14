@@ -1,10 +1,20 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 当前交接 · 2026-10-14 · G2-PF BLOCKED
+
+**最终结论：G2-PF BLOCKED。**正式完整矩阵 Native **10/12，exit 1**，Controlled **11/12，exit 1**；本地 54 条 Fast 命令全部 exit 0，真实 Edge GPU 产品浏览器 45 项检查通过，整机 10 场景契约通过。最新事实与失败项目见 [G2-PF 性能收束与集成报告](./G2_PERFORMANCE_FINALIZATION_REPORT.md)。
+
+`82d18` 耐久实测完成 600 生命周期 + 6000 帧，180 个预建 geometry 的有限身份 / 首次 GPU 使用账本符合契约，资源失败为 0；该次原始退出码仍为 1，原因是自有 profile 清理失败。后续已独立核验归属并补清理，原始失败记录保留，不能将耐久整个流程称为全绿。正式矩阵 `14a1f870` 与 `82d18` 的产品代码相同，后者只修改验证脚本。
+
+正式 main 仍为 `e1e5503`，G1 已合并；G2.1 → G2.2 → G2.3 为线性链，G2.3 BASE `7c244a7`。性能分支 `codex/g2-performance-finalization` 和集成候选 `integrate/g2-release-candidate` 仅供 Draft 评审，当前无合流条件，B 数值实验线未并入。
+
+施工及原始验收材料位于 `.worktrees/g2pf`；根工作区保留用户 14 项修改。A / B / C 与整机口径已审计，地形算术候选已撤销；保留植被前缀上传，expanse 满容量无节省，large 约 9851 仅略少，不构成 RAF 修复结论。以下保留历史交接记录。
+
 ## 当前开发增量 · 2026-10-13 · G2.3「山河有痕」
 
 G2.3 在 G2.2 验收 head `9cbd0d83948bd0ca91df613af2dba1a1688cf9f3` 上以独立分支 `codex/g2.3-real-environment-aftermath` 开发。正式焚林、World 灾迹、地点检视、会话对照和 Three 地表读取已经接通；最终验收与接口见 [G2.3 交付](./G23_ENVIRONMENT_AFTERMATH_REPORT.md)。上游 G2.1 完整硬件 CPU / RAF 失败继续保留；本分支保持 Draft，不合 main，不拉取或修改 B数值系统。G2.4 只有 [候选设计](./G23_FUTURE_FIRE_ABILITY_DESIGN.md)，未接入模拟。
 
-本地根工作文件夹同步有效产品代码，施工和原始验收材料位于独立 `.g23-worktree`。后续接手以当前实际分支、源码和 G2.3 报告为准，下面段落保留各阶段当时状态。
+本轮施工和原始验收材料改由独立 `.worktrees/g2pf` 承载；根工作区保留用户的 14 项修改。此前 G2.3 工作树路径已由本轮路径接替，后续接手以当前实际分支、源码和 G2-PF 报告为准，下面段落保留各阶段当时状态。
 
 ## 当前交接 · 2026-10-09 · G1-R Runtime
 

@@ -1,5 +1,15 @@
 # 坐天观井 · Inkbox 1.0.0
 
+## 2026-10-14 · G2-PF BLOCKED
+
+**最终结论：G2-PF BLOCKED。**正式完整矩阵 Native **10/12，exit 1**，Controlled **11/12，exit 1**；本地 54 条 Fast 命令全部 exit 0，真实 Edge GPU 产品浏览器 45 项检查通过，整机 10 场景契约通过。最新事实与失败项目见 [G2-PF 性能收束与集成报告](./G2_PERFORMANCE_FINALIZATION_REPORT.md)。
+
+`82d18` 耐久实测完成 600 生命周期 + 6000 帧，180 个预建 geometry 的有限身份 / 首次 GPU 使用账本符合契约，资源失败为 0；该次原始退出码仍为 1，原因是自有 profile 清理失败。后续已独立核验归属并补清理，原始失败记录保留，不能将耐久整个流程称为全绿。正式矩阵 `14a1f870` 与 `82d18` 的产品代码相同，后者只修改验证脚本。
+
+main 仍为 `e1e5503`，G1 已合并；G2.1 → G2.2 → G2.3 保持线性链，G2.3 BASE 为 `7c244a7`。性能分支 `codex/g2-performance-finalization` 与集成候选 `integrate/g2-release-candidate` 仅作 Draft 评审，当前不具备合流条件，main 未改动，B 数值实验线未并入。
+
+仪器 A / B / C 及整机口径已经审计。地形算术候选因无稳定产品 P95 收益撤销；保留植被前缀上传，但 expanse 10000 满容量无节省、large 约 9851 仅略少，不能宣称 RAF 修复。
+
 2026-10-13：本地更新到已合并 G1 的主线 `e1e5503`，G2.1 七个有效提交在 `codex/g2.1-combat-hardening-integration` 恢复。真实命中的 Canvas / 3D 剑气、火痕和雷光共用表现舞台，顶部“战斗墨痕”可关闭展示。地形局部优化保留固定历史 RGBA 门禁；完整硬件矩阵仍有 CPU / 帧间隔超预算，性能未封板。用户已允许在功能验证基线上继续 G2.2，两阶段保留 Draft，不合 main。证据见 [G2.1 恢复与收束报告](./G21_HARDENING_REPORT.md)；原始交付结论保留在 [G1 集成报告](./G1_INTEGRATION_REPORT.md) 和 [G2.1 历史记录](./G2_COMBAT_REPORT.md)。
 
 G2.2 在 `codex/g2.2-combat-observation-runtime` 接入命簿的真实气血与养伤、右栏“山河有声”交手近讯，以及宿主重新核验后的定位。近讯来自短命表现，生平继续读取正式保留历史；不把命中或墨痕消失解释为持续交战、胜负或死亡。交付与验收见 [G2.2 真实世界反馈报告](./G22_REAL_WORLD_FEEDBACK_REPORT.md)。

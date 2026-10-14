@@ -99,6 +99,8 @@ const FILES = [
   'scripts/inkbox-g21-terrain-equivalence.mjs',
   'tests/fixtures/g21-terrain-rgba.json',
   'G21_HARDENING_REPORT.md',
+  'G2_PERFORMANCE_FINALIZATION_REPORT.md',
+  'reports/release/g2pf/summary/acceptance-summary.json',
   'scripts/inkbox-g22-runtime.mjs',
   'scripts/inkbox-g22-web.mjs',
   'scripts/inkbox-g22-browser.mjs',
