@@ -130,8 +130,13 @@ assert.equal(env.right.classList.contains('p1-open'), false);
 assert.equal(env.doc.activeElement, env.observeOpen);
 assert.equal(env.scrim.hidden, true);
 
-// 680：左栏也可达；遮罩关闭和返回焦点有效。
+// 680：Three 的正式工具栏接管时，旧 Canvas 栏被 inert，不能重新开。
 env.setWidth(680);
+env.left.inert = true;
+env.toolsOpen.click();
+assert.equal(env.left.classList.contains('p1-open'), false);
+env.left.inert = false;
+// Canvas 模式的左栏仍可达；遮罩关闭和返回焦点有效。
 env.toolsOpen.click();
 assert.equal(env.left.classList.contains('p1-open'), true);
 assert.equal(env.scrim.hidden, false);
