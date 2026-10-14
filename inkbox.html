@@ -498,6 +498,7 @@
       <div class="pill" id="inkTimePill">仙历 1 年 · 第 1 日</div>
       <div class="pill" id="inkSpeedPill">常速 ×2</div>
       <div class="pill" id="inkFpsPill">-- FPS</div>
+      <label class="pill" title="显示真实交战留下的短暂墨痕"><input id="inkCombatFx" type="checkbox" checked> 战斗墨痕</label>
       <!-- Q31：帮助入口。与键盘 `?` 走**同一条**路径（`qol.openHelp()`）。 -->
       <button class="btn" id="inkBtnHelp" title="快捷键与门道（按 ?）">? 帮助</button>
     </div>
@@ -635,6 +636,10 @@
 
       <div class="sec-title">值得关注</div>
       <div class="chronicle" id="inkNotables"></div>
+      <div class="sec-title" data-sec-key="交战近讯">交战近讯 · 短时观测</div>
+      <div id="inkCombatObserver"></div>
+      <div class="sec-title">山河灾迹 · 此地观测</div>
+      <div id="inkEnvironmentObserver"></div>
       <!-- ── 天道记挂（D7-E，见 sim/watch.js）──────────────────────────
            玩家「指着一个人说：这个人我想继续看」的观察列表。**不是世界规律**——
            它存在 `world.watch`，不进三界人口守恒、不抽 RNG、不给任何数值 buff、
@@ -809,6 +814,8 @@
     </div>
   </div>
 </div>
+<link rel="stylesheet" href="./src/inkbox/ui/g2/combat/combatObserver.css" />
+<link rel="stylesheet" href="./src/inkbox/ui/g2/environment/environmentObserver.css" />
 <link rel="stylesheet" href="./src/inkbox/ui/g1/presentation/characterCard.css" />
 <link rel="stylesheet" href="./src/inkbox/ui/g1/presentation/worldProgress.css" />
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>

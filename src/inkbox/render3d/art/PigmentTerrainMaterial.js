@@ -307,6 +307,13 @@ void main() {
     return;
   }
   color*=1.0+grain*paperGrainStrength;
+  // Alpha in the existing type texture carries the mortal World's live fire.
+  // Exact-cell sampling keeps the cue attached at every camera distance.
+  float fire=texture2D(typeTexture,uvAt(p)).a;
+  if(fire>0.02){
+    float heat=min(1.0,fire*1.15);
+    color=mix(color,vec3(1.0,(214.0-heat*70.0)/255.0,(120.0-heat*90.0)/255.0),heat*0.86);
+  }
   outputColor(color);
 }`;
 

@@ -72,11 +72,11 @@ export function stepFire(world, dtDays, rng) {
   next.set(fire);
 
   let active = 0;
-  for (let y = 1; y < h - 1; y += 1) {
-    for (let x = 1; x < w - 1; x += 1) {
+  let scorched = false;
+  const burnCell = (x, y) => {
       const i = y * w + x;
       const f = fire[i];
-      if (f <= 0.01) continue;
+      if (f <= 0.01) return;
       active += 1;
 
       // 燃烧消耗植被
@@ -87,6 +87,7 @@ export function stepFire(world, dtDays, rng) {
         if (over[i] !== OVER.SCORCHED) {
           over[i] = OVER.SCORCHED;
           markDirty(world, i);
+          scorched = true;
         }
         next[i] = Math.min(1, f + consumed * 0.5);
       } else {
@@ -94,10 +95,11 @@ export function stepFire(world, dtDays, rng) {
       }
 
       // 向邻格蔓延：湿度、植被决定成功率
-      if (f < 0.12) continue;
+      if (f < 0.12) return;
       for (let d = 0; d < 8; d += 1) {
         const nx = x + DIRS[d][0];
         const ny = y + DIRS[d][1];
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
         const ni = ny * w + nx;
         if (height[ni] < SEA_LEVEL + 0.004) continue;
         if (world.type[ni] === TERRAIN.LAVA) continue;
@@ -110,10 +112,19 @@ export function stepFire(world, dtDays, rng) {
           next[ni] = Math.max(next[ni], 0.25 + rng() * 0.35);
         }
       }
+  };
+  // Keep the historical interior traversal (and its RNG order) before processing
+  // ignited edge cells, which otherwise never burn out.
+  for (let y = 1; y < h - 1; y += 1) {
+    for (let x = 1; x < w - 1; x += 1) {
+      burnCell(x, y);
     }
   }
+  for (let x = 0; x < w; x += 1) { burnCell(x, 0); if (h > 1) burnCell(x, h - 1); }
+  for (let y = 1; y < h - 1; y += 1) { burnCell(0, y); if (w > 1) burnCell(w - 1, y); }
 
   for (let i = 0; i < world.size; i += 1) fire[i] = next[i];
+  if (scorched) flushDirty(world);
   if (active > 0) world.touch();
   return active;
 }

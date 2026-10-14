@@ -1,0 +1,146 @@
+{
+  "base": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "head": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+  "sourceHashes": [
+    {
+      "path": "src/inkbox/render/terrainLayer.js",
+      "sha256": "812ad914792436521dd2a791868fca7b9d83b2eb3277a0933d2a736f8a4cd3fa"
+    },
+    {
+      "path": "scripts/inkbox-g21-terrain-equivalence.mjs",
+      "sha256": "09f661c3c380b93425b8ad4f301bd043f295e21d15b1e12f8b9fb4c43e4f4e15"
+    },
+    {
+      "path": "scripts/inkbox-g1-browser.mjs",
+      "sha256": "90fea24d3e21d17a4ad1110a177c3f4d24bf9c1eb5f691dbc4d6b6fa00f62d2c"
+    },
+    {
+      "path": "scripts/inkbox-g2-browser.mjs",
+      "sha256": "d0bb94e49dd02cd942792b550a357c6961528787564612407c78ab1bfda955ae"
+    },
+    {
+      "path": "tests/fixtures/g21-terrain-rgba.json",
+      "sha256": "134243596edf0f9402545995f110214733ff9cda5f11e4b9bf10b17f9a0cd36d"
+    }
+  ],
+  "commands": [
+    {
+      "command": "npm run test:g1",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\final-verification\\test-g1.log"
+    },
+    {
+      "command": "npm run test:g2",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\final-verification\\test-g2.log"
+    },
+    {
+      "command": "npm run test:presentation",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\final-verification\\test-presentation.log"
+    },
+    {
+      "command": "npm run test:runtime-events",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\final-verification\\test-runtime-events.log"
+    },
+    {
+      "command": "npm run test:g21:terrain",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\final-verification\\test-g21-terrain.log"
+    },
+    {
+      "command": "npm run test:g1:browser (sandbox)",
+      "exitCode": 1,
+      "log": "reports/release/g2.1-hardening/proof/final-verification/test-g1-browser.log"
+    },
+    {
+      "command": "npm run test:g1:browser (escalated)",
+      "exitCode": 0,
+      "log": "reports/release/g2.1-hardening/proof/final-verification/test-g1-browser-escalated.log"
+    },
+    {
+      "command": "npm run test:g2:browser (escalated)",
+      "exitCode": 0,
+      "log": "reports/release/g2.1-hardening/proof/final-verification/test-g2-browser.log"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "log": "reports/release/g2.1-hardening/proof/final-verification/npm-run-build-final.log"
+    },
+    {
+      "command": "npm run test:package",
+      "exitCode": 0,
+      "log": "reports/release/g2.1-hardening/proof/final-verification/npm-run-test-package-final.log"
+    }
+  ],
+  "browser": {
+    "backend": "Microsoft Edge via scripts/cdp.mjs",
+    "fallbackReason": "Tabbit could not connect in this task; repository-owned Edge/CDP fallback used",
+    "g1": {
+      "pass": true,
+      "checks": 9,
+      "passed": 9,
+      "browserVersion": "Edg/155.0.4283.45",
+      "screenshots": [
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\canvas-person.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\canvas-edicts.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\canvas-nether.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\canvas-world-progress.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\3d-person.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\3d-nether.png"
+      ],
+      "report": "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g1\\g1-browser.json"
+    },
+    "g2": {
+      "pass": true,
+      "checks": 12,
+      "passed": 12,
+      "gpuMode": "hardwareRequired (local Edge GPU)",
+      "webglRenderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "runtimeErrors": 0,
+      "consoleErrors": 0,
+      "screenshots": [
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\canvas-combat-blade.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\canvas-combat-fire.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\canvas-combat-thunder.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\beast-combat.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\upper-tribulation.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\3d-combat-blade.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\3d-combat-fire.png",
+        "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\3d-combat-thunder.png"
+      ],
+      "report": "reports\\release\\g2.1-hardening\\proof\\final-verification\\screenshots\\g2\\g2-browser.json"
+    }
+  },
+  "firstG1SandboxFailure": "CDP WebSocket connection error before any checks; no screenshots; escalated run passed.",
+  "cleanup": {
+    "ownedEdgeProfile": "scripts/cdp.mjs closes owned Edge process tree and removes isolated cdp-* temp profile on Session.close/failure",
+    "localServerPorts": {
+      "g1": 4197,
+      "g2": 4217
+    },
+    "listenersRemaining": [],
+    "backgroundServerRemaining": false
+  },
+  "workingTreeShortStatus": [
+    " M .github/workflows/ci.yml",
+    " M README.md",
+    " M package.json",
+    " M scripts/inkbox-g2-browser.mjs",
+    " M scripts/inkbox-g2-performance.mjs",
+    " M scripts/inkbox-package-audit.mjs",
+    " M scripts/inkbox-package.mjs",
+    " M src/inkbox/render/terrainLayer.js",
+    " M tests/README.md",
+    "?? G21_HARDENING_REPORT.md",
+    "?? reports/release/g2.1-hardening/",
+    "?? scripts/inkbox-g21-terrain-equivalence.mjs",
+    "?? tests/fixtures/"
+  ],
+  "notRun": [
+    "save-equivalence",
+    "performance matrix"
+  ]
+}

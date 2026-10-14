@@ -1,10 +1,41 @@
 # Inkbox 测试与验证入口
 
-## Current Truth · 2026-10-09 · G1 Runtime 分支
+## Current Truth · 2026-10-13 · G2.2 真实世界反馈
 
-G1-R 从共同 main 基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 在 `feat/g1-runtime-codex` 独立开发。人物真实身份、只读模型、三项敕令、记挂、地图成长和独立 Runtime 回归已接线，正式 Presentation 和 C5 视觉协调留待后续集成。接口、保存语义和后续步骤见 [G1 Runtime 交接](../G1_RUNTIME_HANDOFF.md)。
+G2.2 基于已验证的 G2.1 `b9ee2df`，继续保留 Draft 性能风险。`npm run test:g22` 检查真实人物健康事实、只读短讯、身份/世界代次、视界权限及观察纯度，进入 CI Fast；`npm run test:g22:browser` 检查正式 Canvas / Three 健康显示与交手近讯，进入手动 Browser Smoke。报告见 [G2.2 交付记录](../G22_REAL_WORLD_FEEDBACK_REPORT.md) 和 [compact 摘要](../reports/release/g2.2-feedback/summary/acceptance-summary.json)。新增反馈不写 World、RNG、存档或永久战斗史。
 
-`npm run test:g1` 进入 Fast（Runtime、宿主、地图三个入口），`npm run test:g1:longrun` 进入 Heavy（30 / 100 年观察纯度和敕令后确定性）。`npm run test:g1:browser` 使用已有 Edge CDP 对真实 Canvas / 3D 鼠标接线、敕令、记挂和产品存读档做六项工程验收；它也加入手动 Browser Smoke。本轮使用软件 D3D11，不能作为真实 GPU 性能证明，正式人物卡 Browser 验收仍在集成阶段。
+本轮 Runtime 8 组、Web 6 组、实际 Edge 8/8 通过，真实 AI/mercy/存读档路径与只读事实均已验证；独立复验 G22、G1、G2、core、presentation 和 324 项地形像素门禁全部 exit 0。当前正式 combat 源仅凡间，未制造子界交手；上界健康/离世使用正式推进和名录验证。前期验收脚本调试失败保留，不能由功能通过推导完整硬件预算通过。
+
+## G2.1 恢复与未封板性能
+
+主线 BASE 为 `e1e5503`。G2.1 七个有效增量已在 `codex/g2.1-combat-hardening-integration` 恢复；本轮恢复门禁及全部失败矩阵见 [G2.1 收束报告](../G21_HARDENING_REPORT.md) 和 [compact 摘要](../reports/release/g2.1-hardening/summary/acceptance-summary.json)。用户允许先接入 G2.2，保留 Draft 性能风险；这不等于性能预算通过。
+
+新增 `npm run test:g21:terrain` 逐项核对 324 幅固定历史 RGBA SHA256，默认无 Git 历史依赖，进入 CI Fast 并随包出货。`node scripts/inkbox-g21-terrain-equivalence.mjs --historical` 只用于逐字节历史诊断，`--benchmark` 的 Node 算术数据不代表完整产品性能。本轮原生与受控完整 12×4 硬件矩阵全部保留，raw CPU、保守 CPU、RAF 任一失败仍 exit 1，预算保持 off 最坏 P95 ×1.08+1.5 ms。
+
+下文 2026-10-12 的计数及性能结论为原交付历史记录。
+
+G1 Runtime 与 Presentation 从共同 main 基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 完整合流；代码验收 SHA `5f13f038c37a36529d5aa788164df76555a498fb`，最终 G1 head `a462632430898271e4c911c2955ff6835b9dbad2` 只追加方向文档，Fast / Heavy 通过。G2 生产代码 `8ef436b` 在此基线上独立接入真实战斗表现。接口和完整证据见 [G1 集成报告](../G1_INTEGRATION_REPORT.md) 与 [G2.1 交付记录](../G2_COMBAT_REPORT.md)。
+
+`npm run test:g1` 进入 Fast（Runtime、宿主、地图、Web 组件、正式集成），`test:g1:longrun` 进入 Heavy；`test:g1:browser` 验证真实选择、四卷、敕令、存读档及导入。`npm run test:g2` 进入 Fast（命中源、Canvas/Stage、Three 固定池与释放，共 25 组）；`test:g2:browser` 加入手动 Browser Smoke，默认要求硬件 GPU，CI 的 `INKBOX_GPU=0` 只用于功能。真实 Edge G1 9/9、G2 12/12 通过。
+
+`test:g2:performance` 默认原生时钟，单独测真实硬件、DPR2、大地图、ABBA 等价交战负载。`INKBOX_PERF_CLOCK=controlled` 固定显示输入，所有正式 update/render 和内容保留，仍量实际 RAF，并严格核验地形输入/cadence。两套完整 12×4 结果均保留：各 CPU 11/12、RAF 12/12，presentation P95 分别 ≤.5/.3 ms；**整体 exit 1，G2 性能未封板**。不挑选单组重跑、不扩大预算、软件渲染不作性能结论。数据在 [compact 指标](../reports/release/g2-combat/summary/g2-combat.json)。
+
+复验须串行，分别保存目录。下列两个实验各自独立执行并保留退出码：
+
+```powershell
+$env:INKBOX_REPORT_DIR = 'reports/g2-local/performance/native-recheck'
+$env:INKBOX_PERF_CLOCK = 'native'
+npm run test:g2:performance
+```
+
+```powershell
+$env:INKBOX_REPORT_DIR = 'reports/g2-local/performance/controlled-recheck'
+$env:INKBOX_PERF_CLOCK = 'controlled'
+npm run test:g2:performance
+```
+
+每轮 120 个真实产品预热帧和 90 个测量帧；默认完整 12 组。完整 CPU/RAF 门槛是 off 最大 P95 ×1.08+1.5 ms，presentation ≤1.5 ms、每可见位面 draw 增量 ≤3。`INKBOX_PERF_CASE` 仅限定位，单组不能代替完整验收；不得与浏览器、GPU 或重型 CPU 测试并行。
+
 
 ## 2026-10-08 历史基线
 

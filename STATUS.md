@@ -1,5 +1,15 @@
 # Project Status
 
+## Current Truth · 2026-10-14 · G2-PF BLOCKED
+
+**最终结论：G2-PF BLOCKED。**正式完整矩阵 Native **10/12，exit 1**，Controlled **11/12，exit 1**；本地 54 条 Fast 命令全部 exit 0，真实 Edge GPU 产品浏览器 45 项检查通过，整机 10 场景契约通过。最新事实与失败项目见 [G2-PF 性能收束与集成报告](./G2_PERFORMANCE_FINALIZATION_REPORT.md)。
+
+`82d18` 耐久实测完成 600 生命周期 + 6000 帧，180 个预建 geometry 的有限身份 / 首次 GPU 使用账本符合契约，资源失败为 0；该次原始退出码仍为 1，原因是自有 profile 清理失败。后续已独立核验归属并补清理，原始失败记录保留，不能将耐久整个流程称为全绿。正式矩阵 `14a1f870` 与 `82d18` 的产品代码相同，后者只修改验证脚本。
+
+正式 main 为 `e1e5503`，G1 已合并；G2.1 → G2.2 → G2.3 线性链以 G2.3 BASE `7c244a7` 接续性能分支 `codex/g2-performance-finalization`。该分支与 `integrate/g2-release-candidate` 仅作 Draft 评审，完整性能门禁仍阻止合流，main 未改动，B 未并入。
+
+地形算术候选因无稳定产品 P95 收益撤销；植被前缀上传在 expanse 10000 满容量无节省、large 约 9851 仅略少，不能宣称 RAF 修复。根工作区用户 14 项修改保留。以下日期条目继续作为历史证据索引。
+
 ## Current Truth · 2026-10-08
 
 本文件是时间线与证据索引。当前产品主线为 GitHub main，正式阶段为 M2-C2E；完整分支、archive tag 和工作区交接规则见 [HANDOFF](./HANDOFF.md)。

@@ -1,0 +1,96 @@
+{
+  "base": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "head": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+  "transplantedCommitMap": [
+    {
+      "commit": "d6eb6616f2986c488d12190cea42f25e6cc0f757",
+      "subject": "feat(g2): emit bounded presentation events from real combat hits"
+    },
+    {
+      "commit": "9e1571db17b4a098bb9febb4120530b2cddbc226",
+      "subject": "feat(g2): show bounded ink combat effects on the shared Canvas stage"
+    },
+    {
+      "commit": "70915c389710234450943d43b2beb98721b90bc6",
+      "subject": "feat(g2): render pooled combat brushes in 3D realm stages"
+    },
+    {
+      "commit": "3b5efa2365a3c2a7eb1c2bfbcfa3e12d4371502e",
+      "subject": "test(g2): audit FX admissions and complete realm window ownership"
+    },
+    {
+      "commit": "6c9025d3e0e8bd958d40416f84bfcb5dd65fa97c",
+      "subject": "fix(g2): keep near-contact combat brushes readable at true hit points"
+    },
+    {
+      "commit": "cda443561d6f69596be80c4fc5745298fbdf3fbb",
+      "subject": "test(g2): verify real combat in Edge and retain full hardware budget failures"
+    },
+    {
+      "commit": "f41021c64889a26bff5f4a05c5fb5447128a2f10",
+      "subject": "docs(g2): record complete GPU matrices and unresolved Canvas CPU budgets"
+    }
+  ],
+  "install": {
+    "command": "npm ci",
+    "exitCode": 0,
+    "log": "reports/release/g2.1-hardening/proof/baseline/npm-ci.log",
+    "lockfileChanged": false
+  },
+  "commands": [
+    {
+      "command": "npm run test:g1",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-g1.log"
+    },
+    {
+      "command": "npm run test:presentation",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-presentation.log"
+    },
+    {
+      "command": "npm run test:runtime-events",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-runtime-events.log"
+    },
+    {
+      "command": "npm run test:g2",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-g2.log"
+    },
+    {
+      "command": "npm run test:save-equivalence",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-save-equivalence.log"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\build.log"
+    },
+    {
+      "command": "npm run test:package",
+      "exitCode": 0,
+      "log": "reports\\release\\g2.1-hardening\\proof\\baseline\\test-package.log"
+    }
+  ],
+  "buildOutputs": [
+    "dist/zuotian-guan-jing-inkbox-1.0.0",
+    "dist/zuotian-guan-jing-inkbox-1.0.0.zip"
+  ],
+  "ignoredArtifacts": [
+    "node_modules/",
+    "dist/",
+    "reports/release/g2.1-hardening/proof/"
+  ],
+  "packageSourceScope": "scripts/inkbox-package.mjs copies explicit FILES and RELEASE_SUMMARIES entries into dist staging; it does not walk the checkout or include nested .worktrees.",
+  "coverage": {
+    "browser": false,
+    "soak": false,
+    "performance": false,
+    "backgroundServices": false
+  },
+  "observations": [
+    "Initial restoration worktree status was clean. Performance instrumentation was subsequently edited by the assigned performance builder; production source remained at the restored checkpoint throughout the seven baseline gates. The final baseline build/package audit included that instrumentation."
+  ]
+}

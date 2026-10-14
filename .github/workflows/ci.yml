@@ -63,6 +63,24 @@ jobs:
       - name: G1 正式集成（身份 / 命簿四卷 / 权限 / 地图成长 / Web 组件）
         run: npm run test:g1
 
+      - name: G2 真实命中、预算保护、Canvas / 3D 快照及资源生命周期
+        run: npm run test:g2
+
+      - name: G2.1 地形像素回归（固定历史 RGBA 基准，无 Git 历史依赖）
+        run: npm run test:g21:terrain
+
+      - name: G2.2 真实气血、养伤、观察纯度与短讯生命周期
+        run: npm run test:g22
+
+      - name: G2.3 火灾灾迹、会话对照、权限与地表恢复
+        run: npm run test:g23
+
+      - name: G2-PF 性能仪器参数及正式矩阵程序
+        run: npm run test:g2pf:instrumentation
+
+      - name: G2-PF 植被实例字节等价与真实 Three 上传协议
+        run: npm run test:g2pf:vegetation
+
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
         run: npm run test:render3d
 
@@ -192,6 +210,24 @@ jobs:
         run: npm run test:g1:browser
         env:
           INKBOX_REPORT_DIR: reports/ci/g1-browser
+
+      - name: G2 正式 Canvas / 3D 真实交战与三界生命周期 Edge
+        run: npm run test:g2:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g2-browser
+          INKBOX_GPU: '0'
+
+      - name: G2.2 正式 Canvas / Three 命簿健康事实与真实交手近讯
+        run: npm run test:g22:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g22-browser
+          INKBOX_GPU: '0'
+
+      - name: G2.3 正式 Canvas / Three 焚林、灾迹、恢复与存读档
+        run: npm run test:g23:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g23-browser
+          INKBOX_GPU: '0'
 
       - name: Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0 Edge（共享服务器生命周期）
         run: node scripts/inkbox-browser-smoke.mjs

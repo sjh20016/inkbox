@@ -1,0 +1,3221 @@
+{
+  "schemaVersion": 1,
+  "stage": "G2.3 山河有痕",
+  "date": "2026-10-13",
+  "status": "PASS",
+  "repository": "sjh20016/inkbox",
+  "branch": "codex/g2.3-real-environment-aftermath",
+  "base": "9cbd0d83948bd0ca91df613af2dba1a1688cf9f3",
+  "validatedSourceCommit": "0b8c549751fb62f23e8876ef2e85975887790b03",
+  "upstream": {
+    "main": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+    "g21Draft": 4,
+    "g22Draft": 5,
+    "bBranchExcluded": true,
+    "bBranchUnchanged": "a370ad72488829b5d58df8324a28f421341d72bc",
+    "g21FullHardwareCpuRafPassed": false
+  },
+  "sourceHashes": {
+    "inkbox.html": "565bb364d5ca31255effd02d185b610ec0e892ba26b90d85df9bde0b9d414d72",
+    "src/inkbox/main.js": "f856fd1bc4a37b51b14ff746ca1a07d2e703c80f9e38c904c3ba42560f07aa95",
+    "src/inkbox/g1/sandboxRuntime.js": "9213b4b2423cf8c05aff636dca4220279ee054978f339f98a6a2c9a03111448e",
+    "src/inkbox/g2/environmentObservation.js": "8efa64ec7a33d8c0e4b5f15b7c740391c8140157aaa0d82dd8303bc232bf42cb",
+    "src/inkbox/g2/environmentObservationRuntime.js": "33ef1a74ee874138883f6b8e8a4c506cea530d0dba414a93820e62ad07dcf80c",
+    "src/inkbox/ui/g2/environment/environmentObserverView.js": "0c8555a638e012da7d7ee4cffdb2312a90f50dcd9abdcbc25372e9d351fd9ebb",
+    "src/inkbox/ui/g2/environment/environmentObserver.css": "2a37c1ed6e116a11a26eafe501a12d41ed28814846096b20987986d551e6c0cb",
+    "src/inkbox/render3d/Render3DAdapter.js": "adea194e811c5db968d69a72587e5f70e692e801dc10c08b63a376f8f34f6212",
+    "src/inkbox/render3d/WorldRenderBridge.js": "5f129c7de32bbde2529f65f9025b27ba5e557e202e04d2831c44061b1a848cb1",
+    "src/inkbox/render3d/art/PigmentTerrainMaterial.js": "385d010f38e972eae38588a4de7da11ab94de702cce66dee6aa5466c2b8b553a",
+    "src/inkbox/render3d/art/TerrainDataTextures.js": "c1ecbb3192ba5b2d1ca582954ef12bb493eea4f5f425758698ccfdbb29e01385",
+    "src/inkbox/render3d/stage/PlaneStage.js": "31754548a020c06ed6e7f729b1aad05770e8977e60eac828ec7a86ffffaf7342",
+    "src/inkbox/render3d/terrain/TerrainMesh.js": "b0236a6761710bc4aa9df6291d6b0b533097f97517a5244891423d9a3a549677",
+    "src/inkbox/sim/ecology.js": "dde5d57bbed0b55797ac893b3fc1f70796aed9ce48bf08038a32b3da322ace7c",
+    "src/inkbox/world/terrain.js": "8fc30c57e5adf464e0c212c27f72d1de385e94cbfee5c149a1b64db1ccc28f71",
+    "scripts/inkbox-g23-observation.mjs": "8c11fa4c3348dcbcfbae6ad80501282a9239ce99657ecb6ca756594dd12b9acf",
+    "scripts/inkbox-g23-runtime.mjs": "46143c8bf6c68b45bc4f83f6c4303ed26aa10d3046d477ea2d0cb342e4662d8b",
+    "scripts/inkbox-g23-terrain.mjs": "b83da18df62efa7cf80dee7be8c1e29da284b3e5224bf0defb4f19330a205c3c",
+    "scripts/inkbox-g23-browser.mjs": "580a4fe2413e50dec509239b21195ae4610d66b58562087aefc23c15e3808a47",
+    "scripts/inkbox-g23-render-browser.mjs": "1c6929a4a2133a10828621401fb1e5ed30faea0a3b0f98221b62066e9900259f"
+  },
+  "hashPolicy": "UTF-8 source normalized LF",
+  "regression": {
+    "previousSuites": [
+      {
+        "suite": "test:g23",
+        "exitCode": 0,
+        "durationSeconds": 2.399,
+        "stdout": "test-g23.stdout.log",
+        "stderr": "test-g23.stderr.log"
+      },
+      {
+        "suite": "test:core",
+        "exitCode": 0,
+        "durationSeconds": 3.629,
+        "stdout": "test-core.stdout.log",
+        "stderr": "test-core.stderr.log"
+      },
+      {
+        "suite": "test:regression",
+        "exitCode": 0,
+        "durationSeconds": 1.121,
+        "stdout": "test-regression.stdout.log",
+        "stderr": "test-regression.stderr.log"
+      },
+      {
+        "suite": "test:three-realms",
+        "exitCode": 0,
+        "durationSeconds": 151.508,
+        "stdout": "test-three-realms.stdout.log",
+        "stderr": "test-three-realms.stderr.log"
+      },
+      {
+        "suite": "test:save-equivalence",
+        "exitCode": 0,
+        "durationSeconds": 144.009,
+        "stdout": "test-save-equivalence.stdout.log",
+        "stderr": "test-save-equivalence.stderr.log"
+      },
+      {
+        "suite": "test:g1",
+        "exitCode": 0,
+        "durationSeconds": 6.694,
+        "stdout": "test-g1.stdout.log",
+        "stderr": "test-g1.stderr.log"
+      },
+      {
+        "suite": "test:g2",
+        "exitCode": 0,
+        "durationSeconds": 3.107,
+        "stdout": "test-g2.stdout.log",
+        "stderr": "test-g2.stderr.log"
+      },
+      {
+        "suite": "test:g22",
+        "exitCode": 0,
+        "durationSeconds": 2.504,
+        "stdout": "test-g22.stdout.log",
+        "stderr": "test-g22.stderr.log"
+      },
+      {
+        "suite": "test:presentation",
+        "exitCode": 0,
+        "durationSeconds": 1.383,
+        "stdout": "test-presentation.stdout.log",
+        "stderr": "test-presentation.stderr.log"
+      },
+      {
+        "suite": "test:view",
+        "exitCode": 0,
+        "durationSeconds": 2.033,
+        "stdout": "test-view.stdout.log",
+        "stderr": "test-view.stderr.log"
+      },
+      {
+        "suite": "test:render3d:m2a",
+        "exitCode": 0,
+        "durationSeconds": 1.986,
+        "stdout": "test-render3d-m2a.stdout.log",
+        "stderr": "test-render3d-m2a.stderr.log"
+      },
+      {
+        "suite": "test:render3d:m2c",
+        "exitCode": 0,
+        "durationSeconds": 1.93,
+        "stdout": "test-render3d-m2c.stdout.log",
+        "stderr": "test-render3d-m2c.stderr.log"
+      }
+    ],
+    "postReviewReruns": [
+      {
+        "suite": "test:g23",
+        "exitCode": 0,
+        "durationSeconds": 2.403,
+        "stdout": "final-test-g23.stdout.log",
+        "stderr": "final-test-g23.stderr.log"
+      },
+      {
+        "suite": "test:g1",
+        "exitCode": 0,
+        "durationSeconds": 4.395,
+        "stdout": "final-test-g1.stdout.log",
+        "stderr": "final-test-g1.stderr.log"
+      }
+    ]
+  },
+  "finalGate": [
+    {
+      "suite": "test:g23:browser",
+      "exitCode": 0,
+      "durationSeconds": 48.906,
+      "stdout": "final-test-g23-browser.stdout.log",
+      "stderr": "final-test-g23-browser.stderr.log"
+    },
+    {
+      "suite": "test:g23",
+      "exitCode": 0,
+      "durationSeconds": 1.684,
+      "stdout": "final-test-g23.stdout.log",
+      "stderr": "final-test-g23.stderr.log"
+    },
+    {
+      "suite": "test:view",
+      "exitCode": 0,
+      "durationSeconds": 1.531,
+      "stdout": "final-test-view.stdout.log",
+      "stderr": "final-test-view.stderr.log"
+    },
+    {
+      "suite": "test:render3d:m2b",
+      "exitCode": 0,
+      "durationSeconds": 2.338,
+      "stdout": "final-test-render3d-m2b.stdout.log",
+      "stderr": "final-test-render3d-m2b.stderr.log"
+    }
+  ],
+  "extraRegression": [
+    {
+      "command": "test:render3d:bridge",
+      "exitCode": 0,
+      "groups": 36
+    },
+    {
+      "command": "test:render3d:m2c2e",
+      "exitCode": 0,
+      "checks": 44
+    },
+    {
+      "command": "test:g21:terrain",
+      "exitCode": 0,
+      "rgbaCases": 324
+    },
+    {
+      "command": "test:render3d:m2b",
+      "exitCode": 0,
+      "groups": 70
+    }
+  ],
+  "browser": {
+    "startedAt": "2026-10-13T15:50:37.520Z",
+    "pass": true,
+    "backend": "Repository-owned Microsoft Edge/CDP",
+    "browserPlugin": "absent",
+    "fallbackReason": "Browser plugin was unavailable; Tabbit returned CLI_REGISTRATION_UNAVAILABLE in ordinary and elevated attempts. Used the repository Edge/CDP harness as authorized.",
+    "sourceFlow": "official Canvas/3D pointer tools -> World fire/veg/over -> advanceDays -> environment observer -> official browser save/load",
+    "performanceClaim": false,
+    "viewport": {
+      "desktop": "1440x1000",
+      "narrow": "960x800"
+    },
+    "checks": [
+      {
+        "name": "Application identity, initial rendering and desktop controls",
+        "pass": true,
+        "evidence": {
+          "title": "水墨沙盒 · 坐天观井 v1.0.0",
+          "controls": [
+            {
+              "action": "read-area",
+              "disabled": true,
+              "rect": {
+                "x": 1228,
+                "y": 1634.203125,
+                "w": 60,
+                "h": 25
+              }
+            },
+            {
+              "action": "record-baseline",
+              "disabled": true,
+              "rect": {
+                "x": 1293,
+                "y": 1634.203125,
+                "w": 60,
+                "h": 25
+              }
+            },
+            {
+              "action": "focus-area",
+              "disabled": true,
+              "rect": {
+                "x": 1228,
+                "y": 1664.203125,
+                "w": 60,
+                "h": 25
+              }
+            },
+            {
+              "action": "find-fires",
+              "disabled": false,
+              "rect": {
+                "x": 1293,
+                "y": 1664.203125,
+                "w": 60,
+                "h": 25
+              }
+            }
+          ],
+          "screenshot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\desktop-initial.png"
+        }
+      },
+      {
+        "name": "Canvas pointer ignites live vegetation and observer reports actual World facts",
+        "pass": true,
+        "evidence": {
+          "land": {
+            "x": 102,
+            "y": 100,
+            "score": 0.946816000906163,
+            "meanVeg": 0.9470267211830856,
+            "meanWater": 0.00010536013846129379,
+            "damaged": 0,
+            "n": 149,
+            "r": 7
+          },
+          "afterBurn": {
+            "fire": 89,
+            "scorched": 89,
+            "vegetationMean": 0.5482773758636581,
+            "day": 0,
+            "dirty": true,
+            "renderer": false,
+            "pointer": {
+              "x": 700.8653846153846,
+              "y": 636.4078649185025,
+              "rect": {
+                "left": 178,
+                "top": 50.5,
+                "width": 1026,
+                "height": 857
+              },
+              "hit": {
+                "x": 102,
+                "y": 100,
+                "plane": "mortal"
+              },
+              "world": {
+                "x": 102,
+                "y": 100
+              }
+            }
+          },
+          "observation": {
+            "location": {
+              "x": 102,
+              "y": 100
+            },
+            "day": 0,
+            "environment": {
+              "activeFireCells": 49,
+              "maxFireIntensity": 0.8199999928474426,
+              "scorchedCells": 49,
+              "ashCells": 0,
+              "vegetationMean": 0.061372664281908344,
+              "yinMean": null,
+              "terrainSummary": {
+                "SCORCHED": 46,
+                "SHALLOW": 3
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "pointer": {
+              "x": 700.8653846153846,
+              "y": 636.4078649185025,
+              "rect": {
+                "left": 178,
+                "top": 50.5,
+                "width": 1026,
+                "height": 857
+              },
+              "hit": {
+                "x": 102,
+                "y": 100,
+                "plane": "mortal"
+              },
+              "world": {
+                "x": 102,
+                "y": 100
+              }
+            }
+          },
+          "screenshot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\canvas-real-burn.png"
+        }
+      },
+      {
+        "name": "On-demand fire search and UI observation button focus a live fire",
+        "pass": true,
+        "evidence": {
+          "contextId": "environment-context-3",
+          "search": {
+            "count": 12,
+            "truncated": true,
+            "metrics": {
+              "cellsVisited": 25600
+            },
+            "first": {
+              "plane": "mortal",
+              "location": {
+                "x": 101,
+                "y": 95
+              },
+              "intensity": 0.42776772379875183,
+              "id": "environment-3-2"
+            }
+          },
+          "focus": [
+            101,
+            95,
+            {
+              "zoom": 7,
+              "duration": 0.75
+            }
+          ],
+          "observed": {
+            "x": 101,
+            "y": 95
+          }
+        }
+      },
+      {
+        "name": "Upper and Nether Canvas windows expose their own plane and mask mortal fire",
+        "pass": true,
+        "evidence": {
+          "upper": {
+            "location": {
+              "x": 102,
+              "y": 100
+            },
+            "environment": {
+              "activeFireCells": null,
+              "maxFireIntensity": null,
+              "scorchedCells": 0,
+              "ashCells": 0,
+              "vegetationMean": 0,
+              "yinMean": null,
+              "terrainSummary": {
+                "DEEP": 44,
+                "OCEAN": 5
+              },
+              "vegetationKind": "spiritual-vegetation",
+              "fireSupported": false
+            },
+            "visibleSearchCount": 0,
+            "hiddenBurnExcluded": true
+          },
+          "nether": {
+            "location": {
+              "x": 102,
+              "y": 100
+            },
+            "environment": {
+              "activeFireCells": null,
+              "maxFireIntensity": null,
+              "scorchedCells": 0,
+              "ashCells": 0,
+              "vegetationMean": null,
+              "yinMean": 0.7869861880127265,
+              "terrainSummary": {
+                "FOREST": 35,
+                "ROCK": 14
+              },
+              "vegetationKind": "yin",
+              "fireSupported": false
+            },
+            "visibleSearchCount": 0,
+            "hiddenBurnExcluded": true
+          }
+        }
+      },
+      {
+        "name": "Session baseline, real advanceDays extinction and ecology regrowth update the same observation",
+        "pass": true,
+        "evidence": {
+          "days": 158.8,
+          "fireSamples": 11,
+          "afterFire": {
+            "activeFireCells": 0,
+            "maxFireIntensity": 0,
+            "scorchedCells": 49,
+            "ashCells": 0,
+            "vegetationMean": 0,
+            "yinMean": null,
+            "terrainSummary": {
+              "SCORCHED": 46,
+              "SHALLOW": 3
+            },
+            "vegetationKind": "vegetation",
+            "fireSupported": true
+          },
+          "final": {
+            "activeFireCells": 0,
+            "maxFireIntensity": 0,
+            "scorchedCells": 49,
+            "ashCells": 0,
+            "vegetationMean": 0.2887747287750244,
+            "yinMean": null,
+            "terrainSummary": {
+              "SCORCHED": 46,
+              "SHALLOW": 3
+            },
+            "vegetationKind": "vegetation",
+            "fireSupported": true
+          },
+          "comparison": {
+            "ok": true,
+            "reason": null,
+            "deltaDays": 158.8,
+            "changes": {
+              "activeFireCells": -49,
+              "scorchedCells": 0,
+              "ashCells": 0,
+              "vegetationMean": 0.22740206449311606
+            },
+            "recovering": true,
+            "evidence": {
+              "cause": "unknown",
+              "historyComplete": false
+            }
+          },
+          "screenshot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\canvas-aftermath-recovery.png"
+        }
+      },
+      {
+        "name": "Renderer switch preserves this World observation and bounded refresh cost",
+        "pass": true,
+        "evidence": {
+          "sameRuntime": true,
+          "sameWorld": true,
+          "location": {
+            "x": 102,
+            "y": 100
+          },
+          "localRefresh": {
+            "iterations": 30,
+            "elapsedMs": 1.399999976158142,
+            "cellsVisited": 49,
+            "radius": 3
+          }
+        }
+      },
+      {
+        "name": "3D burn option and terrain pick alter the same live World; inspection and persistent fire tint follow",
+        "pass": true,
+        "evidence": {
+          "location": {
+            "x": 72,
+            "y": 102
+          },
+          "observation": {
+            "activeFireCells": 49,
+            "maxFireIntensity": 0.8199999928474426,
+            "scorchedCells": 49,
+            "ashCells": 0,
+            "vegetationMean": 0.21326770618253824,
+            "yinMean": null,
+            "terrainSummary": {
+              "SCORCHED": 49
+            },
+            "vegetationKind": "vegetation",
+            "fireSupported": true
+          },
+          "before": {
+            "fire": 0,
+            "veg": 0.8288623690605164,
+            "over": 0,
+            "color": [
+              0.1384316086769104,
+              0.20863686501979828,
+              0.11697066575288773
+            ],
+            "info": {
+              "geometries": 10,
+              "textures": 4
+            }
+          },
+          "after": {
+            "sameWorld": true,
+            "fire": 0.8199999928474426,
+            "veg": 0.2072155922651291,
+            "over": 2,
+            "color": [
+              0.8242794871330261,
+              0.4806463420391083,
+              0.11894581466913223
+            ],
+            "selected": true
+          },
+          "settledTint": [
+            0.8242794871330261,
+            0.4806463420391083,
+            0.11894581466913223
+          ],
+          "lod": {
+            "tree": {
+              "lod": [
+                0,
+                1634,
+                2129
+              ],
+              "triangles": 57882,
+              "instances": 3763,
+              "overflow": 0,
+              "capacity": 10000,
+              "hlod": 0
+            },
+            "character": {
+              "lod": [
+                0,
+                16,
+                51
+              ],
+              "triangles": 412,
+              "instances": 67,
+              "overflow": 0,
+              "capacity": 3256,
+              "hlod": 0
+            },
+            "building": {
+              "lod": [
+                0,
+                0,
+                0
+              ],
+              "triangles": 0,
+              "instances": 0,
+              "overflow": 0,
+              "capacity": 4608,
+              "hlod": 0
+            }
+          },
+          "memory": {
+            "geometries": 12,
+            "textures": 4
+          },
+          "screenshot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\three-real-burn.png"
+        }
+      },
+      {
+        "name": "Official browser save/load restores environmental facts and invalidates stale baseline actions",
+        "pass": true,
+        "evidence": {
+          "saved": {
+            "seed": 2302301,
+            "day": 158.8,
+            "location": {
+              "x": 72,
+              "y": 102
+            },
+            "fire": 0.8199999928474426,
+            "veg": 0.2072155922651291,
+            "over": 2,
+            "savedFacts": {
+              "fire": 49,
+              "scorched": 49,
+              "ash": 0,
+              "veg": 0.21326770618253824
+            },
+            "keys": [
+              "v",
+              "app",
+              "w",
+              "h",
+              "seed",
+              "day",
+              "year",
+              "nextEntityId",
+              "nextVillageId",
+              "nextFactionId",
+              "terrain",
+              "entities",
+              "villages",
+              "factions",
+              "leylines",
+              "nextLeylineId",
+              "sites",
+              "nextSiteId",
+              "artifacts",
+              "nextArtifactId",
+              "artifactLog",
+              "ascended",
+              "plane",
+              "souls",
+              "nextSoulId",
+              "clans",
+              "nextClanId",
+              "clanLog",
+              "lastClanFoundDay",
+              "wars",
+              "nextWarId",
+              "warLog",
+              "rifts",
+              "nextRiftId",
+              "riftLog",
+              "wraiths",
+              "wraithLog",
+              "soulLog",
+              "possessionLog",
+              "dead",
+              "deadLog",
+              "busanzi",
+              "chronicle",
+              "milestones",
+              "watch",
+              "worldEvents",
+              "upper",
+              "nether",
+              "generation",
+              "meta"
+            ]
+          },
+          "loaded": {
+            "seed": 2302301,
+            "day": 158.8,
+            "fire": 0.8200045824050903,
+            "veg": 0.2072175145149231,
+            "over": 2,
+            "vm": {
+              "schemaVersion": 1,
+              "contextId": "environment-context-11",
+              "observationId": null,
+              "observation": null,
+              "comparison": null,
+              "baselineDay": null,
+              "message": "世界已替换，会话对照已清除；它未作为长期史料存档。",
+              "canFocus": false,
+              "search": null
+            },
+            "differentEpoch": true
+          },
+          "confirmationShown": true
+        }
+      },
+      {
+        "name": "Progressive-map UI rejects inaccessible coordinates and narrow viewport has no horizontal clipping",
+        "pass": true,
+        "evidence": {
+          "access": {
+            "bounds": {
+              "x0": 60,
+              "y0": 38,
+              "x1": 139,
+              "y1": 89
+            },
+            "stage": 0,
+            "deniedReason": "center-inaccessible"
+          },
+          "layout": {
+            "innerWidth": 960,
+            "scrollWidth": 960,
+            "root": {
+              "x": 0,
+              "y": 0,
+              "width": 0,
+              "right": 0
+            },
+            "buttons": [
+              {
+                "a": "read-area",
+                "x": 0,
+                "right": 0,
+                "width": 0,
+                "visible": false
+              },
+              {
+                "a": "record-baseline",
+                "x": 0,
+                "right": 0,
+                "width": 0,
+                "visible": false
+              },
+              {
+                "a": "focus-area",
+                "x": 0,
+                "right": 0,
+                "width": 0,
+                "visible": false
+              },
+              {
+                "a": "find-fires",
+                "x": 0,
+                "right": 0,
+                "width": 0,
+                "visible": false
+              }
+            ]
+          },
+          "screenshot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\narrow-viewport.png"
+        }
+      },
+      {
+        "name": "Maximum Canvas brush radius 32 ignites a real bounded World region",
+        "pass": true,
+        "evidence": {
+          "radius": 32,
+          "fire": 2067,
+          "scorched": 2067,
+          "visited": 3209,
+          "dirty": true,
+          "pointer": {
+            "x": 745.2596153846154,
+            "y": 557.4715210394218,
+            "rect": {
+              "left": 178,
+              "top": 50.5,
+              "width": 1026,
+              "height": 814
+            },
+            "hit": {
+              "x": 111,
+              "y": 92,
+              "plane": "mortal"
+            },
+            "world": {
+              "x": 111,
+              "y": 93
+            }
+          },
+          "target": {
+            "x": 111,
+            "y": 93,
+            "score": 0.47879864611288236,
+            "meanVeg": 0.48740078510428864,
+            "meanWater": 0.004301069495703137,
+            "damaged": 0,
+            "n": 3209,
+            "r": 32
+          },
+          "screenshot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\canvas-max-brush-32.png"
+        }
+      }
+    ],
+    "screenshots": [
+      "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\desktop-initial.png",
+      "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\canvas-real-burn.png",
+      "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\canvas-aftermath-recovery.png",
+      "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\three-real-burn.png",
+      "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\narrow-viewport.png",
+      "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\canvas-max-brush-32.png"
+    ],
+    "edge": {
+      "browser": "Edg/155.0.4283.45",
+      "debugPort": 9330,
+      "width": 1440,
+      "height": 1000
+    },
+    "pageIdentity": {
+      "title": "水墨沙盒 · 坐天观井 v1.0.0",
+      "url": "http://127.0.0.1:4219/inkbox.html?renderer=3d"
+    },
+    "desktopInitial": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\desktop-initial.png",
+    "canvasTarget": {
+      "x": 102,
+      "y": 100,
+      "score": 0.946816000906163,
+      "meanVeg": 0.9470267211830856,
+      "meanWater": 0.00010536013846129379,
+      "damaged": 0,
+      "n": 149,
+      "r": 7
+    },
+    "canvasObservation": {
+      "location": {
+        "x": 102,
+        "y": 100
+      },
+      "day": 0,
+      "environment": {
+        "activeFireCells": 49,
+        "maxFireIntensity": 0.8199999928474426,
+        "scorchedCells": 49,
+        "ashCells": 0,
+        "vegetationMean": 0.061372664281908344,
+        "yinMean": null,
+        "terrainSummary": {
+          "SCORCHED": 46,
+          "SHALLOW": 3
+        },
+        "vegetationKind": "vegetation",
+        "fireSupported": true
+      },
+      "pointer": {
+        "x": 700.8653846153846,
+        "y": 636.4078649185025,
+        "rect": {
+          "left": 178,
+          "top": 50.5,
+          "width": 1026,
+          "height": 857
+        },
+        "hit": {
+          "x": 102,
+          "y": 100,
+          "plane": "mortal"
+        },
+        "world": {
+          "x": 102,
+          "y": 100
+        }
+      }
+    },
+    "canvasBurnShot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\canvas-real-burn.png",
+    "search": {
+      "count": 12,
+      "truncated": true,
+      "metrics": {
+        "cellsVisited": 25600
+      },
+      "first": {
+        "plane": "mortal",
+        "location": {
+          "x": 101,
+          "y": 95
+        },
+        "intensity": 0.42776772379875183,
+        "id": "environment-3-2"
+      }
+    },
+    "upperWindow": {
+      "location": {
+        "x": 102,
+        "y": 100
+      },
+      "environment": {
+        "activeFireCells": null,
+        "maxFireIntensity": null,
+        "scorchedCells": 0,
+        "ashCells": 0,
+        "vegetationMean": 0,
+        "yinMean": null,
+        "terrainSummary": {
+          "DEEP": 44,
+          "OCEAN": 5
+        },
+        "vegetationKind": "spiritual-vegetation",
+        "fireSupported": false
+      },
+      "visibleSearchCount": 0,
+      "hiddenBurnExcluded": true
+    },
+    "netherWindow": {
+      "location": {
+        "x": 102,
+        "y": 100
+      },
+      "environment": {
+        "activeFireCells": null,
+        "maxFireIntensity": null,
+        "scorchedCells": 0,
+        "ashCells": 0,
+        "vegetationMean": null,
+        "yinMean": 0.7869861880127265,
+        "terrainSummary": {
+          "FOREST": 35,
+          "ROCK": 14
+        },
+        "vegetationKind": "yin",
+        "fireSupported": false
+      },
+      "visibleSearchCount": 0,
+      "hiddenBurnExcluded": true
+    },
+    "simulation": {
+      "days": 158.8,
+      "fireSamples": [
+        49,
+        49,
+        49,
+        49,
+        49,
+        49,
+        45,
+        21,
+        9,
+        1,
+        0
+      ],
+      "afterFire": {
+        "activeFireCells": 0,
+        "maxFireIntensity": 0,
+        "scorchedCells": 49,
+        "ashCells": 0,
+        "vegetationMean": 0,
+        "yinMean": null,
+        "terrainSummary": {
+          "SCORCHED": 46,
+          "SHALLOW": 3
+        },
+        "vegetationKind": "vegetation",
+        "fireSupported": true
+      },
+      "final": {
+        "activeFireCells": 0,
+        "maxFireIntensity": 0,
+        "scorchedCells": 49,
+        "ashCells": 0,
+        "vegetationMean": 0.2887747287750244,
+        "yinMean": null,
+        "terrainSummary": {
+          "SCORCHED": 46,
+          "SHALLOW": 3
+        },
+        "vegetationKind": "vegetation",
+        "fireSupported": true
+      },
+      "comparison": {
+        "ok": true,
+        "reason": null,
+        "deltaDays": 158.8,
+        "changes": {
+          "activeFireCells": -49,
+          "scorchedCells": 0,
+          "ashCells": 0,
+          "vegetationMean": 0.22740206449311606
+        },
+        "recovering": true,
+        "evidence": {
+          "cause": "unknown",
+          "historyComplete": false
+        }
+      }
+    },
+    "canvasRecoveryShot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\canvas-aftermath-recovery.png",
+    "localRefresh": {
+      "iterations": 30,
+      "elapsedMs": 1.399999976158142,
+      "cellsVisited": 49,
+      "radius": 3
+    },
+    "three": {
+      "location": {
+        "x": 72,
+        "y": 102
+      },
+      "terrainPick": {
+        "x": 72,
+        "y": 102,
+        "plane": "mortal",
+        "kind": "terrain",
+        "world": {
+          "x": 71.99999999999997,
+          "y": 101.99999999999991
+        }
+      },
+      "before": {
+        "fire": 0,
+        "veg": 0.8288623690605164,
+        "over": 0,
+        "color": [
+          0.1384316086769104,
+          0.20863686501979828,
+          0.11697066575288773
+        ],
+        "info": {
+          "geometries": 10,
+          "textures": 4
+        }
+      },
+      "after": {
+        "sameWorld": true,
+        "fire": 0.8199999928474426,
+        "veg": 0.2072155922651291,
+        "over": 2,
+        "color": [
+          0.8242794871330261,
+          0.4806463420391083,
+          0.11894581466913223
+        ],
+        "selected": true
+      },
+      "settled": {
+        "color": [
+          0.8242794871330261,
+          0.4806463420391083,
+          0.11894581466913223
+        ],
+        "fire": 0.8199999928474426,
+        "lod": {
+          "tree": {
+            "lod": [
+              0,
+              1634,
+              2129
+            ],
+            "triangles": 57882,
+            "instances": 3763,
+            "overflow": 0,
+            "capacity": 10000,
+            "hlod": 0
+          },
+          "character": {
+            "lod": [
+              0,
+              16,
+              51
+            ],
+            "triangles": 412,
+            "instances": 67,
+            "overflow": 0,
+            "capacity": 3256,
+            "hlod": 0
+          },
+          "building": {
+            "lod": [
+              0,
+              0,
+              0
+            ],
+            "triangles": 0,
+            "instances": 0,
+            "overflow": 0,
+            "capacity": 4608,
+            "hlod": 0
+          }
+        },
+        "memory": {
+          "geometries": 12,
+          "textures": 4
+        }
+      },
+      "memory": {
+        "geometries": 12,
+        "textures": 4
+      }
+    },
+    "threeBurnShot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\three-real-burn.png",
+    "saveLoad": {
+      "saved": {
+        "seed": 2302301,
+        "day": 158.8,
+        "location": {
+          "x": 72,
+          "y": 102
+        },
+        "fire": 0.8199999928474426,
+        "veg": 0.2072155922651291,
+        "over": 2,
+        "savedFacts": {
+          "fire": 49,
+          "scorched": 49,
+          "ash": 0,
+          "veg": 0.21326770618253824
+        },
+        "keys": [
+          "v",
+          "app",
+          "w",
+          "h",
+          "seed",
+          "day",
+          "year",
+          "nextEntityId",
+          "nextVillageId",
+          "nextFactionId",
+          "terrain",
+          "entities",
+          "villages",
+          "factions",
+          "leylines",
+          "nextLeylineId",
+          "sites",
+          "nextSiteId",
+          "artifacts",
+          "nextArtifactId",
+          "artifactLog",
+          "ascended",
+          "plane",
+          "souls",
+          "nextSoulId",
+          "clans",
+          "nextClanId",
+          "clanLog",
+          "lastClanFoundDay",
+          "wars",
+          "nextWarId",
+          "warLog",
+          "rifts",
+          "nextRiftId",
+          "riftLog",
+          "wraiths",
+          "wraithLog",
+          "soulLog",
+          "possessionLog",
+          "dead",
+          "deadLog",
+          "busanzi",
+          "chronicle",
+          "milestones",
+          "watch",
+          "worldEvents",
+          "upper",
+          "nether",
+          "generation",
+          "meta"
+        ]
+      },
+      "loaded": {
+        "seed": 2302301,
+        "day": 158.8,
+        "fire": 0.8200045824050903,
+        "veg": 0.2072175145149231,
+        "over": 2,
+        "vm": {
+          "schemaVersion": 1,
+          "contextId": "environment-context-11",
+          "observationId": null,
+          "observation": null,
+          "comparison": null,
+          "baselineDay": null,
+          "message": "世界已替换，会话对照已清除；它未作为长期史料存档。",
+          "canFocus": false,
+          "search": null
+        },
+        "differentEpoch": true
+      },
+      "confirmationShown": true
+    },
+    "narrowLayout": {
+      "innerWidth": 960,
+      "scrollWidth": 960,
+      "root": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "right": 0
+      },
+      "buttons": [
+        {
+          "a": "read-area",
+          "x": 0,
+          "right": 0,
+          "width": 0,
+          "visible": false
+        },
+        {
+          "a": "record-baseline",
+          "x": 0,
+          "right": 0,
+          "width": 0,
+          "visible": false
+        },
+        {
+          "a": "focus-area",
+          "x": 0,
+          "right": 0,
+          "width": 0,
+          "visible": false
+        },
+        {
+          "a": "find-fires",
+          "x": 0,
+          "right": 0,
+          "width": 0,
+          "visible": false
+        }
+      ]
+    },
+    "narrowShot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\narrow-viewport.png",
+    "maxBrushTarget": {
+      "x": 111,
+      "y": 93,
+      "score": 0.47879864611288236,
+      "meanVeg": 0.48740078510428864,
+      "meanWater": 0.004301069495703137,
+      "damaged": 0,
+      "n": 3209,
+      "r": 32
+    },
+    "maxBrush": {
+      "radius": 32,
+      "fire": 2067,
+      "scorched": 2067,
+      "visited": 3209,
+      "dirty": true,
+      "pointer": {
+        "x": 745.2596153846154,
+        "y": 557.4715210394218,
+        "rect": {
+          "left": 178,
+          "top": 50.5,
+          "width": 1026,
+          "height": 814
+        },
+        "hit": {
+          "x": 111,
+          "y": 92,
+          "plane": "mortal"
+        },
+        "world": {
+          "x": 111,
+          "y": 93
+        }
+      }
+    },
+    "maxBrushShot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\canvas-max-brush-32.png",
+    "runtimeErrors": [],
+    "consoleErrors": [],
+    "pageHealth": {
+      "title": "水墨沙盒 · 坐天观井 v1.0.0",
+      "url": "http://127.0.0.1:4219/inkbox.html?renderer=3d",
+      "meaningfulBody": true,
+      "frameworkOverlay": false
+    },
+    "cleanup": {
+      "edgeExited": true,
+      "profileRemoved": true,
+      "serverExited": true
+    },
+    "finishedAt": "2026-10-13T15:50:54.839Z"
+  },
+  "renderBrowser": {
+    "startedAt": "2026-10-13T15:50:54.892Z",
+    "pass": true,
+    "url": "http://127.0.0.1:4220/inkbox.html?renderer=3d",
+    "viewport": "1440x1000",
+    "browser": "isolated Microsoft Edge/CDP",
+    "browserPlugin": "absent",
+    "fallbackReason": "The repository CDP harness is the user-specified hardware acceptance path; Browser plugin is unavailable.",
+    "sourceFlow": "official 3D burn pointer -> World -> observer -> terrain pigment GPU -> formal progression -> realm windows",
+    "performanceClaim": false,
+    "checks": [
+      {
+        "name": "Official 3D burn uses current World and refreshes active fire pigment",
+        "pass": true,
+        "evidence": {
+          "target": {
+            "x": 100,
+            "y": 91,
+            "veg": 0.6749969992335407,
+            "hit": {
+              "x": 100,
+              "y": 91
+            },
+            "screen": {
+              "x": 642.5492150429891,
+              "y": 493.1683277966252
+            }
+          },
+          "before": {
+            "day": 0,
+            "fire": 0,
+            "veg": 0.8257046937942505,
+            "over": 0,
+            "type": 7,
+            "canonical": 7,
+            "color": [
+              0.1384316086769104,
+              0.20863686501979828,
+              0.11697066575288773
+            ],
+            "fireAlpha": 0,
+            "material": "Inkbox:PigmentTerrain",
+            "artProfile": "realm-style-v1",
+            "lodEnabled": true,
+            "zoom": 1,
+            "drawRange": 151638,
+            "observer": null,
+            "gpu": {
+              "geometry": 6,
+              "texture": 4,
+              "program": 5
+            },
+            "glError": 0
+          },
+          "active": {
+            "day": 0,
+            "fire": 0.8199999928474426,
+            "veg": 0.20642617344856262,
+            "over": 2,
+            "type": 18,
+            "canonical": 18,
+            "color": [
+              0.8242794871330261,
+              0.4806463420391083,
+              0.11894581466913223
+            ],
+            "fireAlpha": 209,
+            "material": "Inkbox:PigmentTerrain",
+            "artProfile": "realm-style-v1",
+            "lodEnabled": true,
+            "zoom": 1,
+            "drawRange": 151638,
+            "observer": {
+              "plane": "mortal",
+              "fire": 49,
+              "scorched": 49,
+              "ash": 0
+            },
+            "gpu": {
+              "geometry": 8,
+              "texture": 4,
+              "program": 8
+            },
+            "glError": 0
+          }
+        }
+      },
+      {
+        "name": "Near and far actual GPU views retain fire with LOD enabled",
+        "pass": true,
+        "evidence": {
+          "near": {
+            "day": 0,
+            "fire": 0.8199999928474426,
+            "veg": 0.20642617344856262,
+            "over": 2,
+            "type": 18,
+            "canonical": 18,
+            "color": [
+              0.8242794871330261,
+              0.4806463420391083,
+              0.11894581466913223
+            ],
+            "fireAlpha": 209,
+            "material": "Inkbox:PigmentTerrain",
+            "artProfile": "realm-style-v1",
+            "lodEnabled": true,
+            "zoom": 1.8506178062217107,
+            "drawRange": 151638,
+            "observer": {
+              "plane": "mortal",
+              "fire": 49,
+              "scorched": 49,
+              "ash": 0
+            },
+            "gpu": {
+              "geometry": 8,
+              "texture": 4,
+              "program": 8
+            },
+            "glError": 0
+          },
+          "far": {
+            "day": 0,
+            "fire": 0.8199999928474426,
+            "veg": 0.20642617344856262,
+            "over": 2,
+            "type": 18,
+            "canonical": 18,
+            "color": [
+              0.8242794871330261,
+              0.4806463420391083,
+              0.11894581466913223
+            ],
+            "fireAlpha": 209,
+            "material": "Inkbox:PigmentTerrain",
+            "artProfile": "realm-style-v1",
+            "lodEnabled": true,
+            "zoom": 1,
+            "drawRange": 151638,
+            "observer": {
+              "plane": "mortal",
+              "fire": 49,
+              "scorched": 49,
+              "ash": 0
+            },
+            "gpu": {
+              "geometry": 8,
+              "texture": 4,
+              "program": 8
+            },
+            "glError": 0
+          },
+          "nearShot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\mortal-near-live-fire.png",
+          "farShot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\mortal-far-live-fire.png"
+        }
+      },
+      {
+        "name": "Formal day advancement extinguishes fire and refreshes 3D terrain",
+        "pass": true,
+        "evidence": {
+          "progress": {
+            "steps": 11,
+            "day": 159.6,
+            "fire": 0,
+            "over": 2,
+            "veg": 0.2849436402320862
+          },
+          "after": {
+            "day": 159.6,
+            "fire": 0,
+            "veg": 0.2849436402320862,
+            "over": 2,
+            "type": 18,
+            "canonical": 18,
+            "color": [
+              0.07036009430885315,
+              0.052860647439956665,
+              0.0382043719291687
+            ],
+            "fireAlpha": 0,
+            "material": "Inkbox:PigmentTerrain",
+            "artProfile": "realm-style-v1",
+            "lodEnabled": true,
+            "zoom": 1,
+            "drawRange": 151638,
+            "observer": {
+              "plane": "mortal",
+              "fire": 0,
+              "scorched": 49,
+              "ash": 0
+            },
+            "gpu": {
+              "geometry": 12,
+              "texture": 4,
+              "program": 8
+            },
+            "glError": 0
+          }
+        }
+      },
+      {
+        "name": "Existing real-time overlay decay cadence updates canonical type and art texture",
+        "pass": true,
+        "evidence": {
+          "elapsedMs": 15000,
+          "start": {
+            "day": 159.6,
+            "fire": 0,
+            "veg": 0.2849436402320862,
+            "over": 2,
+            "type": 18,
+            "canonical": 18,
+            "color": [
+              0.07036009430885315,
+              0.052860647439956665,
+              0.0382043719291687
+            ],
+            "fireAlpha": 0,
+            "material": "Inkbox:PigmentTerrain",
+            "artProfile": "realm-style-v1",
+            "lodEnabled": true,
+            "zoom": 1,
+            "drawRange": 151638,
+            "observer": {
+              "plane": "mortal",
+              "fire": 0,
+              "scorched": 49,
+              "ash": 0
+            },
+            "gpu": {
+              "geometry": 12,
+              "texture": 4,
+              "program": 8
+            },
+            "glError": 0
+          },
+          "final": {
+            "day": 204.9530999999959,
+            "fire": 0,
+            "veg": 0.35282155871391296,
+            "over": 0,
+            "type": 7,
+            "canonical": 7,
+            "color": [
+              0.1384316086769104,
+              0.20863686501979828,
+              0.11697066575288773
+            ],
+            "fireAlpha": 0,
+            "material": "Inkbox:PigmentTerrain",
+            "artProfile": "realm-style-v1",
+            "lodEnabled": true,
+            "zoom": 1,
+            "drawRange": 151638,
+            "observer": {
+              "plane": "mortal",
+              "fire": 0,
+              "scorched": 8,
+              "ash": 16
+            },
+            "gpu": {
+              "geometry": 12,
+              "texture": 4,
+              "program": 8
+            },
+            "glError": 0
+          },
+          "textureType": 7
+        }
+      },
+      {
+        "name": "Formal Three Upper and Nether windows clip mortal fire and keep child alpha empty",
+        "pass": true,
+        "evidence": [
+          {
+            "plane": "upper",
+            "open": true,
+            "target": "upper",
+            "mask": true,
+            "inside": true,
+            "mortalQuads": 148260,
+            "fullQuads": 151638,
+            "childQuads": 3378,
+            "childAlpha": 0,
+            "observer": null,
+            "fire": 0.8199999928474426,
+            "glError": 0,
+            "tool": "viewUpper",
+            "observed": {
+              "plane": "upper",
+              "fireSupported": false,
+              "sameRegion": true,
+              "riftsBefore": 1,
+              "riftsAfter": 1,
+              "realmDraw": false,
+              "viewOpen": true,
+              "route": "actual Three click on visible child terrain"
+            }
+          },
+          {
+            "plane": "nether",
+            "open": true,
+            "target": "nether",
+            "mask": true,
+            "inside": true,
+            "mortalQuads": 148260,
+            "fullQuads": 151638,
+            "childQuads": 3378,
+            "childAlpha": 0,
+            "observer": null,
+            "fire": 0.8199999928474426,
+            "glError": 0,
+            "tool": "viewNether",
+            "observed": {
+              "plane": "nether",
+              "fireSupported": false,
+              "sameRegion": true,
+              "riftsBefore": 2,
+              "riftsAfter": 2,
+              "realmDraw": false,
+              "viewOpen": true,
+              "route": "actual Three click on visible child terrain"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Warm repeated RAF and world replacement release old terrain with no stale observer callback",
+        "pass": true,
+        "evidence": {
+          "before": {
+            "memory": {
+              "geometries": 25,
+              "textures": 10
+            },
+            "program": 11
+          },
+          "repeat": {
+            "memory": {
+              "geometries": 25,
+              "textures": 10
+            },
+            "program": 11,
+            "glError": 0
+          },
+          "replacement": {
+            "newWorld": true,
+            "seed": 2302302,
+            "disposed": 1,
+            "stale": {
+              "ok": false,
+              "reason": "stale-context"
+            },
+            "memory": {
+              "geometries": 12,
+              "textures": 4
+            },
+            "program": 7,
+            "glError": 0
+          },
+          "cycles": [
+            {
+              "replaced": true,
+              "disposed": 1,
+              "memory": {
+                "geometries": 12,
+                "textures": 4
+              },
+              "program": 7,
+              "glError": 0
+            },
+            {
+              "replaced": true,
+              "disposed": 1,
+              "memory": {
+                "geometries": 12,
+                "textures": 4
+              },
+              "program": 7,
+              "glError": 0
+            }
+          ]
+        }
+      }
+    ],
+    "screenshots": [
+      "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\mortal-near-live-fire.png",
+      "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\mortal-far-live-fire.png"
+    ],
+    "edge": {
+      "browser": "Edg/155.0.4283.45",
+      "debugPort": 9585,
+      "width": 1440,
+      "height": 1000
+    },
+    "page": {
+      "url": "http://127.0.0.1:4220/inkbox.html?renderer=3d",
+      "title": "水墨沙盒 · 坐天观井 v1.0.0",
+      "content": 1752,
+      "overlay": false
+    },
+    "target": {
+      "x": 100,
+      "y": 91,
+      "veg": 0.6749969992335407,
+      "hit": {
+        "x": 100,
+        "y": 91
+      },
+      "screen": {
+        "x": 642.5492150429891,
+        "y": 493.1683277966252
+      }
+    },
+    "fire": {
+      "before": {
+        "day": 0,
+        "fire": 0,
+        "veg": 0.8257046937942505,
+        "over": 0,
+        "type": 7,
+        "canonical": 7,
+        "color": [
+          0.1384316086769104,
+          0.20863686501979828,
+          0.11697066575288773
+        ],
+        "fireAlpha": 0,
+        "material": "Inkbox:PigmentTerrain",
+        "artProfile": "realm-style-v1",
+        "lodEnabled": true,
+        "zoom": 1,
+        "drawRange": 151638,
+        "observer": null,
+        "gpu": {
+          "geometry": 6,
+          "texture": 4,
+          "program": 5
+        },
+        "glError": 0
+      },
+      "active": {
+        "day": 0,
+        "fire": 0.8199999928474426,
+        "veg": 0.20642617344856262,
+        "over": 2,
+        "type": 18,
+        "canonical": 18,
+        "color": [
+          0.8242794871330261,
+          0.4806463420391083,
+          0.11894581466913223
+        ],
+        "fireAlpha": 209,
+        "material": "Inkbox:PigmentTerrain",
+        "artProfile": "realm-style-v1",
+        "lodEnabled": true,
+        "zoom": 1,
+        "drawRange": 151638,
+        "observer": {
+          "plane": "mortal",
+          "fire": 49,
+          "scorched": 49,
+          "ash": 0
+        },
+        "gpu": {
+          "geometry": 8,
+          "texture": 4,
+          "program": 8
+        },
+        "glError": 0
+      }
+    },
+    "views": {
+      "near": {
+        "day": 0,
+        "fire": 0.8199999928474426,
+        "veg": 0.20642617344856262,
+        "over": 2,
+        "type": 18,
+        "canonical": 18,
+        "color": [
+          0.8242794871330261,
+          0.4806463420391083,
+          0.11894581466913223
+        ],
+        "fireAlpha": 209,
+        "material": "Inkbox:PigmentTerrain",
+        "artProfile": "realm-style-v1",
+        "lodEnabled": true,
+        "zoom": 1.8506178062217107,
+        "drawRange": 151638,
+        "observer": {
+          "plane": "mortal",
+          "fire": 49,
+          "scorched": 49,
+          "ash": 0
+        },
+        "gpu": {
+          "geometry": 8,
+          "texture": 4,
+          "program": 8
+        },
+        "glError": 0
+      },
+      "far": {
+        "day": 0,
+        "fire": 0.8199999928474426,
+        "veg": 0.20642617344856262,
+        "over": 2,
+        "type": 18,
+        "canonical": 18,
+        "color": [
+          0.8242794871330261,
+          0.4806463420391083,
+          0.11894581466913223
+        ],
+        "fireAlpha": 209,
+        "material": "Inkbox:PigmentTerrain",
+        "artProfile": "realm-style-v1",
+        "lodEnabled": true,
+        "zoom": 1,
+        "drawRange": 151638,
+        "observer": {
+          "plane": "mortal",
+          "fire": 49,
+          "scorched": 49,
+          "ash": 0
+        },
+        "gpu": {
+          "geometry": 8,
+          "texture": 4,
+          "program": 8
+        },
+        "glError": 0
+      },
+      "nearShot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\mortal-near-live-fire.png",
+      "farShot": "D:\\worldxxxxx\\坐天观井inkbox\\.g23-worktree\\reports\\local\\g23\\final-gate\\browser\\mortal-far-live-fire.png"
+    },
+    "extinction": {
+      "progress": {
+        "steps": 11,
+        "day": 159.6,
+        "fire": 0,
+        "over": 2,
+        "veg": 0.2849436402320862
+      },
+      "after": {
+        "day": 159.6,
+        "fire": 0,
+        "veg": 0.2849436402320862,
+        "over": 2,
+        "type": 18,
+        "canonical": 18,
+        "color": [
+          0.07036009430885315,
+          0.052860647439956665,
+          0.0382043719291687
+        ],
+        "fireAlpha": 0,
+        "material": "Inkbox:PigmentTerrain",
+        "artProfile": "realm-style-v1",
+        "lodEnabled": true,
+        "zoom": 1,
+        "drawRange": 151638,
+        "observer": {
+          "plane": "mortal",
+          "fire": 0,
+          "scorched": 49,
+          "ash": 0
+        },
+        "gpu": {
+          "geometry": 12,
+          "texture": 4,
+          "program": 8
+        },
+        "glError": 0
+      }
+    },
+    "decay": {
+      "elapsedMs": 15000,
+      "start": {
+        "day": 159.6,
+        "fire": 0,
+        "veg": 0.2849436402320862,
+        "over": 2,
+        "type": 18,
+        "canonical": 18,
+        "color": [
+          0.07036009430885315,
+          0.052860647439956665,
+          0.0382043719291687
+        ],
+        "fireAlpha": 0,
+        "material": "Inkbox:PigmentTerrain",
+        "artProfile": "realm-style-v1",
+        "lodEnabled": true,
+        "zoom": 1,
+        "drawRange": 151638,
+        "observer": {
+          "plane": "mortal",
+          "fire": 0,
+          "scorched": 49,
+          "ash": 0
+        },
+        "gpu": {
+          "geometry": 12,
+          "texture": 4,
+          "program": 8
+        },
+        "glError": 0
+      },
+      "final": {
+        "day": 204.9530999999959,
+        "fire": 0,
+        "veg": 0.35282155871391296,
+        "over": 0,
+        "type": 7,
+        "canonical": 7,
+        "color": [
+          0.1384316086769104,
+          0.20863686501979828,
+          0.11697066575288773
+        ],
+        "fireAlpha": 0,
+        "material": "Inkbox:PigmentTerrain",
+        "artProfile": "realm-style-v1",
+        "lodEnabled": true,
+        "zoom": 1,
+        "drawRange": 151638,
+        "observer": {
+          "plane": "mortal",
+          "fire": 0,
+          "scorched": 8,
+          "ash": 16
+        },
+        "gpu": {
+          "geometry": 12,
+          "texture": 4,
+          "program": 8
+        },
+        "glError": 0
+      },
+      "textureType": 7
+    },
+    "realm": [
+      {
+        "plane": "upper",
+        "open": true,
+        "target": "upper",
+        "mask": true,
+        "inside": true,
+        "mortalQuads": 148260,
+        "fullQuads": 151638,
+        "childQuads": 3378,
+        "childAlpha": 0,
+        "observer": null,
+        "fire": 0.8199999928474426,
+        "glError": 0,
+        "tool": "viewUpper",
+        "observed": {
+          "plane": "upper",
+          "fireSupported": false,
+          "sameRegion": true,
+          "riftsBefore": 1,
+          "riftsAfter": 1,
+          "realmDraw": false,
+          "viewOpen": true,
+          "route": "actual Three click on visible child terrain"
+        }
+      },
+      {
+        "plane": "nether",
+        "open": true,
+        "target": "nether",
+        "mask": true,
+        "inside": true,
+        "mortalQuads": 148260,
+        "fullQuads": 151638,
+        "childQuads": 3378,
+        "childAlpha": 0,
+        "observer": null,
+        "fire": 0.8199999928474426,
+        "glError": 0,
+        "tool": "viewNether",
+        "observed": {
+          "plane": "nether",
+          "fireSupported": false,
+          "sameRegion": true,
+          "riftsBefore": 2,
+          "riftsAfter": 2,
+          "realmDraw": false,
+          "viewOpen": true,
+          "route": "actual Three click on visible child terrain"
+        }
+      }
+    ],
+    "resources": {
+      "before": {
+        "memory": {
+          "geometries": 25,
+          "textures": 10
+        },
+        "program": 11
+      },
+      "repeat": {
+        "memory": {
+          "geometries": 25,
+          "textures": 10
+        },
+        "program": 11,
+        "glError": 0
+      },
+      "replacement": {
+        "newWorld": true,
+        "seed": 2302302,
+        "disposed": 1,
+        "stale": {
+          "ok": false,
+          "reason": "stale-context"
+        },
+        "memory": {
+          "geometries": 12,
+          "textures": 4
+        },
+        "program": 7,
+        "glError": 0
+      },
+      "cycles": [
+        {
+          "replaced": true,
+          "disposed": 1,
+          "memory": {
+            "geometries": 12,
+            "textures": 4
+          },
+          "program": 7,
+          "glError": 0
+        },
+        {
+          "replaced": true,
+          "disposed": 1,
+          "memory": {
+            "geometries": 12,
+            "textures": 4
+          },
+          "program": 7,
+          "glError": 0
+        }
+      ]
+    },
+    "runtimeErrors": [],
+    "consoleErrors": [],
+    "cleanup": {
+      "edgeExited": true,
+      "profileRemoved": true,
+      "serverExited": true
+    },
+    "finishedAt": "2026-10-13T15:51:24.629Z"
+  },
+  "browserAttemptLedger": {
+    "schemaVersion": 1,
+    "reportPath": "reports/local/g23/browser/g23-browser.json",
+    "reportRetention": "All attempts wrote to the same report path; earlier g23-browser.json contents were overwritten by subsequent runs. No per-attempt raw stdout/stderr files were retained. The errors below are copied from observed tool output or summarized only where the original exact text was not retained.",
+    "attempts": [
+      {
+        "id": 1,
+        "command": "node scripts/inkbox-g23-browser.mjs",
+        "exitCode": 1,
+        "checksPassed": null,
+        "error": "Top-level URL identifier shadowed the global URL constructor; exact stderr text was not retained.",
+        "classification": "Harness setup error before browser acceptance; not a product failure.",
+        "reportPath": null,
+        "rawLogPath": null,
+        "rawOutput": "Only the cause and pre-browser failure were retained in task notes."
+      },
+      {
+        "id": 2,
+        "command": "node scripts/inkbox-g23-browser.mjs (sandboxed)",
+        "exitCode": 1,
+        "checksPassed": 0,
+        "error": "CDP connection error",
+        "classification": "Sandboxed local browser WebSocket handshake failure; not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "Error: CDP connection error"
+      },
+      {
+        "id": 3,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP)",
+        "exitCode": 1,
+        "checksPassed": 1,
+        "error": "Missing enabled control [data-tool=\"burn\"]",
+        "classification": "Harness selector sequencing issue: tool group was not activated; not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "Initial app identity check passed; Canvas burn tool control was not mounted in the active group."
+      },
+      {
+        "id": 4,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP)",
+        "exitCode": 1,
+        "checksPassed": 1,
+        "error": "Control clipped/intercepted #inkGroups [data-group=\"nature\"]",
+        "classification": "Harness attempted Canvas rail interaction while Three renderer had made the rail inert; not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "Initial app identity check passed."
+      },
+      {
+        "id": 5,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP, hit-stack diagnostic)",
+        "exitCode": 1,
+        "checksPassed": 1,
+        "error": "Control clipped/intercepted #inkGroups [data-group=\"nature\"]: hit div.main; hit stack omitted the visible rail button.",
+        "classification": "Same renderer-inertness harness issue; diagnostic run, not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "Observed button rect x=90.5,y=87.5,w=36.25,h=30; stack contained div.main, div.app, BODY, HTML."
+      },
+      {
+        "id": 6,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP, ancestor-style diagnostic)",
+        "exitCode": 1,
+        "checksPassed": 1,
+        "error": "Control clipped/intercepted #inkGroups [data-group=\"nature\"]",
+        "classification": "Same renderer-inertness harness issue; not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "Observed .rail.left.inert behavior later traced to Three renderer activation; button and ancestors computed pointer-events:auto."
+      },
+      {
+        "id": 7,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP, Canvas mode sequencing)",
+        "exitCode": 1,
+        "checksPassed": 1,
+        "error": "ReferenceError: y is not defined",
+        "classification": "Harness projection helper omitted its coordinate bindings; not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "Application identity passed; failure occurred in clickWorld/projectWorld."
+      },
+      {
+        "id": 8,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP, projection fixed)",
+        "exitCode": 1,
+        "checksPassed": 5,
+        "error": "Control clipped/intercepted #inkRender3DTools [data-action=\"toggle\"]: hit div.inspect-head.",
+        "classification": "Harness left the authentic terrain inspector open over its toolbar toggle; selector interaction state issue, not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "Identity, Canvas burn/observation, fire search/focus, realm isolation and baseline/extinction/regrowth passed before renderer switch."
+      },
+      {
+        "id": 9,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP, inspector close added)",
+        "exitCode": 1,
+        "checksPassed": 5,
+        "error": "Control clipped/intercepted #inkRender3DTools [data-action=\"toggle\"]: hit div.inspect-head.",
+        "classification": "Inspector-close timing/state remained in this attempt; harness issue, not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "Same renderer-toggle obstruction was observed after five checks."
+      },
+      {
+        "id": 10,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP)",
+        "exitCode": 1,
+        "checksPassed": 3,
+        "error": "TypeError: Cannot read properties of null (reading 'items')",
+        "classification": "Harness read a search result before the refreshed realm action context/result was ready; not classified as a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "Canvas burn and search/focus passed; failure occurred in Upper/Nether result assertion."
+      },
+      {
+        "id": 11,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP, realm wait added)",
+        "exitCode": 1,
+        "checksPassed": 9,
+        "error": "Maximum slider did not select radius 32: {\"value\":\"3\",\"radius\":7}",
+        "classification": "Harness range-slider input did not reach the maximum; not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "The first nine checks passed."
+      },
+      {
+        "id": 12,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP, keyboard End slider input)",
+        "exitCode": 1,
+        "checksPassed": 9,
+        "error": "Maximum slider did not select radius 32: {\"value\":\"3\",\"radius\":7}",
+        "classification": "Harness slider-focus/input method did not change the control; not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "The first nine checks passed."
+      },
+      {
+        "id": 13,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP, official slider input event)",
+        "exitCode": 1,
+        "checksPassed": 9,
+        "error": "Control clipped/intercepted #inkGroups [data-group=\"nature\"]",
+        "classification": "Harness attempted Canvas tool selection while the Three renderer was active after Save/Load; not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "The first nine checks passed."
+      },
+      {
+        "id": 14,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP, Canvas switch added)",
+        "exitCode": 1,
+        "checksPassed": 9,
+        "error": "Control clipped/intercepted #inkRender3DTools [data-action=\"toggle\"]: hit div.inspect-head.",
+        "classification": "Harness left the 3D inspector open over the Canvas/Three switch; not a product failure.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json (overwritten)",
+        "rawLogPath": null,
+        "rawOutput": "The first nine checks passed."
+      },
+      {
+        "id": 15,
+        "command": "node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP, final)",
+        "exitCode": 0,
+        "checksPassed": 10,
+        "error": null,
+        "classification": "Final browser acceptance pass.",
+        "reportPath": "reports/local/g23/browser/g23-browser.json",
+        "rawLogPath": null,
+        "rawOutput": "G23 browser: 10 checks; pass=true",
+        "reportEvidence": {
+          "screenshots": 6,
+          "runtimeErrors": 0,
+          "consoleErrors": 0,
+          "edgeExited": true,
+          "profileRemoved": true,
+          "serverExited": true
+        }
+      },
+      {
+        "id": 16,
+        "command": "$env:INKBOX_REPORT_DIR=reports/local/g23/browser-final; node scripts/inkbox-g23-browser.mjs (elevated Edge/CDP)",
+        "exitCode": 0,
+        "checksPassed": 10,
+        "error": null,
+        "classification": "Final post-lifecycle-fix browser acceptance pass; verified the Save/Load history notice persists.",
+        "reportPath": "reports/local/g23/browser-final/g23-browser.json",
+        "rawLogPath": null,
+        "rawOutput": "G23 browser: 10 checks; pass=true",
+        "reportEvidence": {
+          "loadHistoryNotice": "世界已替换，会话对照已清除；它未作为长期史料存档。",
+          "runtimeErrors": 0,
+          "consoleErrors": 0,
+          "edgeExited": true,
+          "profileRemoved": true,
+          "serverExited": true,
+          "screenshots": 6
+        }
+      }
+    ],
+    "finalCoverage": {
+      "nearTint": "One picked mortal tile changed terrain vertex color from [0.1384,0.2086,0.1170] to [0.8243,0.4806,0.1189] after actual 3D burn; sampled again after six animation frames with unchanged color and active fire 0.82.",
+      "farTint": "Not tested: no separate far-screen tile burn/tint assertion.",
+      "lod": "Captured one LOD snapshot after the near-tile burn: trees LOD [0,1637,2132], 3,769 instances, 57,981 triangles, overflow 0; characters LOD [0,17,51], 68 instances, 408 triangles, overflow 0; buildings 0 instances. No explicit forced near-to-far LOD transition/tint check.",
+      "resources": "Single 3D burn/update sample: renderer memory geometries 9 before and 11 after settled update; textures 4 before and after. This covers one event only, not repeated-update/long-run stability.",
+      "otherLimits": [
+        "Narrow viewport check verified document scrollWidth <= 960, but the observer panel buttons were all hidden (zero-sized) after the world reset, so visible observer-panel clipping was not exercised at narrow width.",
+        "The bounded refresh sample was 30 selections at radius 3, each reporting 49 cells visited; measured 3.2 ms for the batch and is not a performance claim."
+      ]
+    }
+  },
+  "environmentSample": {
+    "seed": 20261013,
+    "input": "official fixture + explicit burnForest; advanceWorld 5 game days then existing overlay input 902.5 per 2.5s tick; no hydrology replay",
+    "map": {
+      "w": 64,
+      "h": 40
+    },
+    "samples": [
+      {
+        "burning": true,
+        "observing": false,
+        "rows": [
+          {
+            "day": 0,
+            "environment": {
+              "activeFireCells": 5,
+              "maxFireIntensity": 0.8199999928474426,
+              "scorchedCells": 5,
+              "ashCells": 0,
+              "vegetationMean": 0.37384458222655276,
+              "yinMean": null,
+              "terrainSummary": {
+                "DEEP": 55,
+                "FOREST": 50,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 17,
+                "SCORCHED": 5,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 0,
+            "villages": 0,
+            "localSurvivingEntities": 0
+          },
+          {
+            "day": 5,
+            "environment": {
+              "activeFireCells": 5,
+              "maxFireIntensity": 0.9383394122123718,
+              "scorchedCells": 4,
+              "ashCells": 1,
+              "vegetationMean": 0.3673752691680533,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 1,
+                "DEEP": 55,
+                "FOREST": 50,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 17,
+                "SCORCHED": 4,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 1,
+            "villages": 0,
+            "localSurvivingEntities": 6
+          },
+          {
+            "day": 20,
+            "environment": {
+              "activeFireCells": 3,
+              "maxFireIntensity": 0.7973644733428955,
+              "scorchedCells": 2,
+              "ashCells": 3,
+              "vegetationMean": 0.3516163534152879,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 3,
+                "DEEP": 55,
+                "FOREST": 51,
+                "JUNGLE": 30,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SCORCHED": 2,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 1,
+            "villages": 0,
+            "localSurvivingEntities": 8
+          },
+          {
+            "day": 60,
+            "environment": {
+              "activeFireCells": 17,
+              "maxFireIntensity": 1,
+              "scorchedCells": 6,
+              "ashCells": 7,
+              "vegetationMean": 0.27797455085396355,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 7,
+                "DEEP": 55,
+                "FOREST": 54,
+                "JUNGLE": 20,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 22,
+                "SAND": 18,
+                "SCORCHED": 6,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 3,
+            "villages": 0,
+            "localSurvivingEntities": 5
+          },
+          {
+            "day": 120,
+            "environment": {
+              "activeFireCells": 7,
+              "maxFireIntensity": 0.8524825572967529,
+              "scorchedCells": 9,
+              "ashCells": 16,
+              "vegetationMean": 0.13700503434592723,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 16,
+                "DEEP": 55,
+                "FOREST": 39,
+                "JUNGLE": 27,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 18,
+                "SAND": 18,
+                "SCORCHED": 9,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 7,
+            "villages": 0,
+            "localSurvivingEntities": 4
+          },
+          {
+            "day": 360,
+            "environment": {
+              "activeFireCells": 0,
+              "maxFireIntensity": 0,
+              "scorchedCells": 0,
+              "ashCells": 1,
+              "vegetationMean": 0.15959411978102886,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 1,
+                "DEEP": 55,
+                "FOREST": 53,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 20,
+            "villages": 2,
+            "localSurvivingEntities": 2
+          }
+        ],
+        "simulationMs": 100.14339999999993,
+        "updates": 72,
+        "reads": 0,
+        "lifeRngDraws": 72872,
+        "ecoRngDraws": 3038,
+        "saveSha256": "a7aae5a8220279f668d55242ce38a42b96862760020da4f14c1a218b33618fa5"
+      },
+      {
+        "burning": true,
+        "observing": true,
+        "rows": [
+          {
+            "day": 0,
+            "environment": {
+              "activeFireCells": 5,
+              "maxFireIntensity": 0.8199999928474426,
+              "scorchedCells": 5,
+              "ashCells": 0,
+              "vegetationMean": 0.37384458222655276,
+              "yinMean": null,
+              "terrainSummary": {
+                "DEEP": 55,
+                "FOREST": 50,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 17,
+                "SCORCHED": 5,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 0,
+            "villages": 0,
+            "localSurvivingEntities": 0
+          },
+          {
+            "day": 5,
+            "environment": {
+              "activeFireCells": 5,
+              "maxFireIntensity": 0.9383394122123718,
+              "scorchedCells": 4,
+              "ashCells": 1,
+              "vegetationMean": 0.3673752691680533,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 1,
+                "DEEP": 55,
+                "FOREST": 50,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 17,
+                "SCORCHED": 4,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 1,
+            "villages": 0,
+            "localSurvivingEntities": 6
+          },
+          {
+            "day": 20,
+            "environment": {
+              "activeFireCells": 3,
+              "maxFireIntensity": 0.7973644733428955,
+              "scorchedCells": 2,
+              "ashCells": 3,
+              "vegetationMean": 0.3516163534152879,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 3,
+                "DEEP": 55,
+                "FOREST": 51,
+                "JUNGLE": 30,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SCORCHED": 2,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 1,
+            "villages": 0,
+            "localSurvivingEntities": 8
+          },
+          {
+            "day": 60,
+            "environment": {
+              "activeFireCells": 17,
+              "maxFireIntensity": 1,
+              "scorchedCells": 6,
+              "ashCells": 7,
+              "vegetationMean": 0.27797455085396355,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 7,
+                "DEEP": 55,
+                "FOREST": 54,
+                "JUNGLE": 20,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 22,
+                "SAND": 18,
+                "SCORCHED": 6,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 3,
+            "villages": 0,
+            "localSurvivingEntities": 5
+          },
+          {
+            "day": 120,
+            "environment": {
+              "activeFireCells": 7,
+              "maxFireIntensity": 0.8524825572967529,
+              "scorchedCells": 9,
+              "ashCells": 16,
+              "vegetationMean": 0.13700503434592723,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 16,
+                "DEEP": 55,
+                "FOREST": 39,
+                "JUNGLE": 27,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 18,
+                "SAND": 18,
+                "SCORCHED": 9,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 7,
+            "villages": 0,
+            "localSurvivingEntities": 4
+          },
+          {
+            "day": 360,
+            "environment": {
+              "activeFireCells": 0,
+              "maxFireIntensity": 0,
+              "scorchedCells": 0,
+              "ashCells": 1,
+              "vegetationMean": 0.15959411978102886,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 1,
+                "DEEP": 55,
+                "FOREST": 53,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 20,
+            "villages": 2,
+            "localSurvivingEntities": 2
+          }
+        ],
+        "simulationMs": 50.21510000000018,
+        "updates": 72,
+        "reads": 72,
+        "lifeRngDraws": 72872,
+        "ecoRngDraws": 3038,
+        "saveSha256": "a7aae5a8220279f668d55242ce38a42b96862760020da4f14c1a218b33618fa5"
+      },
+      {
+        "burning": true,
+        "observing": false,
+        "rows": [
+          {
+            "day": 0,
+            "environment": {
+              "activeFireCells": 5,
+              "maxFireIntensity": 0.8199999928474426,
+              "scorchedCells": 5,
+              "ashCells": 0,
+              "vegetationMean": 0.37384458222655276,
+              "yinMean": null,
+              "terrainSummary": {
+                "DEEP": 55,
+                "FOREST": 50,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 17,
+                "SCORCHED": 5,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 0,
+            "villages": 0,
+            "localSurvivingEntities": 0
+          },
+          {
+            "day": 5,
+            "environment": {
+              "activeFireCells": 5,
+              "maxFireIntensity": 0.9383394122123718,
+              "scorchedCells": 4,
+              "ashCells": 1,
+              "vegetationMean": 0.3673752691680533,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 1,
+                "DEEP": 55,
+                "FOREST": 50,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 17,
+                "SCORCHED": 4,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 1,
+            "villages": 0,
+            "localSurvivingEntities": 6
+          },
+          {
+            "day": 20,
+            "environment": {
+              "activeFireCells": 3,
+              "maxFireIntensity": 0.7973644733428955,
+              "scorchedCells": 2,
+              "ashCells": 3,
+              "vegetationMean": 0.3516163534152879,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 3,
+                "DEEP": 55,
+                "FOREST": 51,
+                "JUNGLE": 30,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SCORCHED": 2,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 1,
+            "villages": 0,
+            "localSurvivingEntities": 8
+          },
+          {
+            "day": 60,
+            "environment": {
+              "activeFireCells": 17,
+              "maxFireIntensity": 1,
+              "scorchedCells": 6,
+              "ashCells": 7,
+              "vegetationMean": 0.27797455085396355,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 7,
+                "DEEP": 55,
+                "FOREST": 54,
+                "JUNGLE": 20,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 22,
+                "SAND": 18,
+                "SCORCHED": 6,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 3,
+            "villages": 0,
+            "localSurvivingEntities": 5
+          },
+          {
+            "day": 120,
+            "environment": {
+              "activeFireCells": 7,
+              "maxFireIntensity": 0.8524825572967529,
+              "scorchedCells": 9,
+              "ashCells": 16,
+              "vegetationMean": 0.13700503434592723,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 16,
+                "DEEP": 55,
+                "FOREST": 39,
+                "JUNGLE": 27,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 18,
+                "SAND": 18,
+                "SCORCHED": 9,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 7,
+            "villages": 0,
+            "localSurvivingEntities": 4
+          },
+          {
+            "day": 360,
+            "environment": {
+              "activeFireCells": 0,
+              "maxFireIntensity": 0,
+              "scorchedCells": 0,
+              "ashCells": 1,
+              "vegetationMean": 0.15959411978102886,
+              "yinMean": null,
+              "terrainSummary": {
+                "ASH": 1,
+                "DEEP": 55,
+                "FOREST": 53,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 20,
+            "villages": 2,
+            "localSurvivingEntities": 2
+          }
+        ],
+        "simulationMs": 46.74589999999995,
+        "updates": 72,
+        "reads": 0,
+        "lifeRngDraws": 72872,
+        "ecoRngDraws": 3038,
+        "saveSha256": "a7aae5a8220279f668d55242ce38a42b96862760020da4f14c1a218b33618fa5"
+      },
+      {
+        "burning": false,
+        "observing": false,
+        "rows": [
+          {
+            "day": 0,
+            "environment": {
+              "activeFireCells": 0,
+              "maxFireIntensity": 0,
+              "scorchedCells": 0,
+              "ashCells": 0,
+              "vegetationMean": 0.3840274207654915,
+              "yinMean": null,
+              "terrainSummary": {
+                "DEEP": 55,
+                "FOREST": 54,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 0,
+            "villages": 0,
+            "localSurvivingEntities": 0
+          },
+          {
+            "day": 5,
+            "environment": {
+              "activeFireCells": 0,
+              "maxFireIntensity": 0,
+              "scorchedCells": 0,
+              "ashCells": 0,
+              "vegetationMean": 0.38095238721997166,
+              "yinMean": null,
+              "terrainSummary": {
+                "DEEP": 55,
+                "FOREST": 54,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 0,
+            "villages": 0,
+            "localSurvivingEntities": 7
+          },
+          {
+            "day": 20,
+            "environment": {
+              "activeFireCells": 0,
+              "maxFireIntensity": 0,
+              "scorchedCells": 0,
+              "ashCells": 0,
+              "vegetationMean": 0.36948978310534697,
+              "yinMean": null,
+              "terrainSummary": {
+                "DEEP": 55,
+                "FOREST": 54,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 0,
+            "villages": 0,
+            "localSurvivingEntities": 10
+          },
+          {
+            "day": 60,
+            "environment": {
+              "activeFireCells": 0,
+              "maxFireIntensity": 0,
+              "scorchedCells": 0,
+              "ashCells": 0,
+              "vegetationMean": 0.3452224947486369,
+              "yinMean": null,
+              "terrainSummary": {
+                "DEEP": 55,
+                "FOREST": 54,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 0,
+            "villages": 0,
+            "localSurvivingEntities": 5
+          },
+          {
+            "day": 120,
+            "environment": {
+              "activeFireCells": 0,
+              "maxFireIntensity": 0,
+              "scorchedCells": 0,
+              "ashCells": 0,
+              "vegetationMean": 0.3095845338795012,
+              "yinMean": null,
+              "terrainSummary": {
+                "DEEP": 55,
+                "FOREST": 54,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 0,
+            "villages": 0,
+            "localSurvivingEntities": 7
+          },
+          {
+            "day": 360,
+            "environment": {
+              "activeFireCells": 0,
+              "maxFireIntensity": 0,
+              "scorchedCells": 0,
+              "ashCells": 0,
+              "vegetationMean": 0.24930267113302818,
+              "yinMean": null,
+              "terrainSummary": {
+                "DEEP": 55,
+                "FOREST": 54,
+                "JUNGLE": 32,
+                "MOUNTAIN": 6,
+                "OCEAN": 56,
+                "PEAK": 5,
+                "ROCK": 23,
+                "SAND": 18,
+                "SEA": 22,
+                "SHALLOW": 18
+              },
+              "vegetationKind": "vegetation",
+              "fireSupported": true
+            },
+            "location": {
+              "x": 13,
+              "y": 9
+            },
+            "dead": 0,
+            "villages": 2,
+            "localSurvivingEntities": 3
+          }
+        ],
+        "simulationMs": 63.662700000000086,
+        "updates": 72,
+        "reads": 0,
+        "lifeRngDraws": 74333,
+        "ecoRngDraws": 0,
+        "saveSha256": "56a220e89f9f8dd0d3125d8b6c757ea5a7c6870107c3ebfdf8e9fe84c0434bfc"
+      }
+    ],
+    "performance": {
+      "map": {
+        "w": 512,
+        "h": 320
+      },
+      "radius3": {
+        "iterations": 500,
+        "p50Ms": 0.019800000000032014,
+        "p95Ms": 0.05899999999996908,
+        "maxMs": 0.2217999999999165
+      },
+      "radius8": {
+        "iterations": 500,
+        "p50Ms": 0.0585999999999558,
+        "p95Ms": 0.08310000000005857,
+        "maxMs": 1.2726000000000113
+      },
+      "onDemandSearch": {
+        "iterations": 50,
+        "p50Ms": 1.663200000000188,
+        "p95Ms": 1.8151000000000295,
+        "maxMs": 2.2765999999999167
+      },
+      "ordinaryCells": 49,
+      "maxLocalCells": 289,
+      "searchCells": 163840,
+      "fullHardwareBudgetClaim": false
+    },
+    "observationPure": true,
+    "sameInputDeterministic": true
+  },
+  "review": {
+    "agentRole": "reviewer",
+    "resolved": [
+      "maximum Canvas radius32",
+      "recovery evidence",
+      "entity floor cell agreement",
+      "search buffer invalidation",
+      "bounded visibility context",
+      "native Three child window inspection",
+      "stale gesture invalidation"
+    ],
+    "remainingActionableFindings": 0
+  },
+  "limits": {
+    "defaultLocalCells": 49,
+    "maxLocalCells": 289,
+    "fireResults": 12,
+    "sessionBaselines": 1,
+    "saveFieldsAdded": 0,
+    "newPerCellMeshes": 0
+  },
+  "build": {
+    "status": "PASS",
+    "buildExitCode": 0,
+    "packageAuditExitCode": 0,
+    "buildDurationSeconds": 7.159662,
+    "fileCount": 445,
+    "scriptTargets": 99,
+    "markdownDocuments": 108,
+    "buildLog": "build-attempt-2.log",
+    "packageLog": "package-attempt-1.log",
+    "priorAttempts": [
+      {
+        "buildExitCode": 1,
+        "packageExecuted": false,
+        "reason": "G2.3 compact summary missing from exact package audit allowlist; added one explicit path"
+      }
+    ]
+  },
+  "screenshots": [
+    {
+      "name": "desktop-initial.png",
+      "path": "reports/release/g2.3-aftermath/golden/desktop-initial.png",
+      "bytes": 613930,
+      "sha256": "ed3f346bd72b5e81f943b40f4b617af730121a41dd110bda54405b23ce655066"
+    },
+    {
+      "name": "canvas-real-burn.png",
+      "path": "reports/release/g2.3-aftermath/golden/canvas-real-burn.png",
+      "bytes": 830086,
+      "sha256": "070ce087a0d37e2261348669fba0352a4563b1c3e68509842b3572273327f585"
+    },
+    {
+      "name": "canvas-aftermath-recovery.png",
+      "path": "reports/release/g2.3-aftermath/golden/canvas-aftermath-recovery.png",
+      "bytes": 776871,
+      "sha256": "6fed5bf4fa91f9e54ecfdb200eed7c7143ca185bc9ef5792ea69b27a165b8eb3"
+    },
+    {
+      "name": "three-real-burn.png",
+      "path": "reports/release/g2.3-aftermath/golden/three-real-burn.png",
+      "bytes": 609319,
+      "sha256": "561d21f68a516bdca53b77d63ebed13df8c089aab3aa7e4b073589d153e802de"
+    },
+    {
+      "name": "narrow-viewport.png",
+      "path": "reports/release/g2.3-aftermath/golden/narrow-viewport.png",
+      "bytes": 366682,
+      "sha256": "90a6353124ae42a1635e9ee310c3d04c386d7a3f908f55f2aee6ca21580d48dc"
+    },
+    {
+      "name": "canvas-max-brush-32.png",
+      "path": "reports/release/g2.3-aftermath/golden/canvas-max-brush-32.png",
+      "bytes": 865959,
+      "sha256": "a0b9ea6f9bce96ef8d2bf415f944ed08a3aaa2ff7b6e031b0a8f4e888cf408bb"
+    },
+    {
+      "name": "mortal-near-live-fire.png",
+      "path": "reports/release/g2.3-aftermath/golden/mortal-near-live-fire.png",
+      "bytes": 1085198,
+      "sha256": "390ba412663c5666dd2be2efa1e740f98a27377b95f7918b1682829c0d469cb8"
+    },
+    {
+      "name": "mortal-far-live-fire.png",
+      "path": "reports/release/g2.3-aftermath/golden/mortal-far-live-fire.png",
+      "bytes": 626577,
+      "sha256": "572be1dee7ad863f4173b6f8bb068538dde3f4289feb2d3ba94dca2e9f9229f9"
+    }
+  ],
+  "remainingRisks": [
+    "Inherited G2.1 full hardware CPU/RAF budget failures remain",
+    "960px viewport hides original rail; visible environment-panel interaction not claimed",
+    "Targeted samples do not certify entire hardware budget"
+  ],
+  "evidenceRetention": "Intermediate original browser reports were overwritten; observed attempt ledger retained; final reports and supplemental failed reports kept locally. Only compact+<=8 representative images committed."
+}
