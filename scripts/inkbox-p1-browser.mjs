@@ -1,4 +1,3 @@
-// Prepared only; copy into the C worktree scripts/ before running. No browser execution was performed during preparation.
 // P1-W: real product browser interaction at target viewport sizes. No GPU performance claim.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
