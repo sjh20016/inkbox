@@ -94,6 +94,10 @@ const FILES = [
   'scripts/inkbox-g2pf-config.mjs',
   'scripts/inkbox-g2pf-soak.mjs',
   'scripts/inkbox-g2pf-vegetation.mjs',
+  // P1 观察导航：随包保留轻量与正式 Edge 回归入口。
+  'scripts/inkbox-p1-navigation.mjs',
+  'scripts/inkbox-p1-browser.mjs',
+  'P1_PLAYER_EXPERIENCE_REPORT.md',
   'scripts/inkbox-g2p0-environment.mjs',
   'scripts/inkbox-g2p0-terrain-cache.mjs',
   'scripts/inkbox-g2p0-ecology.mjs',

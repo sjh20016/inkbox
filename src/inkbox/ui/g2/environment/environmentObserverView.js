@@ -47,8 +47,10 @@ export function createEnvironmentObserverView(root, { onAction } = {}) {
       const diff = vm.comparison, changes = diff?.changes;
       update(comparison, diff?.ok ? `距基线 ${diff.deltaDays.toFixed(1)} 日 · 火势 ${signed(changes.activeFireCells)} 格 · 焦土 ${signed(changes.scorchedCells)} 格 · 灰烬 ${signed(changes.ashCells)} 格\n${vegetationLabel}变化 ${Number.isFinite(changes.vegetationMean) ? `${changes.vegetationMean > 0 ? '+' : ''}${(changes.vegetationMean * 100).toFixed(1)} 个百分点` : '不可考'}${diff.recovering ? ' · 植被恢复中' : ''}` : vm.baselineDay !== null && vm.baselineDay !== undefined ? '当前范围无法与基线比较。' : '尚未记下会话基线');
       update(message, vm.message || '');
+      update(note, valid ? '会话对照不写入存档；换世界或读档后须重新记下。' : '先用检视选一处山河。只记当前事实；前后对照不作为长期史料存档。');
       for (const [type, button] of buttons) {
         button.disabled = type === 'find-fires' ? false : !valid;
+        button.title = button.disabled ? '请先在地图上检视一处可观察的地点' : '';
         button.dataset.environmentContext = vm.contextId || '';
         button.dataset.environmentId = vm.observationId || '';
       }
