@@ -2,11 +2,16 @@
   "task": "G2-P0.3 阶段 B · 植被更新降载试点",
   "verdict": "LOCAL_GAIN_PROVEN_FRAME_GAIN_UNPROVEN",
   "verdictNote": "确定性工作量减少 74% 且两轮候选稳定复现（满足 §B5 的性能判据）；但整帧 P95 的差异小于同臂噪声，故不宣布整机收益。不宣布 G2 门禁 PASS。",
-  "sourceHeadCandidate": "458b4b5cecaecb8deaf9d878b283285c394e459a",
-  "sourceHeadBaseline": "834b0e53b6df6d458c71a0bcbfc143744d85ec9c",
+  "captureSourceHeadCandidate": "458b4b5cecaecb8deaf9d878b283285c394e459a",
+  "captureSourceHeadBaseline": "834b0e53b6df6d458c71a0bcbfc143744d85ec9c",
+  "productBaselineCommit": "74934a8b1360af9007c69935d5becdf8f9809872",
+  "productCandidateCommit": "6c8ab6f9a4a27787df1aca235d571145abd69114",
   "productChanges": [
     "src/inkbox/render3d/vegetation/VegetationLayer.js",
     "src/inkbox/render3d/stage/PlaneStage.js"
+  ],
+  "knownBaselineLimitations": [
+    "V08 exercises VegetationLayer.update directly and does not cover PlaneStage dirty wiring. A waterRegion-only change does not currently queue a vegetation rebuild; this pre-existing Stage gap is not introduced or fixed by this pilot."
   ],
   "deterministicWork": {
     "matrixWriteCount": {

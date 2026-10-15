@@ -13,10 +13,10 @@
 
 | 文件 | 差异 |
 | --- | --- |
-| `src/inkbox/render3d/vegetation/VegetationLayer.js` | +21 / −2 |
-| `src/inkbox/render3d/stage/PlaneStage.js` | +4 / −1 |
+| `src/inkbox/render3d/vegetation/VegetationLayer.js` | +19 / −2 |
+| `src/inkbox/render3d/stage/PlaneStage.js` | +3 / −1 |
 
-**产品改动共 2 个文件、+25 / −3 行。** 未新增任何状态字段、未改 World / 存档 / RNG /
+**产品改动共 2 个文件、+22 / −3 行。** 未新增任何状态字段、未改 World / 存档 / RNG /
 水文步长 / 补跑上限 / 生态 / 预算公式 / DPR / 画质。
 
 ---
@@ -113,12 +113,19 @@ markers / decorations / realmArtifacts / selectionMarker** —— 唯独植被�
 `setArtProfile` + `setLODEnabled(true)` + `artView.camera` 的组合，而这三条已由
 §5.2 的既有 oracle 覆盖，本轮不重复造第二套。
 
+另有一项 Stage 接线未覆盖：V08 直接调用 `VegetationLayer.update()` 验证水位跨阈值后的实例等价，
+没有经过 `PlaneStage.update()` 的 dirty 通道。当前 `PlaneStage` 的植被排队条件未包含单独的
+`waterRegion`；因此仅水位变化时，树木成员变化可能延迟到其他植被触发后才反映到画面。
+这是基线已有缺口，不由本次优化引入，也不在本候选范围内。
+
 ---
 
 ## 6. 同机 ABBA 实测（Baseline → Candidate → Candidate → Baseline）
 
 同一台机器、同一浏览器/GPU/viewport/DPR/seed/正式 fixture、同一测量脚本、
 同一 120 暖 + 90 测。基线跑在未改产品的 `74934a8` 工作树，候选跑在试点分支。
+采集记录中的 source HEAD 是运行快照：基线 `834b0e5`、候选 `458b4b5`；两者包含采集/分析工具，
+不是产品差异基准。产品差异对应 `74934a8` → `6c8ab6f`。
 
 原始数据：
 `…-baseA1-…json`、`…-candB1-…json`、`…-candB2-…json`、`…-baseA2-…json`
@@ -131,7 +138,7 @@ markers / decorations / realmArtifacts / selectionMarker** —— 唯独植被�
 | `matrixNeedsUpdateCount` | 24 / 26 | **7 / 6** | **−74.0%** |
 | `fullRebuildCalls` | 24 / 26 | **7 / 6** | **−74.0%** |
 | `matrixUploadMs` | 88.5 / 133.5 | **35 / 23.5** | **−73.6%** |
-| `glUploadBytes` | 28,386,304 / 32,115,776 | 23,066,304 / 20,096,832 | −21.6% |
+| `glUploadBytes` | 28,386,304 / 32,115,776 | 23,066,304 / 20,096,832 | −28.7% |
 
 **两轮候选独立复现同一量级** ⇒ 满足 §B5「在至少一个真实目标场景中，证明全量重建、
 矩阵重写或上传工作量确实减少」。
@@ -169,7 +176,7 @@ markers / decorations / realmArtifacts / selectionMarker** —— 唯独植被�
   240k→70k、260k→60k）
 - `matrixNeedsUpdateCount` 24→7 / 26→6：**上传标记次数同步减少 74%**
   （不再对没变的批次标记 `needsUpdate` / `addUpdateRange`）
-- `glUploadBytes` 减少约 22%（全部 WebGL 缓冲写入，不止植被）
+- `glUploadBytes` 减少约 29%（全部 WebGL 缓冲写入，不止植被）
 - **无资源泄漏**：V15 断言 6 轮更新后 mesh / `instanceMatrix` / `instanceColor`
   的**对象身份与容量完全不变**，无池漂移
 
