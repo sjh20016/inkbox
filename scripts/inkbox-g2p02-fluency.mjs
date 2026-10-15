@@ -36,21 +36,31 @@ function frameStats(frames, key) {
 }
 
 function thresholdSummary(values, threshold) {
-  const xs = values.filter(Number.isFinite);
+  const validSampleCount = values.filter(Number.isFinite).length;
+  const invalidSampleCount = values.length - validSampleCount;
   let streaks = [], streak = 0;
-  for (const value of xs) {
+  let count = 0;
+  for (const value of values) {
+    if (!Number.isFinite(value)) {
+      if (streak) { streaks.push(streak); streak = 0; }
+      continue;
+    }
     if (value > threshold) streak++;
-    else if (streak) { streaks.push(streak); streak = 0; }
+    else {
+      if (streak) { streaks.push(streak); streak = 0; }
+    }
+    if (value > threshold) count++;
   }
   if (streak) streaks.push(streak);
   const distribution = {};
   for (const length of streaks) distribution[length] = (distribution[length] || 0) + 1;
-  const count = xs.filter((value) => value > threshold).length;
   return {
     thresholdMs: threshold,
+    validSampleCount,
+    invalidSampleCount,
     count,
-    fraction: xs.length ? count / xs.length : null,
-    percent: xs.length ? count / xs.length * 100 : null,
+    fraction: validSampleCount ? count / validSampleCount : null,
+    percent: validSampleCount ? count / validSampleCount * 100 : null,
     longestStreak: streaks.length ? Math.max(...streaks) : 0,
     streakCount: streaks.length,
     streakLengthDistribution: distribution,
@@ -223,14 +233,18 @@ function runCheck() {
   const p = [percentile(values, 0.5), percentile(values, 0.95), percentile(values, 0.99)];
   if (p.some((value, i) => Math.abs(value - [25, 38.5, 39.7][i]) > 1e-10)) throw new Error(`Percentile check failed: ${p}`);
   const thresholds = thresholdSummary(q, 33.3);
-  if (thresholds.count !== 3 || thresholds.fraction !== 0.5 || thresholds.longestStreak !== 2 || JSON.stringify(thresholds.streakLengthDistribution) !== JSON.stringify({ 1: 1, 2: 1 })) throw new Error(`Threshold/streak check failed: ${JSON.stringify(thresholds)}`);
+  if (thresholds.validSampleCount !== 6 || thresholds.invalidSampleCount !== 0 || thresholds.count !== 3 || thresholds.fraction !== 0.5 || thresholds.longestStreak !== 2 || JSON.stringify(thresholds.streakLengthDistribution) !== JSON.stringify({ 1: 1, 2: 1 })) throw new Error(`Threshold/streak check failed: ${JSON.stringify(thresholds)}`);
+  const splitStreak = thresholdSummary([40, Number.NaN, 40], 33.3);
+  if (splitStreak.validSampleCount !== 2 || splitStreak.invalidSampleCount !== 1 || splitStreak.count !== 2 || splitStreak.fraction !== 1 || splitStreak.longestStreak !== 1 || JSON.stringify(splitStreak.streakLengthDistribution) !== JSON.stringify({ 1: 2 })) throw new Error(`Invalid-sample streak-break check failed: ${JSON.stringify(splitStreak)}`);
+  const mixedValidity = thresholdSummary([40, Number.NaN, 10], 33.3);
+  if (mixedValidity.validSampleCount !== 2 || mixedValidity.invalidSampleCount !== 1 || mixedValidity.count !== 1 || mixedValidity.fraction !== 0.5 || mixedValidity.percent !== 50) throw new Error(`Invalid-sample denominator check failed: ${JSON.stringify(mixedValidity)}`);
   const selectedCases = [{ caseIndex: 9 }, { caseIndex: 10 }];
   const selectedIndexes = selectedCases.map((item, position) => item.caseIndex ?? position);
   if (JSON.stringify(selectedIndexes) !== JSON.stringify([9, 10])) throw new Error(`Partial caseIndex check failed: ${selectedIndexes}`);
   const fullCases = [{}, {}, {}];
   const fullIndexes = fullCases.map((item, position) => item.caseIndex ?? position);
   if (JSON.stringify(fullIndexes) !== JSON.stringify([0, 1, 2])) throw new Error(`Full-matrix fallback check failed: ${fullIndexes}`);
-  return { percentile: p, threshold: thresholds, caseIndexes: { partialSelection: selectedIndexes, fullMatrixFallback: fullIndexes } };
+  return { percentile: p, threshold: thresholds, invalidFrameChecks: { splitStreak, mixedValidity }, caseIndexes: { partialSelection: selectedIndexes, fullMatrixFallback: fullIndexes } };
 }
 
 function mdEscape(value) { return String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' '); }
@@ -247,7 +261,7 @@ function renderMarkdown(output) {
   for (const report of output.reports) for (const item of report.cases) {
     for (const run of item.originalResult.runs) {
       const cadence = run.frameTimings.longFrames.nativeRafInterval;
-      const ratio = (key) => `${cadence[key].count}/${run.sampleCount} (${cadence[key].percent == null ? 'n/a' : cadence[key].percent.toFixed(1) + '%'})`;
+      const ratio = (key) => `${cadence[key].count}/${cadence[key].validSampleCount} valid (${cadence[key].percent == null ? 'n/a' : cadence[key].percent.toFixed(1) + '%'})`;
       const id = run.identity;
       lines.push(`| ${mdEscape(id.report.file)} | ${id.caseIndex} | ${mdEscape(`${id.renderer}/${id.scenario}`)} | ${mdEscape(`${id.surface ?? 'unknown'}/${id.presentationClock ?? 'unknown'}`)} | ${mdEscape(id.mode)} | ${id.runIndex} | ${run.frameTimings.nativeRafIntervalMs.p95?.toFixed(2) ?? 'n/a'} / ${run.frameTimings.nativeRafIntervalMs.max?.toFixed(2) ?? 'n/a'} | ${ratio('16.7')}; ${ratio('33.3')}; ${ratio('50')} | ${run.frameTimings.cpuMs.completeWrapperCpu.p95?.toFixed(2) ?? 'n/a'} | ${run.frameTimings.cpuMs.webglSubmission.p95?.toFixed(2) ?? 'n/a'} | ${run.gpuQuery.validSamples} / ${run.gpuQuery.ms.p95?.toFixed(2) ?? 'n/a'} | ${id.mode == null ? 'unknown' : mdEscape(item.originalResult.pass)}`);
     }
