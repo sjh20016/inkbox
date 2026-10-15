@@ -84,6 +84,9 @@ jobs:
       - name: G2-PF 植被实例字节等价与真实 Three 上传协议
         run: npm run test:g2pf:vegetation
 
+      - name: G2-P0.2 浏览器进程归属与清理一致性
+        run: npm run test:g2p02
+
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
         run: npm run test:render3d
 
