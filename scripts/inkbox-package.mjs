@@ -103,6 +103,7 @@ const FILES = [
   'scripts/inkbox-g2p0-terrain-cache.mjs',
   'scripts/inkbox-g2p0-ecology.mjs',
   'scripts/inkbox-g2p02-cdp-cleanup.mjs',
+  'scripts/inkbox-g2p02-fluency.mjs',
   'G2_P02_PERFORMANCE_RESOLUTION_REPORT.md',
   'reports/release/g2p02/summary/acceptance-summary.json',
   'G2_P0_PERFORMANCE_ECOLOGY_REPORT.md',
