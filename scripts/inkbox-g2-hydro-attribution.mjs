@@ -272,7 +272,13 @@ window.__h1.install=function(k){
       proto.update=function(){
         const meshes=(this.lodMeshes&&this.lodMeshes.length)?this.lodMeshes:(this.mesh?[this.mesh]:[]);
         const before=meshes.map(function(m){return m&&m.instanceMatrix?m.instanceMatrix.version:null;});
+        const t0=performance.now();
         const out=orig.apply(this,arguments);
+        // §A8：植被更新自身的 CPU 耗时（测试侧计时，不改产品）
+        const ms=performance.now()-t0;
+        window.__h1._vegCalls=(window.__h1._vegCalls||0)+1;
+        window.__h1._vegMsTotal=(window.__h1._vegMsTotal||0)+ms;
+        window.__h1._vegMs=(window.__h1._vegMs||[]);window.__h1._vegMs.push(ms);
         const after=meshes.map(function(m){return m&&m.instanceMatrix?m.instanceMatrix.version:null;});
         const trees=this.trees||[];
         let sig=2166136261;
@@ -322,7 +328,7 @@ async function prepare(spec) {
     ? await browser.js(combatFixtureExpression({ count: spec.count, roots, seed: GATE_CONST.SEED }), { timeoutMs: 180000 })
     : await page(`window.__g2CombatActors=[];return {count:0,originalEntitiesRetained:true,originalEntityCount:window.inkbox.world.entities.length,seed:window.inkbox.world.seed};`);
   const scenario = await page(scenarioSetup(spec));
-  await page('await window.__h1.armA6();await window.__h1.armVeg();window.__h1.frames=[];window.__h1.veg=[];window.__h1._glUploads=0;window.__h1._glBytes=0;window.__h1.__probe=window.inkbox.__hydroProbe;window.inkbox.__hydroProbe.enabled=true;return true;');
+  await page('await window.__h1.armA6();await window.__h1.armVeg();window.__h1.frames=[];window.__h1.veg=[];window.__h1._glUploads=0;window.__h1._glBytes=0;window.__h1._vegCalls=0;window.__h1._vegMsTotal=0;window.__h1._vegMs=[];window.__h1.__probe=window.inkbox.__hydroProbe;window.inkbox.__hydroProbe.enabled=true;return true;');
   return { dimensions, fixture, scenario };
 }
 
@@ -360,8 +366,9 @@ async function runCase(spec, arm) {
   const metrics = await page(measure(arm === 'on', spec));
   const frames = await page('return window.__h1.frames;');
   const veg = await page('return window.__h1.veg;');
-  const probe = await page('const p=window.inkbox.__hydroProbe;return {stepCalls:p.stepCalls,accumulateWrites:p.accumulateWrites,otherWrites:p.otherWrites.slice(0,20),otherCount:p.otherWrites.length,errors:window.__h1.errors.slice(0,10)};');
-  return { case: spec, arm, dimensions, fixture, scenario, metrics, frames, veg, probe };
+  const probe = await page('const p=window.inkbox.__hydroProbe;return {stepCalls:p.stepCalls,accumulateWrites:p.accumulateWrites,otherWrites:p.otherWrites.slice(0,20),otherCount:p.otherWrites.length,stepMs:p.stepMs.slice(),errors:window.__h1.errors.slice(0,10)};');
+  const vegTiming = await page('return {calls:window.__h1._vegCalls||0,totalMs:window.__h1._vegMsTotal||0,ms:(window.__h1._vegMs||[]).slice()};');
+  return { case: spec, arm, dimensions, fixture, scenario, metrics, frames, veg, probe, vegTiming };
 }
 
 /** 逐帧双路复算 + 登记。门禁与 live 共用，保证结论口径一致。 */

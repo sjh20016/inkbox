@@ -8,7 +8,7 @@
   },
   "baseline": {
     "branch": "codex/g2-p1-integration-validation",
-    "commit": "0352391e20b77e9a8686e0d730877c1e53c6c3fe",
+    "commit": "9025eedbd2f631e203f9a918e14bfe49c62c375b",
     "equalsPr12Head": true,
     "remoteBranchRef": "72d95b3（经 left-right 判定为基线祖先，故不换基线）"
   },
@@ -53,7 +53,7 @@
     "hydrologyCallsMeasuredDirect": 0,
     "hydrologyCallsMeasuredInferred": 0,
     "inconsistentFrames": 0,
-    "totalFrames": 213,
+    "totalFrames": 214,
     "measuredFrames": 90,
     "pausedEveryMeasuredFrame": true,
     "hydrologyActive": false,
@@ -65,12 +65,12 @@
       "originalEntitiesRetained": true
     },
     "frameCpuMs": {
-      "p50": 2.3,
-      "p95": 21.4,
-      "p99": 25.5
+      "p50": 2.7,
+      "p95": 20.4,
+      "p99": 28.9
     },
-    "updateCpuMsP95": 1.2,
-    "renderCpuMsP95": 20.7
+    "updateCpuMsP95": 1.4,
+    "renderCpuMsP95": 19.7
   },
   "vegetation": {
     "updates": 22,
@@ -93,8 +93,8 @@
       "nether": 1,
       "wraith": 1
     },
-    "gpuUploadCalls": 162,
-    "gpuUploadBytes": 24656832,
+    "gpuUploadCalls": 170,
+    "gpuUploadBytes": 25646656,
     "trigger": "LIFE_VEG_CHANGE（life.step 吃草写 world.veg，sim/life.js:679）→ veg 通道每帧脏 → vegetationPending → treeClock>=0.15 节流器定节拍",
     "triggerClass": "CONFIRMED",
     "hydrologyInvolved": false,
@@ -194,6 +194,23 @@
         "minMarginMs": -5.384
       }
     ]
+  },
+  "vegetationCost": {
+    "calls": 22,
+    "perCallMsP50": 11.3,
+    "perCallMsP95": 15.7,
+    "perCallMsMax": 18.2,
+    "totalMsPer90Frames": 259.7,
+    "msPerFrame": 2.89,
+    "shareOfRenderCpu": 80.2,
+    "shareOfFrameCpu": 64.3
+  },
+  "phaseBVerdict": {
+    "decision": "START",
+    "reason": "初稿曾判「不启动」，理由是植被占比未知；补测后该理由被推翻：植被 update 占 renderCpu 80.2%、frameCpu 64.3%，单次 P50 11.3ms；而 15/21 次重建成员未变且门禁环境 height/water/type 脏全为 0 ⇒ 可证明的纯浪费约 1.97 ms/帧，是 A/A 噪声底(0.244-0.408ms)的 5-8 倍。",
+    "acceptanceThreshold": "case 6 P95 改善 ≥ 1.5 ms 且两轮候选都复现；case 5 波动过大不宜作验收场景",
+    "notStartedThisRound": true,
+    "boundary": "门禁口径下最强（成员未变即完全无需重写）；正常游玩下水文改高程，成员未变仍需重写贴地 Y"
   },
   "runtimeHydrology": {
     "sceneSet": "L1 Canvas / L2 Three，512×320，setSpeed(2)，不注入 advanceDays，120 暖 + 180 测 × 2 轮",

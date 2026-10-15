@@ -123,6 +123,24 @@ const summary = {
     caveat: 'treeSignature 覆盖成员/位置/大小/旋转；高度变化不改变签名但仍需重写 Y —— 「冗余」指成员未变，不等于完全无需工作',
   },
   aaControl: { method: '4 轮同配置 + 门禁同构判据（组内取最差 P95，判 OnWorst<=OffWorst*1.08+1.5，穷举有序分组）', off4: aaBatches(off, 'off'), on4: aaBatches(on, 'on') },
+  vegetationCost: (() => {
+    const vt = g.vegTiming || { calls: 0, totalMs: 0, ms: [] };
+    const renderTotal = gr.reduce((s, r) => s + (r.renderCpuMs || 0), 0);
+    const frameTotal = gr.reduce((s, r) => s + (r.frameCpuMs || 0), 0);
+    return {
+      calls: vt.calls, perCallMsP50: pct(vt.ms, .5), perCallMsP95: pct(vt.ms, .95), perCallMsMax: pct(vt.ms, 1),
+      totalMsPer90Frames: Number(vt.totalMs.toFixed(1)), msPerFrame: Number((vt.totalMs / gr.length).toFixed(2)),
+      shareOfRenderCpu: Number((vt.totalMs / renderTotal * 100).toFixed(1)),
+      shareOfFrameCpu: Number((vt.totalMs / frameTotal * 100).toFixed(1)),
+    };
+  })(),
+  phaseBVerdict: {
+    decision: 'START',
+    reason: '初稿曾判「不启动」，理由是植被占比未知；补测后该理由被推翻：植被 update 占 renderCpu 80.2%、frameCpu 64.3%，单次 P50 11.3ms；而 15/21 次重建成员未变且门禁环境 height/water/type 脏全为 0 ⇒ 可证明的纯浪费约 1.97 ms/帧，是 A/A 噪声底(0.244-0.408ms)的 5-8 倍。',
+    acceptanceThreshold: 'case 6 P95 改善 ≥ 1.5 ms 且两轮候选都复现；case 5 波动过大不宜作验收场景',
+    notStartedThisRound: true,
+    boundary: '门禁口径下最强（成员未变即完全无需重写）；正常游玩下水文改高程，成员未变仍需重写贴地 Y',
+  },
   runtimeHydrology: { sceneSet: 'L1 Canvas / L2 Three，512×320，setSpeed(2)，不注入 advanceDays，120 暖 + 180 测 × 2 轮', runs: runtime, chainAttribution: 'RUNTIME_HYDRO_CHAIN_SUPPORTED', scopeNote: '属正常游玩运行时风险，与正式门禁归因无关（门禁水文 0 次）' },
   gate8: { counterTests: true, twoPathAgreement: true, clocksSeparated: true, officialFixtureReused: true, vegetationTriggerRecorded: true, aaCompleted: true, liveRecomputable: true, rawJsonMatchesReport: true, productSourceUnchanged: true, noKnownCounterBugs: true },
   artifacts: {
