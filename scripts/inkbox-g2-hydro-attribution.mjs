@@ -35,7 +35,7 @@ import { launch, sleep, findBrowser } from './cdp.mjs';
 import { combatFixtureExpression, findCombatRoots } from './inkbox-g2-fixtures.mjs';
 import { selectCases, diagnosticCases, scenarioSetup, collectBrowserErrors } from './inkbox-g2pf-config.mjs';
 import { readPerformanceSurface, readForegroundEvidence, foregroundEvidenceValid } from './inkbox-g2p0-environment.mjs';
-import { inferHydroSteps, crossCheckHydro, hydroAccessorSource } from './inkbox-g2-hydro-counter.mjs';
+import { inferHydroSteps, crossCheckHydro, hydroAccessorSource, HYDRO_PERIOD_S, HYDRO_MAX_STEPS, HYDRO_EPS } from './inkbox-g2-hydro-counter.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'reports', 'analysis', 'g2-p03');
@@ -44,6 +44,10 @@ const arg = (n, d) => { const hit = process.argv.find(t => t.startsWith(`--${n}=
 const MODE = arg('mode', 'gate');
 const CLOCK = arg('clock', 'native');
 const CASES = arg('cases', '6').split(',').map(Number);
+const LIVE_CASES = arg('live', 'L1,L2').split(',');
+const LIVE_ROUNDS = Number(arg('rounds', '2'));
+const LIVE_WARM = Number(arg('warm', '120'));
+const LIVE_FRAMES = Number(arg('frames', '180'));
 const ARMS = arg('arms', MODE === 'aa' ? 'off,off,off,off' : 'off').split(',');
 const SURFACE = arg('surface', 'headless');
 
@@ -97,12 +101,22 @@ const CASES_SPEC = {
   6: { caseIndex: 6, preset: 'expanse', renderer: '3d', view: 'full', count: 2 },
   8: { caseIndex: 8, preset: 'expanse', renderer: '3d', view: 'full', count: 100 },
 };
+// A7：非暂停场景。preset 非 large ⇒ 512×320（与门禁同一判据）
+const LIVE_SPECS = {
+  L1: { caseIndex: 'L1', preset: 'expanse', renderer: 'canvas', view: 'full', count: 0 },
+  L2: { caseIndex: 'L2', preset: 'expanse', renderer: '3d', view: 'full', count: 0 },
+};
 
 // ── ② 探针：只读观测。注入源码里**不能有顶层 return**（普通脚本求值） ─────────
 const PROBE = `
 window.__h1={frames:[],veg:[],hydro:{stepCalls:0,accumulateWrites:0,otherWrites:[]},errors:[],installed:false,_lastStepCalls:0};
 window.__h1.install=function(k){
   if(window.__h1.installed)return;window.__h1.installed=true;
+  // ⚠️ 注入的函数引用了模块级常量，**必须一并注入**。gate 模式 paused 恒真、
+  //    函数走 early-return 碰不到它们，所以这个 bug 只会在**非暂停**路径炸出来
+  //    —— 这正是「必须做正对照」的原因（A7 首次跑就抓到了）。
+  const HYDRO_PERIOD_S=${HYDRO_PERIOD_S},HYDRO_MAX_STEPS=${HYDRO_MAX_STEPS},HYDRO_EPS=${HYDRO_EPS};
+  const inferHydro=(${inferHydroSteps.toString()});
   window.__h1._acc={before:null,after:null,dt:null,rawInterval:null,lastTs:null,lastRawTs:null};
   try{ ${hydroAccessorSource('k')} }catch(e){window.__h1.errors.push('accessor:'+e.message);}
   const origFrame=k.frame.bind(k);
@@ -127,7 +141,7 @@ window.__h1.install=function(k){
     const before=window.__h1._acc.before, after=window.__h1._acc.after, dt=window.__h1._acc.dt;
     // ⚠️ 注入的函数表达式必须加括号再调用：函数声明后直接跟调用括号不会执行
     const inferred=(before===null||after===null||dt===null)?{steps:null,consistent:false,reason:'no-update'}
-      :(${inferHydroSteps.toString()})({paused:window.__h1._acc.paused,accumBefore:before,accumAfter:after,dt});
+      :inferHydro({paused:window.__h1._acc.paused,accumBefore:before,accumAfter:after,dt});
     const directDelta=hydro.stepCalls-(window.__h1._lastStepCalls||0);
     window.__h1._lastStepCalls=hydro.stepCalls;
     const rec2=window.__h1._rec;
@@ -295,13 +309,13 @@ await sleep(900);
 const browser = await launch({ url: `http://127.0.0.1:${PORT}/inkbox.html`, browser: EDGE, width: 1500, height: 940, gpu: true });
 const page = (body, timeoutMs = 300000) => browser.js(`return (async()=>{${body}})();`, { timeoutMs });
 
-async function runCase(spec, arm) {
+/** 建页 → setup → 正式战斗 fixture → scenarioSetup。门禁与 live 共用同一段，避免两套分叉。 */
+async function prepare(spec) {
   const url = new URL(`http://127.0.0.1:${PORT}/inkbox.html`);
   if (spec.renderer === '3d') url.searchParams.set('renderer', '3d');
   await browser.cdp.send('Page.navigate', { url: url.toString() });
   await browser.waitFor('return !!window.inkbox?.world');
   if (spec.renderer === '3d') await browser.waitFor('return !!window.inkbox?.render3d?.renderer?.gpu');
-  // 正式顺序：setup → fixture → scenarioSetup → measure
   const dimensions = await page(setup(spec));
   const roots = findCombatRoots();
   const fixture = spec.count > 0
@@ -309,12 +323,73 @@ async function runCase(spec, arm) {
     : await page(`window.__g2CombatActors=[];return {count:0,originalEntitiesRetained:true,originalEntityCount:window.inkbox.world.entities.length,seed:window.inkbox.world.seed};`);
   const scenario = await page(scenarioSetup(spec));
   await page('await window.__h1.armA6();await window.__h1.armVeg();window.__h1.frames=[];window.__h1.veg=[];window.__h1._glUploads=0;window.__h1._glBytes=0;window.__h1.__probe=window.inkbox.__hydroProbe;window.inkbox.__hydroProbe.enabled=true;return true;');
+  return { dimensions, fixture, scenario };
+}
+
+/** 等到探针记录满 count 帧（轮询 CDP，开销远低于逐帧回调）。 */
+async function waitFrames(count) {
+  for (let i = 0; i < 2400; i += 1) {
+    const n = await page('return window.__h1.frames.length;');
+    if (n >= count) return n;
+    await sleep(100);
+  }
+  throw new Error(`waitFrames 超时（目标 ${count} 帧）`);
+}
+
+/**
+ * A7：**非暂停**真实速度。用正式公开入口 setSpeed(2)，**不注入 advanceDays**
+ * （委托书明令：不得同时手工注入额外 advanceDays，否则会双倍推进部分模拟系统）。
+ */
+async function runLive(spec, round, warmFrames, measureFrames) {
+  const prep = await prepare(spec);
+  const arm = await page(`const k=window.inkbox;k.setSpeed(2);window.__g2PerfPhase='live-warm';window.__h1.frames=[];window.__h1.veg=[];window.__h1._glUploads=0;window.__h1._glBytes=0;if(k.__hydroProbe)k.__hydroProbe.stepMs=[];return {speedIndex:k.speedIndex,paused:k.speedIndex===0};`);
+  const warmed = await waitFrames(warmFrames);
+  await page(`window.__g2PerfPhase='live-measure';window.__h1.frames=[];window.__h1.veg=[];window.__h1._glUploads=0;window.__h1._glBytes=0;if(window.inkbox.__hydroProbe)window.inkbox.__hydroProbe.stepMs=[];return true;`);
+  const measured = await waitFrames(measureFrames);
+  const frames = await page('return window.__h1.frames;');
+  const veg = await page('return window.__h1.veg;');
+  const probe = await page('const p=window.inkbox.__hydroProbe;return {stepCalls:p.stepCalls,accumulateWrites:p.accumulateWrites,otherCount:p.otherWrites.length,stepMs:p.stepMs.slice(),errors:window.__h1.errors.slice(0,10)};');
+  await page('window.inkbox.setSpeed(0);return window.inkbox.speedIndex;');
+  return { case: spec, arm: 'live', round, warmFrames: warmed, measureFrames: measured, ...prep, frames, veg, probe };
+}
+
+async function runCase(spec, arm) {
+  // 正式顺序：setup → fixture → scenarioSetup → measure（与 live 共用 prepare，避免两套分叉）
+  const { dimensions, fixture, scenario } = await prepare(spec);
   if (!report.environment.gpu) report.environment.gpu = await page(`const k=window.inkbox;const r=k&&k.render3d&&k.render3d.renderer;const gl=r&&r.gpu?r.gpu.getContext():null;if(!gl)return {renderer:'(no-webgl)'};const e=gl.getExtension('WEBGL_debug_renderer_info');return {renderer:e?gl.getParameter(e.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),viewport:[innerWidth,innerHeight],dpr:devicePixelRatio};`);
   const metrics = await page(measure(arm === 'on', spec));
   const frames = await page('return window.__h1.frames;');
   const veg = await page('return window.__h1.veg;');
   const probe = await page('const p=window.inkbox.__hydroProbe;return {stepCalls:p.stepCalls,accumulateWrites:p.accumulateWrites,otherWrites:p.otherWrites.slice(0,20),otherCount:p.otherWrites.length,errors:window.__h1.errors.slice(0,10)};');
   return { case: spec, arm, dimensions, fixture, scenario, metrics, frames, veg, probe };
+}
+
+/** 逐帧双路复算 + 登记。门禁与 live 共用，保证结论口径一致。 */
+function finalizeRun(run, label) {
+  const rows = run.frames.map(f => {
+    const inferred = inferHydroSteps({
+      paused: f.paused === true,
+      accumBefore: f.hydroAccumBefore,
+      accumAfter: f.hydroAccumAfter,
+      dt: f.simulationDtMs === null ? NaN : f.simulationDtMs / 1000,
+    });
+    return { ...f, inferredRecalc: inferred, crossOk: crossCheckHydro({ directSteps: f.hydroDirectCalls, inferred }).ok };
+  });
+  const inconsistent = rows.filter(r => !r.crossOk);
+  run.recalc = {
+    frames: rows.length,
+    inconsistentFrames: inconsistent.length,
+    firstInconsistent: inconsistent[0] || null,
+    hydroDirectTotal: rows.reduce((a, r) => a + (r.hydroDirectCalls || 0), 0),
+    hydroInferredTotal: rows.reduce((a, r) => a + (r.inferredRecalc.steps || 0), 0),
+    probeOtherWrites: run.probe.otherCount,
+    pausedFrames: rows.filter(r => r.paused === true).length,
+  };
+  delete run.frames; run.rows = rows;
+  report.cases.push(run);
+  if (inconsistent.length) report.invalid.push({ label, reason: 'hydro-counter-inconsistent', frames: inconsistent.length });
+  console.log(`${label}: frames=${rows.length} hydroDirect=${run.recalc.hydroDirectTotal} hydroInferred=${run.recalc.hydroInferredTotal} inconsistent=${inconsistent.length} vegUpdates=${(run.veg || []).length}`);
+  return run;
 }
 
 try {
@@ -325,29 +400,19 @@ try {
   await browser.cdp.send('Page.addScriptToEvaluateOnNewDocument', {
     source: "Object.defineProperty(window,'inkbox',{configurable:true,set(k){Object.defineProperty(window,'inkbox',{configurable:true,writable:true,value:k});k.speedIndex=0;try{window.__h1.install(k);}catch(e){window.__h1.errors.push('install:'+e.message);}}});" + PROBE.replace(/\nreturn true;$/, ''),
   });
-  for (const index of CASES) {
-    const spec = CASES_SPEC[index];
-    if (!spec) { console.error(`未知 case ${index}`); continue; }
-    for (const arm of ARMS) {
-      const run = await runCase(spec, arm);
-      // A1：双路一致性总检 + 逐帧复算
-      const rows = run.frames.map(f => {
-        const inferred = inferHydroSteps({ paused: f.paused === true, accumBefore: f.hydroAccumBefore, accumAfter: f.hydroAccumAfter, dt: f.simulationDtMs === null ? NaN : f.simulationDtMs / 1000 });
-        return { ...f, inferredRecalc: inferred, crossOk: crossCheckHydro({ directSteps: f.hydroDirectCalls, inferred }).ok };
-      });
-      const inconsistent = rows.filter(r => !r.crossOk);
-      run.recalc = {
-        frames: rows.length,
-        inconsistentFrames: inconsistent.length,
-        firstInconsistent: inconsistent[0] || null,
-        hydroDirectTotal: rows.reduce((a, r) => a + (r.hydroDirectCalls || 0), 0),
-        hydroInferredTotal: rows.reduce((a, r) => a + (r.inferredRecalc.steps || 0), 0),
-        probeOtherWrites: run.probe.otherCount,
-      };
-      delete run.frames; run.rows = rows;
-      report.cases.push(run);
-      if (inconsistent.length) report.invalid.push({ case: index, arm, reason: 'hydro-counter-inconsistent', frames: inconsistent.length });
-      console.log(`case ${index} arm=${arm}: frames=${rows.length} hydroDirect=${run.recalc.hydroDirectTotal} hydroInferred=${run.recalc.hydroInferredTotal} inconsistent=${inconsistent.length} vegUpdates=${run.veg.length}`);
+  if (MODE === 'live') {
+    for (const name of LIVE_CASES) {
+      const spec = LIVE_SPECS[name];
+      if (!spec) { console.error(`未知 live 场景 ${name}`); continue; }
+      for (let round = 0; round < LIVE_ROUNDS; round += 1) {
+        finalizeRun(await runLive(spec, round, LIVE_WARM, LIVE_FRAMES), `${name} round${round}`);
+      }
+    }
+  } else {
+    for (const index of CASES) {
+      const spec = CASES_SPEC[index];
+      if (!spec) { console.error(`未知 case ${index}`); continue; }
+      for (const arm of ARMS) finalizeRun(await runCase(spec, arm), `case ${index} arm=${arm}`);
     }
   }
   report.summary = { ok: report.invalid.length === 0, invalid: report.invalid.length };
@@ -355,7 +420,9 @@ try {
   report.summary = { ok: false, error: String(error), browserErrors: browser.errors().slice(0, 8) };
   console.error(error);
 } finally {
-  const file = `attribution-${MODE}-cases${CASES.join('-')}-${CLOCK}.json`;
+  const file = MODE === 'live'
+    ? `attribution-live-${LIVE_CASES.join('-')}-${CLOCK}.json`
+    : `attribution-${MODE}-cases${CASES.join('-')}-${CLOCK}.json`;
   fs.writeFileSync(path.join(OUT, file), JSON.stringify(report, null, 2) + '\n');
   console.log(`written reports/analysis/g2-p03/${file}`);
   await browser.close().catch(() => {});

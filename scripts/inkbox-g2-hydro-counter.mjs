@@ -89,8 +89,10 @@ export function crossCheckHydro({ directSteps, inferred }) {
  */
 export function hydroAccessorSource(targetExpr = 'window.inkbox') {
   return `(function installHydroAccessor(target, periodS, eps){
-  const probe = { writes: [], stepCalls: 0, accumulateWrites: 0, otherWrites: [], enabled: true, lastDt: null };
+  const probe = { writes: [], stepCalls: 0, accumulateWrites: 0, otherWrites: [], enabled: true, lastDt: null,
+                  stepMs: [], frameStepMs: 0, lastWriteAt: null };
   let value = target.hydroAccum;
+  const now = function(){ return (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now(); };
   Object.defineProperty(target, 'hydroAccum', {
     configurable: true,
     enumerable: true,
@@ -99,11 +101,18 @@ export function hydroAccessorSource(targetExpr = 'window.inkbox') {
       const delta = next - value;
       const isStep = Math.abs(delta + periodS) <= eps;
       const isAccumulate = delta > 0 && (probe.lastDt === null || Math.abs(delta - probe.lastDt) <= eps);
+      const t = now();
       if (probe.enabled) {
-        if (isStep) { probe.stepCalls += 1; probe.writes.push({ kind: 'step', delta, value: next }); }
+        if (isStep) {
+          // 这一次写入紧跟一次 stepHydrology() 返回 ⇒ 与上一次写入的间隔即该步的直接耗时
+          // （同一帧内第 2/3 步同理，量的是「上一步 + 中间循环开销」）
+          if (probe.lastWriteAt !== null) { const ms = t - probe.lastWriteAt; probe.stepMs.push(ms); probe.frameStepMs += ms; }
+          probe.stepCalls += 1; probe.writes.push({ kind: 'step', delta, value: next });
+        }
         else if (isAccumulate) { probe.accumulateWrites += 1; probe.writes.push({ kind: 'accumulate', delta, value: next }); }
         else { probe.otherWrites.push({ delta, value: next, lastDt: probe.lastDt }); probe.writes.push({ kind: 'other', delta, value: next }); }
       }
+      probe.lastWriteAt = t;
       value = next;
     },
   });

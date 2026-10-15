@@ -9,7 +9,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
-  HYDRO_PERIOD_S, HYDRO_MAX_STEPS,
+  HYDRO_PERIOD_S, HYDRO_MAX_STEPS, HYDRO_EPS,
   inferHydroSteps, crossCheckHydro, hydroAccessorSource,
 } from './inkbox-g2-hydro-counter.mjs';
 
@@ -153,6 +153,22 @@ check('存取器：读数语义与产品字段完全一致（不改变取值）'
   assert.equal(target.hydroAccum, 0.42, '装存取器后初值必须原样可读');
   target.hydroAccum += 0.01;
   assert.equal(target.hydroAccum, 0.43, '写入必须原样生效');
+});
+
+// ⚠️ 反例（真实踩过）：把 inferHydroSteps 注入页面时它的**模块级常量不会跟着走**。
+//    gate 模式 paused 恒真、函数走 early-return，碰不到常量 ⇒ 不报错；
+//    非暂停路径才炸 ReferenceError，而且是在页面 RAF 回调里炸 ⇒ 整个游戏循环停摆。
+//    所以这里在**隔离作用域**里把注入形态真跑一遍，两种路径都要过。
+check('注入形态：inferHydroSteps 在无模块作用域下仍可用（paused 与非 paused 都要过）', () => {
+  const injected = `const HYDRO_PERIOD_S=${HYDRO_PERIOD_S},HYDRO_MAX_STEPS=${HYDRO_MAX_STEPS},HYDRO_EPS=${HYDRO_EPS};const inferHydro=(${inferHydroSteps.toString()});return inferHydro;`;
+  const inferHydro = new Function(injected)();
+  // 非暂停路径（gate 模式永远走不到这里，所以历史上没暴露）
+  assert.deepEqual(inferHydro({ paused: false, accumBefore: 0.15, accumAfter: 0.15 + DT60 - HYDRO_PERIOD_S, dt: DT60 }), { steps: 1, consistent: true, reason: 'ok' });
+  assert.equal(inferHydro({ paused: false, accumBefore: 0.02, accumAfter: 0.02 + DT60, dt: DT60 }).steps, 0);
+  // 暂停路径
+  assert.equal(inferHydro({ paused: true, accumBefore: 0.09, accumAfter: 0.09, dt: DT60 }).steps, 0);
+  // 且必须真的不依赖外部常量：故意在函数外不留任何变量
+  assert.equal(typeof HYDRO_PERIOD_S, 'number');
 });
 
 console.log('');
