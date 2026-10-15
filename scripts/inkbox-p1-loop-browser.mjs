@@ -4,13 +4,15 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {spawn,execFileSync} from 'node:child_process';
+import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {launch,findEdge,sleep} from './cdp.mjs';
 import {collectBrowserErrors} from './inkbox-g2pf-config.mjs';
 import {combatFixtureExpression} from './inkbox-g2-fixtures.mjs';
+import {launchOwnedServer} from './inkbox-owned-server.mjs';
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const PORT=Number(process.env.INKBOX_PORT||4229),BASE=process.env.INKBOX_URL||`http://127.0.0.1:${PORT}`;
+const PORT=Number(process.env.INKBOX_PORT||0);
+let BASE=process.env.INKBOX_URL;
 const OUT=path.resolve(process.env.INKBOX_REPORT_DIR||path.join(ROOT,'reports/local/p1/loop'));
 const selectedRenderer=process.env.INKBOX_P1_RENDERER;
 assert(selectedRenderer===undefined||['canvas','3d'].includes(selectedRenderer),'Unknown P1 diagnostic renderer');
@@ -118,21 +120,22 @@ async function selectMapPerson(id){
 }
 try{
  fs.mkdirSync(OUT,{recursive:true});
- if(!process.env.INKBOX_URL){server=spawn(process.execPath,['scripts/inkbox-server.mjs','--port',String(PORT)],{cwd:ROOT,stdio:'ignore',windowsHide:true});let ready=false;for(let i=0;i<90;i++){try{if((await fetch(BASE+'/inkbox.html')).ok){ready=true;break;}}catch{}await sleep(150);}assert(ready,'Owned server boot failed');}
+ if(!BASE){const owned=await launchOwnedServer({root:ROOT,port:PORT});server=owned.child;BASE=owned.url;report.serverIdentity=owned.identity;}
+ else report.serverIdentity={owned:false,url:BASE,reason:'External server source identity unverified'};
  browser=await launch({url:BASE+'/inkbox.html',browser:findEdge(),width:1500,height:940,gpu:true});report.browser=browser.meta;
  for(renderer of renderers){
  report.renderer=renderer;
  await browser.cdp.send('Page.navigate',{url:BASE+'/inkbox.html'+(renderer==='3d'?'?renderer=3d&assets=on':'')});
  await wait('return !!window.inkbox?.g1&&!!document.querySelector("[data-experience-target]")','P1 product missing');
  await page('window.inkbox.setSpeed(0);return true;');
- if(renderer==='3d'){await wait('return !!window.inkbox.render3d?.active&&!!window.inkbox.render3d.renderer?.stages.get("mortal")','Three not active');await page('const r=window.inkbox.render3d.renderer;await r.characterLoadPromise;await r.environmentLoadPromise;await r.art.comparisonReady;return true;');report.hardware=await page(`const gl=window.inkbox.render3d.renderer.gpu.getContext(),e=gl.getExtension('WEBGL_debug_renderer_info');return{vendor:gl.getParameter(e?e.UNMASKED_VENDOR_WEBGL:gl.VENDOR),renderer:gl.getParameter(e?e.UNMASKED_RENDERER_WEBGL:gl.RENDERER)};`);assert(!/swiftshader|llvmpipe|software/i.test(report.hardware.renderer),'Hardware required: '+JSON.stringify(report.hardware));}
+ if(renderer==='3d'){await wait('return !!window.inkbox.render3d?.active&&!!window.inkbox.render3d.renderer?.stages.get("mortal")','Three not active');await page('const r=window.inkbox.render3d.renderer;await r.characterLoadPromise;await r.environmentLoadPromise;await r.art.comparisonReady;return true;');report.hardware=await page(`const gl=window.inkbox.render3d.renderer.gpu.getContext(),e=gl.getExtension('WEBGL_debug_renderer_info');return{vendor:gl.getParameter(e?e.UNMASKED_VENDOR_WEBGL:gl.VENDOR),renderer:gl.getParameter(e?e.UNMASKED_RENDERER_WEBGL:gl.RENDERER)};`);assert(!/swiftshader|llvmpipe|software|basic render|warp/i.test(report.hardware.renderer),'Hardware required: '+JSON.stringify(report.hardware));}
  await check('Real creation controls establish one World',async()=>{await choose('#inkPresetSelect','small');if(await page('return document.querySelector("#inkProgressive").checked;'))await click('#inkProgressive');await regen(673231);return page('window.__p1LoopWorld=window.inkbox.world;return{seed:window.inkbox.world.seed,size:[window.inkbox.world.w,window.inkbox.world.h],day:window.inkbox.world.day};');});
  await check('Formal full-HP fixture reaches real battle injury and natural rest',async()=>{
    report.fixture=await browser.js(combatFixtureExpression({count:2}));assert(report.fixture.originalEntitiesRetained);assert(report.fixture.actors.every(e=>e.hp===e.maxHp));
    // Select the real visible fighter before normal simulation can build an opaque sect over the resting person.
    report.preCombatPick=await selectMapPerson(report.fixture.actors[1].id);
    await page(`const k=window.inkbox,original=k.life.attack;window.__p1Battle={hits:[],rest:null,steps:0,observationProof:null};k.life.attack=function(e,target,...args){const before={hp:target.hp,restUntil:target.restUntil,day:k.world.day};const result=original.call(this,e,target,...args);if(window.__g2CombatActors.includes(e.id)&&window.__g2CombatActors.includes(target.id)){const row={attacker:e.id,target:target.id,before,after:{hp:target.hp,maxHp:target.maxHp,restUntil:target.restUntil,day:k.world.day}};if(target.hp<before.hp)window.__p1Battle.hits.push(row);if(target.hp>0&&target.hp<before.hp&&!(before.restUntil>before.day)&&target.restUntil>k.world.day)window.__p1Battle.rest=row;}return result;};window.__p1RestoreAttack=()=>{k.life.attack=original};return true;`);
-   try{for(let i=0;i<600;i++){const done=await page('const k=window.inkbox;k.advanceDays(.2);window.__p1Battle.steps++;await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);k.combatObservation.refresh();const vm=k.combatObservation.current(),items=k.stage.snapshotPlane("mortal")?.items||[],pair=items.filter(e=>e.kind==="combat"&&window.__g2CombatActors.includes(e.subjectId)&&window.__g2CombatActors.includes(e.targetId));if(pair.length&&vm.events.length&&!window.__p1Battle.observationProof)window.__p1Battle.observationProof={day:k.world.day,stage:pair,vm};return !!window.__p1Battle.rest;');if(done)break;}}finally{report.battle=await page('window.__p1RestoreAttack();return {...window.__p1Battle,schedule:{stepDays:.2,maxSteps:600,maxDays:120,clock:"controlled simulation"}};');}
+   try{for(let i=0;i<600;i++){const done=await page('const k=window.inkbox;k.advanceDays(.2);window.__p1Battle.steps++;await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);k.combatObservation.refresh();const vm=k.combatObservation.current(),items=k.stage.snapshotPlane("mortal")?.items||[],pair=items.filter(e=>e.kind==="combat"&&window.__g2CombatActors.includes(e.subjectId)&&window.__g2CombatActors.includes(e.targetId));const matches=pair.flatMap(item=>{const actor=k.world.entities.find(e=>e.id===item.subjectId),target=k.world.entities.find(e=>e.id===item.targetId);const event=vm.events.find(row=>row.plane===item.plane&&row.day===item.day&&row.actor===(actor?.name||("人物 #"+item.subjectId))&&row.target===(target?.name||("人物 #"+item.targetId))&&row.x===target?.x&&row.y===target?.y&&row.canObserve===true);return event?[{stage:item,event,actorId:item.subjectId,targetId:item.targetId}]:[];});if(matches.length&&!window.__p1Battle.observationProof)window.__p1Battle.observationProof={day:k.world.day,matches};return !!window.__p1Battle.rest;');if(done)break;}}finally{report.battle=await page('window.__p1RestoreAttack();return {...window.__p1Battle,schedule:{stepDays:.2,maxSteps:600,maxDays:120,clock:"controlled simulation"}};');}
    assert(report.battle.hits.length>0,'No real attack damage in bounded schedule');assert(report.battle.rest,'No natural rest transition; full bounded evidence retained');assert(report.battle.observationProof,'Real pair hit did not reach Stage and G22 observation');await same();return report.battle;
  });
  await check('Selected real person displays natural injury and watch command',async()=>{
@@ -159,15 +162,16 @@ try{
    report.loaded=await page(`const k=window.inkbox,e=k.world.entities.find(e=>e.id===${report.saved.person.id});return{seed:k.world.seed,day:k.world.day,watch:k.world.watch.map(e=>e.key),person:{id:e.id,hp:e.hp,restUntil:e.restUntil},observation:k.environmentObservation.current().observation,g1:k.g1.current()};`);
    assert.equal(report.loaded.seed,report.saved.seed);assert.equal(report.loaded.day,report.saved.day);assert.deepEqual(report.loaded.person,report.saved.person);assert.deepEqual(report.loaded.watch,report.saved.watch);assert.equal(report.loaded.observation,null);assert.equal(report.loaded.g1,null);await shot('loaded-world');return{saved:report.saved,loaded:report.loaded,stale:report.stale};
  });
- report.runs.push({renderer,hardware:renderer==='3d'?report.hardware:null,fixture:report.fixture,battle:report.battle,land:report.land,ecology:report.ecology,saved:report.saved,loaded:report.loaded});
+ report.runs.push({renderer,preCombatPick:report.preCombatPick,personCameraAttempts:report.personCameraAttempts,hardware:renderer==='3d'?report.hardware:null,fixture:report.fixture,battle:report.battle,land:report.land,ecology:report.ecology,saved:report.saved,loaded:report.loaded});
  }
  report.browserErrors=collectBrowserErrors(browser);assert.equal(report.browserErrors.length,0,JSON.stringify(report.browserErrors));
- report.pass=report.checks.every(check=>check.pass);
- if(!report.pass){report.error='Player-loop check failed; independent remaining checks retained';process.exitCode=1;}
+ report.targetedPass=report.checks.every(check=>check.pass);
+ report.pass=report.targetedPass&&report.completeRendererCoverage&&report.serverIdentity?.owned===true;
+ if(!report.pass){report.error=report.targetedPass?'Partial or externally served diagnostics do not establish full P1 acceptance':'Player-loop check failed; independent remaining checks retained';process.exitCode=1;}
 }catch(error){report.error=String(error.stack||error);report.pass=false;process.exitCode=1;if(browser){try{report.failureScreenshot=await browser.screenshot(path.join(OUT,'loop-failure.png'));report.failureFacts=await page('const k=window.inkbox;return{day:k?.world?.day,battle:window.__p1Battle,observation:k?.environmentObservation?.current(),g1:k?.g1?.current(),geometryDiagnostic:window.__g1GeometryDiagnostic};');}catch(e){report.failureEvidenceError=String(e);}}}
 finally{
  if(browser){try{report.authoritativeCleanup=await browser.close();}catch(e){report.cleanupError=String(e.stack||e);}report.browserErrors=collectBrowserErrors(browser);if(!report.authoritativeCleanup?.complete||report.browserErrors.length){report.pass=false;process.exitCode=1;}}
- if(server){server.kill();for(let n=0;n<50&&server.exitCode===null&&server.signalCode===null;n++)await sleep(100);if(server.exitCode===null&&server.signalCode===null){report.pass=false;process.exitCode=1;report.serverCleanupFailed=true;}}
+ if(server){if(server.exitCode!==null||server.signalCode!==null){report.pass=false;process.exitCode=1;report.serverPrematureExit=true;}server.kill();for(let n=0;n<50&&server.exitCode===null&&server.signalCode===null;n++)await sleep(100);if(server.exitCode===null&&server.signalCode===null){report.pass=false;process.exitCode=1;report.serverCleanupFailed=true;}}
  report.actualExitCode=process.exitCode||0;report.finishedAt=new Date().toISOString();fs.mkdirSync(OUT,{recursive:true});fs.writeFileSync(path.join(OUT,'p1-loop-browser.json'),JSON.stringify(report,null,2)+'\n');
 }
 console.log('P1 loop: '+report.checks.length+' checks; pass='+report.pass);

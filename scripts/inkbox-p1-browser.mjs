@@ -2,15 +2,16 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn,execFileSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {collectBrowserErrors} from './inkbox-g2pf-config.mjs';
 import { fileURLToPath } from 'node:url';
 import { launch, findEdge, sleep } from './cdp.mjs';
+import { launchOwnedServer } from './inkbox-owned-server.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const PORT = Number(process.env.INKBOX_PORT || 4228);
-const BASE = process.env.INKBOX_URL || `http://127.0.0.1:${PORT}`;
+const PORT = Number(process.env.INKBOX_PORT || 0);
+let BASE = process.env.INKBOX_URL;
 const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(ROOT, 'reports/local/p1/browser'));
 const report = { startedAt: new Date().toISOString(), pass: false, checks: [],
   head:execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8',windowsHide:true}).trim(),sourceHashes:Object.fromEntries(['scripts/inkbox-p1-browser.mjs','scripts/cdp.mjs','src/inkbox/ui/playerExperienceNav.js','src/inkbox/ui/playerExperienceNav.css','inkbox.html'].map(file=>[file,createHash('sha256').update(fs.readFileSync(path.join(ROOT,file))).digest('hex')])),screenshots: [], performanceClaim: false, backend: 'Edge/CDP formal product' };
@@ -127,12 +128,8 @@ async function exerciseNarrowKeyboard(renderer){
 }
 try {
   fs.mkdirSync(OUT,{recursive:true});
-  if(!process.env.INKBOX_URL){
-    server=spawn(process.execPath,['scripts/inkbox-server.mjs','--port',String(PORT)],{cwd:ROOT,stdio:'ignore',windowsHide:true});
-    let ready=false;
-    for(let n=0;n<90;n++){try{if((await fetch(BASE+'/inkbox.html')).ok){ready=true;break;}}catch{}await sleep(150);}
-    assert(ready,'P1 browser server failed to start');
-  }
+  if(!BASE){const owned=await launchOwnedServer({root:ROOT,port:PORT});server=owned.child;BASE=owned.url;report.serverIdentity=owned.identity;}
+  else report.serverIdentity={owned:false,url:BASE,reason:'External server source identity unverified'};
   browser=await launch({url:BASE+'/inkbox.html',browser:findEdge(),width:1366,height:768,gpu:true});
   report.edge=browser.meta;
   for(const renderer of ['canvas','3d']){
@@ -140,20 +137,21 @@ try {
     assert(await browser.waitFor('return document.readyState === "complete" && !!window.inkbox?.world && !!document.querySelector("[data-experience-target]")',{timeoutMs:90000}),renderer+' boot failed');
     if(renderer==='3d')assert(await browser.waitFor('return !!window.inkbox?.render3d?.active',{timeoutMs:90000}),'Three not active');
     await frames();
-    if(renderer==='3d'){report.hardware=await page(`const gl=window.inkbox.render3d.renderer.gpu.getContext(),ext=gl.getExtension('WEBGL_debug_renderer_info');return{vendor:gl.getParameter(ext?ext.UNMASKED_VENDOR_WEBGL:gl.VENDOR),renderer:gl.getParameter(ext?ext.UNMASKED_RENDERER_WEBGL:gl.RENDERER)};`);assert(!/swiftshader|llvmpipe|software/i.test(report.hardware.renderer),'Hardware renderer required: '+JSON.stringify(report.hardware));}
+    if(renderer==='3d'){report.hardware=await page(`const gl=window.inkbox.render3d.renderer.gpu.getContext(),ext=gl.getExtension('WEBGL_debug_renderer_info');return{vendor:gl.getParameter(ext?ext.UNMASKED_VENDOR_WEBGL:gl.VENDOR),renderer:gl.getParameter(ext?ext.UNMASKED_RENDERER_WEBGL:gl.RENDERER)};`);assert(!/swiftshader|llvmpipe|software|basic render|warp/i.test(report.hardware.renderer),'Hardware renderer required: '+JSON.stringify(report.hardware));}
     for(const [w,h] of [[1500,940],[1366,768],[1280,720]])await check(renderer+' '+w+'x'+h,()=>exerciseDesktop(renderer,w,h));
     await check(renderer+' narrow 960/680',()=>exerciseDrawer(renderer));
     await check(renderer+' 680 observation navigation/native trap/focus/map',()=>exerciseNarrowKeyboard(renderer));
   }
   report.browserErrors=collectBrowserErrors(browser);
   assert.equal(report.browserErrors.length,0,JSON.stringify(report.browserErrors));
+  assert(report.serverIdentity?.owned,'Owned product source is required for formal P1 acceptance');
   report.pass=true;
 } catch(error){
   report.error=String(error.stack||error);console.error(error);process.exitCode=1;
   if(browser)try{await shot('p1-failure')}catch(e){report.screenshotError=String(e)}
 } finally {
   if(browser){try{report.authoritativeCleanup=await browser.close();}catch(error){report.authoritativeCleanupError=String(error.stack||error);report.pass=false;process.exitCode=1;}if(!report.authoritativeCleanup?.complete){report.pass=false;process.exitCode=1;}report.browserErrors=collectBrowserErrors(browser);if(report.browserErrors.length){report.pass=false;process.exitCode=1;}}
-  if(server){server.kill();for(let n=0;n<50&&server.exitCode===null&&server.signalCode===null;n++)await sleep(100);}
+  if(server){if(server.exitCode!==null||server.signalCode!==null){report.pass=false;process.exitCode=1;report.serverPrematureExit=true;}server.kill();for(let n=0;n<50&&server.exitCode===null&&server.signalCode===null;n++)await sleep(100);}
   report.cleanup={browser:report.authoritativeCleanup||null,serverExited:!server||server.exitCode!==null||server.signalCode!==null};
   if(!report.cleanup.serverExited){report.pass=false;process.exitCode=1;}
   report.actualExitCode=process.exitCode||0;
