@@ -1,10 +1,10 @@
 # G2-P0.3 · 阶段 A：性能证据勘误与真实瓶颈确认报告
 
 - 委托书：《坐天观井 / Inkbox》G2-P0.3（性能证据勘误、真实瓶颈确认与植被更新降载试点）
-- 产品基线：`codex/g2-p1-integration-validation` @ **`74934a8`**（= PR #12 head；远端分支 ref `72d95b3` 经 `git rev-list --left-right --count` 判定为其**祖先**，故不换基线）
+- 产品基线：`codex/g2-p1-integration-validation` @ **`74934a8`**（= PR #12 head；推送前通过 `git ls-remote` 核实远端分支也指向 `74934a8`）
 - 取证分支：`analysis/g2-p03-attribution-correction`，独立 worktree `.g2-p03a-worktree`
 - 环境：Microsoft Edge · **ANGLE (AMD, AMD Radeon(TM) 610M, D3D11 vs_5_0)** · 1500×940 · DPR 2 · Native 时钟
-- **产品源码改动：0 处。既有脚本改动：0 处。**（相对基线仅 3 个新增文件、875 行插入）
+- **产品源码改动：0 处。既有脚本改动：0 处。**（相对基线 6 个新增文件、0 个修改文件，共 1,780 行插入）
 
 ---
 
@@ -17,7 +17,7 @@
 | G2 植被上传触发源 | **CONFIRMED**（`veg` 通道 + 0.15 s 节流器） |
 | A/A 稳定性 | **COMPLETE**（4 批 × 4 轮，含门禁同构判据模拟） |
 | 非暂停水文瓶颈 | **SUPPORTED**（直接因果，非相关） |
-| 植被优化 | **NOT_STARTED**（见 §7 裁决） |
+| 植被优化 | **阶段 A 尚未实现；裁决为 START**（见 §8） |
 | 正式 G2 状态 | **BLOCKED（不变）** |
 
 ---
@@ -233,7 +233,7 @@ case 5 两次一批稳一批不稳 ⇒ 波动是**间歇性**的，这正是三�
 | 6 | Case 5/6 A/A 已完成 | ✅ | §5：Off4 ×2 批 + On4，含门禁同构判据模拟 |
 | 7 | 非暂停 Canvas/Three 可独立复算 | ✅ | §6，离线脚本重算 |
 | 8 | 原始 JSON 与报告统计一致 | ✅ | 全部统计由 `--recalc` 从原始数组重算 |
-| 9 | 产品源码未改变 | ✅ | `git status --porcelain -- src inkbox.html` 为空；3 新增 / 0 修改 |
+| 9 | 产品源码未改变 | ✅ | `git status --porcelain -- src inkbox.html` 为空；6 新增 / 0 修改 |
 | 10 | 测试脚本不存在已知计数错误 | ✅ | 已修 2 处（`delta>0`；常量未注入）并各配单测/正对照 |
 
 **阶段 A = `A_PASS`。**
