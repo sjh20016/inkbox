@@ -253,6 +253,70 @@ function recalcFile(file) {
     say(`  GPU 上传：${glCalls} 次调用 · ${glBytes} 字节（拦截 bufferSubData/bufferData）`);
   }
   say(`\n重算完成：${problems ? `发现 ${problems} 处不可信` : '全部一致，可独立复算'}`);
+
+  // ── A/A 离散度（委托书 §A5 问题 1/2：同配置不同轮次相差多少）─────────────
+  // 从**每轮自己的原始帧数组**重算 P95，再比较轮间极差与比值。
+  // 门禁现行预算为 `On ≤ Off×1.08 + 1.5ms`，所以这里把同一把尺子量在 A/A 上：
+  // 「同代码 vs 同代码」若也能越线，说明该通道的分辨率不足以支撑该预算。
+  const groups = new Map();
+  for (const run of raw.cases || []) {
+    const key = `${run.case.caseIndex ?? run.case.preset}/${run.case.renderer}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(run);
+  }
+  for (const [key, runs] of groups) {
+    if (runs.length < 2) continue;
+    const per = runs.map(run => {
+      const rows = (run.rows || []).filter(r => r.phase === 'measured');
+      const use = rows.length ? rows : (run.rows || []);
+      return { frameP95: percentile(use.map(r => r.frameCpuMs), .95), rafP95: percentile(use.map(r => r.rawRafIntervalMs), .95), rafP50: percentile(use.map(r => r.rawRafIntervalMs), .5) };
+    });
+    const spread = list => {
+      const v = list.filter(Number.isFinite);
+      return { min: Math.min(...v), max: Math.max(...v), range: Number((Math.max(...v) - Math.min(...v)).toFixed(3)), ratio: Number((Math.max(...v) / Math.min(...v)).toFixed(3)) };
+    };
+    const f = spread(per.map(p => p.frameP95));
+    const r = spread(per.map(p => p.rafP95));
+    say(`\n── A/A 离散 · ${key} · ${runs.length} 轮同配置 ──`);
+    say(`  frameCpuMs P95 各轮：${per.map(p => p.frameP95).join(' / ')}  ⇒ 极差 ${f.range} ms（${(f.ratio * 100 - 100).toFixed(1)}%）`);
+    say(`  rawRaf     P95 各轮：${per.map(p => p.rafP95).join(' / ')}  ⇒ 极差 ${r.range} ms（${(r.ratio * 100 - 100).toFixed(1)}%）`);
+    // ⚠️ 必须按**门禁自己的判据**模拟：门禁取 Off 组与 On 组的**最差 P95**，
+    //    判 `OnWorst <= OffWorst * 1.08 + 1.5`。上一版写成「最快轮 vs 最慢轮的容许
+    //    上限」，方向是反的，会得出一个碰巧正确的「通过」——这种结论不算证据。
+    //    这里穷举把 N 轮拆成两组（每组 ≥2）的全部方式，并对 Off/On 两种角色各算一次。
+    const p95 = runs.map(run => {
+      const rows = (run.rows || []).filter(r => r.phase === 'measured');
+      const use = rows.length ? rows : (run.rows || []);
+      return percentile(use.map(r => r.frameCpuMs), .95);
+    });
+    const combos = [];
+    const n = p95.length;
+    const half = Math.floor(n / 2);
+    const choose = (start, picked) => {
+      if (picked.length === half) { combos.push(picked.slice()); return; }
+      for (let i = start; i < n; i += 1) { picked.push(i); choose(i + 1, picked); picked.pop(); }
+    };
+    if (n >= 4) choose(0, []);
+    const allowance = off => Number((off * 1.08 + 1.5).toFixed(3));
+    let worstMargin = Infinity; let failing = 0; let total = 0;
+    for (const groupA of combos) {
+      const groupB = p95.map((_, i) => i).filter(i => !groupA.includes(i));
+      for (const [offIdx, onIdx] of [[groupA, groupB], [groupB, groupA]]) {
+        const offWorst = Math.max(...offIdx.map(i => p95[i]));
+        const onWorst = Math.max(...onIdx.map(i => p95[i]));
+        const margin = Number((allowance(offWorst) - onWorst).toFixed(3));
+        total += 1;
+        if (margin < 0) failing += 1;
+        worstMargin = Math.min(worstMargin, margin);
+      }
+    }
+    if (total) {
+      say(`  门禁同构模拟：${total} 种有序分组（组内取最差 P95，判 OnWorst ≤ OffWorst×1.08+1.5）`);
+      say(`    判为回退的分组 ${failing}/${total} · 最小余量 ${worstMargin} ms`);
+      say(`  ⇒ 同代码 A/A ${failing ? `**会**出现 ${failing} 种假失败` : '未出现假失败'}${!failing && worstMargin < 1.5 ? '，但最小余量已不足 1.5ms，属薄余量' : ''}`);
+    }
+  }
+  say('');
   return problems;
 }
 
