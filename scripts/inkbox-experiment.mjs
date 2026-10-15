@@ -68,6 +68,9 @@ const CLI_VALUE_KEYS = Object.freeze([
   'intervention',
   // B1-5：可调参数覆盖（JSON 文本，仅 profile=sensitivity 时生效）
   'parameterOverrides',
+  // B2-2：人物命运观察队列（JSON 文本，任何 profile 生效）。例：
+  //   --fateQueue='{"max":32,"atDay":3600,"filter":"all"}'
+  'fateQueue',
   // B0.1 §10：单 seed worker 模式
   'worker',
 ]);
@@ -106,6 +109,11 @@ const USAGE = `水墨沙盒 · World Laboratory
   --parameterOverrides=<json> B1-5 可调参数覆盖（仅 profile=sensitivity）。例：
                         '{"POP_SOFT_CAP":1200,"SOUL_CAP":200}'。键必须已登记
                         （见 src/inkbox/sim/tunables.js）；零覆盖 ≡ 默认 ≡ natural。
+  --fateQueue=<json>   B2-2 人物命运观察队列（**任何 profile**，纯采集不改世界线）。
+                        例：'{"max":32,"atDay":3600,"filter":"all"}'。
+                        max: 1..64（默认 32）；atDay: 第几天建队（默认 0）；
+                        filter: all / cultivators / mortals（默认 all）。
+                        产物：seeds/<seed>/fate.csv 与顶层 fate.csv。
   --seeds=<a,b,c>       逗号分隔的非负整数种子
   --years=<n>           游戏年数（正整数，默认 300；小数会被拒绝而不是四舍五入）
   --step=<n>            每次 advanceWorld 推进的游戏日（默认 3）
@@ -184,6 +192,11 @@ function describeConfig(config) {
     //   在日志上跟「什么都没改的基线」一模一样，而这正是最危险的静默混统计。
     ...(config.parameterOverrides && Object.keys(config.parameterOverrides).length
       ? [`overrides=${Object.keys(config.parameterOverrides).sort().map((k) => `${k}=${config.parameterOverrides[k]}`).join(',')}`]
+      : []),
+    // B2-2：命运队列也进配置行。理由同前两条——不印的话，一份「开了 32 人
+    //   观察队列」的实验在日志上跟「没开」的一模一样，而前者多一份 fate.csv。
+    ...(config.fateQueue
+      ? [`fate=${config.fateQueue.filter}/max${config.fateQueue.max}@day${config.fateQueue.atDay}`]
       : []),
     `seeds=[${config.seeds.join(',')}]`,
     `years=${config.years}`,

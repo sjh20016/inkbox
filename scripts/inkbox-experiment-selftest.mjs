@@ -54,6 +54,12 @@ import { diagnoseSeed } from './experiment/diagnostics.mjs';
 import { advanceWorld } from '../src/inkbox/sim/advance.js';
 import { compareWorldConstruction, compareSteppedWorlds } from './experiment/equivalence.mjs';
 import { TELEMETRY_KEYS, bumpTelemetry, readTelemetry } from '../src/inkbox/sim/telemetry.js';
+// B2-2：命运队列的纯函数（选队 / 采集 / 摘要）与被测本体同源导入。
+import {
+  FATE_COLUMNS, FATE_FILTERS, FATE_QUEUE_KEYS, collectFate, fateQueueSpec,
+  fateQueueSummary, selectFateQueue,
+} from './experiment/fate-queue.mjs';
+import { FATE_CSV_COLUMNS, flattenFate } from './experiment/report.mjs';
 
 let checks = 0;
 let failed = 0;
@@ -1643,6 +1649,236 @@ check('★ 零覆盖的 runSeed 与 natural runSeed 的 digest 逐字节相同',
   // 防御：错误地给 natural 传非空覆盖时必须当场抛错（runner 的守卫）
   assert.throws(() => runSeed({ ...mkCfg('natural', null), parameterOverrides: { POP_SOFT_CAP: 900 } }, 20260914),
     /parameterOverrides/, 'runner 必须拦住「natural + 非空覆盖」这种静默忽略');
+});
+
+// ══════════════════════════════════════════════════════════════════
+// B2-2 · 人物命运观察队列
+//
+// 这一段的四条断言对应 fate-queue.mjs 头注释的四条纪律。每条都刻意用
+// 「跑一遍真的会失败的方式」去测，而不是只测形状：
+//   ① 选人不抽 RNG      ⇒ 同 seed 两世界的队列必须逐字相同；
+//   ② 不猜身份继承      ⇒ 名册里没有的人必须落 unavailable，不是 dead、不是 0；
+//   ③ 幸存者偏差零容忍  ⇒ 长跑后成员数恒定，且必须有非 alive 态留在样本里；
+//   ④ 只读              ⇒ 开关队列不得改变世界 digest（★ 最硬的一条）。
+// ══════════════════════════════════════════════════════════════════
+
+section('B2-2 · 人物命运观察队列（选队 / 采集 / 纯度 / 幸存者偏差）');
+
+check('fateQueue：形状校验（非法输入响在跑之前，不静默忽略）', () => {
+  const good = { ...defaultJob(), profile: 'natural', viewPolicy: 'closed' };
+  assert.equal(validateJob({ ...good, fateQueue: { max: 32, atDay: 3600, filter: 'all' } }).ok, true,
+    '合法规格应通过');
+  assert.equal(validateJob({ ...good, fateQueue: {} }).ok, true,
+    '空对象 = 全默认（32 人 / 下界 0 / all）——「开一个默认队列」是明确请求，不是省略');
+  assert.equal(validateJob({ ...good, fateQueue: { max: 8 } }).ok, true, '只写 max 应合法（其余补默认）');
+  // 非法形状逐一报错——每一条对应一种「静默忽略后跑出空 fate.csv」的事故
+  assert.equal(validateJob({ ...good, fateQueue: { max: 0, atDay: 0, filter: 'all' } }).ok, false, 'max=0 应报错');
+  assert.equal(validateJob({ ...good, fateQueue: { max: 32.5, atDay: 0, filter: 'all' } }).ok, false, 'max 小数应报错');
+  assert.equal(validateJob({ ...good, fateQueue: { max: 65, atDay: 0, filter: 'all' } }).ok, false, 'max>64 应报错');
+  assert.equal(validateJob({ ...good, fateQueue: { max: 32, atDay: -1, filter: 'all' } }).ok, false, 'atDay 负值应报错');
+  assert.equal(validateJob({ ...good, fateQueue: { max: 32, atDay: 1.5, filter: 'all' } }).ok, false, 'atDay 小数应报错');
+  assert.equal(validateJob({ ...good, fateQueue: { max: 32, atDay: 0, filter: 'bogus' } }).ok, false, '未知 filter 应报错');
+  assert.equal(validateJob({ ...good, fateQueue: { max: 32, atDay: 0, filter: 'all', cue: 1 } }).ok, false,
+    '未知字段应报错（拼错的键不许被静默忽略）');
+  assert.equal(validateJob({ ...good, fateQueue: 'all' }).ok, false, '非对象应报错');
+  // filter 白名单与 fate-queue.mjs 同一份（FATE_FILTERS），逐个试过
+  for (const f of FATE_FILTERS) {
+    assert.equal(validateJob({ ...good, fateQueue: { max: 8, atDay: 0, filter: f } }).ok, true,
+      `filter=${f} 应合法`);
+  }
+});
+
+check('fateQueue：CLI JSON 解析 + config 默认 null（未写 = 不建队）', () => {
+  const good = { ...defaultJob(), profile: 'natural', viewPolicy: 'closed' };
+  const parsed = jobFromArgs({ fateQueue: '{"max":16,"atDay":720,"filter":"cultivators"}' }, good);
+  assert.equal(validateJob(parsed).ok, true, '合法 JSON 应被解析并通过校验');
+  assert.deepEqual(parsed.fateQueue, { max: 16, atDay: 720, filter: 'cultivators' });
+  // 未写 ⇒ config.fateQueue 为 null（区分「没写」与「显式写了空」）
+  assert.equal(validateJob(good).config.fateQueue, null, '未写 fateQueue 时 config 应为 null');
+  // 归一化：缺字段补齐默认值（max=32 / atDay=0 / filter=all）
+  const r = validateJob({ ...good, fateQueue: { max: 8 } });
+  assert.equal(r.ok, true, '只写 max 应合法');
+  assert.deepEqual(r.config.fateQueue, { max: 8, atDay: 0, filter: 'all' },
+    'config.fateQueue 应携带归一化后的完整规格');
+  assert.deepEqual(validateJob({ ...good, fateQueue: {} }).config.fateQueue,
+    { max: 32, atDay: 0, filter: 'all' }, '空对象 ⇒ 全默认');
+  // 坏 JSON 不做静默兜底
+  const broken = jobFromArgs({ fateQueue: '{"max":' }, good);
+  assert.equal(validateJob(broken).ok, false, '坏 JSON 必须报错');
+});
+
+check('fateQueue 进 configSignature（不同队列不许静默互覆）', () => {
+  const base = { ...defaultJob(), profile: 'natural', viewPolicy: 'closed' };
+  const c1 = validateJob({ ...base, fateQueue: { max: 16, atDay: 0, filter: 'all' } }).config;
+  const c2 = validateJob({ ...base, fateQueue: { max: 32, atDay: 0, filter: 'all' } }).config;
+  assert.notEqual(configSignature(c1), configSignature(c2), 'max 不同 ⇒ 两次不同实验 ⇒ 签名不同');
+  // 字段书写顺序不同但语义相同 ⇒ 签名必须相同
+  const c3 = validateJob({ ...base, fateQueue: { filter: 'all', atDay: 0, max: 16 } }).config;
+  assert.equal(configSignature(c3), configSignature(c1), '语义相同的队列（键序不同）签名必须相同');
+  // null 与「未写」天然同类：签名里都是 'none'
+  assert.equal(configSignature(validateJob(base).config), configSignature({ ...base, fateQueue: null }));
+});
+
+check('flattenFate：空快照 ⇒ 空行（不产只有表头的 fate.csv）', () => {
+  assert.deepEqual(flattenFate(1, []), [], '没开队列时必须返回空数组');
+  assert.deepEqual(flattenFate(1, null), []);
+  assert.deepEqual(flattenFate(1, [{ day: 360, members: [] }]), [], '空成员也要返回空数组');
+  // 一行成员 ⇒ 一行 CSV 行，且列与 FATE_CSV_COLUMNS 对齐
+  const rows = flattenFate(7, [{
+    day: 360,
+    members: [{ slot: 0, id: 3, name: '张三', state: 'alive', level: 2, maxLevelSeen: 5, everCultivator: true }],
+  }]);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].seed, 7);
+  assert.equal(rows[0].day, 360);
+  assert.equal(rows[0].name, '张三');
+  assert.equal(rows[0].maxLevelSeen, 5);
+  for (const col of FATE_CSV_COLUMNS) {
+    assert.ok(col in rows[0], `压平行必须含列 ${col}（缺列会让 CSV 出现空洞）`);
+  }
+  // 追加式纪律：FATE_COLUMNS 必须原样出现在 FATE_CSV_COLUMNS 里（顺序一致）
+  assert.deepEqual(FATE_CSV_COLUMNS.slice(2), [...FATE_COLUMNS],
+    'fate.csv 的列必须是 seed,day + FATE_COLUMNS 原序');
+});
+
+check('① selectFateQueue 确定性：同 seed 两世界的队列逐字相同（不抽 RNG）', () => {
+  const mk = () => createLabWorld({
+    seed: 4242, preset: 'small', profile: 'natural',
+    generationVersion: 2, terrainPreset: 'standard',
+  });
+  const a = mk();
+  const b = mk();
+  // 空池语义：第 0 日实体表是空的（初始人口排在 pendingSpawns）⇒ 选不出人，
+  // 返回 **空数组**而不是兜底选人。这条先钉死，否则「空队」会被误读成「没人可选」。
+  assert.deepEqual(selectFateQueue(a.world, { max: 16, atDay: 0, filter: 'all' }), [],
+    '第 0 日实体表为空，选队应返回空数组（不兜底、不抛错）');
+  // 推进到人口成形后再选：两个同 seed 世界必须选出**逐字相同**的队伍。
+  for (const lab of [a, b]) {
+    for (let d = 0; d < 90; d += 3) {
+      advanceWorld(lab.world, 3, {
+        life: lab.life, upperLife: lab.upperLife, rng: lab.ecoRng,
+        state: lab.advanceState, riftActive: false,
+      });
+    }
+  }
+  const qa = selectFateQueue(a.world, { max: 16, atDay: 0, filter: 'all' });
+  const qb = selectFateQueue(b.world, { max: 16, atDay: 0, filter: 'all' });
+  assert.deepEqual(qa, qb, '同 seed 的两次选队必须逐字相同（靠 id 排序，不靠随机）');
+  // 幂等：对同一个世界再选一次，结果不变（说明选队没推进世界）
+  assert.deepEqual(selectFateQueue(a.world, { max: 16, atDay: 0, filter: 'all' }), qa);
+  assert.ok(qa.length > 0 && qa.length <= 16, `队列规模应落在 1..16，实际 ${qa.length}`);
+  // 等距取样必须覆盖 id 区间（不是只取最早的 cap 个）
+  if (a.world.entities.length > 16) {
+    const ids = qa.map((m) => m.id);
+    assert.ok(Math.max(...ids) > Math.min(...ids), '等距取样应跨越 id 区间');
+  }
+});
+
+check('④★ 开关 fateQueue 不得改变世界 digest（纯采集的结构性证明）', () => {
+  const mk = (fateQueue) => validateJob({
+    ...defaultJob(), experiment: 'selftest-b2fate-purity',
+    profile: 'natural', viewPolicy: 'closed', seeds: [20260914], years: 3,
+    stepDays: 3, snapshotDays: 360, probeDays: 30,
+    ...(fateQueue ? { fateQueue } : {}),
+  }).config;
+  // atDay 落在运行中段（第 2 年）——建队路径也要走到，而不只是开头建一次。
+  const withFate = runSeedSafely(mk({ max: 16, atDay: 720, filter: 'all' }), 20260914);
+  const without = runSeedSafely(mk(null), 20260914);
+  assert.equal(withFate.ok && without.ok, true,
+    `两次运行都应成功：${withFate.error ? withFate.error.message : ''}${without.error ? without.error.message : ''}`);
+  assert.equal(withFate.result.fingerprint.digest, without.result.fingerprint.digest,
+    '★ 开队列与不开队列的世界指纹必须逐字节相同（fate-queue 只读纪律）');
+  assert.equal(withFate.result.fingerprint.bytes, without.result.fingerprint.bytes);
+  // 反证：队列确实采到了东西（否则「digest 相同」可能是因为「什么都没采」）
+  const snaps = withFate.result.fateSnapshots;
+  assert.ok(snaps.length >= 2, `3 年里应至少采到 2 期（建队在第 2 年），实际 ${snaps.length}`);
+  assert.equal(snaps[0].members.length, 16, '队列规模应为 16');
+  // 不开队列时 result.fateSnapshots 必须是空数组（报告层据此不写 fate.csv）
+  assert.deepEqual(without.result.fateSnapshots, []);
+});
+
+check('② atDay 语义：没到建队日不采；atDay=0 从第一期就采', () => {
+  const mk = (atDay) => validateJob({
+    ...defaultJob(), experiment: 'selftest-b2fate-atday',
+    profile: 'natural', viewPolicy: 'closed', seeds: [20260914], years: 3,
+    stepDays: 3, snapshotDays: 360, probeDays: 30,
+    fateQueue: { max: 8, atDay, filter: 'all' },
+  }).config;
+  const never = runSeedSafely(mk(99999), 20260914);   // 建队日在总时长之外
+  assert.equal(never.ok, true);
+  assert.deepEqual(never.result.fateSnapshots, [], 'atDay 超过总时长时一期都不该采');
+  const fromZero = runSeedSafely(mk(0), 20260914);
+  assert.ok(fromZero.result.fateSnapshots.length >= 3,
+    'atDay=0 时应从第 1 期（第 360 日）就开始采');
+  assert.equal(fromZero.result.fateSnapshots[0].day, 360, '第一期应落在第一个快照日');
+});
+
+check('③★ 幸存者偏差零容忍：长跑后成员数恒定，且死者留在样本里', () => {
+  // 60 年足够让一代凡人走完一生：若队列被「悄悄只留活人」，
+  // members.length 会随死亡下降——这条断言就是抓那个的。
+  const cfg = validateJob({
+    ...defaultJob(), experiment: 'selftest-b2fate-survival',
+    profile: 'natural', viewPolicy: 'closed', seeds: [20260914], years: 60,
+    stepDays: 3, snapshotDays: 360, probeDays: 30,
+    fateQueue: { max: 24, atDay: 0, filter: 'all' },
+  }).config;
+  const r = runSeedSafely(cfg, 20260914);
+  assert.equal(r.ok, true, `60 年运行应成功：${r.error ? r.error.message : ''}`);
+  const snaps = r.result.fateSnapshots;
+  assert.ok(snaps.length >= 60, `应采到约 60 期，实际 ${snaps.length}`);
+  const sizes = snaps.map((s) => s.members.length);
+  for (const n of sizes) {
+    assert.equal(n, 24, '每一期的成员数必须恒为 24（样本只增不减，绝不悄悄移除）');
+  }
+  const last = snaps[snaps.length - 1];
+  const states = {};
+  for (const m of last.members) states[m.state] = (states[m.state] || 0) + 1;
+  assert.ok((states.dead || 0) + (states.ascended || 0) + (states.unavailable || 0) > 0,
+    `60 年后必须有成员离开实体表；四态分布=${JSON.stringify(states)}（全 alive 说明队列被过滤过）`);
+  // 死者必须带**可证的**最后状态：level / died / cause / fate 至少一项有值，
+  // 且 maxLevelSeen ≥ 名册 level（跨样本记忆不许丢）
+  const gone = last.members.filter((m) => m.state !== 'alive');
+  for (const m of gone) {
+    assert.ok(m.died !== '' || m.cause !== '' || m.fate !== '' || m.state === 'unavailable',
+      `离开实体表的成员应有可证的最后状态（id=${m.id} state=${m.state}）`);
+    assert.ok((Number(m.maxLevelSeen) || 0) >= (Number(m.level) || 0),
+      `maxLevelSeen 必须 ≥ 名册 level（跨样本记忆丢了？id=${m.id}）`);
+  }
+  // 摘要器：四态计数之和 = 成员数（不容许多算或少算）
+  const summary = fateQueueSummary(snaps);
+  assert.equal(summary.counts.alive + summary.counts.dead + summary.counts.ascended + summary.counts.unavailable,
+    summary.memberCount, '四态计数之和必须等于成员数');
+  assert.deepEqual(summary.columns, [...FATE_COLUMNS], '摘要应带上列清单（便于 CSV 对齐）');
+  // ★ 境界列必须是**真标签**：`realmLabel` 收的是等级（内部自己调 realmFor）。
+  //   曾经误写成 realmLabel(realmFor(level)) ⇒ 整列变成「炼气NaN层」——
+  //   一个看起来像数据、其实是 NaN 的列。这条断言就是守它。
+  for (const snap of snaps) {
+    for (const m of snap.members) {
+      if (m.state !== 'alive') continue;
+      if ((Number(m.level) || 0) <= 0) {
+        assert.equal(m.realm, '凡人', 'level<=0 的境界必须是「凡人」');
+      } else {
+        assert.ok(!String(m.realm).includes('NaN'),
+          `境界列不得含 NaN（id=${m.id} level=${m.level} realm=${m.realm}）`);
+        assert.ok(String(m.realm).length >= 2, `境界列应是真标签：${m.realm}`);
+      }
+    }
+  }
+  // 心魔列只对活体有值（死者不可得 ⇒ 空，不是 0）
+  for (const m of last.members) {
+    if (m.state === 'alive') assert.ok(m.heartDemon !== '', '活体必须带心魔读数');
+    else assert.equal(m.heartDemon, '', '死者的心魔不可得，必须留空而不是填 0');
+  }
+});
+
+check('fateQueueSpec：归一化的边界（钳位而不是抛错，校验已在上游做完）', () => {
+  assert.equal(fateQueueSpec(null), null, 'null ⇒ 不建队');
+  assert.equal(fateQueueSpec(undefined), null);
+  assert.deepEqual(fateQueueSpec({ max: 999 }), { max: 64, atDay: 0, filter: 'all' }, 'max 超出上限应钳到 64');
+  assert.deepEqual(fateQueueSpec({ max: -5 }), { max: 1, atDay: 0, filter: 'all' }, 'max 负值应钳到 1');
+  assert.deepEqual(fateQueueSpec({ atDay: -10 }), { max: 32, atDay: 0, filter: 'all' }, 'atDay 负值应钳到 0');
+  // 未知 filter 回落默认值（这里不抛错：validateJob 已经在跑前挡住了）
+  assert.deepEqual(fateQueueSpec({ filter: 'bogus' }), { max: 32, atDay: 0, filter: 'all' });
 });
 
 // ══════════════════════════════════════════════════════════════════

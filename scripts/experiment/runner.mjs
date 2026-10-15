@@ -68,6 +68,8 @@ import { createLabWorld } from './world-factory.mjs';
 import { profileOf } from './profiles.mjs';
 import { collectProbe, collectSnapshot } from './collectors.mjs';
 import { worldFingerprint } from './digest.mjs';
+// B2-2：人物命运观察队列（只读采集，见 fate-queue.mjs 头注释的四条纪律）。
+import { selectFateQueue, collectFate } from './fate-queue.mjs';
 // B1-5：可调参数的作用域覆盖（见本文件头部「参数覆盖」一段）。
 import { withTunables, currentOverrides } from '../../src/inkbox/sim/tunables.js';
 
@@ -136,6 +138,26 @@ function runSeedInner(config, seed, hooks = {}) {
   const collect = config.collect !== false;
   const snapshots = [];
   const probes = [];
+  // ── B2-2 · 命运观察队列 ────────────────────────────────────────
+  //
+  // `config.fateQueue` 已是 `validateJob` 归一化后的规格（{max, atDay, filter}）
+  // 或 null。三个变量的分工：
+  //   · `fateSpec`      —— 本次要不要建队（null = 不建，一个字节都不采）；
+  //   · `fateQueue`     —— **建队后不再变动**的成员名单。名单是「输入」而不是
+  //                       每次重算的产物：若每次采样都重选，世界演化会把原成员
+  //                       换掉，样本就成了「今天还活着的人」——那正是幸存者偏差，
+  //                       本装置存在的全部理由就是消灭它；
+  //   · `prevFate`      —— 上一次采集，用于跨样本记忆（maxLevelSeen /
+  //                       everCultivator / lastAliveDay）。成员死去后这些字段
+  //                       仍要能回答「他这一辈子到过哪个境界」。
+  //
+  // ⚠️ 采集频率**绑快照**（snapshotDays，默认 1 年）而不是绑 probe / 推进步：
+  //    300 年 × 32 人若每 3 游戏日一采是 117 万行，其中 99% 是同一状态的复读；
+  //    而年度粒度足够回答「人生是否分叉」（一次炼气→筑基的跃升在年级别可见）。
+  const fateSpec = config.fateQueue || null;
+  let fateQueue = null;
+  let prevFate = null;
+  const fateSnapshots = [];
 
   // ⚠️ B0.1 §8：这里**不再有 `Math.round`**。
   //    旧版写的是 `Math.round(config.years)`，于是 `years: 3.7` 会被静默跑成 4 年，
@@ -168,9 +190,38 @@ function runSeedInner(config, seed, hooks = {}) {
     }
     if (day >= nextSnapshotDay) {
       snapshots.push(collectSnapshot(lab));
+      collectFateIfDue(day);
       do { nextSnapshotDay += config.snapshotDays; } while (nextSnapshotDay <= day);
     }
   };
+
+  /**
+   * 命运队列的「到点建队 + 按期采集」。
+   *
+   * ⚠️ 建队条件是「已达 atDay **且**实体表非空」，而不是「第一次调用就建」。
+   *    两个理由各自对应一种失败：
+   *      · 只按 atDay：`atDay` 小于人口成形期时建出**空队**，之后每一期都是
+   *        0 成员——fate.csv 要么不存在（report 层跳过空行），要么是一堆空行，
+   *        而你会以为「这个世界的个体不可追踪」；
+   *      · 忽略 atDay：队列在第一次采样（可能是第 0 日）就建好，观察的是
+   *        「初始人口」而不是「atDay 时的世界构成」——而那正是 B2-2 要研究的。
+   *    实际建队日记在 fate.csv 第一行的 `day` 上，不猜不编。
+   * ⚠️ 本函数只读 world（`selectFateQueue` 按 id 排序等距取，不抽 RNG；
+   *    `collectFate` 只读实体表与名册）。开关它不得改变世界指纹——
+   *    这条由自检的 B2-2 段钉死。
+   */
+  function collectFateIfDue(day) {
+    if (!fateSpec) return;
+    if (!fateQueue) {
+      if (day < fateSpec.atDay) return;        // 还没到建队日：这一期不采
+      const picked = selectFateQueue(world, fateSpec);
+      if (picked.length === 0) return;         // 空池（人口还没落地）：等下一期
+      fateQueue = picked;
+    }
+    const snap = collectFate(world, fateQueue, prevFate);
+    prevFate = snap;
+    fateSnapshots.push(snap);
+  }
 
   // 世界初态（第 0 日）。为什么要有它：它是「变化了多少」的唯一参照，
   // 而且它把「世界建出来就是这样」与「跑了一年变成这样」分开——
@@ -211,6 +262,9 @@ function runSeedInner(config, seed, hooks = {}) {
   //    而那是「最终状态」——整份报告最重要的一行。
   if (collect && (world.day > 0) && snapshots[snapshots.length - 1].day !== world.day) {
     snapshots.push(collectSnapshot(lab));
+    // B2-2：尾快照同样要带一次命运采集——否则队列的最后一行停在去年，
+    //    「第 300 年谁还活着」这个问题在 fate.csv 里没有答案。
+    collectFateIfDue(world.day);
   }
   if (collect && (world.day > 0) && probes[probes.length - 1].day !== world.day) {
     probes.push(collectProbe(lab));
@@ -239,6 +293,10 @@ function runSeedInner(config, seed, hooks = {}) {
     stepDays,
     snapshots,
     probes,
+    // B2-2：命运快照序列（空数组 = 没开队列）。⚠️ 它在 result 里而不是被
+    //   直接写盘：runner 只负责「采集对」，写哪儿是 report.mjs 的决定
+    //   （同一份 result 要被 writer / aggregate / 自检三方消费）。
+    fateSnapshots,
     fingerprint,
     elapsedMs: Date.now() - startedAt,
     tally: lab.tally,

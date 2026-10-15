@@ -46,6 +46,9 @@ import { describeProfile, parameterOverrideSignature } from './profiles.mjs';
 import { DIGEST_SCHEME } from './digest.mjs';
 import { countBySeverity } from './diagnostics.mjs';
 import { mean, median, min, max, percentile } from './stats.mjs';
+// B2-2：命运队列的列清单与摘要器。注意 `fate.csv` 的前两列（seed / day）由
+//   本文件加——FATE_COLUMNS 描述的是**单个成员**，不含「哪次运行、哪一天」。
+import { FATE_COLUMNS, FATE_QUEUE_KEYS, fateQueueSummary } from './fate-queue.mjs';
 
 /** 工程根目录（`scripts/experiment/` 往上两级）。 */
 export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -148,6 +151,9 @@ export function summarizeSeed(result, config, diagnostics) {
     //   与 manifest 的 `parameterOverrides`（请求值）分列，两者不等即为
     //   「请求了但没进作用域」——这正是不把两者合并的理由。
     parameterOverrides: result.parameterOverrides || {},
+    // B2-2：命运队列摘要（null = 本次没开队列）。summary 里放摘要而不是
+    //   全量：全量在 fate.csv 里，summary 要能一眼回答「样本还剩几个活的」。
+    fateQueue: fateQueueSummary(result.fateSnapshots || []),
     years: result.years,
     finalDay: result.finalDay,
     samples: { snapshots: snapshots.length, probes: result.probes.length },
@@ -168,6 +174,36 @@ function describeSeries(series) {
     p10: percentile(series, 0.1),
     p90: percentile(series, 0.9),
   };
+}
+
+/**
+ * `fate.csv` 的列清单：`seed,day` + 每成员一行的 FATE_COLUMNS。
+ *
+ * ⚠️ 追加式纪律同样适用：新列只能加在**末尾**，永不改名删列
+ *    （旧 fate.csv 必须是新 fate.csv 的前缀子集）。seed / day 放最前而不是
+ *    最后，是因为「这份行属于哪次运行」是第一位的定位信息——但它同样永不挪位。
+ */
+export const FATE_CSV_COLUMNS = Object.freeze(['seed', 'day', ...FATE_COLUMNS]);
+
+/**
+ * 把一次运行的命运快照压平成 CSV 行。
+ *
+ * 空数组 ⇒ 返回 []（调用方据此**不写** fate.csv，而不是写一份只有表头的）。
+ * 这个区别重要：一份只有表头的 fate.csv 看起来像「跑过了，没有人」，
+ * 而真相是「这个 Job 根本没开队列」——两者在复盘时长得一样。
+ */
+export function flattenFate(seed, fateSnapshots) {
+  if (!Array.isArray(fateSnapshots) || fateSnapshots.length === 0) return [];
+  const rows = [];
+  for (const snap of fateSnapshots) {
+    if (!snap || !Array.isArray(snap.members)) continue;
+    for (const m of snap.members) {
+      const row = { seed, day: snap.day };
+      for (const col of FATE_COLUMNS) row[col] = m[col] === undefined ? '' : m[col];
+      rows.push(row);
+    }
+  }
+  return rows;
 }
 
 // ───────────────────────────────────────────────────────────────────────
@@ -394,6 +430,12 @@ export function configSignature(config) {
     //   若共用目录名，后者会静默覆盖前者，而两份 timeseries.csv 的列与形状
     //   完全一样。零覆盖 ⇒ 这一项是 'none'，与 natural 天然相同（都无覆盖）。
     parameterOverrideSignature(config.parameterOverrides),
+    // B2-2：命运队列**进签名**。它与前两项的差别在于作用面——它不改变世界线，
+    //   但改变**产物集**（多一份 fate.csv）。若两个只有队列不同的实验共用目录名，
+    //   后跑的那个会让 fate.csv 静静变成它的，而 timeseries.csv / summary.json
+    //   一字不差——于是你拿到一份「带着不认识的人的命运数据」的基线。
+    //   null ⟹ 'none'，与「没有该字段的旧 Job」天然相同（旧 Job 全部无队列）。
+    fateQueueSignature(config.fateQueue),
     String(config.years), String(config.stepDays),
     String(config.snapshotDays), String(config.probeDays),
     config.seeds.join(','),
@@ -415,6 +457,21 @@ function interventionSignature(intervention) {
   const rest = Object.keys(intervention).filter((k) => k !== 'kind').sort();
   for (const k of rest) parts.push(`${k}=${String(intervention[k])}`);
   return parts.join(',');
+}
+
+/**
+ * 把命运队列规格压成一个稳定字符串，进 `configSignature`。
+ *
+ * 同 `interventionSignature` 的理由：**按固定键序拼接**，不用 `JSON.stringify`
+ * （后者键序取决于书写顺序 ⇒ 两份语义相同的队列会得到不同签名）。
+ * 另有一条自己的纪律：**排序后比较，而不是按输入顺序**——`{max:32,atDay:0}`
+ * 与 `{atDay:0,max:32}` 是同一份实验，必须得到同一签名。
+ */
+function fateQueueSignature(fateQueue) {
+  if (!fateQueue) return 'none';
+  return FATE_QUEUE_KEYS.slice().sort()
+    .map((k) => `${k}=${String(fateQueue[k])}`)
+    .join(',');
 }
 
 // ───────────────────────────────────────────────────────────────────────
@@ -511,6 +568,9 @@ export function createReporter(config, options = {}) {
       : (r.diagnostics || []);
     writeText(path.join(sDir, 'timeseries.csv'), toCsv(SNAPSHOT_COLUMNS, r.snapshots));
     writeText(path.join(sDir, 'probes.csv'), toCsv(PROBE_COLUMNS, r.probes));
+    // B2-2：开了队列才写 fate.csv（空队列 ⇒ 一个字节都不写，理由见 flattenFate）
+    const fateRows = flattenFate(r.seed, r.fateSnapshots);
+    if (fateRows.length) writeText(path.join(sDir, 'fate.csv'), toCsv(FATE_CSV_COLUMNS, fateRows));
     writeJson(path.join(sDir, 'summary.json'), summarizeSeed(r, config, diagnostics));
     writeJson(path.join(sDir, 'diagnostics.json'), diagnostics);
     writeJson(path.join(sDir, 'fingerprint.json'), r.fingerprint);
@@ -521,17 +581,21 @@ export function createReporter(config, options = {}) {
     if (isWorker) return;
     const snapshots = [];
     const probes = [];
+    const fateRows = [];
     const diagnostics = [];
     const summaries = [];
     for (const r of done) {
       for (const s of r.snapshots) snapshots.push(s);
       for (const p of r.probes) probes.push(p);
+      for (const row of flattenFate(r.seed, r.fateSnapshots)) fateRows.push(row);
       const d = options.diagnose ? options.diagnose(r, config) : (r.diagnostics || []);
       for (const e of d) diagnostics.push(e);
       summaries.push(summarizeSeed(r, config, d));
     }
     writeText(path.join(dir, 'timeseries.csv'), toCsv(SNAPSHOT_COLUMNS, snapshots));
     writeText(path.join(dir, 'probes.csv'), toCsv(PROBE_COLUMNS, probes));
+    // B2-2：顶层 fate.csv 只为「有任意 seed 开了队列」而存在。
+    if (fateRows.length) writeText(path.join(dir, 'fate.csv'), toCsv(FATE_CSV_COLUMNS, fateRows));
     writeJson(path.join(dir, 'diagnostics.json'), diagnostics);
     writeJson(path.join(dir, 'summary.json'), buildSummary(config, summaries, diagnostics, failures));
   }
@@ -613,6 +677,12 @@ export function aggregate(config, options = {}) {
   const failed = [];
   const snapshotRows = [];
   const probeRows = [];
+  // B2-2：命运行。⚠️ 与 timeseries / probes 一样**逐行拼接原文**，不重新
+  //   格式化——否则聚合产物与单进程产物不会逐 byte 相同（B0.1 §10 的契约）。
+  const fateRows = [];
+  // 只在「至少一个 seed 目录里有 fate.csv」时才写顶层 fate.csv。
+  //   没有它却写一份只有表头的文件，会让复盘误以为「这个 Job 开了队列但没人」。
+  let hasFate = false;
 
   for (const seed of config.seeds) {
     const sDir = path.join(seedsDir, String(seed));
@@ -643,6 +713,16 @@ export function aggregate(config, options = {}) {
       for (let i = 1; i < lines.length; i += 1) sink.push(lines[i]);
     }
 
+    // B2-2：fate.csv 同样逐行拼接；顺带抬起 hasFate 旗标。
+    const fatePath = path.join(sDir, 'fate.csv');
+    if (fs.existsSync(fatePath)) {
+      hasFate = true;
+      const text = fs.readFileSync(fatePath, 'utf8');
+      const lines = text.split(NL);
+      if (lines.length && lines[lines.length - 1] === '') lines.pop();
+      for (let i = 1; i < lines.length; i += 1) fateRows.push(lines[i]);
+    }
+
     const failPath = path.join(sDir, 'failure.json');
     if (fs.existsSync(failPath)) {
       const f = JSON.parse(fs.readFileSync(failPath, 'utf8'));
@@ -658,6 +738,11 @@ export function aggregate(config, options = {}) {
     `${header(SNAPSHOT_COLUMNS)}${snapshotRows.length ? `${snapshotRows.join(NL)}${NL}` : ''}`);
   writeText(path.join(dir, 'probes.csv'),
     `${header(PROBE_COLUMNS)}${probeRows.length ? `${probeRows.join(NL)}${NL}` : ''}`);
+  // B2-2：有命运数据才写（理由见 hasFate 处的注释）。
+  if (hasFate) {
+    writeText(path.join(dir, 'fate.csv'),
+      `${header(FATE_CSV_COLUMNS)}${fateRows.length ? `${fateRows.join(NL)}${NL}` : ''}`);
+  }
   writeJson(path.join(dir, 'diagnostics.json'), diagnostics);
   writeJson(path.join(dir, 'summary.json'), buildSummary(config, summaries, diagnostics, failures));
   writeJson(path.join(dir, 'manifest.json'), buildManifest(config, manifestExtras(config)));
@@ -683,6 +768,10 @@ export function buildSummary(config, seedSummaries, diagnostics, failures) {
       intervention: config.intervention ? { ...config.intervention } : null,
       // B1-5：可调参数覆盖的**请求值**（null = 零覆盖 ≡ 默认）。
       parameterOverrides: config.parameterOverrides ? { ...config.parameterOverrides } : null,
+      // B2-2：命运队列的**请求规格**（null = 本次没开队列）。与上面两项
+      //   同样进 summary：读 summary 的人要能判断「有没有命运数据可看」，
+      //   而不是去目录里翻 fate.csv 在不在。
+      fateQueue: config.fateQueue ? { ...config.fateQueue } : null,
       seeds: config.seeds.slice(),
       years: config.years,
       stepDays: config.stepDays,

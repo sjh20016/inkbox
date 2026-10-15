@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 3,
+  "experiment": "b2-fate-300y",
+  "experimentGroup": "b2-s3-fate",
+  "profile": "natural",
+  "preset": "medium",
+  "seeds": [20260914, 7, 424242],
+  "years": 300,
+  "stepDays": 3,
+  "snapshotDays": 360,
+  "probeDays": 30,
+  "viewPolicy": "closed",
+  "generationVersion": 2,
+  "terrainPreset": "standard",
+  "fateQueue": {
+    "max": 32,
+    "atDay": 3600,
+    "filter": "all"
+  }
+}

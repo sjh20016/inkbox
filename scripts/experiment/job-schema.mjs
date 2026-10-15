@@ -23,6 +23,10 @@ import { WORLD_PRESETS } from '../../src/inkbox/core/config.js';
 import { PROFILE_NAMES, profileDefaultViewPolicy, INTERVENTION_KINDS } from './profiles.mjs';
 import { GENERATION_VERSIONS, TERRAIN_PRESET_NAMES } from './world-factory.mjs';
 import { TUNABLE_NAMES, tunableMeta } from '../../src/inkbox/sim/tunables.js';
+// B2-2：命运队列的白名单从 fate-queue.mjs 取（**一处定义**，理由见该文件的
+//   FATE_FILTERS 注释）。job-schema 已经经 world-factory 传递加载整个 sim，
+//   所以这一行不引入新的依赖面。
+import { FATE_FILTERS, FATE_QUEUE_KEYS, fateQueueSpec } from './fate-queue.mjs';
 
 /**
  * Job 文件格式版本。改了字段语义就 +1——云端要靠它决定怎么读。
@@ -62,6 +66,17 @@ import { TUNABLE_NAMES, tunableMeta } from '../../src/inkbox/sim/tunables.js';
  *     （零覆盖 ≡ 默认），故版本号不必动。为什么必须与 `sensitivity` profile 绑定、
  *     且为什么键必须来自 `TUNABLE_NAMES`：见 validateJob 里该段的注释。
  *
+ * v3（B2-2 增补，**不改版本号**）：
+ *   · 新增可选字段 `fateQueue`（人物命运观察队列，任何 profile 生效）。
+ *     与上两条同口径：不写 ⇒ 队列不建、不采集、不产 fate.csv，语义与旧 v3 Job
+ *     完全一致。它与 intervention / parameterOverrides 的差别在于**作用面**：
+ *     后两者改变「世界怎么跑」，fateQueue 只改变「多记一份读数」——它是纯采集，
+ *     所以不绑定任何 profile。相应地，它必须满足更硬的一条纪律：开关它不得改变
+ *     世界指纹（`inkbox-experiment-selftest.mjs` 的 B2-2 段钉死）。
+ *     为什么 still 要在这里严格校验形状：一份 `fateQueue: {max: 0}` 若被静默
+ *     忽略，跑出来的就是一份「没有命运数据」的实验，而报告目录里什么都没有——
+ *     这种缺失**没有任何痕迹**，比报错危险得多。
+ *
  * ⚠️ 为什么增补字段时**不改版本号**：schemaVersion 的语义是「怎么读这份 Job」。
  *    新增一个**带严格默认**（不写=无操作）的可选字段，不改变任何旧 Job 的读法，
  *    相应地也不该让旧 Job 失效。真正需要 +1 的是「改了已有字段的语义」
@@ -87,6 +102,8 @@ export const JOB_KEYS = Object.freeze([
   'intervention',
   // ── B1-5：可调参数覆盖（仅 profile=sensitivity 时生效）───────
   'parameterOverrides',
+  // ── B2-2：人物命运观察队列（纯采集，任何 profile 生效）────────
+  'fateQueue',
   // 运行控制（不影响世界线，只影响「跑不跑 / 跑完写哪儿」）
   'collect', 'outputRoot', 'failFast',
   // B0.1 §10：云实验的单 seed worker 开关（见 validateJob 的说明）
@@ -366,6 +383,48 @@ export function validateJob(raw) {
     }
   }
 
+  // ── B2-2 · 人物命运观察队列（可选，**任何 profile** 生效）──────
+  //
+  // ⚠️ 为什么它不像 parameterOverrides 那样绑定 profile：fateQueue 是**纯采集**
+  //    （`scripts/experiment/fate-queue.mjs` 只读 world、不抽签、不推进），
+  //    所以它在 natural / intervention / sensitivity 下都合法且无歧义。
+  //    那为什么还要在这里严格校验：因为「静默忽略」的代价是**无声的**——
+  //    `fateQueue: {max: 0}` 若被当作「没有队列」，跑完的目录里就是没有 fate.csv，
+  //    而你会以为「这个实验的个体都不可追踪」。缺一份数据和没有数据，
+  //    在只看目录的复盘里长得一模一样。
+  //
+  // 三条形状规则：
+  //   1) `max` 正整数且 ≤ 64（委托书：至多 32 名；留到 64 是给敏感性用的头寸）；
+  //   2) `atDay` 非负整数（第几天建队；0 = 人口一成形就建）；
+  //   3) `filter` ∈ {all, cultivators, mortals}（选取范围；**写法**与 digest 无关，
+  //      只影响「观察谁」——它不参与世界线，但进 manifest 与 configSignature）。
+  //   ⚠️ 三者**全部可选**：`fateQueue: {}` 是合法的（= 全默认：32 人 / 下界 0 /
+  //      全部人口）。因为「开一个默认队列」本身是一个明确的请求，不是省略。
+  //      只在「写了但非法」时报错——缺字段由 `fateQueueSpec` 补默认（一处定义）。
+  // 未知字段一律报错（与 intervention 同口径）：形状随专题演化时是「加新键」，
+  //   而不是在旧键上塞可选值——后者会让「拼错的键被静默忽略」重新变成可能。
+  if (raw.fateQueue !== undefined) {
+    const fq = raw.fateQueue;
+    if (!isPlainObject(fq)) {
+      errors.push('fateQueue 必须是一个对象（形如 {max: 32, atDay: 3600, filter: "all"}）');
+    } else {
+      if (fq.max !== undefined && (!isPositiveInt(fq.max) || fq.max > 64)) {
+        errors.push(`fateQueue.max 必须是 1..64 的正整数，收到 ${JSON.stringify(fq.max)}`
+          + '（委托书 §B2-2：至多 32 名；上限留到 64）');
+      }
+      if (fq.atDay !== undefined && (!Number.isInteger(fq.atDay) || fq.atDay < 0)) {
+        errors.push(`fateQueue.atDay 必须是非负整数（建队日下界；0 = 人口一成形就建），收到 ${JSON.stringify(fq.atDay)}`);
+      }
+      if (fq.filter !== undefined && !FATE_FILTERS.includes(fq.filter)) {
+        errors.push(`fateQueue.filter 必须是 ${FATE_FILTERS.join(' / ')} 之一，收到 ${JSON.stringify(fq.filter)}`);
+      }
+      const fqExtra = Object.keys(fq).filter((k) => !FATE_QUEUE_KEYS.includes(k));
+      if (fqExtra.length) {
+        errors.push(`fateQueue 含未知字段 ${JSON.stringify(fqExtra)}（允许：${FATE_QUEUE_KEYS.join(', ')}）`);
+      }
+    }
+  }
+
   if (errors.length) return { ok: false, errors, config: null };
 
   const config = {
@@ -388,6 +447,13 @@ export function validateJob(raw) {
     //   保持 undefined 而不是补一个 `{}`：那样会让「没写覆盖」与「显式写了空覆盖」
     //   在产物里同形，而前者是「一份没有 sensitivity 语义的 Job」——必须能分辨。
     parameterOverrides: raw.parameterOverrides === undefined ? null : raw.parameterOverrides,
+    // ── B2-2 人物命运观察队列（纯采集，任何 profile 生效）─────────
+    //   与 intervention 同口径区分「没写」与「显式写了空」：
+    //   `undefined` ⟹ null ⟹ 不建队列、不产 fate.csv。
+    //   ⚠️ 这里存**归一化后的规格**（补齐 max/atDay/filter 默认值）而不是原样
+    //      回显：校验已在上面做完（非法值到不了这一行），runner 直接消费规格，
+    //      不需要再做一次「缺字段补默认」——那会让默认值有两处定义。
+    fateQueue: raw.fateQueue === undefined ? null : fateQueueSpec(raw.fateQueue),
     seeds: raw.seeds.slice(),
     years: raw.years,
     stepDays: raw.stepDays,
@@ -469,6 +535,18 @@ export function jobFromArgs(args, base = {}) {
       try { raw.parameterOverrides = JSON.parse(t); } catch { raw.parameterOverrides = t; }
     } else {
       raw.parameterOverrides = t;   // 交给校验器报错
+    }
+  }
+  // ── B2-2：人物命运观察队列 ─────────────────────────────────────
+  // ⚠️ 与 intervention / parameterOverrides 同口径：只接受 JSON 文本，
+  //    **不做逐字段拆解**（否则 CLI 与 schema 各长一份形状定义，迟早分叉）。
+  //    非法 JSON 原样留成字符串 ⇒ validateJob 报「必须是一个对象」。
+  if (args.fateQueue !== undefined) {
+    const t = String(args.fateQueue).trim();
+    if (t.startsWith('{')) {
+      try { raw.fateQueue = JSON.parse(t); } catch { raw.fateQueue = t; }
+    } else {
+      raw.fateQueue = t;   // 交给校验器报错
     }
   }
   // ⚠️ 布尔参数**不做真值强转**：`--collect=maybe` 若被当成 `true`，
