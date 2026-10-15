@@ -137,14 +137,31 @@ export class VegetationLayer {
     this.pendingRegionRebuild = true;
   }
 
-  update() {
+  /**
+   * G2-P0.3 §9 候选：`options.heightChanged === false` 时**不再强制**重写实例，
+   * 改由 `_reassignAndUpload()` 自带的等价判据（`changed`：逐 cell 比对 LOD 归属）决定。
+   *
+   * 为什么这样是等价的（三条都必须成立，缺一不可）：
+   *   1. 树木的 `x/y/size/rotation` 全部由 `cellHash(world.seed, cell, salt)` 决定
+   *      （`deriveVegetation.js:15`），**与 `veg` 无关** ⇒ 只要树的 cell 集合相同，
+   *      派生属性必然逐项相同；
+   *   2. 树集合不同 ⇒ `_lodByTree` 的键集合不同 ⇒ `changed = true` ⇒ 照常重写；
+   *      成员缩减/新增（`veg` 跨过阈值）同理被这条判据捕获；
+   *   3. 贴地高度走 `elevation.at()`，`veg` 变化不会碰它 —— 它只随高程变化，
+   *      而调用方用 `heightChanged=false` 明确保证了高程未变。
+   * 另外 `setArtProfile()` / `setLODEnabled()` / `setArtView()` 走各自的强制路径，
+   * 不经此处，不受影响。
+   *
+   * ⚠️ `heightChanged` 默认 **true**：不传参时行为与改动前**逐字节一致**。
+   */
+  update(options = {}) {
     const all = deriveVegetation(this.world);
     // 只在重建时过滤（本方法由节流通道调用，不是每帧）。
     this.trees = this.regionGeometry && !this.regionGeometry.allInside
       ? all.filter(tree => this.regionGeometry.isInsideCell(tree.x, tree.y) === this.regionInside)
       : all;
     this.pendingRegionRebuild = false;
-    this._reassignAndUpload(true);
+    this._reassignAndUpload(options.heightChanged !== false);
   }
 
   /** Enable opt-in CPU attribution for the forest LOD assignment path. */

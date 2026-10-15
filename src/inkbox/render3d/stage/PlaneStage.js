@@ -262,7 +262,9 @@ export class PlaneStage {
     if (this.vegetation && (heightChanged || typeRegion || vegRegion || this.vegetation.pendingRegionRebuild)) this.vegetationPending = true;
     this.treeClock += Number.isFinite(dt) ? dt : 0;
     if (this.vegetationPending && (heightChanged || this.treeClock >= 0.15)) {
-      this.vegetation.update(); this.vegetationPending = false; this.treeClock = 0;
+      // G2-P0.3 §9：把高程是否变化如实告诉植被层。heightChanged=false 时它不再强制
+      // 重写 10000 个实例矩阵（门禁口径下 22 次 update 里 15 次的树集合并未变化）。
+      this.vegetation.update({ heightChanged }); this.vegetationPending = false; this.treeClock = 0;
     }
     const t3 = performance.now();
     const options = { heightChanged };
