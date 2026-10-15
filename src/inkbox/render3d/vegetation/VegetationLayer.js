@@ -50,6 +50,9 @@ export class VegetationLayer {
     this.pilotGeometry = this.lodGeometries[0]; this.pilotMaterial = null;
     this._nextLodByTree = new Map();
     this._dummy = new THREE.Object3D();
+    this._transformCache = new Map(); this._nextTransformCache = new Map();
+    this._transformWorld = world; this._transformSeed = world.seed;
+    this._transformCacheHits = 0; this._transformCacheMisses = 0;
     this._variantTints = Array.from({ length: 5 }, () => new THREE.Color('#ffffff'));
     this._whiteTint = new THREE.Color('#ffffff');
     this._variantCounts = [0, 0, 0, 0, 0];
@@ -151,6 +154,7 @@ export class VegetationLayer {
   setLODProbeEnabled(enabled = true) {
     if (!enabled) { this.lodProbe = null; return null; }
     this.lodProbe = {
+      transformCacheHits: 0, transformCacheMisses: 0,
       calls: 0, matrixUploadCount: 0, matrixInstancesWritten: 0, matrixNeedsUpdateMarks: 0,
       concatTemporaryArrays: 0, concatTemporaryElements: 0, concatTemporaryElementsAvoided: 0,
       partitionElementsProcessed: 0, renderTreesArraysAllocated: 0, last: null,
@@ -226,6 +230,8 @@ export class VegetationLayer {
       probe.concatTemporaryElementsAvoided += partitionElementsProcessed;
       probe.renderTreesArraysAllocated += uploaded ? this.lodMeshes.length : 0;
       if (uploaded) {
+        probe.transformCacheHits += this._transformCacheHits;
+        probe.transformCacheMisses += this._transformCacheMisses;
         probe.matrixUploadCount++;
         probe.matrixInstancesWritten += matrixInstancesWritten;
         probe.matrixNeedsUpdateMarks += matrixNeedsUpdateMarks;
@@ -238,12 +244,46 @@ export class VegetationLayer {
         budgetDemotions: this._budgetDemotions, concatTemporaryArrays: 0, concatTemporaryElements: 0,
         concatTemporaryElementsAvoided: partitionElementsProcessed, partitionElementsProcessed,
         matrixInstancesWritten, matrixNeedsUpdateMarks,
+        transformCacheHits: uploaded ? this._transformCacheHits : 0,
+        transformCacheMisses: uploaded ? this._transformCacheMisses : 0,
       };
     }
   }
 
+  _treeMatrix(tree, side, varied, p, sx, sy, sz, rotation, slots) {
+    const dummy = this._dummy, ex = dummy.rotation.x, ez = dummy.rotation.z, order = dummy.rotation.order;
+    let entry = slots[side];
+    const finite = Number.isFinite(tree.cell) && Number.isFinite(this.world.seed)
+      && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z)
+      && Number.isFinite(sx) && Number.isFinite(sy) && Number.isFinite(sz)
+      && Number.isFinite(rotation) && Number.isFinite(ex) && Number.isFinite(ez);
+    if (finite && entry && Object.is(entry.x, p.x) && Object.is(entry.y, p.y) && Object.is(entry.z, p.z)
+      && Object.is(entry.sx, sx) && Object.is(entry.sy, sy) && Object.is(entry.sz, sz)
+      && Object.is(entry.rotation, rotation) && Object.is(entry.ex, ex) && Object.is(entry.ez, ez) && entry.order === order) {
+      this._transformCacheHits++;
+      return entry.matrix;
+    }
+    // Original composition order and Double matrix values are retained on misses.
+    dummy.position.set(p.x, p.y, p.z); dummy.scale.setScalar(tree.size);
+    if (varied) dummy.scale.set(sx, sy, sz);
+    dummy.rotation.y = rotation; dummy.updateMatrix();
+    if (!entry) slots[side] = entry = { matrix: new THREE.Matrix4() };
+    entry.x = p.x; entry.y = p.y; entry.z = p.z;
+    entry.sx = sx; entry.sy = sy; entry.sz = sz;
+    entry.rotation = rotation; entry.ex = ex; entry.ez = ez; entry.order = order;
+    entry.matrix.copy(dummy.matrix);
+    this._transformCacheMisses++;
+    return entry.matrix;
+  }
+
   _writeMatrices() {
-    const dummy = this._dummy, counts = this._batchCounts;
+    const counts = this._batchCounts;
+    const previous = this._transformCache, next = this._nextTransformCache;
+    next.clear();
+    if (this._transformWorld !== this.world || !Object.is(this._transformSeed, this.world.seed)) {
+      previous.clear(); this._transformWorld = this.world; this._transformSeed = this.world.seed;
+    }
+    this._transformCacheHits = this._transformCacheMisses = 0;
     const varied = this.artProfile?.realmStyle?.plane === 'mortal';
     this._variantCounts.fill(0);
     let matrixInstancesWritten = 0;
@@ -252,24 +292,27 @@ export class VegetationLayer {
     for (const tree of this.trees) {
       const lod = this._lodByTree.get(tree.cell) ?? 0;
       const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
-      dummy.position.set(p.x, p.y, p.z); dummy.scale.setScalar(tree.size);
       const variant = varied ? treeVariantIndex(this.world.seed, tree.cell) : 0;
       this._variantCounts[variant]++;
-      if (varied) {
-        const scale = TREE_VARIANT_SCALES[variant];
-        dummy.scale.set(tree.size * scale[0], tree.size * scale[1], tree.size * scale[2]);
-      }
+      const scale = varied ? TREE_VARIANT_SCALES[variant] : null;
+      const sx = varied ? tree.size * scale[0] : tree.size;
+      const sy = varied ? tree.size * scale[1] : tree.size;
+      const sz = varied ? tree.size * scale[2] : tree.size;
+      const slots = previous.get(tree.cell) || [];
+      next.set(tree.cell, slots);
       const tint = varied ? this._variantTints[variant] : this._whiteTint;
       const target = this.lodMeshes[lod];
       if (lod === 0 && !this.artProfile) {
+        slots.length = 2;
         for (let side = 0; side < 2; side++) {
-          dummy.rotation.y = tree.rotation + side * Math.PI / 2;
-          dummy.updateMatrix(); target.setColorAt(counts[lod], tint); target.setMatrixAt(counts[lod]++, dummy.matrix); matrixInstancesWritten++;
+          const matrix = this._treeMatrix(tree, side, varied, p, sx, sy, sz, tree.rotation + side * Math.PI / 2, slots);
+          target.setColorAt(counts[lod], tint); target.setMatrixAt(counts[lod]++, matrix); matrixInstancesWritten++;
           target.userData.renderTrees.push(tree);
         }
       } else {
-        dummy.rotation.y = tree.rotation;
-        dummy.updateMatrix(); target.setColorAt(counts[lod], tint); target.setMatrixAt(counts[lod]++, dummy.matrix); matrixInstancesWritten++;
+        slots.length = 1;
+        const matrix = this._treeMatrix(tree, 0, varied, p, sx, sy, sz, tree.rotation, slots);
+        target.setColorAt(counts[lod], tint); target.setMatrixAt(counts[lod]++, matrix); matrixInstancesWritten++;
         target.userData.renderTrees.push(tree);
       }
     }
@@ -289,6 +332,7 @@ export class VegetationLayer {
       mesh.boundingBox = null; mesh.boundingSphere = null;
       mesh.visible = counts[lod] > 0;
     }
+    this._transformCache = next; this._nextTransformCache = previous; previous.clear();
     return matrixInstancesWritten;
   }
 
@@ -312,6 +356,7 @@ export class VegetationLayer {
     s.overflow = overflow; s.capacityOverflow = overflow;
   }
   dispose() {
+    this._transformCache.clear(); this._nextTransformCache.clear(); this._transformWorld = null;
     this.mesh.dispose(); this.geometry.dispose(); this.material.dispose(); this.texture.dispose();
     this.pilotMaterial?.dispose();
     for (let lod = 1; lod <= 2; lod++) this.lodMeshes[lod].dispose();
