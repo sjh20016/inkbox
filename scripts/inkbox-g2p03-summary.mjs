@@ -86,7 +86,7 @@ const runtime = (live.cases || []).map(c => {
 
 const summary = {
   task: 'G2-P0.3 阶段 A · 性能证据勘误与真实瓶颈确认',
-  status: { phaseA: 'A_PASS', phaseBAtCapture: 'B_NOT_STARTED', phaseBDecision: 'START', g2FormalGate: 'G2_PERF_BLOCKED', note: '阶段 A 取证时阶段 B 尚未实现；§8 裁决为 START，后续阶段 B 结果见 G2_P03_VEGETATION_PILOT_REPORT.md' },
+  status: { phaseA: 'A_PASS', phaseBAtCapture: 'B_NOT_STARTED', phaseBDecision: 'START', g2FormalGate: 'G2_PERF_BLOCKED', note: '阶段 A 取证时阶段 B 尚未实现；§8 裁决为 START。后续结果见 codex/g2-p03-vegetation-pilot 分支上的 G2_P03_VEGETATION_PILOT_REPORT.md' },
   baseline: { branch: 'codex/g2-p1-integration-validation', commit: '74934a8b1360af9007c69935d5becdf8f9809872', analysisSourceHeadAtCapture: gate.sourceHead, equalsPr12Head: true, remoteBranchRefAtReview: '74934a8b1360af9007c69935d5becdf8f9809872（git ls-remote，推送前核实）' },
   integrity: { productSourceDirty: gate.productSourceDirty || '', changedFiles: 6, modifiedExistingFiles: 0, inventory: ['G2_P03_ATTRIBUTION_CORRECTION_REPORT.md（新增）', 'reports/analysis/g2-p03/attribution-summary.json（新增）', 'scripts/inkbox-g2-hydro-counter.mjs（新增）', 'scripts/inkbox-g2-hydro-attribution.mjs（新增）', 'scripts/inkbox-g2-hydro-attribution-check.mjs（新增）', 'scripts/inkbox-g2p03-summary.mjs（新增）'] },
   environment: { browser: 'Microsoft Edge', gpu: gate.environment.gpu.renderer, viewport: gate.environment.gpu.viewport, dpr: gate.environment.gpu.dpr, clock: 'native', gateExtractionSha256: gate.gateSourceIdentity.extractedSha256, gateConstants: gate.gateSourceIdentity.constants },

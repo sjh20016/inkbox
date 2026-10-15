@@ -5,7 +5,7 @@
     "phaseBAtCapture": "B_NOT_STARTED",
     "phaseBDecision": "START",
     "g2FormalGate": "G2_PERF_BLOCKED",
-    "note": "阶段 A 取证时阶段 B 尚未实现；§8 裁决为 START，后续阶段 B 结果见 G2_P03_VEGETATION_PILOT_REPORT.md"
+    "note": "阶段 A 取证时阶段 B 尚未实现；§8 裁决为 START。后续结果见 codex/g2-p03-vegetation-pilot 分支上的 G2_P03_VEGETATION_PILOT_REPORT.md"
   },
   "baseline": {
     "branch": "codex/g2-p1-integration-validation",
