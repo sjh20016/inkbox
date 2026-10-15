@@ -7,7 +7,6 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import net from 'node:net';
 import os from 'node:os';
 import { spawn, execFileSync } from 'node:child_process';
 
@@ -207,27 +206,59 @@ export const KEYS = {
   ])),
 };
 
-async function waitForPort(port, timeoutMs = 15000) {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    const ok = await new Promise((resolve) => {
-      const socket = net.createConnection({ host: '127.0.0.1', port });
-      socket.once('connect', () => { socket.destroy(); resolve(true); });
-      socket.once('error', () => resolve(false));
-    });
-    if (ok) return true;
-    await sleep(200);
+// Chromium writes this file inside the profile only after it has bound its
+// OS-assigned debugging port. A listening port by itself proves no ownership.
+function readOwnedEndpoint(profile) {
+  let contents;
+  try { contents = fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8'); }
+  catch (error) { if (error.code === 'ENOENT') return null; throw error; }
+  // An in-progress write may contain just the first line; keep waiting for it.
+  if (/^\d{0,5}\r?\n?$/.test(contents)) return null;
+  const match = /^([1-9]\d{0,4})\r?\n(\/devtools\/browser\/[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12})\r?\n?$/.exec(contents);
+  if (/^\d{1,5}\r?\n\/devtools\/browser\/[a-fA-F0-9-]{0,35}$/.test(contents)) return null;
+  if (!match || Number(match[1]) > 65535) throw new Error('Invalid owned DevToolsActivePort');
+  return { port: Number(match[1]), browserPath: match[2] };
+}
+
+async function waitForOwnedEndpoint(profile, child, timeoutMs, launchError) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const endpoint = readOwnedEndpoint(profile);
+    if (endpoint) return endpoint;
+    if (launchError.current) throw launchError.current;
+    if (child.exitCode !== null || child.signalCode !== null) throw new Error('Owned browser exited before DevToolsActivePort was ready');
+    await sleep(Math.min(100, Math.max(1, deadline - Date.now())));
   }
-  return false;
+  throw new Error('Timed out waiting for owned DevToolsActivePort');
+}
+
+function verifyOwnedBrowserEndpoint(debuggerUrl, endpoint) {
+  let parsed;
+  try { parsed = new URL(debuggerUrl); } catch { throw new Error('Invalid browser WebSocket endpoint'); }
+  if (parsed.protocol !== 'ws:' || parsed.hostname !== '127.0.0.1'
+    || Number(parsed.port) !== endpoint.port || parsed.pathname !== endpoint.browserPath
+    || parsed.search || parsed.hash || parsed.username || parsed.password) {
+    throw new Error('Browser endpoint does not match owned DevToolsActivePort');
+  }
+}
+
+async function fetchOwnedJson(url, deadline) {
+  const remaining = deadline - Date.now();
+  if (remaining <= 0) throw new Error('Timed out verifying owned browser endpoint');
+  const response = await fetch(url, { signal: AbortSignal.timeout(remaining) });
+  if (!response.ok) throw new Error(`Browser endpoint returned HTTP ${response.status}`);
+  return response.json();
 }
 
 // 新版 Chrome/Edge 对 /json/new 只接受 PUT，旧版接受 GET，两种都试。
 // 不能只看 fetch 有没有抛错——405 也是「成功返回」，要查 response.ok。
-async function openTarget(base) {
+async function openTarget(base, deadline) {
   let lastError = null;
   for (const method of ['GET', 'PUT']) {
     try {
-      const response = await fetch(`${base}/json/new?about:blank`, { method });
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) throw new Error('Timed out creating owned debug target');
+      const response = await fetch(`${base}/json/new?about:blank`, { method, signal: AbortSignal.timeout(remaining) });
       if (!response.ok) continue;
       const data = await response.json();
       if (data && data.webSocketDebuggerUrl) return data;
@@ -437,11 +468,11 @@ export class Session {
  *
  * @param {object}  options
  * @param {string}  options.url          要打开的地址
- * @param {number} [options.port]        CDP 调试端口，默认随机挑一个
+ * @param {number} [options.port]        保留兼容；实际端口由浏览器分配并从隔离 profile 读取
  * @param {number} [options.width]       视口宽
  * @param {number} [options.height]      视口高
  * @param {string} [options.browser]     浏览器可执行文件路径，默认自动探测
- * @param {number} [options.timeoutMs]   等待调试端口就绪的超时
+ * @param {number} [options.timeoutMs]   等待本次浏览器调试端点就绪的超时
  * @param {boolean} [options.gpu]        **默认 `false`**：加 `--disable-gpu`，WebGL 落到
  *   软件光栅器（SwiftShader）。这样同一台机器上的读数**可比**（渲染器名会自报
  *   `Microsoft Basic Render Driver` 之类），但它**不是**真实 GPU 性能。
@@ -460,12 +491,17 @@ export async function launch({
   headless = true,
 } = {}) {
   if (typeof headless !== 'boolean') throw new TypeError('headless must be a boolean');
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new TypeError('timeoutMs must be positive and finite');
   const executable = browser || findBrowser();
   if (!executable) throw new Error('找不到 Edge / Chrome，请显式传 browser 路径');
 
-  const debugPort = port || (9300 + Math.floor(Math.random() * 500));
+  void port; // Retained in the public API; a requested fixed port cannot establish ownership.
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cdp-'));
-  const child = spawn(executable, [
+  let child;
+  let cdp = null;
+  let ws = null;
+  try {
+    child = spawn(executable, [
     ...(headless ? ['--headless=new'] : []),
     ...(gpu ? [] : ['--disable-gpu']),
     '--no-first-run',
@@ -473,24 +509,37 @@ export async function launch({
     '--hide-scrollbars',
     '--disable-extensions',
     '--disable-background-networking',
-    `--remote-debugging-port=${debugPort}`,
+    '--remote-debugging-port=0',
     `--user-data-dir=${userDataDir}`,
     `--window-size=${width},${height}`,
     'about:blank',
-  ], { stdio: 'ignore', detached: false, windowsHide: headless });
+    ], { stdio: 'ignore', detached: false, windowsHide: headless });
+    const launchError = { current: null };
+    child.on('error', (error) => { launchError.current = error; });
+    const deadline = Date.now() + timeoutMs;
+    const endpoint = await waitForOwnedEndpoint(userDataDir, child, timeoutMs, launchError);
+    if (launchError.current) throw launchError.current;
+    const base = `http://127.0.0.1:${endpoint.port}`;
+    const version = await fetchOwnedJson(`${base}/json/version`, deadline);
+    verifyOwnedBrowserEndpoint(version.webSocketDebuggerUrl, endpoint);
+    if (launchError.current || child.exitCode !== null || child.signalCode !== null) {
+      throw launchError.current || new Error('Owned browser exited before target creation');
+    }
+    const target = await openTarget(base, deadline);
+    let targetUrl;
+    try { targetUrl = new URL(target.webSocketDebuggerUrl); } catch { throw new Error('Invalid owned target WebSocket endpoint'); }
+    if (targetUrl.protocol !== 'ws:' || targetUrl.hostname !== '127.0.0.1'
+      || Number(targetUrl.port) !== endpoint.port || !/^\/devtools\/page\/[A-Za-z0-9_-]+$/.test(targetUrl.pathname)
+      || targetUrl.search || targetUrl.hash || targetUrl.username || targetUrl.password) {
+      throw new Error('Target endpoint does not match owned browser port');
+    }
 
-  const base = `http://127.0.0.1:${debugPort}`;
-  let cdp = null;
-  try {
-    if (!(await waitForPort(debugPort, timeoutMs))) throw new Error('调试端口未就绪');
-
-    const version = await (await fetch(`${base}/json/version`)).json();
-    const target = await openTarget(base);
-
-    const ws = new WebSocket(target.webSocketDebuggerUrl);
+    ws = new WebSocket(target.webSocketDebuggerUrl);
     await new Promise((resolve, reject) => {
-      ws.addEventListener('open', resolve, { once: true });
-      ws.addEventListener('error', reject, { once: true });
+      const timer = setTimeout(() => reject(new Error('Timed out connecting to owned CDP target')),
+        Math.max(1, deadline - Date.now()));
+      ws.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
+      ws.addEventListener('error', (error) => { clearTimeout(timer); reject(error); }, { once: true });
     });
 
     cdp = new Cdp(ws);
@@ -502,9 +551,11 @@ export async function launch({
     });
     await cdp.send('Page.navigate', { url });
 
-    return new Session(cdp, child, userDataDir, { browser: version.Browser, debugPort, width, height });
+    return new Session(cdp, child, userDataDir, { browser: version.Browser, debugPort: endpoint.port, width, height });
   } catch (error) {
-    const cleanup = await finalizeOwnedBrowser(child, userDataDir, cdp);
+    if (!cdp) try { ws?.close(); } catch { /* connection never opened */ }
+    const cleanup = child?.pid ? await finalizeOwnedBrowser(child, userDataDir, cdp)
+      : await removeOwnedProfile(userDataDir).then((result) => ({ ...result, processesExited: true, complete: result.removed }));
     if (!cleanup.complete) throw new AggregateError([error,
       new Error('Owned CDP profile cleanup failed: ' + JSON.stringify(cleanup))],
     'CDP launch and owned profile cleanup failed');
