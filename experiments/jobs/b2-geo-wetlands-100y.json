@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 3,
+  "experiment": "b2-geo-wetlands-100y",
+  "experimentGroup": "b2-s2-geo",
+  "profile": "natural",
+  "preset": "medium",
+  "seeds": [20260914, 7, 424242, 0, 42],
+  "years": 100,
+  "stepDays": 3,
+  "snapshotDays": 360,
+  "probeDays": 30,
+  "viewPolicy": "closed",
+  "generationVersion": 2,
+  "terrainPreset": "wetlands"
+}
