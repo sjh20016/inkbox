@@ -156,8 +156,7 @@ export class TerrainLayer {
 
   prepareLandCache() {
     const { world, wash, w, h } = this;
-    const allocated = !this.landInputs;
-    if (allocated) {
+    if (!this.landInputs) {
       const size = w * h;
       this.landColor = new Float64Array(size * 3);
       this.landValid = new Uint8Array(size);
@@ -168,56 +167,30 @@ export class TerrainLayer {
       };
     }
     const old = this.landInputs, valid = this.landValid;
-    let changed = allocated ? 63 : 0;
-    // Preserve TypedArray.set length handling even when the equal prefix did
-    // not change. In particular, an oversized replacement must still throw.
-    if (world.height.length !== old.height.length) changed |= 1;
-    if (world.water.length !== old.water.length) changed |= 2;
-    if (world.veg.length !== old.veg.length) changed |= 4;
-    if (world.temp.length !== old.temp.length) changed |= 8;
-    if (world.type.length !== old.type.length) changed |= 16;
-    if (wash.length !== old.wash.length) changed |= 32;
     // Palette vectors are mutable even though INK_RGB's outer object is frozen.
     const palette = [...TERRAIN_RGB.flat(), ...INK_RGB.paper,
       ...INK_RGB.shadow, ...INK_RGB.mist, ...INK_RGB.azurite].join(',');
-    const paletteChanged = palette !== this.landPalette;
-    if (paletteChanged) {
+    if (palette !== this.landPalette) {
       valid.fill(0);
       this.landPalette = palette;
-    }
-    for (let y = 0, i = 0; y < h; y += 1) {
-      for (let x = 0; x < w; x += 1, i += 1) {
-        const hv = world.height[i], ovh = old.height[i], dh = hv !== ovh;
-        const wv = world.water[i], ovw = old.water[i], dw = wv !== ovw;
-        const vv = world.veg[i], ovv = old.veg[i], dv = vv !== ovv;
-        const tv = world.temp[i], ovt = old.temp[i], dt = tv !== ovt;
-        const typeChanged = world.type[i] !== old.type[i];
-        const av = wash[i], ova = old.wash[i], da = av !== ova;
-        // Signed zero does not invalidate the old color cache, but its bit
-        // pattern must still reach the snapshot just as the original set did.
-        if (dh || (!(changed & 1) && hv === 0 && !Object.is(hv, ovh))) changed |= 1;
-        if (dw || (!(changed & 2) && wv === 0 && !Object.is(wv, ovw))) changed |= 2;
-        if (dv || (!(changed & 4) && vv === 0 && !Object.is(vv, ovv))) changed |= 4;
-        if (dt || (!(changed & 8) && tv === 0 && !Object.is(tv, ovt))) changed |= 8;
-        if (typeChanged) changed |= 16;
-        if (da || (!(changed & 32) && av === 0 && !Object.is(av, ova))) changed |= 32;
-        if (!paletteChanged && (dh || dw)) {
-          // Slopes, ridges and shoreline ink read neighbouring height/water.
-          for (let ny = Math.max(0, y - 1); ny <= Math.min(h - 1, y + 1); ny += 1) {
-            for (let nx = Math.max(0, x - 1); nx <= Math.min(w - 1, x + 1); nx += 1) {
-              valid[ny * w + nx] = 0;
+    } else {
+      for (let y = 0, i = 0; y < h; y += 1) {
+        for (let x = 0; x < w; x += 1, i += 1) {
+          if (world.height[i] !== old.height[i] || world.water[i] !== old.water[i]) {
+            // Slopes, ridges and shoreline ink read neighbouring height/water.
+            for (let ny = Math.max(0, y - 1); ny <= Math.min(h - 1, y + 1); ny += 1) {
+              for (let nx = Math.max(0, x - 1); nx <= Math.min(w - 1, x + 1); nx += 1) {
+                valid[ny * w + nx] = 0;
+              }
             }
           }
+          if (world.type[i] !== old.type[i] || world.veg[i] !== old.veg[i]
+            || world.temp[i] !== old.temp[i] || wash[i] !== old.wash[i]) valid[i] = 0;
         }
-        if (typeChanged || dv || dt || da) valid[i] = 0;
       }
     }
-    if (changed & 1) old.height.set(world.height);
-    if (changed & 2) old.water.set(world.water);
-    if (changed & 4) old.veg.set(world.veg);
-    if (changed & 8) old.temp.set(world.temp);
-    if (changed & 16) old.type.set(world.type);
-    if (changed & 32) old.wash.set(wash);
+    for (const key of ['height', 'water', 'veg', 'temp', 'type']) old[key].set(world[key]);
+    old.wash.set(wash);
   }
 
   render(time, force = false) {
