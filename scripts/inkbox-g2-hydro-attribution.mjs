@@ -420,9 +420,11 @@ try {
   report.summary = { ok: false, error: String(error), browserErrors: browser.errors().slice(0, 8) };
   console.error(error);
 } finally {
+/** 文件名必须带 arm 签名 —— 否则 On4 会**静默覆盖** Off4 的原始数据（踩过一次）。 */
+const armTag = MODE === 'aa' ? `-${ARMS.join('')}` : '';
   const file = MODE === 'live'
     ? `attribution-live-${LIVE_CASES.join('-')}-${CLOCK}.json`
-    : `attribution-${MODE}-cases${CASES.join('-')}-${CLOCK}.json`;
+    : `attribution-${MODE}-cases${CASES.join('-')}${armTag}-${CLOCK}.json`;
   fs.writeFileSync(path.join(OUT, file), JSON.stringify(report, null, 2) + '\n');
   console.log(`written reports/analysis/g2-p03/${file}`);
   await browser.close().catch(() => {});
