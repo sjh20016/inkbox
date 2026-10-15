@@ -119,7 +119,7 @@
     "test:g2pf:soak": "node scripts/inkbox-g2pf-soak.mjs",
     "test:g2pf:vegetation": "node scripts/inkbox-g2pf-vegetation.mjs",
     "test:g2p0": "node scripts/inkbox-g2p0-terrain-cache.mjs && node scripts/inkbox-g2p0-ecology.mjs --long && node scripts/inkbox-g2p0-environment.mjs --check",
-    "test:g2p02": "node scripts/inkbox-g2p02-cdp-cleanup.mjs && node scripts/inkbox-g2p02-fluency.mjs --check",
+    "test:g2p02": "node scripts/inkbox-cdp-ownership-test.mjs && node scripts/inkbox-g2p02-cdp-cleanup.mjs && node scripts/inkbox-g2p02-fluency.mjs --check && node scripts/inkbox-g2p02-server.mjs",
     "test:g2p02:fluency": "node scripts/inkbox-g2p02-fluency.mjs"
   },
   "dependencies": {

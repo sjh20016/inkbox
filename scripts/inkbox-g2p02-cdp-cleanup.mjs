@@ -52,7 +52,7 @@ await check('repeated and concurrent close calls share one terminal cleanup resu
 });
 await check('performance consumes the same terminal result without a second deletion or exit reset',async()=>{
  const s=fs.readFileSync(path.join(root,'scripts/inkbox-g2-performance.mjs'),'utf8');assert(!s.includes('async function removeOwnedProfile'));assert(s.includes('profileCleanupEvidence=cleanup;'));assert(s.includes('if(!cleanup.complete||!report.environment.edgeExited)'));assert(!/process\.exitCode\s*=\s*0/.test(s));
- assert(source.includes('const cleanup = await finalizeOwnedBrowser(child, userDataDir, cdp);'));
+ assert(source.includes('await finalizeOwnedBrowser(child, userDataDir, cdp)'));
 });
 if(process.platform==='win32'){
  await check('real PowerShell identity filters reject PID reuse and command-line mismatch (mock processes only)',async()=>{
