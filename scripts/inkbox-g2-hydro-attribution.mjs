@@ -48,6 +48,7 @@ const LIVE_CASES = arg('live', 'L1,L2').split(',');
 const LIVE_ROUNDS = Number(arg('rounds', '2'));
 const LIVE_WARM = Number(arg('warm', '120'));
 const LIVE_FRAMES = Number(arg('frames', '180'));
+const TAG = arg('tag', '') ? `-${arg('tag', '')}` : '';
 const ARMS = arg('arms', MODE === 'aa' ? 'off,off,off,off' : 'off').split(',');
 const SURFACE = arg('surface', 'headless');
 
@@ -182,7 +183,7 @@ window.__h1.install=function(k){
     const t0=performance.now();
     const out=origUpdate(dt);
     a.updateCpuMs=performance.now()-t0;a.after=k.hydroAccum;
-    const rr=k.render3d&&k.render3d.renderer,st=rr&&rr.stages?(rr.stages.get(rr.activePlane)||rr.stages.get('mortal')):null;
+    const rr=k.render3d&&k.render3d.renderer,st=rr&&rr.stages?(rr.stages.get(rr.activePlane)||rr.stages.get("mortal")):null;
     window.__h1._vegPending=st?st.vegetationPending:null;
     window.__h1._treeClock=st?st.treeClock:null;
     return out;
@@ -284,7 +285,7 @@ window.__h1.install=function(k){
         let sig=2166136261;
         for(let i=0;i<trees.length;i++){const t=trees[i];const s=(t.cellIndex!==undefined?t.cellIndex:t.i)+'|'+t.x+'|'+t.y+'|'+t.size+'|'+(t.rotation||t.rot||0);
           for(let j=0;j<s.length;j++){sig^=s.charCodeAt(j);sig=Math.imul(sig,16777619);}}
-        window.__h1.veg.push({frameId:window.__h1._frameNo||null,treeCount:trees.length,treeSignature:(sig>>>0),
+        window.__h1.veg.push({frameId:window.__h1._frameNo||null,lod:this.lodProbe&&this.lodProbe.last?Object.assign({},this.lodProbe.last):null,treeCount:trees.length,treeSignature:(sig>>>0),
           versionBefore:before,versionAfter:after,uploaded:before.some(function(v,i){return v!==after[i];}),lodCount:meshes.length});
         window.__h1._vegTrees=trees.length;
         return out;
@@ -328,7 +329,7 @@ async function prepare(spec) {
     ? await browser.js(combatFixtureExpression({ count: spec.count, roots, seed: GATE_CONST.SEED }), { timeoutMs: 180000 })
     : await page(`window.__g2CombatActors=[];return {count:0,originalEntitiesRetained:true,originalEntityCount:window.inkbox.world.entities.length,seed:window.inkbox.world.seed};`);
   const scenario = await page(scenarioSetup(spec));
-  await page('await window.__h1.armA6();await window.__h1.armVeg();window.__h1.frames=[];window.__h1.veg=[];window.__h1._glUploads=0;window.__h1._glBytes=0;window.__h1._vegCalls=0;window.__h1._vegMsTotal=0;window.__h1._vegMs=[];window.__h1.__probe=window.inkbox.__hydroProbe;window.inkbox.__hydroProbe.enabled=true;return true;');
+  await page('await window.__h1.armA6();await window.__h1.armVeg();try{const st=window.inkbox.render3d&&window.inkbox.render3d.renderer?window.inkbox.render3d.renderer.stages.get("mortal"):null;if(st&&st.vegetation)st.vegetation.setLODProbeEnabled(true);}catch(e){}window.__h1.frames=[];window.__h1.veg=[];window.__h1._glUploads=0;window.__h1._glBytes=0;window.__h1._vegCalls=0;window.__h1._vegMsTotal=0;window.__h1._vegMs=[];window.__h1.__probe=window.inkbox.__hydroProbe;window.inkbox.__hydroProbe.enabled=true;return true;');
   return { dimensions, fixture, scenario };
 }
 
@@ -431,7 +432,7 @@ try {
 const armTag = MODE === 'aa' ? `-${ARMS.join('')}` : '';
   const file = MODE === 'live'
     ? `attribution-live-${LIVE_CASES.join('-')}-${CLOCK}.json`
-    : `attribution-${MODE}-cases${CASES.join('-')}${armTag}-${CLOCK}.json`;
+    : `attribution-${MODE}-cases${CASES.join('-')}${armTag}${TAG}-${CLOCK}.json`;
   fs.writeFileSync(path.join(OUT, file), JSON.stringify(report, null, 2) + '\n');
   console.log(`written reports/analysis/g2-p03/${file}`);
   await browser.close().catch(() => {});
