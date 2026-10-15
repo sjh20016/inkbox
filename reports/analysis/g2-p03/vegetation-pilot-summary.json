@@ -1,0 +1,101 @@
+{
+  "task": "G2-P0.3 阶段 B · 植被更新降载试点",
+  "verdict": "LOCAL_GAIN_PROVEN_FRAME_GAIN_UNPROVEN",
+  "verdictNote": "确定性工作量减少 74% 且两轮候选稳定复现（满足 §B5 的性能判据）；但整帧 P95 的差异小于同臂噪声，故不宣布整机收益。不宣布 G2 门禁 PASS。",
+  "sourceHeadCandidate": "458b4b5cecaecb8deaf9d878b283285c394e459a",
+  "sourceHeadBaseline": "834b0e53b6df6d458c71a0bcbfc143744d85ec9c",
+  "productChanges": [
+    "src/inkbox/render3d/vegetation/VegetationLayer.js",
+    "src/inkbox/render3d/stage/PlaneStage.js"
+  ],
+  "deterministicWork": {
+    "matrixWriteCount": {
+      "baseline": [
+        240000,
+        260000
+      ],
+      "candidate": [
+        70000,
+        60000
+      ],
+      "changePct": -74
+    },
+    "matrixNeedsUpdateCount": {
+      "baseline": [
+        24,
+        26
+      ],
+      "candidate": [
+        7,
+        6
+      ],
+      "changePct": -74
+    },
+    "fullRebuildCalls": {
+      "baseline": [
+        24,
+        26
+      ],
+      "candidate": [
+        7,
+        6
+      ],
+      "changePct": -74
+    },
+    "matrixUploadMs": {
+      "baseline": [
+        88.5,
+        133.5
+      ],
+      "candidate": [
+        35,
+        23.5
+      ],
+      "changePct": -73.6
+    },
+    "glUploadBytes": {
+      "baseline": [
+        28386304,
+        32115776
+      ],
+      "candidate": [
+        23066304,
+        20096832
+      ],
+      "changePct": -28.7
+    }
+  },
+  "frameLevel": {
+    "baselineFrameP95": [
+      19.3,
+      25.8
+    ],
+    "candidateFrameP95": [
+      20.7,
+      17.1
+    ],
+    "sameArmNoiseMs": 6.5,
+    "candidateArmNoiseMs": 3.6,
+    "deltaAvgMs": 3.65,
+    "distinguishable": false,
+    "reason": "差异小于同臂 A1↔A2 极差 ⇒ 与噪声不可分"
+  },
+  "oracle": {
+    "newOracle": "scripts/inkbox-g2p03-vegetation-oracle.mjs",
+    "passed": 14,
+    "failed": 0,
+    "exitCode": 0,
+    "existingRegression": {
+      "script": "scripts/inkbox-g2pf-vegetation.mjs",
+      "passed": 11,
+      "exitCode": 0
+    }
+  },
+  "notCovered": [
+    "V10 相机缩放改 LOD（由既有 g2pf-vegetation 的三条 LOD 等价性覆盖）",
+    "V11 相机移动改可见优先级（同上）"
+  ],
+  "keepOrRollback": "KEEP",
+  "keepReason": "正确性有逐实例字节等价 oracle（14/14）；确定性工作量削减 74% 在两轮候选独立复现；无正确性风险、无资源泄漏、无世界/RNG 变化。整机收益未证实不等于回退条件。",
+  "g2FormalGate": "G2_PERF_BLOCKED（未重跑完整矩阵，未改预算）"
+}

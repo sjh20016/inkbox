@@ -48,6 +48,7 @@ const LIVE_CASES = arg('live', 'L1,L2').split(',');
 const LIVE_ROUNDS = Number(arg('rounds', '2'));
 const LIVE_WARM = Number(arg('warm', '120'));
 const LIVE_FRAMES = Number(arg('frames', '180'));
+const TAG = arg('tag', '') ? `-${arg('tag', '')}` : '';
 const ARMS = arg('arms', MODE === 'aa' ? 'off,off,off,off' : 'off').split(',');
 const SURFACE = arg('surface', 'headless');
 
@@ -431,7 +432,7 @@ try {
 const armTag = MODE === 'aa' ? `-${ARMS.join('')}` : '';
   const file = MODE === 'live'
     ? `attribution-live-${LIVE_CASES.join('-')}-${CLOCK}.json`
-    : `attribution-${MODE}-cases${CASES.join('-')}${armTag}-${CLOCK}.json`;
+    : `attribution-${MODE}-cases${CASES.join('-')}${armTag}${TAG}-${CLOCK}.json`;
   fs.writeFileSync(path.join(OUT, file), JSON.stringify(report, null, 2) + '\n');
   console.log(`written reports/analysis/g2-p03/${file}`);
   await browser.close().catch(() => {});
