@@ -2,9 +2,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { spawn, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { launch, findEdge, sleep } from './cdp.mjs';
+import { collectBrowserErrors } from './inkbox-g2pf-config.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.INKBOX_PORT || 4220);
@@ -12,6 +14,8 @@ const BASE = process.env.INKBOX_URL || `http://127.0.0.1:${PORT}`;
 const APP_URL = new URL('inkbox.html?renderer=3d', BASE.endsWith('/') ? BASE : BASE + '/').href;
 const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(ROOT, 'reports/local/g23/render-browser'));
 const report = { startedAt: new Date().toISOString(), pass: false, url: APP_URL, viewport: '1440x1000',
+  productionHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8', windowsHide: true }).trim(),
+  sourceHashes: Object.fromEntries(['scripts/inkbox-g23-render-browser.mjs', 'scripts/cdp.mjs', 'src/inkbox/main.js', 'src/inkbox/render3d/Render3DAdapter.js', 'src/inkbox/render3d/Render3DHost.js'].map(p => [p, createHash('sha256').update(fs.readFileSync(path.join(ROOT, p))).digest('hex')])),
   browser: 'isolated Microsoft Edge/CDP', browserPlugin: 'absent',
   fallbackReason: 'The repository CDP harness is the user-specified hardware acceptance path; Browser plugin is unavailable.',
   sourceFlow: 'official 3D burn pointer -> World -> observer -> terrain pigment GPU -> formal progression -> realm windows',
@@ -26,9 +30,15 @@ async function click(selector) {
   assert(p.w > 0 && p.h > 0); await browser.click(p.x, p.y); return p;
 }
 async function shot(name) { const file = await browser.screenshot(path.join(OUT, `${name}.png`), { timeoutMs: 30000 }); report.screenshots.push(file); return file; }
-async function tool(name) { await page(`const e=document.querySelector('#inkRender3DTools select[aria-label="沙盘工具"]');e.value=${JSON.stringify(name)};e.dispatchEvent(new Event('change',{bubbles:true}));return true;`); }
+function realmWindowState() {
+  const k = window.inkbox, r = k.render3d.renderer;
+  return { tool: k.toolId, logicalOpen: k.getRealmViewState().open,
+    renderOpen: r.realmPrototype.open, mortalQuads: r.stages.get('mortal').terrain.geometry.drawRange.count,
+    fullQuads: (k.world.w - 1) * (k.world.h - 1) * 6, frame: r.gpu.info.render.frame };
+}
+async function tool(name) { return page(`const e=document.querySelector('#inkRender3DTools select[aria-label="沙盘工具"]');e.value=${JSON.stringify(name)};e.dispatchEvent(new Event('change',{bubbles:true}));return (${realmWindowState.toString()})();`); }
 async function point(x, y) {
-  return page(`const k=window.inkbox,r=k.render3d.renderer,s=r.stages.get('mortal'),T=await import('three'),rect=k.render3d.canvas.getBoundingClientRect();r.cameraRig.camera.updateMatrixWorld();const p=r.coordinates.worldToRender(${x},${y},s.elevation.at(${x},${y})),v=new T.Vector3(p.x,p.y,p.z).project(r.cameraRig.camera),sx=rect.left+(v.x+1)*rect.width/2,sy=rect.top+(1-v.y)*rect.height/2,h=r.pickPlane(sx-rect.left,sy-rect.top,'mortal');return{x:sx,y:sy,hit:h?{x:h.x,y:h.y,plane:h.plane,kind:h.kind}:null};`);
+  return page(`const k=window.inkbox,r=k.render3d.renderer,s=r.stages.get('mortal'),T=await import('three'),rect=k.render3d.canvas.getBoundingClientRect();r.cameraRig.camera.updateMatrixWorld();const p=r.coordinates.worldToRender(${x},${y},s.elevation.at(${x},${y})),v=new T.Vector3(p.x,p.y,p.z).project(r.cameraRig.camera),sx=rect.left+(v.x+1)*rect.width/2,sy=rect.top+(1-v.y)*rect.height/2,h=r.pickPlane(sx-rect.left,sy-rect.top,'mortal');return{x:sx,y:sy,world:{x:${x},y:${y}},ndc:{x:v.x,y:v.y,z:v.z},rect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},realm:(${realmWindowState.toString()})(),hit:h?{x:h.x,y:h.y,plane:h.plane,kind:h.kind}:null};`);
 }
 async function visiblePlanePoint(x, y, plane) {
   return page(`const k=window.inkbox,r=k.render3d.renderer,s=r.stages.get(${JSON.stringify(plane)}),T=await import('three'),rect=k.render3d.canvas.getBoundingClientRect();r.cameraRig.camera.updateMatrixWorld();for(let dy=-5;dy<=5;dy++)for(let dx=-5;dx<=5;dx++){const xx=${x}+dx,yy=${y}+dy;if(!s.world.inside(xx,yy))continue;const p=r.coordinates.worldToRender(xx,yy,s.elevation.at(xx,yy)),v=new T.Vector3(p.x,p.y,p.z).project(r.cameraRig.camera),sx=(v.x+1)*rect.width/2,sy=(1-v.y)*rect.height/2;if(sx<0||sy<0||sx>rect.width||sy>rect.height)continue;const hit=r.pick(sx,sy);if(hit?.plane===${JSON.stringify(plane)})return{x:sx+rect.left,y:sy+rect.top,hit:{plane:hit.plane,x:hit.x,y:hit.y,kind:hit.kind}};}throw Error('No visible '+${JSON.stringify(plane)}+' pick around realm window center');`);
@@ -120,10 +130,19 @@ try {
     const live = await sample(x, y); assert(live.fire > .02);
     const results = [];
     for (const [mode, plane] of [['viewUpper', 'upper'], ['viewNether', 'nether']]) {
-      await tool(mode);
+      const preparation = { plane, transition: await tool(mode) };
+      (report.realmPreparations ??= []).push(preparation);
       const corners = [[x-9,y-9],[x+9,y-9],[x+9,y+9],[x-9,y+9],[x-9,y-9]];
+      preparation.beforeRender = [];
+      for (const [xx, yy] of corners) preparation.beforeRender.push(await point(xx, yy));
+      // selectTool clears the logical window synchronously. Its old hole is
+      // removed by the next real product render, which also drives raycasting.
+      // Wait for that state boundary; never pick through the stale child mask.
+      await waitFor(`const s=(${realmWindowState.toString()})();return !s.logicalOpen&&!s.renderOpen&&s.mortalQuads===s.fullQuads;`, 'Previous realm mask did not close before drawing '+plane);
+      preparation.ready = await page(`return (${realmWindowState.toString()})();`);
       const pts = []; for (const [xx, yy] of corners) pts.push(await point(xx, yy));
-      assert(pts.every(q => q.hit?.plane === 'mortal'));
+      preparation.points = pts;
+      assert(pts.every(q => q.hit?.plane === 'mortal'), 'Mortal corners unavailable after mask convergence: '+JSON.stringify(preparation));
       // Keep CDP's pressed button through the native pointer route. The generic
       // mouseMove helper sends buttons:0, which cancels this canvas's capture.
       await browser.mouseMove(pts[0].x,pts[0].y); await browser.mouseDown(pts[0].x,pts[0].y);
@@ -180,11 +199,15 @@ try {
 } catch (error) {
   report.error = String(error.stack || error); process.exitCode = 1; console.error(error);
 } finally {
-  if (browser) await browser.close();
+  if (browser) report.browserCleanup = await browser.close();
   if (server) { server.kill(); for (let n = 0; n < 50 && server.exitCode === null && server.signalCode === null; n++) await sleep(100); }
   report.cleanup = { edgeExited: !browser || browser.child.exitCode !== null || browser.child.signalCode !== null,
+    ownedBrowserProcessesExited: !browser || report.browserCleanup.processesExited,
+    cleanupComplete: !browser || report.browserCleanup.complete,
     profileRemoved: !browser || !fs.existsSync(browser.userDataDir), serverExited: !server || server.exitCode !== null || server.signalCode !== null };
   if (Object.values(report.cleanup).some(v => !v)) { report.pass = false; process.exitCode = 1; }
+  report.browserErrors = collectBrowserErrors(browser);
+  if (report.browserErrors.length) { report.pass = false; process.exitCode = 1; }
   report.finishedAt = new Date().toISOString();
   fs.mkdirSync(OUT, { recursive: true }); fs.writeFileSync(path.join(OUT, 'g23-render-browser.json'), JSON.stringify(report, null, 2) + '\n');
 }
