@@ -7,6 +7,7 @@
 // 运行：node scripts/inkbox-g2-hydro-attribution-check.mjs
 
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {
   HYDRO_PERIOD_S, HYDRO_MAX_STEPS,
   inferHydroSteps, crossCheckHydro, hydroAccessorSource,
@@ -158,6 +159,105 @@ console.log('');
 if (failures.length) {
   console.error(`水文计数器自测失败 ${failures.length} 项 / 共 ${passed + failures.length} 项`);
   for (const f of failures) console.error(`  ✗ ${f.label}: ${f.error.message}`);
-  process.exit(1);
+  process.exitCode = 1;
+} else {
+  console.log(`水文计数器自测通过 · ${passed} 项（A2-1…A2-8 + 注入源码 2 项）`);
 }
-console.log(`水文计数器自测通过 · ${passed} 项（A2-1…A2-8 + 注入源码 2 项）`);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 离线重算模式（委托书 §4）：
+// 全部 P50/P95/P99、长帧比例与水文分组结果，都必须能从**原始逐帧 JSON**
+// 独立重算 —— 不能只提交算好的摘要表。本模式不读任何预先计算的统计字段，
+// 只读 frames / veg / probe 原始数组，重新推一遍并交叉验证计数器。
+//
+// 用法：
+//   node scripts/inkbox-g2-hydro-attribution-check.mjs --recalc=reports/analysis/g2-p03/<file>.json
+// ─────────────────────────────────────────────────────────────────────────────
+
+function percentile(values, p) {
+  const sorted = values.filter(v => v !== null && v !== undefined && Number.isFinite(v)).sort((a, b) => a - b);
+  if (!sorted.length) return null;
+  const index = Math.min(sorted.length - 1, Math.floor(sorted.length * p));
+  return Number(sorted[index].toFixed(3));
+}
+
+function recalcFile(file) {
+  const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const lines = [];
+  const say = s => { lines.push(s); console.log(s); };
+  let problems = 0;
+
+  say(`\n═══ 离线重算：${file} ═══`);
+  say(`产品 HEAD ${raw.sourceHead} · 产品源码改动「${raw.productSourceDirty || ''}」· 门禁抽取 SHA-256 ${raw.gateSourceIdentity.extractedSha256.slice(0, 16)}`);
+  say(`环境：${raw.environment?.gpu?.renderer || '(未记录)'} · clock=${raw.clock} · surface=${raw.surface}`);
+
+  for (const run of raw.cases || []) {
+    const { case: spec, arm, rows, veg, probe } = run;
+    const measured = rows.filter(r => r.phase === 'measured');
+    const use = measured.length ? measured : rows;
+    say(`\n── case ${spec.caseIndex ?? spec.preset} / arm=${arm} / ${use.length} 帧${measured.length ? '（measured 段）' : ''} ──`);
+
+    // ① 计数器交叉验证（独立重推，不信任已存的 hydroInferredCalls）
+    let bad = 0; let directTotal = 0; let inferredTotal = 0;
+    for (const r of use) {
+      const inferred = inferHydroSteps({
+        paused: r.paused === true,
+        accumBefore: r.hydroAccumBefore,
+        accumAfter: r.hydroAccumAfter,
+        dt: r.simulationDtMs === null ? NaN : r.simulationDtMs / 1000,
+      });
+      directTotal += r.hydroDirectCalls || 0;
+      inferredTotal += inferred.steps || 0;
+      if (!crossCheckHydro({ directSteps: r.hydroDirectCalls, inferred }).ok) bad += 1;
+    }
+    say(`水文：直接 ${directTotal} 步 · 推导 ${inferredTotal} 步 · 不一致帧 ${bad} · paused 全真 ${use.every(r => r.paused === true)}`);
+    if (bad) { problems += 1; say('  ✗ 计数器不一致 ⇒ 该次运行 INVALID，不得产出性能结论'); }
+    if (probe?.otherCount) { problems += 1; say(`  ✗ hydroAccum 存在 ${probe.otherCount} 次非 +dt/-0.16 写入 ⇒ 判据不成立`); }
+
+    // ② 时间口径（四类必须分开报，不得混用）
+    for (const [name, key] of [['rawRafIntervalMs', 'rawRafIntervalMs'], ['simulationDtMs', 'simulationDtMs'], ['updateCpuMs', 'updateCpuMs'], ['renderCpuMs', 'renderCpuMs'], ['frameCpuMs', 'frameCpuMs']]) {
+      const v = use.map(r => r[key]);
+      say(`  ${name.padEnd(18)} P50 ${percentile(v, .5)} · P95 ${percentile(v, .95)} · P99 ${percentile(v, .99)} · max ${percentile(v, 1)}`);
+    }
+    const raf = use.map(r => r.rawRafIntervalMs);
+    say(`  RAF 长帧比例：>16.7ms ${(raf.filter(v => v > 16.7).length / raf.length * 100).toFixed(1)}% · >33.3ms ${(raf.filter(v => v > 33.3).length / raf.length * 100).toFixed(1)}% · >50ms ${(raf.filter(v => v > 50).length / raf.length * 100).toFixed(1)}%`);
+
+    // ③ 水文分组：有步 / 无步 两类帧的分布（用**下一帧** RAF 关联，慢帧表现为下一帧 dt 变大）
+    const lag = [];
+    for (let i = 0; i < use.length - 1; i += 1) {
+      const inferred = inferHydroSteps({ paused: use[i].paused === true, accumBefore: use[i].hydroAccumBefore, accumAfter: use[i].hydroAccumAfter, dt: (use[i].simulationDtMs || 0) / 1000 });
+      lag.push({ steps: inferred.steps || 0, nextRaf: use[i + 1].rawRafIntervalMs, selfCpu: use[i].frameCpuMs });
+    }
+    const withH = lag.filter(x => x.steps > 0); const withoutH = lag.filter(x => x.steps === 0);
+    say(`  水文分组：有步帧 n=${withH.length}（下一帧 RAF P50 ${percentile(withH.map(x => x.nextRaf), .5)} / P95 ${percentile(withH.map(x => x.nextRaf), .95)}）`);
+    say(`            无步帧 n=${withoutH.length}（下一帧 RAF P50 ${percentile(withoutH.map(x => x.nextRaf), .5)} / P95 ${percentile(withoutH.map(x => x.nextRaf), .95)}）`);
+
+    // ④ 脏通道与触发证据
+    const chans = { height: 0, type: 0, veg: 0, water: 0 };
+    let firedCounts = {}; let lifeFrames = 0;
+    for (const r of use) {
+      if (r.bridge) for (const k of Object.keys(chans)) if (r.bridge[k]) chans[k] += 1;
+      if (r.fired) for (const k of Object.keys(r.fired)) if (r.fired[k]) firedCounts[k] = (firedCounts[k] || 0) + 1;
+      if (r.lifeStepped) lifeFrames += 1;
+    }
+    say(`  脏通道：${JSON.stringify(chans)} · lifeStepped ${lifeFrames}/${use.length} · fired ${JSON.stringify(firedCounts)}`);
+
+    // ⑤ 植被：真实 GPU 上传与「成员是否真的变了」
+    const glCalls = use.reduce((a, r) => a + (r.glUploads || 0), 0);
+    const glBytes = use.reduce((a, r) => a + (r.glBytes || 0), 0);
+    const sigs = (veg || []).map(v => v.treeSignature);
+    let changed = 0;
+    for (let i = 1; i < sigs.length; i += 1) if (sigs[i] !== sigs[i - 1]) changed += 1;
+    const redundant = Math.max(0, sigs.length - 1 - changed);
+    say(`  植被：完整更新 ${sigs.length} 次 · 唯一成员签名 ${new Set(sigs).size} · 相邻签名变化 ${changed} 次 ⇒ 成员未变的重建 ${redundant} 次`);
+    say(`  GPU 上传：${glCalls} 次调用 · ${glBytes} 字节（拦截 bufferSubData/bufferData）`);
+  }
+  say(`\n重算完成：${problems ? `发现 ${problems} 处不可信` : '全部一致，可独立复算'}`);
+  return problems;
+}
+
+const recalcArg = process.argv.find(a => a.startsWith('--recalc='));
+if (recalcArg) {
+  const problems = recalcFile(recalcArg.slice('--recalc='.length));
+  if (problems) process.exitCode = 1;
+}

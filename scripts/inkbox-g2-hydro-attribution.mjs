@@ -116,6 +116,9 @@ window.__h1.install=function(k){
     window.__h1._lastRawTs=ts;
     window.__h1._frameOpen=true;
     window.__h1._frameStart=t0;
+    // A6：逐帧重置「本帧发生了什么」的直接证据
+    window.__h1._lifeStepped=false;window.__h1._fired=null;window.__h1._bridgeLatest=null;
+    window.__h1._glFrameBase={calls:window.__h1._glUploads||0,bytes:window.__h1._glBytes||0};
     const out=origFrame(ts);
     window.__h1._frameOpen=false;
     const probe=k.__hydroProbe||window.__h1.__probe;
@@ -144,6 +147,14 @@ window.__h1.install=function(k){
       frameCpuMs:performance.now()-t0,
       worldDay:window.__h1._acc.day,worldRevision:window.__h1._acc.revision,
       vegTrees:window.__h1._vegTrees===undefined?null:window.__h1._vegTrees,
+      // ── A6 直接触发证据（非时间相关性）─────────────────────────
+      bridge:window.__h1._bridgeLatest,
+      lifeStepped:window.__h1._lifeStepped===true,
+      fired:window.__h1._fired,
+      glUploads:(window.__h1._glUploads||0)-(window.__h1._glFrameBase?window.__h1._glFrameBase.calls:0),
+      glBytes:(window.__h1._glBytes||0)-(window.__h1._glFrameBase?window.__h1._glFrameBase.bytes:0),
+      vegetationPending:window.__h1._vegPending===true,
+      treeClock:window.__h1._treeClock===undefined?null:window.__h1._treeClock,
     });
     return out;
   };
@@ -157,6 +168,9 @@ window.__h1.install=function(k){
     const t0=performance.now();
     const out=origUpdate(dt);
     a.updateCpuMs=performance.now()-t0;a.after=k.hydroAccum;
+    const rr=k.render3d&&k.render3d.renderer,st=rr&&rr.stages?(rr.stages.get(rr.activePlane)||rr.stages.get('mortal')):null;
+    window.__h1._vegPending=st?st.vegetationPending:null;
+    window.__h1._treeClock=st?st.treeClock:null;
     return out;
   };
   const origRender=k.render.bind(k);
@@ -165,6 +179,75 @@ window.__h1.install=function(k){
     const out=origRender(now,...Array.prototype.slice.call(arguments,1));
     window.__h1._acc.renderCpuMs=performance.now()-t0;
     return out;
+  };
+  window.__h1.armA6=function(){
+    const out={bridge:false,life:false,gl:false,advance:false};
+    // ① 脏通道：WorldRenderBridge.changes() 的返回值即「本帧哪些 TypedArray 真的变了」
+    out.bridge=import('./src/inkbox/render3d/WorldRenderBridge.js').then(function(mod){
+      const proto=mod.WorldRenderBridge.prototype;
+      if(proto.__h1Bridge)return false;proto.__h1Bridge=true;
+      const orig=proto.changes;
+      proto.changes=function(){
+        const res=orig.apply(this,arguments);
+        const box=function(r){return r?{x0:r.x0,y0:r.y0,x1:r.x1,y1:r.y1,area:(r.x1-r.x0+1)*(r.y1-r.y0+1)}:null;};
+        window.__h1._bridgeLatest=res?{height:box(res.height),type:box(res.type),veg:box(res.veg),water:box(res.water)}:null;
+        return res;
+      };
+      return true;
+    }).catch(function(e){window.__h1.errors.push('bridge:'+e.message);return false;});
+    // ② 生灵进食：Life.prototype.step 是类方法，可安全注入（不碰产品文件）
+    out.life=import('./src/inkbox/sim/life.js').then(function(mod){
+      const proto=mod.Life.prototype;
+      if(proto.__h1Life)return false;proto.__h1Life=true;
+      const orig=proto.step;
+      proto.step=function(){window.__h1._lifeStepped=true;return orig.apply(this,arguments);};
+      return true;
+    }).catch(function(e){window.__h1.errors.push('life:'+e.message);return false;});
+    // ③ 真正的 GPU 数据提交：拦截 WebGL 缓冲上传，拿真实次数与字节数
+    out.gl=(function(){
+      const kinds=typeof WebGL2RenderingContext!=='undefined'?[WebGL2RenderingContext]:[];
+      if(typeof WebGLRenderingContext!=='undefined')kinds.push(WebGLRenderingContext);
+      let patched=false;
+      for(const Ctor of kinds){
+        if(!Ctor||!Ctor.prototype)continue;
+        for(const name of ['bufferSubData','bufferData']){
+          const proto=Ctor.prototype;
+          if(proto['__h1Gl_'+name])continue;
+          try{Object.defineProperty(proto,'__h1Gl_'+name,{value:true,configurable:true});}catch(e){}
+          const orig=proto[name];
+          if(typeof orig!=='function')continue;
+          proto[name]=function(){
+            // bufferSubData(target, offset, srcData) → 变体多，逐个判：
+            //  · 参数里有 TypedArray/ArrayBufferView ⇒ 用它的 byteLength
+            //  · bufferData(target, size, usage) 的 size 是**数字** ⇒ 直接就是字节数
+            let bytes=0;
+            for(let i=0;i<arguments.length;i++){
+              const a=arguments[i];
+              if(a&&typeof a.byteLength==='number'){bytes=a.byteLength;break;}
+              if(typeof a==='number'&&i>0&&name==='bufferData'){bytes=a;}
+            }
+            window.__h1._glUploads=(window.__h1._glUploads||0)+1;
+            window.__h1._glBytes=(window.__h1._glBytes||0)+bytes;
+            window.__h1._glByKind=window.__h1._glByKind||{};
+            window.__h1._glByKind[name]=(window.__h1._glByKind[name]||0)+bytes;
+            return orig.apply(this,arguments);
+          };
+          patched=true;
+        }
+      }
+      return patched;
+    })();
+    // ④ 生态/火势：advanceDays() 的返回值 fired 是产品**自己**的证据
+    out.advance=(function(){
+      const orig=k.advanceDays.bind(k);
+      k.advanceDays=function(){
+        const fired=orig.apply(null,arguments);
+        if(fired)window.__h1._fired={eco:!!fired.eco,fire:!!fired.fire,upper:!!fired.upper,nether:!!fired.nether,rift:!!fired.rift,wraith:!!fired.wraith,mapProgress:!!fired.mapProgress};
+        return fired;
+      };
+      return true;
+    })();
+    return Promise.all([out.bridge,out.life]).then(function(){return out;});
   };
   window.__h1.armVeg=function(){
     return import('./src/inkbox/render3d/vegetation/VegetationLayer.js').then(function(mod){
@@ -225,7 +308,7 @@ async function runCase(spec, arm) {
     ? await browser.js(combatFixtureExpression({ count: spec.count, roots, seed: GATE_CONST.SEED }), { timeoutMs: 180000 })
     : await page(`window.__g2CombatActors=[];return {count:0,originalEntitiesRetained:true,originalEntityCount:window.inkbox.world.entities.length,seed:window.inkbox.world.seed};`);
   const scenario = await page(scenarioSetup(spec));
-  await page('await window.__h1.armVeg();window.__h1.frames=[];window.__h1.veg=[];window.__h1.__probe=window.inkbox.__hydroProbe;window.inkbox.__hydroProbe.enabled=true;return true;');
+  await page('await window.__h1.armA6();await window.__h1.armVeg();window.__h1.frames=[];window.__h1.veg=[];window.__h1._glUploads=0;window.__h1._glBytes=0;window.__h1.__probe=window.inkbox.__hydroProbe;window.inkbox.__hydroProbe.enabled=true;return true;');
   if (!report.environment.gpu) report.environment.gpu = await page(`const k=window.inkbox;const r=k&&k.render3d&&k.render3d.renderer;const gl=r&&r.gpu?r.gpu.getContext():null;if(!gl)return {renderer:'(no-webgl)'};const e=gl.getExtension('WEBGL_debug_renderer_info');return {renderer:e?gl.getParameter(e.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),viewport:[innerWidth,innerHeight],dpr:devicePixelRatio};`);
   const metrics = await page(measure(arm === 'on', spec));
   const frames = await page('return window.__h1.frames;');
