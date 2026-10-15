@@ -1,0 +1,17 @@
+# 行尾策略（M1.1D D6 vendor 治理）
+#
+# 背景：本机 `core.autocrlf=true`。若不给 vendored 的第三方运行时钉住行尾，
+# 新克隆时 `vendor/three/*` 会被转换成 CRLF，而 npm 装出来的 `node_modules/three/*`
+# 是 LF ⇒ `npm run test:vendor` 的「逐字节相同」断言会在**别的机器上假红**
+# （本机不红，因为工作区里两份都还是 LF —— 典型的「本机绿、别人红」）。
+#
+# 修法：把 vendored 运行时钉成 LF，与 npm 出货形态一致 ⇒ 任何平台克隆后都逐字节相同。
+vendor/three/** text eol=lf
+
+# 批处理脚本钉死 CRLF（2026-10-01 启动器重做）。
+#
+# 背景：cmd.exe 的 `goto :label` 依赖 CRLF 行尾；LF-only 的 .bat 在部分 Windows 上
+# 会报「系统找不到指定的批处理标签」。本机 `core.autocrlf=true` 恰好给出 CRLF，
+# 所以**本机看不出问题**，但 `autocrlf=false` 的机器克隆后 .bat 会是 LF
+# ⇒ 又是同一类「本机绿、别人红」。显式钉住，与上面 vendor 的理由完全一致。
+*.bat text eol=crlf

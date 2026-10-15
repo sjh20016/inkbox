@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "generator": "tools/gen_art_assets.py",
+  "seed": 20260930,
+  "assets": {
+    "paper_grain": {
+      "file": "paper_grain.png",
+      "w": 512,
+      "h": 512,
+      "use": "DOM multiply overlay"
+    },
+    "cun": {
+      "file": "cun.png",
+      "w": 256,
+      "h": 256,
+      "use": "wall dry-brush strokes (R=ink amount)"
+    },
+    "edge": {
+      "file": "edge.png",
+      "w": 256,
+      "h": 16,
+      "use": "wall edge wobble (R)"
+    },
+    "mist_puff": {
+      "file": "mist_puff.png",
+      "w": 128,
+      "h": 128,
+      "use": "rim mist sprite (A)"
+    },
+    "ramp_upper": {
+      "file": "ramp_upper.png",
+      "w": 128,
+      "h": 1,
+      "use": "wall strata ramp (left=mortal, right=target)"
+    },
+    "ramp_nether": {
+      "file": "ramp_nether.png",
+      "w": 128,
+      "h": 1,
+      "use": "wall strata ramp (left=mortal, right=target)"
+    }
+  }
+}

@@ -1,0 +1,68 @@
+name: Inkbox C2C Current Browser Acceptance
+
+# Current-stage acceptance is independently repeatable. Full historical Edge
+# regression remains in ci.yml workflow_dispatch; neither runs on each push.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  current-browser:
+    name: C2C current stage and key ancestors
+    runs-on: windows-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install frozen dependencies
+        run: npm ci
+      - name: Key ancestor Region and Rift boundary contracts
+        shell: pwsh
+        run: |
+          $c2cAncestorServer = Start-Process node -ArgumentList @('scripts/inkbox-server.mjs', '--port', '4180') -WindowStyle Hidden -PassThru
+          try {
+            $c2cAncestorReady = $false
+            for ($attempt = 0; $attempt -lt 100; $attempt++) {
+              if ($c2cAncestorServer.HasExited) { throw 'Owned ancestor server exited before readiness' }
+              try {
+                $response = Invoke-WebRequest 'http://127.0.0.1:4180/inkbox.html' -UseBasicParsing
+                $c2cAncestorReady = $response.StatusCode -eq 200
+              } catch { }
+              if ($c2cAncestorReady) { break }
+              Start-Sleep -Milliseconds 200
+            }
+            if (-not $c2cAncestorReady) { throw 'Ancestor runtime did not become ready' }
+            npm run test:render3d:m2b:browser
+            if ($LASTEXITCODE -ne 0) { throw 'M2-B ancestor browser failed' }
+            node -e "const e=require('./reports/ci/c2c/ancestor-m2b/m2b-browser-evidence.json'); if(e.status!=='passed'||e.pickingRequirements?.met!==true||e.runtimeErrors?.length) process.exit(1)"
+            if ($LASTEXITCODE -ne 0) { throw 'M2-B ancestor picker or runtime-error gate failed' }
+          } finally {
+            Stop-Process -Id $c2cAncestorServer.Id -ErrorAction SilentlyContinue
+          }
+        env:
+          INKBOX_REPORT_DIR: reports/ci/c2c/ancestor-m2b
+      - name: Key ancestor real GLB production picking
+        run: npm run test:render3d:m2c2b:sample:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/c2c/ancestor-sample
+      - name: C2C 23 normal-view pairs, actual identities and product RAF timings
+        run: npm run test:render3d:m2c2c:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/c2c/browser
+      - name: C2C 600 lifecycle and 6000 product RAF frames
+        run: npm run test:render3d:m2c2c:soak
+        env:
+          INKBOX_REPORT_DIR: reports/ci/c2c/soak
+      - name: Preserve complete browser evidence, including failed runs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: inkbox-c2c-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/ci/c2c/
+          if-no-files-found: warn
+          retention-days: 14

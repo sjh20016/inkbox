@@ -1,0 +1,437 @@
+{
+  "schema": "cultivator-library-v1",
+  "asset": "mesh/cultivator_library.glb",
+  "coordinate_system": {
+    "blender": "Z-up, front -Y, feet/root at origin",
+    "gltf": "Y-up, front +Z, feet/root at origin",
+    "module_transform": "identity; vertices in shared character rest space"
+  },
+  "rig": {
+    "node": "cultivator_rig",
+    "bone_count": 16,
+    "bones": [
+      "root",
+      "pelvis",
+      "spine",
+      "head",
+      "l_upperarm",
+      "l_lowerarm",
+      "l_hand",
+      "r_upperarm",
+      "r_lowerarm",
+      "r_hand",
+      "l_upperleg",
+      "l_lowerleg",
+      "l_foot",
+      "r_upperleg",
+      "r_lowerleg",
+      "r_foot"
+    ],
+    "animations": {
+      "Idle": {
+        "start": 1,
+        "end": 33,
+        "fps": 24
+      },
+      "Walk": {
+        "start": 1,
+        "end": 33,
+        "fps": 24,
+        "in_place": true
+      }
+    }
+  },
+  "palette": {
+    "texture": "materials/cultivator_palette_12.png",
+    "material": "cultivator_flat_palette",
+    "count": 12,
+    "factionSlot": 5,
+    "colors": [
+      {
+        "index": 0,
+        "semantic": "skin",
+        "hex": "#F4C9AC"
+      },
+      {
+        "index": 1,
+        "semantic": "paper_white",
+        "hex": "#ECE6DE"
+      },
+      {
+        "index": 2,
+        "semantic": "warm_beige",
+        "hex": "#D4BEA8"
+      },
+      {
+        "index": 3,
+        "semantic": "ink_black",
+        "hex": "#302D32"
+      },
+      {
+        "index": 4,
+        "semantic": "blue_gray",
+        "hex": "#8597B0"
+      },
+      {
+        "index": 5,
+        "semantic": "sect_blue",
+        "hex": "#355B91"
+      },
+      {
+        "index": 6,
+        "semantic": "earth_brown",
+        "hex": "#806A5D"
+      },
+      {
+        "index": 7,
+        "semantic": "dark_red",
+        "hex": "#8D3A3A"
+      },
+      {
+        "index": 8,
+        "semantic": "ghost_cyan",
+        "hex": "#36676A"
+      },
+      {
+        "index": 9,
+        "semantic": "medicine_yellow",
+        "hex": "#E8B454"
+      },
+      {
+        "index": 10,
+        "semantic": "gray_purple",
+        "hex": "#A6A0AB"
+      },
+      {
+        "index": 11,
+        "semantic": "muted_green",
+        "hex": "#6E7B56"
+      }
+    ],
+    "uv_rule": "face loop UV at ((index+0.5)/12, 0.5); nearest sampling"
+  },
+  "modules": {
+    "body_base": {
+      "node": "cultivator_body_base",
+      "slot": "body",
+      "triangles": 384,
+      "socket": null,
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "belt": 4,
+          "cross_collar_left": 4,
+          "cross_collar_right": 4,
+          "eyes": 3,
+          "l_block_hand": 0,
+          "l_block_shoe": 3,
+          "l_short_leg": 6,
+          "l_upper_sleeve": 5,
+          "l_wide_cuff": 4,
+          "large_head": 0,
+          "r_block_hand": 0,
+          "r_block_shoe": 3,
+          "r_short_leg": 6,
+          "r_upper_sleeve": 5,
+          "r_wide_cuff": 4,
+          "short_robe": 5
+        },
+        "faction_recolor_parts": [
+          "short_robe",
+          "l_upper_sleeve",
+          "r_upper_sleeve"
+        ]
+      }
+    },
+    "hair_base": {
+      "node": "cultivator_hair_base",
+      "slot": "hair",
+      "triangles": 50,
+      "socket": "socket_hair",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "hair_cap": 3,
+          "hair_fringe_left": 3,
+          "hair_fringe_right": 3,
+          "topknot": 3
+        },
+        "faction_recolor_parts": []
+      }
+    },
+    "hair_elder": {
+      "node": "cultivator_hair_elder",
+      "slot": "hair",
+      "triangles": 50,
+      "socket": "socket_hair",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "hair_mass": 1,
+          "hair_topknot": 1,
+          "white_fringe": 1
+        },
+        "faction_recolor_parts": []
+      }
+    },
+    "hair_ghost": {
+      "node": "cultivator_hair_ghost",
+      "slot": "hair",
+      "triangles": 50,
+      "socket": "socket_hair",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "hair_mass": 3,
+          "hair_topknot": 3,
+          "ghost_fringe": 3,
+          "ghost_red_streak": 7
+        },
+        "faction_recolor_parts": []
+      }
+    },
+    "sword_simple": {
+      "node": "cultivator_sword_simple",
+      "slot": "weapon",
+      "triangles": 36,
+      "socket": "socket_weapon",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "sword_grip": 6,
+          "sword_guard": 9,
+          "sword_blade": 4
+        },
+        "faction_recolor_parts": []
+      }
+    },
+    "pack_traveler": {
+      "node": "cultivator_pack_traveler",
+      "slot": "back",
+      "triangles": 60,
+      "socket": "socket_back",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "pack_body": 6,
+          "pack_flap": 7,
+          "pack_roll": 6,
+          "pack_strap": 2
+        },
+        "faction_recolor_parts": []
+      }
+    },
+    "gourd_small": {
+      "node": "cultivator_gourd_small",
+      "slot": "prop",
+      "triangles": 68,
+      "socket": "socket_waist",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "gourd_shell": 9,
+          "gourd_cork": 6
+        },
+        "faction_recolor_parts": []
+      }
+    },
+    "soul_lamp": {
+      "node": "cultivator_soul_lamp",
+      "slot": "prop",
+      "triangles": 100,
+      "socket": "socket_weapon",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "lamp_glass": 8,
+          "lamp_roof": 3,
+          "lamp_loop": 3,
+          "lamp_frame": 3
+        },
+        "faction_recolor_parts": []
+      }
+    },
+    "sect_token": {
+      "node": "cultivator_sect_token",
+      "slot": "tag",
+      "triangles": 24,
+      "socket": "socket_waist",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "tag_face": 9,
+          "tag_loop": 6
+        },
+        "faction_recolor_parts": []
+      }
+    },
+    "alchemy_tag": {
+      "node": "cultivator_alchemy_tag",
+      "slot": "tag",
+      "triangles": 32,
+      "socket": "socket_waist",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "tag_face": 9,
+          "tag_loop": 6,
+          "furnace_mark": 3
+        },
+        "faction_recolor_parts": []
+      }
+    },
+    "elder_mantle": {
+      "node": "cultivator_elder_mantle",
+      "slot": "robe",
+      "triangles": 12,
+      "socket": "socket_back",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "elder_shoulder": 10
+        },
+        "faction_recolor_parts": []
+      }
+    },
+    "ghost_torn_hem": {
+      "node": "cultivator_ghost_torn_hem",
+      "slot": "robe",
+      "triangles": 16,
+      "socket": "socket_waist",
+      "local_transform": "identity",
+      "palette": {
+        "parts": {
+          "torn_hem": 3
+        },
+        "faction_recolor_parts": []
+      }
+    }
+  },
+  "sockets": {
+    "socket_hair": {
+      "parent_bone": "head",
+      "rest_world_position": [
+        0,
+        0,
+        2.12
+      ]
+    },
+    "socket_back": {
+      "parent_bone": "spine",
+      "rest_world_position": [
+        0,
+        0.27,
+        1.17
+      ]
+    },
+    "socket_waist": {
+      "parent_bone": "pelvis",
+      "rest_world_position": [
+        0.28,
+        0,
+        0.83
+      ]
+    },
+    "socket_weapon": {
+      "parent_bone": "r_hand",
+      "rest_world_position": [
+        0.62,
+        -0.05,
+        0.72
+      ]
+    }
+  },
+  "roles": {
+    "basic": {
+      "body": "body_base",
+      "hair": "hair_base",
+      "weapon": null,
+      "prop": null,
+      "tag": null,
+      "back": null,
+      "paletteIndex": 1,
+      "allowedSlots": [
+        "weapon",
+        "back",
+        "prop",
+        "tag"
+      ]
+    },
+    "sect_disciple": {
+      "body": "body_base",
+      "hair": "hair_base",
+      "weapon": "sword_simple",
+      "tag": "sect_token",
+      "prop": null,
+      "back": null,
+      "paletteIndex": 5,
+      "allowedSlots": [
+        "weapon",
+        "tag"
+      ]
+    },
+    "wanderer": {
+      "body": "body_base",
+      "hair": "hair_base",
+      "weapon": null,
+      "tag": null,
+      "prop": "gourd_small",
+      "back": "pack_traveler",
+      "paletteIndex": 2,
+      "allowedSlots": [
+        "back",
+        "prop"
+      ]
+    },
+    "elder": {
+      "body": "body_base",
+      "hair": "hair_elder",
+      "weapon": "sword_simple",
+      "tag": null,
+      "prop": null,
+      "back": null,
+      "robe": "elder_mantle",
+      "paletteIndex": 4,
+      "allowedSlots": [
+        "weapon",
+        "robe"
+      ]
+    },
+    "ghost": {
+      "body": "body_base",
+      "hair": "hair_ghost",
+      "weapon": null,
+      "tag": null,
+      "prop": "soul_lamp",
+      "back": null,
+      "robe": "ghost_torn_hem",
+      "paletteIndex": 3,
+      "allowedSlots": [
+        "prop",
+        "tag",
+        "robe"
+      ]
+    },
+    "alchemist": {
+      "body": "body_base",
+      "hair": "hair_base",
+      "weapon": null,
+      "tag": "alchemy_tag",
+      "prop": null,
+      "back": null,
+      "paletteIndex": 9,
+      "allowedSlots": [
+        "prop",
+        "tag"
+      ]
+    }
+  },
+  "limits": {
+    "hair": 1,
+    "weapon": 1,
+    "prop": 1,
+    "tag": 1,
+    "weapon_prop_tag_combined": 2
+  },
+  "phase": "full"
+}

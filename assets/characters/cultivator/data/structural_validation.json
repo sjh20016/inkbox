@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-10-03T15:15:33.614Z",
+  "pass": true,
+  "glbBytes": 145188,
+  "baseTriangles": 434,
+  "modules": {
+    "body_base": 384,
+    "hair_base": 50,
+    "hair_elder": 50,
+    "hair_ghost": 50,
+    "sword_simple": 36,
+    "pack_traveler": 60,
+    "gourd_small": 68,
+    "soul_lamp": 100,
+    "sect_token": 24,
+    "alchemy_tag": 32,
+    "elder_mantle": 12,
+    "ghost_torn_hem": 16
+  },
+  "sharedMeshCount": 12,
+  "materialCount": 1,
+  "textureCount": 1,
+  "bones": [
+    "root",
+    "pelvis",
+    "spine",
+    "head",
+    "l_upperarm",
+    "l_lowerarm",
+    "l_hand",
+    "r_upperarm",
+    "r_lowerarm",
+    "r_hand",
+    "l_upperleg",
+    "l_lowerleg",
+    "l_foot",
+    "r_upperleg",
+    "r_lowerleg",
+    "r_foot"
+  ],
+  "animations": [
+    "idle",
+    "walk"
+  ]
+}

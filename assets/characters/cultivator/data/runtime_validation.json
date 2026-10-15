@@ -1,0 +1,163 @@
+{
+  "generatedAt": "2026-10-02T11:34:03.984Z",
+  "scales": [
+    {
+      "count": 6,
+      "characterDraws": 12,
+      "characterTriangles": 2980,
+      "allCalls": 14,
+      "allTriangles": 2982,
+      "materialCount": 1,
+      "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "viewport": [
+        1440,
+        764
+      ],
+      "dpr": 1,
+      "frameMs": {
+        "mean": 5.567777777777778,
+        "p95": 5.699999999999932
+      },
+      "batchWriteMs": {
+        "mean": 0.08461538612187564,
+        "p95": 0.20000001788139343
+      },
+      "frames": 90,
+      "softwareRasterizer": false
+    },
+    {
+      "count": 20,
+      "characterDraws": 12,
+      "characterTriangles": 9868,
+      "allCalls": 14,
+      "allTriangles": 9870,
+      "materialCount": 1,
+      "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "viewport": [
+        1440,
+        764
+      ],
+      "dpr": 1,
+      "frameMs": {
+        "mean": 5.69,
+        "p95": 5.7999999999999545
+      },
+      "batchWriteMs": {
+        "mean": 0.13076923017973427,
+        "p95": 0.30000001192092896
+      },
+      "frames": 90,
+      "softwareRasterizer": false
+    },
+    {
+      "count": 50,
+      "characterDraws": 12,
+      "characterTriangles": 24768,
+      "allCalls": 14,
+      "allTriangles": 24770,
+      "materialCount": 1,
+      "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "viewport": [
+        1440,
+        764
+      ],
+      "dpr": 1,
+      "frameMs": {
+        "mean": 6.671111111111109,
+        "p95": 11.099999999999909
+      },
+      "batchWriteMs": {
+        "mean": 0.2560439561749553,
+        "p95": 0.5
+      },
+      "frames": 90,
+      "softwareRasterizer": false
+    },
+    {
+      "count": 300,
+      "characterDraws": 12,
+      "characterTriangles": 149000,
+      "allCalls": 14,
+      "allTriangles": 149002,
+      "materialCount": 1,
+      "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "viewport": [
+        1440,
+        764
+      ],
+      "dpr": 1,
+      "frameMs": {
+        "mean": 5.566666666666666,
+        "p95": 5.700000000000273
+      },
+      "batchWriteMs": {
+        "mean": 0.5197802172912346,
+        "p95": 0.9000000059604645
+      },
+      "frames": 90,
+      "softwareRasterizer": false
+    }
+  ],
+  "game": {
+    "spawn": {
+      "made": 100,
+      "entities": 100,
+      "cultivators": 100
+    },
+    "snapshot": {
+      "pure": true,
+      "characters": 100,
+      "stats": {
+        "instances": 100,
+        "byClass": {
+          "human": 0,
+          "cultivator": 100,
+          "beast": 0,
+          "spirit": 0,
+          "wraith": 0
+        },
+        "overflow": 0
+      },
+      "geometries": 7,
+      "materialCount": 1
+    },
+    "afterRebuild": {
+      "geometries": 4
+    }
+  },
+  "errors": [],
+  "browser": {
+    "browser": "Edg/154.0.4258.48",
+    "debugPort": 9697,
+    "width": 1440,
+    "height": 900
+  },
+  "library": {
+    "modules": 12,
+    "roles": [
+      "basic",
+      "sect_disciple",
+      "wanderer",
+      "elder",
+      "ghost",
+      "alchemist"
+    ],
+    "animations": [
+      "Idle",
+      "Walk"
+    ],
+    "loadedFrom": [
+      "http://127.0.0.1:4186/assets/characters/cultivator/data/cultivator_manifest.json",
+      "http://127.0.0.1:4186/assets/characters/cultivator/mesh/cultivator_library.glb"
+    ]
+  },
+  "picking": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "pass": true
+}

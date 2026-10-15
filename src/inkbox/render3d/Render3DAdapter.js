@@ -1,0 +1,451 @@
+import { Renderer3D } from './Renderer3D.js';
+import { ArtDebugPanel } from './art/ArtDebugPanel.js';
+import { artDebugOptions } from './art/ArtDiagnostics.js';
+import { sculpt, strokeSamples, restoreHeights } from './terrain/sculpt.js';
+import { TerrainStroke, restoreTerrainStroke } from './terrain/sculpt.js';
+import { accessBounds, canAccess } from '../world/mapProgress.js';
+import { isViewTool, VIEW_CLICK_PX } from '../ui/realmView.js';
+
+/**
+ * M2-B B4（§63）：界缘检视的文案。
+ *
+ * ⚠️ **只说中性事实**：哪一界的界缘、此处界差、附近有几道裂缝、这里是不是破口。
+ *    不许出现「镇压强度」「泄漏概率」「鬼魂风险 −30%」这类**机制性文案**——
+ *    那些机制目前根本不存在（P2 / §63）。界差是**表现读数**，不是封印强度。
+ */
+export function boundaryInspectorText(hit) {
+  if (!hit) return '';
+  const name = hit.targetPlane === 'upper' ? '上界界缘' : '幽冥界缘';
+  const rifts = hit.nearbyRifts || [];
+  const parts = [
+    `${name} · 格 ${Math.round(hit.x)}, ${Math.round(hit.y)}`,
+    `此处界差 ${hit.rawGap.toFixed(1)}（画出的深度 ${hit.visualDepth.toFixed(1)}）`,
+    rifts.length ? `附近裂缝 ${rifts.length} 道` : '附近无裂缝',
+  ];
+  if (rifts.length) parts.push(hit.breach ? '此处为破口' : '未与界缘相交');
+  return parts.join(' · ');
+}
+import { TERRAIN_INFO } from '../core/config.js';
+
+// DOM/input integration lives here; Sandbox sees only render() and dispose().
+export class Render3DAdapter {
+  constructor(sandbox) {
+    this.sandbox = sandbox; this.active = true; this.mode = 'inspect'; this.radius = 6; this.strength = 0.035;
+    // M2-B B2（§54）：垂直表现模式的**调试开关**。`?boundary=strata` 让视觉证据脚本
+    // 能在同一 seed / 同一 Region / 同一相机下切换 Raw 与 Strata。正式 UI 不并列它。
+    this.boundaryMode = new URLSearchParams(globalThis.location?.search || '').get('boundary') || null;
+    this.abort = new AbortController(); this.undoStack = []; this.redoStack=[];this.historyBytes=0;this.historyLimit=12;this.historyByteLimit=8*1024*1024;
+    const stage = sandbox.canvas.parentElement;
+    this.canvas = document.createElement('canvas'); this.canvas.id = 'inkCanvas3D';
+    this.canvas.setAttribute('aria-label', '立体山河沙盘'); this.canvas.tabIndex = 0;
+    Object.assign(this.canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', touchAction: 'none', zIndex: '1' });
+    stage.append(this.canvas);
+    const artParams = new URLSearchParams(globalThis.location?.search || '');
+    const requestedArt = artParams.get('art');
+    const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'realm-style-v1';
+    const diagnostics = artDebugOptions();
+    try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
+      artDevelopment: diagnostics.development, artDebugView: diagnostics.debugView,
+      productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off',
+      geography: artParams.get('geography') !== 'off' && artParams.get('assets') !== 'off' }); }
+    catch (error) { this.canvas.remove(); throw error; }
+    // The product and evidence harness await art.comparisonReady before capturing.
+    // Production resolves to candidate without loading the historical snapshot module.
+    this.renderer.art.setComparisonStyle(diagnostics.comparisonStyle).catch(error => {
+      this.artComparisonError = error;
+      if (this.active) console.error('Art comparison initialization failed', error);
+    });
+    this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
+    Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
+    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="burn">焚林</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="ridge">山脊</option><option value="basin">盆地</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"><output data-radius>6</output></label><label>强度 <input aria-label="笔刷强度" type="range" min="0.005" max="0.12" step="0.005" value="0.035" style="width:65px"><output data-strength>0.035</output></label><button data-action="undo">撤销雕刻</button><button data-action="redo">重做雕刻</button><span data-edit-state></span><button data-action="fit">全图</button><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><details><summary>操作 / 性能</summary><div>撤销/重做仅限当前 3D 会话；创建、加载世界或切回 Canvas 会清除。</div><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
+    stage.append(this.panel);
+    this.readout = document.createElement('div'); this.readout.id = 'inkRender3DReadout';
+    Object.assign(this.readout.style, { position: 'absolute', bottom: '12px', left: '12px', zIndex: '3', padding: '6px 10px', background: '#eee5d3eb', borderRadius: '4px', fontSize: '12px', pointerEvents: 'none' });
+    stage.append(this.readout);
+    this.listen(this.panel.querySelector('select'), 'change', e => {
+      this.endStroke();
+      const next = e.target.value;
+      const wasView = isViewTool(this.mode);
+      // 离开视界工具 ⇒ 走 Canvas 既有的「切换工具即关窗」出口（关闭路径 ①）。
+      if (wasView && !isViewTool(next)) this.sandbox.selectTool('inspect');
+      this.mode = next;
+      // M2-B B3（§48）：视界是**正式工具**，与 Canvas 工具表共用同一个 toolId ——
+      // 目标位面、门控、V7 语义全部由 `viewPlaneForTool` 一处决定。
+      if (isViewTool(next)) this.sandbox.selectTool(next);
+      if (next === 'burn' || next === 'inspect') this.sandbox.selectTool(next);
+    });
+    this.listen(this.panel.querySelector('[aria-label="笔刷半径"]'), 'input', e => { this.endStroke();this.radius = Number(e.target.value);this.panel.querySelector('[data-radius]').textContent=this.radius; });
+    this.listen(this.panel.querySelector('[aria-label="笔刷强度"]'), 'input', e => { this.endStroke();this.strength = Number(e.target.value);this.panel.querySelector('[data-strength]').textContent=this.strength.toFixed(3); });
+    this.listen(this.panel, 'click', e => {
+      const action = e.target.dataset.action;
+      if (action === 'toggle') this.setActive(!this.active);
+      if (action === 'fit') this.renderer.cameraRig.fit();
+      if (action === 'focus' && this.selectedCell) this.renderer.focusOn(this.selectedCell.x, this.selectedCell.y, {}, this.selectedCell.plane);
+      if (action === 'undo') this.undo();
+      if (action === 'redo') this.redo();
+    });
+    this.listen(this.canvas, 'contextmenu', e => e.preventDefault());
+    this.listen(document.getElementById('inkBtnUndo'), 'click', e => {
+      if (this.active) { e.stopImmediatePropagation(); this.undo(); }
+    }, true);
+    this.listen(this.canvas, 'pointerdown', e => {
+      if (e.button !== 0 || e.pointerType === 'touch') return;
+      this.canvas.focus(); this.renderer.cameraRig.cancelFocus();
+      // ── M2-B B3：正式 3D 划窗（§48–§52）─────────────────────────────
+      // 屏幕轨迹**只用于采样**；记下来的一律是 world x/y ⇒ 相机转了也不漂（§51）。
+      // 开窗动作仍然只由 `Sandbox.commitSelection` 在 pointerup 一次成型（§49 / S9）。
+      if (this.isViewMode()) {
+        const view = this.sandbox.getRealmViewState();
+        const visible = view.open ? this.hit(e) : null;
+        const inspectable = visible?.plane === view.targetPlane && view.region?.contains(visible.x + .5, visible.y + .5)
+          && canAccess(this.sandbox.world, visible.x, visible.y);
+        const hit = this.hitMortal(e);
+        if (!hit && !inspectable) return;
+        this.canvas.setPointerCapture(e.pointerId);
+        // The target surface is pickable even when its mortal quad is masked.
+        // It can start a read-only click; drag samples still use mortal terrain.
+        this.realmDraw = { path: hit ? [[hit.world.x, hit.world.y]] : [], last: hit?.world || null,
+          world: this.sandbox.world, press: { x: e.clientX, y: e.clientY },
+          viewRegion: view.region, targetPlane: view.targetPlane, source: this.sandbox.world?.[view.targetPlane],
+          mode: this.mode, toolId: this.sandbox.toolId };
+        this.renderer.setDraftPath(this.realmDraw.path);
+        return;
+      }
+      const hit = this.hit(e);
+      if (!hit) return;
+      // M2-B B4（§62/§63）：界缘断面也能被命中，但它**不是**一格的检视对象，
+      // 也**不落选择环**——界缘属于「当前这扇窗」，不属于某一位面的某一格。
+      if (hit.kind === 'realm-boundary') {
+        this.selectedBoundary = hit; this.selectedCell = null;
+        this.renderer.setSelection(null, null);
+        this.sandbox.notify(boundaryInspectorText(hit), 3600);
+        return;
+      }
+      this.selectedBoundary = null;
+      this.selectPicked(hit);
+      // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
+      this.renderer.setSelection(hit.x, hit.y, hit.plane);
+      if (this.mode === 'burn') { this.burnAt(hit); return; }
+      if (this.mode === 'inspect') {
+        this.inspectPicked(hit);
+        return;
+      }
+      if (!this.canSculpt(hit)) {this.sandbox.notify(this.editReason(hit),2400);return;}
+      this.canvas.setPointerCapture(e.pointerId);
+      this.stroke = new TerrainStroke(sandbox.world,hit.world,{radius:this.radius,strength:this.strength,mode:this.mode,
+        syncWater:true,accessBounds:this.brushAccessBounds()});
+      this.redoStack=[];this.historyNotice=null;this.syncHistoryState();
+    });
+    this.listen(this.canvas, 'pointermove', e => {
+      this.pointer = { x: e.clientX, y: e.clientY };
+      if (this.realmDraw) { this.sampleRealmDraw(e); return; }
+      if (!this.stroke) return;
+      const hit = this.hit(e);
+      if (!this.canSculpt(hit)) { this.stroke.breakPath(); return; }
+      this.stroke.sample(hit.world);
+    });
+    // ⚠️ 只有 pointerup 才**提交**；pointercancel / lostpointercapture 一律**取消**
+    //    （拖动被打断不该开出一扇玩家没画完的窗）。
+    this.listen(this.canvas, 'pointerup', e => { if(this.stroke){const hit=this.hit(e);if(this.canSculpt(hit))this.stroke.sample(hit.world);}});
+    this.listen(this.canvas, 'pointerup', e => { this.commitRealmDraw(e); this.endStroke(); });
+    for (const event of ['pointercancel', 'lostpointercapture']) this.listen(this.canvas, event, () => this.endStroke());
+    this.listen(this.canvas, 'pointerleave', () => { this.pointer = null; this.renderer.brush(null); });
+    this.listen(window, 'blur', () => { this.endStroke(); this.pointer = null; });
+    this.listen(window, 'keydown', e => {
+      if (!this.active || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+      const key = e.key.toLowerCase();
+      if (['q', 'e', 'f'].includes(key) || ((e.ctrlKey || e.metaKey) && key === 'z')) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (key === 'z') {if(e.shiftKey)this.redo();else this.undo();}
+        else if (key === 'f') this.renderer.cameraRig.fit();
+        else this.renderer.cameraRig.rotate((key === 'q' ? -1 : 1) * Math.PI / 4);
+      }
+    }, true);
+    this.listen(this.canvas, 'webglcontextlost', e => { e.preventDefault(); this.setActive(false); sandbox.notify('3D 图形上下文丢失，已回到 Canvas；恢复后可重新切入。'); });
+    this.resizeObserver = new ResizeObserver(() => this.resize()); this.resizeObserver.observe(stage);
+    this.originalFocus = sandbox.camera.focusOn; this.originalFit = sandbox.camera.fit;
+    const adapter = this;
+    sandbox.camera.focusOn = function (...args) { if (adapter.active) return adapter.focusMortal(...args); return adapter.originalFocus.apply(this, args); };
+    sandbox.camera.fit = function (...args) { const result = adapter.originalFit.apply(this, args); if (adapter.active) adapter.renderer.cameraRig.fit(); return result; };
+    this.addPrototypeControls();
+    if (diagnostics.panel) this.artDebug = new ArtDebugPanel(this.renderer, stage);
+    this.setActive(true); this.resize();
+  }
+  listen(target, name, fn, capture = false) { target.addEventListener(name, fn, { signal: this.abort.signal, capture }); }
+  addPrototypeControls() {
+    this.panel.querySelector('b').textContent = '山河沙盘';
+    // ⚠️ §54：下面这些是**调试探针**（固定矩形 Mask / Slab / 位面切换），不是玩家功能。
+    //    它们被折进一个 details 里与正式工具分开——但**仍留在 DOM 中**，因为
+    //    M2-A 的浏览器证据脚本按 `[data-probe]` 与 `[aria-label="调试位面"]` 选取它们。
+    const debug = document.createElement('details');
+    debug.style.cssText = 'display:inline-block';
+    debug.innerHTML = '<summary style="cursor:pointer">调试探针</summary>';
+    const controls = document.createElement('span');
+    controls.style.cssText = 'display:inline-flex;gap:5px;flex-wrap:wrap;padding-top:4px';
+    controls.innerHTML = `<select aria-label="调试位面"><option value="mortal">凡间</option><option value="upper">上界</option><option value="nether">幽冥</option></select><button data-probe="upper">上界 Mask</button><button data-probe="nether">幽冥 Mask</button><button data-probe="close">关窗</button><button data-probe="open-all">开放全图</button><button data-probe="slab">Slab 20×20</button>`;
+    debug.append(controls);
+    this.panel.append(debug);
+    const select = controls.querySelector('select'); this.planeSelect = select;
+    const requested = new URLSearchParams(location.search).get('plane');
+    if (requested && this.renderer.setActivePlane(requested)) select.value = requested;
+    this.listen(select, 'change', () => { this.endStroke(); this.selectedCell = null; this.renderer.setSelection(null, null); if (!this.renderer.setActivePlane(select.value)) select.value = this.renderer.activePlane; });
+    this.listen(controls, 'click', event => {
+      const mode = event.target.dataset.probe; if (!mode) return;
+      if(mode==='open-all'){this.endStroke();this.sandbox.expandMap?.(true);return;}
+      this.endStroke(); this.renderer.setActivePlane('mortal'); select.value = 'mortal';
+      if (mode === 'close') { this.sandbox.selection = null; this.sandbox.dirty = true; return; }
+      if (mode === 'slab') {
+        this.sandbox.selection = null; this.renderer.setRealmViewState(this.sandbox.getRealmViewState());
+        this.renderer.setSlabProbe(true); return;
+      }
+      if (!this.renderer.stages.has(mode)) return;
+      const { w, h } = this.sandbox.world;
+      const x0 = Math.floor(w * 0.28), x1 = Math.floor(w * 0.72), y0 = Math.floor(h * 0.28), y1 = Math.floor(h * 0.72);
+      // Use the established selection and view tool: no second 3D view state.
+      this.sandbox.selectTool(mode === 'upper' ? 'viewUpper' : 'viewNether');
+      this.sandbox.selection = { x0, y0, x1, y1, area: (x1 - x0) * (y1 - y0), path: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]] };
+      this.sandbox.dirty = true;
+    });
+  }
+  // Existing faction/person links always refer to mortal subjects. Make that
+  // plane visible and use its elevation rather than the current debug stage.
+  focusMortal(x, y, options = {}) {
+    this.endStroke(); this.sandbox.selection = null; this.sandbox.dirty = true;
+    this.renderer.setActivePlane('mortal'); this.planeSelect.value = 'mortal';
+    this.renderer.setRealmViewState(this.sandbox.getRealmViewState());
+    this.renderer.focusOn(x, y, options, 'mortal');
+  }
+  resize() { const r = this.sandbox.canvas.parentElement.getBoundingClientRect(); this.renderer.resize(Math.max(1, r.width), Math.max(1, r.height)); }
+  setActive(active) {
+    this.endStroke(); if(this.active&&!active)this.clearHistory('切回 Canvas 已清除沙盘撤销会话');this.active = active; this.lastNow = null;
+    this.canvas.hidden = !active; this.readout.hidden = !active;
+    if (this.artDebug) this.artDebug.element.hidden = !active;
+    this.sandbox.canvas.style.visibility = active ? 'hidden' : '';
+    this.panel.querySelector('[data-action="toggle"]').textContent = active ? '切回 Canvas' : '进入 3D';
+    for (const element of this.panel.querySelectorAll('select,input,button:not([data-action="toggle"])')) element.disabled = !active;
+    document.querySelector('.rail.left').inert = active;
+    document.querySelector('.rail.left').style.opacity = active ? '0.5' : '';
+    for (const id of ['inkBrushRange', 'inkBtnRelief', 'inkBtnGrid']) document.getElementById(id).disabled = active;
+    document.getElementById('inkHint').style.visibility = active ? 'hidden' : '';
+    this.sandbox.pointer.painting = false; this.sandbox.pointer.down = false; this.sandbox.pointer.panning = false;
+    this.sandbox.dirty = true;
+  }
+  hit(e) { const rect = this.canvas.getBoundingClientRect(); return this.renderer.pick(e.clientX - rect.left, e.clientY - rect.top); }
+  /** §52：划窗只 raycast **凡间** terrain —— 鼠标经过已经开着的目标界不参与。 */
+  hitMortal(e) { const rect = this.canvas.getBoundingClientRect(); return this.renderer.pickPlane(e.clientX - rect.left, e.clientY - rect.top, 'mortal'); }
+  isViewMode() { return isViewTool(this.mode); }
+  selectPicked(hit) {
+    this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y, kind: hit.kind, settlementId: hit.settlementId,
+      entityId: hit.entityId, artifactId: hit.artifactId, siteId: hit.siteId, leylineId: hit.leylineId, riftId: hit.riftId,
+      entityContainer: hit.entityContainer, houseKey: hit.houseKey, houseX: hit.houseX, houseY: hit.houseY };
+  }
+  inspectPicked(hit) {
+    this.selectedBoundary = null;
+    this.selectPicked(hit);
+    this.renderer.setSelection(hit.x, hit.y, hit.plane);
+    this.sandbox.environmentObservation?.select({ plane: hit.plane, x: hit.x, y: hit.y });
+    if (['entity', 'house', 'settlement', 'artifact', 'site', 'leyline', 'rift'].includes(hit.kind))
+      return this.sandbox.inspectPlaneSubject(hit.plane, this.selectedCell);
+    return this.sandbox.inspectPlaneAt(hit.plane, hit.x, hit.y);
+  }
+  brushAccessBounds(){return accessBounds(this.sandbox.world);}
+  editReason(hit){
+    if(this.isViewMode())return '视界工具不修改地形';
+    if(hit?.kind==='world-edge')return '世界外侧面只能观察，请在地表落笔';
+    if(hit?.plane!=='mortal'||this.renderer.activePlane!=='mortal')return '只可塑造凡间地形';
+    if(this.renderer.realmPrototype.open)return '请先关闭视界，再塑造地形';
+    if(this.renderer.slabProbe)return '请先关闭 Slab 调试探针';
+    const bounds=this.brushAccessBounds();
+    if(hit?.world&&bounds&&!canAccess(this.sandbox.world,hit.world.x,hit.world.y))return '这片区域尚未解锁';
+    return '';
+  }
+  withinBrushBounds(bounds,x,y){return !bounds||x>=bounds.x0&&y>=bounds.y0&&x<=bounds.x1&&y<=bounds.y1;}
+  canSculpt(hit) {return !this.editReason(hit);}
+  /** The existing burn tool owns World mutation; this adapter only supplies an authorized pick. */
+  burnAt(hit) {
+    if (!this.active || this.mode !== 'burn' || this.renderer.world !== this.sandbox.world
+      || this.sandbox.getRealmViewState?.().open
+      || !hit || !this.canSculpt(hit) || !Number.isFinite(hit.x) || !Number.isFinite(hit.y)) {
+      this.sandbox.notify('请在当前已开放的凡间地表焚林，先关闭视界与调试面片。', 2400);
+      return false;
+    }
+    const sandbox = this.sandbox;
+    sandbox.selectTool('burn');
+    sandbox.history.begin();
+    sandbox.applyTool(true, { point: { x: Math.round(hit.x), y: Math.round(hit.y) }, radius: this.radius });
+    const changed = sandbox.history.end('焚林');
+    sandbox.qol.syncUndoState();
+    if (changed) sandbox.notify('焚林已落笔 · 火势与灾迹可用检视观察。', 2600);
+    return !!changed;
+  }
+  stamp(point, plane) {
+    if(plane!=='mortal'||!this.stroke||this.stroke.plane!=='mortal'||this.stroke.world!==this.sandbox.world||!this.canSculpt({plane,world:point}))return;
+    if(typeof this.stroke.sample==='function'){this.stroke.sample(point);return;}
+    // Historical callers provide a Map-backed stroke and expect one explicit stamp.
+    const region=sculpt(this.sandbox.world,{...point,radius:this.radius,strength:this.strength,mode:this.mode,
+      targetHeight:this.stroke.targetHeight,accessBounds:this.brushAccessBounds()});
+    if(region){for(const [i,,old] of region.changes)if(!this.stroke.before.has(i))this.stroke.before.set(i,old);
+      this.stroke.changed=true;this.applyTerrainDirty(region);}
+  }
+  applyTerrainDirty(region,reason='terrain'){
+    if(!region)return;
+    this.renderer.markTerrainDirty(region);this.sandbox.dirty=true;
+    if(this.sandbox.terrain?.invalidate)this.sandbox.terrain.invalidate();
+    else if(this.sandbox.terrain)this.sandbox.terrain.lastRender=-Infinity;
+    this.sandbox.qol?.markDirty?.(reason);
+  }
+  flushStroke(){if(this.stroke?.world===this.sandbox.world)this.applyTerrainDirty(this.stroke.flush?.());}
+  syncHistoryState(){
+    this.historyBytes=[...(this.undoStack||[]),...(this.redoStack||[])].reduce((sum,entry)=>sum+(entry.bytes||entry.changes.length*32),0);
+    const panel=this.panel;if(!panel)return;
+    const undo=panel.querySelector('[data-action="undo"]'),redo=panel.querySelector('[data-action="redo"]');
+    if(undo)undo.disabled=!this.active||!this.undoStack?.length;if(redo)redo.disabled=!this.active||!this.redoStack?.length;
+  }
+  clearHistory(message){
+    this.stroke=null;this.undoStack=[];this.redoStack=[];this.historyBytes=0;this.historyNotice=message||null;this.syncHistoryState();
+    if(message&&this.panel?.querySelector('[data-edit-state]'))this.panel.querySelector('[data-edit-state]').textContent=message;
+  }
+  endStroke() {
+    this.cancelRealmDraw();
+    if(this.stroke?.world===this.sandbox.world){
+      const entry=typeof this.stroke.finish==='function'?this.stroke.finish():this.stroke.changed
+        ?{plane:this.stroke.plane,world:this.stroke.world,changes:[...this.stroke.before],bytes:this.stroke.before.size*32}:null;
+      if(entry){this.applyTerrainDirty(entry.region);this.undoStack.push(entry);this.redoStack=[];
+        this.historyBytes=(this.historyBytes||0)+entry.bytes;
+        while(this.undoStack.length>(this.historyLimit||12)||this.historyBytes>(this.historyByteLimit||8*1024*1024)){
+          const old=this.undoStack.shift();this.historyBytes-=old.bytes||old.changes.length*32;
+        }
+      }
+    }
+    this.stroke=null;this.syncHistoryState();
+  }
+
+  // ── M2-B B3 · 正式 3D 划窗（§48–§52）──────────────────────────────────
+
+  /**
+   * 采样一个指针位置，追加到**世界坐标路径**上。
+   *
+   * §51：屏幕鼠标轨迹只用于**采样**，最终 Region 必须由 world x/y 构成——
+   * 相机转动后 Region 不漂移。所以这里每次采样都重新 raycast 凡间地形。
+   * 采样点间距小于 0.6 格就丢掉，避免路径被抖动的像素灌满。
+   */
+  sampleRealmDraw(e) {
+    const hit = this.hitMortal(e);
+    if (!hit) return;
+    const point = hit.world;
+    const last = this.realmDraw.last;
+    if (last && Math.hypot(point.x - last.x, point.y - last.y) < 0.6) return;
+    this.realmDraw.path.push([point.x, point.y]);
+    this.realmDraw.last = point;
+    this.renderer.setDraftPath(this.realmDraw.path);
+  }
+
+  /**
+   * pointerup：把世界坐标路径交给 **Canvas 侧唯一提交点**（§49 / S9）。
+   *
+   * ⚠️ 每次拖拽**只调一次** `commitSelection`——它自己负责 normalizeRegion、
+   *    选区、目标位面、`openRifts`、通知与 V7 语义。这里**绝不**自己调 `openRifts`，
+   *    也**没有**第二个 3D 选择状态。
+   * 退化路径（点一下 / 只划一条线）也照样交出去：`commitSelection` 会用既有的
+   *    「点一下 = 收起视界 / 太小 = 拒绝并发声」出口（不许静默）。
+   */
+  commitRealmDraw(event) {
+    const draw = this.realmDraw;
+    if (!draw) return null;
+    this.realmDraw = null;
+    this.renderer.setDraftPath(null);
+    if (draw.world && (draw.world !== this.sandbox.world || this.renderer.world !== draw.world)) return null;
+    const view = this.sandbox.getRealmViewState?.();
+    if (draw.mode !== undefined && draw.mode !== this.mode) return null;
+    if ('toolId' in draw && draw.toolId !== this.sandbox.toolId) return null;
+    if ('viewRegion' in draw && (draw.viewRegion !== view?.region || draw.targetPlane !== view?.targetPlane)) return null;
+    if ('source' in draw && draw.source !== this.sandbox.world?.[draw.targetPlane]) return null;
+    if (event && draw.press && view?.open && draw.viewRegion === view.region
+      && draw.targetPlane === view.targetPlane
+      && Math.hypot(event.clientX - draw.press.x, event.clientY - draw.press.y) < VIEW_CLICK_PX) {
+      const hit = this.hit(event), source = hit?.plane === 'mortal' ? this.sandbox.world : this.sandbox.world?.[hit?.plane];
+      if (hit?.plane === view.targetPlane && source === this.renderer.stages?.get(hit.plane)?.world
+        && canAccess(this.sandbox.world, hit.x, hit.y) && view.region.contains(hit.x + .5, hit.y + .5)) {
+        // A short click observes the actual visible plane without re-opening rifts.
+        this.inspectPicked(hit);
+        return { inspected: true, plane: hit.plane, x: hit.x, y: hit.y };
+      }
+    }
+    const path = draw.path;
+    if (!path.length) return null;
+    this.sandbox.commitSelection(path);
+    this.sandbox.dirty = true;
+    return path;
+  }
+
+  cancelRealmDraw() {
+    if (!this.realmDraw) return null;
+    const path = this.realmDraw.path;
+    this.realmDraw = null;
+    this.renderer.setDraftPath(null);
+    return path;
+  }
+  undo() {
+    this.endStroke();
+    if (!this.canSculpt({ plane: this.renderer.activePlane })) return false;
+    const entry=this.undoStack.pop();
+    if(!entry)return false;
+    if(entry.plane!=='mortal'||entry.world!==this.sandbox.world){this.clearHistory('创建或加载世界后不能撤销旧会话');return false;}
+    const restored=entry.records?restoreTerrainStroke(entry.world,entry,'before'):restoreHeights(entry.world, entry.changes);
+    if(entry.records&&!restored)return this.rejectHistoryConflict();
+    this.redoStack??=[];this.redoStack.push(entry);this.applyTerrainDirty(restored,'undo');this.syncHistoryState();return !!restored;
+  }
+  rejectHistoryConflict(){
+    const message='世界演化已改变地形，不能撤销旧笔画';
+    this.clearHistory(message);this.sandbox.notify?.(message,4200);return false;
+  }
+  redo(){
+    this.endStroke();
+    if(!this.canSculpt({plane:this.renderer.activePlane}))return false;
+    const entry=this.redoStack?.pop();if(!entry)return false;
+    if(entry.world!==this.sandbox.world){this.clearHistory('创建或加载世界后不能撤销旧会话');return false;}
+    const restored=restoreTerrainStroke(entry.world,entry,'after');
+    if(entry.records&&!restored)return this.rejectHistoryConflict();
+    if(restored)this.undoStack.push(entry);this.applyTerrainDirty(restored);this.syncHistoryState();return !!restored;
+  }
+
+  render(now) {
+    if (!this.active) return false;
+    const world = this.sandbox.world;
+    if (this.renderer.setWorld(world)) { this.clearHistory('创建或加载世界后不能撤销旧会话'); this.selectedCell = null; this.lastNow = null; this.planeSelect.value = this.renderer.activePlane; }
+    this.renderer.setRealmViewState(this.sandbox.getRealmViewState());
+    if (this.boundaryMode) this.renderer.setBoundaryMode(this.boundaryMode);
+    this.renderer.setPresentation(this.sandbox.stage);
+    const dt = this.lastNow == null ? 0 : Math.max(0, now - this.lastNow); this.lastNow = now;
+    this.flushStroke();
+    this.renderer.update(dt);
+    const hit = this.pointer ? this.hit({ clientX: this.pointer.x, clientY: this.pointer.y }) : null;    this.renderer.brush(this.mode === 'inspect' || !this.canSculpt(hit) ? null : hit, this.radius);
+    const editState=this.panel.querySelector('[data-edit-state]');
+    if(editState&&this.mode!=='inspect')editState.textContent=this.editReason(hit)||this.historyNotice||'拖动塑造 · 本会话支持撤销/重做';
+    this.syncHistoryState();
+    const metrics = this.renderer.render();
+    const cell = hit || this.selectedCell;
+    const viewedWorld = this.renderer.stages.get(cell?.plane || this.renderer.activePlane)?.world || world;
+    // §63：界缘检视优先显示（它是中性的界差读数，与格子检视互斥）。
+    const boundaryText = this.selectedBoundary ? boundaryInspectorText(this.selectedBoundary) : null;
+    const village = cell?.kind === 'settlement' ? viewedWorld.villages?.find(v => v.id === cell.settlementId) : null;
+    this.readout.textContent = boundaryText || (village ? `聚落 · ${village.name}` : cell && cell.plane
+      ? `${cell.plane} · 格 ${cell.x}, ${cell.y} · 高程 ${viewedWorld.height[cell.y * viewedWorld.w + cell.x]?.toFixed(4)} · ${TERRAIN_INFO[viewedWorld.type[cell.y * viewedWorld.w + cell.x]]?.name || '—'}`
+      : '左键检视 / 雕刻 · 中键旋转 · 右键平移 · 滚轮缩放');
+    if (!this.lastDebug || now - this.lastDebug > 0.3) {
+      this.lastDebug = now;
+      this.panel.querySelector('[data-debug]').textContent = `Q/E 旋转 · F 全图 · Ctrl+Z 撤销 · Ctrl+Shift+Z 重做\n左键检视 / 雕刻 · 中键旋转 · 右键平移 · 滚轮缩放\n${metrics.fps.toFixed(1)} FPS · ${metrics.frameMs.toFixed(1)} ms/frame\n${metrics.drawCalls} draws · ${metrics.triangles} triangles\n${metrics.terrainVertices} terrain vertices · ${metrics.treeInstances} trees\n${metrics.entityInstances} entities · ${metrics.houseInstances} buildings · ${metrics.markerInstances} markers\nRaycast ${metrics.lastRaycastMs.toFixed(2)} ms（上次查询） · render submit ${metrics.renderMs.toFixed(2)} ms\nCPU 更新 ${metrics.layerUpdateMs.toFixed(2)} ms（桥扫描 ${metrics.bridgeScanMs.toFixed(2)} · 地形 ${metrics.terrainUpdateMs.toFixed(2)} · 水 ${metrics.waterUpdateMs.toFixed(2)} · 植被 ${metrics.vegetationUpdateMs.toFixed(2)}）\n实体 ${metrics.entityUpdateMs.toFixed(2)} ms · 建筑 ${metrics.settlementUpdateMs.toFixed(2)} ms · 标记 ${metrics.markerUpdateMs.toFixed(2)} ms`;
+      if (metrics.lod) {
+        const names = { tree: 'Trees', character: 'Characters', building: 'Buildings' };
+        this.panel.querySelector('[data-debug]').textContent += '\n' + Object.entries(metrics.lod).map(([key, value]) =>
+          `${names[key]} L0/L1/L2 ${value.lod.join('/')} · ${value.triangles} tris · overflow ${value.overflow} · capacity ${value.capacity}${value.hlod ? ` · HLOD ${value.hlod}` : ''}`).join('\n');
+      }
+    }
+    return true;
+  }
+  dispose() {
+    this.setActive(false); this.artDebug?.dispose(); this.abort.abort(); this.resizeObserver.disconnect(); this.renderer.dispose();
+    this.sandbox.camera.focusOn = this.originalFocus; this.sandbox.camera.fit = this.originalFit;
+    this.canvas.remove(); this.panel.remove(); this.readout.remove();
+  }
+}

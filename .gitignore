@@ -1,0 +1,66 @@
+
+# 可再生成的依赖、构建产物、测试结果与工具缓存。
+node_modules/
+logs/
+dist/
+/coverage/
+/.nyc_output/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/.cache/
+/.vite/
+__pycache__/
+*.py[cod]
+
+# 临时截图、视频和追踪文件放在明确的临时目录；不全局忽略图片，避免误伤 fixtures / baseline。
+**/tmp-screenshots/
+**/tmp-videos/
+**/tmp-traces/
+*.trace.zip
+
+# reports 默认是可重建输出；下面只放行归档与经过筛选的正式证据。
+reports/
+!reports/
+reports/*
+!reports/archive/
+!reports/archive/**
+!reports/release/
+# New release evidence is opt-in: compact summaries and selected golden images only.
+# Existing tracked release evidence remains tracked and is not rewritten by ignore rules.
+reports/release/**
+!reports/release/**/
+!reports/release/**/summary/
+!reports/release/**/summary/*.json
+!reports/release/**/golden/
+!reports/release/**/golden/*.png
+# proof/, matrix/, source images and logs remain ignored. The evidence audit
+# limits each new stage to eight representative golden PNGs plus compact JSON.
+run/
+# 一次性日志与压缩输出。
+*.log
+npm-debug.log*
+*.zip
+!reports/archive/v4-docs/*.zip
+.vscode/
+
+# AI 工作目录（本地记忆 / 工具数据，不属于项目源码）
+.workbuddy-ai/
+.local-backups/
+.g23-worktree/
+.g2-p0-worktree/
+# Blender's automatic previous-version backup is local recovery state, not a source asset.
+*.blend1
+
+# 系统杂项
+.DS_Store
+Thumbs.db
+
+# 第三方完整参考包保留本地，设计说明随仓库。
+美术素材/范式素材参考/*
+!美术素材/范式素材参考/《坐天观井》视觉参考说明文档.md
+
+# G2-P0 raw evidence can contain nested historical golden/summary paths.
+# Keep this rule after the general release-summary exceptions.
+/reports/release/g2p0/proof/

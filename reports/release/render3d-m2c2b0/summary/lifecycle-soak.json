@@ -1,0 +1,557 @@
+{
+  "phase": "B6-soak",
+  "passed": true,
+  "source": "reports/m2c2b0/b6-soak-final/lifecycle-soak.json",
+  "sourceURL": "http://127.0.0.1:4192/inkbox.html?renderer=3d&boundary=strata",
+  "gitCommit": "f69b9e249c2819f4a4d2ad92c07dc242aa3a270e",
+  "scenario": "NETHER_STYLE_A",
+  "ghost": {
+    "id": 2000213,
+    "x": 60.67505160874961,
+    "y": 27.663227859635388,
+    "soulKind": "ghostCultivator"
+  },
+  "worldDigest": {
+    "algorithm": "SHA-256",
+    "scope": "JSON.stringify entire world (including upper/nether, all typed arrays and facts) + advanceState; functions excluded by JSON",
+    "bytes": 43833700,
+    "value": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938"
+  },
+  "lifecycle": {
+    "frames": 600,
+    "actualCalls": {
+      "update": 600,
+      "render": 600
+    },
+    "worldUnchanged": true,
+    "resizeRestored": true
+  },
+  "frames": 6000,
+  "states": [
+    "legacy/no-lod/mortal",
+    "legacy/no-lod/upper",
+    "legacy/no-lod/nether",
+    "legacy/no-lod/upper-window",
+    "legacy/no-lod/nether-window",
+    "legacy/lod/mortal",
+    "legacy/lod/upper",
+    "legacy/lod/nether",
+    "legacy/lod/upper-window",
+    "legacy/lod/nether-window",
+    "realm-style-v1/no-lod/mortal",
+    "realm-style-v1/no-lod/upper",
+    "realm-style-v1/no-lod/nether",
+    "realm-style-v1/no-lod/upper-window",
+    "realm-style-v1/no-lod/nether-window",
+    "realm-style-v1/lod/mortal",
+    "realm-style-v1/lod/upper",
+    "realm-style-v1/lod/nether",
+    "realm-style-v1/lod/upper-window",
+    "realm-style-v1/lod/nether-window"
+  ],
+  "resources": {
+    "geometries": 53,
+    "textures": 7,
+    "programs": 13
+  },
+  "blocks": [
+    {
+      "key": "legacy/no-lod/mortal",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16879140,
+        "jsHeapTotalBytes": 18087936,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "legacy/no-lod/upper",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16827832,
+        "jsHeapTotalBytes": 17825792,
+        "domNodes": 1924,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "legacy/no-lod/nether",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16843696,
+        "jsHeapTotalBytes": 17825792,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "legacy/no-lod/upper-window",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16808368,
+        "jsHeapTotalBytes": 18087936,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "legacy/no-lod/nether-window",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16892264,
+        "jsHeapTotalBytes": 18350080,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "legacy/lod/mortal",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16696704,
+        "jsHeapTotalBytes": 18087936,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "legacy/lod/upper",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16693352,
+        "jsHeapTotalBytes": 17563648,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "legacy/lod/nether",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16692604,
+        "jsHeapTotalBytes": 17563648,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "legacy/lod/upper-window",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16699952,
+        "jsHeapTotalBytes": 18087936,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "legacy/lod/nether-window",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16788384,
+        "jsHeapTotalBytes": 18350080,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "realm-style-v1/no-lod/mortal",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 17000776,
+        "jsHeapTotalBytes": 18612224,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "realm-style-v1/no-lod/upper",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16968908,
+        "jsHeapTotalBytes": 18350080,
+        "domNodes": 1924,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "realm-style-v1/no-lod/nether",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 17007076,
+        "jsHeapTotalBytes": 18350080,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "realm-style-v1/no-lod/upper-window",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16963656,
+        "jsHeapTotalBytes": 18612224,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "realm-style-v1/no-lod/nether-window",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 17031232,
+        "jsHeapTotalBytes": 18350080,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "realm-style-v1/lod/mortal",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16817188,
+        "jsHeapTotalBytes": 18350080,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "realm-style-v1/lod/upper",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16849292,
+        "jsHeapTotalBytes": 18087936,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "realm-style-v1/lod/nether",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16849284,
+        "jsHeapTotalBytes": 18087936,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "realm-style-v1/lod/upper-window",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16823644,
+        "jsHeapTotalBytes": 18350080,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    },
+    {
+      "key": "realm-style-v1/lod/nether-window",
+      "frames": 300,
+      "actualCalls": {
+        "update": 300,
+        "render": 300
+      },
+      "resources": {
+        "geometries": 53,
+        "textures": 7,
+        "programs": 13
+      },
+      "worldSha": "15702f5d674c8c8e71de3fd88751bbb1ed31bdc6a29c8251578fb5744de3e938",
+      "segmentsChecked": 10,
+      "cpuMemory": {
+        "available": true,
+        "afterForcedGC": true,
+        "jsHeapUsedBytes": 16919916,
+        "jsHeapTotalBytes": 18874368,
+        "domNodes": 1415,
+        "jsEventListeners": 87
+      }
+    }
+  ],
+  "memory": {
+    "samplesChecked": 21,
+    "first": {
+      "available": true,
+      "afterForcedGC": true,
+      "jsHeapUsedBytes": 17493216,
+      "jsHeapTotalBytes": 20709376,
+      "domNodes": 1607,
+      "jsEventListeners": 95
+    },
+    "last": {
+      "available": true,
+      "afterForcedGC": true,
+      "jsHeapUsedBytes": 16919916,
+      "jsHeapTotalBytes": 18874368,
+      "domNodes": 1415,
+      "jsEventListeners": 87
+    },
+    "limits": {
+      "heapBytes": 30255128,
+      "domNodes": 1967.7,
+      "listeners": 204.5
+    },
+    "peakHeapBytes": 17031232,
+    "peakDomNodes": 1924,
+    "peakListeners": 87,
+    "heapGrowthBytes": -573300,
+    "domNodeDelta": -192,
+    "listenerDelta": -8
+  },
+  "errors": {
+    "consoleErrors": [],
+    "runtimeErrors": []
+  },
+  "productCallMonitor": {
+    "update": 7789,
+    "render": 7789
+  }
+}

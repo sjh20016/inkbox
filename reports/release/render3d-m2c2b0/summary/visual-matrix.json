@@ -1,0 +1,1139 @@
+{
+  "phase": "B5",
+  "accepted": true,
+  "visualReview": {
+    "reviewer": "root",
+    "method": "Actual fresh PNG review, including legacy/v1 Mortal and Upper, Nether ink, real houses/cultivator, and crossed Nether breach.",
+    "criteria": "Semantic colours and stage ownership follow visual bible; statistics are diagnostic only.",
+    "limitations": [
+      "No formal floating island topology; attached low terrain wash is not a cloud entity.",
+      "Canvas metrics include some HUD/selection; nearest palette occupancy is not a semantic test.",
+      "Older original GPU/rAF timings are historical; current serial legacy/v1 comparisons do not establish a global speedup."
+    ]
+  },
+  "matrix": {
+    "source": "reports/m2c2b0/b5-matrix-final/matrix.json",
+    "pairs": 24,
+    "images": 48,
+    "suites": [
+      {
+        "name": "mortal",
+        "evidence": "reports/m2c2b0/b5-matrix-final/mortal/evidence.json",
+        "pass": true,
+        "pairs": 7,
+        "resize": {
+          "before": [
+            1086,
+            797
+          ],
+          "during": [
+            900,
+            600
+          ],
+          "restored": [
+            1086,
+            797
+          ],
+          "glError": 0
+        },
+        "digest": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1",
+        "legitimateWindowSetupMayChangeWorld": false
+      },
+      {
+        "name": "nether",
+        "evidence": "reports/m2c2b0/b5-matrix-final/nether/evidence.json",
+        "pass": true,
+        "pairs": 4,
+        "resize": null,
+        "digest": "c35d82a172f5bcbaa50ed66bcdf08b7f44989aa177a98243c1f52fccabfb6bb3",
+        "legitimateWindowSetupMayChangeWorld": true
+      },
+      {
+        "name": "upper",
+        "evidence": "reports/m2c2b0/b5-matrix-final/upper/evidence.json",
+        "pass": true,
+        "pairs": 5,
+        "resize": null,
+        "digest": "0c33425e03aec922b38def0b9bc3a2f283ed2638a1b07d5b4b4f7d3161aac53e",
+        "legitimateWindowSetupMayChangeWorld": true
+      },
+      {
+        "name": "cross",
+        "evidence": "reports/m2c2b0/b5-matrix-final/cross/evidence.json",
+        "pass": true,
+        "pairs": 8,
+        "resize": null,
+        "digest": "ff0774e044b43a95370044901624c13a129000ecd3e735e3d255c2ad14d8c3b0",
+        "legitimateWindowSetupMayChangeWorld": true
+      }
+    ],
+    "cases": [
+      {
+        "suite": "mortal",
+        "name": "overview",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/overview-legacy.png",
+            "sha256": "bcf45b367f8898f3818d16707da616ddc33863255fb02c146b9bc7d0fec93fca",
+            "triangles": 179874,
+            "drawCalls": 12,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.6000000238418579,
+            "meanSaturation": 0.049586245547794804,
+            "nearPaperRatio": 0.8253542149349492,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/overview-realm-style-v1.png",
+            "sha256": "9f3fac9b3bc0f30358fa8b1fb94030e4cabe1edbe6e72031c7a05096c897035f",
+            "triangles": 179874,
+            "drawCalls": 12,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.11035801076685003,
+            "nearPaperRatio": 0.5914943860274461,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "mortal",
+        "name": "settlement-near",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/settlement-near-legacy.png",
+            "sha256": "56511aa00a829955749427e9c0872e0de775131876e3baae3a278d180e017c41",
+            "triangles": 256819,
+            "drawCalls": 14,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.5,
+            "meanSaturation": 0.043676058714449316,
+            "nearPaperRatio": 0.3017398859383354,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/settlement-near-realm-style-v1.png",
+            "sha256": "fd849909027237cfacb5998defc5b2898fc0b6b87e17b7d4466b79f36dd1111e",
+            "triangles": 256819,
+            "drawCalls": 14,
+            "cpuMedianMs": 0.2999999523162842,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.13754728341461803,
+            "nearPaperRatio": 0.10400329709499198,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "mortal",
+        "name": "settlement-mid",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/settlement-mid-legacy.png",
+            "sha256": "3bd426a03e4457cbfccdc7d63ccaf1952417549c0b35f0f1ae7997d9d633d421",
+            "triangles": 246699,
+            "drawCalls": 13,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.04520658691348653,
+            "nearPaperRatio": 0.3700766351808947,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/settlement-mid-realm-style-v1.png",
+            "sha256": "12f01d8f411481cf71249f3ae7ab3d1460619ab1bbe688cbfe5dd948c9486bd6",
+            "triangles": 246699,
+            "drawCalls": 13,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.13100066316044334,
+            "nearPaperRatio": 0.12753965425057923,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "mortal",
+        "name": "settlement-far-hlod",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/settlement-far-hlod-legacy.png",
+            "sha256": "348a0a1de128a879acf2669ca8621198ff88f673ff23c474630659c2ae0011c6",
+            "triangles": 129024,
+            "drawCalls": 8,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.5,
+            "meanSaturation": 0.051554890501890514,
+            "nearPaperRatio": 0.9803956513990376,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/settlement-far-hlod-realm-style-v1.png",
+            "sha256": "cf675fd21cc5fa91ac64f18af7ee26b2362c98377fc6dca6b24d25a2ee4d3652",
+            "triangles": 129024,
+            "drawCalls": 8,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.11030216298761371,
+            "nearPaperRatio": 0.9146431117447871,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "mortal",
+        "name": "wateredge",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/wateredge-legacy.png",
+            "sha256": "ac00779a48b1652528a0f0802e65e909548bfad15857e72c086176a483ee1562",
+            "triangles": 236799,
+            "drawCalls": 13,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.5,
+            "meanSaturation": 0.04526584733514989,
+            "nearPaperRatio": 0.6829776332204598,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/wateredge-realm-style-v1.png",
+            "sha256": "69e32025ccc1566b74869d912fc4c251ef1670c53a735d4dc649c761bf44100e",
+            "triangles": 236799,
+            "drawCalls": 13,
+            "cpuMedianMs": 0.19999998807907104,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.11821031949087878,
+            "nearPaperRatio": 0.25033416503297096,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "mortal",
+        "name": "forest",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/forest-legacy.png",
+            "sha256": "b99264030f043a76a20f2da2e1f84fbbd8ebe73d4a6db2a2cccbd4112c2cf628",
+            "triangles": 246699,
+            "drawCalls": 13,
+            "cpuMedianMs": 0.2999999523162842,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.04325896210875746,
+            "nearPaperRatio": 0.5565407235786848,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/forest-realm-style-v1.png",
+            "sha256": "7bb5e8643406ad617e41ca8d1da26dfafae82b68ec00d7cd778ab626dd24f69e",
+            "triangles": 246699,
+            "drawCalls": 13,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.14302796422663527,
+            "nearPaperRatio": 0.16673721261807165,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "mortal",
+        "name": "character",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/character-legacy.png",
+            "sha256": "078c2e63b144e9a4f023c6bc3a3eb350f0d2649c6eaaf89bbbcefa305555226f",
+            "triangles": 256819,
+            "drawCalls": 14,
+            "cpuMedianMs": 0.2999999523162842,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.042788361016364414,
+            "nearPaperRatio": 0.26659686330422383,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/mortal/character-realm-style-v1.png",
+            "sha256": "2a7ae90480fcdcd0199d6423d8df0b7b313a3c3c286c9331d8991abf77a12595",
+            "triangles": 256819,
+            "drawCalls": 14,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.5,
+            "meanSaturation": 0.13611989642077607,
+            "nearPaperRatio": 0.09997103903047586,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "nether",
+        "name": "nether-overview",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/nether/nether-overview-legacy.png",
+            "sha256": "38d14c03bd77d9f245fb02b5509a5d1278a7556bda0aef5cb69ed58efe96544b",
+            "triangles": 103246,
+            "drawCalls": 3,
+            "cpuMedianMs": 0.5,
+            "cpuP95Ms": 0.800000011920929,
+            "meanSaturation": 0.05275470490586727,
+            "nearPaperRatio": 0.9140416146854393,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/nether/nether-overview-realm-style-v1.png",
+            "sha256": "a631fced77e42398c2906f89928ac20f7de7742d69f82f22649e639c12681094",
+            "triangles": 103246,
+            "drawCalls": 3,
+            "cpuMedianMs": 0.5,
+            "cpuP95Ms": 0.7000000476837158,
+            "meanSaturation": 0.10694156117172524,
+            "nearPaperRatio": 0.547117269648904,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "nether",
+        "name": "nether-terrain-close",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/nether/nether-terrain-close-legacy.png",
+            "sha256": "ac2055edc080f2546e1b42e9268c96c6b899b50c6d420559f6f4913327a6a1fe",
+            "triangles": 103760,
+            "drawCalls": 3,
+            "cpuMedianMs": 0.40000003576278687,
+            "cpuP95Ms": 0.699999988079071,
+            "meanSaturation": 0.056067458156175976,
+            "nearPaperRatio": 0.6956759044733559,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/nether/nether-terrain-close-realm-style-v1.png",
+            "sha256": "b989d5e6c15a5cc04cc02b61cb8ef99da5e697a36ebcb10e68d7de14c31d806c",
+            "triangles": 103760,
+            "drawCalls": 3,
+            "cpuMedianMs": 0.3999999761581421,
+            "cpuP95Ms": 0.699999988079071,
+            "meanSaturation": 0.21689794135894905,
+            "nearPaperRatio": 0.07109918018178578,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "nether",
+        "name": "nether-entity-close",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/nether/nether-entity-close-legacy.png",
+            "sha256": "106ec5741ed56fe43a850c79042bf58fd4ea2de923d46f17959a160358d4bf44",
+            "triangles": 104736,
+            "drawCalls": 6,
+            "cpuMedianMs": 0.3999999761581421,
+            "cpuP95Ms": 0.699999988079071,
+            "meanSaturation": 0.05313333454461063,
+            "nearPaperRatio": 0.45338397790055246,
+            "redAccentArea": 0.00004455533772945999
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/nether/nether-entity-close-realm-style-v1.png",
+            "sha256": "72b729eaa9618521e4d2add3589f50abc77c23a14cc525c2b9f325b744fa1e8d",
+            "triangles": 104736,
+            "drawCalls": 6,
+            "cpuMedianMs": 0.3999999761581421,
+            "cpuP95Ms": 0.699999988079071,
+            "meanSaturation": 0.3106625022955957,
+            "nearPaperRatio": 0.058100160399215825,
+            "redAccentArea": 0.000022277668864729994
+          }
+        ]
+      },
+      {
+        "suite": "nether",
+        "name": "mortal-nether-large-window",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/nether/mortal-nether-large-window-legacy.png",
+            "sha256": "2661902ddd7ff5a071038121d0acf0f35c716be2556f5f56c5f7c530eeb8b43f",
+            "triangles": 244501,
+            "drawCalls": 16,
+            "cpuMedianMs": 0.699999988079071,
+            "cpuP95Ms": 2.300000011920929,
+            "meanSaturation": 0.05103125999162404,
+            "nearPaperRatio": 0.8983804134735341,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/nether/mortal-nether-large-window-realm-style-v1.png",
+            "sha256": "e0084a4e9cb5ad3247343ceac5a1a948250bab5a6c98eea3763046f45c03d8f5",
+            "triangles": 244501,
+            "drawCalls": 16,
+            "cpuMedianMs": 0.699999988079071,
+            "cpuP95Ms": 2.300000011920929,
+            "meanSaturation": 0.11833131970300274,
+            "nearPaperRatio": 0.577270094457316,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "upper",
+        "name": "upper-overview",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/upper/upper-overview-legacy.png",
+            "sha256": "e3699e3a7946049b44cf755da8b9379a7114beb4dc3f27f091ec3d330896ac14",
+            "triangles": 50786,
+            "drawCalls": 2,
+            "cpuMedianMs": 0.3999999761581421,
+            "cpuP95Ms": 0.6000000238418579,
+            "meanSaturation": 0.05225645529721286,
+            "nearPaperRatio": 0.7105908037782926,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/upper/upper-overview-realm-style-v1.png",
+            "sha256": "5b3d4ef174d925cc84bf13908c57424c48889c02a34bdcc49b9d28a38a0c47ae",
+            "triangles": 50786,
+            "drawCalls": 2,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.5,
+            "meanSaturation": 0.11739436150742923,
+            "nearPaperRatio": 0.5216761718053823,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "upper",
+        "name": "upper-highland-cliff",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/upper/upper-highland-cliff-legacy.png",
+            "sha256": "22896d56ccb6e8f88e0ffc5fac80c13e1dcec4731196c76175ef56022f98e993",
+            "triangles": 51194,
+            "drawCalls": 2,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.5,
+            "meanSaturation": 0.05298596853065977,
+            "nearPaperRatio": 0.4792260737836393,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/upper/upper-highland-cliff-realm-style-v1.png",
+            "sha256": "f0b5d07d744a14f78bc5b108d6f83b3c1f1fea115c425b02c59e489fd4d24a3b",
+            "triangles": 51194,
+            "drawCalls": 2,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.6000000238418579,
+            "meanSaturation": 0.09902336309996285,
+            "nearPaperRatio": 0.2009000178221351,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "upper",
+        "name": "upper-entity-close",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/upper/upper-entity-close-legacy.png",
+            "sha256": "f417c2d0cb1c8d5db0d7ef1b7442b9c08a83adc21533f0457d82eb5dcde5544a",
+            "triangles": 55818,
+            "drawCalls": 4,
+            "cpuMedianMs": 0.20000004768371582,
+            "cpuP95Ms": 0.5,
+            "meanSaturation": 0.05630344386788588,
+            "nearPaperRatio": 0.45082204598110853,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/upper/upper-entity-close-realm-style-v1.png",
+            "sha256": "48f2f5721d73e6f59fbd5fbf295e7e155470194fc144b5c94b4f49a291798457",
+            "triangles": 55818,
+            "drawCalls": 4,
+            "cpuMedianMs": 0.20000004768371582,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.09516124048035897,
+            "nearPaperRatio": 0.16111210122972733,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "upper",
+        "name": "upper-cloud-negative-space",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/upper/upper-cloud-negative-space-legacy.png",
+            "sha256": "a9fde523c4c64b6a9a3e80fe349b4de88b8efafe125a4d14f3d7fab95d1001bb",
+            "triangles": 51194,
+            "drawCalls": 2,
+            "cpuMedianMs": 0.2999999523162842,
+            "cpuP95Ms": 0.40000003576278687,
+            "meanSaturation": 0.0524867493902653,
+            "nearPaperRatio": 0.7437065585457138,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/upper/upper-cloud-negative-space-realm-style-v1.png",
+            "sha256": "950e36ad7cc029752051afe0fc1165968d14d61ebb990b76a40b4060d0321e09",
+            "triangles": 51194,
+            "drawCalls": 2,
+            "cpuMedianMs": 0.30000001192092896,
+            "cpuP95Ms": 0.5,
+            "meanSaturation": 0.12256767635939579,
+            "nearPaperRatio": 0.6253341650329709,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "upper",
+        "name": "mortal-upper-large-window",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/upper/mortal-upper-large-window-legacy.png",
+            "sha256": "9b705695ce1ddedd970c8d47739a89d8780fc6e07ea6524b1b7c94b26ef30da5",
+            "triangles": 143515,
+            "drawCalls": 12,
+            "cpuMedianMs": 0.3999999761581421,
+            "cpuP95Ms": 0.699999988079071,
+            "meanSaturation": 0.05591462091657989,
+            "nearPaperRatio": 0.7817902334699697,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/upper/mortal-upper-large-window-realm-style-v1.png",
+            "sha256": "e494df214d21629f6e4b981732b78e076274b305bf4e349cbc5b74ce36f4dbed",
+            "triangles": 143515,
+            "drawCalls": 12,
+            "cpuMedianMs": 0.40000003576278687,
+            "cpuP95Ms": 0.6000000238418579,
+            "meanSaturation": 0.1144559366870593,
+            "nearPaperRatio": 0.5671226162894315,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "cross",
+        "name": "cross-upper-overview",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-upper-overview-upper-legacy.png",
+            "sha256": "0e4bc1050500526c6cb4506da272725dd1d732932f94933845b6418135ee9e71",
+            "triangles": 218537,
+            "drawCalls": 20,
+            "cpuMedianMs": 0.6000000238418579,
+            "cpuP95Ms": 1.600000023841858,
+            "meanSaturation": 0.05548613627126261,
+            "nearPaperRatio": 0.8750779718410265,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-upper-overview-upper-realm-style-v1.png",
+            "sha256": "98d1937997557a2195f68efde246890beef8aad0d6c84bbc957fe742fdf3b39b",
+            "triangles": 218537,
+            "drawCalls": 20,
+            "cpuMedianMs": 0.699999988079071,
+            "cpuP95Ms": 2,
+            "meanSaturation": 0.11921458448184098,
+            "nearPaperRatio": 0.6007284797718767,
+            "redAccentArea": 0.00006683300659418999
+          }
+        ]
+      },
+      {
+        "suite": "cross",
+        "name": "cross-upper-breach-near",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-upper-breach-near-upper-legacy.png",
+            "sha256": "13e1def55c86ff719cc2026c0d68fd24745d19463ffb03f93a291504594be3b3",
+            "triangles": 280571,
+            "drawCalls": 21,
+            "cpuMedianMs": 0.699999988079071,
+            "cpuP95Ms": 1.600000023841858,
+            "meanSaturation": 0.06289160586740405,
+            "nearPaperRatio": 0.5214533951167349,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-upper-breach-near-upper-realm-style-v1.png",
+            "sha256": "400df6d43613aaec4988983ba2bfb90726541545df1645282207bd2df8d44107",
+            "triangles": 280571,
+            "drawCalls": 21,
+            "cpuMedianMs": 0.699999988079071,
+            "cpuP95Ms": 1.800000011920929,
+            "meanSaturation": 0.15061798289706388,
+            "nearPaperRatio": 0.15647834610586348,
+            "redAccentArea": 0.00015594368205310998
+          }
+        ]
+      },
+      {
+        "suite": "cross",
+        "name": "cross-upper-breach-far",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-upper-breach-far-upper-legacy.png",
+            "sha256": "3df1b352ddf1410308cfb05d7d735aca07575ea27e107ce91b26770323d99144",
+            "triangles": 208568,
+            "drawCalls": 16,
+            "cpuMedianMs": 0.800000011920929,
+            "cpuP95Ms": 2.300000011920929,
+            "meanSaturation": 0.05252112757774666,
+            "nearPaperRatio": 0.9802397077169845,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-upper-breach-far-upper-realm-style-v1.png",
+            "sha256": "cb8a967158b46eeb19fcb649bf0863741f2ac1920055d345ee19a3a1344a897f",
+            "triangles": 208568,
+            "drawCalls": 16,
+            "cpuMedianMs": 0.7999999523162842,
+            "cpuP95Ms": 1.699999988079071,
+            "meanSaturation": 0.11234541971950801,
+            "nearPaperRatio": 0.9138745321689539,
+            "redAccentArea": 0.000011138834432364997
+          }
+        ]
+      },
+      {
+        "suite": "cross",
+        "name": "cross-upper-breach-oblique",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-upper-breach-oblique-upper-legacy.png",
+            "sha256": "78009fb25022091d008c9ca2b5537de23d6c090e2fb28ed11c4d2998620880ff",
+            "triangles": 280571,
+            "drawCalls": 21,
+            "cpuMedianMs": 0.7000000476837158,
+            "cpuP95Ms": 2,
+            "meanSaturation": 0.07709604075995362,
+            "nearPaperRatio": 0.6130368918196399,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-upper-breach-oblique-upper-realm-style-v1.png",
+            "sha256": "4e415c21bcaae3048d2b97f97f786225e10a31ce688cf5bd3dcc1a19bce30552",
+            "triangles": 280571,
+            "drawCalls": 21,
+            "cpuMedianMs": 0.7000000476837158,
+            "cpuP95Ms": 2.099999964237213,
+            "meanSaturation": 0.14748111501763017,
+            "nearPaperRatio": 0.36890705756549635,
+            "redAccentArea": 0.00006683300659418999
+          }
+        ]
+      },
+      {
+        "suite": "cross",
+        "name": "cross-nether-overview",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-nether-overview-nether-legacy.png",
+            "sha256": "c7ad1d2dbd84a84a0f2e894d3e088734c6ce4201b7e1600774d29586b01d34fe",
+            "triangles": 227412,
+            "drawCalls": 19,
+            "cpuMedianMs": 0.7000000476837158,
+            "cpuP95Ms": 2.5,
+            "meanSaturation": 0.049873697227391836,
+            "nearPaperRatio": 0.9198338085902691,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-nether-overview-nether-realm-style-v1.png",
+            "sha256": "2d23e724da77d40a57663d5f15c978197a0ce4ba41438f179328b890b36285c4",
+            "triangles": 227412,
+            "drawCalls": 19,
+            "cpuMedianMs": 0.6000000238418579,
+            "cpuP95Ms": 1.7000000476837158,
+            "meanSaturation": 0.11516587169566947,
+            "nearPaperRatio": 0.5987012119051862,
+            "redAccentArea": 0.00008911067545891998
+          }
+        ]
+      },
+      {
+        "suite": "cross",
+        "name": "cross-nether-breach-near",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-nether-breach-near-nether-legacy.png",
+            "sha256": "63017bb6335021e8c5994fc7b4683966a8e9b38cb1abb8bcf4c43373a2be8826",
+            "triangles": 280795,
+            "drawCalls": 21,
+            "cpuMedianMs": 0.699999988079071,
+            "cpuP95Ms": 2,
+            "meanSaturation": 0.050939671430373624,
+            "nearPaperRatio": 0.7084744252361432,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-nether-breach-near-nether-realm-style-v1.png",
+            "sha256": "ad535a18b0e86ee17fc2337bcc5a11bf998fb63a51ac20fc7c2a3ed603a6472e",
+            "triangles": 280795,
+            "drawCalls": 21,
+            "cpuMedianMs": 0.6000000238418579,
+            "cpuP95Ms": 1.800000011920929,
+            "meanSaturation": 0.16607541337367332,
+            "nearPaperRatio": 0.18017064694350382,
+            "redAccentArea": 0
+          }
+        ]
+      },
+      {
+        "suite": "cross",
+        "name": "cross-nether-breach-far",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-nether-breach-far-nether-legacy.png",
+            "sha256": "3e92f63484f452a6c484c287bcfbea18a2a7df75b8695653d03e72bd50610a4c",
+            "triangles": 208708,
+            "drawCalls": 16,
+            "cpuMedianMs": 0.800000011920929,
+            "cpuP95Ms": 1.699999988079071,
+            "meanSaturation": 0.05118555544579303,
+            "nearPaperRatio": 0.9870232578862947,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-nether-breach-far-nether-realm-style-v1.png",
+            "sha256": "3cc383a922f288dbb90cb6eeb5889526c6f35dd84ea0a8ca4ec6d554fec5ecba",
+            "triangles": 208708,
+            "drawCalls": 16,
+            "cpuMedianMs": 0.800000011920929,
+            "cpuP95Ms": 1.600000023841858,
+            "meanSaturation": 0.110564637683917,
+            "nearPaperRatio": 0.9128386205667439,
+            "redAccentArea": 0.000022277668864729994
+          }
+        ]
+      },
+      {
+        "suite": "cross",
+        "name": "cross-nether-breach-oblique",
+        "sameCameraPose": true,
+        "sameTriangles": true,
+        "sameDrawCalls": true,
+        "profiles": [
+          {
+            "profile": "legacy",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-nether-breach-oblique-nether-legacy.png",
+            "sha256": "5a9576bd64824d2517127dbf4e4d677d9edc3f9cf60e00f1468a9eaa50534b28",
+            "triangles": 280795,
+            "drawCalls": 21,
+            "cpuMedianMs": 0.6000000238418579,
+            "cpuP95Ms": 1.7000000476837158,
+            "meanSaturation": 0.05002709753195394,
+            "nearPaperRatio": 0.7144002851541614,
+            "redAccentArea": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "file": "reports/m2c2b0/b5-matrix-final/cross/cross-nether-breach-oblique-nether-realm-style-v1.png",
+            "sha256": "62a8dbc93aef21e303ea543005114e4f2f415396b0d58076477d3a74b3e20cec",
+            "triangles": 280795,
+            "drawCalls": 21,
+            "cpuMedianMs": 0.699999988079071,
+            "cpuP95Ms": 1.800000011920929,
+            "meanSaturation": 0.16076254626276987,
+            "nearPaperRatio": 0.3382752628764926,
+            "redAccentArea": 0.000022277668864729994
+          }
+        ]
+      }
+    ]
+  },
+  "goldens": [
+    {
+      "file": "reports/release/render3d-m2c2b0/golden/cross-cross-nether-breach-near-legacy.png",
+      "bytes": 1086132
+    },
+    {
+      "file": "reports/release/render3d-m2c2b0/golden/cross-cross-nether-breach-near-realm-style-v1.png",
+      "bytes": 1242226
+    },
+    {
+      "file": "reports/release/render3d-m2c2b0/golden/mortal-overview-legacy.png",
+      "bytes": 824540
+    },
+    {
+      "file": "reports/release/render3d-m2c2b0/golden/mortal-overview-realm-style-v1.png",
+      "bytes": 832705
+    },
+    {
+      "file": "reports/release/render3d-m2c2b0/golden/nether-nether-overview-legacy.png",
+      "bytes": 833493
+    },
+    {
+      "file": "reports/release/render3d-m2c2b0/golden/nether-nether-overview-realm-style-v1.png",
+      "bytes": 984421
+    },
+    {
+      "file": "reports/release/render3d-m2c2b0/golden/upper-upper-overview-legacy.png",
+      "bytes": 842667
+    },
+    {
+      "file": "reports/release/render3d-m2c2b0/golden/upper-upper-overview-realm-style-v1.png",
+      "bytes": 863961
+    }
+  ],
+  "performance": {
+    "source": "reports/m2c2b0/b5-performance-final-2/performance.json",
+    "pass": true,
+    "gpu": {
+      "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "vendor": "Google Inc. (AMD)",
+      "viewport": [
+        1500,
+        940
+      ],
+      "rendererSize": [
+        1086,
+        797.5
+      ],
+      "cssResolution": [
+        1086,
+        798
+      ],
+      "dpr": 1,
+      "canvasPixelSize": [
+        1086,
+        797
+      ],
+      "timerQueryWebGL2": true
+    },
+    "method": {
+      "viewport": [
+        1500,
+        940
+      ],
+      "expectedDpr": 1,
+      "overviewSamplesPerProfile": 120,
+      "warmupRafs": 12,
+      "stableFrames": 6,
+      "scenarios": [
+        "GOLDEN_A",
+        "DENSITY_A"
+      ],
+      "profiles": [
+        "legacy",
+        "realm-style-v1"
+      ],
+      "setup": "Apply scenario, await Render3DHost and stage World adoption, disable LOD, apply fixed WORLD_OVERVIEW camera, wait five product RAFs for dimensions/PPU, apply profile, enable LOD, warm and require six stable product frames before sampling.",
+      "timing": "Wrap the live product-loop Host.update/render methods. Each wrapper forwards exactly once; the probe never calls either method directly. rAF intervals use browser timestamps.",
+      "gpuTiming": "EXT_disjoint_timer_query_webgl2 elapsed render queries are asynchronous, bounded to eight pending, disjoint-filtered, drained and always deleted. CPU update/render submission and rAF are reported separately.",
+      "purity": "Full JSON.stringify({world,advanceState}) SHA-256 plus independent World and advanceState SHA-256 values must match the original A0 baseline and remain unchanged after each sample."
+    },
+    "rows": [
+      {
+        "scenario": "GOLDEN_A",
+        "name": "overview",
+        "profiles": [
+          {
+            "profile": "legacy",
+            "triangles": 179874,
+            "drawCalls": 12,
+            "cpuUpdate": {
+              "samples": 120,
+              "mean": 0.32250000089406966,
+              "median": 0.30000001192092896,
+              "p95": 0.5,
+              "max": 0.6000000238418579
+            },
+            "gpuRender": {
+              "samples": 121,
+              "median": 4.66272,
+              "p95": 5.09364,
+              "max": 5.54148
+            },
+            "raf": {
+              "samples": 120,
+              "mean": 6.634166666666666,
+              "median": 5.599999999999909,
+              "p95": 11.200000000000045,
+              "max": 16.799999999999727
+            },
+            "digest": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1",
+            "gpuValid": 121,
+            "gpuInvalid": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "triangles": 179874,
+            "drawCalls": 12,
+            "cpuUpdate": {
+              "samples": 120,
+              "mean": 0.2824999993046125,
+              "median": 0.30000001192092896,
+              "p95": 0.5,
+              "max": 0.699999988079071
+            },
+            "gpuRender": {
+              "samples": 121,
+              "median": 4.832,
+              "p95": 5.15024,
+              "max": 5.33104
+            },
+            "raf": {
+              "samples": 120,
+              "mean": 6.725833333333332,
+              "median": 5.599999999999909,
+              "p95": 11.200000000000273,
+              "max": 16.699999999999818
+            },
+            "digest": "0f9efd918df2e4f26bcf678cffe2ca1593381c9abee209de9e2e8cc747d755f1",
+            "gpuValid": 121,
+            "gpuInvalid": 0
+          }
+        ]
+      },
+      {
+        "scenario": "DENSITY_A",
+        "name": "overview",
+        "profiles": [
+          {
+            "profile": "legacy",
+            "triangles": 282411,
+            "drawCalls": 12,
+            "cpuUpdate": {
+              "samples": 120,
+              "mean": 0.4183333307504654,
+              "median": 0.3999999761581421,
+              "p95": 0.6000000238418579,
+              "max": 0.7000000476837158
+            },
+            "gpuRender": {
+              "samples": 121,
+              "median": 5.46004,
+              "p95": 5.82392,
+              "max": 6.39644
+            },
+            "raf": {
+              "samples": 120,
+              "mean": 7.329166666666667,
+              "median": 5.600000000000364,
+              "p95": 11.199999999999818,
+              "max": 11.200000000000728
+            },
+            "digest": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74",
+            "gpuValid": 121,
+            "gpuInvalid": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "triangles": 282411,
+            "drawCalls": 12,
+            "cpuUpdate": {
+              "samples": 120,
+              "mean": 0.400833331545194,
+              "median": 0.3999999761581421,
+              "p95": 0.6000000238418579,
+              "max": 0.699999988079071
+            },
+            "gpuRender": {
+              "samples": 121,
+              "median": 5.83176,
+              "p95": 6.1336,
+              "max": 6.51984
+            },
+            "raf": {
+              "samples": 120,
+              "mean": 9.323333333333327,
+              "median": 11.100000000000364,
+              "p95": 11.200000000000728,
+              "max": 16.700000000000728
+            },
+            "digest": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74",
+            "gpuValid": 121,
+            "gpuInvalid": 0
+          }
+        ]
+      },
+      {
+        "scenario": "DENSITY_A",
+        "name": "forest-zoom9",
+        "profiles": [
+          {
+            "profile": "legacy",
+            "triangles": 414037,
+            "drawCalls": 13,
+            "cpuUpdate": {
+              "samples": 120,
+              "mean": 0.4033333326379458,
+              "median": 0.3999999761581421,
+              "p95": 0.699999988079071,
+              "max": 0.800000011920929
+            },
+            "gpuRender": {
+              "samples": 121,
+              "median": 7.226,
+              "p95": 7.65204,
+              "max": 7.90532
+            },
+            "raf": {
+              "samples": 120,
+              "mean": 9.1375,
+              "median": 11.099999999998545,
+              "p95": 11.200000000000728,
+              "max": 16.700000000000728
+            },
+            "digest": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74",
+            "gpuValid": 121,
+            "gpuInvalid": 0
+          },
+          {
+            "profile": "realm-style-v1",
+            "triangles": 414037,
+            "drawCalls": 13,
+            "cpuUpdate": {
+              "samples": 120,
+              "mean": 0.3816666627923648,
+              "median": 0.3999999761581421,
+              "p95": 0.5999999642372131,
+              "max": 0.800000011920929
+            },
+            "gpuRender": {
+              "samples": 121,
+              "median": 7.64332,
+              "p95": 7.9772,
+              "max": 8.61628
+            },
+            "raf": {
+              "samples": 120,
+              "mean": 9.601666666666672,
+              "median": 11.100000000000364,
+              "p95": 11.800000000001091,
+              "max": 16.799999999999272
+            },
+            "digest": "62e4c87937af73ca8d68f5b0d420450c0d64544b0a5068d76edb8fab1e778b74",
+            "gpuValid": 121,
+            "gpuInvalid": 0
+          }
+        ]
+      }
+    ]
+  },
+  "glErrors": 0,
+  "consoleErrors": 0,
+  "runtimeErrors": 0,
+  "globalFog": false
+}

@@ -1,0 +1,260 @@
+name: Inkbox CI
+
+# ─────────────────────────────────────────────────────────────────────────
+# 分层门禁（M1.1D D3）
+# ─────────────────────────────────────────────────────────────────────────
+#
+#   Fast Gate   —— 每次 push / PR 都跑。快速工程门禁，必须全绿。
+#   Heavy Gate  —— 与 Fast Gate **并行**跑。长回归，慢但同样必须全绿。
+#   browser-smoke —— **只手动触发**（workflow_dispatch）。浏览器探针依赖本机浏览器，
+#                    不是普通 CI 硬门槛；见下面 job 里的说明。
+#
+# ⚠️ 铁律（D3.6）——违反任何一条都算没做完：
+#   · **禁止**为了「CI 绿」删测试；
+#   · **禁止**给失败命令加 `|| true`（那等于把门禁拆了）；
+#   · **禁止**把 assertion 降级成 warning。
+#   如果 CI 暴露平台差异 ⇒ **修平台问题**，不得掩盖失败。
+#
+# 刻意**不**进本 workflow 的：
+#   · `npm run test:simulation`（smoke，6.5–13 分钟）与 `npm run inkbox:longrun`（800 年）
+#     ⇒ 见 `nightly.yml`（D3.5：长测不进普通 CI）。
+#   · Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0，以及 C2D.1 Edge 视觉/性能复验
+#     ⇒ 手动浏览器验证；C2D.1 的 CPU 契约仍在 Fast Gate，浏览器性能不作为普通 CI 门槛。
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ── 快速门禁：每次 push / PR 都跑 ───────────────────────────────────────
+  fast-gate:
+    name: Fast Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: Three vendor 一致性（版本 / 许可证 / 字节）
+        run: npm run test:vendor
+
+      - name: 核心检查（导入图 / 核心 / 启动 / 运行事件）
+        run: npm run test:core
+
+      - name: 视界回归（D8 视界契约）
+        run: npm run test:view
+
+      - name: 表现层回归（D7 FX / 记挂 / 关系图 / 战争线）
+        run: npm run test:presentation
+
+      - name: UX/QoL 填缝包回归（QOL_PASS1 · Escape 分层 / 折叠 / 偏好白名单 / 模拟纯度门禁）
+        run: npm run test:qol
+
+      - name: G1 正式集成（身份 / 命簿四卷 / 权限 / 地图成长 / Web 组件）
+        run: npm run test:g1
+
+      - name: G2 真实命中、预算保护、Canvas / 3D 快照及资源生命周期
+        run: npm run test:g2
+
+      - name: G2.1 地形像素回归（固定历史 RGBA 基准，无 Git 历史依赖）
+        run: npm run test:g21:terrain
+
+      - name: G2.2 真实气血、养伤、观察纯度与短讯生命周期
+        run: npm run test:g22
+
+      - name: G2.3 火灾灾迹、会话对照、权限与地表恢复
+        run: npm run test:g23
+
+      - name: G2-PF 性能仪器参数及正式矩阵程序
+        run: npm run test:g2pf:instrumentation
+
+      - name: G2-P0 陆地缓存像素与真实生态因果回归
+        run: npm run test:g2p0
+
+      - name: G2-PF 植被实例字节等价与真实 Three 上传协议
+        run: npm run test:g2pf:vegetation
+
+      - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
+        run: npm run test:render3d
+
+      - name: Render3D M1（实体 / 聚落 / 标记 / 只读 / 模拟不受影响）
+        run: npm run test:render3d:m1
+
+      - name: Render3D dirty 分类（height / water / type / veg 分层派发）
+        run: npm run test:render3d:bridge
+
+      - name: Render3D M2-A 多位面架构不变量
+        run: npm run test:render3d:m2a
+
+      - name: Render3D M2-B 完整视界与界缘
+        run: npm run test:render3d:m2b
+
+      - name: M2-C2E 地形 / 事务 / 渐进访问 CPU 契约
+        run: npm run test:render3d:m2c2e
+
+      - name: Render3D M2-C 写意渲染与实体母版
+        run: npm run test:render3d:m2c
+
+      - name: Render3D M2-C2A LOD/HLOD 与密度预算
+        run: npm run test:render3d:m2c2a
+
+      - name: Render3D M2-C2A.1 聚落屋顶簇 HLOD
+        run: npm run test:render3d:m2c2a1:hlod
+
+      - name: Render3D M2-C2B0 三界风格与完整模拟纯度
+        run: npm run test:render3d:m2c2b0
+
+      - name: Render3D M2-C2B 单屋实际 GLB 样板门禁
+        run: npm run test:render3d:m2c2b:sample
+
+      - name: Render3D M2-C2B 真实身份与不透明幽冥家族
+        run: npm run test:render3d:m2c2b:content
+
+      - name: Render3D M2-C2B 自然装饰与完整占地区域归属
+        run: npm run test:render3d:m2c2b:decorations
+
+      - name: Render3D M2-C2B 幽冥地面法宝实际资产与身份
+        run: npm run test:render3d:m2c2b:artifacts
+
+      - name: Render3D M2-C2B 实际生产 GLB 九模式 600 日与 11 RNG
+        run: npm run test:render3d:m2c2b:purity
+
+      - name: C2B.1 资产生产规范与独立分类预算
+        run: npm run test:render3d:m2c2b1
+
+      - name: C2C 语义事实源与三界 Region 接线
+        run: npm run test:render3d:m2c2c
+
+      - name: C2C 四类真实 Site 与灵脉生产地貌
+        run: npm run test:render3d:m2c2c:sites && npm run test:render3d:m2c2c:leylines
+
+      - name: C2C 两界只读 R8 场与资源生命周期
+        run: npm run test:render3d:m2c2c:fields
+
+      - name: C2C 真实裂隙、池化快照 FX 与身份检视
+        run: npm run test:render3d:m2c2c:rifts
+
+      - name: C2C 十一模式 600 日与全部十一条 RNG 流
+        run: npm run test:render3d:m2c2c:purity
+
+      - name: C2D 连续表面视觉场、绘画水面、绘画法线与界缘断面契约
+        run: npm run test:render3d:m2c2d
+
+      - name: C2D.1 绘画化 shader 与诊断 CPU 契约
+        run: npm run test:render3d:m2c2d1
+
+      - name: 构建发布包（自包含，clone 即可跑）
+        run: npm run build
+
+  # ── 长回归：与 Fast Gate 并行，慢但同样必须全绿 ─────────────────────────
+  heavy-gate:
+    name: Heavy Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 干预 / 灾祸 / 存读档回归
+        run: npm run test:regression
+
+      - name: 三界生态不变量回归（时间 / 身份 / id 空间 / 上界 / 幽冥 / 裂隙 / 跨界）
+        run: npm run test:three-realms
+
+      - name: 存读档分叉等价
+        run: npm run test:save-equivalence
+
+      - name: G1 三界30年与100年观察纯度 / 敕令确定性
+        run: npm run test:g1:longrun
+
+  # ── 浏览器探针：**手动触发**，不是普通 CI 硬门槛（D3.4）─────────────────
+  #
+  # 为什么不放在 push / PR：
+  #   Canvas playtest 优先 Edge；M2-A 强制 Edge，复用仓库零依赖 CDP。
+  #   windows-latest 预装 Edge；不引 Playwright / Puppeteer，不改游戏运行方式。
+  #   M2-A 结果写 reports/ci，保留 reports/release 的本机硬件基线。
+  #
+  # 手动跑法：仓库 → Actions → Inkbox CI → Run workflow。
+  browser-smoke:
+    name: Browser Smoke（手动）
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    # Hosted Windows uses a software D3D11 renderer. Keep every case and the
+    # 6000-frame soak, with a finite job deadline that covers their real frames.
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: G1 正式命簿 Canvas / 3D 真实身份、命令与存读档
+        run: npm run test:g1:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g1-browser
+
+      - name: G2 正式 Canvas / 3D 真实交战与三界生命周期 Edge
+        run: npm run test:g2:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g2-browser
+          INKBOX_GPU: '0'
+
+      - name: G2.2 正式 Canvas / Three 命簿健康事实与真实交手近讯
+        run: npm run test:g22:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g22-browser
+          INKBOX_GPU: '0'
+
+      - name: G2.3 正式 Canvas / Three 焚林、灾迹、恢复与存读档
+        run: npm run test:g23:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g23-browser
+          INKBOX_GPU: '0'
+
+      - name: Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0 Edge（共享服务器生命周期）
+        run: node scripts/inkbox-browser-smoke.mjs
+
+      - name: C2B0 600 lifecycle + 6000 frame Edge soak
+        run: npm run test:render3d:m2c2b0:soak
+        env:
+          INKBOX_REPORT_DIR: reports/ci/render3d-m2c2b0-soak
+
+      - name: C2B Pass1 正式建筑、角色、法宝、装饰及 21 视角 Edge 矩阵
+        run: npm run test:render3d:m2c2b:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/render3d-m2c2b-pass1
+
+      - name: C2B Pass1 600 lifecycle + 6000 actual frame Edge soak
+        run: npm run test:render3d:m2c2b:soak
+        env:
+          INKBOX_REPORT_DIR: reports/ci/render3d-m2c2b-pass1-soak
+
+      - name: 保存浏览器复验证据（含失败时的可用输出）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: inkbox-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/ci/
+          if-no-files-found: warn
+          retention-days: 14
