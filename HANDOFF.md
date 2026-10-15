@@ -1,5 +1,9 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 当前交接 · 2026-10-15 · P1 集成验证
+
+**P1 READY / ECO PASS / PERF BLOCKED**。本分支已正常合入 PR #10 有效 UI 改动及 G2-P0.2 最终交付材料，Edge 双 renderer 的10项布局与10项真实玩家闭环通过，build/package审计通过。详见 [P1集成报告](./G2_P1_INTEGRATION_VALIDATION_REPORT.md)、[Draft PR #12](https://github.com/sjh20016/inkbox/pull/12)。上游性能仍阻塞，不建议正式合main。
+
 ## 当前交接 · 2026-10-15 · G2-P0.2
 
 **PERF ATTRIBUTED / BLOCKED · ECO PASS**。本次最终 Edge/AMD 完整 Native **9/12**、Controlled **7/12**，均保留原始 exit 1。三个性能候选均未保留；本轮性能分支的产品 `src` 与 `e071e83` 相同，没有改动数值系统、模拟、RNG 或存档规则。帧级记录将 Canvas 长帧关联到地形重绘、Three 长帧关联到植被上传，但固定排程下仍有轮间波动，不据此解除阻塞。

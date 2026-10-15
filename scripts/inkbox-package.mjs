@@ -99,6 +99,8 @@ const FILES = [
   'scripts/inkbox-p1-browser.mjs',
   'scripts/inkbox-p1-loop-browser.mjs',
   'P1_PLAYER_EXPERIENCE_REPORT.md',
+  'G2_P1_INTEGRATION_VALIDATION_REPORT.md',
+  'reports/release/g2p1-integration/summary/acceptance-summary.json',
   'scripts/inkbox-g2p0-environment.mjs',
   'scripts/inkbox-g2p0-terrain-cache.mjs',
   'scripts/inkbox-g2p0-ecology.mjs',
