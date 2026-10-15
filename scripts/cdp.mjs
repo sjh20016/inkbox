@@ -60,14 +60,119 @@ async function removeOwnedProfile(profile) {
     throw new Error('Refusing cleanup outside an owned temporary CDP profile');
   }
   let lastError;
-  for (let attempt = 0; attempt < 10; attempt += 1) {
+  // One shared bound replaces the former two independent ten-attempt callers.
+  for (let attempt = 0; attempt < 20; attempt += 1) {
     if (!fs.existsSync(target)) return { removed: true, attempts: attempt };
     try { fs.rmSync(target, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 }); }
     catch (error) { lastError = error.code || error.message; }
     if (!fs.existsSync(target)) return { removed: true, attempts: attempt + 1 };
     await sleep(200);
   }
-  return { removed: false, attempts: 10, lastError };
+  return { removed: false, attempts: 20, lastError };
+}
+
+// Freeze owned Windows process identities before Browser.close can remove the
+// leader. A PID alone is insufficient after exit because Windows can reuse it.
+function ownedWindowsProcesses(child, profile, frozen = []) {
+  if (process.platform !== 'win32') return { supported: false, processes: [] };
+  const target = path.resolve(profile);
+  if (path.dirname(target).toLowerCase() !== path.resolve(os.tmpdir()).toLowerCase()
+    || !/^cdp-[a-z0-9]{6}$/i.test(path.basename(target))) {
+    throw new Error('Refusing process discovery outside an owned CDP profile');
+  }
+  const executable = child?.spawnfile;
+  if (!executable || !path.isAbsolute(executable)) return { supported: true, error: 'Unknown owned browser executable', processes: [] };
+  const script = `
+$ErrorActionPreference = 'Stop'
+$all = @(Get-CimInstance Win32_Process)
+$byId = @{}; foreach ($p in $all) { $byId[[int]$p.ProcessId] = $p }
+$escaped = [regex]::Escape($env:INKBOX_CDP_PROFILE)
+$pattern = '(?i)(?:^|\\s)(?:"--user-data-dir=' + $escaped + '"|--user-data-dir="' + $escaped + '"|--user-data-dir=' + $escaped + ')(?=\\s|$)'
+$browsers = @($all | Where-Object { [string]::Equals([string]$_.ExecutablePath, $env:INKBOX_CDP_EXECUTABLE, [StringComparison]::OrdinalIgnoreCase) })
+$roots = @{}; foreach ($p in $browsers) { if ([string]$p.CommandLine -match $pattern) { $roots[[int]$p.ProcessId] = $true } }
+$prior = @{}; foreach ($f in (ConvertFrom-Json -InputObject $env:INKBOX_CDP_PRIOR_IDENTITIES)) { $prior[[int]$f.pid] = $f }
+$rows = @(); foreach ($p in $browsers) {
+  $cursor = [int]$p.ProcessId; $seen = @{}; $owned = $false; $depth = 0
+  while ($cursor -gt 0 -and -not $seen.ContainsKey($cursor)) {
+    $seen[$cursor] = $true
+    if ($roots.ContainsKey($cursor)) { $owned = $true; break }
+    if (-not $byId.ContainsKey($cursor)) { break }
+    $parent = [int]$byId[$cursor].ParentProcessId
+    if ($byId.ContainsKey($parent) -and $byId[$parent].CreationDate -gt $byId[$cursor].CreationDate) { break }
+    $cursor = $parent; $depth++
+  }
+  if (-not $owned -and $prior.ContainsKey([int]$p.ProcessId)) {
+    $f = $prior[[int]$p.ProcessId]
+    $owned = $p.CreationDate.ToUniversalTime().Ticks.ToString() -eq [string]$f.created -and
+      [string]::Equals([string]$p.ExecutablePath,[string]$f.executable,[StringComparison]::OrdinalIgnoreCase) -and
+      [string]$p.CommandLine -ceq [string]$f.commandLine
+  }
+  if ($owned) { $rows += @{ pid=[int]$p.ProcessId; created=$p.CreationDate.ToUniversalTime().Ticks.ToString(); executable=[string]$p.ExecutablePath; commandLine=[string]$p.CommandLine; depth=$depth } }
+}
+$unattributed = $env:INKBOX_CDP_LAUNCHER_PENDING -eq 'true' -and $byId.ContainsKey([int]$env:INKBOX_CDP_LAUNCHER_PID) -and -not @($rows | Where-Object pid -eq ([int]$env:INKBOX_CDP_LAUNCHER_PID)).Count
+@{ supported=$true; processes=@($rows); error=$(if($unattributed){'Live launcher ownership could not be proven'}else{$null}) } | ConvertTo-Json -Depth 5 -Compress`;
+  try {
+    return JSON.parse(execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
+      encoding: 'utf8', timeout: 8000, windowsHide: true,
+      env: { ...process.env, INKBOX_CDP_PROFILE: target, INKBOX_CDP_EXECUTABLE: executable,
+        INKBOX_CDP_PRIOR_IDENTITIES: JSON.stringify(frozen), INKBOX_CDP_LAUNCHER_PID: String(child.pid || 0),
+        INKBOX_CDP_LAUNCHER_PENDING: String(child.exitCode === null && child.signalCode === null) },
+    }).trim());
+  } catch (error) { return { supported: true, error: error.message, processes: [] }; }
+}
+
+function stopFrozenWindowsProcesses(snapshot) {
+  if (!snapshot.supported || snapshot.error || !snapshot.processes.length) return { attempted: 0, errors: [] };
+  const script = `
+$ErrorActionPreference = 'Stop'
+$frozen = ConvertFrom-Json -InputObject $env:INKBOX_CDP_FROZEN
+$all = @{}; foreach ($p in @(Get-CimInstance Win32_Process)) { $all[[int]$p.ProcessId] = $p }
+$attempted = 0; $problems = @()
+foreach ($f in @($frozen | Sort-Object depth -Descending)) {
+  if (-not $all.ContainsKey([int]$f.pid)) { continue }
+  $p = $all[[int]$f.pid]
+  if ($p.CreationDate.ToUniversalTime().Ticks.ToString() -ne [string]$f.created -or
+      -not [string]::Equals([string]$p.ExecutablePath,[string]$f.executable,[StringComparison]::OrdinalIgnoreCase) -or
+      [string]$p.CommandLine -cne [string]$f.commandLine) { continue }
+  try { Stop-Process -Id ([int]$f.pid) -Force -ErrorAction Stop; $attempted++ }
+  catch { if (Get-Process -Id ([int]$f.pid) -ErrorAction SilentlyContinue) { $problems += $_.Exception.Message } }
+}
+@{ attempted=$attempted; errors=@($problems) } | ConvertTo-Json -Depth 4 -Compress`;
+  try {
+    return JSON.parse(execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
+      encoding: 'utf8', timeout: 8000, windowsHide: true,
+      env: { ...process.env, INKBOX_CDP_FROZEN: JSON.stringify(snapshot.processes) },
+    }).trim());
+  } catch (error) { return { attempted: 0, errors: [error.message] }; }
+}
+
+async function finalizeOwnedBrowser(child, profile, cdp) {
+  const target = path.resolve(profile);
+  if (path.dirname(target).toLowerCase() !== path.resolve(os.tmpdir()).toLowerCase()
+    || !/^cdp-[a-z0-9]{6}$/i.test(path.basename(target))) {
+    return { removed: false, attempts: 0, processesExited: false, complete: false,
+      lastError: 'Refusing cleanup outside an owned temporary CDP profile' };
+  }
+  const frozen = ownedWindowsProcesses(child, profile);
+  if (cdp?.ws.readyState === 1) {
+    try { await cdp.send('Browser.close', {}, 2000); } catch { /* terminate frozen identities below */ }
+  }
+  cdp?.rejectPending(new Error('CDP session closed'));
+  try { cdp?.ws.close(); } catch { /* already closed */ }
+  const termination = stopFrozenWindowsProcesses(frozen);
+  if (!frozen.supported) stopOwnedBrowser(child);
+  await sleep(400);
+  let remaining = ownedWindowsProcesses(child, profile, frozen.processes);
+  for (let attempt = 0; !remaining.error && remaining.processes.length && attempt < 4; attempt++) {
+    await sleep(200);
+    remaining = ownedWindowsProcesses(child, profile, frozen.processes);
+  }
+  const processesExited = !frozen.supported || (!frozen.error && !remaining.error && remaining.processes.length === 0);
+  const cleanup = processesExited ? await removeOwnedProfile(profile)
+    : { removed: false, attempts: 0, lastError: 'Owned process exit could not be verified; profile retained' };
+  return { ...cleanup, processesExited, complete: cleanup.removed && processesExited,
+    processEvidence: { supported: frozen.supported, frozen: frozen.processes.length, remaining: remaining.processes.length,
+      discoveryError: frozen.error || remaining.error || null, termination } };
 }
 
 // CDP 的修饰键是位掩码，不是布尔
@@ -315,21 +420,15 @@ export class Session {
   }
 
   async close() {
-    if (this.cdp.ws.readyState === 1) {
-      try { await this.cdp.send('Browser.close', {}, 2000); } catch { /* fallback below */ }
-    }
-    this.cdp.rejectPending(new Error('CDP session closed'));
-    try { this.cdp.ws.close(); } catch { /* ignore */ }
-    stopOwnedBrowser(this.child);
-    await sleep(400);
-    this.meta.profileCleanup = await removeOwnedProfile(this.userDataDir);
-    if (!this.meta.profileCleanup.removed) {
-      // Keep callers' finally blocks running so their servers also close, but
-      // never let a CLI gate exit successfully after owned-profile cleanup fails.
-      process.exitCode = 1;
-      console.error('Owned CDP profile cleanup failed: ' + JSON.stringify(this.meta.profileCleanup));
-    }
-    return this.meta.profileCleanup;
+    this._closePromise ??= (async () => {
+      this.meta.profileCleanup = await finalizeOwnedBrowser(this.child, this.userDataDir, this.cdp);
+      if (!this.meta.profileCleanup.complete) {
+        process.exitCode = 1;
+        console.error('Owned CDP cleanup failed: ' + JSON.stringify(this.meta.profileCleanup));
+      }
+      return this.meta.profileCleanup;
+    })();
+    return this._closePromise;
   }
 }
 
@@ -405,14 +504,8 @@ export async function launch({
 
     return new Session(cdp, child, userDataDir, { browser: version.Browser, debugPort, width, height });
   } catch (error) {
-    if (cdp?.ws.readyState === 1) {
-      try { await cdp.send('Browser.close', {}, 2000); } catch { /* process fallback below */ }
-      try { cdp.ws.close(); } catch { /* already closed */ }
-    }
-    stopOwnedBrowser(child);
-    await sleep(300);
-    const cleanup = await removeOwnedProfile(userDataDir);
-    if (!cleanup.removed) throw new AggregateError([error,
+    const cleanup = await finalizeOwnedBrowser(child, userDataDir, cdp);
+    if (!cleanup.complete) throw new AggregateError([error,
       new Error('Owned CDP profile cleanup failed: ' + JSON.stringify(cleanup))],
     'CDP launch and owned profile cleanup failed');
     throw error;
