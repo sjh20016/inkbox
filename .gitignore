@@ -64,3 +64,5 @@ Thumbs.db
 # G2-P0 raw evidence can contain nested historical golden/summary paths.
 # Keep this rule after the general release-summary exceptions.
 /reports/release/g2p0/proof/
+/reports/release/g2p02/proof/
+/reports/release/g2p1-integration/proof/

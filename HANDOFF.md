@@ -1,5 +1,11 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 当前交接 · 2026-10-15 · G2-P0.2
+
+**PERF ATTRIBUTED / BLOCKED · ECO PASS**。本次最终 Edge/AMD 完整 Native **9/12**、Controlled **7/12**，均保留原始 exit 1。三个性能候选均未保留；本轮性能分支的产品 `src` 与 `e071e83` 相同，没有改动数值系统、模拟、RNG 或存档规则。帧级记录将 Canvas 长帧关联到地形重绘、Three 长帧关联到植被上传，但固定排程下仍有轮间波动，不据此解除阻塞。
+
+保留 CDP 独占 profile/端点、子服务器 IPC 归属、绝对长帧离线分析及正式证据。45 项产品浏览器、600 生命周期 + 6000 RAF、42 条 CPU 门禁通过；最终工具修改另已运行定向门禁。独立 `codex/g2-p1-integration-validation` 的 10 项布局与 10 项完整玩家闭环通过，记作 **P1 READY**，不替代 G2 性能封板。主线与历史 Draft PR 保留；最新身份、完整矩阵、失败候选和限制见 [G2-P0.2 报告](./G2_P02_PERFORMANCE_RESOLUTION_REPORT.md)。
+
 ## 当前开发增量 · 2026-10-14 · G2-P0
 
 **PERF BLOCKED / ECO PASS**。本机 AMD 硬件完整 Native/Controlled 均 10/12、exit 1；真实前台无输入对照通过正确性但 RAF 超限。45 项产品浏览器与 600+6000 帧耐久、build/package 通过；历史 Intel 环境与真实旧档样本仍不可用。PR #8 继续 Draft。
