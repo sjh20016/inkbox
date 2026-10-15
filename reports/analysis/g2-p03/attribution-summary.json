@@ -1,0 +1,367 @@
+{
+  "task": "G2-P0.3 阶段 A · 性能证据勘误与真实瓶颈确认",
+  "status": {
+    "phaseA": "A_PASS",
+    "phaseB": "B_NOT_STARTED",
+    "g2FormalGate": "G2_PERF_BLOCKED",
+    "note": "阶段 B 未启动：见报告 §8 裁决（可测收益被 A/A 噪声底挡住）"
+  },
+  "baseline": {
+    "branch": "codex/g2-p1-integration-validation",
+    "commit": "0352391e20b77e9a8686e0d730877c1e53c6c3fe",
+    "equalsPr12Head": true,
+    "remoteBranchRef": "72d95b3（经 left-right 判定为基线祖先，故不换基线）"
+  },
+  "integrity": {
+    "productSourceDirty": "",
+    "changedFiles": 3,
+    "modifiedExistingFiles": 0,
+    "inventory": [
+      "scripts/inkbox-g2-hydro-counter.mjs（新增）",
+      "scripts/inkbox-g2-hydro-attribution.mjs（新增）",
+      "scripts/inkbox-g2-hydro-attribution-check.mjs（新增）"
+    ]
+  },
+  "environment": {
+    "browser": "Microsoft Edge",
+    "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "viewport": [
+      1500,
+      940
+    ],
+    "dpr": 2,
+    "clock": "native",
+    "gateExtractionSha256": "043d85fc3bf1d9d260264a8fa2d53959c9943b62effef4c4026d67984fe81ef4",
+    "gateConstants": {
+      "FRAMES": 90,
+      "WARM": 120,
+      "STEP": 0.1,
+      "SEED": 673231
+    }
+  },
+  "counter": {
+    "unitTests": {
+      "passed": 11,
+      "exitCode": 0
+    },
+    "directMethod": "实例存取器拦截 hydroAccum 写入，「减 0.16 的次数」即 stepHydrology() 调用次数",
+    "inferredMethod": "round((accumBefore + dt - accumAfter) / 0.16) + 残差校验",
+    "otherWritesObserved": 0,
+    "oldBugFixed": "delta>0 判据漏掉累加器下降的补水帧；另修 inferHydroSteps 常量未注入（仅非暂停路径可见）"
+  },
+  "formalGate": {
+    "hydrologyCallsMeasuredDirect": 0,
+    "hydrologyCallsMeasuredInferred": 0,
+    "inconsistentFrames": 0,
+    "totalFrames": 213,
+    "measuredFrames": 90,
+    "pausedEveryMeasuredFrame": true,
+    "hydrologyActive": false,
+    "attribution": "CONFIRMED_NO_HYDROLOGY",
+    "fixture": {
+      "count": 2,
+      "pairs": 1,
+      "seed": 673231,
+      "originalEntitiesRetained": true
+    },
+    "frameCpuMs": {
+      "p50": 2.3,
+      "p95": 21.4,
+      "p99": 25.5
+    },
+    "updateCpuMsP95": 1.2,
+    "renderCpuMsP95": 20.7
+  },
+  "vegetation": {
+    "updates": 22,
+    "uniqueMembershipSignatures": 7,
+    "adjacentSignatureChanges": 6,
+    "redundantRebuilds": 15,
+    "treeCount": 10000,
+    "bridgeDirtyChannels": {
+      "height": 0,
+      "type": 0,
+      "veg": 90,
+      "water": 0
+    },
+    "frames": 90,
+    "lifeSteppedFrames": 90,
+    "firedCounts": {
+      "fire": 10,
+      "eco": 2,
+      "upper": 1,
+      "nether": 1,
+      "wraith": 1
+    },
+    "gpuUploadCalls": 162,
+    "gpuUploadBytes": 24656832,
+    "trigger": "LIFE_VEG_CHANGE（life.step 吃草写 world.veg，sim/life.js:679）→ veg 通道每帧脏 → vegetationPending → treeClock>=0.15 节流器定节拍",
+    "triggerClass": "CONFIRMED",
+    "hydrologyInvolved": false,
+    "caveat": "treeSignature 覆盖成员/位置/大小/旋转；高度变化不改变签名但仍需重写 Y —— 「冗余」指成员未变，不等于完全无需工作"
+  },
+  "aaControl": {
+    "method": "4 轮同配置 + 门禁同构判据（组内取最差 P95，判 OnWorst<=OffWorst*1.08+1.5，穷举有序分组）",
+    "off4": [
+      {
+        "key": "6/3d",
+        "arms": "off",
+        "rounds": 4,
+        "frameCpuP95": [
+          22.8,
+          21.3,
+          18.8,
+          19
+        ],
+        "frameCpuP95Range": 4,
+        "rawRafP95": [
+          27.8,
+          22.3,
+          22.4,
+          22.3
+        ],
+        "rawRafP95Range": 5.5,
+        "gateEquivalentGroupings": 12,
+        "falseRegressionGroupings": 2,
+        "minMarginMs": -0.78
+      },
+      {
+        "key": "5/canvas",
+        "arms": "off",
+        "rounds": 4,
+        "frameCpuP95": [
+          8.6,
+          7.9,
+          12.5,
+          8.1
+        ],
+        "frameCpuP95Range": 4.6,
+        "rawRafP95": [
+          5.7,
+          5.7,
+          11.1,
+          5.7
+        ],
+        "rawRafP95Range": 5.4,
+        "gateEquivalentGroupings": 12,
+        "falseRegressionGroupings": 6,
+        "minMarginMs": -2.252
+      }
+    ],
+    "on4": [
+      {
+        "key": "6/3d",
+        "arms": "on",
+        "rounds": 4,
+        "frameCpuP95": [
+          21.8,
+          19.3,
+          22.1,
+          18.3
+        ],
+        "frameCpuP95Range": 3.8,
+        "rawRafP95": [
+          22.3,
+          27.8,
+          22.3,
+          22.2
+        ],
+        "rawRafP95Range": 5.6,
+        "gateEquivalentGroupings": 12,
+        "falseRegressionGroupings": 0,
+        "minMarginMs": 0.244
+      },
+      {
+        "key": "5/canvas",
+        "arms": "on",
+        "rounds": 4,
+        "frameCpuP95": [
+          12.7,
+          12.5,
+          20.6,
+          12.7
+        ],
+        "frameCpuP95Range": 8.1,
+        "rawRafP95": [
+          11.2,
+          11.2,
+          22.2,
+          11.2
+        ],
+        "rawRafP95Range": 11,
+        "gateEquivalentGroupings": 12,
+        "falseRegressionGroupings": 6,
+        "minMarginMs": -5.384
+      }
+    ]
+  },
+  "runtimeHydrology": {
+    "sceneSet": "L1 Canvas / L2 Three，512×320，setSpeed(2)，不注入 advanceDays，120 暖 + 180 测 × 2 轮",
+    "runs": [
+      {
+        "scene": "L1",
+        "renderer": "canvas",
+        "round": 0,
+        "frames": 182,
+        "hydroStepsDirect": 8,
+        "hydroStepsInferred": 8,
+        "inconsistentFrames": 0,
+        "pausedFrames": 0,
+        "stepMsP50": 0,
+        "stepMsP95": 0,
+        "nextFrameSimDtMsWithHydro": {
+          "p50": 22.3,
+          "p95": 27.9,
+          "n": 8
+        },
+        "nextFrameSimDtMsWithoutHydro": {
+          "p50": 5.6,
+          "p95": 11.1,
+          "n": 173
+        },
+        "nextFrameOver33ms": {
+          "withHydro": 0,
+          "withoutHydro": 1
+        },
+        "bridgeDirtyChannels": {
+          "height": 0,
+          "type": 0,
+          "veg": 0,
+          "water": 0
+        },
+        "glUploads": 0,
+        "glBytes": 0
+      },
+      {
+        "scene": "L1",
+        "renderer": "canvas",
+        "round": 1,
+        "frames": 193,
+        "hydroStepsDirect": 9,
+        "hydroStepsInferred": 9,
+        "inconsistentFrames": 0,
+        "pausedFrames": 0,
+        "stepMsP50": 0,
+        "stepMsP95": 0,
+        "nextFrameSimDtMsWithHydro": {
+          "p50": 22.3,
+          "p95": 27.9,
+          "n": 9
+        },
+        "nextFrameSimDtMsWithoutHydro": {
+          "p50": 5.6,
+          "p95": 11.1,
+          "n": 183
+        },
+        "nextFrameOver33ms": {
+          "withHydro": 0,
+          "withoutHydro": 0
+        },
+        "bridgeDirtyChannels": {
+          "height": 0,
+          "type": 0,
+          "veg": 0,
+          "water": 0
+        },
+        "glUploads": 0,
+        "glBytes": 0
+      },
+      {
+        "scene": "L2",
+        "renderer": "3d",
+        "round": 0,
+        "frames": 183,
+        "hydroStepsDirect": 20,
+        "hydroStepsInferred": 20,
+        "inconsistentFrames": 0,
+        "pausedFrames": 0,
+        "stepMsP50": 0,
+        "stepMsP95": 0.1,
+        "nextFrameSimDtMsWithHydro": {
+          "p50": 72.4,
+          "p95": 89.1,
+          "n": 20
+        },
+        "nextFrameSimDtMsWithoutHydro": {
+          "p50": 5.6,
+          "p95": 27.8,
+          "n": 162
+        },
+        "nextFrameOver33ms": {
+          "withHydro": 20,
+          "withoutHydro": 3
+        },
+        "bridgeDirtyChannels": {
+          "height": 20,
+          "type": 20,
+          "veg": 183,
+          "water": 20
+        },
+        "glUploads": 6784,
+        "glBytes": 13211248272
+      },
+      {
+        "scene": "L2",
+        "renderer": "3d",
+        "round": 1,
+        "frames": 184,
+        "hydroStepsDirect": 20,
+        "hydroStepsInferred": 20,
+        "inconsistentFrames": 0,
+        "pausedFrames": 0,
+        "stepMsP50": 0,
+        "stepMsP95": 0.1,
+        "nextFrameSimDtMsWithHydro": {
+          "p50": 72.4,
+          "p95": 94.6,
+          "n": 20
+        },
+        "nextFrameSimDtMsWithoutHydro": {
+          "p50": 5.6,
+          "p95": 27.8,
+          "n": 163
+        },
+        "nextFrameOver33ms": {
+          "withHydro": 20,
+          "withoutHydro": 2
+        },
+        "bridgeDirtyChannels": {
+          "height": 20,
+          "type": 20,
+          "veg": 184,
+          "water": 20
+        },
+        "glUploads": 6797,
+        "glBytes": 13225753200
+      }
+    ],
+    "chainAttribution": "RUNTIME_HYDRO_CHAIN_SUPPORTED",
+    "scopeNote": "属正常游玩运行时风险，与正式门禁归因无关（门禁水文 0 次）"
+  },
+  "gate8": {
+    "counterTests": true,
+    "twoPathAgreement": true,
+    "clocksSeparated": true,
+    "officialFixtureReused": true,
+    "vegetationTriggerRecorded": true,
+    "aaCompleted": true,
+    "liveRecomputable": true,
+    "rawJsonMatchesReport": true,
+    "productSourceUnchanged": true,
+    "noKnownCounterBugs": true
+  },
+  "artifacts": {
+    "report": "G2_P03_ATTRIBUTION_CORRECTION_REPORT.md",
+    "raw": [
+      "reports/analysis/g2-p03/attribution-gate-cases6-native.json",
+      "reports/analysis/g2-p03/attribution-aa-cases6-5-offoffoffoff-native.json",
+      "reports/analysis/g2-p03/attribution-aa-cases6-5-on4-native.json",
+      "reports/analysis/g2-p03/attribution-live-L1-L2-native.json"
+    ],
+    "scripts": [
+      "scripts/inkbox-g2-hydro-counter.mjs",
+      "scripts/inkbox-g2-hydro-attribution.mjs",
+      "scripts/inkbox-g2-hydro-attribution-check.mjs"
+    ]
+  }
+}
