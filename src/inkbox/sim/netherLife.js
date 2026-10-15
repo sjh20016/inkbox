@@ -71,6 +71,8 @@ import {
 // 一份耐久常量**，直接用凡间那一份（`MAX_DURABILITY`）。依赖方向：
 // `netherLife → artifacts → lore / noise`，artifacts 不回头引 sim，不成环。
 import { MAX_DURABILITY } from './artifacts.js';
+// B2 可调参数注册表。见 sim/tunables.js。
+import { tunable } from './tunables.js';
 
 /**
  * 鬼修六级的**考古定名**（`06册 §5.3`，`00_文案使用说明:229-239` 锁死）。
@@ -157,6 +159,11 @@ export const TIER_THRESHOLDS = Object.freeze([0, 10, 30, 70, 150, 300]);
  * ⚠️ **待标定**：等长测能给出 `ghost` / `wraith` 的真实到达率后回标。
  */
 export const NETHER_SOUL_CAP = 400;
+
+/** 幽冥鬼魂总量上限的**运行时读值**（B2 起可被实验层覆盖）。 */
+function netherSoulCapNow() {
+  return tunable('NETHER_SOUL_CAP');
+}
 
 // ───────────────────────────────────────────────────────────────────────
 // D6-2 工程包 D · 幽冥最低生态 —— 常量
@@ -758,7 +765,7 @@ export function stepNether(world, days) {
   // ── 4. 上限：逐出**最老的普通鬼魂**（优先非鬼修）──────────────────
   // 「最老」= `id` 最小（id 单调递增、按创建顺序）。逐出优先打普通鬼魂，
   // 让鬼修（有升阶价值、数量少）尽量留住。
-  while (list.length > NETHER_SOUL_CAP) {
+  while (list.length > netherSoulCapNow()) {
     let victim = -1;
     for (let pass = 0; pass < 2 && victim < 0; pass += 1) {
       const wantGhost = pass === 0;           // pass 0 先挑普通鬼魂

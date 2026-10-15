@@ -40,6 +40,11 @@ import { stepSites } from './sites.js';
 import { stepArtifacts, dropArtifacts, wearArtifacts, ownerLine, KILL_WEAR } from './artifacts.js';
 import { tickBusanzi } from './busanzi.js';
 import { WorldEvents } from './worldEvents.js';
+// B1/B2 观测计数器（只自增，不抽签、不改状态、不进存档）。见 sim/telemetry.js。
+import { bumpTelemetry } from './telemetry.js';
+// B2 可调参数注册表：常量改为「运行时读值（默认 = 原常量）」。
+// 无覆盖时 `tunable(x) === 原常量`，逐位相同（自检 §B1-5(A) 钉死）。
+import { tunable } from './tunables.js';
 
 const TERRAIN_SPEED = Object.freeze({
   [TERRAIN.SAND]: 0.82,
@@ -64,30 +69,33 @@ const BASE_TILES_PER_DAY = 2.1;
 /**
  * 每名村民每天的生育期望。凡人寿元约 4200 天，故维持人口需要 1/4200 ≈ 2.4e-4，
  * 取 4e-4 留一倍冗余，抵消战乱、饥荒、以及觉醒后「不再算凡人」的流失。
+ *
+ * ⚠️ B2 起改为「运行时读值」：无覆盖时恒等于默认 0.00075（逐位相同）。
+ *    `BIRTH()` 而不是常量，是为了让实验层能在一次运行内改变它。
  */
-const BIRTH_PER_CAPITA_DAY = 0.00075;
+const BIRTH = () => tunable('BIRTH_PER_CAPITA_DAY');
 
 /** 满员的村子每天分家外迁的概率。约合每 30 年一次 */
-const SPLIT_PER_DAY = 0.00016;
+const SPLIT = () => tunable('SPLIT_PER_DAY');
 
 /** 荒野灵兽的目标存量与总量上限。灵兽是妖兽/坐骑/认主的来源，不能没有 */
-const WILDLIFE_TARGET = 35;
-const WILDLIFE_POP_CAP = 2200;
+const WILDLIFE_TARGET = () => tunable('WILDLIFE_TARGET');
+const WILDLIFE_POP_CAP = () => tunable('WILDLIFE_POP_CAP');
 
 /** 灵兽的领地半径：超出这个距离就不再追杀 */
-const BEAST_AGGRO_RANGE = 5;
+const BEAST_AGGRO_RANGE = () => tunable('BEAST_AGGRO_RANGE');
 
 /** 开山立派的最低境界。筑基（10 级）以下只配做弟子，没资格另立门户 */
-const SECT_FOUND_MIN_LEVEL = 10;
+const SECT_FOUND_MIN_LEVEL = () => tunable('SECT_FOUND_MIN_LEVEL');
 
 /** 村庄吸纳流民与自愈的半径 */
-const VILLAGE_ABSORB_RADIUS = 9;
+const VILLAGE_ABSORB_RADIUS = () => tunable('VILLAGE_ABSORB_RADIUS');
 
 /** 每一亩田每天的产出 */
-const FIELD_YIELD_PER_DAY = 0.03;
+const FIELD_YIELD_PER_DAY = () => tunable('FIELD_YIELD_PER_DAY');
 
 /** 村庄的人口上限 = BASE + 等级 × 10 */
-const VILLAGE_CAPACITY_BASE = 10;
+const VILLAGE_CAPACITY_BASE = () => tunable('VILLAGE_CAPACITY_BASE');
 
 /**
  * 全世界的生灵总量软上限。
@@ -95,8 +103,11 @@ const VILLAGE_CAPACITY_BASE = 10;
  * 村子会一直分家、人口会一直涨，若不设闸门，最后会顶到 maxEntities（3000），
  * 到那时每个村子都被摊薄成两三个人，画面反而更空。留出余量让人口停在
  * 「热闹但不拥挤」的密度上。
+ *
+ * ⚠️ 名字叫「软上限」，但 B1-1/B1-3 实测它表现得像**硬约束**
+ *    （注入 900 人后人口仍精确回到 1400）。B2-1 将复验。
  */
-const POP_SOFT_CAP = 1400;
+const POP_SOFT_CAP = () => tunable('POP_SOFT_CAP');
 
 /**
  * 「重伤」的血量比例。低于它就脱离战斗、转入撤退。
@@ -408,7 +419,7 @@ export class Life {
         if (soul) world.souls.push(soul);
         break;
       }
-      initEntity(entity, this.rng, { cultivator: sp === SPECIES.CULTIVATOR });
+      initEntity(entity, this.rng, { cultivator: sp === SPECIES.CULTIVATOR, world });
       entity.surname = surname;
       // ── 先天修士也要留一笔 ─────────────────────────────────
       //
@@ -443,6 +454,15 @@ export class Life {
         registerBirth(world, entity, parents);
       }
       created += 1;
+      // ── B1/B2 · 出生记账 ──────────────────────────────────
+      //
+      // 位置刻意选在 `created += 1` 之后：那是「这个实体真的落地了」的**唯一**
+      // 成功出口（上面的 `addEntity` 返回 null / `findSpawnSpot` 失败都是 break，
+      // 不会走到这里）。凡间出生的四条入口（世界初开、村庄繁衍、聚落建立、
+      // `pendingSpawns` 夹具/干预）全部汇到 `spawn()`，所以一处插桩就够。
+      //
+      // ⚠️ 只做 `+= 1`：不抽签、不读签、不写 world ⇒ 世界指纹一个字节不变。
+      bumpTelemetry(world, 'births');
     }
     if (created) world.touch();
     return created;
@@ -1035,12 +1055,12 @@ export class Life {
       // 灵兽护食守土，不会跨半张地图追杀凡人。
       // 早先不限距离时，九十头灵兽能把整个人口在四十年内吃干净。
       if (other.sp === SPECIES.BEAST && e.sp !== SPECIES.BEAST) {
-        if (d > BEAST_AGGRO_RANGE) return false;
+        if (d > BEAST_AGGRO_RANGE()) return false;
         found = other;
         return true;
       }
       if (e.sp === SPECIES.BEAST && other.sp !== SPECIES.BEAST) {
-        if (d > BEAST_AGGRO_RANGE) return false;
+        if (d > BEAST_AGGRO_RANGE()) return false;
         found = other;
         return true;
       }
@@ -1368,7 +1388,7 @@ export class Life {
       // 宗门：只有筑基以上、且身上没有宗门归属的修士，才在此开山立派
       if (!village.faction) {
         const founder = this.strongestNear(tx, ty, 18);
-        if (founder && (founder.level || 0) >= SECT_FOUND_MIN_LEVEL && !founder.faction && founder.root) {
+        if (founder && (founder.level || 0) >= SECT_FOUND_MIN_LEVEL() && !founder.faction && founder.root) {
           const sect = foundSect(world, tx, ty, founder, this.rng);
           if (sect) {
             village.faction = sect.id;
@@ -1464,7 +1484,7 @@ export class Life {
       // 这一步是人口能否接续的关键：村子之外的人不生育，而世界开天辟地时
       // 那一百多号人若迟迟进不了村，就会整批自然老死、无人接班
       // （实测开局 117 人在十五年内掉到 11 人）。
-      this.forEachNear(village.x, village.y, VILLAGE_ABSORB_RADIUS, (e) => {
+      this.forEachNear(village.x, village.y, VILLAGE_ABSORB_RADIUS(), (e) => {
         if (e.village) return false;
         if (e.sp !== SPECIES.HUMAN && e.sp !== SPECIES.CULTIVATOR) return false;
         e.village = village.id;
@@ -1492,7 +1512,7 @@ export class Life {
       // 人口再也长不起来（实测卡在每村二十人上下）。田亩是村子的家底，
       // 只要开出来就一直有产出，这才撑得住繁衍与开枝散叶。
       const yieldPerDay = village.pop * 0.010 * (0.6 + world.fertility(center))
-        + village.fields * FIELD_YIELD_PER_DAY;
+        + village.fields * FIELD_YIELD_PER_DAY();
       village.food += yieldPerDay * dtDays;
       village.food -= village.pop * dtDays * 0.0085;
       village.food = clamp(village.food, 0, 400);
@@ -1530,10 +1550,10 @@ export class Life {
       // 按村算的话 38 人的村和 3 人的村生得一样多，长期必然负增长而灭绝。
       // 凡人寿元约 4200 天，所以每人每天约需 1/4200 的生育率才能维持人口；
       // 取 4e-4 留出约一倍冗余，抵消战乱、饥荒与觉醒流失。
-      const capacity = VILLAGE_CAPACITY_BASE + village.level * 10;
-      const roomLeft = world.entities.length < POP_SOFT_CAP;
+      const capacity = VILLAGE_CAPACITY_BASE() + village.level * 10;
+      const roomLeft = world.entities.length < POP_SOFT_CAP();
       if (roomLeft && village.pop < capacity && village.food > 20 && village.pop > 0) {
-        const expected = village.pop * BIRTH_PER_CAPITA_DAY * dtDays;
+        const expected = village.pop * BIRTH() * dtDays;
         const births = Math.floor(expected) + (this.rng() < expected % 1 ? 1 : 0);
         if (births > 0) {
           const innate = this.rng() < 0.1;
@@ -1561,10 +1581,10 @@ export class Life {
   maybeSplitVillage(village, dtDays) {
     const world = this.world;
     if (world.villages.length >= LIMITS.maxVillages) return;
-    if (world.entities.length >= POP_SOFT_CAP) return;
-    const capacity = VILLAGE_CAPACITY_BASE + village.level * 10;
+    if (world.entities.length >= POP_SOFT_CAP()) return;
+    const capacity = VILLAGE_CAPACITY_BASE() + village.level * 10;
     if (village.pop < capacity - 4 || village.food < 60) return;
-    if (this.rng() >= dtDays * SPLIT_PER_DAY) return;
+    if (this.rng() >= dtDays * SPLIT()) return;
 
     const spot = this.findSplitSpot(village);
     if (!spot) return;
@@ -1640,7 +1660,7 @@ export class Life {
    */
   stepWildlife(dtDays) {
     const world = this.world;
-    if (world.entities.length >= WILDLIFE_POP_CAP) return;
+    if (world.entities.length >= WILDLIFE_POP_CAP()) return;
     this.wildCooldown -= dtDays;
     if (this.wildCooldown > 0) return;
     this.wildCooldown = 90;
@@ -1650,7 +1670,7 @@ export class Life {
       const sp = world.entities[i].sp;
       if (sp === SPECIES.BEAST || sp === SPECIES.SPIRIT) wild += 1;
     }
-    if (wild >= WILDLIFE_TARGET) return;
+    if (wild >= WILDLIFE_TARGET()) return;
 
     const spot = this.findWildSpot();
     if (!spot) return;

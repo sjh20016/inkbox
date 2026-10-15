@@ -30,6 +30,10 @@ import { TIME } from '../core/config.js';
 import { clamp } from '../core/noise.js';
 import { RELATION_TYPES } from './relations.js';
 import { lifespanFor, realmFor, realmLabel } from './cultivation.js';
+// B1/B2 观测计数器（只自增，不抽签、不改状态、不进存档）。见 sim/telemetry.js。
+import { bumpTelemetry } from './telemetry.js';
+// B2 可调参数注册表。见 sim/tunables.js。
+import { tunable } from './tunables.js';
 // 名册侧的回填（见 `necrology.js` 的 `markSoulRoute`）。方向是**单向**的：
 // 本模块 → necrology，而 necrology **不**import 本模块（它要的中文路名在界面层拼），
 // 所以这条新边**不引入新的 import 环**。⚠️ 别顺手把 `ROUTE_LABEL` 挪过来给
@@ -41,8 +45,18 @@ import { markSoulRoute } from './necrology.js';
 // （它要的字段全在 core/config.js 里），所以这条边不引入新的 import 环。
 import { spawnNetherGhost } from './netherLife.js';
 
-/** 神魂池上限。满了就丢掉等得最久的那个——「多數神魂散于天地」 */
+/**
+ * 神魂池上限的**默认值**。满了就丢掉等得最久的那个——「多數神魂散于天地」
+ *
+ * ⚠️ 这是**默认值**（供外部消费者 / 测试对照），**不是**模拟运行时读的值。
+ *    模拟里请用 `soulCapNow()`（读可调参数，无覆盖时恒等于此默认值）。
+ */
 export const SOUL_CAP = 120;
+
+/** 神魂池上限的**运行时读值**（B2 起可被实验层覆盖）。 */
+function soulCapNow() {
+  return tunable('SOUL_CAP');
+}
 
 /**
  * 死路（**魂分五路**）。
@@ -566,12 +580,22 @@ export function enterNether(world, entity, rng) {
   //   改丢 `dueDay` 最大的之后，池子留住的是**最急着要回来的那批**，
   //   它们按期到期、被取走、腾出位置，管道就通了。
   //   语义上也更顺：幽冥满了，**新来的魂排不上队**，而不是「等着投胎的被打发走」。
-  if (world.souls.length > SOUL_CAP) {
+  if (world.souls.length > soulCapNow()) {
     let latest = 0;
     for (let i = 1; i < world.souls.length; i += 1) {
       if (world.souls[i].dueDay > world.souls[latest].dueDay) latest = i;
     }
     world.souls.splice(latest, 1);
+    // ── B1/B2 · 魂池逐出记账 ────────────────────────────────────
+    //
+    // 为什么必须记这一笔：逐出**不记账**时，
+    // 「池子从没满过」与「池子一直在满、一直在丢魂」在 `soulPool` 这一个读数上
+    // **同形**——两者都印 120。补上账本之后，「一直在丢」才第一次可见。
+    //
+    // ⚠️ 只做 `+= 1`：不抽签、不读签、不写 world ⇒ 世界指纹一个字节不变。
+    // ⚠️ 只记 `enterNether` 里这一处**满了才丢**的 splice（上面的 `if`）：
+    //     同日文件 `takeSoul`（转生取魂）那处 splice 是**正常取用**，不是逐出。
+    bumpTelemetry(world, 'soulEvictions');
   }
   // ── 滞留者在幽冥留下一只普通鬼魂（契约 §二 / §六）────────────────────
   // 「有些魂在河边坐下了，说等一个人」（`G13-07/G13-12`）——魂**留在池里**

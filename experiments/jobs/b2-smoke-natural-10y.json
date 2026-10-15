@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 3,
+  "experiment": "b2-smoke-natural-10y",
+  "experimentGroup": "b2-s0",
+  "profile": "natural",
+  "preset": "medium",
+  "seeds": [20260914],
+  "years": 10,
+  "stepDays": 3,
+  "snapshotDays": 360,
+  "probeDays": 30,
+  "viewPolicy": "closed",
+  "generationVersion": 2,
+  "terrainPreset": "standard"
+}

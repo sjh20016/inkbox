@@ -14,7 +14,10 @@ import { MANUALS, FORBIDDEN_TECHNIQUES, narrate } from '../core/lore.js';
 import { ELEMENTS } from '../core/cultivation.js';
 import { awaken, attemptBreakthrough, ascend, placeName, addKarma } from './cultivation.js';
 import { plantSite } from './sites.js';
-import { foundSect, SECT_FOUNDER_MIN_LEVEL, findBuildableNear } from './sects.js';
+import { foundSect, findBuildableNear } from './sects.js';
+// B2 可调参数注册表。`SECT_FOUNDER_MIN_LEVEL` 的运行时读值见 `sects.js` 的
+// `sectFounderMinLevel()`；这里直接用注册表，避免为了一个数多开一条导出边。
+import { tunable } from './tunables.js';
 
 /** 地图上灵脉的条数上限，防止玩家狂点把灵气层堆爆 */
 export const MAX_LEYLINES = 24;
@@ -49,7 +52,7 @@ export function grantRoot(world, x, y, radius, rng) {
   let n = 0;
   const awakened = [];
   for (const e of targets) {
-    if (awaken(e, rng)) {
+    if (awaken(e, rng, { world })) {
       world.record(`${e.name} 于${placeName(world, e)}觉醒${e.root.rootName}`, 'awaken', e);
       awakened.push(`${e.name}（${e.root.rootName}）`);
       n += 1;
@@ -158,9 +161,9 @@ export function foundSectAt(world, x, y, radius, rng) {
   if (!spot) return '左近无处可立山门';
   const [tx, ty] = spot;
   const founder = near(world, tx, ty, Math.max(radius, 8))
-    .filter((e) => !e.faction && e.root && (e.level || 0) >= SECT_FOUNDER_MIN_LEVEL)
+    .filter((e) => !e.faction && e.root && (e.level || 0) >= tunable('SECT_FOUNDER_MIN_LEVEL'))
     .sort(byLevelDesc)[0];
-  if (!founder) return `方圆之内无筑基以上的散修（需 ${SECT_FOUNDER_MIN_LEVEL} 重）`;
+  if (!founder) return `方圆之内无筑基以上的散修（需 ${tunable('SECT_FOUNDER_MIN_LEVEL')} 重）`;
   const sect = foundSect(world, tx, ty, founder, rng);
   if (!sect) return '宗门数量已达上限';
   for (let i = 0; i < world.villages.length; i += 1) {

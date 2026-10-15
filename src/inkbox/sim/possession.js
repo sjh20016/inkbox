@@ -754,7 +754,7 @@ function possessMortal(world, nether, ghost, target) {
   // ⚠️ 不这么做会让「境界被抬起来、`sp` 还是 human」——静默失配。
   // 传**确定性 rng**（不抽主流）：这具身体的灵根由它的 id 决定，可复现。
   if ((target.level || 0) <= 0) {
-    awaken(target, mulberry32(hashString(`possess-awaken:${target.id}`)));
+    awaken(target, mulberry32(hashString(`possess-awaken:${target.id}`)), { world });
   }
   // 名字后缀（同凡间夺舍：只加一次，防「张三·异·异」）
   target.name = originalName.endsWith('·异') ? originalName : `${originalName}·异`;

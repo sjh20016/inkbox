@@ -55,6 +55,8 @@ import { initEntity, stepEntity as stepCultivation } from './cultivation.js';
 import { dropArtifacts, stepArtifacts, forgeArtifact, ownerLine } from './artifacts.js';
 import { rememberDead } from './necrology.js';
 import { recordLifeEvent } from './biography.js';
+// B2 可调参数注册表。见 sim/tunables.js。
+import { tunable } from './tunables.js';
 import { upperWalkable, ensureUpperPopLog } from '../world/planes.js';
 
 /** 上界模拟流的派生键：ASCII 'UPLI'（UPper LIfE）。 */
@@ -147,7 +149,7 @@ const UPPER_BIRTH_MIN_LEVEL = 50;
  * `maybeBorn()` 改成只数**非凡人**（见那里的 `cultivatorCount`），
  * 凡人另立 `UPPER_MORTAL_CAP`。两个额度互不侵占。
  */
-const UPPER_POP_CAP = 300;
+const UPPER_POP_CAP = () => tunable('UPPER_POP_CAP');
 
 /**
  * 上界**凡人**人口软上限（**必须与 `UPPER_POP_CAP` 分开，理由见上**）。
@@ -502,7 +504,7 @@ export class UpperLife {
     for (let i = 0; i < upper.entities.length; i += 1) {
       if (!isUpperMortal(upper.entities[i])) cultivatorCount += 1;
     }
-    if (cultivatorCount >= UPPER_POP_CAP) return;
+    if (cultivatorCount >= UPPER_POP_CAP()) return;
 
     const candidates = upper.entities.filter((e) => (e.level || 0) >= UPPER_BIRTH_MIN_LEVEL);
     if (!candidates.length) return;

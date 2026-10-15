@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 3,
+  "experiment": "b2-baseline-natural-30y",
+  "experimentGroup": "b2-s1",
+  "profile": "natural",
+  "preset": "medium",
+  "seeds": [20260914, 7, 424242],
+  "years": 30,
+  "stepDays": 3,
+  "snapshotDays": 360,
+  "probeDays": 30,
+  "viewPolicy": "closed",
+  "generationVersion": 2,
+  "terrainPreset": "standard"
+}

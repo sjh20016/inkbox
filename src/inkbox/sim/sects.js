@@ -21,6 +21,8 @@ import {
 } from '../core/lore.js';
 import { speak } from './busanzi.js';
 import { clamp } from '../core/noise.js';
+// B2 可调参数注册表。见 sim/tunables.js。
+import { tunable } from './tunables.js';
 import {
   computeTerritory, crossedBoundary, cellOf, leylineAllowance,
 } from './territory.js';
@@ -32,11 +34,15 @@ export const ALLIED_THRESHOLD = 26;
 /** 长老的最低境界。来源 sectSystem.js:350 */
 export const ELDER_MIN_LEVEL = 20;
 
-/** 声望上限与容量公式 */
+/**
+ * 声望上限与容量公式的**默认基数**。
+ *
+ * ⚠️ B2 起它是**默认值**（供外部对照），运行时读的是 `tunable('SECT_CAPACITY_BASE')`。
+ */
 export const SECT_CAPACITY_BASE = 10;
 
 export function sectCapacity(sect) {
-  return Math.floor(SECT_CAPACITY_BASE + sect.reputation / 4);
+  return Math.floor(tunable('SECT_CAPACITY_BASE') + sect.reputation / 4);
 }
 
 /** 开宗立派。founder 若为空则为「无主之地自生」的宗门 */
@@ -201,6 +207,10 @@ export function stepSects(world, life, dtDays, rng) {
  * 触发用 world.day 的相位判断，不额外记状态，存档读档也不会漂。
  */
 const SECT_FOUND_PERIOD_DAYS = 20 * 360;
+/**
+ * 开宗立派的最低境界的**默认值**（运行时读 `tunable('SECT_FOUNDER_MIN_LEVEL')`）。
+ * 外部消费者（`divine.js`）直接 import 本常量作默认值对照。
+ */
 export const SECT_FOUNDER_MIN_LEVEL = 10;
 /** 门史保留的条数上限（开宗、继任、接掌这些大事，不必无限积攒） */
 export const SECT_HISTORY_CAP = 32;
@@ -225,7 +235,7 @@ function maybeFoundSect(world, life, rng) {
   for (let i = 0; i < world.entities.length; i += 1) {
     const e = world.entities[i];
     if (e.faction || !e.root) continue;
-    if ((e.level || 0) < SECT_FOUNDER_MIN_LEVEL) continue;
+    if ((e.level || 0) < tunable('SECT_FOUNDER_MIN_LEVEL')) continue;
     candidates.push(e);
   }
   if (!candidates.length) return null;
@@ -266,8 +276,16 @@ function stepOneSect(world, sect, dtDays, rng) {
     const l = world.leylineById(sect.leylines[k]);
     if (l) income += 1.6 * l.strength;
   }
-  sect.resources.spiritStone = clamp(sect.resources.spiritStone + income * dtDays * 0.02, 0, 9999);
-  sect.resources.provisions = clamp(sect.resources.provisions + sect.villages.length * dtDays * 0.03, 0, 9999);
+  // ⚠️ 两个入账系数自 B2 起可调（默认 0.02 / 0.03，逐位相同）。
+  //    粮草是**纯增长、无汇**（唯一的「消耗」是下面的 starving 稳定度惩罚，并不扣粮草）
+  //    ⇒ B1-2/B1-3 观测到它后段仍单调增长（`monotonic_resource`），疑为「缺汇」。
+  //    B2-3 将定位缺失的消费关系。
+  sect.resources.spiritStone = clamp(
+    sect.resources.spiritStone + income * dtDays * tunable('SECT_SPIRIT_STONE_RATE'), 0, 9999,
+  );
+  sect.resources.provisions = clamp(
+    sect.resources.provisions + sect.villages.length * dtDays * tunable('SECT_PROVISIONS_RATE'), 0, 9999,
+  );
 
   // 声望：人多势众则涨，灵脉多则涨，战败则跌
   const want = Math.min(1, sect.pop / Math.max(1, cap));
