@@ -50,9 +50,14 @@ function summarizeRows(rows) {
     rawRafIntervalMs: stats(rows.map(row => row.rawRafIntervalMs)),
     canvasTerrainRenderMs: stats(rows.map(row => row.canvasTerrainRenderMs)),
     webglSubmissionMs: stats(rows.map(row => row.webglSubmissionMs)),
-    gpuUploadBytes: stats(rows.map(row => row.gpuUploadBytes)),
-    gpuUploadCalls: stats(rows.map(row => row.gpuUploadCalls)),
-    gpuUploadUnknownByteCalls: stats(rows.map(row => row.gpuUploadUnknownByteCalls)),
+    bufferUploadBytesKnown: stats(rows.map(row => row.bufferUploadBytesKnown)),
+    textureUploadBytesKnown: stats(rows.map(row => row.textureUploadBytesKnown)),
+    uploadSourceBytesUpperBound: stats(rows.map(row => row.uploadSourceBytesUpperBound)),
+    uploadUnknownByteCalls: stats(rows.map(row => row.uploadUnknownByteCalls)),
+    bufferUploadCalls: stats(rows.map(row => row.bufferUploadCalls)),
+    textureUploadCalls: stats(rows.map(row => row.textureUploadCalls)),
+    bufferAllocationBytesKnown: stats(rows.map(row => row.bufferAllocationBytesKnown)),
+    legacyMixedUploadEstimate: stats(rows.map(row => row.gpuUploadBytes)),
     longFrameRatesPct: thresholdRates,
     hydrologyFrames: hydroFrames.length,
     nonHydrologyFrames: quietFrames.length,
@@ -121,11 +126,31 @@ function summarizeHydrology(records) {
   };
 }
 function readRawRuns() {
-  if (!fs.existsSync(RAW)) return [];
-  return fs.readdirSync(RAW).filter(name => name.endsWith('.json')).sort().map(name => {
+  if (!fs.existsSync(RAW)) throw new Error(`Required raw evidence directory is missing: ${RAW}`);
+  const rawFiles = fs.readdirSync(RAW).filter(name => name.endsWith('.json')).sort();
+  const expectedRunIds = EXPECTED.flatMap(id => [
+    `${id}-low-perturbation-r1`, `${id}-detailed-r1`, `${id}-detailed-r2`,
+  ]);
+  const runs = rawFiles.map(name => {
     const value = JSON.parse(fs.readFileSync(path.join(RAW, name), 'utf8'));
     return { file: name, ...value };
   });
+  const actualIds = runs.map(run => run.runId);
+  const missing = expectedRunIds.filter(id => !actualIds.includes(id));
+  const unexpected = actualIds.filter(id => !expectedRunIds.includes(id));
+  const duplicates = actualIds.filter((id, index) => actualIds.indexOf(id) !== index);
+  if (missing.length || unexpected.length || duplicates.length || runs.length !== expectedRunIds.length) {
+    throw new Error(`Raw evidence matrix invalid (missing=${missing.join(',') || 'none'}; unexpected=${unexpected.join(',') || 'none'}; duplicates=${duplicates.join(',') || 'none'}; files=${runs.length}/${expectedRunIds.length})`);
+  }
+  for (const run of runs) {
+    if (!Array.isArray(run.frames) || run.frames.length !== 300) {
+      throw new Error(`Raw run ${run.runId} has ${run.frames?.length ?? 'no'} frames; expected 300`);
+    }
+    if (!run.source?.sourceHashes || !run.environment || !run.browser || !run.scenario) {
+      throw new Error(`Raw run ${run.runId} is missing source, browser, environment, or scenario identity`);
+    }
+  }
+  return runs;
 }
 function groupBy(runs, keyFn) {
   return runs.reduce((group, run) => {
@@ -154,7 +179,7 @@ function createMarkdown(summary) {
     '',
     'The complex-water fixture modifies a single generated `World` instance after standard generation. It is an analysis fixture only. It creates curved straits, a branching inlet, a lagoon and a grouped island chain from deterministic geometric fields. It does not change default world generation or the save schema.',
     '', '## Matrix results', '',
-    row(['Case', 'Renderer / map', 'Runs', 'Hydro step p95 / max (ms)', 'Hydro frame CPU p95 (ms)', 'Non-hydro frame CPU p95 (ms)', 'Frame >16.7 / 33.3 / 50 ms (%)', 'RAF interval p95 (ms)', 'Layer update p95 (ms)', 'WebGL submit p95 (ms)', 'Upload source p95 (bytes)']),
+    row(['Case', 'Renderer / map', 'Runs', 'Hydro step p95 / max (ms)', 'Hydro frame CPU p95 (ms)', 'Non-hydro frame CPU p95 (ms)', 'Frame >16.7 / 33.3 / 50 ms (%)', 'RAF interval p95 (ms)', 'Layer update p95 (ms)', 'WebGL submit p95 (ms)', 'Legacy mixed estimate p95*']),
     row(['---', '---', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:']),
   ];
   for (const item of summary.scenarios) {
@@ -163,7 +188,7 @@ function createMarkdown(summary) {
       fmt(item.frames.hydroFrameCpuMs.p95), fmt(item.frames.nonHydroFrameCpuMs.p95),
       `${fmt(item.frames.longFrameRatesPct['16.7']?.frameCpuPct)} / ${fmt(item.frames.longFrameRatesPct['33.3']?.frameCpuPct)} / ${fmt(item.frames.longFrameRatesPct['50']?.frameCpuPct)}`,
       fmt(item.frames.rawRafIntervalMs.p95), fmt(item.frames.three.layerUpdateMs.p95),
-      fmt(item.frames.webglSubmissionMs.p95), fmt(item.frames.gpuUploadBytes.p95)]));
+      fmt(item.frames.webglSubmissionMs.p95), fmt(item.frames.legacyMixedUploadEstimate.p95)]));
   }
   lines.push('', '## Instrumentation perturbation check', '',
     'Each case has one low-perturbation timing-only run plus two detailed runs. Detailed runs add field snapshots/diffs and per-layer/WebGL wrappers; this table shows their frame-tail movement rather than folding diagnostic overhead into the timing-only baseline. Negative deltas reflect run-to-run variation, not a performance benefit from instrumentation.', '',
@@ -173,7 +198,7 @@ function createMarkdown(summary) {
     lines.push(row([item.id, fmt(item.lowPerturbationFrameCpuP95), fmt(item.detailedFrameCpuP95),
       fmt(item.detailedVsLowP95DeltaMs), fmt(item.lowPerturbationHydroStepP95?.p95)]));
   }
-  lines.push('', 'WebGL `gpuUploadBytes` is the aggregate source-array byte length observed at wrapped upload calls (or the explicit `bufferData` size), not a driver-confirmed transfer count; range-limited calls can make it an upper-bound estimate.', '');
+  lines.push('', '* Historical `gpuUploadBytes` is a mixed diagnostic estimate: it adds whole CPU view byte lengths and numeric `bufferData` capacities without decoding overload ranges. It is not a valid upload-byte upper bound and is not GPU transfer or VRAM traffic. Raw values are preserved unchanged.', '');
   lines.push('', '### Per-hydrology-call changes (detailed runs)', '',
     row(['Case', 'water changed p50 / p95', 'height changed p50 / p95', 'type changed p50 / p95', 'wet/dry transitions p50 / p95', 'water bbox cells; bbox/change', 'height bbox cells; bbox/change', 'type bbox cells; bbox/change']),
     row(['---', '---:', '---:', '---:', '---:', '---:', '---:', '---:']));
@@ -282,6 +307,10 @@ function composeSummary(runs) {
     surfaceFieldMs: layerMethod(frame, 'surfaceField'),
     terrainSidesMs: layerMethod(frame, 'terrainSides'),
     webglSubmissionMs: frame.webglSubmissionMs, gpuUploadBytes: frame.gpuUploadBytes, gpuUploadCalls: frame.gpuUploadCalls,
+    bufferUploadBytesKnown: frame.bufferUploadBytesKnown, textureUploadBytesKnown: frame.textureUploadBytesKnown,
+    uploadSourceBytesUpperBound: frame.uploadSourceBytesUpperBound, uploadUnknownByteCalls: frame.uploadUnknownByteCalls,
+    bufferUploadCalls: frame.bufferUploadCalls, textureUploadCalls: frame.textureUploadCalls,
+    bufferAllocationBytesKnown: frame.bufferAllocationBytesKnown,
   })));
   const slowestFrames = allFrames.sort((a, b) => (b.frameCpuMs || 0) - (a.frameCpuMs || 0));
   const envRuns = runs.map(run => run.environment || {});
