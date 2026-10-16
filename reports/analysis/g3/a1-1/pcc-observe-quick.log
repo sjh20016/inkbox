@@ -1,0 +1,23 @@
+{
+  "verdict": "A1_1_BLOCKED_COST_STOP",
+  "directAssertions": 22,
+  "quick": [
+    {
+      "label": "standard",
+      "p50": 19.420099999999366,
+      "p95": 31.421499999999924,
+      "bridgeP50": 3.115799999999581,
+      "listBytes": 1870848,
+      "pccBytes": 22962948
+    },
+    {
+      "label": "archipelago",
+      "p50": 19.893299999999726,
+      "p95": 29.896300000000338,
+      "bridgeP50": 3.357299999999668,
+      "listBytes": 1608704,
+      "pccBytes": 23642884
+    }
+  ],
+  "output": "reports/analysis/g3/a1-1/pcc-observe-quick.json"
+}
