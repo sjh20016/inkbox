@@ -1,0 +1,3434 @@
+{
+  "generatedAt": "2026-10-16T01:53:10.399Z",
+  "task": "G2-PERF-H2",
+  "baseline": {
+    "branch": "analysis/g2-h2-runtime-hydrology-attribution-luna",
+    "productHead": "74934a8b1360af9007c69935d5becdf8f9809872"
+  },
+  "source": {
+    "productHead": "74934a8b1360af9007c69935d5becdf8f9809872",
+    "sourceHashes": {
+      "scripts/cdp.mjs": "4a85e505cccb034fcd7903d672fe5c5699a639109e4c8b0263837ab67d8c91a4",
+      "scripts/inkbox-g2-h2-profile.mjs": "b42f2241310bd98c7a411322dac6157d55b427c730ad09529e53416db6607702",
+      "scripts/inkbox-g2-h2-recalculate.mjs": "67617050b9089e72a81e0e484e3c388bb2d505a1b2abde49176a4ae58755fdf6",
+      "scripts/inkbox-g2-h2-archipelago-world.mjs": "29c42f4be3afb5ec261d364a424d91b1d7dba07f5e6b91721c342b759d20117c",
+      "src/inkbox/main.js": "03e49c0751edd1ed52e2007ca9c3b30a1a4cbd3b052fcb22d507d0483ce3b5f8",
+      "src/inkbox/sim/hydrology.js": "0fbbc2f5fb03d79e111bc85b6d6aef266e660d15f2dddb0b7c4c75775af40295",
+      "src/inkbox/world/terrain.js": "9326e463dd79f57996257e20107d71318e8b3ff53e561162ad7a1dc6c2d19663",
+      "src/inkbox/render/terrainLayer.js": "326b5fd6c6cc99ad0068791161781aafdc724624e862cbbe4f903184549948e2",
+      "src/inkbox/render3d/WorldRenderBridge.js": "35e11e9bb61d4349d9a53ae48fbd1a8cb7f538ac45aa5244cc074a93e1a5d677",
+      "src/inkbox/render3d/stage/PlaneStage.js": "36a84c49863ca9d601384bcfecf044f49de5fcfd06c96e5fab041904fa921c5f",
+      "src/inkbox/render3d/Render3DHost.js": "305d75f6a0d4401120cd1e2576fffe074cd5949e4e8bdf8d881fea99e1bba761",
+      "src/inkbox/render3d/water/WaterLayer.js": "aeb2120da8d1181f56d8e7cda24f4cf7637c12b068681e2482f797c9a1b71333",
+      "src/inkbox/render3d/vegetation/VegetationLayer.js": "9462b7b5fa073add8c8e3033a822f86cc940a1bde9821b22ae3e2139b5de2880",
+      "src/inkbox/core/config.js": "2327265096204c8adddfb55232266695e45f363cb892ce2a8f32434b118e4170"
+    },
+    "recalculationScriptSha256": "69c7f6a6a0be8d74828a600a32f7c8b6c71404d6ad6b6ad574dd554c3d565b86"
+  },
+  "seed": 673231,
+  "measurement": {
+    "framesPerRun": 300,
+    "warmFrames": 120,
+    "speedEntry": "setSpeed(2)",
+    "modes": [
+      "low-perturbation",
+      "detailed"
+    ]
+  },
+  "runCoverage": {
+    "completed": 12,
+    "expected": 12,
+    "complete": true,
+    "runIds": [
+      "H2-E1-detailed-r1",
+      "H2-E1-detailed-r2",
+      "H2-E1-low-perturbation-r1",
+      "H2-E2-detailed-r1",
+      "H2-E2-detailed-r2",
+      "H2-E2-low-perturbation-r1",
+      "H2-E3-detailed-r1",
+      "H2-E3-detailed-r2",
+      "H2-E3-low-perturbation-r1",
+      "H2-E4-detailed-r1",
+      "H2-E4-detailed-r2",
+      "H2-E4-low-perturbation-r1"
+    ]
+  },
+  "environment": {
+    "browserVersions": [
+      "Edg/155.0.4283.45"
+    ],
+    "gpuNames": [
+      "Intel(R) UHD Graphics 730",
+      "Microsoft Basic Render Driver"
+    ],
+    "webglRenderers": [
+      "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    ],
+    "viewports": [
+      "1416×808 @ DPR 1"
+    ],
+    "hardwareVerified": true,
+    "softwareGpu": false,
+    "browserHeadless": true,
+    "backgroundThrottlingDisabled": true,
+    "visibleFocusedFrames": 3600,
+    "visibilitySampleCount": 3600
+  },
+  "topology": [
+    {
+      "map": "standard",
+      "metrics": {
+        "waterCoveragePct": 41.9769287109375,
+        "coastlineLengthApprox": 3600,
+        "islandCount": 2,
+        "mediumIslandCount": 1,
+        "inlandSeaCount": 0,
+        "largestLandmassPct": 99.66549203176773,
+        "wetVegetationFrontierCells": 4,
+        "hydroSensitiveCoastCells": 2357,
+        "definitions": {
+          "waterThreshold": 0.0015,
+          "connectivity": "4-neighbor",
+          "islandCount": "land connected components excluding the largest landmass and components under 33 cells",
+          "islandMinimumCells": 33,
+          "mediumIslandRangeCells": [
+            164,
+            6554
+          ],
+          "inlandSeaMinimumCells": 164,
+          "coastline": "land/water shared cell edges; map-border land edges included",
+          "wetVegetationFrontier": "vegetated land cells directly touching water",
+          "hydroSensitiveCoast": "coastal land cells with height <= SEA_LEVEL + 0.08 (0.380)"
+        }
+      }
+    },
+    {
+      "map": "archipelago",
+      "metrics": {
+        "waterCoveragePct": 58.32092285156249,
+        "coastlineLengthApprox": 3976,
+        "islandCount": 12,
+        "mediumIslandCount": 9,
+        "inlandSeaCount": 3,
+        "largestLandmassPct": 59.21478465886626,
+        "wetVegetationFrontierCells": 1640,
+        "hydroSensitiveCoastCells": 1733,
+        "definitions": {
+          "waterThreshold": 0.0015,
+          "connectivity": "4-neighbor",
+          "islandCount": "land connected components excluding the largest landmass and components under 33 cells",
+          "islandMinimumCells": 33,
+          "mediumIslandRangeCells": [
+            164,
+            6554
+          ],
+          "inlandSeaMinimumCells": 164,
+          "coastline": "land/water shared cell edges; map-border land edges included",
+          "wetVegetationFrontier": "vegetated land cells directly touching water",
+          "hydroSensitiveCoast": "coastal land cells with height <= SEA_LEVEL + 0.08 (0.380)"
+        }
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "H2-E1",
+      "renderer": "three",
+      "map": "standard",
+      "runCount": 3,
+      "detailedRunCount": 2,
+      "frames": {
+        "frames": 600,
+        "frameCpuMs": {
+          "n": 600,
+          "mean": 20.788,
+          "median": 4.8,
+          "p95": 92.1,
+          "max": 165.9
+        },
+        "updateCpuMs": {
+          "n": 600,
+          "mean": 4.746,
+          "median": 0.9,
+          "p95": 20.9,
+          "max": 37
+        },
+        "renderCpuMs": {
+          "n": 600,
+          "mean": 15.987,
+          "median": 3.1,
+          "p95": 71,
+          "max": 140.5
+        },
+        "rawRafIntervalMs": {
+          "n": 598,
+          "mean": 29.123,
+          "median": 16.7,
+          "p95": 83.5,
+          "max": 166.7
+        },
+        "canvasTerrainRenderMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "webglSubmissionMs": {
+          "n": 600,
+          "mean": 3.893,
+          "median": 0.7,
+          "p95": 19.6,
+          "max": 27.8
+        },
+        "gpuUploadBytes": {
+          "n": 600,
+          "mean": 347817691.933,
+          "median": 0,
+          "p95": 1918546136,
+          "max": 1926410456
+        },
+        "gpuUploadCalls": {
+          "n": 600,
+          "mean": 235.103,
+          "median": 0,
+          "p95": 1290,
+          "max": 1294
+        },
+        "gpuUploadUnknownByteCalls": {
+          "n": 600,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "longFrameRatesPct": {
+          "50": {
+            "frameCpuPct": 18.167,
+            "rafIntervalPct": 18.06
+          },
+          "16.7": {
+            "frameCpuPct": 23.833,
+            "rafIntervalPct": 57.692
+          },
+          "33.3": {
+            "frameCpuPct": 19.167,
+            "rafIntervalPct": 19.231
+          }
+        },
+        "hydrologyFrames": 109,
+        "nonHydrologyFrames": 491,
+        "hydroFrameCpuMs": {
+          "n": 109,
+          "mean": 87.655,
+          "median": 84.5,
+          "p95": 114.3,
+          "max": 165.9
+        },
+        "nonHydroFrameCpuMs": {
+          "n": 491,
+          "mean": 5.944,
+          "median": 4.1,
+          "p95": 24.1,
+          "max": 42.1
+        },
+        "hydroFrameUpdateCpuMs": {
+          "n": 109,
+          "mean": 20.272,
+          "median": 19.4,
+          "p95": 26.9,
+          "max": 37
+        },
+        "nonHydroFrameUpdateCpuMs": {
+          "n": 491,
+          "mean": 1.3,
+          "median": 0.6,
+          "p95": 4.6,
+          "max": 6.7
+        },
+        "hydroFrameRenderCpuMs": {
+          "n": 109,
+          "mean": 67.323,
+          "median": 65.5,
+          "p95": 88.2,
+          "max": 140.5
+        },
+        "nonHydroFrameRenderCpuMs": {
+          "n": 491,
+          "mean": 4.59,
+          "median": 2.8,
+          "p95": 22.1,
+          "max": 41.8
+        },
+        "hydroFrameDirectStepCpuMs": {
+          "n": 109,
+          "mean": 15.052,
+          "median": 14.5,
+          "p95": 19.5,
+          "max": 21.1
+        },
+        "three": {
+          "bridgeScanMs": {
+            "n": 600,
+            "mean": 1.685,
+            "median": 1.4,
+            "p95": 3.2,
+            "max": 9.8
+          },
+          "terrainUpdateMs": {
+            "n": 600,
+            "mean": 2.704,
+            "median": 0,
+            "p95": 15.1,
+            "max": 55.4
+          },
+          "hydroBridgeScanMs": {
+            "n": 109,
+            "mean": 1.941,
+            "median": 1.7,
+            "p95": 3.3,
+            "max": 7.3
+          },
+          "hydroTerrainUpdateMs": {
+            "n": 109,
+            "mean": 14.808,
+            "median": 13.8,
+            "p95": 17.6,
+            "max": 55.4
+          },
+          "hydroWaterUpdateMs": {
+            "n": 109,
+            "mean": 13.689,
+            "median": 12.5,
+            "p95": 25.3,
+            "max": 44.1
+          },
+          "hydroVegetationUpdateMs": {
+            "n": 109,
+            "mean": 17.665,
+            "median": 17.1,
+            "p95": 24.7,
+            "max": 31.6
+          },
+          "terrainSidesMs": {
+            "n": 600,
+            "mean": 0.171,
+            "median": 0,
+            "p95": 1,
+            "max": 3.6
+          },
+          "terrainMeshUpdateMs": {
+            "n": 600,
+            "mean": 2.506,
+            "median": 0,
+            "p95": 13.9,
+            "max": 53.2
+          },
+          "terrainScalarFieldMs": {
+            "n": 600,
+            "mean": 0.008,
+            "median": 0,
+            "p95": 0.1,
+            "max": 0.1
+          },
+          "waterUpdateMs": {
+            "n": 600,
+            "mean": 2.487,
+            "median": 0,
+            "p95": 13.6,
+            "max": 44.1
+          },
+          "hydroSurfaceFieldMs": {
+            "n": 109,
+            "mean": 2.683,
+            "median": 2.5,
+            "p95": 3.4,
+            "max": 6.1
+          },
+          "surfaceFieldMs": {
+            "n": 600,
+            "mean": 0.487,
+            "median": 0,
+            "p95": 2.7,
+            "max": 6.1
+          },
+          "vegetationUpdateMs": {
+            "n": 600,
+            "mean": 4.476,
+            "median": 0,
+            "p95": 22.2,
+            "max": 37.8
+          },
+          "entityUpdateMs": {
+            "n": 600,
+            "mean": 0.132,
+            "median": 0,
+            "p95": 0.5,
+            "max": 1.5
+          },
+          "settlementUpdateMs": {
+            "n": 600,
+            "mean": 0.014,
+            "median": 0,
+            "p95": 0.1,
+            "max": 0.2
+          },
+          "layerUpdateMs": {
+            "n": 600,
+            "mean": 9.897,
+            "median": 0.1,
+            "p95": 48.4,
+            "max": 120.5
+          },
+          "hydroLayerUpdateMs": {
+            "n": 109,
+            "mean": 46.918,
+            "median": 44.3,
+            "p95": 63.5,
+            "max": 120.5
+          },
+          "lodUpdateMs": {
+            "n": 600,
+            "mean": 0.04,
+            "median": 0,
+            "p95": 0.1,
+            "max": 0.6
+          }
+        }
+      },
+      "hydrology": {
+        "calls": 109,
+        "stepHydrologyMs": {
+          "n": 109,
+          "mean": 15.052,
+          "median": 14.5,
+          "p95": 19.5,
+          "max": 21.1
+        },
+        "phaseMs": {
+          "seaRefillMs": {
+            "n": 109,
+            "mean": 1.075,
+            "median": 1,
+            "p95": 1.9,
+            "max": 3.1
+          },
+          "riverMaintenanceMs": {
+            "n": 109,
+            "mean": 0.239,
+            "median": 0.2,
+            "p95": 0.5,
+            "max": 0.6
+          },
+          "waterFlowAndEvaporationMs": {
+            "n": 109,
+            "mean": 4.177,
+            "median": 4.1,
+            "p95": 5.6,
+            "max": 7.2
+          },
+          "erosionMs": {
+            "n": 109,
+            "mean": 3.263,
+            "median": 3.2,
+            "p95": 4,
+            "max": 5.2
+          },
+          "thermalMs": {
+            "n": 109,
+            "mean": 2.628,
+            "median": 2.6,
+            "p95": 3.4,
+            "max": 4.1
+          },
+          "dirtyFlushMs": {
+            "n": 109,
+            "mean": 3.618,
+            "median": 3.5,
+            "p95": 5.4,
+            "max": 7.3
+          }
+        },
+        "changedCells": {
+          "waterChangedCells": {
+            "n": 109,
+            "mean": 68931.459,
+            "median": 68945,
+            "p95": 68969,
+            "max": 68977
+          },
+          "heightChangedCells": {
+            "n": 109,
+            "mean": 66106.578,
+            "median": 66110,
+            "p95": 66478,
+            "max": 66583
+          },
+          "typeChangedCells": {
+            "n": 109,
+            "mean": 68.761,
+            "median": 67,
+            "p95": 84,
+            "max": 101
+          },
+          "wetDryTransitions": {
+            "n": 109,
+            "mean": 0.459,
+            "median": 0,
+            "p95": 2,
+            "max": 2
+          },
+          "dirtyFlushedCells": {
+            "n": 109,
+            "mean": 71049.514,
+            "median": 71069,
+            "p95": 71101,
+            "max": 71109
+          }
+        },
+        "dirtyBounds": {
+          "water": {
+            "n": 109,
+            "meanArea": 163840,
+            "medianAreaPerChangedCell": 2.376,
+            "p95AreaPerChangedCell": 2.38
+          },
+          "height": {
+            "n": 109,
+            "meanArea": 163840,
+            "medianAreaPerChangedCell": 2.478,
+            "p95AreaPerChangedCell": 2.494
+          },
+          "type": {
+            "n": 109,
+            "meanArea": 158887.817,
+            "medianAreaPerChangedCell": 2347.97,
+            "p95AreaPerChangedCell": 2857.909
+          }
+        },
+        "diagnosticOverheadMs": {
+          "n": 109,
+          "mean": 4.231,
+          "median": 3.9,
+          "p95": 6.7,
+          "max": 15.3
+        },
+        "changeScanMs": {
+          "n": 109,
+          "mean": 3.406,
+          "median": 3.1,
+          "p95": 6,
+          "max": 14.4
+        }
+      },
+      "lowPerturbation": {
+        "frames": 300,
+        "frameCpuMs": {
+          "n": 300,
+          "mean": 15.231,
+          "median": 4.2,
+          "p95": 72.4,
+          "max": 91.4
+        },
+        "updateCpuMs": {
+          "n": 300,
+          "mean": 3.243,
+          "median": 0.7,
+          "p95": 15,
+          "max": 22.1
+        },
+        "renderCpuMs": {
+          "n": 300,
+          "mean": 11.95,
+          "median": 2.6,
+          "p95": 57.8,
+          "max": 71.8
+        },
+        "rawRafIntervalMs": {
+          "n": 299,
+          "mean": 24.582,
+          "median": 16.7,
+          "p95": 66.8,
+          "max": 83.5
+        },
+        "canvasTerrainRenderMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "webglSubmissionMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadBytes": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadCalls": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadUnknownByteCalls": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "longFrameRatesPct": {
+          "50": {
+            "frameCpuPct": 15.333,
+            "rafIntervalPct": 14.716
+          },
+          "16.7": {
+            "frameCpuPct": 20.333,
+            "rafIntervalPct": 49.833
+          },
+          "33.3": {
+            "frameCpuPct": 15.333,
+            "rafIntervalPct": 15.719
+          }
+        },
+        "hydrologyFrames": 46,
+        "nonHydrologyFrames": 254,
+        "hydroFrameCpuMs": {
+          "n": 46,
+          "mean": 72.087,
+          "median": 70.6,
+          "p95": 84.1,
+          "max": 91.4
+        },
+        "nonHydroFrameCpuMs": {
+          "n": 254,
+          "mean": 4.935,
+          "median": 3.6,
+          "p95": 17.6,
+          "max": 24.1
+        },
+        "hydroFrameUpdateCpuMs": {
+          "n": 46,
+          "mean": 14.687,
+          "median": 14.6,
+          "p95": 17.4,
+          "max": 22.1
+        },
+        "nonHydroFrameUpdateCpuMs": {
+          "n": 254,
+          "mean": 1.17,
+          "median": 0.6,
+          "p95": 3.7,
+          "max": 9.7
+        },
+        "hydroFrameRenderCpuMs": {
+          "n": 46,
+          "mean": 57.354,
+          "median": 55.8,
+          "p95": 67,
+          "max": 71.8
+        },
+        "nonHydroFrameRenderCpuMs": {
+          "n": 254,
+          "mean": 3.728,
+          "median": 2.4,
+          "p95": 17.3,
+          "max": 23.2
+        },
+        "hydroFrameDirectStepCpuMs": {
+          "n": 46,
+          "mean": 13.907,
+          "median": 13.6,
+          "p95": 17.1,
+          "max": 19.8
+        },
+        "three": {
+          "bridgeScanMs": {
+            "n": 300,
+            "mean": 1.55,
+            "median": 1.4,
+            "p95": 2.9,
+            "max": 4.8
+          },
+          "terrainUpdateMs": {
+            "n": 300,
+            "mean": 1.921,
+            "median": 0,
+            "p95": 12.7,
+            "max": 17.1
+          },
+          "hydroBridgeScanMs": {
+            "n": 46,
+            "mean": 1.665,
+            "median": 1.7,
+            "p95": 2.3,
+            "max": 2.4
+          },
+          "hydroTerrainUpdateMs": {
+            "n": 46,
+            "mean": 12.507,
+            "median": 12.3,
+            "p95": 15.5,
+            "max": 17.1
+          },
+          "hydroWaterUpdateMs": {
+            "n": 46,
+            "mean": 11.989,
+            "median": 11.8,
+            "p95": 14.1,
+            "max": 25.9
+          },
+          "hydroVegetationUpdateMs": {
+            "n": 46,
+            "mean": 14.585,
+            "median": 14.1,
+            "p95": 18.2,
+            "max": 20.1
+          },
+          "terrainSidesMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainMeshUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainScalarFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "waterUpdateMs": {
+            "n": 300,
+            "mean": 1.839,
+            "median": 0,
+            "p95": 12.5,
+            "max": 25.9
+          },
+          "hydroSurfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "surfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "vegetationUpdateMs": {
+            "n": 300,
+            "mean": 3.067,
+            "median": 0,
+            "p95": 16.6,
+            "max": 20.1
+          },
+          "entityUpdateMs": {
+            "n": 300,
+            "mean": 0.097,
+            "median": 0,
+            "p95": 0.3,
+            "max": 1.2
+          },
+          "settlementUpdateMs": {
+            "n": 300,
+            "mean": 0.011,
+            "median": 0,
+            "p95": 0.1,
+            "max": 0.3
+          },
+          "layerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroLayerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "lodUpdateMs": {
+            "n": 300,
+            "mean": 0.031,
+            "median": 0,
+            "p95": 0.1,
+            "max": 0.2
+          }
+        }
+      },
+      "topology": {
+        "waterCoveragePct": 41.9769287109375,
+        "coastlineLengthApprox": 3600,
+        "islandCount": 2,
+        "mediumIslandCount": 1,
+        "inlandSeaCount": 0,
+        "largestLandmassPct": 99.66549203176773,
+        "wetVegetationFrontierCells": 4,
+        "hydroSensitiveCoastCells": 2357,
+        "definitions": {
+          "waterThreshold": 0.0015,
+          "connectivity": "4-neighbor",
+          "islandCount": "land connected components excluding the largest landmass and components under 33 cells",
+          "islandMinimumCells": 33,
+          "mediumIslandRangeCells": [
+            164,
+            6554
+          ],
+          "inlandSeaMinimumCells": 164,
+          "coastline": "land/water shared cell edges; map-border land edges included",
+          "wetVegetationFrontier": "vegetated land cells directly touching water",
+          "hydroSensitiveCoast": "coastal land cells with height <= SEA_LEVEL + 0.08 (0.380)"
+        }
+      },
+      "fixtureTopology": null
+    },
+    {
+      "id": "H2-E2",
+      "renderer": "canvas",
+      "map": "standard",
+      "runCount": 3,
+      "detailedRunCount": 2,
+      "frames": {
+        "frames": 600,
+        "frameCpuMs": {
+          "n": 600,
+          "mean": 7.809,
+          "median": 1.3,
+          "p95": 34.7,
+          "max": 70.7
+        },
+        "updateCpuMs": {
+          "n": 600,
+          "mean": 2.865,
+          "median": 0.4,
+          "p95": 18.8,
+          "max": 27.8
+        },
+        "renderCpuMs": {
+          "n": 600,
+          "mean": 4.905,
+          "median": 0.8,
+          "p95": 16.6,
+          "max": 52.3
+        },
+        "rawRafIntervalMs": {
+          "n": 598,
+          "mean": 18.06,
+          "median": 16.7,
+          "p95": 33.3,
+          "max": 66.7
+        },
+        "canvasTerrainRenderMs": {
+          "n": 169,
+          "mean": 14.586,
+          "median": 13.7,
+          "p95": 17.9,
+          "max": 51.3
+        },
+        "webglSubmissionMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadBytes": {
+          "n": 600,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "gpuUploadCalls": {
+          "n": 600,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "gpuUploadUnknownByteCalls": {
+          "n": 600,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "longFrameRatesPct": {
+          "50": {
+            "frameCpuPct": 0.5,
+            "rafIntervalPct": 0.334
+          },
+          "16.7": {
+            "frameCpuPct": 18.667,
+            "rafIntervalPct": 35.284
+          },
+          "33.3": {
+            "frameCpuPct": 6,
+            "rafIntervalPct": 5.686
+          }
+        },
+        "hydrologyFrames": 68,
+        "nonHydrologyFrames": 532,
+        "hydroFrameCpuMs": {
+          "n": 68,
+          "mean": 34.484,
+          "median": 33.3,
+          "p95": 41.1,
+          "max": 70.7
+        },
+        "nonHydroFrameCpuMs": {
+          "n": 532,
+          "mean": 4.399,
+          "median": 1.2,
+          "p95": 17.9,
+          "max": 56.6
+        },
+        "hydroFrameUpdateCpuMs": {
+          "n": 68,
+          "mean": 18.903,
+          "median": 18.6,
+          "p95": 22.7,
+          "max": 27.8
+        },
+        "nonHydroFrameUpdateCpuMs": {
+          "n": 532,
+          "mean": 0.815,
+          "median": 0.4,
+          "p95": 2.6,
+          "max": 5.3
+        },
+        "hydroFrameRenderCpuMs": {
+          "n": 68,
+          "mean": 15.543,
+          "median": 14.9,
+          "p95": 18.4,
+          "max": 43.8
+        },
+        "nonHydroFrameRenderCpuMs": {
+          "n": 532,
+          "mean": 3.545,
+          "median": 0.8,
+          "p95": 15.7,
+          "max": 52.3
+        },
+        "hydroFrameDirectStepCpuMs": {
+          "n": 68,
+          "mean": 13.913,
+          "median": 13.7,
+          "p95": 17.1,
+          "max": 17.8
+        },
+        "three": {
+          "bridgeScanMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroBridgeScanMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroTerrainUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroWaterUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroVegetationUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainSidesMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainMeshUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainScalarFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "waterUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroSurfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "surfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "vegetationUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "entityUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "settlementUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "layerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroLayerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "lodUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          }
+        }
+      },
+      "hydrology": {
+        "calls": 68,
+        "stepHydrologyMs": {
+          "n": 68,
+          "mean": 13.913,
+          "median": 13.7,
+          "p95": 17.1,
+          "max": 17.8
+        },
+        "phaseMs": {
+          "seaRefillMs": {
+            "n": 68,
+            "mean": 1.025,
+            "median": 0.9,
+            "p95": 1.7,
+            "max": 2.1
+          },
+          "riverMaintenanceMs": {
+            "n": 68,
+            "mean": 0.263,
+            "median": 0.2,
+            "p95": 0.5,
+            "max": 0.6
+          },
+          "waterFlowAndEvaporationMs": {
+            "n": 68,
+            "mean": 3.956,
+            "median": 3.9,
+            "p95": 5,
+            "max": 5.2
+          },
+          "erosionMs": {
+            "n": 68,
+            "mean": 3.246,
+            "median": 3.3,
+            "p95": 3.8,
+            "max": 4.2
+          },
+          "thermalMs": {
+            "n": 68,
+            "mean": 2.435,
+            "median": 2.4,
+            "p95": 3.1,
+            "max": 3.4
+          },
+          "dirtyFlushMs": {
+            "n": 68,
+            "mean": 2.946,
+            "median": 2.9,
+            "p95": 4.3,
+            "max": 5.2
+          }
+        },
+        "changedCells": {
+          "waterChangedCells": {
+            "n": 68,
+            "mean": 68874.309,
+            "median": 68864,
+            "p95": 68939,
+            "max": 68960
+          },
+          "heightChangedCells": {
+            "n": 68,
+            "mean": 66424.015,
+            "median": 66419,
+            "p95": 66644,
+            "max": 66651
+          },
+          "typeChangedCells": {
+            "n": 68,
+            "mean": 79.147,
+            "median": 78,
+            "p95": 101,
+            "max": 107
+          },
+          "wetDryTransitions": {
+            "n": 68,
+            "mean": 0.397,
+            "median": 0,
+            "p95": 1,
+            "max": 2
+          },
+          "dirtyFlushedCells": {
+            "n": 68,
+            "mean": 71093.132,
+            "median": 71089,
+            "p95": 71112,
+            "max": 71115
+          }
+        },
+        "dirtyBounds": {
+          "water": {
+            "n": 68,
+            "meanArea": 163840,
+            "medianAreaPerChangedCell": 2.379,
+            "p95AreaPerChangedCell": 2.381
+          },
+          "height": {
+            "n": 68,
+            "meanArea": 163840,
+            "medianAreaPerChangedCell": 2.466,
+            "p95AreaPerChangedCell": 2.475
+          },
+          "type": {
+            "n": 68,
+            "meanArea": 159156.235,
+            "medianAreaPerChangedCell": 2057.526,
+            "p95AreaPerChangedCell": 2413.925
+          }
+        },
+        "diagnosticOverheadMs": {
+          "n": 68,
+          "mean": 4.171,
+          "median": 3.8,
+          "p95": 6.9,
+          "max": 10.7
+        },
+        "changeScanMs": {
+          "n": 68,
+          "mean": 3.366,
+          "median": 3,
+          "p95": 6.4,
+          "max": 10
+        }
+      },
+      "lowPerturbation": {
+        "frames": 300,
+        "frameCpuMs": {
+          "n": 300,
+          "mean": 6.977,
+          "median": 1.5,
+          "p95": 29.7,
+          "max": 44.2
+        },
+        "updateCpuMs": {
+          "n": 300,
+          "mean": 2.472,
+          "median": 0.5,
+          "p95": 15.3,
+          "max": 24.1
+        },
+        "renderCpuMs": {
+          "n": 300,
+          "mean": 4.468,
+          "median": 0.8,
+          "p95": 16.3,
+          "max": 20.1
+        },
+        "rawRafIntervalMs": {
+          "n": 299,
+          "mean": 17.391,
+          "median": 16.7,
+          "p95": 17.3,
+          "max": 49.7
+        },
+        "canvasTerrainRenderMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "webglSubmissionMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadBytes": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadCalls": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadUnknownByteCalls": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "longFrameRatesPct": {
+          "50": {
+            "frameCpuPct": 0,
+            "rafIntervalPct": 0
+          },
+          "16.7": {
+            "frameCpuPct": 18,
+            "rafIntervalPct": 40.134
+          },
+          "33.3": {
+            "frameCpuPct": 2.667,
+            "rafIntervalPct": 2.007
+          }
+        },
+        "hydrologyFrames": 33,
+        "nonHydrologyFrames": 267,
+        "hydroFrameCpuMs": {
+          "n": 33,
+          "mean": 30.345,
+          "median": 29.3,
+          "p95": 36.7,
+          "max": 44.2
+        },
+        "nonHydroFrameCpuMs": {
+          "n": 267,
+          "mean": 4.089,
+          "median": 1.3,
+          "p95": 17.6,
+          "max": 25.3
+        },
+        "hydroFrameUpdateCpuMs": {
+          "n": 33,
+          "mean": 15.476,
+          "median": 14.9,
+          "p95": 20.3,
+          "max": 24.1
+        },
+        "nonHydroFrameUpdateCpuMs": {
+          "n": 267,
+          "mean": 0.864,
+          "median": 0.4,
+          "p95": 2.6,
+          "max": 8.3
+        },
+        "hydroFrameRenderCpuMs": {
+          "n": 33,
+          "mean": 14.848,
+          "median": 14.3,
+          "p95": 18.7,
+          "max": 20.1
+        },
+        "nonHydroFrameRenderCpuMs": {
+          "n": 267,
+          "mean": 3.185,
+          "median": 0.8,
+          "p95": 15.6,
+          "max": 19.1
+        },
+        "hydroFrameDirectStepCpuMs": {
+          "n": 33,
+          "mean": 14.561,
+          "median": 14.4,
+          "p95": 19.8,
+          "max": 20.3
+        },
+        "three": {
+          "bridgeScanMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroBridgeScanMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroTerrainUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroWaterUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroVegetationUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainSidesMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainMeshUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainScalarFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "waterUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroSurfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "surfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "vegetationUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "entityUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "settlementUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "layerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroLayerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "lodUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          }
+        }
+      },
+      "topology": {
+        "waterCoveragePct": 41.9769287109375,
+        "coastlineLengthApprox": 3600,
+        "islandCount": 2,
+        "mediumIslandCount": 1,
+        "inlandSeaCount": 0,
+        "largestLandmassPct": 99.66549203176773,
+        "wetVegetationFrontierCells": 4,
+        "hydroSensitiveCoastCells": 2357,
+        "definitions": {
+          "waterThreshold": 0.0015,
+          "connectivity": "4-neighbor",
+          "islandCount": "land connected components excluding the largest landmass and components under 33 cells",
+          "islandMinimumCells": 33,
+          "mediumIslandRangeCells": [
+            164,
+            6554
+          ],
+          "inlandSeaMinimumCells": 164,
+          "coastline": "land/water shared cell edges; map-border land edges included",
+          "wetVegetationFrontier": "vegetated land cells directly touching water",
+          "hydroSensitiveCoast": "coastal land cells with height <= SEA_LEVEL + 0.08 (0.380)"
+        }
+      },
+      "fixtureTopology": null
+    },
+    {
+      "id": "H2-E3",
+      "renderer": "three",
+      "map": "archipelago",
+      "runCount": 3,
+      "detailedRunCount": 2,
+      "frames": {
+        "frames": 600,
+        "frameCpuMs": {
+          "n": 600,
+          "mean": 16.309,
+          "median": 3.9,
+          "p95": 76.5,
+          "max": 220.6
+        },
+        "updateCpuMs": {
+          "n": 600,
+          "mean": 4.108,
+          "median": 0.7,
+          "p95": 20.7,
+          "max": 27.3
+        },
+        "renderCpuMs": {
+          "n": 600,
+          "mean": 12.163,
+          "median": 2.5,
+          "p95": 55.6,
+          "max": 195.8
+        },
+        "rawRafIntervalMs": {
+          "n": 598,
+          "mean": 25.669,
+          "median": 16.7,
+          "p95": 66.8,
+          "max": 219.2
+        },
+        "canvasTerrainRenderMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "webglSubmissionMs": {
+          "n": 600,
+          "mean": 3.027,
+          "median": 0.6,
+          "p95": 15.9,
+          "max": 68.2
+        },
+        "gpuUploadBytes": {
+          "n": 600,
+          "mean": 301619401.187,
+          "median": 0,
+          "p95": 1910929272,
+          "max": 1924036472
+        },
+        "gpuUploadCalls": {
+          "n": 600,
+          "mean": 204.157,
+          "median": 0,
+          "p95": 1284,
+          "max": 1294
+        },
+        "gpuUploadUnknownByteCalls": {
+          "n": 600,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "longFrameRatesPct": {
+          "50": {
+            "frameCpuPct": 15.833,
+            "rafIntervalPct": 15.886
+          },
+          "16.7": {
+            "frameCpuPct": 20,
+            "rafIntervalPct": 52.174
+          },
+          "33.3": {
+            "frameCpuPct": 16,
+            "rafIntervalPct": 16.555
+          }
+        },
+        "hydrologyFrames": 95,
+        "nonHydrologyFrames": 505,
+        "hydroFrameCpuMs": {
+          "n": 95,
+          "mean": 78.772,
+          "median": 74.1,
+          "p95": 95.1,
+          "max": 220.6
+        },
+        "nonHydroFrameCpuMs": {
+          "n": 505,
+          "mean": 4.559,
+          "median": 3.3,
+          "p95": 16.7,
+          "max": 33.8
+        },
+        "hydroFrameUpdateCpuMs": {
+          "n": 95,
+          "mean": 20.421,
+          "median": 20.1,
+          "p95": 24.8,
+          "max": 27.3
+        },
+        "nonHydroFrameUpdateCpuMs": {
+          "n": 505,
+          "mean": 1.039,
+          "median": 0.5,
+          "p95": 3.3,
+          "max": 6.8
+        },
+        "hydroFrameRenderCpuMs": {
+          "n": 95,
+          "mean": 58.301,
+          "median": 54.2,
+          "p95": 71.8,
+          "max": 195.8
+        },
+        "nonHydroFrameRenderCpuMs": {
+          "n": 505,
+          "mean": 3.483,
+          "median": 2.3,
+          "p95": 15.7,
+          "max": 28.8
+        },
+        "hydroFrameDirectStepCpuMs": {
+          "n": 95,
+          "mean": 16.004,
+          "median": 15.9,
+          "p95": 18.5,
+          "max": 20.1
+        },
+        "three": {
+          "bridgeScanMs": {
+            "n": 600,
+            "mean": 1.483,
+            "median": 1.3,
+            "p95": 2.8,
+            "max": 5.8
+          },
+          "terrainUpdateMs": {
+            "n": 600,
+            "mean": 2.129,
+            "median": 0,
+            "p95": 12.2,
+            "max": 92.8
+          },
+          "hydroBridgeScanMs": {
+            "n": 95,
+            "mean": 1.602,
+            "median": 1.6,
+            "p95": 2.1,
+            "max": 2.3
+          },
+          "hydroTerrainUpdateMs": {
+            "n": 95,
+            "mean": 13.371,
+            "median": 11.8,
+            "p95": 15.9,
+            "max": 92.8
+          },
+          "hydroWaterUpdateMs": {
+            "n": 95,
+            "mean": 14.591,
+            "median": 13.2,
+            "p95": 25.9,
+            "max": 55.9
+          },
+          "hydroVegetationUpdateMs": {
+            "n": 95,
+            "mean": 11.924,
+            "median": 11.7,
+            "p95": 14.8,
+            "max": 19.5
+          },
+          "terrainSidesMs": {
+            "n": 600,
+            "mean": 0.123,
+            "median": 0,
+            "p95": 0.8,
+            "max": 1.7
+          },
+          "terrainMeshUpdateMs": {
+            "n": 600,
+            "mean": 1.988,
+            "median": 0,
+            "p95": 11.4,
+            "max": 91.9
+          },
+          "terrainScalarFieldMs": {
+            "n": 600,
+            "mean": 0.006,
+            "median": 0,
+            "p95": 0.1,
+            "max": 0.1
+          },
+          "waterUpdateMs": {
+            "n": 600,
+            "mean": 2.31,
+            "median": 0,
+            "p95": 13.9,
+            "max": 55.9
+          },
+          "hydroSurfaceFieldMs": {
+            "n": 95,
+            "mean": 2.721,
+            "median": 2.6,
+            "p95": 3.4,
+            "max": 5.9
+          },
+          "surfaceFieldMs": {
+            "n": 600,
+            "mean": 0.431,
+            "median": 0,
+            "p95": 2.7,
+            "max": 5.9
+          },
+          "vegetationUpdateMs": {
+            "n": 600,
+            "mean": 2.634,
+            "median": 0,
+            "p95": 13.5,
+            "max": 22.9
+          },
+          "entityUpdateMs": {
+            "n": 600,
+            "mean": 0.093,
+            "median": 0,
+            "p95": 0.3,
+            "max": 0.6
+          },
+          "settlementUpdateMs": {
+            "n": 600,
+            "mean": 0.011,
+            "median": 0,
+            "p95": 0.1,
+            "max": 0.2
+          },
+          "layerUpdateMs": {
+            "n": 600,
+            "mean": 7.235,
+            "median": 0.1,
+            "p95": 38.3,
+            "max": 125.1
+          },
+          "hydroLayerUpdateMs": {
+            "n": 95,
+            "mean": 40.445,
+            "median": 36.9,
+            "p95": 53.1,
+            "max": 125.1
+          },
+          "lodUpdateMs": {
+            "n": 600,
+            "mean": 0.037,
+            "median": 0,
+            "p95": 0.1,
+            "max": 0.3
+          }
+        }
+      },
+      "hydrology": {
+        "calls": 95,
+        "stepHydrologyMs": {
+          "n": 95,
+          "mean": 16.004,
+          "median": 15.9,
+          "p95": 18.5,
+          "max": 20.1
+        },
+        "phaseMs": {
+          "seaRefillMs": {
+            "n": 95,
+            "mean": 0.912,
+            "median": 0.9,
+            "p95": 1.3,
+            "max": 1.9
+          },
+          "riverMaintenanceMs": {
+            "n": 95,
+            "mean": 0.188,
+            "median": 0.2,
+            "p95": 0.3,
+            "max": 0.8
+          },
+          "waterFlowAndEvaporationMs": {
+            "n": 95,
+            "mean": 4.503,
+            "median": 4.5,
+            "p95": 5.6,
+            "max": 6.8
+          },
+          "erosionMs": {
+            "n": 95,
+            "mean": 3.367,
+            "median": 3.4,
+            "p95": 4,
+            "max": 5.5
+          },
+          "thermalMs": {
+            "n": 95,
+            "mean": 2.741,
+            "median": 2.7,
+            "p95": 3.6,
+            "max": 3.9
+          },
+          "dirtyFlushMs": {
+            "n": 95,
+            "mean": 4.249,
+            "median": 4.2,
+            "p95": 5.6,
+            "max": 6.1
+          }
+        },
+        "changedCells": {
+          "waterChangedCells": {
+            "n": 95,
+            "mean": 87421.116,
+            "median": 87929,
+            "p95": 90035,
+            "max": 90226
+          },
+          "heightChangedCells": {
+            "n": 95,
+            "mean": 64046.063,
+            "median": 64044,
+            "p95": 64490,
+            "max": 64528
+          },
+          "typeChangedCells": {
+            "n": 95,
+            "mean": 109.916,
+            "median": 107,
+            "p95": 167,
+            "max": 184
+          },
+          "wetDryTransitions": {
+            "n": 95,
+            "mean": 3.295,
+            "median": 2,
+            "p95": 12,
+            "max": 25
+          },
+          "dirtyFlushedCells": {
+            "n": 95,
+            "mean": 93995.758,
+            "median": 94401,
+            "p95": 96283,
+            "max": 96371
+          }
+        },
+        "dirtyBounds": {
+          "water": {
+            "n": 95,
+            "meanArea": 163840,
+            "medianAreaPerChangedCell": 1.863,
+            "p95AreaPerChangedCell": 1.968
+          },
+          "height": {
+            "n": 95,
+            "meanArea": 163840,
+            "medianAreaPerChangedCell": 2.558,
+            "p95AreaPerChangedCell": 2.572
+          },
+          "type": {
+            "n": 95,
+            "meanArea": 155417.874,
+            "medianAreaPerChangedCell": 1459.13,
+            "p95AreaPerChangedCell": 1984.533
+          }
+        },
+        "diagnosticOverheadMs": {
+          "n": 95,
+          "mean": 3.624,
+          "median": 3.3,
+          "p95": 5.5,
+          "max": 8.9
+        },
+        "changeScanMs": {
+          "n": 95,
+          "mean": 2.934,
+          "median": 2.7,
+          "p95": 4.1,
+          "max": 7.9
+        }
+      },
+      "lowPerturbation": {
+        "frames": 300,
+        "frameCpuMs": {
+          "n": 300,
+          "mean": 17.656,
+          "median": 4.4,
+          "p95": 83.8,
+          "max": 105
+        },
+        "updateCpuMs": {
+          "n": 300,
+          "mean": 4.097,
+          "median": 0.9,
+          "p95": 18.9,
+          "max": 29.4
+        },
+        "renderCpuMs": {
+          "n": 300,
+          "mean": 13.513,
+          "median": 2.8,
+          "p95": 63.2,
+          "max": 85.9
+        },
+        "rawRafIntervalMs": {
+          "n": 299,
+          "mean": 26.701,
+          "median": 16.7,
+          "p95": 83.4,
+          "max": 100.1
+        },
+        "canvasTerrainRenderMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "webglSubmissionMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadBytes": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadCalls": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadUnknownByteCalls": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "longFrameRatesPct": {
+          "50": {
+            "frameCpuPct": 16.667,
+            "rafIntervalPct": 16.388
+          },
+          "16.7": {
+            "frameCpuPct": 22.667,
+            "rafIntervalPct": 55.518
+          },
+          "33.3": {
+            "frameCpuPct": 17,
+            "rafIntervalPct": 17.391
+          }
+        },
+        "hydrologyFrames": 50,
+        "nonHydrologyFrames": 250,
+        "hydroFrameCpuMs": {
+          "n": 50,
+          "mean": 78.886,
+          "median": 77.2,
+          "p95": 98.1,
+          "max": 105
+        },
+        "nonHydroFrameCpuMs": {
+          "n": 250,
+          "mean": 5.41,
+          "median": 3.8,
+          "p95": 18.7,
+          "max": 33.4
+        },
+        "hydroFrameUpdateCpuMs": {
+          "n": 50,
+          "mean": 18.206,
+          "median": 18.2,
+          "p95": 22.2,
+          "max": 29.4
+        },
+        "nonHydroFrameUpdateCpuMs": {
+          "n": 250,
+          "mean": 1.275,
+          "median": 0.6,
+          "p95": 4.1,
+          "max": 14.2
+        },
+        "hydroFrameRenderCpuMs": {
+          "n": 50,
+          "mean": 60.626,
+          "median": 58.1,
+          "p95": 79.6,
+          "max": 85.9
+        },
+        "nonHydroFrameRenderCpuMs": {
+          "n": 250,
+          "mean": 4.09,
+          "median": 2.5,
+          "p95": 17.7,
+          "max": 32.7
+        },
+        "hydroFrameDirectStepCpuMs": {
+          "n": 50,
+          "mean": 17.44,
+          "median": 17.1,
+          "p95": 21.5,
+          "max": 28.8
+        },
+        "three": {
+          "bridgeScanMs": {
+            "n": 300,
+            "mean": 1.595,
+            "median": 1.4,
+            "p95": 3,
+            "max": 4.7
+          },
+          "terrainUpdateMs": {
+            "n": 300,
+            "mean": 2.21,
+            "median": 0,
+            "p95": 14.1,
+            "max": 19
+          },
+          "hydroBridgeScanMs": {
+            "n": 50,
+            "mean": 1.818,
+            "median": 1.8,
+            "p95": 2.6,
+            "max": 3.3
+          },
+          "hydroTerrainUpdateMs": {
+            "n": 50,
+            "mean": 13.226,
+            "median": 12.8,
+            "p95": 17.4,
+            "max": 19
+          },
+          "hydroWaterUpdateMs": {
+            "n": 50,
+            "mean": 14.284,
+            "median": 13.7,
+            "p95": 18.7,
+            "max": 19.4
+          },
+          "hydroVegetationUpdateMs": {
+            "n": 50,
+            "mean": 13.738,
+            "median": 13.1,
+            "p95": 25.2,
+            "max": 29.3
+          },
+          "terrainSidesMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainMeshUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainScalarFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "waterUpdateMs": {
+            "n": 300,
+            "mean": 2.381,
+            "median": 0,
+            "p95": 14.8,
+            "max": 19.4
+          },
+          "hydroSurfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "surfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "vegetationUpdateMs": {
+            "n": 300,
+            "mean": 3.321,
+            "median": 0,
+            "p95": 16.4,
+            "max": 29.3
+          },
+          "entityUpdateMs": {
+            "n": 300,
+            "mean": 0.167,
+            "median": 0,
+            "p95": 0.4,
+            "max": 15.8
+          },
+          "settlementUpdateMs": {
+            "n": 300,
+            "mean": 0.013,
+            "median": 0,
+            "p95": 0.1,
+            "max": 0.3
+          },
+          "layerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroLayerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "lodUpdateMs": {
+            "n": 300,
+            "mean": 0.035,
+            "median": 0,
+            "p95": 0.1,
+            "max": 0.2
+          }
+        }
+      },
+      "topology": {
+        "waterCoveragePct": 58.32092285156249,
+        "coastlineLengthApprox": 3976,
+        "islandCount": 12,
+        "mediumIslandCount": 9,
+        "inlandSeaCount": 3,
+        "largestLandmassPct": 59.21478465886626,
+        "wetVegetationFrontierCells": 1640,
+        "hydroSensitiveCoastCells": 1733,
+        "definitions": {
+          "waterThreshold": 0.0015,
+          "connectivity": "4-neighbor",
+          "islandCount": "land connected components excluding the largest landmass and components under 33 cells",
+          "islandMinimumCells": 33,
+          "mediumIslandRangeCells": [
+            164,
+            6554
+          ],
+          "inlandSeaMinimumCells": 164,
+          "coastline": "land/water shared cell edges; map-border land edges included",
+          "wetVegetationFrontier": "vegetated land cells directly touching water",
+          "hydroSensitiveCoast": "coastal land cells with height <= SEA_LEVEL + 0.08 (0.380)"
+        }
+      },
+      "fixtureTopology": {
+        "waterCoveragePct": 58.32092285156249,
+        "coastlineLengthApprox": 3976,
+        "islandCount": 12,
+        "mediumIslandCount": 9,
+        "inlandSeaCount": 3,
+        "largestLandmassPct": 59.21478465886626,
+        "wetVegetationFrontierCells": 1640,
+        "hydroSensitiveCoastCells": 1733,
+        "definitions": {
+          "waterThreshold": 0.0015,
+          "connectivity": "4-neighbor",
+          "islandCount": "land connected components excluding the largest landmass and components under 33 cells",
+          "islandMinimumCells": 33,
+          "mediumIslandRangeCells": [
+            164,
+            6554
+          ],
+          "inlandSeaMinimumCells": 164,
+          "coastline": "land/water shared cell edges; map-border land edges included",
+          "wetVegetationFrontier": "vegetated land cells directly touching water",
+          "hydroSensitiveCoast": "coastal land cells with height <= SEA_LEVEL + 0.08 (0.380)"
+        }
+      }
+    },
+    {
+      "id": "H2-E4",
+      "renderer": "canvas",
+      "map": "archipelago",
+      "runCount": 3,
+      "detailedRunCount": 2,
+      "frames": {
+        "frames": 600,
+        "frameCpuMs": {
+          "n": 600,
+          "mean": 7.47,
+          "median": 1.1,
+          "p95": 33.8,
+          "max": 64.2
+        },
+        "updateCpuMs": {
+          "n": 600,
+          "mean": 2.844,
+          "median": 0.4,
+          "p95": 19.8,
+          "max": 25.1
+        },
+        "renderCpuMs": {
+          "n": 600,
+          "mean": 4.595,
+          "median": 0.7,
+          "p95": 15.7,
+          "max": 42.2
+        },
+        "rawRafIntervalMs": {
+          "n": 598,
+          "mean": 18.032,
+          "median": 16.7,
+          "p95": 33.3,
+          "max": 50
+        },
+        "canvasTerrainRenderMs": {
+          "n": 170,
+          "mean": 13.969,
+          "median": 13.2,
+          "p95": 17.3,
+          "max": 41.6
+        },
+        "webglSubmissionMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadBytes": {
+          "n": 600,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "gpuUploadCalls": {
+          "n": 600,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "gpuUploadUnknownByteCalls": {
+          "n": 600,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "longFrameRatesPct": {
+          "50": {
+            "frameCpuPct": 0.333,
+            "rafIntervalPct": 0
+          },
+          "16.7": {
+            "frameCpuPct": 15.5,
+            "rafIntervalPct": 31.94
+          },
+          "33.3": {
+            "frameCpuPct": 6,
+            "rafIntervalPct": 6.187
+          }
+        },
+        "hydrologyFrames": 67,
+        "nonHydrologyFrames": 533,
+        "hydroFrameCpuMs": {
+          "n": 67,
+          "mean": 34.757,
+          "median": 33.5,
+          "p95": 42,
+          "max": 64.2
+        },
+        "nonHydroFrameCpuMs": {
+          "n": 533,
+          "mean": 4.04,
+          "median": 1,
+          "p95": 16.6,
+          "max": 32.2
+        },
+        "hydroFrameUpdateCpuMs": {
+          "n": 67,
+          "mean": 19.758,
+          "median": 19.4,
+          "p95": 23.7,
+          "max": 25.1
+        },
+        "nonHydroFrameUpdateCpuMs": {
+          "n": 533,
+          "mean": 0.717,
+          "median": 0.3,
+          "p95": 2.3,
+          "max": 6.5
+        },
+        "hydroFrameRenderCpuMs": {
+          "n": 67,
+          "mean": 14.957,
+          "median": 14,
+          "p95": 17.9,
+          "max": 42.2
+        },
+        "nonHydroFrameRenderCpuMs": {
+          "n": 533,
+          "mean": 3.292,
+          "median": 0.7,
+          "p95": 14.6,
+          "max": 29.9
+        },
+        "hydroFrameDirectStepCpuMs": {
+          "n": 67,
+          "mean": 15.216,
+          "median": 15,
+          "p95": 18,
+          "max": 19
+        },
+        "three": {
+          "bridgeScanMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroBridgeScanMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroTerrainUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroWaterUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroVegetationUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainSidesMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainMeshUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainScalarFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "waterUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroSurfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "surfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "vegetationUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "entityUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "settlementUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "layerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroLayerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "lodUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          }
+        }
+      },
+      "hydrology": {
+        "calls": 67,
+        "stepHydrologyMs": {
+          "n": 67,
+          "mean": 15.216,
+          "median": 15,
+          "p95": 18,
+          "max": 19
+        },
+        "phaseMs": {
+          "seaRefillMs": {
+            "n": 67,
+            "mean": 0.875,
+            "median": 0.8,
+            "p95": 1.1,
+            "max": 1.5
+          },
+          "riverMaintenanceMs": {
+            "n": 67,
+            "mean": 0.26,
+            "median": 0.2,
+            "p95": 0.5,
+            "max": 0.6
+          },
+          "waterFlowAndEvaporationMs": {
+            "n": 67,
+            "mean": 4.479,
+            "median": 4.4,
+            "p95": 5.5,
+            "max": 5.8
+          },
+          "erosionMs": {
+            "n": 67,
+            "mean": 3.409,
+            "median": 3.4,
+            "p95": 4.4,
+            "max": 5.1
+          },
+          "thermalMs": {
+            "n": 67,
+            "mean": 2.478,
+            "median": 2.4,
+            "p95": 3.1,
+            "max": 4.3
+          },
+          "dirtyFlushMs": {
+            "n": 67,
+            "mean": 3.679,
+            "median": 3.7,
+            "p95": 4.7,
+            "max": 5.5
+          }
+        },
+        "changedCells": {
+          "waterChangedCells": {
+            "n": 67,
+            "mean": 84870.373,
+            "median": 85251,
+            "p95": 88063,
+            "max": 88351
+          },
+          "heightChangedCells": {
+            "n": 67,
+            "mean": 63886.851,
+            "median": 64011,
+            "p95": 64125,
+            "max": 64134
+          },
+          "typeChangedCells": {
+            "n": 67,
+            "mean": 152.925,
+            "median": 123,
+            "p95": 319,
+            "max": 361
+          },
+          "wetDryTransitions": {
+            "n": 67,
+            "mean": 8.119,
+            "median": 3,
+            "p95": 47,
+            "max": 109
+          },
+          "dirtyFlushedCells": {
+            "n": 67,
+            "mean": 91776.328,
+            "median": 92260,
+            "p95": 94512,
+            "max": 94696
+          }
+        },
+        "dirtyBounds": {
+          "water": {
+            "n": 67,
+            "meanArea": 163840,
+            "medianAreaPerChangedCell": 1.922,
+            "p95AreaPerChangedCell": 2.042
+          },
+          "height": {
+            "n": 67,
+            "meanArea": 163840,
+            "medianAreaPerChangedCell": 2.56,
+            "p95AreaPerChangedCell": 2.578
+          },
+          "type": {
+            "n": 67,
+            "meanArea": 156275.075,
+            "medianAreaPerChangedCell": 1281.59,
+            "p95AreaPerChangedCell": 1620.49
+          }
+        },
+        "diagnosticOverheadMs": {
+          "n": 67,
+          "mean": 3.806,
+          "median": 3.7,
+          "p95": 5.1,
+          "max": 8.5
+        },
+        "changeScanMs": {
+          "n": 67,
+          "mean": 3.028,
+          "median": 2.9,
+          "p95": 4.6,
+          "max": 7.7
+        }
+      },
+      "lowPerturbation": {
+        "frames": 300,
+        "frameCpuMs": {
+          "n": 300,
+          "mean": 6.154,
+          "median": 1,
+          "p95": 30,
+          "max": 33.6
+        },
+        "updateCpuMs": {
+          "n": 300,
+          "mean": 2.167,
+          "median": 0.3,
+          "p95": 15.5,
+          "max": 18.1
+        },
+        "renderCpuMs": {
+          "n": 300,
+          "mean": 3.958,
+          "median": 0.7,
+          "p95": 14.6,
+          "max": 16.3
+        },
+        "rawRafIntervalMs": {
+          "n": 299,
+          "mean": 16.889,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 33.4
+        },
+        "canvasTerrainRenderMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "webglSubmissionMs": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadBytes": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadCalls": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "gpuUploadUnknownByteCalls": {
+          "n": 0,
+          "mean": null,
+          "median": null,
+          "p95": null,
+          "max": null
+        },
+        "longFrameRatesPct": {
+          "50": {
+            "frameCpuPct": 0,
+            "rafIntervalPct": 0
+          },
+          "16.7": {
+            "frameCpuPct": 12,
+            "rafIntervalPct": 25.084
+          },
+          "33.3": {
+            "frameCpuPct": 0.333,
+            "rafIntervalPct": 0.669
+          }
+        },
+        "hydrologyFrames": 31,
+        "nonHydrologyFrames": 269,
+        "hydroFrameCpuMs": {
+          "n": 31,
+          "mean": 29.794,
+          "median": 30,
+          "p95": 32.6,
+          "max": 33.6
+        },
+        "nonHydroFrameCpuMs": {
+          "n": 269,
+          "mean": 3.429,
+          "median": 1,
+          "p95": 15.4,
+          "max": 18.6
+        },
+        "hydroFrameUpdateCpuMs": {
+          "n": 31,
+          "mean": 15.6,
+          "median": 15.5,
+          "p95": 17.5,
+          "max": 18.1
+        },
+        "nonHydroFrameUpdateCpuMs": {
+          "n": 269,
+          "mean": 0.619,
+          "median": 0.3,
+          "p95": 2,
+          "max": 4.6
+        },
+        "hydroFrameRenderCpuMs": {
+          "n": 31,
+          "mean": 14.155,
+          "median": 14,
+          "p95": 15.4,
+          "max": 16.1
+        },
+        "nonHydroFrameRenderCpuMs": {
+          "n": 269,
+          "mean": 2.783,
+          "median": 0.6,
+          "p95": 13.7,
+          "max": 16.3
+        },
+        "hydroFrameDirectStepCpuMs": {
+          "n": 31,
+          "mean": 14.919,
+          "median": 15.1,
+          "p95": 16.8,
+          "max": 16.9
+        },
+        "three": {
+          "bridgeScanMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroBridgeScanMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroTerrainUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroWaterUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroVegetationUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainSidesMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainMeshUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "terrainScalarFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "waterUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroSurfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "surfaceFieldMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "vegetationUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "entityUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "settlementUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "layerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "hydroLayerUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          },
+          "lodUpdateMs": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "p95": null,
+            "max": null
+          }
+        }
+      },
+      "topology": {
+        "waterCoveragePct": 58.32092285156249,
+        "coastlineLengthApprox": 3976,
+        "islandCount": 12,
+        "mediumIslandCount": 9,
+        "inlandSeaCount": 3,
+        "largestLandmassPct": 59.21478465886626,
+        "wetVegetationFrontierCells": 1640,
+        "hydroSensitiveCoastCells": 1733,
+        "definitions": {
+          "waterThreshold": 0.0015,
+          "connectivity": "4-neighbor",
+          "islandCount": "land connected components excluding the largest landmass and components under 33 cells",
+          "islandMinimumCells": 33,
+          "mediumIslandRangeCells": [
+            164,
+            6554
+          ],
+          "inlandSeaMinimumCells": 164,
+          "coastline": "land/water shared cell edges; map-border land edges included",
+          "wetVegetationFrontier": "vegetated land cells directly touching water",
+          "hydroSensitiveCoast": "coastal land cells with height <= SEA_LEVEL + 0.08 (0.380)"
+        }
+      },
+      "fixtureTopology": {
+        "waterCoveragePct": 58.32092285156249,
+        "coastlineLengthApprox": 3976,
+        "islandCount": 12,
+        "mediumIslandCount": 9,
+        "inlandSeaCount": 3,
+        "largestLandmassPct": 59.21478465886626,
+        "wetVegetationFrontierCells": 1640,
+        "hydroSensitiveCoastCells": 1733,
+        "definitions": {
+          "waterThreshold": 0.0015,
+          "connectivity": "4-neighbor",
+          "islandCount": "land connected components excluding the largest landmass and components under 33 cells",
+          "islandMinimumCells": 33,
+          "mediumIslandRangeCells": [
+            164,
+            6554
+          ],
+          "inlandSeaMinimumCells": 164,
+          "coastline": "land/water shared cell edges; map-border land edges included",
+          "wetVegetationFrontier": "vegetated land cells directly touching water",
+          "hydroSensitiveCoast": "coastal land cells with height <= SEA_LEVEL + 0.08 (0.380)"
+        }
+      }
+    }
+  ],
+  "slowestFrames": [
+    {
+      "runId": "H2-E3-detailed-r2",
+      "index": 264,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 20.09999999962747,
+      "frameCpuMs": 220.59999999962747,
+      "updateCpuMs": 24.799999999813735,
+      "renderCpuMs": 195.79999999981374,
+      "bridgeScanMs": 2.2999999998137355,
+      "terrainUpdateMs": 92.79999999981374,
+      "waterUpdateMs": 18.59999999962747,
+      "vegetationUpdateMs": 13.200000000186265,
+      "layerUpdateMs": 125.09999999962747,
+      "surfaceFieldMs": 4,
+      "terrainSidesMs": 0.900000000372529,
+      "webglSubmissionMs": 68.19999999925494,
+      "gpuUploadBytes": 1879224584,
+      "gpuUploadCalls": 1263
+    },
+    {
+      "runId": "H2-E3-detailed-r2",
+      "index": 5,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 16.40000000037253,
+      "frameCpuMs": 168.20000000018626,
+      "updateCpuMs": 26.299999999813735,
+      "renderCpuMs": 141.79999999981374,
+      "bridgeScanMs": 2,
+      "terrainUpdateMs": 43,
+      "waterUpdateMs": 55.90000000037253,
+      "vegetationUpdateMs": 19.5,
+      "layerUpdateMs": 119.5,
+      "surfaceFieldMs": 5.900000000372529,
+      "terrainSidesMs": 1.3999999994412065,
+      "webglSubmissionMs": 20,
+      "gpuUploadBytes": 1913303256,
+      "gpuUploadCalls": 1284
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 2,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 17,
+      "frameCpuMs": 165.90000000037253,
+      "updateCpuMs": 25.299999999813735,
+      "renderCpuMs": 140.5,
+      "bridgeScanMs": 2.199999999254942,
+      "terrainUpdateMs": 55.40000000037253,
+      "waterUpdateMs": 44.09999999962747,
+      "vegetationUpdateMs": 20.100000000558794,
+      "layerUpdateMs": 120.5,
+      "surfaceFieldMs": 6.099999999627471,
+      "terrainSidesMs": 1.7999999998137355,
+      "webglSubmissionMs": 17.399999999441206,
+      "gpuUploadBytes": 1910681864,
+      "gpuUploadCalls": 1287
+    },
+    {
+      "runId": "H2-E1-detailed-r1",
+      "index": 5,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 17.200000000186265,
+      "frameCpuMs": 159.5,
+      "updateCpuMs": 29.200000000186265,
+      "renderCpuMs": 130.1000000005588,
+      "bridgeScanMs": 1.7999999998137355,
+      "terrainUpdateMs": 42.90000000037253,
+      "waterUpdateMs": 42.5,
+      "vegetationUpdateMs": 23.5,
+      "layerUpdateMs": 109.5,
+      "surfaceFieldMs": 5.800000000745058,
+      "terrainSidesMs": 1.2000000001862645,
+      "webglSubmissionMs": 17.899999999441206,
+      "gpuUploadBytes": 1915924744,
+      "gpuUploadCalls": 1291
+    },
+    {
+      "runId": "H2-E3-detailed-r1",
+      "index": 2,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 17.100000000558794,
+      "frameCpuMs": 158.1000000005588,
+      "updateCpuMs": 27.300000000745058,
+      "renderCpuMs": 130.79999999981374,
+      "bridgeScanMs": 1.7000000001862645,
+      "terrainUpdateMs": 44.40000000037253,
+      "waterUpdateMs": 43.299999999813735,
+      "vegetationUpdateMs": 19.5,
+      "layerUpdateMs": 108.20000000018626,
+      "surfaceFieldMs": 5.599999999627471,
+      "terrainSidesMs": 1.5,
+      "webglSubmissionMs": 20.5,
+      "gpuUploadBytes": 1913550712,
+      "gpuUploadCalls": 1286
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 4,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 19.09999999962747,
+      "frameCpuMs": 120.5,
+      "updateCpuMs": 26.90000000037253,
+      "renderCpuMs": 93.59999999962747,
+      "bridgeScanMs": 2.2000000001862645,
+      "terrainUpdateMs": 24,
+      "waterUpdateMs": 30.799999999813735,
+      "vegetationUpdateMs": 18.300000000745058,
+      "layerUpdateMs": 73.90000000037253,
+      "surfaceFieldMs": 3.199999999254942,
+      "terrainSidesMs": 0.7999999998137355,
+      "webglSubmissionMs": 17.100000000558794,
+      "gpuUploadBytes": 1923789016,
+      "gpuUploadCalls": 1292
+    },
+    {
+      "runId": "H2-E1-detailed-r1",
+      "index": 17,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 15.799999999813735,
+      "frameCpuMs": 117.29999999981374,
+      "updateCpuMs": 22.5,
+      "renderCpuMs": 94.79999999981374,
+      "bridgeScanMs": 1.6000000005587935,
+      "terrainUpdateMs": 21.5,
+      "waterUpdateMs": 36.89999999944121,
+      "vegetationUpdateMs": 15.700000000186265,
+      "layerUpdateMs": 74.79999999981374,
+      "surfaceFieldMs": 2.7999999998137355,
+      "terrainSidesMs": 1.7000000001862645,
+      "webglSubmissionMs": 17.90000000037253,
+      "gpuUploadBytes": 1910681816,
+      "gpuUploadCalls": 1282
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 11,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 21.100000000558794,
+      "frameCpuMs": 117.09999999962747,
+      "updateCpuMs": 27.199999999254942,
+      "renderCpuMs": 89.90000000037253,
+      "bridgeScanMs": 2,
+      "terrainUpdateMs": 25.299999999813735,
+      "waterUpdateMs": 19.600000000558794,
+      "vegetationUpdateMs": 22.200000000186265,
+      "layerUpdateMs": 68.1000000005588,
+      "surfaceFieldMs": 3.1000000005587935,
+      "terrainSidesMs": 3.6000000005587935,
+      "webglSubmissionMs": 18.600000000558794,
+      "gpuUploadBytes": 1902817496,
+      "gpuUploadCalls": 1276
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 168,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 21.100000000558794,
+      "frameCpuMs": 114.30000000074506,
+      "updateCpuMs": 37,
+      "renderCpuMs": 77.20000000018626,
+      "bridgeScanMs": 7.2999999998137355,
+      "terrainUpdateMs": 12.300000000745058,
+      "waterUpdateMs": 12.599999999627471,
+      "vegetationUpdateMs": 21.5,
+      "layerUpdateMs": 47.200000000186265,
+      "surfaceFieldMs": 3.2000000001862645,
+      "terrainSidesMs": 1.2000000001862645,
+      "webglSubmissionMs": 21.299999999813735,
+      "gpuUploadBytes": 1915924696,
+      "gpuUploadCalls": 1286
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 27,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 19.5,
+      "frameCpuMs": 114,
+      "updateCpuMs": 26.799999999813735,
+      "renderCpuMs": 87.20000000018626,
+      "bridgeScanMs": 1.7999999998137355,
+      "terrainUpdateMs": 17,
+      "waterUpdateMs": 25.299999999813735,
+      "vegetationUpdateMs": 17.5,
+      "layerUpdateMs": 61,
+      "surfaceFieldMs": 2.900000000372529,
+      "terrainSidesMs": 1.6000000005587935,
+      "webglSubmissionMs": 23.5,
+      "gpuUploadBytes": 1918546136,
+      "gpuUploadCalls": 1288
+    },
+    {
+      "runId": "H2-E1-detailed-r1",
+      "index": 242,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 16.90000000037253,
+      "frameCpuMs": 110.40000000037253,
+      "updateCpuMs": 22.200000000186265,
+      "renderCpuMs": 88.20000000018626,
+      "bridgeScanMs": 1.8999999994412065,
+      "terrainUpdateMs": 15.100000000558794,
+      "waterUpdateMs": 15.099999999627471,
+      "vegetationUpdateMs": 31.600000000558794,
+      "layerUpdateMs": 63.5,
+      "surfaceFieldMs": 2.7999999998137355,
+      "terrainSidesMs": 1.5,
+      "webglSubmissionMs": 22.299999999813735,
+      "gpuUploadBytes": 1913303256,
+      "gpuUploadCalls": 1284
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 101,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 15.400000000372529,
+      "frameCpuMs": 107.8999999994412,
+      "updateCpuMs": 20.09999999962747,
+      "renderCpuMs": 87.79999999981374,
+      "bridgeScanMs": 2.2000000001862645,
+      "terrainUpdateMs": 16,
+      "waterUpdateMs": 12.100000000558794,
+      "vegetationUpdateMs": 28.399999999441206,
+      "layerUpdateMs": 57.200000000186265,
+      "surfaceFieldMs": 2.5,
+      "terrainSidesMs": 1.400000000372529,
+      "webglSubmissionMs": 27.799999999813735,
+      "gpuUploadBytes": 1923789016,
+      "gpuUploadCalls": 1292
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 106,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 13.900000000372529,
+      "frameCpuMs": 107,
+      "updateCpuMs": 19.40000000037253,
+      "renderCpuMs": 87.5,
+      "bridgeScanMs": 1.8999999994412065,
+      "terrainUpdateMs": 14.200000000186265,
+      "waterUpdateMs": 16.90000000037253,
+      "vegetationUpdateMs": 24.799999999813735,
+      "layerUpdateMs": 57.30000000074506,
+      "surfaceFieldMs": 2.900000000372529,
+      "terrainSidesMs": 1.1000000005587935,
+      "webglSubmissionMs": 27.600000000558794,
+      "gpuUploadBytes": 1910681816,
+      "gpuUploadCalls": 1282
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 253,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 15.799999999813735,
+      "frameCpuMs": 105.29999999981374,
+      "updateCpuMs": 19.40000000037253,
+      "renderCpuMs": 85.79999999981374,
+      "bridgeScanMs": 2,
+      "terrainUpdateMs": 15.100000000558794,
+      "waterUpdateMs": 13.599999999627471,
+      "vegetationUpdateMs": 30.90000000037253,
+      "layerUpdateMs": 60.5,
+      "surfaceFieldMs": 2.5,
+      "terrainSidesMs": 1,
+      "webglSubmissionMs": 22.700000000186265,
+      "gpuUploadBytes": 1887088904,
+      "gpuUploadCalls": 1269
+    },
+    {
+      "runId": "H2-E1-detailed-r1",
+      "index": 228,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 20.799999999813735,
+      "frameCpuMs": 104.6000000005588,
+      "updateCpuMs": 28.200000000186265,
+      "renderCpuMs": 76.20000000018626,
+      "bridgeScanMs": 1.900000000372529,
+      "terrainUpdateMs": 17.09999999962747,
+      "waterUpdateMs": 12.700000000186265,
+      "vegetationUpdateMs": 26.700000000186265,
+      "layerUpdateMs": 57.39999999944121,
+      "surfaceFieldMs": 2.7000000001862645,
+      "terrainSidesMs": 0.7999999998137355,
+      "webglSubmissionMs": 16.59999999962747,
+      "gpuUploadBytes": 1905438984,
+      "gpuUploadCalls": 1283
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 7,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 16.700000000186265,
+      "frameCpuMs": 102.5,
+      "updateCpuMs": 23.09999999962747,
+      "renderCpuMs": 79.20000000018626,
+      "bridgeScanMs": 1.800000000745058,
+      "terrainUpdateMs": 14.699999999254942,
+      "waterUpdateMs": 25.800000000745058,
+      "vegetationUpdateMs": 21,
+      "layerUpdateMs": 62.09999999962747,
+      "surfaceFieldMs": 3.1000000005587935,
+      "terrainSidesMs": 0.7999999998137355,
+      "webglSubmissionMs": 15.100000000558794,
+      "gpuUploadBytes": 1902817544,
+      "gpuUploadCalls": 1281
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 58,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 20.09999999962747,
+      "frameCpuMs": 101.29999999981374,
+      "updateCpuMs": 31.59999999962747,
+      "renderCpuMs": 69.6000000005588,
+      "bridgeScanMs": 1.800000000745058,
+      "terrainUpdateMs": 13.5,
+      "waterUpdateMs": 14.099999999627471,
+      "vegetationUpdateMs": 16.700000000186265,
+      "layerUpdateMs": 45,
+      "surfaceFieldMs": 2.7000000001862645,
+      "terrainSidesMs": 0.7000000001862645,
+      "webglSubmissionMs": 22.5,
+      "gpuUploadBytes": 1910681816,
+      "gpuUploadCalls": 1282
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 204,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 16.299999999813735,
+      "frameCpuMs": 100.59999999962747,
+      "updateCpuMs": 21.299999999813735,
+      "renderCpuMs": 79.09999999962747,
+      "bridgeScanMs": 4.7999999998137355,
+      "terrainUpdateMs": 16.59999999962747,
+      "waterUpdateMs": 14.600000000558794,
+      "vegetationUpdateMs": 21.59999999962747,
+      "layerUpdateMs": 53.5,
+      "surfaceFieldMs": 2.900000000372529,
+      "terrainSidesMs": 1,
+      "webglSubmissionMs": 20.200000000186265,
+      "gpuUploadBytes": 1910681816,
+      "gpuUploadCalls": 1282
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 249,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 16.299999999813735,
+      "frameCpuMs": 99.30000000074506,
+      "updateCpuMs": 19.700000000186265,
+      "renderCpuMs": 79.5,
+      "bridgeScanMs": 1.199999999254942,
+      "terrainUpdateMs": 14.300000000745058,
+      "waterUpdateMs": 13.899999999441206,
+      "vegetationUpdateMs": 23.40000000037253,
+      "layerUpdateMs": 52.60000000055879,
+      "surfaceFieldMs": 2.7000000001862645,
+      "terrainSidesMs": 0.7999999998137355,
+      "webglSubmissionMs": 25,
+      "gpuUploadBytes": 1915924696,
+      "gpuUploadCalls": 1286
+    },
+    {
+      "runId": "H2-E1-detailed-r1",
+      "index": 232,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 17.799999999813735,
+      "frameCpuMs": 98.90000000037253,
+      "updateCpuMs": 22.200000000186265,
+      "renderCpuMs": 76.59999999962747,
+      "bridgeScanMs": 1.7000000001862645,
+      "terrainUpdateMs": 17.59999999962747,
+      "waterUpdateMs": 13.599999999627471,
+      "vegetationUpdateMs": 24.200000000186265,
+      "layerUpdateMs": 56.39999999944121,
+      "surfaceFieldMs": 2.7000000001862645,
+      "terrainSidesMs": 0.7999999998137355,
+      "webglSubmissionMs": 18.299999999813735,
+      "gpuUploadBytes": 1908060424,
+      "gpuUploadCalls": 1285
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 177,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 19.799999999813735,
+      "frameCpuMs": 97.20000000018626,
+      "updateCpuMs": 26,
+      "renderCpuMs": 71.1000000005588,
+      "bridgeScanMs": 3.199999999254942,
+      "terrainUpdateMs": 16.700000000186265,
+      "waterUpdateMs": 14,
+      "vegetationUpdateMs": 16.299999999813735,
+      "layerUpdateMs": 47.5,
+      "surfaceFieldMs": 2.7000000001862645,
+      "terrainSidesMs": 0.8999999994412065,
+      "webglSubmissionMs": 20,
+      "gpuUploadBytes": 1921167576,
+      "gpuUploadCalls": 1290
+    },
+    {
+      "runId": "H2-E1-detailed-r1",
+      "index": 299,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 15.200000000186265,
+      "frameCpuMs": 96.79999999981374,
+      "updateCpuMs": 26.699999999254942,
+      "renderCpuMs": 70,
+      "bridgeScanMs": 1.400000000372529,
+      "terrainUpdateMs": 16.200000000186265,
+      "waterUpdateMs": 13.200000000186265,
+      "vegetationUpdateMs": 18.5,
+      "layerUpdateMs": 49.200000000186265,
+      "surfaceFieldMs": 2.7000000001862645,
+      "terrainSidesMs": 1.400000000372529,
+      "webglSubmissionMs": 19.100000000558794,
+      "gpuUploadBytes": 1902817496,
+      "gpuUploadCalls": 1276
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 46,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 18.90000000037253,
+      "frameCpuMs": 96.20000000018626,
+      "updateCpuMs": 22.90000000037253,
+      "renderCpuMs": 73.20000000018626,
+      "bridgeScanMs": 1.6000000005587935,
+      "terrainUpdateMs": 16.899999999441206,
+      "waterUpdateMs": 15.700000000186265,
+      "vegetationUpdateMs": 19.200000000186265,
+      "layerUpdateMs": 53.09999999962747,
+      "surfaceFieldMs": 3,
+      "terrainSidesMs": 0.7999999998137355,
+      "webglSubmissionMs": 17.899999999441206,
+      "gpuUploadBytes": 1921167576,
+      "gpuUploadCalls": 1290
+    },
+    {
+      "runId": "H2-E1-detailed-r2",
+      "index": 171,
+      "hydrologySteps": 1,
+      "hydroStepCpuMs": 18.600000000558794,
+      "frameCpuMs": 96,
+      "updateCpuMs": 23.199999999254942,
+      "renderCpuMs": 72.70000000018626,
+      "bridgeScanMs": 1.7000000001862645,
+      "terrainUpdateMs": 16.200000000186265,
+      "waterUpdateMs": 13,
+      "vegetationUpdateMs": 22.09999999962747,
+      "layerUpdateMs": 52.700000000186265,
+      "surfaceFieldMs": 2.7999999998137355,
+      "terrainSidesMs": 0.7000000001862645,
+      "webglSubmissionMs": 18,
+      "gpuUploadBytes": 1913303256,
+      "gpuUploadCalls": 1284
+    }
+  ],
+  "verdict": "DOWNSTREAM_RENDER_DOMINANT",
+  "archipelagoStatus": "ARCHIPELAGO_FIXTURE_VALID",
+  "attributionBasis": {
+    "threeHydrologyFrameCount": 204,
+    "meanDirectHydrologyStepCpuMs": 15.496,
+    "meanDownstreamRenderCpuMs": 63.122,
+    "renderToHydrologyMeanRatio": 4.073
+  },
+  "answers": {
+    "H2_BQ1": "On hydro frames, p95 surfaceField 3.40→3.40 ms (Δ 0.00); waterUpdate group p95 25.30→25.90 ms. The measured delta is small; coastline length alone did not produce a large surface-field cost.",
+    "H2_BQ2": "No increase in measured re-derivation cost or frequency: the detailed samples contained 109/600 E1 hydro frames and 95/600 E3 hydro frames, while VegetationUpdate p95 was 24.70→14.80 ms. Type changes p95 rose 84.00→167.00 and the frontier rose 4.00→1640.00 cells, but both maps already re-derive vegetation on hydro frames because height changes each step.",
+    "H2_BQ3": "33.3 ms frame-CPU rate: standard 19.17%, archipelago 16.00%; canvas comparison: 6.00% vs 6.00%. The central-continent case had the higher threshold rate in this sample. E1 terrain/vegetation p95 was 17.60/24.70 ms versus E3 15.90/14.80 ms, while the water group differed by only 0.60 ms; added coast length alone did not predict tails.",
+    "H2_BQ4": "Yes as a deterministic stress fixture. Its higher water coverage, longer coast, multiple medium land components, and smaller dominant landmass extend the standard-map sample; it is not yet a measured worst-case bound for all future maps.",
+    "C1": "DOWNSTREAM_RENDER_DOMINANT; across Three hydro frames, mean direct step CPU was 15.50 ms and mean render CPU was 63.12 ms (4.07×). On center-continent E1, direct stepHydrology p95 was 19.50 ms per call, while render CPU p95 on hydro frames was 88.20 ms and summed PlaneStage layer-update p95 was 63.50 ms. Canvas E2 render CPU p95 on hydro frames was 18.40 ms despite a similar hydro step p95 of 17.10 ms; Three’s terrain/water/vegetation updates and WebGL submission explain most of that gap. The slow-frame rows retain direct hydro, update/render, bridge, layer, and submission times for each tail.",
+    "C2": "The fixture raises coast edges 3600.00→3976.00 and wet-vegetation frontier 4.00→1640.00 cells. Per hydro call, water changes p95 68969.00→90035.00 cells. On hydro frames, water-update p95 is 25.90 ms and vegetation p95 is 14.80 ms.",
+    "C3": "Keep it as a test fixture now. Treat it as a future start-world candidate only after the measured tail pressure is addressed; this H2 branch does not promote it to a product preset."
+  },
+  "optimizationCandidates": [
+    {
+      "priority": 1,
+      "name": "Terrain mesh rebuild and GPU buffer locality",
+      "evidence": "terrain group peaked at 92.80 ms in a measured slow frame; E1 height dirty bounds span all 163,840 cells",
+      "correctnessRisk": "high: height/type geometry must stay correct across incremental updates",
+      "complexity": "high"
+    },
+    {
+      "priority": 2,
+      "name": "Hydrology-triggered vegetation re-derivation",
+      "evidence": "E1 vegetation p95 24.70 ms on hydro frames; the archipelago fixture has 1,640 vegetated shoreline cells",
+      "correctnessRisk": "medium: instance membership and shoreline thresholds",
+      "complexity": "medium"
+    },
+    {
+      "priority": 3,
+      "name": "Hydrology full-grid pass profiling/optimization",
+      "evidence": "E1 stepHydrology p95 19.50 ms; water flow, erosion, thermal, and dirty flush are measurable sub-phases",
+      "correctnessRisk": "high: water, erosion, type threshold, and dirty-flush semantics",
+      "complexity": "medium"
+    }
+  ],
+  "diagnosticComparison": [
+    {
+      "id": "H2-E1",
+      "lowPerturbationFrameCpuP95": 72.4,
+      "detailedFrameCpuP95": 92.1,
+      "detailedVsLowP95DeltaMs": 19.7,
+      "lowPerturbationHydroStepP95": {
+        "n": 46,
+        "mean": 13.907,
+        "median": 13.6,
+        "p95": 17.1,
+        "max": 19.8
+      }
+    },
+    {
+      "id": "H2-E2",
+      "lowPerturbationFrameCpuP95": 29.7,
+      "detailedFrameCpuP95": 34.7,
+      "detailedVsLowP95DeltaMs": 5,
+      "lowPerturbationHydroStepP95": {
+        "n": 33,
+        "mean": 14.561,
+        "median": 14.4,
+        "p95": 19.8,
+        "max": 20.3
+      }
+    },
+    {
+      "id": "H2-E3",
+      "lowPerturbationFrameCpuP95": 83.8,
+      "detailedFrameCpuP95": 76.5,
+      "detailedVsLowP95DeltaMs": -7.3,
+      "lowPerturbationHydroStepP95": {
+        "n": 50,
+        "mean": 17.44,
+        "median": 17.1,
+        "p95": 21.5,
+        "max": 28.8
+      }
+    },
+    {
+      "id": "H2-E4",
+      "lowPerturbationFrameCpuP95": 30,
+      "detailedFrameCpuP95": 33.8,
+      "detailedVsLowP95DeltaMs": 3.8,
+      "lowPerturbationHydroStepP95": {
+        "n": 31,
+        "mean": 14.919,
+        "median": 15.1,
+        "p95": 16.8,
+        "max": 16.9
+      }
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "startedAt": "2026-10-16T01:31:32.329Z",
+  "task": "G2-PERF-H2",
+  "seed": 673231,
+  "baseline": "origin/codex/g2-p1-integration-validation at 74934a8b1360af9007c69935d5becdf8f9809872",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "warmFrames": 120,
+  "measuredFrames": 300,
+  "runPlan": [
+    {
+      "id": "H2-E1",
+      "renderer": "three",
+      "map": "standard",
+      "preset": "expanse",
+      "mode": "low-perturbation",
+      "repeat": 1
+    },
+    {
+      "id": "H2-E1",
+      "renderer": "three",
+      "map": "standard",
+      "preset": "expanse",
+      "mode": "detailed",
+      "repeat": 1
+    },
+    {
+      "id": "H2-E1",
+      "renderer": "three",
+      "map": "standard",
+      "preset": "expanse",
+      "mode": "detailed",
+      "repeat": 2
+    },
+    {
+      "id": "H2-E2",
+      "renderer": "canvas",
+      "map": "standard",
+      "preset": "expanse",
+      "mode": "low-perturbation",
+      "repeat": 1
+    },
+    {
+      "id": "H2-E2",
+      "renderer": "canvas",
+      "map": "standard",
+      "preset": "expanse",
+      "mode": "detailed",
+      "repeat": 1
+    },
+    {
+      "id": "H2-E2",
+      "renderer": "canvas",
+      "map": "standard",
+      "preset": "expanse",
+      "mode": "detailed",
+      "repeat": 2
+    },
+    {
+      "id": "H2-E3",
+      "renderer": "three",
+      "map": "archipelago",
+      "preset": "expanse",
+      "mode": "low-perturbation",
+      "repeat": 1
+    },
+    {
+      "id": "H2-E3",
+      "renderer": "three",
+      "map": "archipelago",
+      "preset": "expanse",
+      "mode": "detailed",
+      "repeat": 1
+    },
+    {
+      "id": "H2-E3",
+      "renderer": "three",
+      "map": "archipelago",
+      "preset": "expanse",
+      "mode": "detailed",
+      "repeat": 2
+    },
+    {
+      "id": "H2-E4",
+      "renderer": "canvas",
+      "map": "archipelago",
+      "preset": "expanse",
+      "mode": "low-perturbation",
+      "repeat": 1
+    },
+    {
+      "id": "H2-E4",
+      "renderer": "canvas",
+      "map": "archipelago",
+      "preset": "expanse",
+      "mode": "detailed",
+      "repeat": 1
+    },
+    {
+      "id": "H2-E4",
+      "renderer": "canvas",
+      "map": "archipelago",
+      "preset": "expanse",
+      "mode": "detailed",
+      "repeat": 2
+    }
+  ],
+  "fullMatrix": true,
+  "completedRuns": [
+    "H2-E1-low-perturbation-r1",
+    "H2-E1-detailed-r1",
+    "H2-E1-detailed-r2",
+    "H2-E2-low-perturbation-r1",
+    "H2-E2-detailed-r1",
+    "H2-E2-detailed-r2",
+    "H2-E3-low-perturbation-r1",
+    "H2-E3-detailed-r1",
+    "H2-E3-detailed-r2",
+    "H2-E4-low-perturbation-r1",
+    "H2-E4-detailed-r1",
+    "H2-E4-detailed-r2"
+  ],
+  "failures": [],
+  "updatedAt": "2026-10-16T01:35:49.640Z",
+  "serverCleanup": {
+    "exited": true,
+    "exitCode": null,
+    "signalCode": "SIGTERM"
+  },
+  "finishedAt": "2026-10-16T01:35:49.743Z"
+}

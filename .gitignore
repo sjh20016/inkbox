@@ -37,6 +37,10 @@ reports/release/**
 !reports/release/**/golden/*.png
 # proof/, matrix/, source images and logs remain ignored. The evidence audit
 # limits each new stage to eight representative golden PNGs plus compact JSON.
+# G2-PERF-H2 keeps its raw browser samples and recalculable attribution report.
+!reports/analysis/
+!reports/analysis/g2-h2/
+!reports/analysis/g2-h2/**
 run/
 # 一次性日志与压缩输出。
 *.log

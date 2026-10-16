@@ -12,6 +12,52 @@ import {
 
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
+const H2_PROBE_KEY = '__INKBOX_G2_H2_PROBE';
+
+function probeNow() {
+  return globalThis.performance?.now?.() ?? Date.now();
+}
+
+function snapshotHydrologyFields(world) {
+  return { height: world.height.slice(), water: world.water.slice(), type: world.type.slice() };
+}
+
+function changedField(before, after, width) {
+  let count = 0, x0 = width, y0 = before.length, x1 = -1, y1 = -1;
+  for (let i = 0; i < before.length; i += 1) {
+    if (before[i] === after[i]) continue;
+    count += 1;
+    const x = i % width, y = (i - x) / width;
+    if (x < x0) x0 = x;
+    if (y < y0) y0 = y;
+    if (x > x1) x1 = x;
+    if (y > y1) y1 = y;
+  }
+  return { count, bounds: x1 < 0 ? null : { x0, y0, x1, y1 } };
+}
+
+function captureHydrologyChanges(before, world) {
+  const height = changedField(before.height, world.height, world.w);
+  const water = changedField(before.water, world.water, world.w);
+  const type = changedField(before.type, world.type, world.w);
+  let wetDryTransitions = 0;
+  for (let i = 0; i < world.size; i += 1) {
+    if ((before.water[i] > 0.0015) !== (world.water[i] > 0.0015)) wetDryTransitions += 1;
+  }
+  return {
+    waterChangedCells: water.count, heightChangedCells: height.count, typeChangedCells: type.count,
+    wetDryTransitions, waterDirtyBounds: water.bounds, heightDirtyBounds: height.bounds,
+    typeDirtyBounds: type.bounds,
+  };
+}
+
+function measuredPhase(probe, phaseMs, key, operation) {
+  if (!probe) return operation();
+  const start = probeNow();
+  try { return operation(); }
+  finally { phaseMs[key] = probeNow() - start; }
+}
+
 /** 海洋补水：高程低于海平面的格子始终保持至少海平面水深 */
 export function refillSea(world) {
   const { height, water } = world;
@@ -203,12 +249,40 @@ export function stepThermal(world, dtDays, opts = {}) {
 
 /** 组合推进：一次调用完成 补水 → 流动 → 蒸发 → 侵蚀 → 类型重算 */
 export function stepHydrology(world, dtDays) {
-  refillSea(world);
-  maintainRivers(world);
-  const moved = stepWater(world, dtDays);
-  const eroded = stepErosion(world, dtDays);
-  if (eroded > 0) stepThermal(world, dtDays);
-  flushDirty(world);
+  const candidate = globalThis[H2_PROBE_KEY];
+  const probe = candidate?.enabled === true ? candidate : null;
+  const detailed = probe?.mode === 'detailed';
+  const snapshotStart = detailed ? probeNow() : 0;
+  const before = detailed ? snapshotHydrologyFields(world) : null;
+  const beforeSnapshotMs = detailed ? probeNow() - snapshotStart : 0;
+  const phaseMs = probe ? {} : null;
+  const start = probe ? probeNow() : 0;
+  measuredPhase(probe, phaseMs, 'seaRefillMs', () => refillSea(world));
+  measuredPhase(probe, phaseMs, 'riverMaintenanceMs', () => maintainRivers(world));
+  const moved = measuredPhase(probe, phaseMs, 'waterFlowAndEvaporationMs', () => stepWater(world, dtDays));
+  const eroded = measuredPhase(probe, phaseMs, 'erosionMs', () => stepErosion(world, dtDays));
+  if (eroded > 0) measuredPhase(probe, phaseMs, 'thermalMs', () => stepThermal(world, dtDays));
+  const dirtyFlushedCells = measuredPhase(probe, phaseMs, 'dirtyFlushMs', () => flushDirty(world));
+  const totalMs = probe ? probeNow() - start : 0;
+  if (probe) {
+    const record = {
+      frameIndex: Number.isInteger(probe.frameIndex) ? probe.frameIndex : null,
+      callIndex: probe.hydrologyRecords.length,
+      stepHydrologyMs: totalMs,
+      phaseMs,
+      moved,
+      eroded,
+      dirtyFlushedCells,
+    };
+    if (before) {
+      const changeStart = probeNow();
+      Object.assign(record, captureHydrologyChanges(before, world));
+      record.changeScanMs = probeNow() - changeStart;
+      record.beforeSnapshotMs = beforeSnapshotMs;
+      record.diagnosticOverheadMs = beforeSnapshotMs + record.changeScanMs;
+    }
+    probe.hydrologyRecords.push(record);
+  }
   return { moved, eroded };
 }
 
