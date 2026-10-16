@@ -1,5 +1,8 @@
 # ARCHITECTURE · 工作区与模块地图
 
+2026-10-16 状态以 [ROADMAP](./ROADMAP.md) 与 [HANDOFF](./HANDOFF.md) 顶部为准：main 已合并 G1，G2 / G3 为候选与研究。下方阶段性状态均为历史快照；模块职责和契约结合当前源码阅读。
+
+
 ## Current Truth · 2026-10-08
 
 稳定模块地图以当前 GitHub main 为基线；当前正式阶段为 M2-C2E，工程接入已完成。产品主线、实验分支、归档 tag 与本地部署规则见 [HANDOFF](./HANDOFF.md)。阶段时间线见 [ROADMAP](./ROADMAP.md)，未完成事项见 [BACKLOG](./BACKLOG.md)。 下方阶段性叙述中标为“当前”的内容属于对应日期快照。

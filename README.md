@@ -1,22 +1,16 @@
 # 坐天观井 · Inkbox 1.0.0
 
-2026-10-09：G1-R Runtime 在 `feat/g1-runtime-codex` 独立交付，基线为 main `fc612ac9`。真实人物身份 / ViewModel、三项天道敕令、记挂与生命周期、正式世界日驱动的地图成长已接线；测试和接口见 [G1 Runtime 交接](./G1_RUNTIME_HANDOFF.md)。本分支保留旧人物展示，正式 Presentation 与 C5 视觉协调待后续集成；未合并 main。
+## 当前仓库状态（2026-10-16）
 
-2026-10-08：M2-C2E 本地工程验收完成：44项CPU、108种子矩阵、14项真实产品GPU、十二镜同机对照和600/6000帧联合耐久通过。最终美术裁决与最大图性能边界见 [本轮就绪报告](./M2C2E_READINESS.md)。开发分支 `codex/m2-c2e-living-terrain`。3D 创建入口提供标准／群山／水泽、有效 seed 0、512×320 和渐进探索；雕刻支持山脊、盆地、Undo／Redo。
+正式产品基线为 **M2-C2E + G1**。`origin/main` 当前为 `e1e55039bb56efda7a307513ede07a9fab3bf534`，G1 已由 PR #2 合并。
 
-2026-10-06：**M2-C2C Meaningful Geography 本地验收完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。**既有四类 Site、Leyline、Upper qi、Nether yin 与持久 Rift / 瞬时 FX 已接入六个只读表现开关。完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。 CPU 11 模式 × 600 日、11 RNG 与 49 save keys 一致，full SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`。C2B Pass 1 的远端封板基线仍是 main `e0a851c`：Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、Windows Browser [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功，不能充作 C2C 远端证据。C2C 入口：[就绪](./M2C2C_READINESS.md)、[工程与24项答复](./M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](./M2C2C_PERFORMANCE_REPORT.md)、[视觉](./M2C2C_VISUAL_ACCEPTANCE.md)。
+PR #12 候选提交 `74934a8b1360af9007c69935d5becdf8f9809872` 的范围仅为 **G2-P1 闭环 READY**；G2 性能 **BLOCKED**，候选整体未合并，不能把 G2 全功能标为 READY。PR #17 的 G3 cost 研究为 **BLOCKED**。PR #4–17 均为 open Draft；#10 已是 #12 的祖先，不能重复合并。独立 B 线与产品线没有共同祖先。
 
-当前唯一活跃主线是 `src/inkbox`：一张会自行演化的水墨山河，玩家可以改地形、施神力、观察众生修行与灾祸结果。
-
-2026-10-04：M2-C2A.1 与三界视觉基线已接入。3D 默认 `realm-style-v1`：凡界淡彩与暖白墙、幽冥焦墨骨白、上界石青石绿与赭色；`&art=legacy` 可回到原 pilot 对照。聚落远景由真实房屋派生 2–4 个屋顶簇；运行包排除源 `.blend`、preview 和全量视觉证据。交付入口为 [三界验收](./M2C2B0_VISUAL_ACCEPTANCE.md)、[性能报告](./M2C2B0_PERFORMANCE_REPORT.md) 与 [下一阶段条件](./M2C2B0_READINESS.md)。
-
-历史 M2-C：写意渲染基线已接入。3D 默认使用纸色、颜料吸收、稀疏结构墨和一套批处理民居/树/Mini 修士；`?renderer=3d&art=baseline` 可对照原 M2-B，`&artdebug=1` 仅供开发调参。范围、截图和验证见 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md)。
-
-M2-C2A 已接入树、角色、建筑三档几何 LOD、屏幕优先密度预算与凡间聚落 HLOD 原型。3D 默认开启；`&lod=off` 保留完整模型对照。实施、实测与视觉边界分别见 [LOD 报告](./M2C2A_LOD_REPORT.md)、[性能报告](./M2C2A_PERFORMANCE_REPORT.md)、[视觉验收](./M2C2A_VISUAL_ACCEPTANCE.md)。
+导航：[`HANDOFF.md`](./HANDOFF.md) · [`ROADMAP.md`](./ROADMAP.md) · [`BACKLOG.md`](./BACKLOG.md) · [`tests/README.md`](./tests/README.md) · [`docs/development/REPOSITORY_WORKFLOW.md`](./docs/development/REPOSITORY_WORKFLOW.md)。
 
 ## 启动
 
-需要 Node.js 18 或更新版本。运行依赖**只有一项**：`three@0.186.1`——供可选的 **Render3D 立体沙盘**使用。
+需要 Node.js 18 或更新版本。建议使用 Node.js 24 与 `npm ci` 对齐 CI。运行依赖**只有一项**：`three@0.186.1`——供可选的 **Render3D 立体沙盘**使用。
 默认 Canvas 主线**不加载** Three.js 模块，所以不带 `?renderer=3d` 时它不参与运行。
 
 浏览器侧的 Three.js 走仓库内的 **`vendor/three/`**（`inkbox.html` 的 importmap 指向它），所以**克隆即可运行、不必 `npm install`**；
@@ -76,28 +70,6 @@ npm run test:characters:browser  # 本机Edge/Chrome实载、尺度截图和生�
 
 角色资产随发布包收录；运行游戏不需要安装 Blender。Blender 只用于修改或重建源资产。当前群体采用休止姿态实例绘制；原生 GLB 保留 Idle/Walk，完整群体动画仍是后续工作。几何 LOD 保留现有 GLB 近景与真实身份。
 
-## 当前 C2C 地理表现
-
-工程已并入main。首推c67a0ee暴露的旧dirty分类回归由426412d修复，旧Bridge36断言、新C2C8组与完整Fast26命令通过；修复后的两对GPU诊断及实际Formation105点击通过。最新源码与原23对/Soak的来源分别记录于[就绪报告](./M2C2C_READINESS.md)及compact summary；最终远端门禁查看本轮main Actions。
-
-生产资产开启时，凡界已有 `secret` / `cave` / `formation` / `ruin` 与 Leyline 使用正式 GLB；Formation 的 8/4 阵点按自身地形分别贴地，远档仍共享轮廓。上界读取已有 `qi`，幽冥读取已有 `veg`，通过 Stage 持有的 R8 缓存表现强弱；Rift 地貌读取真实持久裂隙，短命 FX 读取唯一 PresentationStage 的冻结事件快照。地点检视回到当前 World 的真实 id，不另造玩法或存档字段。
-
-六个独立表现开关为 `sites`、`leylines`、`upperQi`、`netherYin`、`rifts`、`riftFx`，由 Host API 控制，不写进 World。产品 3D 默认启用；`&geography=off` 关闭 C2C 表现，`&assets=off` 保留旧资产基线。资产未就绪、关闭或完整 footprint 不适合时，Site / Leyline / Rift 保留既有标记回退，不把回退标记当作正式模型验收。
-
-委托的七个命令已接线（独立 Leyline 定向门禁另见测试索引）：
-
-```bash
-npm run test:render3d:m2c2c
-npm run test:render3d:m2c2c:sites
-npm run test:render3d:m2c2c:fields
-npm run test:render3d:m2c2c:rifts
-npm run test:render3d:m2c2c:purity
-npm run test:render3d:m2c2c:browser
-npm run test:render3d:m2c2c:soak
-```
-
-2026-10-06 本地验收完成：完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。手动 [c2c-browser.yml](./.github/workflows/c2c-browser.yml) 验当前阶段和 M2-B / C2B sample 两个关键祖先；[ci.yml](./.github/workflows/ci.yml) 保留完整历史 Browser 回归，普通 push 不启动 GPU。远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行，C2B e0a851c 的三个成功 run 仍只属于历史基线。
-
 ## 检查与测试
 
 ```bash
@@ -126,30 +98,13 @@ npm run test:simulation     # 范围较大的旧 smoke，仅按需运行
 npm run build               # 生成仅含活跃主线的 dist 项目包
 ```
 
-M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端执行 `npm run test:render3d:m2a:browser`。需要 Node 22+ 和本机 Microsoft Edge。默认输出到 `reports/release/render3d-m2a/`；重跑可用 `INKBOX_REPORT_DIR` 指向本地临时目录，保留已发布的硬件基线。GitHub 手动 workflow 由 Browser Smoke wrapper 顺序运行 Canvas、M2-A、M2-B、M2-C、M2-C2A、M2-C2B0，随后以独立 steps 运行 C2B0 soak、C2B Pass 1 Browser 矩阵与 C2B Pass 1 soak；截图 / JSON 存为独立 artifact。
+M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端执行 `npm run test:render3d:m2a:browser`。该探针需要 Node 22+ 和本机 Microsoft Edge。默认输出到 `reports/release/render3d-m2a/`；重跑可用 `INKBOX_REPORT_DIR` 指向本地临时目录，保留已发布的硬件基线。GitHub 手动 workflow 由 Browser Smoke wrapper 顺序运行 Canvas、M2-A、M2-B、M2-C、M2-C2A、M2-C2B0，随后以独立 steps 运行 C2B0 soak、C2B Pass 1 Browser 矩阵与 C2B Pass 1 soak；截图 / JSON 存为独立 artifact。
 
 测试分类和各旧探针的位置见 [`tests/README.md`](./tests/README.md)。
 
 ## 工程状态
 
-- **Render3D M2-A「Multi-Plane Architecture Prototype」已完成**——一个 Render3D Host 管理三个位面 Stage，复用一个 WebGLRenderer 与 CameraRig；共享视界状态、位面拾取及 Mask / Slab 小型原型。委托书：[`坐天观井 · Render3D M2-A 架构原型工程委托书.md`](./坐天观井%20·%20Render3D%20M2-A%20架构原型工程委托书.md)；验收记录：[`Render3D M2-A 架构原型工程报告.md`](./Render3D%20M2-A%20架构原型工程报告.md)。
-- **正式完成**：D6-2 三界生态 **A–F** · D6-3 跨界生态 **A–E** · D7 观察与表现层 **A–G 封板** ·
-  D8 视界 2.0 **A–F** · **Render3D M0**（地形 / 水体 / 植被 / 相机 / Raycast / 地形雕刻）·
-  **Render3D M1**（实体 / 聚落 / 宗门山门 / 法宝地点灵脉标记 / 3D 选中环）· **Render3D M1.1D**（工程加固）。
-- **已完成底座**：M2-B 的完整 Layer Mask、共享高程、Raw/Strata 界缘、3D 划窗、裂缝破口与拾取。
-- **已完成**：M2-C2B Pass 1 建立第一代正式资产生产体系；验收见 [Pass 1 就绪报告](./M2C2B_READINESS.md)。
-- **当前阶段已本地完成**：M2-C2C Meaningful Geography；23 对 GPU 矩阵、600/6000 帧 Soak、两关键祖先与干净克隆验证通过。远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行。只呈现已有 World 事实，详见 [C2C 就绪](./M2C2C_READINESS.md)。
-- **后续优先方向**：真实宗门 / 灵脉空间归属；R1 群体动画只留 Lab，R2 研究不授权 runtime 道路。完整 HLOD、Trace Field 与 Gameplay G 需后续授权。
-- **暂缓**：D8-G「跨界追迹」为 **WIP**——纯逻辑地基（`ui/realmTrace.js` + `sim/watch.js` 的 `netherGhostOf`）已保存并有测试钉住，但**追迹 UI 未做**；本阶段不继续扩建 Canvas 版 D8-G。
-- **接手先读**：[`HANDOFF.md`](./HANDOFF.md)（当前版本 / 启动入口 / 契约 / 纪律 / 下一包）。
-- 30 秒看懂项目在哪：[`ROADMAP.md`](./ROADMAP.md)
-- 三界规则（代码必须遵守的约束表）：[`THREE_REALMS.md`](./THREE_REALMS.md)
-- 视界契约（观察层「是什么 / 什么不许做」）：[`VIEW_CONTRACT.md`](./VIEW_CONTRACT.md)
-- 工作区 / 模块地图与 Git / dist 归属：[`ARCHITECTURE.md`](./ARCHITECTURE.md)
-- Render3D M0 技术报告：[`RENDER3D_M0.md`](./RENDER3D_M0.md) · Render3D M1 工程报告：[`Render3D M1 工程报告.md`](./Render3D%20M1%20工程报告.md) · Render3D M1.1D 工程报告：[`Render3D M1.1D 工程报告.md`](./Render3D%20M1.1D%20工程报告.md)
-- 当前状态与已知问题：[`STATUS.md`](./STATUS.md)
-- 有效待办与暂停研究：[`BACKLOG.md`](./BACKLOG.md)
-- 玩家指南：[`PLAYER_GUIDE.md`](./PLAYER_GUIDE.md)
+当前产品与候选状态见本文顶部。M2-C2E 的最大地图性能边界、最终视觉裁决与历史 RNG 游标存档决策见 [BACKLOG](./BACKLOG.md)。G1 行为与契约见 [集成报告](./G1_INTEGRATION_REPORT.md)，模块职责见 [ARCHITECTURE](./ARCHITECTURE.md)，三界与视界约束见 [THREE_REALMS](./THREE_REALMS.md) / [VIEW_CONTRACT](./VIEW_CONTRACT.md)。
 
 当前工作树没有旧 V3/V4 的 `src/main.js`、demo 或 `scripts/v*`；需要考古时查 Git 历史。根 `index.html` / `game.html` 是跳转到 Inkbox 的入口。`scripts/_*.mjs` 已入 Git，仅保留历史研究参考，不在发布包中。
 

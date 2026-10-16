@@ -1,6 +1,27 @@
 # Inkbox 测试与验证入口
 
-## Current Truth · 2026-10-09 · G1 Runtime 分支
+## 当前验证入口 · 2026-10-16
+
+main `e1e55039bb56` 已含 G1 集成；G2 / P1 候选与 G3 尚未合入。分支事实见 [工作流](../docs/development/REPOSITORY_WORKFLOW.md)，阶段见 [ROADMAP](../ROADMAP.md)。下方旧日期状态均为历史快照。
+
+推荐 Node 24 与 npm ci，对齐 CI。npm test 只运行 core，不能代表全部门禁。各工作区用独立端口、输出目录与归属明确的服务器 / 浏览器；GPU 测量串行。
+
+| 修改类型 | 本地验证义务 |
+| --- | --- |
+| 文档 | diff --check、文件白名单、链接 / 引用 / 状态核对；影响打包文档时 build + test:package |
+| UI / CSS | 受影响交互 / 布局；必要时双 renderer 关键分辨率；按当前分支现有脚本选择 |
+| 模拟 / 存档 | Fast、相关 Heavy、保存等价与相关 RNG / 纯度契约 |
+| 3D 性能 | 定向 CPU 渲染契约与对应同机 GPU 预算；缺计时不算通过 |
+| 正式集成 / 发布 | 完整 Fast + Heavy，阶段要求的双 renderer Browser、性能、耐久与长测；现有发布义务不减 |
+
+实际定义以 [ci.yml](../.github/workflows/ci.yml) 为准：push / PR 运行 Fast 与 Heavy。Fast 含 G1、渲染契约、vendor、build / package；Heavy 含干预、三界、保存等价、G1 长期回归。Browser Smoke 手动 workflow_dispatch，包含 Canvas / Three 的 G1 真实交互。[C2C Browser](../.github/workflows/c2c-browser.yml) 手动运行 GPU 与 soak；[Nightly](../.github/workflows/nightly.yml) 定时 / 手动运行 smoke 与 800 年长局。普通 CI 不替代真实 GPU 验收，Heavy PASS 不能抵消 Fast FAIL；失败、跳过、未完成均如实记录。
+
+本轮只改文档，不跑完整 GPU ABBA、600/6000 耐久或模拟长局，不修改 workflow、脚本、预算和断言。
+
+---
+
+
+## 历史快照 · 2026-10-09 · G1 Runtime 分支
 
 G1-R 从共同 main 基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 在 `feat/g1-runtime-codex` 独立开发。人物真实身份、只读模型、三项敕令、记挂、地图成长和独立 Runtime 回归已接线，正式 Presentation 和 C5 视觉协调留待后续集成。接口、保存语义和后续步骤见 [G1 Runtime 交接](../G1_RUNTIME_HANDOFF.md)。
 

@@ -1,6 +1,21 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-## 当前交接 · 2026-10-09 · G1-R Runtime
+## 当前交接 · RG-P1 · 2026-10-16
+
+核查日期：2026-10-16（Asia/Shanghai）。正式 main 基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`，[G1 PR #2](https://github.com/sjh20016/inkbox/pull/2) 已于 2026-10-12 合并，正式产品为 M2-C2E + G1。
+
+[Draft PR #12](https://github.com/sjh20016/inkbox/pull/12) HEAD `74934a8b1360af9007c69935d5becdf8f9809872`：Canvas / Three 的 P1 玩家闭环 READY，G2 性能仍 BLOCKED，尚未合入 main；#12 已继承 #10，不重复合并。G3 #17 PCC Observer 成本超限，A1-1 BLOCKED，未进入 A1-2。B2 数值研究为无共同 Git 祖先的独立实验，不是正式产品参数。
+
+接手先核对远端 SHA / PR / Actions，再阅读 [开发工作流与审计](./docs/development/REPOSITORY_WORKFLOW.md)、[路线图](./ROADMAP.md)、[未完成事项](./BACKLOG.md)、[测试入口](./tests/README.md)。从任务指定基线建隔离 worktree；不覆盖现有研究工作区和未提交材料。G1 契约见 [集成报告](./G1_INTEGRATION_REPORT.md)。
+
+风险：H2/H3/G3 Fast Gate 失败，Heavy 通过不能覆盖失败；P1 READY 不代表 G2 性能封板。STATUS 与下方旧日期交接仅作历史证据，不是当前施工授权；不执行旧交接中的工作区改名 / 恢复指令。
+
+---
+
+以下均为历史快照，其中“当前”、未合并与等待集成等措辞仅对当时有效。
+
+
+## 历史交接 · 2026-10-09 · G1-R Runtime
 
 产品主线仍为 GitHub main。Runtime 分支 `feat/g1-runtime-codex` 从双方共同基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 开工，独立交付人物真实身份、快照、敕令、记挂、地图成长和回归体系。正式人物卡仍归 `feat/g1-presentation-web`；Runtime 沿用旧展示，不修改 Presentation 目录或 B数值系统，不单独合并 main。用户明确发出“开始 G1 集成”后才进入双方集成和正式 UI 验收；C5 视觉协调已按委托书延期。
 
