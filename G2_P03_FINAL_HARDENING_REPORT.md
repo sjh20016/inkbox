@@ -1,8 +1,8 @@
 # G2-P0.3 Final Hardening Report
 
-生成时间：2026-10-16 00:20:52 UTC  
-状态截止：2026-10-16 00:20:52 UTC  
-裁决：HARDENED_READY  
+生成时间：2026-10-16 00:20:52 UTC
+状态截止：2026-10-16 00:20:52 UTC
+裁决：HARDENED_READY
 正式 G2 门禁：G2_PERF_BLOCKED
 
 ## 范围与同步
@@ -87,5 +87,3 @@ water-only 更新期间实际记录到 6 次 bufferSubData、5,463,576 bytes；i
 测试执行时 Git HEAD 为候选起点 901844493b86969a2237c41ccc62e32a98dbdc27，实际执行源码由随附摘要中的 SHA-256 标识。候选与诊断分支在本报告截止时间的远端 HEAD 见“范围与同步”。实现提交 SHA 为 b05065e2d39f894aa58eaa70469672f3aebf79a3。Draft PR 为 https://github.com/sjh20016/inkbox/pull/13，目标是 codex/g2-p03-vegetation-pilot，当前仍为 Draft 且未合并。该 SHA 承载本轮被测试的实现内容；PR 后续提交补入报告身份并规范仓库换行。
 
 建议裁决：HARDENED_READY。含义仅为候选正确性证据已补足，可进入后续集成审查；正式 G2 性能门禁仍为 G2_PERF_BLOCKED。
-
-
