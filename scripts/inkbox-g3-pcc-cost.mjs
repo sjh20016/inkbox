@@ -407,7 +407,12 @@ function runBenchmark() {
       const result = spawnSync(process.execPath, ['--expose-gc', fileURLToPath(import.meta.url), '--child', `--scene=${scene}`, `--mode=${mode}`, `--round=${round}`],
         { cwd: ROOT, encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 });
       if (result.status !== 0) throw new Error(`Child failed ${scene}/${mode}/round${round}: ${result.stderr || result.stdout}`);
-      runs.push(JSON.parse(result.stdout));
+      const child = JSON.parse(result.stdout);
+      assert.equal(child.round, round, 'child round uses numeric identity');
+      fs.mkdirSync(RAW_ROOT, { recursive: true });
+      fs.writeFileSync(path.join(RAW_ROOT, `${scene}-${mode}-round${round}.json`), JSON.stringify(child, null, 2));
+      process.stderr.write(`Completed ${scene}/${mode}/round${round}\n`);
+      runs.push(child);
     }
   }
   const equivalence = [];
@@ -438,7 +443,10 @@ function runBenchmark() {
     const result = spawnSync(process.execPath, ['--expose-gc', fileURLToPath(import.meta.url), '--child', `--scene=${scene}`, `--mode=${mode}`, '--profile', '--round=profile'],
       { cwd: ROOT, encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 });
     if (result.status !== 0) throw new Error(`Profile child failed ${scene}/${mode}: ${result.stderr || result.stdout}`);
-    profiles.push(JSON.parse(result.stdout));
+    const child = JSON.parse(result.stdout);
+    fs.writeFileSync(path.join(RAW_ROOT, `${scene}-${mode}-profile.json`), JSON.stringify(child, null, 2));
+    process.stderr.write(`Completed ${scene}/${mode}/profile\n`);
+    profiles.push(child);
   }
   const report = { schema: 'inkbox.g3.pcc-cost.v1', generatedAt: new Date().toISOString(), source: sourceInfo(),
     host: hostInfo(), method: { scenes: ['standard', 'archipelago'], dimensions: [512, 320], seed: SEED, worldWarmHydrologySteps: 30,
@@ -478,7 +486,7 @@ function main() {
   if (process.argv.includes('--child')) {
     const value = name => process.argv.find(x => x.startsWith(`--${name}=`))?.slice(name.length + 3);
     childRun({ scene: value('scene') || 'standard', mode: value('mode') || 'shadow', profile: process.argv.includes('--profile'),
-      round: value('round') || 0, measuredFrames: Number(value('frames') || FRAMES) }); return;
+      round: value('round') === 'profile' ? 'profile' : Number(value('round') ?? 0), measuredFrames: Number(value('frames') || FRAMES) }); return;
   }
   if (process.argv.includes('--checks-only')) {
     const report = { schema: 'inkbox.g3.pcc-cost.checks.v1', source: sourceInfo(), checks: runCorrectness(), lifecycle: runLifecycleChecks(), pass: true };
