@@ -14,7 +14,7 @@ const args = Object.fromEntries(process.argv.slice(2).filter(v => v.startsWith('
   const index = v.indexOf('='); return index < 0 ? [v.slice(2), true] : [v.slice(2, index), v.slice(index + 1)];
 }));
 const suite = args.suite ?? 'all';
-if (!['all', 'smoke'].includes(suite)) throw new Error('Supported --suite: all | smoke (all remains conditional on each gate).');
+if (!['all', 'smoke', 's0r'].includes(suite)) throw new Error('Supported --suite: all | smoke | s0r (all remains conditional on each gate).');
 const OUT = path.resolve(ROOT, args.out ?? 'analysis/g4/p0a/results');
 if (fs.existsSync(path.join(OUT, 'manifest.json'))) throw new Error('OUTPUT_EXISTS: use a fresh --out directory; failed runs are never overwritten.');
 fs.mkdirSync(OUT, { recursive: true });
@@ -64,16 +64,171 @@ const pageCall = (name, options) => browser.session.js(`return (async () => {
   return await experiment[${JSON.stringify(name)}](${JSON.stringify(options ?? {})});
 })();`, { timeoutMs: 240000 });
 
+const DOCUMENT_START_VIEWPORT = `(() => {
+  const vv = window.visualViewport;
+  const value = Object.freeze({ href: location.href, readyState: document.readyState,
+    innerWidth, innerHeight, dpr: devicePixelRatio, outerWidth, outerHeight,
+    screen: Object.freeze({ width: screen.width, height: screen.height,
+      availWidth: screen.availWidth, availHeight: screen.availHeight }),
+    visualViewport: vv ? Object.freeze({ width: vv.width, height: vv.height, scale: vv.scale,
+      offsetLeft: vv.offsetLeft, offsetTop: vv.offsetTop }) : null });
+  Object.defineProperty(window, '__g4p0aDocumentStartViewport', {
+    value, configurable: false, enumerable: false, writable: false });
+})()`;
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+function exactSize(value, requested) { return Number.isFinite(value) && value === requested; }
+
+async function captureViewport(label, { renderer = null, requireDocumentStart = false, requireCanvas = false } = {}) {
+  let page = null, cdp = null, pageError = null, cdpError = null;
+  try {
+    page = await browser.session.js(`return (() => {
+      const vv = window.visualViewport, k = window.inkbox;
+      const canvases = [...document.querySelectorAll('#inkCanvas, #inkCanvas3D')].map(canvas => {
+        const rect = canvas.getBoundingClientRect(), style = getComputedStyle(canvas);
+        return { id: canvas.id, width: canvas.width, height: canvas.height,
+          clientWidth: canvas.clientWidth, clientHeight: canvas.clientHeight,
+          rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+          display: style.display, visibility: style.visibility };
+      });
+      return { href: location.href, readyState: document.readyState, visibility: document.visibilityState,
+        innerWidth, innerHeight, dpr: devicePixelRatio, outerWidth, outerHeight,
+        screen: { width: screen.width, height: screen.height, availWidth: screen.availWidth,
+          availHeight: screen.availHeight, colorDepth: screen.colorDepth, pixelDepth: screen.pixelDepth },
+        visualViewport: vv ? { width: vv.width, height: vv.height, scale: vv.scale,
+          offsetLeft: vv.offsetLeft, offsetTop: vv.offsetTop } : null,
+        documentStartViewport: window.__g4p0aDocumentStartViewport ?? null,
+        product: { hasInkbox: !!k, hasWorld: !!k?.world, speedIndex: k?.speedIndex ?? null,
+          hasThreeRenderer: !!k?.render3d?.renderer, canvases } };
+    })();`);
+  } catch (error) { pageError = error.message; }
+  try {
+    cdp = await browser.session.cdp.send('Page.getLayoutMetrics');
+    try { cdp.screenInfos = await browser.session.cdp.send('Emulation.getScreenInfos'); }
+    catch (error) { cdp.screenInfosError = error.message; }
+  }
+  catch (error) { cdpError = error.message; }
+  const requested = browser.environment.requestedViewport;
+  const layout = cdp?.cssLayoutViewport ?? cdp?.layoutViewport ?? null;
+  const visual = cdp?.cssVisualViewport ?? cdp?.visualViewport ?? null;
+  const cdpSize = value => ({ width: value?.clientWidth ?? value?.width ?? null,
+    height: value?.clientHeight ?? value?.height ?? null });
+  const layoutSize = cdpSize(layout), cdpVisualSize = cdpSize(visual);
+  const violations = [];
+  if (pageError) violations.push('PAGE_VIEWPORT_EVALUATION_FAILED');
+  if (cdpError || !cdp) violations.push('CDP_LAYOUT_METRICS_FAILED');
+  if (page) {
+    if (!exactSize(page.innerWidth, requested.width)) violations.push('INNER_WIDTH_MISMATCH');
+    if (!exactSize(page.innerHeight, requested.height)) violations.push('INNER_HEIGHT_MISMATCH');
+    if (!exactSize(page.dpr, requested.dpr)) violations.push('DPR_MISMATCH');
+    if (!page.visualViewport) violations.push('VISUAL_VIEWPORT_MISSING');
+    else {
+      if (!exactSize(page.visualViewport.width, requested.width)) violations.push('VISUAL_VIEWPORT_WIDTH_MISMATCH');
+      if (!exactSize(page.visualViewport.height, requested.height)) violations.push('VISUAL_VIEWPORT_HEIGHT_MISMATCH');
+      if (page.visualViewport.scale !== 1) violations.push('VISUAL_VIEWPORT_SCALE_MISMATCH');
+    }
+    if (requireDocumentStart) {
+      const start = page.documentStartViewport;
+      if (!start) violations.push('DOCUMENT_START_VIEWPORT_MISSING');
+      else {
+        if (!exactSize(start.innerWidth, requested.width)) violations.push('DOCUMENT_START_INNER_WIDTH_MISMATCH');
+        if (!exactSize(start.innerHeight, requested.height)) violations.push('DOCUMENT_START_INNER_HEIGHT_MISMATCH');
+        if (!exactSize(start.dpr, requested.dpr)) violations.push('DOCUMENT_START_DPR_MISMATCH');
+        if (!start.visualViewport || start.visualViewport.width !== requested.width ||
+          start.visualViewport.height !== requested.height || start.visualViewport.scale !== 1)
+          violations.push('DOCUMENT_START_VISUAL_VIEWPORT_MISMATCH');
+      }
+    }
+  }
+  if (cdp && (!exactSize(layoutSize.width, requested.width) || !exactSize(layoutSize.height, requested.height)))
+    violations.push('CDP_LAYOUT_VIEWPORT_MISMATCH');
+  if (cdp && (!exactSize(cdpVisualSize.width, requested.width) || !exactSize(cdpVisualSize.height, requested.height)))
+    violations.push('CDP_VISUAL_VIEWPORT_MISMATCH');
+  let activeCanvas = null;
+  if (requireCanvas && page) {
+    const activeId = renderer === 'Three' ? 'inkCanvas3D' : 'inkCanvas';
+    activeCanvas = page.product.canvases.find(canvas => canvas.id === activeId) ?? null;
+    if (!activeCanvas) violations.push('PRODUCT_CANVAS_MISSING');
+    else {
+      if (activeCanvas.width <= 0 || activeCanvas.height <= 0 || activeCanvas.rect.width <= 0 || activeCanvas.rect.height <= 0)
+        violations.push('PRODUCT_CANVAS_SIZE_INVALID');
+      if (activeCanvas.display === 'none' || activeCanvas.visibility === 'hidden') violations.push('PRODUCT_CANVAS_NOT_VISIBLE');
+    }
+  }
+  const report = { label, capturedAt: new Date().toISOString(), requested,
+    page, pageError, cdp: cdp ? { layoutViewport: layout, visualViewport: visual,
+      screenInfos: cdp.screenInfos ?? null, screenInfosError: cdp.screenInfosError ?? null,
+      legacyLayoutViewport: cdp.layoutViewport ?? null, legacyVisualViewport: cdp.visualViewport ?? null } : null,
+    cdpError, activeCanvas, outerWindowIsDiagnosticOnly: true,
+    validation: { pass: violations.length === 0, violations,
+      rule: 'Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained.' } };
+  provenance.viewportChecks ??= [];
+  provenance.viewportChecks.push(report);
+  writeJson(path.join(OUT, 'viewport-checks.json'), provenance.viewportChecks);
+  checkpoint();
+  if (!report.validation.pass) {
+    const error = new Error(`VIEWPORT_DRIFT: ${label}`);
+    error.diagnostic = report;
+    throw error;
+  }
+  return report;
+}
+
+async function waitForProduct(label, predicate, { timeoutMs = 30000, intervalMs = 200 } = {}) {
+  const expression = `return (() => {
+    const app = window.inkbox;
+    return { href: location.href, readyState: document.readyState, visibility: document.visibilityState,
+      hasInkbox: !!app, hasWorld: !!app?.world, speedIndex: app?.speedIndex ?? null,
+      hasThreeRenderer: !!app?.render3d?.renderer,
+      documentStartViewport: window.__g4p0aDocumentStartViewport ?? null };
+  })();`;
+  const startedAt = Date.now(), deadline = startedAt + timeoutMs;
+  let attempts = 0, lastResult = null, lastException = null;
+  while (Date.now() < deadline) {
+    attempts++;
+    try { lastResult = await browser.session.js(expression, { timeoutMs: 3000 }); lastException = null; }
+    catch (error) { lastException = { message: error.message, at: new Date().toISOString() }; }
+    if (lastResult && predicate(lastResult)) {
+      const check = { label, status: 'PASS', attempts, elapsedMs: Date.now() - startedAt,
+        lastResult, lastException: null, pageErrors: pageErrors() };
+      provenance.readinessChecks ??= []; provenance.readinessChecks.push(check);
+      writeJson(path.join(OUT, 'readiness-checks.json'), provenance.readinessChecks); checkpoint();
+      return check;
+    }
+    await delay(intervalMs);
+  }
+  const errors = pageErrors();
+  const resourceFailure = errors.some(item => item.method === 'Network.loadingFailed' ||
+    item.method === 'Network.responseReceived' && item.params.response.status >= 400);
+  const scriptFailure = errors.some(item => item.method === 'Runtime.exceptionThrown' || item.method === 'Log.entryAdded');
+  const reason = lastException ? 'READY_EXPRESSION_ERROR' : resourceFailure ? 'RESOURCE_LOAD_FAILURE' :
+    scriptFailure ? 'PRODUCT_SCRIPT_ERROR' : label.includes('renderer') ? 'RENDERER_BOOT_TIMEOUT' : 'PRODUCT_BOOT_TIMEOUT';
+  const diagnostic = { label, status: 'FAIL', reason, attempts, elapsedMs: Date.now() - startedAt,
+    lastResult, lastException, documentReadyState: lastResult?.readyState ?? 'unavailable',
+    product: lastResult ? { hasInkbox: lastResult.hasInkbox, hasWorld: lastResult.hasWorld,
+      speedIndex: lastResult.speedIndex, hasThreeRenderer: lastResult.hasThreeRenderer } : null,
+    pageErrors: errors };
+  provenance.readinessChecks ??= []; provenance.readinessChecks.push(diagnostic);
+  writeJson(path.join(OUT, 'readiness-checks.json'), provenance.readinessChecks); checkpoint();
+  const error = new Error(`${reason}: ${label}`);
+  error.diagnostic = diagnostic;
+  throw error;
+}
+
 async function prepare(variant, { renderer = 'Three', map = 'standard', native = false, normalize = true } = {}) {
   server.setNative(native);
   browser.session.cdp.events.length = 0;
   const query = new URLSearchParams({ g4variant: variant, ...(renderer === 'Three' ? { renderer: '3d' } : {}) });
   await browser.session.cdp.send('Page.navigate', { url: `${server.origin}/inkbox.html?${query}` });
   await browser.session.cdp.send('Page.bringToFront');
-  if (!await browser.session.waitFor('return !!window.inkbox?.world && window.inkbox.speedIndex === 0', { timeoutMs: 30000 })) throw new Error('PRODUCT_BOOT_BLOCKED');
-  if (renderer === 'Three' && !await browser.session.waitFor('return !!window.inkbox?.render3d?.renderer', { timeoutMs: 30000 })) throw new Error('RENDERER_BOOT_BLOCKED');
+  await waitForProduct(`${variant}-world`, state => state.hasWorld && state.speedIndex === 0);
+  if (renderer === 'Three') await waitForProduct(`${variant}-renderer`, state => state.hasThreeRenderer);
+  const beforeSetupViewport = await captureViewport(`${variant}-before-world-setup`, { renderer,
+    requireDocumentStart: true, requireCanvas: true });
   const setup = await pageCall('setup', { map, native, normalize });
-  if (setup.viewport.width !== 1366 || setup.viewport.height !== 768 || setup.viewport.dpr !== 1) throw new Error('VIEWPORT_DRIFT');
+  const afterSetupViewport = await captureViewport(`${variant}-after-world-setup`, { renderer,
+    requireDocumentStart: true, requireCanvas: true });
+  setup.viewportValidation = { beforeSetup: beforeSetupViewport, afterSetup: afterSetupViewport };
   return setup;
 }
 
@@ -115,7 +270,7 @@ async function run(label, variant, options = {}) {
   return entry;
 }
 
-async function s0() {
+async function s0({ s0r = false } = {}) {
   const referenceFiles = ['src/inkbox/sim/hydrology.js', 'src/inkbox/world/terrain.js', 'src/inkbox/main.js',
     'src/inkbox/render3d/stage/PlaneStage.js', 'src/inkbox/render3d/WorldRenderBridge.js', 'src/inkbox/sim/powers.js'];
   for (const file of referenceFiles) provenance.files[file] = { blob: git('rev-parse', `HEAD:${file}`), sha256: sha256(fs.readFileSync(path.join(ROOT, file))) };
@@ -145,6 +300,9 @@ async function s0() {
   provenance.environment = browser.environment;
   try { provenance.environment.powerMode = execFileSync('powercfg', ['/getactivescheme'], { encoding: 'utf8', windowsHide: true }).trim(); }
   catch { provenance.environment.powerMode = null; provenance.environment.powerModeReason = 'Host power scheme command unavailable.'; }
+  const blankViewport = await captureViewport('about-blank-before-product-navigation');
+  writeJson(path.join(OUT, 'viewport-preflight.json'), blankViewport);
+  await browser.session.cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: DOCUMENT_START_VIEWPORT });
   await browser.session.cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: BOOT_PAUSE });
   const setup = await prepare('V0_current'); checkT0(setup);
   const hardware = classifyHardware(browser.environment, setup.webgl);
@@ -157,6 +315,17 @@ async function s0() {
     await run(`s0-${variant}-binding`, variant, { warmup: 12, count: 24, mode: 'smoke' });
   const fingerprints = bindings.map(b => b.proof.fingerprint.split(':').at(-1));
   if (new Set(fingerprints).size !== 4) throw new Error('VARIANT_FINGERPRINT_COLLISION');
+  if (s0r) {
+    manifest.stages.S0R = { status: 'PASS', viewportPreflight: 'PASS', v0Oracle: 'PASS',
+      sampledVariants: manifest.runs.map(r => r.variant), measuredFramesPerVariant: 24,
+      bindingFingerprints: 'PASS', realProductCalls: 'PASS', hardware: 'PASS',
+      formalStages: 'NOT_RUN', nextStageRequiresSeparateInstruction: true };
+    manifest.stages.S0 = { status: 'NOT_RUN', reason: 'S0R_REPAIR_SMOKE_ONLY; formal S0 native V0 direct sample is not part of this smoke.' };
+    manifest.status = 'INCONCLUSIVE';
+    manifest.reason = 'S0R_SMOKE_PASS_NO_FORMAL_PERFORMANCE_DECISION';
+    checkpoint();
+    return;
+  }
   // Untouched native V0 is descriptive only and is never pooled with normalized ABBA.
   server.setNative(true);
   const nativeResponse = await (await fetch(server.origin + '/src/inkbox/main.js')).arrayBuffer();
@@ -233,27 +402,37 @@ async function s3() {
 }
 
 try {
-  await s0();
+  await s0({ s0r: suite === 's0r' });
   if (!stop && suite === 'all') await s1();
   if (!stop && suite === 'all') await s2();
   if (!stop && suite === 'all') await s3();
   if (!stop) {
-    manifest.status = suite === 'smoke' ? 'S0_PASS' : manifest.primary?.clearBenefit ? 'GO_P1_REVIEW' : 'INCONCLUSIVE';
-    manifest.reason = suite === 'smoke' ? 'REQUESTED_SMOKE_ONLY' : manifest.primary?.clearBenefit ? 'S1_THRESHOLDS_AND_S2_VALID' : 'S1_THRESHOLD_NOT_MET';
+    if (suite === 's0r') {
+      manifest.status = 'INCONCLUSIVE';
+      manifest.reason = 'S0R_SMOKE_PASS_NO_FORMAL_PERFORMANCE_DECISION';
+    } else {
+      manifest.status = suite === 'smoke' ? 'S0_PASS' : manifest.primary?.clearBenefit ? 'GO_P1_REVIEW' : 'INCONCLUSIVE';
+      manifest.reason = suite === 'smoke' ? 'REQUESTED_SMOKE_ONLY' : manifest.primary?.clearBenefit ? 'S1_THRESHOLDS_AND_S2_VALID' : 'S1_THRESHOLD_NOT_MET';
+    }
   }
 } catch (error) {
   const message = error.message.replaceAll(ROOT, '<checkout>');
   const errors = browser ? pageErrors() : [];
   let pageState = null;
   try { if (browser) pageState = await browser.session.js('return {url:location.href,ready:document.readyState,visibility:document.visibilityState,world:!!window.inkbox?.world,speed:window.inkbox?.speedIndex,renderer:!!window.inkbox?.render3d?.renderer,body:document.body?.innerText?.slice(0,1000)};', { timeoutMs: 5000 }); } catch {}
-  writeJson(path.join(OUT, 'failure.json'), { message, browserStderr: error.browserStderr ?? null, pageErrors: errors, pageState });
+  writeJson(path.join(OUT, 'failure.json'), { message, diagnostic: error.diagnostic ?? null,
+    browserStderr: error.browserStderr ?? null, browserLaunch: error.browserLaunch ?? null,
+    pageErrors: errors, pageState });
   if (!manifest.stages.S0) manifest.stages.S0 = { status: 'FAIL', reason: message };
+  if (suite === 's0r' && !manifest.stages.S0R) manifest.stages.S0R = { status: 'FAIL', reason: message,
+    diagnostic: error.diagnostic ?? null };
   fail(manifest.stages.S0?.status === 'PASS' ? 'INCONCLUSIVE' : 'ENV_BLOCKED', /EVENT_BLOCKED/.test(message) ? 'EVENT_BLOCKED' : 'EXPERIMENT_BLOCKED', { message });
 } finally {
-  for (const stage of ['S0', 'S1', 'S2', 'S3']) manifest.stages[stage] ??= { status: 'NOT_RUN', reason: manifest.reason };
+  for (const stage of ['S0R', 'S0', 'S1', 'S2', 'S3']) manifest.stages[stage] ??= { status: 'NOT_RUN', reason: manifest.reason };
   manifest.finishedAt = new Date().toISOString(); checkpoint();
   try { await browser?.session.close(); } catch (error) { manifest.failures.push({ reason: 'BROWSER_CLEANUP', message: error.message }); }
   await server?.close(); checkpoint();
   console.log(JSON.stringify({ status: manifest.status, reason: manifest.reason, runs: manifest.runs.length, out: path.relative(ROOT, OUT).replaceAll('\\', '/') }));
-  process.exitCode = ['GO_P1_REVIEW', 'NO_GO', 'S0_PASS'].includes(manifest.status) ? 0 : 2;
+  process.exitCode = manifest.status === 'INCONCLUSIVE' && manifest.stages.S0R?.status === 'PASS' ? 0 :
+    ['GO_P1_REVIEW', 'NO_GO', 'S0_PASS'].includes(manifest.status) ? 0 : 2;
 }

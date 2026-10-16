@@ -56,7 +56,7 @@ export async function launchLabBrowser({ executable = findBrowser(), headless = 
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'inkbox-g4-p0a-'));
   const args = [
     ...(headless ? ['--headless=new'] : []), '--no-first-run', '--no-default-browser-check',
-    '--disable-extensions', '--disable-background-networking',
+    '--disable-extensions', '--disable-background-networking', '--force-device-scale-factor=1',
     `--remote-debugging-address=127.0.0.1`, `--remote-debugging-port=${debugPort}`,
     `--user-data-dir=${userDataDir}`, '--window-size=1366,768', 'about:blank',
   ];
@@ -64,22 +64,21 @@ export async function launchLabBrowser({ executable = findBrowser(), headless = 
   let stderr = '', spawnError = null;
   child.stderr.on('data', data => { stderr = (stderr + data).slice(-24000); });
   child.once('error', error => { spawnError = error; });
-  let browserConnection, pageConnection;
+  let browserConnection, pageConnection, versionInfo = null;
   try {
     const base = `http://127.0.0.1:${debugPort}`;
-    let version;
     for (let i = 0; i < 75; i++) {
       if (spawnError) throw spawnError;
-      try { const r = await fetch(`${base}/json/version`); if (r.ok) { version = await r.json(); break; } } catch {}
+      try { const r = await fetch(`${base}/json/version`); if (r.ok) { versionInfo = await r.json(); break; } } catch {}
       await sleep(200);
     }
-    if (!version) throw new Error('BROWSER_START_BLOCKED: CDP port did not become ready');
-    browserConnection = await connect(version.webSocketDebuggerUrl);
+    if (!versionInfo) throw new Error('BROWSER_START_BLOCKED: CDP port did not become ready');
+    browserConnection = await connect(versionInfo.webSocketDebuggerUrl);
     const target = await (await fetch(`${base}/json/new?about:blank`, { method: 'PUT' })).json();
     if (!target.webSocketDebuggerUrl) throw new Error('CDP target creation failed');
     pageConnection = await connect(target.webSocketDebuggerUrl);
     const session = new Session(pageConnection, child, userDataDir, {
-      browser: version.Browser, debugPort, width: 1366, height: 768, headless,
+      browser: versionInfo.Browser, debugPort, width: 1366, height: 768, headless,
     });
     await pageConnection.send('Page.enable');
     await pageConnection.send('Runtime.enable');
@@ -87,6 +86,7 @@ export async function launchLabBrowser({ executable = findBrowser(), headless = 
     await pageConnection.send('Network.enable');
     await pageConnection.send('Emulation.setDeviceMetricsOverride', {
       width: 1366, height: 768, deviceScaleFactor: 1, mobile: false,
+      screenWidth: 1366, screenHeight: 768,
     });
     let systemInfo, systemInfoError = null;
     try { systemInfo = await browserConnection.send('SystemInfo.getInfo'); }
@@ -96,7 +96,8 @@ export async function launchLabBrowser({ executable = findBrowser(), headless = 
       os: { platform: os.platform(), release: os.release(), arch: os.arch() },
       cpu: { model: os.cpus()[0]?.model ?? null, logicalCount: os.cpus().length },
       browser: browserVersion, headless, gpuDisabledByHarness: false,
-      viewport: { width: 1366, height: 768, dpr: 1 },
+      launchScaleOverride: '--force-device-scale-factor=1',
+      requestedViewport: { width: 1366, height: 768, dpr: 1 },
       gpu: systemInfo?.gpu ?? null, systemInfoError,
       refreshRateHz: null, refreshRateReason: 'No reliable display-mode API used; RAF cadence is not a refresh-rate measurement.',
     };
@@ -110,6 +111,8 @@ export async function launchLabBrowser({ executable = findBrowser(), headless = 
     const session = new Session(pageConnection ?? { ws: { readyState: 3, close() {} }, rejectPending() {} }, child, userDataDir, {});
     await session.close();
     error.browserStderr = stderr.replaceAll(userDataDir, '<temporary-profile>');
+    error.browserLaunch = { browser: versionInfo?.Browser ?? null, debugPort,
+      cdpEndpointDiscovered: !!versionInfo, stderr: error.browserStderr };
     throw error;
   }
 }

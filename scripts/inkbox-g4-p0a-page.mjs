@@ -42,6 +42,21 @@ function cameraState() {
     viewW: k.camera.viewW, viewH: k.camera.viewH, relief: k.camera.relief };
 }
 
+function viewportState() {
+  const k = window.inkbox, vv = window.visualViewport;
+  const canvases = [...document.querySelectorAll('#inkCanvas, #inkCanvas3D')].map(canvas => {
+    const rect = canvas.getBoundingClientRect(), style = getComputedStyle(canvas);
+    return { id: canvas.id, width: canvas.width, height: canvas.height,
+      clientWidth: canvas.clientWidth, clientHeight: canvas.clientHeight,
+      rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+      display: style.display, visibility: style.visibility,
+      active: canvas === (k?.render3d?.renderer?.gpu?.domElement ?? k?.canvas ?? null) };
+  });
+  return { innerWidth, innerHeight, dpr: devicePixelRatio, outerWidth, outerHeight,
+    visualViewport: vv ? { width: vv.width, height: vv.height, scale: vv.scale,
+      offsetLeft: vv.offsetLeft, offsetTop: vv.offsetTop } : null, canvases };
+}
+
 export async function setup({ normalize = true, map = 'standard', native = false } = {}) {
   const k = window.inkbox;
   if (k.speedIndex !== 0 || k.world.day !== 0) throw new Error('BOOT_PAUSE_FAILED: simulation ran before setup');
@@ -78,7 +93,7 @@ export async function setup({ normalize = true, map = 'standard', native = false
   setupRecord = { beforeWarm, t0, otherPlanes, v0PrewarmMs, normalization, map, native,
     speedIndex, speed: TIME.speeds[speedIndex], advanceState: structuredClone(k.advanceState),
     world: { w: k.world.w, h: k.world.h, seed: k.world.seed, day: k.world.day, generation: k.world.generation },
-    camera: cameraState(), webgl: webglInfo(), viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio },
+    camera: cameraState(), webgl: webglInfo(), viewport: viewportState(),
     visibility: document.visibilityState,
     initializationExcluded: '30 direct V0 steps, shared enterStaticSea + flushDirty, normal scene/cache preparation, camera fit; all outside RAF sampling.' };
   return setupRecord;
@@ -178,7 +193,7 @@ export async function sample({ warmup = 120, count = 600, mode = 'primary', even
       };
     }
   }
-  let previous = null, prevProbe = null, prevAccum = k.hydroAccum, measuredStartCount = 0;
+  let previous = null, prevProbe = null, prevAccum = k.hydroAccum, prevProductTime = null, measuredStartCount = 0;
   try {
     k.setSpeed(setupRecord.speedIndex);
     for (let i = -warmup; i <= count; i++) {
@@ -186,12 +201,24 @@ export async function sample({ warmup = 120, count = 600, mode = 'primary', even
       const delta = previous === null ? null : timestamp - previous;
       const hydroSteps = prevProbe && probe ? probe.hydroStepCount - prevProbe.hydroStepCount : null;
       const hydrologyMs = prevProbe && probe ? probe.hydroTotalMs - prevProbe.hydroTotalMs : null;
-      const expected = delta === null ? null : Math.min(3, Math.floor((prevAccum + Math.min(delta / 1000, .12) + 1e-9) / .16));
+      const productLastTime = k.lastTime;
+      const rawProductDt = prevProductTime === null ? null : productLastTime - prevProductTime;
+      const productDt = rawProductDt === null ? null : Math.min(Math.max(rawProductDt, 0), .12);
+      let expectedAccum = productDt === null ? null : prevAccum + productDt, expected = null;
+      if (expectedAccum !== null) {
+        expected = 0;
+        while (expectedAccum >= .16 && expected < 3) { expectedAccum -= .16; expected++; }
+      }
+      const cadenceMatch = expected === null ? null : hydroSteps === expected && Object.is(expectedAccum, k.hydroAccum);
       const record = { frame: i, rafTimestamp: timestamp, rafIntervalMs: delta,
         updateMs: diagnostics ? updateMs : null, renderSubmitMs: diagnostics ? renderSubmitMs : null,
         stageUpdateMs: diagnostics ? stageUpdateMs : null, stageRenderMs: diagnostics ? stageRenderMs : null,
         cpuUnavailableReason: diagnostics ? null : 'Low-perturbation main round does not wrap product update/render.',
-        hydrologyMs, hydroSteps, expectedHydroSteps: expected, hydroAccum: k.hydroAccum,
+        hydrologyMs, hydroSteps, expectedHydroSteps: expected, hydroCadenceMatch: cadenceMatch,
+        productLastTimeSeconds: productLastTime, productDtSeconds: productDt, rawProductDtSeconds: rawProductDt,
+        hydroAccumulatorBefore: prevAccum, expectedHydroAccumulatorAfter: expectedAccum,
+        hydroAccumulatorAfter: k.hydroAccum,
+        hydroStepCounterBefore: prevProbe?.hydroStepCount ?? null, hydroStepCounterAfter: probe?.hydroStepCount ?? null,
         visibility: document.visibilityState, contextLost: contextLost || !!gl?.isContextLost(),
         gpuMs: null, gpuValid: null, gpuDisjoint: null,
         gpuUnavailableReason: diagnostics ? (timer ? 'Asynchronous query result stored separately by frame.' : 'Timer extension unavailable.') : 'GPU queries excluded from low-perturbation main round.',
@@ -219,7 +246,7 @@ export async function sample({ warmup = 120, count = 600, mode = 'primary', even
           if (hydroSteps > 0 && steps % 5 === 0) record.retreat = { step: steps, ...patchSummary(k.world, point) };
         }
       }
-      previous = timestamp; prevProbe = probe; prevAccum = k.hydroAccum;
+      previous = timestamp; prevProbe = probe; prevAccum = k.hydroAccum; prevProductTime = productLastTime;
       updateMs = 0; renderSubmitMs = 0; stageUpdateMs = 0; stageRenderMs = 0;
     }
     armed = false; k.setSpeed(0);
@@ -233,7 +260,7 @@ export async function sample({ warmup = 120, count = 600, mode = 'primary', even
       finalCamera: cameraState(), finalWebgl: webglInfo(),
       validity: { visible: frames.every(f => f.visibility === 'visible'),
         count: frames.length === count && frames.every(f => Number.isFinite(f.rafIntervalMs) && f.rafIntervalMs > 0),
-        hydroCadence: native ? null : frames.every(f => f.hydroSteps === f.expectedHydroSteps && f.hydroSteps <= 3),
+        hydroCadence: native ? null : frames.every(f => f.hydroCadenceMatch === true && f.hydroSteps <= 3),
         events: !events || eventLog.length === 2 && eventLog[0].after.waterSum > eventLog[0].before.waterSum && eventLog[1].after.heightSum > eventLog[1].before.heightSum } };
   } finally {
     armed = false; k.setSpeed(0);
