@@ -159,7 +159,33 @@ async function finalizeOwnedBrowser(child, profile, cdp) {
   cdp?.rejectPending(new Error('CDP session closed'));
   try { cdp?.ws.close(); } catch { /* already closed */ }
   const termination = stopFrozenWindowsProcesses(frozen);
-  if (!frozen.supported) stopOwnedBrowser(child);
+  if (!frozen.supported || frozen.error) {
+    // Some managed Windows environments deny WMI process enumeration. In that
+    // case, use only the exact launcher PID returned by spawn(); taskkill /T
+    // scopes termination to that owned process tree. Profile deletion below
+    // remains the final proof that no process holds files in the isolated dir.
+    const waitForLauncherExit = async (timeoutMs) => {
+      if (!child || child.exitCode !== null || child.signalCode !== null) return true;
+      const deadline = Date.now() + timeoutMs;
+      while (Date.now() < deadline) {
+        if (child.exitCode !== null || child.signalCode !== null) return true;
+        await sleep(100);
+      }
+      return child.exitCode !== null || child.signalCode !== null;
+    };
+    let launcherExited = await waitForLauncherExit(1200);
+    if (!launcherExited) {
+      stopOwnedBrowser(child);
+      launcherExited = await waitForLauncherExit(3000);
+    }
+    const cleanup = launcherExited ? await removeOwnedProfile(profile)
+      : { removed: false, attempts: 0, lastError: 'Owned browser launcher did not exit; profile retained' };
+    const processesExited = launcherExited && cleanup.removed;
+    return { ...cleanup, processesExited, complete: processesExited,
+      processEvidence: { supported: frozen.supported, frozen: frozen.processes.length,
+        remaining: null, discoveryError: frozen.error || null, termination,
+        fallback: 'exact spawned PID tree plus successful isolated-profile removal', launcherExited } };
+  }
   await sleep(400);
   let remaining = ownedWindowsProcesses(child, profile, frozen.processes);
   for (let attempt = 0; !remaining.error && remaining.processes.length && attempt < 4; attempt++) {
@@ -479,6 +505,7 @@ export class Session {
  *   传 `true` 会去掉这个开关去试真显卡——⚠️ 只在做「真实 GPU 基线」时用，
  *   而且**必须如实标注渲染器名**：换开关会让历史读数不再可比（M1.1D D5.3/D5.4）。
  * @param {boolean} [options.headless]   默认 `true`；false 时创建可见浏览器窗口。
+ * @param {boolean} [options.disableBackgroundThrottling] 关闭后台页计时节流，供固定帧数的诊断实验使用。
  */
 export async function launch({
   url = 'about:blank',
@@ -489,6 +516,7 @@ export async function launch({
   timeoutMs = 15000,
   gpu = false,
   headless = true,
+  disableBackgroundThrottling = false,
 } = {}) {
   if (typeof headless !== 'boolean') throw new TypeError('headless must be a boolean');
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new TypeError('timeoutMs must be positive and finite');
@@ -504,6 +532,11 @@ export async function launch({
     child = spawn(executable, [
     ...(headless ? ['--headless=new'] : []),
     ...(gpu ? [] : ['--disable-gpu']),
+    ...(disableBackgroundThrottling ? [
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
+      '--disable-background-timer-throttling',
+    ] : []),
     '--no-first-run',
     '--no-default-browser-check',
     '--hide-scrollbars',
