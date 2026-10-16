@@ -1,0 +1,75 @@
+// G4-P0-A localhost-only, read-only experiment server. No product file is edited.
+import http from 'node:http';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import crypto from 'node:crypto';
+
+const MAIN_IMPORT = "import { stepHydrology } from './sim/hydrology.js';";
+const TEST_IMPORT = "import { stepHydrology } from '/__g4__/hydrology-entry.mjs';";
+const R2_IMPORT = "import { M, SEA_LEVEL } from './env.mjs';";
+const BROWSER_IMPORT = "import * as __g4H from '/src/inkbox/sim/hydrology.js'; import * as __g4T from '/src/inkbox/world/terrain.js'; import * as __g4Noise from '/src/inkbox/core/noise.js'; import { SEA_LEVEL } from '/src/inkbox/core/config.js'; const M = { H: __g4H, T: __g4T, noise: __g4Noise };";
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.woff': 'font/woff', '.woff2': 'font/woff2', '.wasm': 'application/wasm' };
+const sha256 = (data) => crypto.createHash('sha256').update(data).digest('hex');
+
+function replaceExactlyOnce(source, before, after, label) {
+  const first = source.indexOf(before);
+  if (first < 0 || source.indexOf(before, first + before.length) >= 0) throw new Error(`${label}: expected exactly one original import`);
+  return { result: source.slice(0, first) + after + source.slice(first + before.length), offset: first };
+}
+
+export async function createLabServer({ root }) {
+  if (!root) throw new Error('createLabServer requires root');
+  const absRoot = path.resolve(root);
+  const mainPath = path.join(absRoot, 'src/inkbox/main.js');
+  const variantsPath = path.join(absRoot, 'analysis/g4/p0a/reference/variants-r2.mjs');
+  const adapterPath = path.join(absRoot, 'scripts/inkbox-g4-p0a-adapter.mjs');
+  const [mainBytes, variantsBytes, adapterBytes] = await Promise.all([fs.readFile(mainPath), fs.readFile(variantsPath), fs.readFile(adapterPath)]);
+  const mainSource = mainBytes.toString('utf8');
+  const variantsSource = variantsBytes.toString('utf8');
+  const adapterSource = adapterBytes.toString('utf8');
+  const main = replaceExactlyOnce(mainSource, MAIN_IMPORT, TEST_IMPORT, 'main.js');
+  const variants = replaceExactlyOnce(variantsSource, R2_IMPORT, BROWSER_IMPORT, 'variants-r2.mjs');
+  const mainResponse = Buffer.from(main.result);
+  const variantsResponse = Buffer.from(variants.result);
+  // The only difference outside the import is zero bytes by construction; assert it explicitly.
+  if (main.result.slice(0, main.offset) !== mainSource.slice(0, main.offset) || main.result.slice(main.offset + TEST_IMPORT.length) !== mainSource.slice(main.offset + MAIN_IMPORT.length)) throw new Error('main.js contains an unexpected change');
+  if (variants.result.slice(0, variants.offset) !== variantsSource.slice(0, variants.offset) || variants.result.slice(variants.offset + BROWSER_IMPORT.length) !== variantsSource.slice(variants.offset + R2_IMPORT.length)) throw new Error('R2 variant body changed');
+  const adapterSourceSHA256 = sha256(adapterBytes);
+  const marker = '__G4_ADAPTER_SOURCE_SHA256__';
+  const adapter = replaceExactlyOnce(adapterSource, marker, adapterSourceSHA256, 'adapter metadata');
+  const adapterResponse = Buffer.from(adapter.result);
+  const provenance = Object.freeze({
+    mainSourceSHA256: sha256(mainBytes), mainResponseSHA256: sha256(mainResponse),
+    mainImportDiff: Object.freeze({ line: mainSource.slice(0, main.offset).split('\n').length, before: MAIN_IMPORT, after: TEST_IMPORT }),
+    variantsSourceSHA256: sha256(variantsBytes), variantsBrowserSHA256: sha256(variantsResponse),
+    variantsBodySourceSHA256: sha256(variantsSource.slice(variants.offset + R2_IMPORT.length)),
+    variantsBodyBrowserSHA256: sha256(variants.result.slice(variants.offset + BROWSER_IMPORT.length)),
+    adapterSourceSHA256, adapterResponseSHA256: sha256(adapterResponse),
+  });
+  let native = false;
+  const server = http.createServer(async (request, response) => {
+    try {
+      if (request.method !== 'GET' && request.method !== 'HEAD') { response.writeHead(405).end(); return; }
+      const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
+      let content;
+      let mimePath = pathname;
+      if (pathname === '/src/inkbox/main.js' && !native) content = mainResponse;
+      else if (pathname === '/__g4__/hydrology-entry.mjs') content = adapterResponse;
+      else if (pathname === '/__g4__/variants-r2.mjs') content = variantsResponse;
+      else {
+        if (pathname.startsWith('/__g4__/')) { response.writeHead(404).end('Unknown experiment resource'); return; }
+        const rel = decodeURIComponent(pathname === '/' ? '/inkbox.html' : pathname).replace(/^\/+/, '');
+        const target = path.resolve(absRoot, rel);
+        if (!target.startsWith(absRoot + path.sep)) { response.writeHead(403).end('Forbidden'); return; }
+        mimePath = target;
+        try { content = await fs.readFile(target); }
+        catch (error) { response.writeHead(error.code === 'ENOENT' || error.code === 'EISDIR' ? 404 : 500).end('Unavailable'); return; }
+      }
+      response.writeHead(200, { 'Content-Type': `${TYPES[path.extname(mimePath).toLowerCase()] || 'application/octet-stream'}${/\.(?:html|js|mjs|css|json)$/.test(mimePath) ? '; charset=utf-8' : ''}`, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+      response.end(request.method === 'HEAD' ? undefined : content);
+    } catch (error) { response.writeHead(400).end(String(error.message || error)); }
+  });
+  await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
+  const address = server.address();
+  return { origin: `http://127.0.0.1:${address.port}`, provenance, setNative(value) { native = value === true; }, close: () => new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve())) };
+}

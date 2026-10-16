@@ -1,0 +1,10 @@
+standard    V0_current                 sim 21.23/31.61 | stage 60.99/102.68 | terr 22.30/36.59 water 17.37/38.89 veg 18.80/29.27 bridge 2.57/3.58 | MB/step 43.80 | Δh 66167 Δw 68943 Δtype 69
+standard    V1_noErosion               sim 12.88/17.32 | stage 40.60/57.95 | terr 0.79/4.85 water 18.48/30.51 veg 18.58/25.88 bridge 2.24/3.66 | MB/step 33.23 | Δh 0 Δw 70284 Δtype 3
+standard    V2_seaSkipProto            sim 2.40/7.31 | stage 2.10/3.08 | terr 0.00/0.01 water 0.00/0.00 veg 0.00/0.01 bridge 2.04/3.02 | MB/step 0.00 | Δh 0 Δw 0 Δtype 0
+standard    V3_staticSeaStrict         sim 2.87/9.07 | stage 1.86/2.89 | terr 0.00/0.00 water 0.00/0.00 veg 0.00/0.00 bridge 1.82/2.85 | MB/step 0.00 | Δh 0 Δw 0 Δtype 0
+standard    V9_hydrologyOff            sim 0.00/0.01 | stage 1.83/2.64 | terr 0.00/0.01 water 0.00/0.00 veg 0.00/0.00 bridge 1.79/2.59 | MB/step 0.00 | Δh 0 Δw 0 Δtype 0
+archipelago V0_current                 sim 27.64/34.30 | stage 57.96/100.95 | terr 22.54/37.38 water 22.86/63.53 veg 9.73/13.58 bridge 2.63/2.79 | MB/step 43.73 | Δh 64081 Δw 88730 Δtype 101
+archipelago V1_noErosion               sim 15.26/17.25 | stage 32.92/53.37 | terr 1.56/5.78 water 19.74/35.66 veg 9.18/15.26 bridge 2.30/2.41 | MB/step 25.86 | Δh 0 Δw 90595 Δtype 10
+archipelago V2_seaSkipProto            sim 2.53/14.64 | stage 1.82/19.57 | terr 0.00/0.03 water 0.00/3.73 veg 0.00/13.57 bridge 1.78/3.00 | MB/step 0.00 | Δh 0 Δw 0 Δtype 0
+archipelago V3_staticSeaStrict         sim 2.83/15.70 | stage 2.22/2.41 | terr 0.00/0.01 water 0.00/0.15 veg 0.00/0.01 bridge 2.15/2.25 | MB/step 0.00 | Δh 0 Δw 0 Δtype 0
+archipelago V9_hydrologyOff            sim 0.00/0.00 | stage 1.94/2.79 | terr 0.00/0.01 water 0.00/0.00 veg 0.00/0.00 bridge 1.89/2.76 | MB/step 0.00 | Δh 0 Δw 0 Δtype 0
