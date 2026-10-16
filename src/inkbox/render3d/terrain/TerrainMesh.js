@@ -40,6 +40,10 @@ export class TerrainMesh {
     this.regionInside = true;
     this.geometry = gridGeometry(world, coordinates);
     this.geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(world.size * 3), 3).setUsage(THREE.DynamicDrawUsage));
+    this.colorTypeSnapshot = new Uint8Array(world.size);
+    this.colorTypeSnapshot.fill(255);
+    this.colorFireSnapshot = fireEnabled ? new Float32Array(world.size) : null;
+    this.colorFireSnapshot?.fill(Number.NaN);
     // Steep boundary slopes can face away even while the camera stays above ground.
     this.material = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
@@ -110,24 +114,42 @@ export class TerrainMesh {
     const writeColor = writeType || writeFire;
     if (!writeHeight && !writeColor) return;
     const { position, color } = this.geometry.attributes, w = this.world;
+    let colorChanged = false;
     for (let y = region.y0; y <= region.y1; y++) {
+      let colorRangeX0 = w.w, colorRangeX1 = -1;
       for (let x = region.x0; x <= region.x1; x++) {
         const i = y * w.w + x;
         if (writeHeight) position.setY(i, this.elevation.node(x, y));
         if (writeColor) {
-          const c = this.palette[w.type[i]] || this.palette[5];
+          const type = w.type[i];
           const fire = this.fireEnabled ? w.fire[i] : 0;
+          if (this.colorTypeSnapshot[i] === type
+            && (!this.fireEnabled || this.colorFireSnapshot[i] === fire)) continue;
+          this.colorTypeSnapshot[i] = type;
+          if (this.fireEnabled) this.colorFireSnapshot[i] = fire;
+          const c = this.palette[w.type[i]] || this.palette[5];
+          let r = c.r, g = c.g, b = c.b;
           if (fire > 0.02) {
             const heat = Math.min(1, fire * 1.15), mix = heat * 0.86;
-            color.setXYZ(i, c.r * (1 - mix) + mix,
-              c.g * (1 - mix) + (214 - heat * 70) / 255 * mix,
-              c.b * (1 - mix) + (120 - heat * 90) / 255 * mix);
-          } else color.setXYZ(i, c.r, c.g, c.b);
+            r = c.r * (1 - mix) + mix;
+            g = c.g * (1 - mix) + (214 - heat * 70) / 255 * mix;
+            b = c.b * (1 - mix) + (120 - heat * 90) / 255 * mix;
+          }
+          const offset = i * 3, values = color.array;
+          if (values[offset] === Math.fround(r) && values[offset + 1] === Math.fround(g)
+            && values[offset + 2] === Math.fround(b)) continue;
+          color.setXYZ(i, r, g, b);
+          colorChanged = true;
+          if (x < colorRangeX0) colorRangeX0 = x;
+          if (x > colorRangeX1) colorRangeX1 = x;
         }
       }
       const start = (y * w.w + region.x0) * 3, count = (region.x1 - region.x0 + 1) * 3;
       if (writeHeight) position.addUpdateRange(start, count);
-      if (writeColor) color.addUpdateRange(start, count);
+      if (writeColor && colorRangeX1 >= colorRangeX0) {
+        const colorStart = (y * w.w + colorRangeX0) * 3;
+        color.addUpdateRange(colorStart, (colorRangeX1 - colorRangeX0 + 1) * 3);
+      }
     }
     if (writeHeight) {
       position.needsUpdate = true;
@@ -143,7 +165,7 @@ export class TerrainMesh {
           regionGeometry:this.regionGeometry,inside:this.regionInside,quadW:qw,quadH:w.h-1});
       }
     }
-    if (writeColor) color.needsUpdate = true;
+    if (colorChanged) color.needsUpdate = true;
     // The existing dirty channels are also the only GPU snapshot update source.
     // Disabled art does not collect unbounded upload ranges; re-enable performs a full sync.
     if (this.artProfile) this.artData.update(region, options);

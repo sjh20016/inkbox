@@ -338,6 +338,59 @@ check('TerrainMesh：只给 type ⇒ 重写顶点色、**不碰** Y', () => {
   terrain.dispose();
 });
 
+check('TerrainMesh：颜色来源不变时跳过写入，只为实际变化排队范围', () => {
+  const world = flatWorld();
+  const c = createCoordinates(world);
+  const terrain = new TerrainMesh(world, c);
+  const color = terrain.geometry.attributes.color;
+  const region = { x0: 13, y0: 9, x1: 13, y1: 9 };
+  const i = at(world, 13, 9), oldType = world.type[i];
+  color.clearUpdateRanges();
+  const before = color.version;
+  world.type[i] = (oldType + 1) % TERRAIN_INFO.length;
+  terrain.update(region, { height: false, type: true });
+  assert.equal(color.version, before + 1, '实际颜色改变必须标记一次 needsUpdate');
+  assert.deepEqual(color.updateRanges, [{ start: i * 3, count: 3 }], '单格变化只上传该格的三个颜色分量');
+
+  color.clearUpdateRanges();
+  const unchangedVersion = color.version;
+  terrain.update(region, { height: false, type: true });
+  assert.equal(color.version, unchangedVersion, '重复相同输入不得再次标记 needsUpdate');
+  assert.deepEqual(color.updateRanges, [], '重复相同输入不得再提交 BufferAttribute 范围');
+  terrain.dispose();
+});
+
+check('TerrainMesh：火势阈值与增量颜色结果和完整重建一致', () => {
+  const world = flatWorld();
+  const c = createCoordinates(world);
+  const terrain = new TerrainMesh(world, c, undefined, true);
+  const color = terrain.geometry.attributes.color;
+  const i = at(world, 17, 11), region = { x0: 17, y0: 11, x1: 17, y1: 11 };
+
+  color.clearUpdateRanges();
+  const beforeThresholdVersion = color.version;
+  world.fire[i] = 0.01;
+  terrain.update(region, { height: false, type: false, fire: true });
+  assert.equal(color.version, beforeThresholdVersion, '低于火色阈值不应上传相同 RGB');
+  assert.deepEqual(color.updateRanges, []);
+
+  world.fire[i] = 0.03;
+  terrain.update(region, { height: false, type: false, fire: true });
+  assert.equal(color.version, beforeThresholdVersion + 1, '跨过火色阈值必须刷新颜色');
+  assert.deepEqual(color.updateRanges, [{ start: i * 3, count: 3 }]);
+
+  for (let n = 0; n < 24; n += 1) {
+    const x = 4 + (n * 17) % (W - 8), y = 3 + (n * 11) % (H - 6), cell = at(world, x, y);
+    world.type[cell] = (world.type[cell] + 1) % TERRAIN_INFO.length;
+    world.fire[cell] = n % 3 === 0 ? 0.08 : 0;
+    terrain.update({ x0: x, y0: y, x1: x, y1: y }, { height: false, type: true, fire: true });
+  }
+  const rebuilt = new TerrainMesh(world, c, undefined, true);
+  assert.deepEqual([...color.array], [...rebuilt.geometry.attributes.color.array], '增量顶点色必须等于完整重建');
+  terrain.dispose();
+  rebuilt.dispose();
+});
+
 check('TerrainMesh：默认参数（不传 flags）仍是两项都写', () => {
   const world = flatWorld();
   const c = createCoordinates(world);
