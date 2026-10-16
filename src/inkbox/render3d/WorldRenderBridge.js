@@ -77,6 +77,68 @@ export class WorldRenderBridge {
     this.fireSnapshot = world.fire.slice();
   }
 
+  #ensureChangeLists() {
+    if (this.changeLists) return this.changeLists;
+    const make = () => ({ indices: new Uint32Array(256), length: 0 });
+    this.changeLists = {
+      height: make(), water: make(), type: make(), veg: make(), fire: make(),
+      cells: new Uint32Array(256), masks: new Uint8Array(256), cellLength: 0,
+      cellMask: new Uint8Array(this.world.size),
+    };
+    const lists = this.changeLists;
+    this.changeListAllocationBytes = Object.values(lists).reduce((n, value) => n
+      + (ArrayBuffer.isView(value) ? value.byteLength : value?.indices?.byteLength || 0), 0);
+    return this.changeLists;
+  }
+
+  #push(list, index) {
+    if (list.length === list.indices.length) {
+      const next = new Uint32Array(Math.max(256, list.indices.length * 2));
+      next.set(list.indices); list.indices = next;
+      this.changeListAllocationBytes += next.byteLength;
+    }
+    list.indices[list.length++] = index;
+  }
+
+  #recordChange(lists, key, index, mask) {
+    this.#push(lists[key], index);
+    const cellMask = lists.cellMask[index];
+    if (!cellMask) {
+      if (lists.cellLength === lists.cells.length) {
+        const cap = Math.max(256, lists.cells.length * 2);
+        const cells = new Uint32Array(cap), masks = new Uint8Array(cap);
+        cells.set(lists.cells); masks.set(lists.masks);
+        lists.cells = cells; lists.masks = masks;
+        this.changeListAllocationBytes += cells.byteLength + masks.byteLength;
+      }
+      lists.cells[lists.cellLength] = index;
+      lists.masks[lists.cellLength] = mask;
+      lists.cellLength++;
+    } else {
+      // The union is emitted once per cell; channel lists remain independently exact.
+      const at = lists.cellLength - 1;
+      if (lists.cells[at] === index) lists.masks[at] |= mask;
+    }
+    lists.cellMask[index] |= mask;
+  }
+
+  #resetLists(lists) {
+    lists.height.length = 0; lists.water.length = 0; lists.type.length = 0;
+    lists.veg.length = 0; lists.fire.length = 0;
+    for (let i = 0; i < lists.cellLength; i++) lists.cellMask[lists.cells[i]] = 0;
+    lists.cellLength = 0;
+  }
+
+  changeListMemoryStats() {
+    const lists = this.changeLists;
+    if (!lists) return { enabled: false, allocatedBytes: 0, capacityBytes: 0, capacityCells: 0 };
+    const capacityBytes = lists.cellMask.byteLength + lists.cells.byteLength + lists.masks.byteLength
+      + lists.height.indices.byteLength + lists.water.indices.byteLength + lists.type.indices.byteLength
+      + lists.veg.indices.byteLength + lists.fire.indices.byteLength;
+    return { enabled: true, allocatedBytes: this.changeListAllocationBytes, capacityBytes,
+      capacityCells: lists.cells.length, channelCapacity: lists.height.indices.length };
+  }
+
   /**
    * 对比本帧与上一帧的地形数组和活动火势。
    *
@@ -84,10 +146,13 @@ export class WorldRenderBridge {
    *   **各层全都没变 ⇒ `null`**（调用方据此跳过整条地形更新路径）。
    *   每一层要么是 `null`，要么是**闭区间**格坐标矩形 `{x0, y0, x1, y1}`。
    */
-  changes() {
+  changes(observer = null) {
+    const scanStart = observer ? performance.now() : 0;
     const w = this.world;
     const { height, water, type, veg, fire } = w;
     const old = this.snapshots;
+    const lists = observer ? this.#ensureChangeLists() : null;
+    if (lists) this.#resetLists(lists);
     // 每层各一条包围盒：`[x0, y0, x1, y1]`，`x1 < 0` = 这层没脏。
     // ⚠️ 四层**分开记**——揉成一个 region 就是 M1 那套过粗的 dirty。
     const box = {
@@ -104,17 +169,33 @@ export class WorldRenderBridge {
       const x = i % w.w, y = (i / w.w) | 0;
       // ⚠️ 每层**各自**更新快照：漏更一层，那一层会「只脏一次」然后永久沉默，
       //    而且不报错——症状是「地形改完画面不再跟」。
-      if (dHeight) { old.height[i] = height[i]; grow(box.height, x, y); }
-      if (dWater) { old.water[i] = water[i]; grow(box.water, x, y); }
-      if (dType) { old.type[i] = type[i]; grow(box.type, x, y); }
-      if (dVeg) { old.veg[i] = veg[i]; grow(box.veg, x, y); }
-      if (dFire) { this.fireSnapshot[i] = fire[i]; grow(box.fire, x, y); }
+      if (dHeight) { if (lists) this.#recordChange(lists, 'height', i, 1); else old.height[i] = height[i]; grow(box.height, x, y); }
+      if (dWater) { if (lists) this.#recordChange(lists, 'water', i, 2); else old.water[i] = water[i]; grow(box.water, x, y); }
+      if (dType) { if (lists) this.#recordChange(lists, 'type', i, 4); else old.type[i] = type[i]; grow(box.type, x, y); }
+      if (dVeg) { if (lists) this.#recordChange(lists, 'veg', i, 8); else old.veg[i] = veg[i]; grow(box.veg, x, y); }
+      if (dFire) { if (lists) this.#recordChange(lists, 'fire', i, 16); else this.fireSnapshot[i] = fire[i]; grow(box.fire, x, y); }
     }
     const out = {
       any: false, height: toRegion(box.height), water: toRegion(box.water),
       type: toRegion(box.type), veg: toRegion(box.veg), fire: toRegion(box.fire),
     };
-    if (!out.height && !out.water && !out.type && !out.veg && !out.fire) return null;
+    const changed = !!(out.height || out.water || out.type || out.veg || out.fire);
+    if (lists) {
+      const frame = { world: w, old, fireSnapshot: this.fireSnapshot, lists,
+        bridgeScanCpuMs: performance.now() - scanStart,
+        counts: { height: lists.height.length, water: lists.water.length, type: lists.type.length,
+          veg: lists.veg.length, fire: lists.fire.length, cells: lists.cellLength } };
+      try { observer(frame); } catch (error) {
+        this.observerError = error;
+      } finally {
+        for (let j = 0; j < lists.height.length; j++) { const i = lists.height.indices[j]; old.height[i] = height[i]; }
+        for (let j = 0; j < lists.water.length; j++) { const i = lists.water.indices[j]; old.water[i] = water[i]; }
+        for (let j = 0; j < lists.type.length; j++) { const i = lists.type.indices[j]; old.type[i] = type[i]; }
+        for (let j = 0; j < lists.veg.length; j++) { const i = lists.veg.indices[j]; old.veg[i] = veg[i]; }
+        for (let j = 0; j < lists.fire.length; j++) { const i = lists.fire.indices[j]; this.fireSnapshot[i] = fire[i]; }
+      }
+    }
+    if (!changed) return null;
     out.any = true;
     return out;
   }

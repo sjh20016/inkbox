@@ -18,6 +18,7 @@ import { RealmArtifactLayer } from '../markers/RealmArtifactLayer.js';
 import { geographyFeatures } from './GeographyFeatures.js';
 import { ScalarFieldTexture } from '../art/ScalarFieldTexture.js';
 import { SurfaceVisualFieldTexture } from '../art/SurfaceVisualFieldTexture.js';
+import { PresentationChangeLayer } from '../change/PresentationChangeLayer.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
@@ -35,6 +36,16 @@ export class PlaneStage {
     this.productionAssetsEnabled = !!productionAssets;
     this.decorationsEnabled = !!decorations;
     this.geographyFeatures = geographyFeatures(geography);
+    this._pccEnabled = false;
+    this._pccWaterStepId = null;
+    this._pccLayer = null;
+    this._pccBridgeObserver = frame => this._pccLayer?.observeFrame(frame);
+    this.pcc = {};
+    Object.defineProperties(this.pcc, {
+      observe: { enumerable: true, get: () => this._pccEnabled, set: value => this.setPccObserve(value) },
+      waterStepId: { enumerable: true, get: () => this._pccWaterStepId, set: value => this.setPccWaterStepId(value) },
+      stats: { enumerable: true, get: () => this._pccLayer?.stats ?? null },
+    });
     this.setWorld(world, coordinates);
   }
 
@@ -92,12 +103,29 @@ export class PlaneStage {
     this.regionInside = true;
     this.timings = {};
     this.root.visible = this.visible;
+    if (this._pccEnabled) this._pccLayer = new PresentationChangeLayer(world, { waterStepId: this._pccWaterStepId });
   }
 
   setVisible(visible) {
+    const wasVisible = this.visible;
     this.visible = !!visible;
     this.root.visible = this.visible;
+    if (!wasVisible && this.visible && this._pccLayer) this._pccLayer.reset(this.world, 'visible-restored');
   }
+
+  setPccObserve(enabled) {
+    const next = !!enabled;
+    if (next === this._pccEnabled && (!!this._pccLayer) === next) return;
+    this._pccEnabled = next;
+    if (next && this.world) this._pccLayer = new PresentationChangeLayer(this.world, { waterStepId: this._pccWaterStepId });
+    else { this._pccLayer?.dispose(); this._pccLayer = null; }
+  }
+
+  setPccWaterStepId(value) {
+    this._pccWaterStepId = Number.isSafeInteger(value) ? value : null;
+    this._pccLayer?.setWaterStepId(this._pccWaterStepId);
+  }
+
 
   setEnvironmentAssets(library, enabled = this.productionAssetsEnabled) {
     this.productionAssetsEnabled = !!enabled;
@@ -237,7 +265,7 @@ export class PlaneStage {
   update(dt, zoom = 1) {
     if (!this.visible) return;
     const scanStart = performance.now();
-    const dirty = this.bridge.changes();
+    const dirty = this.bridge.changes(this._pccLayer ? this._pccBridgeObserver : null);
     const bridgeScanMs = performance.now() - scanStart;
     const heightRegion = mergeRegion(this.pending, dirty?.height ?? null);
     const typeRegion = dirty?.type ?? null;
@@ -290,6 +318,7 @@ export class PlaneStage {
   }
 
   releaseLayers() {
+    this._pccLayer?.dispose(); this._pccLayer = null;
     this.terrainSides?.dispose();this.terrainSides=null;
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
     this.scalarField?.dispose();this.scalarField=null;
