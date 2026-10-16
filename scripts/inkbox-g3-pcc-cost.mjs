@@ -14,6 +14,8 @@ import { PresentationChangeLayer as Reference } from './fixtures/pcc-a11-referen
 import { applyArchipelagoFixture } from './inkbox-g2-h3-archipelago-world.mjs';
 import { serializeWorld } from '../src/inkbox/io/save.js';
 import { PlaneStage } from '../src/inkbox/render3d/stage/PlaneStage.js';
+import { visualElevation } from '../src/inkbox/render3d/terrain/VisualElevation.js';
+import { PCC_THRESHOLDS } from '../src/inkbox/render3d/change/PresentationChangeLayer.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT_ROOT = path.join(ROOT, 'reports', 'analysis', 'g3', 'a1-1r');
@@ -147,7 +149,7 @@ function runCorrectness() {
   const modes = ['exact', 'rules', 'shadow'].map(mode => ({ layer: new Candidate(world, { mode, profile: false, waterStepId: 10 }), bridge: new WorldRenderBridge(world) }));
   const profileModes = ['exact', 'rules', 'shadow'].map(mode => ({ layer: new Candidate(world, { mode, profile: true, waterStepId: 10 }), bridge: new WorldRenderBridge(world) }));
   let oraclePrior = Object.fromEntries(['height', 'water', 'type', 'veg', 'fire'].map(k => [k, world[k].slice()]));
-  const counts = { frames: 0, oracleChannelFrames: 0, profileParityFrames: 0, scenarios: [] };
+  const counts = { frames: 0, oracleChannelFrames: 0, profileParityFrames: 0, scenarios: [], temporalGeometryDifferences: [] };
   for (let frame = 0; frame < 13; frame++) {
     if (frame === 8) { reference.setWaterStepId(11); for (const m of [...modes, ...profileModes]) m.layer.setWaterStepId(11); }
     if (frame === 9) { reference.setWaterStepId(35); for (const m of [...modes, ...profileModes]) m.layer.setWaterStepId(35); }
@@ -183,6 +185,14 @@ function runCorrectness() {
       candidateResults.push({ mode: layer.mode, lists, dirty, stats, layer });
       assert.equal(saveHash(world), worldBeforeObservers, `${layer.mode} observer leaves serialized World unchanged`);
     }
+    const rulesStats = candidateResults.find(x => x.mode === 'rules')?.stats;
+    const shadowStats = candidateResults.find(x => x.mode === 'shadow')?.stats;
+    if (rulesStats && shadowStats && (rulesStats.terrainGeoCandidateCells !== shadowStats.terrainGeoCandidateCells
+      || rulesStats.waterGeoCandidateCells !== shadowStats.waterGeoCandidateCells)) {
+      counts.temporalGeometryDifferences.push({ frame, rulesGeo: rulesStats.terrainGeoCandidateCells,
+        shadowGeo: shadowStats.terrainGeoCandidateCells, rulesWaterGeo: rulesStats.waterGeoCandidateCells,
+        shadowWaterGeo: shadowStats.waterGeoCandidateCells });
+    }
     for (const entry of profileModes) {
       const layer = entry.layer; let lists; profileBridgeChanges(entry.bridge, f => { lists = snapshotLists(f); layer.observeFrame(f); });
       assert.equal(entry.bridge.observerError, null, `${layer.mode} profiled bridge observer completed without error`);
@@ -207,7 +217,55 @@ function runCorrectness() {
   for (const x of [...modes, ...profileModes]) x.layer.dispose();
   assert.ok(checkBridges.every(b => b.changeListMemoryStats().capacityBytes === 0), 'released bridge list buffers');
   assert.ok([...modes, ...profileModes].every(x => ownBytes(x.layer) === 0), 'disposed PCC buffers are released');
+  counts.rulesTmaxBounded = runRulesTmaxChecks();
   return counts;
+}
+
+function runRulesTmaxChecks() {
+  const w = 12, h = 12, size = w * h;
+  const world = { w, h, size, seed: 77, generation: { version: 2 }, revision: 0,
+    height: new Float32Array(size).fill(.62), water: new Float32Array(size).fill(.035),
+    type: new Uint8Array(size), veg: new Float32Array(size).fill(.4), fire: new Float32Array(size), touch() { this.revision++; } };
+  const bridge = new WorldRenderBridge(world), layer = new Candidate(world, { mode: 'rules', waterStepId: 0 });
+  const heightCell = 5 * w + 5, waterCell = heightCell + 1, firstUnsynced = new Map();
+  const currentStep = [0];
+  const observe = () => {
+    bridge.changes(frame => layer.observeFrame(frame));
+    assert.ok(bridge.observerError == null, 'rules Tmax harness observer succeeds');
+    for (let i = 0; i < size; i++) {
+      const expectedGeo = Math.fround(visualElevation(world.height[i]));
+      const expectedWaterGeo = Math.fround(Math.fround(visualElevation(world.height[i] + world.water[i])) + .04);
+      assert.equal(layer.exactGeo[i], expectedGeo, `exactGeo oracle cell ${i} at step ${currentStep[0]}`);
+      assert.equal(layer.exactWaterGeo[i], expectedWaterGeo, `exactWaterGeo oracle cell ${i} at step ${currentStep[0]}`);
+      for (const [key, exact, presented] of [['height', layer.exactGeo[i], layer.presentedGeo[i]],
+        ['water', layer.exactWaterGeo[i], layer.presentedWaterGeo[i]]]) {
+        const mark = `${key}:${i}`;
+        if (exact === presented) { firstUnsynced.delete(mark); continue; }
+        if (!firstUnsynced.has(mark)) firstUnsynced.set(mark, currentStep[0]);
+        assert.ok(currentStep[0] - firstUnsynced.get(mark) <= PCC_THRESHOLDS.tMaxWaterSteps,
+          `${key} cell ${i} remains unsynced beyond T_max`);
+      }
+    }
+  };
+  const setStep = step => { currentStep[0] = step; layer.setWaterStepId(step); };
+  const mutateMicro = () => { world.height[heightCell] += .00001; world.water[waterCell] += .00001; world.touch(); };
+  for (let f = 0; f < 4; f++) { mutateMicro(); observe(); assert.equal(layer.stats.forcedSyncCells, 0, 'same-step RAF does not age T_max queue'); }
+  for (let step = 1; step <= PCC_THRESHOLDS.tMaxWaterSteps; step++) { setStep(step); observe(); }
+  assert.equal(layer.presentedGeo[heightCell], layer.exactGeo[heightCell], 'height channel syncs by T_max on normal steps');
+  assert.equal(layer.presentedWaterGeo[waterCell], layer.exactWaterGeo[waterCell], 'water channel syncs by T_max on normal steps');
+
+  mutateMicro(); observe(); setStep(24); observe();
+  assert.equal(layer.presentedGeo[heightCell], layer.exactGeo[heightCell], 'height channel syncs on skipped water-step advance');
+  assert.equal(layer.presentedWaterGeo[waterCell], layer.exactWaterGeo[waterCell], 'water channel syncs on skipped water-step advance');
+
+  world.height[heightCell] += .02; world.water[waterCell] += .02; world.touch(); observe();
+  assert.equal(layer.presentedGeo[heightCell], layer.exactGeo[heightCell], 'height above EPS synchronizes immediately');
+  assert.equal(layer.presentedWaterGeo[waterCell], layer.exactWaterGeo[waterCell], 'water geometry above EPS synchronizes immediately');
+  layer.dispose(); bridge.releaseChangeLists();
+  assert.equal(retainedTypedBytes(layer), 0, 'T_max rules fixture disposes PCC buffers');
+  assert.equal(bridge.changeListMemoryStats().capacityBytes, 0, 'T_max rules fixture releases bridge buffers');
+  return { waterStepFrames: 12, sameStepRafFrames: 4, normalAdvanceSyncBy: PCC_THRESHOLDS.tMaxWaterSteps,
+    skippedAdvanceSync: true, epsImmediateSync: true, exactGeoAndWaterGeoOracle: true };
 }
 function profileBridgeChanges(bridge, observer) { return bridge.changes(observer); }
 function semanticWithoutTiming(s) {
@@ -370,6 +428,9 @@ function childRun({ scene, mode, profile, round, measuredFrames = FRAMES }) {
       for (const key of PHASES) measurements.phaseMs[key].push(stats.phaseMs?.[key] ?? 0);
       retainedRows.push({ dirty: dirtySummary(dirty), unionChangedCells: stats.unionChangedCells, geo: stats.terrainGeoCandidateCells,
         waterGeo: stats.waterGeoCandidateCells, shade: stats.terrainShadeCandidateCells, dependencies: stats.dependencyCount,
+        staticEvents: { wetDry: stats.wetDryCrossings, depthBands: stats.depthBandCrossings, a0DepthBands: stats.a0DepthBandCrossings,
+          typeCrossings: stats.typeCrossings, topology: stats.diagonalFlips, vegetationEligibility: stats.vegetationEligibilityChanges,
+          treeEligibility: stats.treeEligibilityChanges },
         crossings: stats.wetDryCrossings, depthBands: stats.depthBandCrossings, topology: stats.diagonalFlips, forced: stats.forcedSyncCells,
         presentationHashes });
     } else { measurements.combinedMs.push(elapsed); retainedRows.push({ dirty: dirtySummary(dirty), presentationHashes: null }); }
@@ -428,15 +489,26 @@ function runBenchmark() {
       if (mode === 'reference' || mode === 'shadow') {
         assert.deepEqual(current.trace.map(x => x.presentationHashes), baseClassifierHashes(runs, scene, round, 'shadow'),
           `${scene}/${round}/${mode} shadow presentation fields follow current shadow`);
-        assert.deepEqual(current.trace.map(x => [x.geo, x.waterGeo, x.shade, x.crossings, x.depthBands, x.topology, x.forced]),
+        assert.deepEqual(current.trace.map(x => [x.geo, x.waterGeo, x.shade, x.staticEvents, x.forced]),
           baseClassifierTrace(runs, scene, round, 'shadow'), `${scene}/${round}/${mode} classifier count trace matches shadow`);
       } else if (mode === 'rules') {
-        assert.deepEqual(current.trace.map(x => [x.geo, x.waterGeo, x.crossings, x.depthBands, x.topology]),
-          baseClassifierTrace(runs, scene, round, 'shadow').map(x => [x[0], x[1], x[3], x[4], x[5]]),
-          `${scene}/${round}/rules non-shade classification counts match shadow`);
+        const shadow = runs.find(r => r.scene === scene && r.round === round && r.mode === 'shadow');
+        assert.ok(shadow, `missing shadow trace ${scene}/${round}`);
+        assert.deepEqual(current.trace.map(x => x.staticEvents), shadow.trace.map(x => x.staticEvents),
+          `${scene}/${round}/rules static threshold/topology/eligibility events match shadow`);
+        current.temporalGeometryDifferences = [];
+        for (let frame = 0; frame < current.trace.length; frame++) {
+          const r = current.trace[frame], s = shadow.trace[frame];
+          if (r.geo !== s.geo || r.waterGeo !== s.waterGeo) current.temporalGeometryDifferences.push({ frame,
+            rulesGeo: r.geo, shadowGeo: s.geo, rulesWaterGeo: r.waterGeo, shadowWaterGeo: s.waterGeo });
+        }
       }
     }
-    equivalence.push({ scene, round, modesCompared: [...MODES], perStepFiveChannelHashes: 'equal', finalSaveHash: base.finalSaveHash, legacyDirty: 'equal' });
+    const rules = runs.find(r => r.scene === scene && r.round === round && r.mode === 'rules');
+    equivalence.push({ scene, round, modesCompared: [...MODES], perStepFiveChannelHashes: 'equal', finalSaveHash: base.finalSaveHash,
+      legacyDirty: 'equal', rulesGeometryTiming: { differingFrames: rules.temporalGeometryDifferences.length,
+        samples: rules.temporalGeometryDifferences.slice(0, 12),
+        reason: 'Omitting the shadow shade queue changes shared geometry/water force deadlines; this records candidate timing differences without claiming per-frame geometry-count equivalence.' } });
   }
   const profiles = [];
   for (const scene of ['standard', 'archipelago']) for (const mode of ['exact', 'rules', 'shadow']) {
@@ -457,24 +529,38 @@ function runBenchmark() {
       profileOffMedian: percentile(runs.filter(r => r.scene === p.scene && r.mode === p.mode).map(r => r.timings.combined.p50), .5),
       profileOn: p.timings })), profiles };
   fs.mkdirSync(RAW_ROOT, { recursive: true }); fs.mkdirSync(REPORT_ROOT, { recursive: true });
-  fs.writeFileSync(path.join(RAW_ROOT, `runs-${Date.now()}.json`), JSON.stringify(report, null, 2));
-  fs.writeFileSync(path.join(REPORT_ROOT, 'pcc-cost-results.json'), JSON.stringify(report, null, 2));
-  console.log(JSON.stringify({ report: path.join(REPORT_ROOT, 'pcc-cost-results.json'), runs: runs.length, profiles: profiles.length }));
+  const rawPath = path.join(RAW_ROOT, `pcc-cost-results-${Date.now()}.json`), rawText = JSON.stringify(report, null, 2);
+  fs.writeFileSync(rawPath, rawText);
+  const compactRun = run => {
+    const out = { ...run, perStepFieldHashesSha256: hash(JSON.stringify(run.perStepFieldHashes)),
+      traceSha256: hash(JSON.stringify(run.trace)) };
+    delete out.perStepFieldHashes; delete out.trace;
+    return out;
+  };
+  const summary = { schema: 'inkbox.g3.pcc-cost.summary.v1', generatedAt: report.generatedAt, source: report.source,
+    host: report.host, method: report.method, equivalence: report.equivalence, profileOverhead: report.profileOverhead,
+    rawEvidence: { path: path.relative(ROOT, rawPath).replaceAll('\\', '/'), sha256: hash(rawText),
+      benchmarkRunCount: runs.length, profileRunCount: profiles.length },
+    runs: runs.map(compactRun), profiles: profiles.map(compactRun) };
+  const summaryPath = path.join(REPORT_ROOT, 'pcc-cost-summary.json');
+  fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
+  console.log(JSON.stringify({ report: summaryPath, rawReport: rawPath, runs: runs.length, profiles: profiles.length }));
 }
 
 function sourceInfo() {
   let gitSha = null; try { gitSha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8', windowsHide: true }).trim(); } catch {}
+  let workingTreeDirty = null; try { workingTreeDirty = !!execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8', windowsHide: true }).trim(); } catch {}
   const files = ['scripts/inkbox-g3-pcc-cost.mjs', 'src/inkbox/render3d/WorldRenderBridge.js',
     'src/inkbox/render3d/change/PresentationChangeLayer.js', 'src/inkbox/render3d/stage/PlaneStage.js',
     'scripts/fixtures/pcc-a11-reference.mjs'];
-  return { gitSha, sha256: Object.fromEntries(files.map(f => [f, fs.existsSync(path.join(ROOT, f)) ? hash(fs.readFileSync(path.join(ROOT, f))) : null])) };
+  return { gitSha, workingTreeDirty, sha256: Object.fromEntries(files.map(f => [f, fs.existsSync(path.join(ROOT, f)) ? hash(fs.readFileSync(path.join(ROOT, f))) : null])) };
 }
 function hostInfo() { return { platform: process.platform, arch: process.arch, osRelease: os.release(), node: process.version,
   cpu: os.cpus()[0]?.model ?? null, logicalCpuCount: os.cpus().length, totalMemoryBytes: os.totalmem() }; }
 function baseClassifierTrace(runs, scene, round, mode) {
   const run = runs.find(r => r.scene === scene && r.round === round && r.mode === mode);
   assert.ok(run, `missing classifier trace ${scene}/${round}/${mode}`);
-  return run.trace.map(x => [x.geo, x.waterGeo, x.shade, x.crossings, x.depthBands, x.topology, x.forced]);
+  return run.trace.map(x => [x.geo, x.waterGeo, x.shade, x.staticEvents, x.forced]);
 }
 function baseClassifierHashes(runs, scene, round, mode) {
   const run = runs.find(r => r.scene === scene && r.round === round && r.mode === mode);
