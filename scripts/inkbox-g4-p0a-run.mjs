@@ -378,7 +378,7 @@ async function s2() {
   const runs = [];
   for (const variant of ['V0_current', 'V3_staticSeaStrict']) runs.push(await run(`s2-events-${variant}`, variant, { events: true, mode: 'events' }));
   manifest.stages.S2 = { status: 'PASS', runs: runs.map(r => r.label),
-    ruleEquivalenceRequired: false, description: 'Authoritative powers.addWater at measured hydro step 15 and powers.sculpt at step 35; actual mutations retained in raw completion records.' };
+    ruleEquivalenceRequired: false, description: 'Authoritative powers.addWater at measured hydro step 15 and powers.sculpt at step 25; step 25 leaves post-sculpt retreat frames inside the fixed 600-RAF window on the slower V3 run. Actual mutations are retained in raw completion records.' };
   checkpoint();
 }
 

@@ -232,7 +232,7 @@ export async function sample({ warmup = 120, count = 600, mode = 'primary', even
         frames.push(record);
         if (events) {
           const steps = probe.hydroStepCount - measuredStartCount;
-          for (const spec of [{ at: 15, name: 'inland-water', amount: .10, radius: 6 }, { at: 35, name: 'local-sculpt', amount: .026, radius: 5 }]) {
+          for (const spec of [{ at: 15, name: 'inland-water', amount: .10, radius: 6 }, { at: 25, name: 'local-sculpt', amount: .026, radius: 5 }]) {
             if (steps < spec.at || eventLog.some(e => e.name === spec.name)) continue;
             const before = patchSummary(k.world, point); k.history.begin();
             if (spec.name === 'inland-water') P.addWater(k.world, point.x + .5, point.y + .5, spec.radius, spec.amount, k.history);
