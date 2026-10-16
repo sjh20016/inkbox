@@ -1,7 +1,7 @@
 {
   "task": "坐天观井 Inkbox G2-P0.3-FINAL",
-  "generatedAt": "2026-10-16T00:17:13Z",
-  "statusCutoffAt": "2026-10-16T00:17:13Z",
+  "generatedAt": "2026-10-16T00:20:52Z",
+  "statusCutoffAt": "2026-10-16T00:20:52Z",
   "verdict": "HARDENED_READY",
   "formalG2Gate": "G2_PERF_BLOCKED",
   "performanceConclusion": "FRAME_GAIN_UNPROVEN",
@@ -17,8 +17,8 @@
   "delivery": {
     "branch": "audit/g2-p03-vegetation-hardening-luna",
     "baseBranch": "codex/g2-p03-vegetation-pilot",
-    "commit": null,
-    "draftPullRequest": null
+    "commit": "b05065e2d39f894aa58eaa70469672f3aebf79a3",
+    "draftPullRequest": "https://github.com/sjh20016/inkbox/pull/13"
   },
   "sourceChanges": {
     "candidateOrderFix": "Compare Map entries in order by cell and LOD, preserving the skip path for fully equivalent instance order.",
@@ -147,5 +147,6 @@
     "src/inkbox/render3d/vegetation/VegetationLayer.js": "7ba95e5fa4f31f2724609327bb22769d714602b976fde9b3d70744aea38a0597"
   }
 }
+
 
 
