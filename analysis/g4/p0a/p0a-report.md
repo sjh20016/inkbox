@@ -1,12 +1,31 @@
 # G4-P0-A R2.1 实验裁断
 
-**INCONCLUSIVE — S0 未通过；两轮基础设施修正后停止。不能裁定 V3 的真实浏览器性能价值，不建议据此启动 P1。**
+**INCONCLUSIVE — 原始 R2.1 S0 曾按两轮修正停止条件中止；后续获单独授权的 S0-R 基建 smoke 已通过。正式 S0、A/A、ABBA 与 S1–S3 未完成，不能裁定 V3 的真实浏览器性能价值，不建议据此启动 P1。**
 
-主轮 P95/P99：`null/null`；A/A P95 差值：`null`；有效主轮 RAF：`0`。S1、S2、S3 均未执行。浏览器 SystemInfo 显示 AMD 硬件 ANGLE / WebGL enabled；产品上下文的双重 GPU 核验未完成，不能报 GPU 验收通过。这里没有“静海无效”或“静海优化成功”的结论。
+正式主轮 P95/P99：`null/null`；A/A P95 差值：`null`；有效主轮 RAF：`0`。S1、S2、S3 均未执行。S0-R 的 4×24 帧只用于验证真实 RAF 采样链路，虽保留描述统计，也不计入性能结论。S0-R 的浏览器 SystemInfo 与产品 WebGL 双重核验均确认 AMD Radeon 610M 硬件后端；这不能替代正式主轮验收。这里没有“静海无效”或“静海优化成功”的结论。
 
 基线：开工时 fetch `origin/main`，锁定 `e1e55039bb56efda7a307513ede07a9fab3bf534`，与委托书参考 SHA 相同，无 BASE_DRIFT。独立分支：`analysis/g4-p0a-hydro-ablation`。既有工作区和其他工作树未重置、合并或覆盖。运行器/参考输入与本次证据/报告分成两个提交；提交信息见 `delivery.json` 和分支日志。
 
-## S0 实际检查点
+## S0-R 基础设施修复复核
+
+S0-R 是原任务结束后的独立、限界复核授权；它不重置原 R2.1 的两轮修正记录，也不运行 A/A、ABBA 或正式 S1。结果目录为 `results/s0r-recovery-06/`，其总裁断仍为 `INCONCLUSIVE`，阶段 `S0R=PASS`；正式 `S0` 和 `S1`–`S3` 均标为 `NOT_RUN`。
+
+| 检查 | 结果 | 实证 |
+|---|---|---|
+| 视口请求前置核验 | PASS | 11 份空白页/产品页快照全部通过；`innerWidth/innerHeight=1366×768`、DPR=`1`、visual viewport 与 CDP CSS layout/visual viewport 均精确一致。具体值见 `viewport-preflight.json` 和 `viewport-checks.json` |
+| 原视口差异定位 | 已解释并修正 | 未固定浏览器设备缩放时，页面 DPR 为 `1.0000000298023224`；CDP CSS 视口仍为 `1366×768`，主机屏幕为 `1707×1067 @ 1.5`。仅增加 CDP screenWidth/Height 未改变 DPR。增加 `--force-device-scale-factor=1` 后，页面与 CDP 屏幕信息均报告 DPR=`1`；阈值保持精确相等，没有放宽 |
+| 产品页面 document-start 与画布 | PASS | document-start 读数为 `1366×768 / DPR 1`；就绪后画布与 CDP 再核验。Three 活动画布 backing=`952×625`，CSS rect=`952×625.5`，均原样记录；尺寸不是整个窗口尺寸，因为画布位于产品中间工作区 |
+| 就绪等待诊断 | PASS | 10 个产品/渲染器等待检查通过，均保留最后状态、尝试次数和页面错误；没有页面异常或资源加载错误 |
+| V0 暂停克隆 Oracle | PASS | 10 步、`dtDays=4`、容差 0；`height/water/type/qi` 四层逐格差异均为 0 |
+| 四变体实际绑定 | PASS | V0/V1/V3/V9 指纹分别为 `0c8ad05b / 7595ba28 / 0aa2d3f0 / 5c07877d`；产品世界调用数与真实水文计数一致，真实世界身份为 true，`lastDtDays=4`，无代理错误；V3 `v3Steps` 等于其水文调用数 |
+| 真实 RAF 小样本 | PASS（仅链路） | 四变体各 12 帧预热、24 帧采样，共 96 条原始测量帧；每帧按产品 `lastTime`、实际 `dt` 和累积器复算，`hydroCadenceMatch` 全通过、无帧超过 3 步。压缩原始记录及解压内容 SHA、样本数和统计已重新读取核对 |
+| GPU 身份 | PASS（仅 S0-R） | Edge `155.0.4283.45`、Windows x64、Ryzen 9 8940HX；SystemInfo WebGL=`enabled`，产品 WebGL2 renderer=`ANGLE (AMD Radeon(TM) 610M, D3D11)`，硬件判据 PASS。设备枚举中的 RTX 5060 不是本轮实际 renderer |
+
+S0-R 没有执行正式 S0 中的原生 V0 direct 描述样本，所以没有把它标成正式 `S0_PASS`。4×24 帧产生的 P95/P99 是 smoke 数据，样本过短且轮次顺序不满足正式 A/A/ABBA 设计，不用于 GO/NO-GO 判别。可复核的等待、视口、绑定、Oracle 与原始帧证据都在上述结果目录。
+
+S0-R 的启动/修复尝试也全部保留：`s0r-recovery-01` 是临时附件路径不可见；`-02` 是沙箱本机 CDP 连接失败；`-03` 暴露诊断器自身的变量遮蔽错误并据此修正；`-04/-05` 保存 DPR 精确差异及 screen-info 交叉证据；`-06` 在固定设备缩放后通过。各目录中的失败清单没有覆盖或删除。浏览器真实 GPU 下的 S0-R 通过不改变整体 INCONCLUSIVE 裁断。
+
+## 原始 R2.1 S0 检查点（Attempt 01–03）
 
 | 检查 | 结果 | 实证与限制 |
 |---|---|---|
@@ -26,14 +45,14 @@
 
 ## 失败与两轮修正
 
-所有浏览器实验失败均留存；没有删除、替换或重命名某次观测来制造通过结果。最小检查收集器曾因 PowerShell 作用域错误重跑一次清单，原始逐项输出不可得，已在 verification.json 的 collectionNotes 披露；这没有产生浏览器性能轮次。
+以下是原始 R2.1 阶段的失败与两次修正；所有记录都保留，没有删除、替换或重命名某次观测来制造通过结果。S0-R 后续失败与成功尝试另见上一节及 `results/s0r-recovery-*/`，不改写这段历史。
 
 1. 沙箱环境尝试：独占临时 Edge profile 的 CDP 连接错误。`results/environment-initial-failure.json` 原样保留；随后主机权限下浏览器连接成功。此环境权限尝试没有产生性能数据。
 2. `attempt-01`：R2 原文含 `const { H, T } = M`，测试服务器替换 import 时又声明同名 H/T，浏览器报告 `SyntaxError: Identifier 'H' has already been declared`。修正 **1/2**：仅对环境 import 使用别名，再组装 M，算法正文不变；旧服务器字节副本为 `attempt-01/failed-server.mjs.txt`。
 3. `attempt-02`：启动等待超时 `PRODUCT_BOOT_BLOCKED`。直接检查既有 `Session.waitFor` / `Session.js` 的合约发现表达式体必须显式 `return`，原运行器漏写，判断恒为 undefined。修正 **2/2**：两处等待体加 return，留存 `attempt-02/failed-runner.mjs.txt` 和当时 page 脚本。该次 pageErrors 为空，但没有可据以宣称产品成功启动的状态快照。
 4. `attempt-03`：页面和 Three 已启动，在计时外构造标准世界、执行初始化流程后，精确视口护栏报告 `VIEWPORT_DRIFT`。`failure.json` 保留页面状态。修正额度耗尽，停止；没有第 3 轮修正，也没有继续 A/A 或正式浏览器采样。
 
-各尝试运行器自身以 `ENV_BLOCKED/EXPERIMENT_BLOCKED` 返回。交付层裁断采用 **INCONCLUSIVE / S0_INVALID_REPAIR_LIMIT**：存在可启动的硬件浏览器，但实验基建未通过，因此既不是证明设备无 GPU，也不是对 V3 性能方向的 NO_GO。
+原始尝试运行器自身以 `ENV_BLOCKED/EXPERIMENT_BLOCKED` 返回。原 R2.1 阶段当时的裁断为 **INCONCLUSIVE / S0_INVALID_REPAIR_LIMIT**。后经单独授权，S0-R 已通过并证明本机 AMD 硬件浏览器可用于该小型测试链路；正式 S0 原生路径与 S1 性能采样仍未执行，因此整体裁断仍是 **INCONCLUSIVE**，不是对 V3 的 NO-GO。
 
 ## 实验设备与来源
 

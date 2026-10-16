@@ -73,7 +73,28 @@
       "reason": "S0_FAILED"
     }
   },
-  "interpretation": "Compressed structured startup records contain zero measured-frame entries. They are raw failure evidence, not frame samples.",
+  "s0rRecovery": {
+    "status": "PASS",
+    "decision": "INCONCLUSIVE",
+    "directory": "s0r-recovery-06",
+    "runnerCommit": "e464016815ae258769315acbccd423c9a39147b9",
+    "verification": "s0r-recovery-06/verification.json",
+    "viewportChecks": "s0r-recovery-06/viewport-checks.json",
+    "readinessChecks": "s0r-recovery-06/readiness-checks.json",
+    "rawMeasuredFrames": 96,
+    "formalPerformanceRuns": 0,
+    "formalS0": "NOT_RUN",
+    "S1": "NOT_RUN",
+    "attempts": [
+      { "directory": "s0r-recovery-01", "status": "ENV_BLOCKED", "reason": "INPUT_BLOCKED: per-process temp path unavailable to runner" },
+      { "directory": "s0r-recovery-02", "status": "ENV_BLOCKED", "reason": "sandbox CDP connection failure" },
+      { "directory": "s0r-recovery-03", "status": "ENV_BLOCKED", "reason": "diagnostic variable shadowing; captured in failure.json" },
+      { "directory": "s0r-recovery-04", "status": "ENV_BLOCKED", "reason": "exact DPR mismatch: 1.0000000298023224" },
+      { "directory": "s0r-recovery-05", "status": "ENV_BLOCKED", "reason": "exact DPR mismatch persisted after screen metrics override" },
+      { "directory": "s0r-recovery-06", "status": "PASS", "reason": "exact viewport, Oracle, hardware and 24-frame-per-variant smoke passed" }
+    ]
+  },
+  "interpretation": "Compressed structured startup records contain zero measured-frame entries. They are raw failure evidence, not frame samples. The S0-R smoke records are separately indexed above and are not formal performance runs.",
   "attempts": [
     {
       "directory": "attempt-01",

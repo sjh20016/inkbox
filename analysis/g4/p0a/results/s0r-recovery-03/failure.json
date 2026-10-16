@@ -1,0 +1,13 @@
+{
+  "message": "Cannot access 'browserVersion' before initialization",
+  "diagnostic": null,
+  "browserStderr": "",
+  "browserLaunch": {
+    "browser": null,
+    "debugPort": 53551,
+    "cdpEndpointDiscovered": false,
+    "stderr": ""
+  },
+  "pageErrors": [],
+  "pageState": null
+}

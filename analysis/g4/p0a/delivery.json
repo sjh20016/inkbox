@@ -6,6 +6,22 @@
   "repairsUsed": 2,
   "performanceRuns": 0,
   "stoppedAt": "S0 viewport gate",
+  "recovery": {
+    "phase": "S0-R",
+    "status": "PASS",
+    "selectedRun": "results/s0r-recovery-06",
+    "runnerCommit": "e464016815ae258769315acbccd423c9a39147b9",
+    "evidenceCommit": "This S0-R recovery evidence commit; resolve with git rev-parse HEAD on analysis/g4-p0a-hydro-ablation.",
+    "viewportChecks": 11,
+    "viewportExact": { "width": 1366, "height": 768, "dpr": 1 },
+    "oracle": "PASS: 10 steps, dtDays=4, zero differences across height/water/type/qi",
+    "sampleFrames": 96,
+    "sampleRuns": 4,
+    "formalPerformanceRuns": 0,
+    "formalS0": "NOT_RUN",
+    "S1": "NOT_RUN",
+    "overallDecision": "INCONCLUSIVE"
+  },
   "checks": [
     {
       "command": "node --check scripts/inkbox-g4-p0a-adapter.mjs",

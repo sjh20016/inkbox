@@ -1,0 +1,1883 @@
+[
+  {
+    "label": "about-blank-before-product-navigation",
+    "capturedAt": "2026-10-16T15:28:31.294Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "about:blank",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": null,
+      "product": {
+        "hasInkbox": false,
+        "hasWorld": false,
+        "speedIndex": null,
+        "hasThreeRenderer": false,
+        "canvases": []
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": null,
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  {
+    "label": "V0_current-before-world-setup",
+    "capturedAt": "2026-10-16T15:28:32.651Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V0_current&renderer=3d",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": {
+        "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V0_current&renderer=3d",
+        "readyState": "loading",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1,
+        "outerWidth": 0,
+        "outerHeight": 0,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        }
+      },
+      "product": {
+        "hasInkbox": true,
+        "hasWorld": true,
+        "speedIndex": 0,
+        "hasThreeRenderer": true,
+        "canvases": [
+          {
+            "id": "inkCanvas",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 625,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625
+            },
+            "display": "block",
+            "visibility": "hidden"
+          },
+          {
+            "id": "inkCanvas3D",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 626,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625.5
+            },
+            "display": "block",
+            "visibility": "visible"
+          }
+        ]
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": {
+      "id": "inkCanvas3D",
+      "width": 952,
+      "height": 625,
+      "clientWidth": 952,
+      "clientHeight": 626,
+      "rect": {
+        "x": 178,
+        "y": 50.5,
+        "width": 952,
+        "height": 625.5
+      },
+      "display": "block",
+      "visibility": "visible"
+    },
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  {
+    "label": "V0_current-after-world-setup",
+    "capturedAt": "2026-10-16T15:28:34.145Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V0_current&renderer=3d",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": {
+        "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V0_current&renderer=3d",
+        "readyState": "loading",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1,
+        "outerWidth": 0,
+        "outerHeight": 0,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        }
+      },
+      "product": {
+        "hasInkbox": true,
+        "hasWorld": true,
+        "speedIndex": 0,
+        "hasThreeRenderer": true,
+        "canvases": [
+          {
+            "id": "inkCanvas",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 625,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625
+            },
+            "display": "block",
+            "visibility": "hidden"
+          },
+          {
+            "id": "inkCanvas3D",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 626,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625.5
+            },
+            "display": "block",
+            "visibility": "visible"
+          }
+        ]
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": {
+      "id": "inkCanvas3D",
+      "width": 952,
+      "height": 625,
+      "clientWidth": 952,
+      "clientHeight": 626,
+      "rect": {
+        "x": 178,
+        "y": 50.5,
+        "width": 952,
+        "height": 625.5
+      },
+      "display": "block",
+      "visibility": "visible"
+    },
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  {
+    "label": "V0_current-before-world-setup",
+    "capturedAt": "2026-10-16T15:28:35.157Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V0_current&renderer=3d",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": {
+        "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V0_current&renderer=3d",
+        "readyState": "loading",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1,
+        "outerWidth": 0,
+        "outerHeight": 0,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        }
+      },
+      "product": {
+        "hasInkbox": true,
+        "hasWorld": true,
+        "speedIndex": 0,
+        "hasThreeRenderer": true,
+        "canvases": [
+          {
+            "id": "inkCanvas",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 625,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625
+            },
+            "display": "block",
+            "visibility": "hidden"
+          },
+          {
+            "id": "inkCanvas3D",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 626,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625.5
+            },
+            "display": "block",
+            "visibility": "visible"
+          }
+        ]
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": {
+      "id": "inkCanvas3D",
+      "width": 952,
+      "height": 625,
+      "clientWidth": 952,
+      "clientHeight": 626,
+      "rect": {
+        "x": 178,
+        "y": 50.5,
+        "width": 952,
+        "height": 625.5
+      },
+      "display": "block",
+      "visibility": "visible"
+    },
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  {
+    "label": "V0_current-after-world-setup",
+    "capturedAt": "2026-10-16T15:28:36.851Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V0_current&renderer=3d",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": {
+        "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V0_current&renderer=3d",
+        "readyState": "loading",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1,
+        "outerWidth": 0,
+        "outerHeight": 0,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        }
+      },
+      "product": {
+        "hasInkbox": true,
+        "hasWorld": true,
+        "speedIndex": 0,
+        "hasThreeRenderer": true,
+        "canvases": [
+          {
+            "id": "inkCanvas",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 625,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625
+            },
+            "display": "block",
+            "visibility": "hidden"
+          },
+          {
+            "id": "inkCanvas3D",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 626,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625.5
+            },
+            "display": "block",
+            "visibility": "visible"
+          }
+        ]
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": {
+      "id": "inkCanvas3D",
+      "width": 952,
+      "height": 625,
+      "clientWidth": 952,
+      "clientHeight": 626,
+      "rect": {
+        "x": 178,
+        "y": 50.5,
+        "width": 952,
+        "height": 625.5
+      },
+      "display": "block",
+      "visibility": "visible"
+    },
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  {
+    "label": "V1_noErosion-before-world-setup",
+    "capturedAt": "2026-10-16T15:28:39.011Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V1_noErosion&renderer=3d",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": {
+        "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V1_noErosion&renderer=3d",
+        "readyState": "loading",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1,
+        "outerWidth": 0,
+        "outerHeight": 0,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        }
+      },
+      "product": {
+        "hasInkbox": true,
+        "hasWorld": true,
+        "speedIndex": 0,
+        "hasThreeRenderer": true,
+        "canvases": [
+          {
+            "id": "inkCanvas",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 625,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625
+            },
+            "display": "block",
+            "visibility": "hidden"
+          },
+          {
+            "id": "inkCanvas3D",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 626,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625.5
+            },
+            "display": "block",
+            "visibility": "visible"
+          }
+        ]
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": {
+      "id": "inkCanvas3D",
+      "width": 952,
+      "height": 625,
+      "clientWidth": 952,
+      "clientHeight": 626,
+      "rect": {
+        "x": 178,
+        "y": 50.5,
+        "width": 952,
+        "height": 625.5
+      },
+      "display": "block",
+      "visibility": "visible"
+    },
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  {
+    "label": "V1_noErosion-after-world-setup",
+    "capturedAt": "2026-10-16T15:28:40.496Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V1_noErosion&renderer=3d",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": {
+        "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V1_noErosion&renderer=3d",
+        "readyState": "loading",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1,
+        "outerWidth": 0,
+        "outerHeight": 0,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        }
+      },
+      "product": {
+        "hasInkbox": true,
+        "hasWorld": true,
+        "speedIndex": 0,
+        "hasThreeRenderer": true,
+        "canvases": [
+          {
+            "id": "inkCanvas",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 625,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625
+            },
+            "display": "block",
+            "visibility": "hidden"
+          },
+          {
+            "id": "inkCanvas3D",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 626,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625.5
+            },
+            "display": "block",
+            "visibility": "visible"
+          }
+        ]
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": {
+      "id": "inkCanvas3D",
+      "width": 952,
+      "height": 625,
+      "clientWidth": 952,
+      "clientHeight": 626,
+      "rect": {
+        "x": 178,
+        "y": 50.5,
+        "width": 952,
+        "height": 625.5
+      },
+      "display": "block",
+      "visibility": "visible"
+    },
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  {
+    "label": "V3_staticSeaStrict-before-world-setup",
+    "capturedAt": "2026-10-16T15:28:41.539Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V3_staticSeaStrict&renderer=3d",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": {
+        "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V3_staticSeaStrict&renderer=3d",
+        "readyState": "loading",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1,
+        "outerWidth": 0,
+        "outerHeight": 0,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        }
+      },
+      "product": {
+        "hasInkbox": true,
+        "hasWorld": true,
+        "speedIndex": 0,
+        "hasThreeRenderer": true,
+        "canvases": [
+          {
+            "id": "inkCanvas",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 625,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625
+            },
+            "display": "block",
+            "visibility": "hidden"
+          },
+          {
+            "id": "inkCanvas3D",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 626,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625.5
+            },
+            "display": "block",
+            "visibility": "visible"
+          }
+        ]
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": {
+      "id": "inkCanvas3D",
+      "width": 952,
+      "height": 625,
+      "clientWidth": 952,
+      "clientHeight": 626,
+      "rect": {
+        "x": 178,
+        "y": 50.5,
+        "width": 952,
+        "height": 625.5
+      },
+      "display": "block",
+      "visibility": "visible"
+    },
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  {
+    "label": "V3_staticSeaStrict-after-world-setup",
+    "capturedAt": "2026-10-16T15:28:42.981Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V3_staticSeaStrict&renderer=3d",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": {
+        "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V3_staticSeaStrict&renderer=3d",
+        "readyState": "loading",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1,
+        "outerWidth": 0,
+        "outerHeight": 0,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        }
+      },
+      "product": {
+        "hasInkbox": true,
+        "hasWorld": true,
+        "speedIndex": 0,
+        "hasThreeRenderer": true,
+        "canvases": [
+          {
+            "id": "inkCanvas",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 625,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625
+            },
+            "display": "block",
+            "visibility": "hidden"
+          },
+          {
+            "id": "inkCanvas3D",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 626,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625.5
+            },
+            "display": "block",
+            "visibility": "visible"
+          }
+        ]
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": {
+      "id": "inkCanvas3D",
+      "width": 952,
+      "height": 625,
+      "clientWidth": 952,
+      "clientHeight": 626,
+      "rect": {
+        "x": 178,
+        "y": 50.5,
+        "width": 952,
+        "height": 625.5
+      },
+      "display": "block",
+      "visibility": "visible"
+    },
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  {
+    "label": "V9_hydrologyOff-before-world-setup",
+    "capturedAt": "2026-10-16T15:28:44.096Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V9_hydrologyOff&renderer=3d",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": {
+        "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V9_hydrologyOff&renderer=3d",
+        "readyState": "loading",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1,
+        "outerWidth": 0,
+        "outerHeight": 0,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        }
+      },
+      "product": {
+        "hasInkbox": true,
+        "hasWorld": true,
+        "speedIndex": 0,
+        "hasThreeRenderer": true,
+        "canvases": [
+          {
+            "id": "inkCanvas",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 625,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625
+            },
+            "display": "block",
+            "visibility": "hidden"
+          },
+          {
+            "id": "inkCanvas3D",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 626,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625.5
+            },
+            "display": "block",
+            "visibility": "visible"
+          }
+        ]
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": {
+      "id": "inkCanvas3D",
+      "width": 952,
+      "height": 625,
+      "clientWidth": 952,
+      "clientHeight": 626,
+      "rect": {
+        "x": 178,
+        "y": 50.5,
+        "width": 952,
+        "height": 625.5
+      },
+      "display": "block",
+      "visibility": "visible"
+    },
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  {
+    "label": "V9_hydrologyOff-after-world-setup",
+    "capturedAt": "2026-10-16T15:28:45.611Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V9_hydrologyOff&renderer=3d",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "screen": {
+        "width": 1366,
+        "height": 768,
+        "availWidth": 1366,
+        "availHeight": 768,
+        "colorDepth": 24,
+        "pixelDepth": 24
+      },
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": {
+        "href": "http://127.0.0.1:52743/inkbox.html?g4variant=V9_hydrologyOff&renderer=3d",
+        "readyState": "loading",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1,
+        "outerWidth": 0,
+        "outerHeight": 0,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        }
+      },
+      "product": {
+        "hasInkbox": true,
+        "hasWorld": true,
+        "speedIndex": 0,
+        "hasThreeRenderer": true,
+        "canvases": [
+          {
+            "id": "inkCanvas",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 625,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625
+            },
+            "display": "block",
+            "visibility": "hidden"
+          },
+          {
+            "id": "inkCanvas3D",
+            "width": 952,
+            "height": 625,
+            "clientWidth": 952,
+            "clientHeight": 626,
+            "rect": {
+              "x": 178,
+              "y": 50.5,
+              "width": 952,
+              "height": 625.5
+            },
+            "display": "block",
+            "visibility": "visible"
+          }
+        ]
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "screenInfos": {
+        "screenInfos": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 2560,
+            "height": 1600,
+            "availLeft": 0,
+            "availTop": 0,
+            "availWidth": 2560,
+            "availHeight": 1528,
+            "devicePixelRatio": 1,
+            "orientation": {
+              "type": "landscapePrimary",
+              "angle": 0
+            },
+            "colorDepth": 24,
+            "isExtended": false,
+            "isInternal": true,
+            "isPrimary": true,
+            "label": "Lecoo",
+            "id": "2724875912"
+          }
+        ]
+      },
+      "screenInfosError": null,
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": {
+      "id": "inkCanvas3D",
+      "width": 952,
+      "height": 625,
+      "clientWidth": 952,
+      "clientHeight": 626,
+      "rect": {
+        "x": 178,
+        "y": 50.5,
+        "width": 952,
+        "height": 625.5
+      },
+      "display": "block",
+      "visibility": "visible"
+    },
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": true,
+      "violations": [],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  }
+]

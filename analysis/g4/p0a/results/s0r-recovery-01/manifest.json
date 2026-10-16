@@ -1,0 +1,44 @@
+{
+  "schema": "g4-p0a-r2.1",
+  "startedAt": "2026-10-16T15:24:05.618Z",
+  "suite": "s0r",
+  "status": "ENV_BLOCKED",
+  "reason": "INPUT_BLOCKED",
+  "runs": [],
+  "failures": [
+    {
+      "reason": "INPUT_BLOCKED",
+      "message": "Provide --r2-zip=<original R2 ZIP path>."
+    }
+  ],
+  "stages": {
+    "S0R": {
+      "status": "NOT_RUN",
+      "reason": "INPUT_BLOCKED"
+    },
+    "S0": {
+      "status": "NOT_RUN",
+      "reason": "INPUT_BLOCKED"
+    },
+    "S1": {
+      "status": "NOT_RUN",
+      "reason": "INPUT_BLOCKED"
+    },
+    "S2": {
+      "status": "NOT_RUN",
+      "reason": "INPUT_BLOCKED"
+    },
+    "S3": {
+      "status": "NOT_RUN",
+      "reason": "INPUT_BLOCKED"
+    }
+  },
+  "quantiles": "Nearest rank: sorted[ceil(p*N)-1]; rates use strict >; adjacent RAF frames are not independent repeats.",
+  "baselineSHA": "d57f4cc2e20f350765ea1a50187b28daafc48525",
+  "regressionBudget": {
+    "formula": "baseline * 1.08 + 1.5ms",
+    "evaluation": null,
+    "reason": "No matching approved product baseline for this device and this experimental protocol; no claim of regression-budget acceptance."
+  },
+  "finishedAt": "2026-10-16T15:24:06.131Z"
+}

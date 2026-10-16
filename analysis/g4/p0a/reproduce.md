@@ -1,6 +1,6 @@
 # 复核 G4-P0-A R2.1
 
-本次裁断为 INCONCLUSIVE：S0 在两轮修正后仍因视口护栏失败停止。没有有效 A/A、ABBA 或逐帧性能结果。先复核已归档证据；重新执行不会得到已验证的性能跑分承诺，也不授权继续修复或 P1。运行器的 S1–S3 路径尚未经过实际运行验证。
+整体裁断为 INCONCLUSIVE：原始 R2.1 的 S0 在两轮修正后因视口护栏停止；之后经单独授权的 S0-R 复核通过了真实浏览器短链路。正式 S0、A/A、ABBA、S1–S3 均未执行，现有 4×24 帧只验证测试链路，不构成性能结论。
 
 ## 获取交付与安装既有依赖
 
@@ -16,7 +16,7 @@ npm ci
 
 clone 时显式关闭自动换行转换，以保持附件原样副本及已记录 SHA-256 的字节一致。不要对 reference 文件另做格式化或换行转换。
 
-从附件将原 `G4-PERF-天地有度-R2.zip` 放在 OS temp 或仓库根（`.zip` 已被原 gitignore 忽略），勿把 ZIP 放入发布目录。算法原样副本和勘误已随分支提供。运行器直接检查 ZIP 内 `G4-PERF-R2/g4lab/lib/variants.mjs` 与副本的字节一致性，不接受自写变体。
+从附件的 Codex 执行包中取出嵌套的 `G4-PERF-天地有度-R2.zip`，放在 OS temp 或仓库根（`.zip` 已被原 gitignore 忽略），勿把 ZIP 放入发布目录。输入 SHA-256 应为 `f7f99fdf50e36f590c328d730aad49e507815260e8a40e1a08bd96efe52efe43`。算法原样副本和勘误已随分支提供。运行器直接检查 ZIP 内 `G4-PERF-R2/g4lab/lib/variants.mjs` 与副本的字节一致性，不接受自写变体。
 
 ## 先复核已有原始记录
 
@@ -59,9 +59,17 @@ node scripts/inkbox-g4-p0a-run.mjs --suite=all '--r2-zip=G4-PERF-天地有度-R2
 node scripts/inkbox-g4-p0a-run.mjs --suite=smoke '--r2-zip=G4-PERF-天地有度-R2.zip' --out=analysis/g4/p0a/results/smoke-reproduction-01
 ```
 
-支持参数只有 `--suite=all|smoke`、`--r2-zip=<path>`、`--out=<fresh path>`、`--browser=<installed executable>`、`--headless`。本次使用有窗口模式，未传 headless。请在能连接本机 CDP 的宿主环境运行；本次沙箱 CDP 失败也已保留，不能把权限失败写成算法失败。输出应放 `analysis/g4/p0a/` 或 OS temp，勿放正式产品目录。
+S0-R 仅验证修复后的视口、V0 Oracle、四变体绑定和四段 24 帧小样本，不执行原生 V0 direct 样本或任何正式性能轮次：
 
-`all` 的设计顺序为 S0 → A/A（超限最多完整重测一次）→ 固定 ABBA → V1/V9 短诊断 → S2 → 满足明显收益条件时 S3。任一关键失败会停止后续阶段。退出码 0 表示 S0_PASS、GO_P1_REVIEW 或 NO_GO 之一，仍须阅读 manifest；其他裁断退出码为 2（部分宿主 wrapper 实际返回 1，以 JSON 裁断和错误记录为准）。**本任务已耗尽两轮修正额度；手动重复启动不重置额度。**
+```powershell
+node scripts/inkbox-g4-p0a-run.mjs --suite=s0r '--r2-zip=G4-PERF-天地有度-R2.zip' --out=analysis/g4/p0a/results/s0r-reproduction-01
+```
+
+`s0r` 通过时，manifest 的 `stages.S0R.status` 为 `PASS`，总 status 仍为 `INCONCLUSIVE`，因为正式性能阶段未运行；退出码 0 代表 smoke 完成，不代表性能方案通过。它逐次保存空白页、document-start、产品 canvas 和 CDP 实际值，保持 DPR 精确相等。未固定比例时，本机 150% 系统缩放曾让 DPR 实际读数成为 `1.0000000298023224`；浏览器现在以 `--force-device-scale-factor=1` 启动并仍要求实际 DPR 精确为 1，不放宽阈值。
+
+支持参数为 `--suite=all|smoke|s0r`、`--r2-zip=<path>`、`--out=<fresh path>`、`--browser=<installed executable>`、`--headless`。本次使用有窗口模式，未传 headless。请在能连接本机 CDP 的宿主环境运行；沙箱 CDP 权限失败也有保留，不能把它写成算法失败。输出应放 `analysis/g4/p0a/` 或 OS temp，勿放正式产品目录。
+
+`all` 的设计顺序为 S0 → A/A（超限最多完整重测一次）→ 固定 ABBA → V1/V9 短诊断 → S2 → 满足明显收益条件时 S3。任一关键失败会停止后续阶段。退出码 0 仍须结合 manifest 判断：`s0r` 会以整体 `INCONCLUSIVE` 结束但返回 0；`smoke` 返回 S0_PASS；`all` 则依据后续有效证据裁断。其他阻断裁断返回非零（部分宿主 wrapper 会把退出码转换为 1）。原始 R2.1 的两轮修正历史仍保留；S0-R 是单独授权的环境修复复核，不启动正式 S1。
 
 每段计划 120 RAF 预热、600 正式间隔；短诊断 300。分位数为 nearest rank，阈值比率用严格大于；主轮与 GPU/CPU 包裹诊断不混池。代码没有修改产品 RAF 循环；唯一服务器响应改写是 hydrology import。参数与测量计划存在不表示它们已经执行成功。
 

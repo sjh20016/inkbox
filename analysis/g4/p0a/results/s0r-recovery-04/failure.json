@@ -1,0 +1,93 @@
+{
+  "message": "VIEWPORT_DRIFT: about-blank-before-product-navigation",
+  "diagnostic": {
+    "label": "about-blank-before-product-navigation",
+    "capturedAt": "2026-10-16T15:26:14.298Z",
+    "requested": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "page": {
+      "href": "about:blank",
+      "readyState": "complete",
+      "visibility": "visible",
+      "innerWidth": 1366,
+      "innerHeight": 768,
+      "dpr": 1.0000000298023224,
+      "outerWidth": 1366,
+      "outerHeight": 768,
+      "visualViewport": {
+        "width": 1366,
+        "height": 768,
+        "scale": 1,
+        "offsetLeft": 0,
+        "offsetTop": 0
+      },
+      "documentStartViewport": null,
+      "product": {
+        "hasInkbox": false,
+        "hasWorld": false,
+        "speedIndex": null,
+        "hasThreeRenderer": false,
+        "canvases": []
+      }
+    },
+    "pageError": null,
+    "cdp": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1366,
+        "clientHeight": 768,
+        "scale": 1,
+        "zoom": 1
+      },
+      "legacyLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 2049,
+        "clientHeight": 1152
+      },
+      "legacyVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 2049,
+        "clientHeight": 1152,
+        "scale": 1,
+        "zoom": 1
+      }
+    },
+    "cdpError": null,
+    "activeCanvas": null,
+    "outerWindowIsDiagnosticOnly": true,
+    "validation": {
+      "pass": false,
+      "violations": [
+        "DPR_MISMATCH"
+      ],
+      "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+    }
+  },
+  "browserStderr": null,
+  "browserLaunch": null,
+  "pageErrors": [],
+  "pageState": {
+    "url": "about:blank",
+    "ready": "complete",
+    "visibility": "visible",
+    "world": false,
+    "renderer": false,
+    "body": ""
+  }
+}

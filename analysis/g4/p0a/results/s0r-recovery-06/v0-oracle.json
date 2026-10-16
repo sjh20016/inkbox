@@ -1,0 +1,81 @@
+{
+  "status": "PASS",
+  "steps": 10,
+  "dtDays": 4,
+  "tolerance": 0,
+  "layers": {
+    "height": {
+      "differences": 0,
+      "directSHA256": "3850a58d7f139448a2eef9843d52a397d77d9d19dd88a08c5a1608b448df7578",
+      "adapterSHA256": "3850a58d7f139448a2eef9843d52a397d77d9d19dd88a08c5a1608b448df7578"
+    },
+    "water": {
+      "differences": 0,
+      "directSHA256": "af768f66ecdca8cb23b945348cb8eafcdede9fa1499fc2cfa16bda0a93699227",
+      "adapterSHA256": "af768f66ecdca8cb23b945348cb8eafcdede9fa1499fc2cfa16bda0a93699227"
+    },
+    "type": {
+      "differences": 0,
+      "directSHA256": "71f0c85128870dcd973f41d3b9e9409ec7a1fbfe3f8d82e2bf77a6674189a8ca",
+      "adapterSHA256": "71f0c85128870dcd973f41d3b9e9409ec7a1fbfe3f8d82e2bf77a6674189a8ca"
+    },
+    "qi": {
+      "differences": 0,
+      "directSHA256": "642c612dde3888d30cfb5cc065b1c4a7e5605eec8195402cb53168ed23a76e74",
+      "adapterSHA256": "642c612dde3888d30cfb5cc065b1c4a7e5605eec8195402cb53168ed23a76e74"
+    }
+  },
+  "proof": {
+    "variant": "V0_current",
+    "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+    "fingerprint": "V0_current:0c8ad05b",
+    "hydroStepCount": 10,
+    "hydroTotalMs": 108.90000000596046,
+    "productWorldCalls": 0,
+    "worldIsProductWorld": false,
+    "lastDtDays": 4,
+    "normalizationCalls": {
+      "prepare": 1,
+      "v3Steps": 0
+    },
+    "normalizationChangedCells": {
+      "prepare": 69751,
+      "v3Steps": 0
+    },
+    "prepareTotalMs": 4.399999976158142,
+    "lastStep": {
+      "before": {
+        "revision": 158,
+        "terrainDirty": true,
+        "size": 163840,
+        "waterSamples": [
+          0.0000031074168873601593,
+          0.09220381081104279,
+          0.26836520433425903
+        ],
+        "heightSamples": [
+          0.300019770860672,
+          0.20785734057426453,
+          0.03175966814160347
+        ]
+      },
+      "after": {
+        "revision": 162,
+        "terrainDirty": true,
+        "size": 163840,
+        "waterSamples": [
+          0.0000031074168873601593,
+          0.09220381081104279,
+          0.26838237047195435
+        ],
+        "heightSamples": [
+          0.300019770860672,
+          0.20785734057426453,
+          0.03175966814160347
+        ]
+      },
+      "elapsedMs": 10.199999988079071
+    },
+    "errors": []
+  }
+}

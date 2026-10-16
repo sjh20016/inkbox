@@ -1,0 +1,332 @@
+{
+  "baselineSHA": "d57f4cc2e20f350765ea1a50187b28daafc48525",
+  "referenceMainAtCommission": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "branch": "analysis/g4-p0a-hydro-ablation",
+  "node": "v24.11.1",
+  "files": {
+    "src/inkbox/sim/hydrology.js": {
+      "blob": "3ca47d08b27a10ed885b295e931dd988da6e32b7",
+      "sha256": "d8d3d16f52a28f79769d99c677ed141587701c29695b925e7c616a32867d68e1"
+    },
+    "src/inkbox/world/terrain.js": {
+      "blob": "e5aaada460fd9843aeb07d7367b71aead2bf968e",
+      "sha256": "315eccaeb353fea3e97fdfe6903f58d0538a0c83d51f2884d8b9c7ccda753fc9"
+    },
+    "src/inkbox/main.js": {
+      "blob": "c16875b435a1e783532540733fc14f836391ea77",
+      "sha256": "2fec345c01204259ded904f026ac9223575b0bacc064e7ced8073e216d9447a4"
+    },
+    "src/inkbox/render3d/stage/PlaneStage.js": {
+      "blob": "cdf7d84fc88d0885331a1f0884d0ee4063c6fc26",
+      "sha256": "e57b9556971158b5a29786204f47c333c80f17c674e39fc6682cd2e76259f786"
+    },
+    "src/inkbox/render3d/WorldRenderBridge.js": {
+      "blob": "e6d7ee6dc72fc22ac739476aab27073a2f0b0fb4",
+      "sha256": "72ef919c56a91b40356ca5d56465ee44ae922e089ea0390a22052fdfe6e987ce"
+    },
+    "src/inkbox/sim/powers.js": {
+      "blob": "ba28a95fccaad03b433e268dd0471ebf50eb05a8",
+      "sha256": "fd756de7d188f42b862385158e77c4b96ce976889029b521a2154d1481b32d6b"
+    }
+  },
+  "input": {
+    "archiveName": "G4-PERF-天地有度-R2.zip",
+    "archiveSHA256": "f7f99fdf50e36f590c328d730aad49e507815260e8a40e1a08bd96efe52efe43",
+    "variantsSHA256": "22aa5b602a7e151235afafa763eeab1221334eb2b4dbe8ffa0990ee82a36e44b",
+    "envSHA256": "434bc2df90cc5d112ae356e2c2caa5a01196738aa92ad8770bd879c14715fdbd"
+  },
+  "environment": {
+    "os": {
+      "platform": "win32",
+      "release": "10.0.26200",
+      "arch": "x64"
+    },
+    "cpu": {
+      "model": "AMD Ryzen 9 8940HX with Radeon Graphics        ",
+      "logicalCount": 32
+    },
+    "browser": {
+      "protocolVersion": "1.3",
+      "product": "Edg/155.0.4283.45",
+      "revision": "@50f24ef2aa5369a074b8888b7db82d9c0652d642",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "jsVersion": "15.5.9.4"
+    },
+    "headless": false,
+    "gpuDisabledByHarness": false,
+    "requestedViewport": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 4098,
+          "deviceId": 5710,
+          "subSysId": 2151552938,
+          "revision": 216,
+          "vendorString": "",
+          "deviceString": "AMD Radeon(TM) 610M",
+          "driverVendor": "AMD",
+          "driverVersion": "32.0.13050.18"
+        },
+        {
+          "vendorId": 4318,
+          "deviceId": 11545,
+          "subSysId": 939726762,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA GeForce RTX 5060 Laptop GPU",
+          "driverVendor": "",
+          "driverVersion": "32.0.16.1088"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9711"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "bgra8OverlaySupport": "SOFTWARE",
+        "canSupportThreadedTextureMailbox": false,
+        "directComposition": true,
+        "directMLFeatureLevel": "Not supported",
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_D3D11",
+        "dx12FeatureLevel": "Not supported",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_copy_texture_3d GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_size GL_ANGLE_multiview_multisample GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_robust_client_memory GL_ANGLE_shader_pixel_local_storage GL_ANGLE_shader_pixel_local_storage_coherent GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_texture_usage GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_compressed_texture GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_EGL_image_external_wrap_modes GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_clip_cull_distance GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_conservative_depth GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_read_format_bgra GL_EXT_render_snorm GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_border_clamp GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_storage GL_EXT_texture_type_2_10_10_10_REV GL_EXT_unpack_subimage GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_NV_EGL_stream_consumer_external GL_NV_fence GL_NV_framebuffer_blit GL_NV_pack_subimage GL_NV_pixel_buffer_object GL_NV_shader_noperspective_interpolation GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_EGL_image_external_essl3 GL_OES_depth24 GL_OES_depth32 GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_border_clamp GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_texture_storage_multisample_2d_array GL_OES_vertex_array_object GL_OVR_multiview GL_OVR_multiview2 ",
+        "glImplementationParts": "(gl=egl-angle,angle=d3d11)",
+        "glRenderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.13050.18)",
+        "glResetNotificationStrategy": 33362,
+        "glVendor": "Google Inc. (AMD)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.48255 git hash: 0b3540a71fa0)",
+        "glWsExtensions": "EGL_EXT_create_context_robustness EGL_ANGLE_d3d_share_handle_client_buffer EGL_ANGLE_d3d_texture_client_buffer EGL_ANGLE_surface_d3d_texture_2d_share_handle EGL_ANGLE_query_surface_pointer EGL_ANGLE_window_fixed_size EGL_ANGLE_keyed_mutex EGL_ANGLE_surface_orientation EGL_ANGLE_direct_composition EGL_NV_post_sub_buffer EGL_KHR_create_context EGL_KHR_image EGL_KHR_image_base EGL_KHR_gl_texture_2D_image EGL_KHR_gl_texture_cubemap_image EGL_KHR_gl_renderbuffer_image EGL_KHR_get_all_proc_addresses EGL_KHR_stream EGL_KHR_stream_consumer_gltexture EGL_NV_stream_consumer_gltexture_yuv EGL_ANGLE_stream_producer_d3d_texture EGL_ANGLE_create_context_webgl_compatibility EGL_CHROMIUM_create_context_bind_generates_resource EGL_CHROMIUM_sync_control EGL_EXT_pixel_format_float EGL_KHR_surfaceless_context EGL_ANGLE_display_texture_share_group EGL_ANGLE_display_semaphore_share_group EGL_ANGLE_create_context_client_arrays EGL_ANGLE_program_cache_control EGL_ANGLE_robust_resource_initialization EGL_ANGLE_create_context_extensions_enabled EGL_ANDROID_blob_cache EGL_ANDROID_recordable EGL_ANGLE_image_d3d11_texture EGL_ANGLE_create_context_backwards_compatible EGL_KHR_no_config_context EGL_KHR_create_context_no_error EGL_KHR_reusable_sync EGL_ANGLE_memory_usage_report ",
+        "glWsVendor": "Google Inc. (AMD)",
+        "glWsVersion": "1.5 (ANGLE 2.1.48255 git hash: 0b3540a71fa0)",
+        "inProcessGpu": false,
+        "initializationTime": 0.082161,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "8",
+        "nv12OverlaySupport": "SCALING",
+        "optimus": false,
+        "p010OverlaySupport": "SCALING",
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "5.0",
+        "playreadyHardwareDrmSupport": false,
+        "processCrashCount": 0,
+        "rgb10a2OverlaySupport": "SCALING",
+        "sandboxed": true,
+        "skiaBackendType": "GaneshGL",
+        "subpixelFontRendering": true,
+        "supportsD3dSharedImages": true,
+        "supportsDirectML": false,
+        "supportsDx12": false,
+        "supportsOverlays": true,
+        "supportsVulkan": false,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "5.0",
+        "visibilityCallbackCallCount": 0,
+        "vulkanVersion": "Not supported",
+        "yuy2OverlaySupport": "SOFTWARE"
+      },
+      "featureStatus": {
+        "2d_canvas": "enabled",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "disabled_off",
+        "trees_in_viz": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "webgl": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      },
+      "driverBugWorkarounds": [
+        "disable_d3d11_vp9_ksvc_decoding",
+        "disable_d3d12_video_encoder",
+        "disable_h264_accelerator_sw_brc",
+        "disable_ms_video_super_resolution",
+        "disable_nv12_dynamic_textures",
+        "disable_video_overlay_if_moving",
+        "disable_vp_auto_hdr",
+        "disable_vp_super_resolution",
+        "disallow_vp9_resilient_dxva_decoding",
+        "enable_webgl_timer_query_extensions",
+        "exit_on_context_lost",
+        "force_rgb10a2_overlay_support",
+        "disabled_extension_GL_KHR_blend_equation_advanced",
+        "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+      ],
+      "videoDecoding": [],
+      "videoEncoding": []
+    },
+    "systemInfoError": null,
+    "refreshRateHz": null,
+    "refreshRateReason": "No reliable display-mode API used; RAF cadence is not a refresh-rate measurement.",
+    "powerMode": "��Դ���� GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (ƽ��)"
+  },
+  "baseDrift": "",
+  "adapter": {
+    "mainSourceSHA256": "2fec345c01204259ded904f026ac9223575b0bacc064e7ced8073e216d9447a4",
+    "mainResponseSHA256": "1c4f3b76028af46822384570af5be2b10402d8f9e1c134d6048cedbba3dd772d",
+    "mainImportDiff": {
+      "line": 39,
+      "before": "import { stepHydrology } from './sim/hydrology.js';",
+      "after": "import { stepHydrology } from '/__g4__/hydrology-entry.mjs';"
+    },
+    "variantsSourceSHA256": "22aa5b602a7e151235afafa763eeab1221334eb2b4dbe8ffa0990ee82a36e44b",
+    "variantsBrowserSHA256": "13fc2bc8a39d5c65ab21e9611fca45e8d1fe49b29cbf525d0dd8d91e86a9aad8",
+    "variantsBodySourceSHA256": "2d0bb19456e40ff41dcfa9fb6df363e3359b6012e03e9d949fcd824f8d46a79f",
+    "variantsBodyBrowserSHA256": "2d0bb19456e40ff41dcfa9fb6df363e3359b6012e03e9d949fcd824f8d46a79f",
+    "adapterSourceSHA256": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+    "adapterResponseSHA256": "2ede20fb6c232aef36623d4d088c6a6498cc7e04648b88cb79620b1a1b6c5a32"
+  },
+  "serverResponses": [
+    {
+      "route": "/src/inkbox/main.js",
+      "status": 200,
+      "sha256": "1c4f3b76028af46822384570af5be2b10402d8f9e1c134d6048cedbba3dd772d",
+      "nodeImport": false
+    },
+    {
+      "route": "/__g4__/hydrology-entry.mjs",
+      "status": 200,
+      "sha256": "2ede20fb6c232aef36623d4d088c6a6498cc7e04648b88cb79620b1a1b6c5a32",
+      "nodeImport": false
+    },
+    {
+      "route": "/__g4__/variants-r2.mjs",
+      "status": 200,
+      "sha256": "13fc2bc8a39d5c65ab21e9611fca45e8d1fe49b29cbf525d0dd8d91e86a9aad8",
+      "nodeImport": false
+    }
+  ],
+  "viewportChecks": [
+    {
+      "label": "about-blank-before-product-navigation",
+      "capturedAt": "2026-10-16T15:27:32.523Z",
+      "requested": {
+        "width": 1366,
+        "height": 768,
+        "dpr": 1
+      },
+      "page": {
+        "href": "about:blank",
+        "readyState": "complete",
+        "visibility": "visible",
+        "innerWidth": 1366,
+        "innerHeight": 768,
+        "dpr": 1.0000000298023224,
+        "outerWidth": 1366,
+        "outerHeight": 768,
+        "screen": {
+          "width": 1366,
+          "height": 768,
+          "availWidth": 1366,
+          "availHeight": 768,
+          "colorDepth": 24,
+          "pixelDepth": 24
+        },
+        "visualViewport": {
+          "width": 1366,
+          "height": 768,
+          "scale": 1,
+          "offsetLeft": 0,
+          "offsetTop": 0
+        },
+        "documentStartViewport": null,
+        "product": {
+          "hasInkbox": false,
+          "hasWorld": false,
+          "speedIndex": null,
+          "hasThreeRenderer": false,
+          "canvases": []
+        }
+      },
+      "pageError": null,
+      "cdp": {
+        "layoutViewport": {
+          "pageX": 0,
+          "pageY": 0,
+          "clientWidth": 1366,
+          "clientHeight": 768
+        },
+        "visualViewport": {
+          "offsetX": 0,
+          "offsetY": 0,
+          "pageX": 0,
+          "pageY": 0,
+          "clientWidth": 1366,
+          "clientHeight": 768,
+          "scale": 1,
+          "zoom": 1
+        },
+        "screenInfos": {
+          "screenInfos": [
+            {
+              "left": 0,
+              "top": 0,
+              "width": 1707,
+              "height": 1067,
+              "availLeft": 0,
+              "availTop": 0,
+              "availWidth": 1707,
+              "availHeight": 1019,
+              "devicePixelRatio": 1.5,
+              "orientation": {
+                "type": "landscapePrimary",
+                "angle": 0
+              },
+              "colorDepth": 24,
+              "isExtended": false,
+              "isInternal": true,
+              "isPrimary": true,
+              "label": "Lecoo",
+              "id": "2724875912"
+            }
+          ]
+        },
+        "screenInfosError": null,
+        "legacyLayoutViewport": {
+          "pageX": 0,
+          "pageY": 0,
+          "clientWidth": 2049,
+          "clientHeight": 1152
+        },
+        "legacyVisualViewport": {
+          "offsetX": 0,
+          "offsetY": 0,
+          "pageX": 0,
+          "pageY": 0,
+          "clientWidth": 2049,
+          "clientHeight": 1152,
+          "scale": 1,
+          "zoom": 1
+        }
+      },
+      "cdpError": null,
+      "activeCanvas": null,
+      "outerWindowIsDiagnosticOnly": true,
+      "validation": {
+        "pass": false,
+        "violations": [
+          "DPR_MISMATCH"
+        ],
+        "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+      }
+    }
+  ]
+}

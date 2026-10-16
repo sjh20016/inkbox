@@ -1,0 +1,47 @@
+{
+  "schema": "g4-p0a-s0r-verification",
+  "runnerCommit": "e464016815ae258769315acbccd423c9a39147b9",
+  "runnerBlobs": {
+    "scripts/inkbox-g4-p0a-browser.mjs": "b0c79e415da5fa9343deea2db1cda42f1fa509bb",
+    "scripts/inkbox-g4-p0a-page.mjs": "59a5cae34f851a4296a8569e4dad7ebb04a95930",
+    "scripts/inkbox-g4-p0a-run.mjs": "ac1deb33f54893d61ef76c5a57283a2022019cf9"
+  },
+  "overallDecision": "INCONCLUSIVE",
+  "suiteStatus": "S0R_PASS",
+  "formalPerformanceRuns": 0,
+  "viewport": {
+    "requested": { "width": 1366, "height": 768, "dpr": 1 },
+    "snapshots": 11,
+    "allExactChecksPassed": true,
+    "cssLayoutAndVisualViewport": "1366x768",
+    "devicePixelRatio": 1,
+    "productActiveCanvasBacking": "952x625",
+    "productActiveCanvasCssRect": "952x625.5",
+    "priorHostScreen": { "width": 1707, "height": 1067, "dpr": 1.5 },
+    "effectiveBrowserScreen": { "width": 2560, "height": 1600, "dpr": 1 },
+    "launchScaleOverride": "--force-device-scale-factor=1"
+  },
+  "readiness": { "checks": 10, "passed": 10, "pageErrors": 0 },
+  "oracle": { "status": "PASS", "steps": 10, "dtDays": 4, "tolerance": 0,
+    "layerDifferences": { "height": 0, "water": 0, "type": 0, "qi": 0 } },
+  "bindings": [
+    { "variant": "V0_current", "fingerprint": "V0_current:0c8ad05b", "productWorldCalls": 6, "hydroStepCount": 6, "v3Steps": 0 },
+    { "variant": "V1_noErosion", "fingerprint": "V1_noErosion:7595ba28", "productWorldCalls": 2, "hydroStepCount": 2, "v3Steps": 0 },
+    { "variant": "V3_staticSeaStrict", "fingerprint": "V3_staticSeaStrict:0aa2d3f0", "productWorldCalls": 2, "hydroStepCount": 2, "v3Steps": 2 },
+    { "variant": "V9_hydrologyOff", "fingerprint": "V9_hydrologyOff:5c07877d", "productWorldCalls": 2, "hydroStepCount": 2, "v3Steps": 0 }
+  ],
+  "samples": { "variants": 4, "warmupFramesPerVariant": 12, "measuredFramesPerVariant": 24,
+    "rawMeasuredFrames": 96, "allFramesHydroCadenceMatched": true,
+    "allFrameProductsDtDerivedFromLastTime": true, "statsHashAndSummaryReread": "PASS" },
+  "hardware": { "browser": "Edg/155.0.4283.45", "headless": false,
+    "productWebGL2Renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "systemWebGLFeatureStatus": "enabled", "hardwareAcceleration": "PASS" },
+  "checks": [
+    { "command": "node --check scripts/inkbox-g4-p0a-*.mjs", "exitCode": 0 },
+    { "command": "npm run test:core", "exitCode": 0 },
+    { "command": "node scripts/inkbox-g4-p0a-smoke.mjs", "exitCode": 0 },
+    { "command": "node scripts/inkbox-g4-p0a-stats.mjs --out=analysis/g4/p0a/results/s0r-recovery-06", "exitCode": 0 }
+  ],
+  "stages": { "S0R": "PASS", "formalS0": "NOT_RUN", "S1": "NOT_RUN", "S2": "NOT_RUN", "S3": "NOT_RUN" },
+  "scopeNote": "24-frame results validate test plumbing only. They are not A/A, ABBA, or performance evidence and do not support GO or NO-GO."
+}

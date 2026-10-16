@@ -1,0 +1,75 @@
+{
+  "baselineSHA": "d57f4cc2e20f350765ea1a50187b28daafc48525",
+  "referenceMainAtCommission": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "branch": "analysis/g4-p0a-hydro-ablation",
+  "node": "v24.11.1",
+  "files": {
+    "src/inkbox/sim/hydrology.js": {
+      "blob": "3ca47d08b27a10ed885b295e931dd988da6e32b7",
+      "sha256": "d8d3d16f52a28f79769d99c677ed141587701c29695b925e7c616a32867d68e1"
+    },
+    "src/inkbox/world/terrain.js": {
+      "blob": "e5aaada460fd9843aeb07d7367b71aead2bf968e",
+      "sha256": "315eccaeb353fea3e97fdfe6903f58d0538a0c83d51f2884d8b9c7ccda753fc9"
+    },
+    "src/inkbox/main.js": {
+      "blob": "c16875b435a1e783532540733fc14f836391ea77",
+      "sha256": "2fec345c01204259ded904f026ac9223575b0bacc064e7ced8073e216d9447a4"
+    },
+    "src/inkbox/render3d/stage/PlaneStage.js": {
+      "blob": "cdf7d84fc88d0885331a1f0884d0ee4063c6fc26",
+      "sha256": "e57b9556971158b5a29786204f47c333c80f17c674e39fc6682cd2e76259f786"
+    },
+    "src/inkbox/render3d/WorldRenderBridge.js": {
+      "blob": "e6d7ee6dc72fc22ac739476aab27073a2f0b0fb4",
+      "sha256": "72ef919c56a91b40356ca5d56465ee44ae922e089ea0390a22052fdfe6e987ce"
+    },
+    "src/inkbox/sim/powers.js": {
+      "blob": "ba28a95fccaad03b433e268dd0471ebf50eb05a8",
+      "sha256": "fd756de7d188f42b862385158e77c4b96ce976889029b521a2154d1481b32d6b"
+    }
+  },
+  "input": {
+    "archiveName": "G4-PERF-天地有度-R2.zip",
+    "archiveSHA256": "f7f99fdf50e36f590c328d730aad49e507815260e8a40e1a08bd96efe52efe43",
+    "variantsSHA256": "22aa5b602a7e151235afafa763eeab1221334eb2b4dbe8ffa0990ee82a36e44b",
+    "envSHA256": "434bc2df90cc5d112ae356e2c2caa5a01196738aa92ad8770bd879c14715fdbd"
+  },
+  "environment": null,
+  "baseDrift": "",
+  "adapter": {
+    "mainSourceSHA256": "2fec345c01204259ded904f026ac9223575b0bacc064e7ced8073e216d9447a4",
+    "mainResponseSHA256": "1c4f3b76028af46822384570af5be2b10402d8f9e1c134d6048cedbba3dd772d",
+    "mainImportDiff": {
+      "line": 39,
+      "before": "import { stepHydrology } from './sim/hydrology.js';",
+      "after": "import { stepHydrology } from '/__g4__/hydrology-entry.mjs';"
+    },
+    "variantsSourceSHA256": "22aa5b602a7e151235afafa763eeab1221334eb2b4dbe8ffa0990ee82a36e44b",
+    "variantsBrowserSHA256": "13fc2bc8a39d5c65ab21e9611fca45e8d1fe49b29cbf525d0dd8d91e86a9aad8",
+    "variantsBodySourceSHA256": "2d0bb19456e40ff41dcfa9fb6df363e3359b6012e03e9d949fcd824f8d46a79f",
+    "variantsBodyBrowserSHA256": "2d0bb19456e40ff41dcfa9fb6df363e3359b6012e03e9d949fcd824f8d46a79f",
+    "adapterSourceSHA256": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+    "adapterResponseSHA256": "2ede20fb6c232aef36623d4d088c6a6498cc7e04648b88cb79620b1a1b6c5a32"
+  },
+  "serverResponses": [
+    {
+      "route": "/src/inkbox/main.js",
+      "status": 200,
+      "sha256": "1c4f3b76028af46822384570af5be2b10402d8f9e1c134d6048cedbba3dd772d",
+      "nodeImport": false
+    },
+    {
+      "route": "/__g4__/hydrology-entry.mjs",
+      "status": 200,
+      "sha256": "2ede20fb6c232aef36623d4d088c6a6498cc7e04648b88cb79620b1a1b6c5a32",
+      "nodeImport": false
+    },
+    {
+      "route": "/__g4__/variants-r2.mjs",
+      "status": 200,
+      "sha256": "13fc2bc8a39d5c65ab21e9611fca45e8d1fe49b29cbf525d0dd8d91e86a9aad8",
+      "nodeImport": false
+    }
+  ]
+}
