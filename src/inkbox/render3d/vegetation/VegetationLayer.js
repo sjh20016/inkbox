@@ -226,7 +226,14 @@ export class VegetationLayer {
     }
     const budgetAssignMs = probe ? performance.now() - budgetStart : 0;
     let changed = previous.size !== nextStates.size;
-    if (!changed) for (const [cell, lod] of nextStates) if (previous.get(cell) !== lod) { changed = true; break; }
+    if (!changed) {
+      const before = previous.entries(), after = nextStates.entries();
+      while (true) {
+        const a = before.next(), b = after.next();
+        if (a.done || b.done) { changed = a.done !== b.done; break; }
+        if (a.value[0] !== b.value[0] || a.value[1] !== b.value[1]) { changed = true; break; }
+      }
+    }
     this._lodByTree = nextStates; this._nextLodByTree = previous; this._nextLodByTree.clear();
     let matrixUploadMs = 0, matrixInstancesWritten = 0, uploaded = false;
     if (forceUpload || changed) {
@@ -335,3 +342,4 @@ export class VegetationLayer {
     for (const geometry of this.lodGeometries) geometry.dispose();
   }
 }
+

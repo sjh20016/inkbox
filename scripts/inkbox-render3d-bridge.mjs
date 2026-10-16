@@ -512,11 +512,11 @@ check('TerrainMesh 分两次调：height 只写 Y、type 只写色', () => {
   assert(/terrain\?\.update\(typeRegion, \{ height: false, type: true \}\)/.test(src), 'type 脏区必须显式关掉 Y');
 });
 
-check('水面吃 height ∨ water；植被吃 height ∨ type ∨ veg', () => {
+check('水面吃 height ∨ water；植被吃 height ∨ water ∨ type ∨ veg', () => {
   const src = readSource('src/inkbox/render3d/stage/PlaneStage.js');
   assert(/if \(\(heightChanged \|\| waterRegion\) && this\.water\) this\.water\.update/.test(src), '水面高度依赖 height + water');
-  assert(/if \(this\.vegetation && \(heightChanged \|\| typeRegion \|\| vegRegion \|\| this\.vegetation\.pendingRegionRebuild\)\) this\.vegetationPending = true;/.test(src),
-    '植被派生依赖 height + type + veg（M2-B §22 追加第 4 条：Region 变化也要重建实例，但仍走同一条节流通道）');
+  assert(/if \(this\.vegetation && \(heightChanged \|\| waterRegion \|\| typeRegion \|\| vegRegion \|\| this\.vegetation\.pendingRegionRebuild\)\) this\.vegetationPending = true;/.test(src),
+    '植被派生依赖 height + water + type + veg（M2-B §22 追加 Region 变化；所有来源仍走同一条节流通道）');
 });
 
 check('区域合并只走 `mergeRegion`，不在 Renderer3D 里手抄一遍 min/max', () => {
@@ -755,3 +755,4 @@ if (failures.length) {
   console.log(`全部通过 · ${passed} 项断言`);
 }
 console.log('══════════════════════════════════════════════════════════════');
+

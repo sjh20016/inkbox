@@ -259,7 +259,7 @@ export class PlaneStage {
     if (waterRegion) this.surfaceField?.update(waterRegion);
     const t2 = performance.now();
     // §22：Region 变化也要重建植被实例（走同一条节流通道，不是每帧全量重写）。
-    if (this.vegetation && (heightChanged || typeRegion || vegRegion || this.vegetation.pendingRegionRebuild)) this.vegetationPending = true;
+    if (this.vegetation && (heightChanged || waterRegion || typeRegion || vegRegion || this.vegetation.pendingRegionRebuild)) this.vegetationPending = true;
     this.treeClock += Number.isFinite(dt) ? dt : 0;
     if (this.vegetationPending && (heightChanged || this.treeClock >= 0.15)) {
       // G2-P0.3 §9：把高程是否变化如实告诉植被层。heightChanged=false 时它不再强制
@@ -312,3 +312,4 @@ export class PlaneStage {
     this.root.removeFromParent();
   }
 }
+
