@@ -38,13 +38,32 @@ export class PlaneStage {
     this.geographyFeatures = geographyFeatures(geography);
     this._pccEnabled = false;
     this._pccWaterStepId = null;
+    this._pccMode = 'shadow';
+    this._pccProfile = false;
+    this._pccError = null;
+    this._pccFailureCount = 0;
     this._pccLayer = null;
-    this._pccBridgeObserver = frame => this._pccLayer?.observeFrame(frame);
+    this._pccBridgeObserver = frame => {
+      try {
+        this._pccLayer.observeFrame(frame);
+        this._pccError = null;
+      } catch (error) {
+        this._pccError = error;
+        this._pccFailureCount++;
+        this._pccLayer?.dispose();
+        this._pccLayer = null;
+        throw error; // Bridge records the failure and still returns legacy dirty regions.
+      }
+    };
     this.pcc = {};
     Object.defineProperties(this.pcc, {
       observe: { enumerable: true, get: () => this._pccEnabled, set: value => this.setPccObserve(value) },
       waterStepId: { enumerable: true, get: () => this._pccWaterStepId, set: value => this.setPccWaterStepId(value) },
       stats: { enumerable: true, get: () => this._pccLayer?.stats ?? null },
+      mode: { enumerable: true, get: () => this._pccMode, set: value => this.setPccMode(value) },
+      profile: { enumerable: true, get: () => this._pccProfile, set: value => this.setPccProfile(value) },
+      error: { enumerable: true, get: () => this._pccError },
+      failureCount: { enumerable: true, get: () => this._pccFailureCount },
     });
     this.setWorld(world, coordinates);
   }
@@ -103,7 +122,7 @@ export class PlaneStage {
     this.regionInside = true;
     this.timings = {};
     this.root.visible = this.visible;
-    if (this._pccEnabled) this._pccLayer = new PresentationChangeLayer(world, { waterStepId: this._pccWaterStepId });
+    if (this._pccEnabled) this._pccLayer = this.createPccLayer();
   }
 
   setVisible(visible) {
@@ -117,8 +136,28 @@ export class PlaneStage {
     const next = !!enabled;
     if (next === this._pccEnabled && (!!this._pccLayer) === next) return;
     this._pccEnabled = next;
-    if (next && this.world) this._pccLayer = new PresentationChangeLayer(this.world, { waterStepId: this._pccWaterStepId });
-    else { this._pccLayer?.dispose(); this._pccLayer = null; }
+    if (next && this.world) this._pccLayer = this.createPccLayer();
+    else { this._pccLayer?.dispose(); this._pccLayer = null; this.bridge?.releaseChangeLists(); }
+    this._pccError = null;
+  }
+
+  createPccLayer() {
+    return new PresentationChangeLayer(this.world, { waterStepId: this._pccWaterStepId,
+      mode: this._pccMode, profile: this._pccProfile });
+  }
+
+  setPccMode(mode) {
+    if (!['shadow', 'rules', 'exact'].includes(mode)) throw new RangeError(`Unknown PCC mode: ${mode}`);
+    if (mode === this._pccMode) return;
+    this._pccMode = mode;
+    this._pccLayer?.dispose();
+    this._pccLayer = this._pccEnabled && this.world ? this.createPccLayer() : null;
+    this._pccError = null;
+  }
+
+  setPccProfile(enabled) {
+    this._pccProfile = !!enabled;
+    if (this._pccLayer) this._pccLayer.profile = this._pccProfile;
   }
 
   setPccWaterStepId(value) {
@@ -264,8 +303,9 @@ export class PlaneStage {
 
   update(dt, zoom = 1) {
     if (!this.visible) return;
+    if (this._pccEnabled && !this._pccLayer) this._pccLayer = this.createPccLayer();
     const scanStart = performance.now();
-    const dirty = this.bridge.changes(this._pccLayer ? this._pccBridgeObserver : null);
+    const dirty = this.bridge.changes(this._pccEnabled ? this._pccBridgeObserver : null);
     const bridgeScanMs = performance.now() - scanStart;
     const heightRegion = mergeRegion(this.pending, dirty?.height ?? null);
     const typeRegion = dirty?.type ?? null;
@@ -319,6 +359,7 @@ export class PlaneStage {
 
   releaseLayers() {
     this._pccLayer?.dispose(); this._pccLayer = null;
+    this.bridge?.releaseChangeLists();
     this.terrainSides?.dispose();this.terrainSides=null;
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
     this.scalarField?.dispose();this.scalarField=null;

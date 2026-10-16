@@ -67,7 +67,10 @@ function shadeAt(geo, w, h, x, y, out, offset) {
 
 /** Render-owned diagnostic shadow. It never mutates World or renderer state. */
 export class PresentationChangeLayer {
-  constructor(world, { waterStepId = null } = {}) {
+  constructor(world, { waterStepId = null, mode = 'shadow', profile = false } = {}) {
+    if (!['shadow', 'rules', 'exact'].includes(mode)) throw new RangeError(`Unknown PCC mode: ${mode}`);
+    this.mode = mode;
+    this.profile = !!profile;
     this.observe = true;
     this.waterStepId = Number.isSafeInteger(waterStepId) ? waterStepId : null;
     this.eventSequence = 0;
@@ -80,7 +83,20 @@ export class PresentationChangeLayer {
 
   reset(world, reason = 'reset') {
     this.world = world;
+    this.stats = null;
     const { size, w, h } = world;
+    if (this.mode === 'exact') {
+      this.exactGeo = this.presentedGeo = this.exactWaterGeo = this.presentedWaterGeo = null;
+      this.exactDepth = this.presentedDepth = this.depthTexelStamp = null;
+      this.exactShade = this.presentedShade = null;
+      this.forceAt = this.forceMask = this.diagonalStamp = null;
+      this.shadeStamp = this.forcedStamp = this.forcedShadeStamp = null;
+      this.shadeCandidates = this.forceBuckets = null;
+      this.shadeCandidateLength = this.queuedCells = this.allocatedBytes = 0;
+      this.lastWaterStepId = this.waterStepId;
+      this.resetReason = reason;
+      return;
+    }
     this.exactGeo = new Float32Array(size);
     this.presentedGeo = new Float32Array(size);
     this.exactWaterGeo = new Float32Array(size);
@@ -88,8 +104,8 @@ export class PresentationChangeLayer {
     this.exactDepth = new Uint8Array(size);
     this.presentedDepth = new Uint8Array(size);
     this.depthTexelStamp = new Uint32Array(size);
-    this.exactShade = new Float64Array(size * 4);
-    this.presentedShade = new Float64Array(size * 4);
+    this.exactShade = this.mode === 'shadow' ? new Float64Array(size * 4) : null;
+    this.presentedShade = this.mode === 'shadow' ? new Float64Array(size * 4) : null;
     this.forceAt = new Int32Array(size); this.forceAt.fill(-1);
     this.forceMask = new Uint8Array(size);
     this.diagonalStamp = new Uint32Array(Math.max(0, w - 1) * Math.max(0, h - 1));
@@ -108,18 +124,20 @@ export class PresentationChangeLayer {
       this.exactWaterGeo[i] = this.presentedWaterGeo[i] = wg;
       this.exactDepth[i] = this.presentedDepth[i] = depthByte(world.water[i]);
     }
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      const i = y * w + x, o = i * 4;
-      shadeAt(this.exactGeo, w, h, x, y, this.exactShade, o);
+    if (this.mode === 'shadow') {
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = y * w + x, o = i * 4;
+        shadeAt(this.exactGeo, w, h, x, y, this.exactShade, o);
+      }
+      this.presentedShade.set(this.exactShade);
     }
-    this.presentedShade.set(this.exactShade);
     this.lastWaterStepId = this.waterStepId;
     this.resetReason = reason;
     this.allocatedBytes = this.exactGeo.byteLength + this.presentedGeo.byteLength
       + this.exactWaterGeo.byteLength + this.presentedWaterGeo.byteLength
       + this.exactDepth.byteLength + this.presentedDepth.byteLength
       + this.depthTexelStamp.byteLength
-      + this.exactShade.byteLength + this.presentedShade.byteLength
+      + (this.exactShade?.byteLength ?? 0) + (this.presentedShade?.byteLength ?? 0)
       + this.forceAt.byteLength + this.forceMask.byteLength + this.diagonalStamp.byteLength
       + this.shadeStamp.byteLength + this.forcedStamp.byteLength + this.forcedShadeStamp.byteLength
       + this.shadeCandidates.byteLength
@@ -145,6 +163,7 @@ export class PresentationChangeLayer {
 
   #schedule(index, mask, stepId) {
     if (stepId === null) return;
+    const started = this.profile ? performance.now() : 0;
     if (this.forceAt[index] < 0) {
       const due = stepId + T_MAX;
       const bucket = this.forceBuckets[due % T_MAX];
@@ -157,14 +176,17 @@ export class PresentationChangeLayer {
       this.queuedCells++;
     }
     this.forceMask[index] |= mask;
+    if (this.profile) this._queueCpuMs += performance.now() - started;
   }
 
   #clearPending(index, mask) {
+    const started = this.profile ? performance.now() : 0;
     this.forceMask[index] &= ~mask;
     if (!this.forceMask[index] && this.forceAt[index] >= 0) {
       this.forceAt[index] = -1;
       this.queuedCells--;
     }
+    if (this.profile) this._queueCpuMs += performance.now() - started;
   }
 
   #markShadeCell(i) {
@@ -215,8 +237,18 @@ export class PresentationChangeLayer {
       if (due < 0) continue;
       if (due > stepId) { bucket.items[write++] = i; continue; }
       const mask = this.forceMask[i];
-      if (mask & 1) { this.presentedGeo[i] = this.#currentGeo(i); this.#clearPending(i, 1); this.#markForced(i, stats); }
-      if (mask & 2) { this.presentedWaterGeo[i] = this.#currentWaterGeo(i); this.#clearPending(i, 2); this.#markForced(i, stats); }
+      if (mask & 1) {
+        const started = this.profile ? performance.now() : 0;
+        this.presentedGeo[i] = this.#currentGeo(i);
+        if (this.profile) this._forcedElevationMs += performance.now() - started;
+        this.#clearPending(i, 1); this.#markForced(i, stats);
+      }
+      if (mask & 2) {
+        const started = this.profile ? performance.now() : 0;
+        this.presentedWaterGeo[i] = this.#currentWaterGeo(i);
+        if (this.profile) this._forcedElevationMs += performance.now() - started;
+        this.#clearPending(i, 2); this.#markForced(i, stats);
+      }
       if (mask & 4) { this.forcedShadeStamp[i] = this.stamp; this.#clearPending(i, 4); }
       this.forceAt[i] = this.forceMask[i] ? stepId + T_MAX : -1;
       if (this.forceMask[i]) {
@@ -227,17 +259,27 @@ export class PresentationChangeLayer {
         } else nextBucket.items[nextBucket.length] = i;
         nextBucket.length++;
       }
-      if (mask & 1) this.#markShadeAffected(i);
-      if (mask & 4) this.#markShadeCell(i);
+      if (mask & 5) {
+        const started = this.profile ? performance.now() : 0;
+        if (mask & 1) this.#markShadeAffected(i);
+        if (mask & 4) this.#markShadeCell(i);
+        if (this.profile) this._forcedDependencyMs += performance.now() - started;
+      }
     }
     bucket.length = write;
   }
 
-  #evaluateShade(stats, stepId) {
+  #computeShade() {
     const { w, h } = this.world;
     for (let j = 0; j < this.shadeCandidateLength; j++) {
       const i = this.shadeCandidates[j], x = i % w, y = (i / w) | 0, o = i * 4;
       shadeAt(this.exactGeo, w, h, x, y, this.exactShade, o);
+    }
+  }
+
+  #evaluateShade(stats, stepId) {
+    for (let j = 0; j < this.shadeCandidateLength; j++) {
+      const i = this.shadeCandidates[j], o = i * 4;
       let error = 0;
       for (let k = 0; k < 4; k++) error = Math.max(error, Math.abs(this.exactShade[o + k] - this.presentedShade[o + k]));
       const forced = this.forcedShadeStamp[i] === this.stamp;
@@ -270,9 +312,26 @@ export class PresentationChangeLayer {
       wetDryCrossings: 0, depthBandCrossings: 0, a0DepthBandCrossings: 0, typeCrossings: counts.type,
       diagonalFlips: 0, vegetationEligibilityChanges: 0, treeEligibilityChanges: 0, forcedSyncCells: 0,
       bridgeScanCpuMs: frame.bridgeScanCpuMs, classificationCpuMs: 0,
+      mode: this.mode, dependencyIndices: null, dependencyCount: 0,
+      phaseMs: { elevation: 0, topology: 0, shadeDependencies: 0, shadeAt: 0, tmax: 0, other: 0 },
       tmaxClockAvailable: stepId !== null, tmaxQueuedCells: this.queuedCells,
       _forcedCount: 0,
     };
+
+    if (this.mode === 'exact') {
+      stats.classificationCpuMs = performance.now() - start;
+      if (this.profile) stats.phaseMs.other = stats.classificationCpuMs;
+      this.totalClassificationCpuMs += stats.classificationCpuMs;
+      this.stats = stats;
+      return;
+    }
+
+    const timed = this.profile;
+    const tick = () => timed ? performance.now() : 0;
+    let phaseStart;
+    this._queueCpuMs = 0;
+    this._forcedElevationMs = 0;
+    this._forcedDependencyMs = 0;
 
     this.stamp++;
     if (this.stamp >= 0xfffffffe) {
@@ -283,8 +342,10 @@ export class PresentationChangeLayer {
     const qW = Math.max(0, w.w - 1), qH = Math.max(0, w.h - 1);
     const oldWorld = { w: w.w, h: w.h, height: old.height, generation: w.generation };
 
+    phaseStart = tick();
+    let queuedBefore = this._queueCpuMs;
     for (let j = 0; j < lists.height.length; j++) {
-      const i = lists.height.indices[j], x = i % w.w, y = (i / w.w) | 0;
+      const i = lists.height.indices[j];
       const nowGeo = this.#currentGeo(i);
       this.exactGeo[i] = nowGeo;
       const delta = Math.abs(nowGeo - this.presentedGeo[i]);
@@ -292,7 +353,14 @@ export class PresentationChangeLayer {
         this.presentedGeo[i] = nowGeo; this.#clearPending(i, 1);
         stats.terrainGeoCandidateCells++;
       } else if (delta !== 0) this.#schedule(i, 1, stepId);
-      this.#markShadeAffected(i);
+    }
+    if (timed) stats.phaseMs.elevation = Math.max(0, performance.now() - phaseStart - (this._queueCpuMs - queuedBefore));
+    phaseStart = tick();
+    for (let j = 0; j < lists.height.length; j++) this.#markShadeAffected(lists.height.indices[j]);
+    if (timed) stats.phaseMs.shadeDependencies = performance.now() - phaseStart;
+    phaseStart = tick();
+    for (let j = 0; j < lists.height.length; j++) {
+      const i = lists.height.indices[j], x = i % w.w, y = (i / w.w) | 0;
       for (let qy = Math.max(0, y - 1); qy <= Math.min(qH - 1, y); qy++) {
         for (let qx = Math.max(0, x - 1); qx <= Math.min(qW - 1, x); qx++) {
           const qi = qy * qW + qx;
@@ -303,6 +371,7 @@ export class PresentationChangeLayer {
         }
       }
     }
+    if (timed) stats.phaseMs.topology = performance.now() - phaseStart;
 
     for (let j = 0; j < lists.water.length; j++) {
       const i = lists.water.indices[j], before = old.water[i], after = w.water[i];
@@ -321,6 +390,8 @@ export class PresentationChangeLayer {
       }
     }
 
+    phaseStart = tick();
+    queuedBefore = this._queueCpuMs;
     for (let j = 0; j < counts.cells; j++) {
       const i = lists.cells[j], mask = lists.masks[j];
       if (mask & 3) {
@@ -334,27 +405,51 @@ export class PresentationChangeLayer {
           else if (delta !== 0) this.#schedule(i, 2, stepId);
         }
       }
+    }
+    if (timed) stats.phaseMs.elevation += Math.max(0, performance.now() - phaseStart - (this._queueCpuMs - queuedBefore));
+    for (let j = 0; j < counts.cells; j++) {
+      const i = lists.cells[j];
       if (eligible(old.height[i], old.water[i]) !== eligible(w.height[i], w.water[i]))
         stats.vegetationEligibilityChanges++;
       if (treeEligible(w, i, old.height[i], old.water[i], old.veg[i]) !== treeEligible(w, i, w.height[i], w.water[i], w.veg[i]))
         stats.treeEligibilityChanges++;
     }
 
+    phaseStart = tick();
+    queuedBefore = this._queueCpuMs;
     this.#processForced(stepId, stats);
-    this.#evaluateShade(stats, stepId);
+    const drainMs = timed ? Math.max(0, performance.now() - phaseStart - (this._queueCpuMs - queuedBefore)
+      - this._forcedElevationMs - this._forcedDependencyMs) : 0;
+    if (timed) {
+      stats.phaseMs.elevation += this._forcedElevationMs;
+      stats.phaseMs.shadeDependencies += this._forcedDependencyMs;
+    }
+    if (this.mode === 'shadow') {
+      phaseStart = tick();
+      this.#computeShade();
+      if (timed) stats.phaseMs.shadeAt = performance.now() - phaseStart;
+      this.#evaluateShade(stats, stepId);
+    } else {
+      /** Borrowed current-frame view; consumers retaining indices must copy before observeFrame/reset. */
+      stats.dependencyIndices = this.shadeCandidates.subarray(0, this.shadeCandidateLength);
+      stats.dependencyCount = this.shadeCandidateLength;
+    }
     stats.forcedSyncCells = stats._forcedCount;
     delete stats._forcedCount;
     stats.classificationCpuMs = performance.now() - start;
+    if (timed) stats.phaseMs.tmax = this._queueCpuMs + drainMs;
+    if (timed) stats.phaseMs.other = Math.max(0, stats.classificationCpuMs - Object.values(stats.phaseMs).reduce((a, b) => a + b, 0));
     this.totalClassificationCpuMs += stats.classificationCpuMs;
     this.stats = stats;
   }
 
   memoryStats() {
+    if (!this.forceBuckets) return { allocatedBytes: 0, capacityBytes: 0, forcedQueueCapacity: 0, queuedCells: 0 };
     const capacities = this.forceBuckets.reduce((n, b) => n + b.items.length, 0);
     const capacityBytes = this.exactGeo.byteLength + this.presentedGeo.byteLength
       + this.exactWaterGeo.byteLength + this.presentedWaterGeo.byteLength
       + this.exactDepth.byteLength + this.presentedDepth.byteLength + this.depthTexelStamp.byteLength
-      + this.exactShade.byteLength + this.presentedShade.byteLength + this.forceAt.byteLength
+      + (this.exactShade?.byteLength ?? 0) + (this.presentedShade?.byteLength ?? 0) + this.forceAt.byteLength
       + this.forceMask.byteLength + this.diagonalStamp.byteLength + this.shadeStamp.byteLength
       + this.forcedStamp.byteLength + this.forcedShadeStamp.byteLength + this.shadeCandidates.byteLength
       + this.forceBuckets.reduce((n, b) => n + b.items.byteLength, 0);

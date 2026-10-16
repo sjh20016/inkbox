@@ -139,6 +139,12 @@ export class WorldRenderBridge {
       capacityCells: lists.cells.length, channelCapacity: lists.height.indices.length };
   }
 
+  /** Drop observation-only buffers without touching legacy world snapshots. */
+  releaseChangeLists() {
+    this.changeLists = null;
+    this.changeListAllocationBytes = 0;
+  }
+
   /**
    * 对比本帧与上一帧的地形数组和活动火势。
    *
@@ -147,6 +153,7 @@ export class WorldRenderBridge {
    *   每一层要么是 `null`，要么是**闭区间**格坐标矩形 `{x0, y0, x1, y1}`。
    */
   changes(observer = null) {
+    if (!observer && this.changeLists) this.releaseChangeLists();
     const scanStart = observer ? performance.now() : 0;
     const w = this.world;
     const { height, water, type, veg, fire } = w;
@@ -185,8 +192,9 @@ export class WorldRenderBridge {
         bridgeScanCpuMs: performance.now() - scanStart,
         counts: { height: lists.height.length, water: lists.water.length, type: lists.type.length,
           veg: lists.veg.length, fire: lists.fire.length, cells: lists.cellLength } };
-      try { observer(frame); } catch (error) {
+      try { observer(frame); this.observerError = null; } catch (error) {
         this.observerError = error;
+        this.observerErrorCount = (this.observerErrorCount ?? 0) + 1;
       } finally {
         for (let j = 0; j < lists.height.length; j++) { const i = lists.height.indices[j]; old.height[i] = height[i]; }
         for (let j = 0; j < lists.water.length; j++) { const i = lists.water.indices[j]; old.water[i] = water[i]; }
