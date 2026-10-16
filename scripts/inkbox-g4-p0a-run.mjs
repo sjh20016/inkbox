@@ -17,14 +17,20 @@ const suite = args.suite ?? 'all';
 if (!['all', 'smoke', 's0r'].includes(suite)) throw new Error('Supported --suite: all | smoke | s0r (all remains conditional on each gate).');
 const OUT = path.resolve(ROOT, args.out ?? 'analysis/g4/p0a/results');
 if (fs.existsSync(path.join(OUT, 'manifest.json'))) throw new Error('OUTPUT_EXISTS: use a fresh --out directory; failed runs are never overwritten.');
-fs.mkdirSync(OUT, { recursive: true });
 const git = (...argv) => execFileSync('git', argv, { cwd: ROOT, encoding: 'utf8', windowsHide: true }).trim();
+const runnerSHA = git('rev-parse', 'HEAD');
+let originMainSHA, baselineSHA;
+try {
+  originMainSHA = git('rev-parse', 'origin/main');
+  baselineSHA = git('merge-base', runnerSHA, 'origin/main');
+} catch { throw new Error('BASELINE_REF_REQUIRED: fetch origin and make origin/main available before running.'); }
+fs.mkdirSync(OUT, { recursive: true });
 const manifest = { schema: 'g4-p0a-r2.1', startedAt: new Date().toISOString(), suite,
   status: 'RUNNING', reason: null, runs: [], failures: [], stages: {},
   quantiles: 'Nearest rank: sorted[ceil(p*N)-1]; rates use strict >; adjacent RAF frames are not independent repeats.',
-  baselineSHA: git('rev-parse', 'HEAD'), regressionBudget: { formula: 'baseline * 1.08 + 1.5ms',
+  baselineRef: 'origin/main', baselineSHA, originMainSHA, runnerSHA, regressionBudget: { formula: 'baseline * 1.08 + 1.5ms',
     evaluation: null, reason: 'No matching approved product baseline for this device and this experimental protocol; no claim of regression-budget acceptance.' } };
-const provenance = { baselineSHA: manifest.baselineSHA, referenceMainAtCommission: 'e1e55039bb56efda7a307513ede07a9fab3bf534',
+const provenance = { baselineRef: manifest.baselineRef, baselineSHA, originMainSHA, runnerSHA, referenceMainAtCommission: 'e1e55039bb56efda7a307513ede07a9fab3bf534',
   branch: git('branch', '--show-current'), node: process.version, files: {}, input: {}, environment: null };
 const bindings = [];
 let server, browser, stop = false;
@@ -379,6 +385,11 @@ async function s2() {
   for (const variant of ['V0_current', 'V3_staticSeaStrict']) runs.push(await run(`s2-events-${variant}`, variant, { events: true, mode: 'events' }));
   manifest.stages.S2 = { status: 'PASS', runs: runs.map(r => r.label),
     ruleEquivalenceRequired: false, description: 'Authoritative powers.addWater at measured hydro step 15 and powers.sculpt at step 25; step 25 leaves post-sculpt retreat frames inside the fixed 600-RAF window on the slower V3 run. Actual mutations are retained in raw completion records.' };
+  if (manifest.primary) {
+    manifest.primary.status = 'S2_VALID';
+    manifest.primary.reason = manifest.primary.clearBenefit ? 'S1_THRESHOLDS_AND_S2_VALID' : 'S2_VALID_WITHOUT_S1_CLEAR_BENEFIT';
+    manifest.stages.S1.assessment = manifest.primary;
+  }
   checkpoint();
 }
 
