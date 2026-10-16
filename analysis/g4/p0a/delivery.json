@@ -1,0 +1,65 @@
+{
+  "finalDecision": "INCONCLUSIVE",
+  "baselineSHA": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "runnerCommit": "a39e2f6cd788bf7ee0dfb6b10114be2b8bfa3b0c",
+  "evidenceCommit": "This evidence commit; resolve with git rev-parse HEAD on analysis/g4-p0a-hydro-ablation.",
+  "repairsUsed": 2,
+  "performanceRuns": 0,
+  "stoppedAt": "S0 viewport gate",
+  "checks": [
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-adapter.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-browser.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-page.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-run.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-server.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-smoke.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-stats.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check analysis/g4/p0a/reference/variants-r2.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check analysis/g4/p0a/reference/env-r2.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:core",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/inkbox-g4-p0a-smoke.mjs",
+      "exitCode": 0
+    }
+  ],
+  "allMinimumChecksPassed": true,
+  "liveBrowserS0Passed": false,
+  "whitelist": [
+    "scripts/inkbox-g4-p0a-*.mjs",
+    "analysis/g4/p0a/**"
+  ],
+  "forbiddenProductChanges": [],
+  "pullRequestCreated": false,
+  "merged": false,
+  "sourceLineEndings": "LF; clone with git -c core.autocrlf=false to preserve archived source bytes."
+}

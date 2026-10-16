@@ -1,0 +1,21 @@
+{
+  "repairLimit": 2,
+  "repairs": [
+    {
+      "number": 1,
+      "afterAttempt": "attempt-01",
+      "reason": "R2 destructuring collided with injected H/T import names.",
+      "change": "Only environment import aliases changed; original R2 body untouched.",
+      "failedSource": "attempt-01/failed-server.mjs.txt"
+    },
+    {
+      "number": 2,
+      "afterAttempt": "attempt-02",
+      "reason": "Repository Session.waitFor requires explicit return in the JavaScript body; omitted return always evaluates undefined.",
+      "change": "Added return to the two readiness predicates.",
+      "failedSource": "attempt-02/failed-runner.mjs.txt"
+    }
+  ],
+  "stoppedAfter": "attempt-03",
+  "stopReason": "VIEWPORT_DRIFT; no third correction or later browser round."
+}

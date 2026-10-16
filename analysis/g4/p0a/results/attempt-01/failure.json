@@ -1,0 +1,46 @@
+{
+  "message": "PRODUCT_BOOT_BLOCKED",
+  "browserStderr": null,
+  "pageErrors": [
+    {
+      "method": "Runtime.exceptionThrown",
+      "params": {
+        "timestamp": 1792162680110.352,
+        "exceptionDetails": {
+          "exceptionId": 1,
+          "text": "Uncaught",
+          "lineNumber": 10,
+          "columnNumber": 8,
+          "scriptId": "56",
+          "url": "<localhost>/__g4__/variants-r2.mjs",
+          "exception": {
+            "type": "object",
+            "subtype": "error",
+            "className": "SyntaxError",
+            "description": "SyntaxError: Identifier 'H' has already been declared",
+            "objectId": "9220462896291696032.2.1",
+            "preview": {
+              "type": "object",
+              "subtype": "error",
+              "description": "SyntaxError: Identifier 'H' has already been declared",
+              "overflow": false,
+              "properties": [
+                {
+                  "name": "stack",
+                  "type": "string",
+                  "value": "SyntaxError: Identifier 'H' has already been declared"
+                },
+                {
+                  "name": "message",
+                  "type": "string",
+                  "value": "Identifier 'H' has already been declared"
+                }
+              ]
+            }
+          },
+          "executionContextId": 2
+        }
+      }
+    }
+  ]
+}

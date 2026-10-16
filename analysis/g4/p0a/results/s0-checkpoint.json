@@ -1,0 +1,33 @@
+{
+  "status": "FAIL",
+  "finalDecision": "INCONCLUSIVE",
+  "reason": "S0_INVALID_REPAIR_LIMIT",
+  "repairsUsed": 2,
+  "repairLimit": 2,
+  "checks": {
+    "latestMain": "PASS",
+    "inputSource": "PASS",
+    "mainImportBoundary": "PASS",
+    "r2BodyIdentity": "PASS",
+    "productBoot": "PASS_ON_ATTEMPT_03",
+    "viewport": "FAIL",
+    "v0Oracle": "NOT_RUN",
+    "t0AcrossSegments": "NOT_VERIFIED",
+    "realVariantBindings": "NOT_VERIFIED",
+    "productGpuIdentity": "NOT_COMPLETED"
+  },
+  "requestedViewport": {
+    "width": 1366,
+    "height": 768,
+    "dpr": 1
+  },
+  "observedViewport": null,
+  "observedViewportMissingReason": "Setup return was not persisted before the VIEWPORT_DRIFT exception.",
+  "nextStages": {
+    "S1": "NOT_RUN",
+    "S2": "NOT_RUN",
+    "S3": "NOT_RUN"
+  },
+  "validPerformanceFrames": 0,
+  "p1Recommended": false
+}

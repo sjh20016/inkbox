@@ -1,0 +1,5 @@
+{
+  "status": "BROWSER_START_BLOCKED",
+  "message": "CDP connection error",
+  "stderr": ""
+}

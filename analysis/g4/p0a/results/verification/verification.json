@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "checks": [
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-adapter.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsedMs": 59
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-browser.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsedMs": 55
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-page.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsedMs": 53
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-run.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsedMs": 52
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-server.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsedMs": 54
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-smoke.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsedMs": 54
+    },
+    {
+      "command": "node --check scripts/inkbox-g4-p0a-stats.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsedMs": 54
+    },
+    {
+      "command": "node --check analysis/g4/p0a/reference/variants-r2.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsedMs": 52
+    },
+    {
+      "command": "node --check analysis/g4/p0a/reference/env-r2.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "elapsedMs": 51
+    },
+    {
+      "command": "npm run test:core",
+      "exitCode": 0,
+      "stdout": "\n> zuotian-guan-jing-inkbox@1.0.0 test:core\n> node scripts/inkbox-import-check.mjs && node scripts/inkbox-core-check.mjs && node scripts/inkbox-startup-check.mjs && node scripts/inkbox-runtime-events.mjs\n\n══════════════════════════════════════════════════════════════\ninkbox 模块图静态导入检查 · 扫描 147 个文件 / 450 条相对导入边\n范围：src/inkbox\n══════════════════════════════════════════════════════════════\n\n✓ 147 个文件、450 条相对导入边，全部解析成功。\n══════════════════════════════════════════════════════════════\nInkbox core OK · v1.0.0 · 200×128 · 推进 30 日 · WorldEvents 已挂接\nInkbox startup OK · / → v1.0.0 · 3 个入口资源可加载 · 启动器 4 个模式映射正确\n  ✓ emit 保持发生顺序并补齐位面 / 游戏日\n  ✓ 事件只包含约定字段，不复制调用方的墙钟时间或额外属性\n  ✓ 事件数据拒绝 DOM / Canvas 一类非 plain 对象\n  ✓ peek 返回隔离快照，调用方不能改写队列内容\n  ✓ drain 按顺序交付全部事件\n  ✓ drain 后队列为空\n  ✓ 队列不超过 256 项，并在满载时丢弃最老事件\n  ✓ 凡间、上界、幽冥各自排队，事件不串位面\n  ✓ emit / peek / drain 不调用也不推进世界 RNG\n  ✓ runtime queue 不挂到 World，也不进入存档字段\n  ✓ runtime event 不改变任何已序列化的模拟状态\n  ✓ 读档后的 runtime queue 为空\n  ✓ drain 只清 transient queue，不改变存档 / 模拟状态\nRuntime events OK · 13 checks · cap 256\n",
+      "stderr": "",
+      "elapsedMs": 3575
+    },
+    {
+      "command": "node scripts/inkbox-g4-p0a-smoke.mjs",
+      "exitCode": 0,
+      "stdout": "{\"status\":\"PASS\",\"scope\":\"localhost responses + ESM syntax + exact import/body/native checks only\",\"liveBrowserS0\":\"NOT_ASSERTED\",\"checks\":[{\"route\":\"/src/inkbox/main.js\",\"status\":\"PASS\",\"sha256\":\"1c4f3b76028af46822384570af5be2b10402d8f9e1c134d6048cedbba3dd772d\",\"nodeImport\":false},{\"route\":\"/__g4__/hydrology-entry.mjs\",\"status\":\"PASS\",\"sha256\":\"2ede20fb6c232aef36623d4d088c6a6498cc7e04648b88cb79620b1a1b6c5a32\",\"nodeImport\":false},{\"route\":\"/__g4__/variants-r2.mjs\",\"status\":\"PASS\",\"sha256\":\"13fc2bc8a39d5c65ab21e9611fca45e8d1fe49b29cbf525d0dd8d91e86a9aad8\",\"nodeImport\":false}],\"mainImportDiff\":{\"line\":39,\"before\":\"import { stepHydrology } from './sim/hydrology.js';\",\"after\":\"import { stepHydrology } from '/__g4__/hydrology-entry.mjs';\"}}\n",
+      "stderr": "",
+      "elapsedMs": 313
+    }
+  ],
+  "collectionNotes": [
+    "The initial collection attempt ran the requested checks, but its PowerShell function-scoped $checks += assignment did not propagate results to the outer scope, so the initial verification.json contained an empty checks array.",
+    "The initial tool output did not include per-command output, exit codes, stderr, or timings; those raw results are unavailable and were not reconstructed.",
+    "The requested check list was repeated once solely to obtain and persist the per-command records. The final checks and conclusions reflect that recorded run."
+  ]
+}

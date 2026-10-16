@@ -1,0 +1,37 @@
+{
+  "status": "NOT_VERIFIED",
+  "reason": "S0 stopped before probe collection and binding smoke.",
+  "adapterSourceSHA256": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+  "variants": [
+    {
+      "variant": "V0_current",
+      "actualBindingFingerprint": null,
+      "hydroStepCount": null,
+      "worldIsProductWorld": null,
+      "normalizationCalls": null
+    },
+    {
+      "variant": "V1_noErosion",
+      "actualBindingFingerprint": null,
+      "hydroStepCount": null,
+      "worldIsProductWorld": null,
+      "normalizationCalls": null
+    },
+    {
+      "variant": "V3_staticSeaStrict",
+      "actualBindingFingerprint": null,
+      "hydroStepCount": null,
+      "worldIsProductWorld": null,
+      "normalizationCalls": null
+    },
+    {
+      "variant": "V9_hydrologyOff",
+      "actualBindingFingerprint": null,
+      "hydroStepCount": null,
+      "worldIsProductWorld": null,
+      "normalizationCalls": null
+    }
+  ],
+  "urlIsExecutionEvidence": false,
+  "v0Oracle": "NOT_RUN"
+}

@@ -1,0 +1,103 @@
+{
+  "schema": "g4-p0a-r2.1-delivery",
+  "status": "INCONCLUSIVE",
+  "reason": "S0_INVALID_REPAIR_LIMIT",
+  "baselineSHA": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "runs": [
+    {
+      "label": "startup-attempt-01",
+      "file": "startup-attempt-01.jsonl.gz",
+      "sha256": "9e53992f4274bbc2905b1851be5e542213209c30f7727f9b18f14adb4e560b81",
+      "rawSHA256": "987c2feca31a1589e66c596b6bb59e20e6904e437e381b4d5b0c1e77af62f82c",
+      "bytes": 5253,
+      "samples": 0,
+      "warmupSamples": 0,
+      "variant": "NOT_VERIFIED",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "startup-only",
+      "status": "FAIL",
+      "summary": null
+    },
+    {
+      "label": "startup-attempt-02",
+      "file": "startup-attempt-02.jsonl.gz",
+      "sha256": "b46008e99728445a14c7ab382e5b79ff913aac42dfa07def00ef57a2abce528e",
+      "rawSHA256": "62bd7a5a695abaa403ef2bd4ff54850355514d28f38357f5a6e08921fe68ceb1",
+      "bytes": 4959,
+      "samples": 0,
+      "warmupSamples": 0,
+      "variant": "NOT_VERIFIED",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "startup-only",
+      "status": "FAIL",
+      "summary": null
+    },
+    {
+      "label": "startup-attempt-03",
+      "file": "startup-attempt-03.jsonl.gz",
+      "sha256": "77e897db0a56f6108c2770b84963760148addb2430b43d465c8b59a340a24160",
+      "rawSHA256": "445d5f72d94489d7646511e4b64f598b88d1dd68ade89a04b6b18d71888adc37",
+      "bytes": 6993,
+      "samples": 0,
+      "warmupSamples": 0,
+      "variant": "NOT_VERIFIED",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "startup-only",
+      "status": "FAIL",
+      "summary": null
+    }
+  ],
+  "validPerformanceFrames": 0,
+  "aa": null,
+  "abba": null,
+  "pairedImprovements": null,
+  "stages": {
+    "S0": {
+      "status": "FAIL",
+      "reason": "VIEWPORT_DRIFT",
+      "checkpoint": "s0-checkpoint.json"
+    },
+    "S1": {
+      "status": "NOT_RUN",
+      "reason": "S0_FAILED"
+    },
+    "S2": {
+      "status": "NOT_RUN",
+      "reason": "S0_FAILED"
+    },
+    "S3": {
+      "status": "NOT_RUN",
+      "reason": "S0_FAILED"
+    }
+  },
+  "interpretation": "Compressed structured startup records contain zero measured-frame entries. They are raw failure evidence, not frame samples.",
+  "attempts": [
+    {
+      "directory": "attempt-01",
+      "manifest": "attempt-01/manifest.json",
+      "failure": "attempt-01/failure.json",
+      "provenance": "attempt-01/provenance.json"
+    },
+    {
+      "directory": "attempt-02",
+      "manifest": "attempt-02/manifest.json",
+      "failure": "attempt-02/failure.json",
+      "provenance": "attempt-02/provenance.json"
+    },
+    {
+      "directory": "attempt-03",
+      "manifest": "attempt-03/manifest.json",
+      "failure": "attempt-03/failure.json",
+      "provenance": "attempt-03/provenance.json"
+    }
+  ],
+  "verification": "verification/verification.json",
+  "environmentAttempts": [
+    "environment-initial-failure.json",
+    "environment-host.json"
+  ],
+  "quantiles": "Nearest rank sorted[ceil(p*N)-1]; strict > threshold rates. No distribution is computable here."
+}
