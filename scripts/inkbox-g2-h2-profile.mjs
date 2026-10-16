@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { launch, findEdge } from './cdp.mjs';
+import { classifyWebGLUpload } from './inkbox-g2-h21-upload-metrics.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.INKBOX_H2_PORT || 4198);
@@ -32,6 +33,7 @@ const RUN_PLAN = ALL_RUNS.filter(run => (!process.env.INKBOX_H2_CASE || run.id =
 assert(RUN_PLAN.length > 0, 'H2 run filter selected no cases');
 const SOURCE_FILES = [
   'scripts/cdp.mjs', 'scripts/inkbox-g2-h2-profile.mjs', 'scripts/inkbox-g2-h2-recalculate.mjs',
+  'scripts/inkbox-g2-h21-upload-metrics.mjs',
   'scripts/inkbox-g2-h2-archipelago-world.mjs', 'src/inkbox/main.js', 'src/inkbox/sim/hydrology.js',
   'src/inkbox/world/terrain.js', 'src/inkbox/render/terrainLayer.js',
   'src/inkbox/render3d/WorldRenderBridge.js', 'src/inkbox/render3d/stage/PlaneStage.js',
@@ -126,22 +128,20 @@ function installProbeSource(caseJson, modeJson, repeat) {
       }
       const gl=r.gpu?.getContext?.();
       if(gl){
-        const uploadBytes=(method,args)=>{
-          for(const value of args){
-            if(ArrayBuffer.isView(value))return value.byteLength;
-            if(value instanceof ArrayBuffer)return value.byteLength;
-          }
-          if(method==='bufferData'&&typeof args[1]==='number')return args[1];
-          return null;
+        const classifyUpload=${classifyWebGLUpload.toString()};
+        const addUpload=(row,result)=>{
+          const key=result.kind==='buffer'?'bufferUploadCalls':'textureUploadCalls';
+          row[key]=(row[key]||0)+1;
+          row.bufferUploadBytesKnown=(row.bufferUploadBytesKnown||0)+result.bufferUploadBytesKnown;
+          row.textureUploadBytesKnown=(row.textureUploadBytesKnown||0)+result.textureUploadBytesKnown;
+          row.uploadSourceBytesUpperBound=(row.uploadSourceBytesUpperBound||0)+result.uploadSourceBytesUpperBound;
+          row.uploadUnknownByteCalls=(row.uploadUnknownByteCalls||0)+result.uploadUnknownByteCalls;
+          row.bufferAllocationBytesKnown=(row.bufferAllocationBytesKnown||0)+result.bufferAllocationBytesKnown;
         };
         probe.glHooks=[];
-        for(const method of ['bufferData','bufferSubData','texImage2D','texSubImage2D','compressedTexImage2D','compressedTexSubImage2D']){
+        for(const method of ['bufferData','bufferSubData','texImage2D','texSubImage2D','texImage3D','texSubImage3D','compressedTexImage2D','compressedTexSubImage2D','compressedTexImage3D','compressedTexSubImage3D']){
           const original=gl[method];if(typeof original!=='function')continue;
-          const wrapper=function(...args){const known=uploadBytes(method,args),row=probe.currentRow;try{return original.apply(this,args);}finally{if(row){
-            row.gpuUploadCalls=(row.gpuUploadCalls||0)+1;
-            if(known===null)row.gpuUploadUnknownByteCalls=(row.gpuUploadUnknownByteCalls||0)+1;
-            else row.gpuUploadBytes=(row.gpuUploadBytes||0)+known;
-          }}};
+          const wrapper=function(...args){const result=classifyUpload(method,args),row=probe.currentRow;try{return original.apply(this,args);}finally{if(row)addUpload(row,result);}};
           try{Object.defineProperty(gl,method,{configurable:true,writable:true,value:wrapper});if(gl[method]===wrapper)probe.glHooks.push(method);}catch{}
         }
       }
@@ -159,7 +159,10 @@ function installProbeSource(caseJson, modeJson, repeat) {
         mode:probe.mode,hydrology:null,updateCpuMs:null,renderCpuMs:null,frameCpuMs:null,
         documentFocused:document.hasFocus(),visibilityState:document.visibilityState,
         bridgeRegions:null,planeTimings:null,layerMethodMs:mode==='detailed'?{}:null,
-        gpuUploadBytes:mode==='detailed'?0:null,gpuUploadCalls:mode==='detailed'?0:null,gpuUploadUnknownByteCalls:mode==='detailed'?0:null,
+        bufferUploadBytesKnown:mode==='detailed'?0:null,textureUploadBytesKnown:mode==='detailed'?0:null,
+        uploadSourceBytesUpperBound:mode==='detailed'?0:null,uploadUnknownByteCalls:mode==='detailed'?0:null,
+        bufferUploadCalls:mode==='detailed'?0:null,textureUploadCalls:mode==='detailed'?0:null,
+        bufferAllocationBytesKnown:mode==='detailed'?0:null,
         webglSubmissionMs:null,canvasTerrainRenderMs:null};
       previousTimestamp=timestamp;probe.currentRow=row;const hydroStart=hydroCursor,start=performance.now();
       try{return originalFrame.call(this,timestamp);}finally{
