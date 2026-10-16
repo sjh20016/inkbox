@@ -1,0 +1,16 @@
+
+== standard strengths {"plane":"mortal","structural":0.59,"deep":0.16,"mass":0.16} TMAX 12
+depth-byte cells p50/p95 2250 2665  texels 8342 9798  shoreline quads 3561  changed 3378
+eps 0.001: terrain 53950/57167 (forced 867/1095)  water 16042/16528  shade8 p99 0.1/0.12 p99.9 0.26/0.32 max 0.57/0.72  cells>2lv 0/0 >4lv 0/0
+eps 0.002: terrain 43855/49775 (forced 1474/2195)  water 12077/12466  shade8 p99 0.25/0.28 p99.9 0.62/0.75 max 1.22/1.42  cells>2lv 0/0 >4lv 0/0
+eps 0.005: terrain 25187/32477 (forced 2571/4266)  water 7390/7798  shade8 p99 1.04/1.15 p99.9 1.89/2.04 max 3.27/4.07  cells>2lv 41/61 >4lv 0/1
+eps 0.01: terrain 15168/18257 (forced 3584/5113)  water 6001/6094  shade8 p99 2.01/2.17 p99.9 3.42/3.71 max 5.99/7.83  cells>2lv 590/766 >4lv 22/40
+eps 0.02: terrain 9887/11258 (forced 4698/5431)  water 5779/5874  shade8 p99 3.69/4.07 p99.9 6.47/7.06 max 11.17/14.58  cells>2lv 2179/2789 >4lv 462/634
+
+== archipelago strengths {"plane":"mortal","structural":0.59,"deep":0.16,"mass":0.16} TMAX 12
+depth-byte cells p50/p95 1350 1624  texels 5087 6169  shoreline quads 3945  changed 3099
+eps 0.001: terrain 46817/51459 (forced 1208/1674)  water 18586/19127  shade8 p99 0.05/0.07 p99.9 0.17/0.34 max 0.6/0.85  cells>2lv 0/0 >4lv 0/0
+eps 0.002: terrain 33283/41056 (forced 2044/3206)  water 12491/12966  shade8 p99 0.15/0.17 p99.9 0.43/0.7 max 1.36/1.78  cells>2lv 0/0 >4lv 0/0
+eps 0.005: terrain 18426/21826 (forced 3327/4689)  water 8443/8961  shade8 p99 0.47/0.5 p99.9 1.45/1.87 max 3.5/4.55  cells>2lv 19/39 >4lv 0/1
+eps 0.01: terrain 12133/13811 (forced 4349/5046)  water 7816/8283  shade8 p99 1/1.05 p99.9 3.19/3.92 max 7.12/8.72  cells>2lv 121/165 >4lv 25/43
+eps 0.02: terrain 8646/9280 (forced 5080/5367)  water 7686/8056  shade8 p99 1.93/2.09 p99.9 7.15/8.21 max 14.77/17.64  cells>2lv 449/500 >4lv 147/190

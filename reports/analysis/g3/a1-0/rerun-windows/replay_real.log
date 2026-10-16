@@ -1,0 +1,40 @@
+
+=== standard mode=real art=realm-style-v1:realm-style-v1 waterClipped=true steps=30
+total                p50 43.44  p95 69.65
+bridgeScanMs         p50 1.63  p95 3.12
+terrainUpdateMs      p50 14.83  p95 27.97
+waterUpdateMs        p50 11.41  p95 23.51
+vegetationUpdateMs   p50 14.71  p95 27.41
+entityUpdateMs       p50 0.06  p95 0.13
+settlementUpdateMs   p50 0.03  p95 0.08
+markerUpdateMs       p50 0.11  p95 0.37
+queued terrain.position      frames 30  p50 bytes 1966080  max 1966080
+queued terrain.color         frames 30  p50 bytes 18732  max 48024
+queued terrain.index         frames 30  p50 bytes 3912216  max 3912216
+queued water.position        frames 30  p50 bytes 23592816  max 23592816
+queued tex.height            frames 30  p50 bytes 2621440  max 2621440
+queued tex.type              frames 30  p50 bytes 636792  max 647448
+queued tex.surface           frames 30  p50 bytes 655360  max 655360
+queued veg2.matrix           frames 30  p50 bytes 640000  max 640000
+queued water.index           frames 24  p50 bytes 7864272  max 7864272
+queued total bytes/step p50 41905580  max 41943584
+
+=== archipelago mode=real art=realm-style-v1:realm-style-v1 waterClipped=true steps=30
+total                p50 30.89  p95 41.69
+bridgeScanMs         p50 1.35  p95 2.26
+terrainUpdateMs      p50 12.36  p95 23.45
+waterUpdateMs        p50 10.69  p95 16.49
+vegetationUpdateMs   p50 4.51  p95 6.74
+entityUpdateMs       p50 0.04  p95 0.07
+settlementUpdateMs   p50 0.02  p95 0.05
+markerUpdateMs       p50 0.06  p95 0.11
+queued terrain.position      frames 30  p50 bytes 1966080  max 1966080
+queued terrain.color         frames 30  p50 bytes 28932  max 67176
+queued terrain.index         frames 30  p50 bytes 3912216  max 3912216
+queued water.position        frames 30  p50 bytes 23592816  max 23592816
+queued water.index           frames 26  p50 bytes 7864272  max 7864272
+queued tex.height            frames 30  p50 bytes 2621440  max 2621440
+queued tex.type              frames 30  p50 bytes 627440  max 642112
+queued tex.surface           frames 30  p50 bytes 655360  max 655360
+queued veg2.matrix           frames 30  p50 bytes 637888  max 637952
+queued total bytes/step p50 41905224  max 41931696

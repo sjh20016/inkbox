@@ -1,0 +1,50 @@
+
+== standard quads 163009 fullIndexBytes 7864272 overflow {"block16_s0.1":0,"block16_s0.25":0,"block32_s0.1":0,"block32_s0.25":0}
+changed                      p50 2  p95 6  max 7  nonzero 45
+byMask                       p50 0  p95 5  max 6  nonzero 22
+byDiagOnly                   p50 1  p95 3  max 3  nonzero 39
+rimChanged                   p50 0  p95 0  max 0  nonzero 0
+drawnCompact                 p50 432393  p95 432414  max 432420  nonzero 60
+drawnFixed                   p50 1966068  p95 1966068  max 1966068  nonzero 60
+wetQuads                     p50 69722  p95 69723  max 69724  nonzero 60
+partial                      p50 3561  p95 3563  max 3563  nonzero 60
+compactFull                  p50 7864272  p95 7864272  max 7864272  nonzero 45
+compactSuffix                p50 843732  p95 1457700  max 1538004  nonzero 45
+fixedSlot                    p50 96  p95 288  max 336  nonzero 45
+block16_s0.1                 p50 7212  p95 21796  max 32188  nonzero 45
+drawn_block16_s0.1           p50 536288  p95 536288  max 536288  nonzero 60
+blocks_touched_16_s0.1       p50 2  p95 4  max 6  nonzero 45
+block16_s0.25                p50 8088  p95 24548  max 36252  nonzero 45
+drawn_block16_s0.25          p50 599544  p95 599544  max 599544  nonzero 60
+blocks_touched_16_s0.25      p50 2  p95 4  max 6  nonzero 45
+block32_s0.1                 p50 27352  p95 86936  max 126632  nonzero 45
+drawn_block32_s0.1           p50 490083  p95 490083  max 490083  nonzero 60
+blocks_touched_32_s0.1       p50 2  p95 4  max 6  nonzero 45
+block32_s0.25                p50 31032  p95 98576  max 143580  nonzero 45
+drawn_block32_s0.25          p50 553432  p95 553432  max 553432  nonzero 60
+blocks_touched_32_s0.25      p50 2  p95 4  max 6  nonzero 45
+
+== archipelago quads 163009 fullIndexBytes 7864272 overflow {"block16_s0.1":0,"block16_s0.25":0,"block32_s0.1":0,"block32_s0.25":0}
+changed                      p50 3  p95 38  max 75  nonzero 35
+byMask                       p50 3  p95 38  max 75  nonzero 35
+byDiagOnly                   p50 0  p95 0  max 0  nonzero 0
+rimChanged                   p50 0  p95 0  max 0  nonzero 0
+drawnCompact                 p50 590280  p95 590946  max 590958  nonzero 60
+drawnFixed                   p50 1966068  p95 1966068  max 1966068  nonzero 60
+wetQuads                     p50 95788  p95 95895  max 95896  nonzero 60
+partial                      p50 3945  p95 3949  max 3949  nonzero 60
+compactFull                  p50 7864272  p95 7864272  max 7864272  nonzero 35
+compactSuffix                p50 889416  p95 1665480  max 1912260  nonzero 35
+fixedSlot                    p50 144  p95 1824  max 3600  nonzero 35
+block16_s0.1                 p50 3936  p95 34316  max 42304  nonzero 35
+drawn_block16_s0.1           p50 710750  p95 710750  max 710750  nonzero 60
+blocks_touched_16_s0.1       p50 1  p95 9  max 14  nonzero 35
+block16_s0.25                p50 4420  p95 38508  max 47320  nonzero 35
+drawn_block16_s0.25          p50 797729  p95 797729  max 797729  nonzero 60
+blocks_touched_16_s0.25      p50 1  p95 9  max 14  nonzero 35
+block32_s0.1                 p50 10880  p95 63856  max 87060  nonzero 35
+drawn_block32_s0.1           p50 664496  p95 664496  max 664496  nonzero 60
+blocks_touched_32_s0.1       p50 1  p95 7  max 10  nonzero 35
+block32_s0.25                p50 12312  p95 72196  max 98564  nonzero 35
+drawn_block32_s0.25          p50 751611  p95 751611  max 751611  nonzero 60
+blocks_touched_32_s0.25      p50 1  p95 7  max 10  nonzero 35

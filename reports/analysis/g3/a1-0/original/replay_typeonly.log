@@ -1,0 +1,26 @@
+
+=== standard mode=typeonly art=realm-style-v1:realm-style-v1 waterClipped=true steps=30
+total                p50 12.50  p95 21.43
+bridgeScanMs         p50 1.61  p95 1.86
+terrainUpdateMs      p50 0.02  p95 0.05
+waterUpdateMs        p50 0.00  p95 0.00
+vegetationUpdateMs   p50 10.81  p95 19.29
+entityUpdateMs       p50 0.02  p95 0.06
+settlementUpdateMs   p50 0.01  p95 0.06
+markerUpdateMs       p50 0.03  p95 0.12
+queued terrain.color         frames 30  p50 bytes 12  max 12
+queued tex.type              frames 30  p50 bytes 4  max 4
+queued total bytes/step p50 16  max 16
+
+=== archipelago mode=typeonly art=realm-style-v1:realm-style-v1 waterClipped=true steps=30
+total                p50 6.31  p95 8.11
+bridgeScanMs         p50 1.74  p95 1.79
+terrainUpdateMs      p50 0.02  p95 0.02
+waterUpdateMs        p50 0.00  p95 0.00
+vegetationUpdateMs   p50 4.50  p95 6.34
+entityUpdateMs       p50 0.01  p95 0.02
+settlementUpdateMs   p50 0.00  p95 0.01
+markerUpdateMs       p50 0.02  p95 0.03
+queued terrain.color         frames 30  p50 bytes 12  max 12
+queued tex.type              frames 30  p50 bytes 4  max 4
+queued total bytes/step p50 16  max 16
