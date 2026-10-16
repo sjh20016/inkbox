@@ -1,0 +1,149 @@
+{
+  "task": "坐天观井 Inkbox G2-P0.3-FINAL",
+  "generatedAt": "2026-10-16T00:20:52Z",
+  "statusCutoffAt": "2026-10-16T00:20:52Z",
+  "verdict": "HARDENED_READY",
+  "formalG2Gate": "G2_PERF_BLOCKED",
+  "performanceConclusion": "FRAME_GAIN_UNPROVEN",
+  "repository": "sjh20016/inkbox",
+  "testedBranch": "codex/g2-p03-vegetation-pilot",
+  "testedHead": "901844493b86969a2237c41ccc62e32a98dbdc27",
+  "testedHeadRemoteFreshness": "identical",
+  "productBaseline": "74934a8b1360af9007c69935d5becdf8f9809872",
+  "diagnosticBranch": {
+    "name": "analysis/g2-p03-attribution-correction",
+    "head": "259b72a19fb927747bc2259efe5e1c8aa1c04939"
+  },
+  "delivery": {
+    "branch": "audit/g2-p03-vegetation-hardening-luna",
+    "baseBranch": "codex/g2-p03-vegetation-pilot",
+    "commit": "b05065e2d39f894aa58eaa70469672f3aebf79a3",
+    "draftPullRequest": "https://github.com/sjh20016/inkbox/pull/13"
+  },
+  "sourceChanges": {
+    "candidateOrderFix": "Compare Map entries in order by cell and LOD, preserving the skip path for fully equivalent instance order.",
+    "preexistingWaterOnlyGap": "PlaneStage now schedules vegetation rebuild when waterRegion changes; covered end to end.",
+    "files": [
+      "src/inkbox/render3d/vegetation/VegetationLayer.js",
+      "src/inkbox/render3d/stage/PlaneStage.js",
+      "scripts/inkbox-g2p03-vegetation-oracle.mjs",
+      "scripts/inkbox-render3d-bridge.mjs",
+      "scripts/inkbox-g2p03-final-browser.mjs"
+    ],
+    "BNumericalSystemModified": false
+  },
+  "oracle": {
+    "command": "node scripts/inkbox-g2p03-vegetation-oracle.mjs",
+    "exitCode": 0,
+    "passed": 14,
+    "failed": 0,
+    "v06": {
+      "candidateCounts": [9999, 10000, 10001],
+      "outputCounts": [9999, 10000, 10000],
+      "orderChangedWithSameMembership": true,
+      "rewroteOnOrderChange": true,
+      "capacityReplacementUploaded": true,
+      "referenceInstancesMatched": true
+    },
+    "v07": {
+      "realWorldElevationChanged": true,
+      "membersUnchanged": true,
+      "instanceGroundingMatched": true,
+      "forcedRebuildMatched": true
+    },
+    "v08": {
+      "path": "World -> WorldRenderBridge -> PlaneStage -> VegetationLayer",
+      "waterThreshold": 0.0015,
+      "waterOnlyCrossedAndReversed": true,
+      "hiddenThenShownRebuilt": true
+    },
+    "v16": {
+      "advancedDays": 5,
+      "saveBytes": 189774,
+      "saveLoadSaveMatched": true,
+      "renderWorldAdvanceStateUnchanged": true,
+      "rng": "Opaque closures; next 16 Life and ecology/fire outputs matched the control."
+    }
+  },
+  "regressions": [
+    {
+      "command": "node scripts/inkbox-render3d-bridge.mjs",
+      "exitCode": 0,
+      "passed": 36
+    },
+    {
+      "command": "node scripts/inkbox-g2pf-vegetation.mjs",
+      "exitCode": 0,
+      "passed": 11
+    }
+  ],
+  "browser": {
+    "command": "node scripts/inkbox-g2p03-final-browser.mjs",
+    "exitCode": 0,
+    "passed": 7,
+    "failed": 0,
+    "browser": "Microsoft Edge 155.0.4283.45",
+    "viewport": "1440x1000",
+    "webglVersion": "WebGL 2.0",
+    "softwareRendererFallbackDetected": false,
+    "fullMortalView": {
+      "world": [200, 128],
+      "terrainDrawIndices": 151638, "terrainQuads": 25273,
+      "visibleTrees": 4966
+    },
+    "waterCrossing": {
+      "instanceAndPickRemovedThenRestored": true,
+      "attributeVersionsAdvanced": true,
+      "webglCalls": 6,
+      "allBufferBytes": 5463576,
+      "glError": 0
+    },
+    "elevationGrounding": true,
+    "cameraZoomAndPan": true,
+    "regionRoundTrip": {
+      "membersAndPerCellMatrixColorRestored": true,
+      "pickMappingConsistent": true,
+      "gpuResourcesStable": true,
+      "lodHysteresisMaySelectDifferentTier": true
+    },
+    "rendererLifecycle": {
+      "disposeEvents": {
+        "geometries": 4,
+        "materials": 2,
+        "textures": 1
+      },
+      "resourcePlateau": {
+        "geometries": 6,
+        "textures": 4,
+        "programs": 5
+      },
+      "glError": 0
+    },
+    "uploadScope": "All WebGL bufferData/bufferSubData traffic during the operation; not vegetation-exclusive."
+  },
+  "realmBrowser": {
+    "command": "node scripts/inkbox-g23-render-browser.mjs",
+    "pass": true,
+    "checksPassed": 6,
+    "upperView": true,
+    "netherView": true,
+    "mortalWindowClipping": true,
+    "repeatedReplacementResourcePlateau": true,
+    "cleanupComplete": true
+  },
+  "existingPerformanceEvidence": {
+    "matrixWriteCount": {"baseline": [240000, 260000], "candidate": [70000, 60000], "reductionPct": 74},
+    "matrixNeedsUpdateCount": {"baseline": [24, 26], "candidate": [7, 6], "reductionPct": 74},
+    "fullRebuildCalls": {"baseline": [24, 26], "candidate": [7, 6], "reductionPct": 74},
+    "matrixUploadMs": {"baseline": [88.5, 133.5], "candidate": [35, 23.5], "reductionPct": 73.6},
+    "allWebglBufferBytes": {"baseline": [28386304, 32115776], "candidate": [23066304, 20096832], "reductionPct": 28.7, "vegetationExclusive": false},
+    "frameP95Ms": {"baseline": [19.3, 25.8], "candidate": [20.7, 17.1], "sameArmNoiseMs": 6.5, "distinguishable": false}
+  },
+  "sourceSha256": {
+    "scripts/inkbox-g2p03-vegetation-oracle.mjs": "a8e4d53a0dcb9c685a32236e57ac4706b7ea883de6a7872734f4ffa6fb8d9a5a",
+    "scripts/inkbox-g2p03-final-browser.mjs": "bed42bc2ddb8212a73102860461c7379b44e0606f5b05307d8106598a5ef74d6",
+    "scripts/inkbox-render3d-bridge.mjs": "d12ca026ae6f03c39a6e22c971926874a8cd2162a3fe41384ffd365b2df58a03",
+    "src/inkbox/render3d/stage/PlaneStage.js": "50631d32d366d1727d9ade22ac3d480bb35adf15757fe2bc6278ad80f71dab0c",
+    "src/inkbox/render3d/vegetation/VegetationLayer.js": "7ba95e5fa4f31f2724609327bb22769d714602b976fde9b3d70744aea38a0597"
+  }
+}

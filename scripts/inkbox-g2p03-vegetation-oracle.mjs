@@ -28,6 +28,16 @@ import { REALM_STYLES } from '../src/inkbox/render3d/art/RealmStyleProfile.js';
 import { RegionGeometry } from '../src/inkbox/render3d/region/RegionGeometry.js';
 import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
 import { normalizeRegion } from '../src/inkbox/ui/tools.js';
+import { World } from '../src/inkbox/world/World.js';
+import { SEA_LEVEL } from '../src/inkbox/core/config.js';
+import { cellHash } from '../src/inkbox/render3d/vegetation/deriveVegetation.js';
+import { PlaneStage } from '../src/inkbox/render3d/stage/PlaneStage.js';
+import { mulberry32 } from '../src/inkbox/core/noise.js';
+import { Life } from '../src/inkbox/sim/life.js';
+import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
+import { serializeWorld, deserializeWorld } from '../src/inkbox/io/save.js';
+import { generateUpperWorld } from '../src/inkbox/world/worldgenUpper.js';
+import { generateNetherWorld } from '../src/inkbox/world/worldgenNether.js';
 
 const SEED = 673231;
 let passed = 0;
@@ -85,10 +95,21 @@ function compareInstances(label, a, b) {
     assert.equal(ma.visible, mb.visible, `${label}: LOD${lod} 可见性`);
     assert.deepEqual(bytes(ma.instanceMatrix, ma.count, 16), bytes(mb.instanceMatrix, mb.count, 16), `${label}: LOD${lod} 实例矩阵字节`);
     assert.deepEqual(bytes(ma.instanceColor, ma.count, 3), bytes(mb.instanceColor, mb.count, 3), `${label}: LOD${lod} 实例颜色字节`);
-    assert.deepEqual(ma.userData.renderTrees, mb.userData.renderTrees, `${label}: LOD${lod} 实例身份与排序`);
+    const expectedPickCells = layer => layer.trees
+      .filter(tree => layer._lodByTree.get(tree.cell) === lod)
+      .flatMap(tree => lod === 0 && !layer.artProfile ? [tree.cell, tree.cell] : [tree.cell]);
+    assert.deepEqual(ma.userData.renderTrees.map(tree => tree.cell), expectedPickCells(a), `${label}: reference LOD${lod} 拾取身份与矩阵顺序`);
+    assert.deepEqual(mb.userData.renderTrees.map(tree => tree.cell), expectedPickCells(b), `${label}: candidate LOD${lod} 拾取身份与矩阵顺序`);
+    assert.deepEqual(ma.userData.renderTrees.map(tree => tree.cell), mb.userData.renderTrees.map(tree => tree.cell), `${label}: LOD${lod} 拾取身份与排序`);
     assert.deepEqual(ma.instanceMatrix.array.length, mb.instanceMatrix.array.length, `${label}: LOD${lod} 容量`);
   }
 }
+
+function vegetationOnlyProfile() {
+  return { terrain: false, water: false, vegetation: true, entities: false, settlements: false, markers: false, selection: false };
+}
+
+function nextRandomValues(rng, count = 16) { return Array.from({ length: count }, () => rng()); }
 
 const world0 = generateWorld({ preset: { w: 64, h: 48 }, seed: SEED, scatter: true });
 const baselineFacts = createHash('sha256').update(JSON.stringify(world0)).digest('hex');
@@ -183,16 +204,56 @@ scenario('V05', '数量相同、成员被替换 → 必须重写', () => {
   return { skipped: false };
 });
 
-// ── V06：树木容量上限 ─────────────────────────────────────────────────────
-scenario('V06', '容量上限下实例与 stats 等价', () => {
-  const world = generateWorld({ preset: { w: 256, h: 192 }, seed: SEED, scatter: true });
+// ── V06：9,999 / 10,000 / 10,001 容量边界、顺序切换与成员替换 ───────────────
+scenario('V06', '容量边界、10,000→10,001 顺序切换与成员替换', () => {
+  const world = new World(256, 192, SEED);
+  world.height.fill(SEA_LEVEL + 1);
+  const ranked = Array.from({ length: world.size }, (_, cell) => ({ cell, rank: cellHash(world.seed, cell) }))
+    .filter(row => row.rank <= 0.7)
+    .sort((a, b) => a.rank - b.rank || a.cell - b.cell);
+  assert(ranked.length > 10001, `需要至少 10,002 个合格 cell，实际 ${ranked.length}`);
+  const setCandidates = count => {
+    world.veg.fill(0);
+    for (let i = 0; i < count; i += 1) world.veg[ranked[i].cell] = 1;
+  };
+  setCandidates(9999);
+  const at9999 = deriveVegetation(world);
+  assert.equal(at9999.length, 9999, '9,999 个合格候选应全部保留');
+  setCandidates(10000);
+  const before = deriveVegetation(world);
+  assert.equal(before.length, 10000, '恰好 10,000 个候选应全部保留');
+  assert.deepEqual(before.map(tree => tree.cell), before.map(tree => tree.cell).slice().sort((a, b) => a - b),
+    '未溢出时应保留按 cell 扫描顺序');
+
   const p = makePair(world);
-  p.step('V06 基线', { heightChanged: true });
-  const r = p.step('V06 无变化', { heightChanged: false });
-  const cap = p.candidate.stats.capacity;
-  assert.equal(typeof cap, 'number');
-  assert.deepEqual(p.candidate.stats.capacityOverflow, p.reference.stats.capacityOverflow);
-  return { skipped: r.skipped, trees: p.candidate.trees.length, capacity: cap };
+  p.step('V06 10,000 基线', { heightChanged: true });
+  world.veg[ranked[10000].cell] = 1;
+  const overflowed = deriveVegetation(world);
+  assert.equal(overflowed.length, 10000, '10,001 个合格候选仍必须受 10,000 上限约束');
+  assert.deepEqual(new Set(overflowed.map(tree => tree.cell)), new Set(before.map(tree => tree.cell)),
+    '第 10,001 个低优先级候选不应改变最终 10,000 个成员');
+  assert.notDeepEqual(overflowed.map(tree => tree.cell), before.map(tree => tree.cell),
+    '超限后必须实际触发 rank 排序路径，形成不同的实例顺序');
+  const order = p.step('V06 10,001 排序切换', { heightChanged: false });
+  assert.equal(order.skipped, false, '成员集合不变但实例排列变化时必须重写矩阵');
+  assert.deepEqual(p.candidate.trees.map(tree => tree.cell), overflowed.map(tree => tree.cell));
+
+  const beforeReplace = new Set(p.candidate.trees.map(tree => tree.cell));
+  world.veg[ranked[0].cell] = 0;
+  world.veg[ranked[10001].cell] = 1;
+  const replaced = deriveVegetation(world);
+  assert.equal(replaced.length, 10000);
+  assert.equal(replaced.some(tree => tree.cell === ranked[0].cell), false);
+  assert.equal(replaced.some(tree => tree.cell === ranked[10000].cell), true);
+  assert.equal(beforeReplace.has(ranked[0].cell), true);
+  const membership = p.step('V06 容量內成員替換', { heightChanged: false });
+  assert.equal(membership.skipped, false, '容量內成員替換必須重寫');
+  assert.equal(p.candidate.stats.capacity, 10000);
+  assert.equal(p.candidate.trees.length, 10000);
+  const capacity = p.candidate.stats.capacity;
+  p.reference.dispose(); p.candidate.dispose();
+  return { candidates: [9999, 10000, 10001], outputCounts: [at9999.length, before.length, overflowed.length],
+    orderChanged: true, membershipReplacementUploaded: !membership.skipped, capacity };
 });
 
 // ── V07：高程变化但成员不变 ───────────────────────────────────────────────
@@ -200,27 +261,70 @@ scenario('V07', '高程变化、成员不变 → 调用方声明 heightChanged=t
   const world = generateWorld({ preset: { w: 64, h: 48 }, seed: SEED, scatter: true });
   const p = makePair(world);
   p.step('V07 基线', { heightChanged: true });
-  const tree = deriveVegetation(world)[0];
-  const beforeY = p.candidate.lodMeshes[0].instanceMatrix.array[13];
+  const beforeCells = p.candidate.trees.map(item => item.cell);
+  const tree = p.candidate.trees.find(item => p.candidate._lodByTree.get(item.cell) === 0);
+  assert(tree, 'V07 需要一个 LOD0 树木实例');
+  const matrixIndex = p.candidate.lodMeshes[0].userData.renderTrees.findIndex(item => item.cell === tree.cell);
+  const beforeY = p.candidate.lodMeshes[0].instanceMatrix.array[matrixIndex * 16 + 13];
+  const beforeGroundY = p.coordinates.worldToRender(tree.x, tree.y, p.candidate.elevation.at(tree.x, tree.y)).y;
+  assert(Math.abs(beforeY - beforeGroundY) < 1e-5, '修改前实例必须贴合实际高程场');
   world.height[tree.cell] += 3;
-  const sameCells = deriveVegetation(world).map(t => t.cell).join(',');
-  assert.equal(sameCells, deriveVegetation(world).map(t => t.cell).join(','));
+  const afterCells = deriveVegetation(world).map(item => item.cell);
+  assert.deepEqual(afterCells, beforeCells, '只改高程时树木成员应保持不变');
+  const changedTree = deriveVegetation(world).find(item => item.cell === tree.cell);
+  const expectedY = p.coordinates.worldToRender(changedTree.x, changedTree.y, p.candidate.elevation.at(changedTree.x, changedTree.y)).y;
   const r = p.step('V07 高程变化', { heightChanged: true });
   assert.equal(r.skipped, false, 'heightChanged=true 必须强制重写（否则贴地高度会过期）');
-  return { skipped: false, beforeY };
+  const afterIndex = p.candidate.lodMeshes[0].userData.renderTrees.findIndex(item => item.cell === tree.cell);
+  const afterY = p.candidate.lodMeshes[0].instanceMatrix.array[afterIndex * 16 + 13];
+  assert(Math.abs(expectedY - beforeY) > 1e-4, '扰动必须改变目标树木的预期地表高度');
+  assert(Math.abs(afterY - expectedY) < 1e-5, '实例矩阵 Y 必须等于更新后的地表高程');
+  assert.notEqual(afterY, beforeY, '真实实例矩阵高度必须改变');
+  return { skipped: false, beforeY, afterY, expectedY, membersUnchanged: true };
 });
 
 // ── V08：水位跨越树木生存阈值 ─────────────────────────────────────────────
-scenario('V08', '水位跨越生存阈值 → 必须重写', () => {
+scenario('V08', 'World → Bridge → PlaneStage → Vegetation 水位阈值与视界恢复', () => {
   const world = generateWorld({ preset: { w: 64, h: 48 }, seed: SEED, scatter: true });
-  const p = makePair(world);
-  p.step('V08 基线', { heightChanged: true });
-  const tree = deriveVegetation(world)[0];
-  world.water[tree.cell] = 0.5;
-  const gone = !deriveVegetation(world).some(t => t.cell === tree.cell);
-  const r = p.step('V08 水位', { heightChanged: false });
-  if (gone) assert.equal(r.skipped, false, '水位淹掉树时必须重写');
-  return { skipped: r.skipped, membershipChanged: gone };
+  const stage = new PlaneStage({ plane: 'mortal', world, profile: vegetationOnlyProfile() });
+  let lastDirty = null;
+  const updateCalls = [];
+  const changes = stage.bridge.changes.bind(stage.bridge);
+  stage.bridge.changes = () => (lastDirty = changes());
+  const update = stage.vegetation.update.bind(stage.vegetation);
+  stage.vegetation.update = options => { updateCalls.push(options); return update(options); };
+  stage.update(0.2);
+  const tree = stage.vegetation.trees.find(item => world.water[item.cell] <= 0.0015);
+  assert(tree, 'V08 需要一棵位于阈值以下的初始树木');
+  const cell = tree.cell, beforeHeight = world.height[cell], beforeVeg = world.veg[cell], beforeType = world.type[cell];
+  assert(world.water[cell] <= 0.0015);
+  world.water[cell] = 0.0016;
+  stage.update(0.2);
+  assert(lastDirty?.water && lastDirty.height === null && lastDirty.type === null && lastDirty.veg === null,
+    'WorldRenderBridge 必须只报告 water 脏区');
+  assert.equal(updateCalls.length, 1, 'water-only 阈值变化必须由 PlaneStage 安排植被更新');
+  assert.equal(updateCalls.at(-1).heightChanged, false);
+  assert.equal(stage.vegetation.trees.some(item => item.cell === cell), false, '越过 0.0015 后树木必须消失');
+  assert.equal(world.height[cell], beforeHeight); assert.equal(world.veg[cell], beforeVeg); assert.equal(world.type[cell], beforeType);
+
+  world.water[cell] = 0;
+  stage.update(0.2);
+  assert(lastDirty?.water && lastDirty.height === null && lastDirty.type === null && lastDirty.veg === null);
+  assert.equal(stage.vegetation.trees.some(item => item.cell === cell), true, '水位回落后树木必须恢复');
+
+  stage.setVisible(false);
+  world.water[cell] = 0.0016;
+  const callsWhileHidden = updateCalls.length;
+  stage.update(0.2);
+  assert.equal(updateCalls.length, callsWhileHidden, '隐藏视界时 Stage 不应更新');
+  assert.equal(stage.vegetation.trees.some(item => item.cell === cell), true, '隐藏期间保留最后一帧可见成员');
+  stage.setVisible(true);
+  stage.update(0.2);
+  assert.equal(stage.vegetation.trees.some(item => item.cell === cell), false, '重新显示后必须消费累积 water dirty 并移除树木');
+  assert.equal(updateCalls.length, callsWhileHidden + 1);
+  stage.releaseLayers();
+  return { threshold: 0.0015, dirty: 'water-only', crossedRemoved: true, reversedRestored: true,
+    hiddenThenShownRebuilt: true, stageUpdates: updateCalls.length };
 });
 
 // ── V09：Region 裁剪变化 ──────────────────────────────────────────────────
@@ -307,12 +411,58 @@ scenario('V15', '多次更新后 mesh/attribute 身份与容量稳定，无池�
   return { skipped: true };
 });
 
-// ── 世界与模拟事实未变 ───────────────────────────────────────────────────
-scenario('V16', '跑完全部场景后世界事实未变（哈希一致）', () => {
-  const fresh = generateWorld({ preset: { w: 64, h: 48 }, seed: SEED, scatter: true });
-  const hash = createHash('sha256').update(JSON.stringify(fresh)).digest('hex');
-  assert.equal(hash, baselineFacts, '同种子同预设生成的世界必须逐字节一致');
-  return {};
+// ── V16：正式推进、advanceState、未来 RNG 输出、存档与渲染只读 ──────────────
+scenario('V16', '同种子推进 / save-load / render update 不改世界与 RNG', () => {
+  const preset = { w: 64, h: 48 };
+  const makeWorld = () => {
+    const world = generateWorld({ preset, seed: SEED, scatter: true });
+    world.upper = generateUpperWorld({ preset, seed: world.seed });
+    world.nether = generateNetherWorld({ preset, seed: world.seed });
+    return world;
+  };
+  const baseline = makeWorld(), candidate = makeWorld();
+  const makeDeps = world => ({
+    life: new Life(world, mulberry32(world.seed ^ 0xa5a5a5a5)),
+    state: createAdvanceState(), rng: mulberry32(world.seed ^ 0x1a2b3c4d),
+    nether: false, riftActive: false, wraith: false,
+  });
+  const baseDeps = makeDeps(baseline), candidateDeps = makeDeps(candidate);
+  const baseFired = advanceWorld(baseline, 5, baseDeps);
+  const candidateFired = advanceWorld(candidate, 5, candidateDeps);
+  assert.equal(baseFired.eco, true); assert.equal(baseFired.fire, true);
+  assert.deepEqual(candidateFired, baseFired, '正式 advanceWorld 返回值');
+  assert.deepEqual(candidateDeps.state, baseDeps.state, 'advanceState');
+  const baseSave = serializeWorld(baseline), candidateSave = serializeWorld(candidate);
+  assert.deepEqual(candidateSave, baseSave, '推進後完整正式 World save payload');
+
+  const serialized = JSON.stringify(candidateSave);
+  const reloaded = deserializeWorld(JSON.parse(serialized));
+  assert.equal(JSON.stringify(serializeWorld(reloaded)), serialized, '正式 save → load → save 必須保持序列化內容');
+  assert.equal(reloaded.day, candidate.day); assert.equal(reloaded.seed, candidate.seed);
+  assert.equal(reloaded.w, candidate.w); assert.equal(reloaded.h, candidate.h);
+  assert.deepEqual(serializeWorld(reloaded).terrain, candidateSave.terrain, '量化地形、水位、植被和类型在存档往返后相同');
+  assert.equal(reloaded.entities.length, candidate.entities.length);
+  assert.equal(reloaded.upper.seed, candidate.upper.seed); assert.equal(reloaded.nether.seed, candidate.nether.seed);
+
+  const beforeRender = JSON.stringify(serializeWorld(candidate));
+  const stage = new PlaneStage({ plane: 'mortal', world: candidate, profile: vegetationOnlyProfile() });
+  stage.vegetation.update({ heightChanged: false });
+  stage.update(0.2);
+  assert.equal(JSON.stringify(serializeWorld(candidate)), beforeRender, '渲染派生不得改变正式世界事实');
+  assert.deepEqual(candidateDeps.state, baseDeps.state, '渲染不得推进 advanceState');
+  stage.releaseLayers();
+
+  const baseLifeNext = nextRandomValues(baseDeps.life.rng);
+  const candidateLifeNext = nextRandomValues(candidateDeps.life.rng);
+  const baseEcoNext = nextRandomValues(baseDeps.rng);
+  const candidateEcoNext = nextRandomValues(candidateDeps.rng);
+  assert.deepEqual(candidateLifeNext, baseLifeNext, '渲染不得消费 Life 随机流');
+  assert.deepEqual(candidateEcoNext, baseEcoNext, '渲染不得消费 ecology/fire 随机流');
+  const fresh = generateWorld({ preset, seed: SEED, scatter: true });
+  assert.equal(createHash('sha256').update(JSON.stringify(fresh)).digest('hex'), baselineFacts,
+    '同种子世界生成哈希仍保持基线');
+  return { advancedDays: 5, advanceState: candidateDeps.state, saveBytes: Buffer.byteLength(serialized),
+    saveRoundTrip: true, renderWorldUnchanged: true, rngState: 'opaque closures; next 16 Life and ecology/fire outputs matched control' };
 });
 
 console.log('');
