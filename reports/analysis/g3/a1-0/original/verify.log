@@ -1,0 +1,140 @@
+
+[census standard] steps 60
+  hc p50 66005 p95 66419
+  wc p50 68952 p95 68973
+  tc p50 65 p95 82
+  wetdry p50 0 p95 2
+  diagFlip p50 152 p95 211
+  vegElig p50 0 p95 0
+  visT[0] p50 13330  visW[0] p50 435 p95 507
+  visT[1] p50 6762  visW[1] p50 45 p95 78
+  visT[2] p50 2666  visW[2] p50 0 p95 1
+  chunk8 anyH p50 0.477 anyW p50 0.480 vis.02 p50 0.439
+  chunk16 anyH p50 0.531 anyW p50 0.530 vis.02 p50 0.500
+  chunk32 anyH p50 0.631 anyW p50 0.619 vis.02 p50 0.581
+  chunk64 anyH p50 0.725 anyW p50 0.700 vis.02 p50 0.675
+  trees identical 60/60
+PASS determinism standard: counts identical across two runs
+PASS determinism standard: state hash chain identical
+PASS cross-script standard: census vs eps_contract state hashes
+
+[census archipelago] steps 60
+  hc p50 64091 p95 64490
+  wc p50 89643 p95 91215
+  tc p50 95 p95 132
+  wetdry p50 1 p95 12
+  diagFlip p50 216 p95 292
+  vegElig p50 1 p95 12
+  visT[0] p50 9382  visW[0] p50 580 p95 791
+  visT[1] p50 5378  visW[1] p50 214 p95 388
+  visT[2] p50 2465  visW[2] p50 49 p95 189
+  chunk8 anyH p50 0.543 anyW p50 0.629 vis.02 p50 0.454
+  chunk16 anyH p50 0.653 anyW p50 0.700 vis.02 p50 0.591
+  chunk32 anyH p50 0.794 anyW p50 0.819 vis.02 p50 0.762
+  chunk64 anyH p50 0.975 anyW p50 0.950 vis.02 p50 0.975
+  trees identical 58/60
+PASS determinism archipelago: counts identical across two runs
+PASS determinism archipelago: state hash chain identical
+PASS cross-script archipelago: census vs eps_contract state hashes
+PASS original A0 census (standard) reproduced: count fields
+PASS original A0 census (archipelago) reproduced: count fields
+
+[eps standard] strengths {"plane":"mortal","structural":0.59,"deep":0.16,"mass":0.16} TMAX 12
+  depth-byte cells p50 2250 texels p50 8342 shoreline quads p50 3561
+  eps 0.001: terrain p50 53950 water p50 16042 shade8 p99.9 p50 0.26 max p95 0.72 >2lv p95 0
+  eps 0.002: terrain p50 43855 water p50 12077 shade8 p99.9 p50 0.62 max p95 1.42 >2lv p95 0
+  eps 0.005: terrain p50 25187 water p50 7390 shade8 p99.9 p50 1.89 max p95 4.07 >2lv p95 61
+  eps 0.01: terrain p50 15168 water p50 6001 shade8 p99.9 p50 3.42 max p95 7.83 >2lv p95 766
+  eps 0.02: terrain p50 9887 water p50 5779 shade8 p99.9 p50 6.47 max p95 14.58 >2lv p95 2789
+
+[eps archipelago] strengths {"plane":"mortal","structural":0.59,"deep":0.16,"mass":0.16} TMAX 12
+  depth-byte cells p50 1350 texels p50 5087 shoreline quads p50 3945
+  eps 0.001: terrain p50 46817 water p50 18586 shade8 p99.9 p50 0.17 max p95 0.85 >2lv p95 0
+  eps 0.002: terrain p50 33283 water p50 12491 shade8 p99.9 p50 0.43 max p95 1.78 >2lv p95 0
+  eps 0.005: terrain p50 18426 water p50 8443 shade8 p99.9 p50 1.45 max p95 4.55 >2lv p95 39
+  eps 0.01: terrain p50 12133 water p50 7816 shade8 p99.9 p50 3.19 max p95 8.72 >2lv p95 165
+  eps 0.02: terrain p50 8646 water p50 7686 shade8 p99.9 p50 7.15 max p95 17.64 >2lv p95 500
+
+[water index standard] overflow {"block16_s0.1":0,"block16_s0.25":0,"block32_s0.1":0,"block32_s0.25":0}
+  changed p50 2 p95 6 max 7 nonzero 45/60
+  byMask p50 0 p95 5 max 6 nonzero 22/60
+  byDiagOnly p50 1 p95 3 max 3 nonzero 39/60
+  drawnCompact p50 432393 p95 432414 max 432420 nonzero 60/60
+  drawnFixed p50 1966068 p95 1966068 max 1966068 nonzero 60/60
+  compactFull p50 7864272 p95 7864272 max 7864272 nonzero 45/60
+  compactSuffix p50 843732 p95 1457700 max 1538004 nonzero 45/60
+  fixedSlot p50 96 p95 288 max 336 nonzero 45/60
+  block32_s0.1 p50 27352 p95 86936 max 126632 nonzero 45/60
+  drawn_block32_s0.1 p50 490083 p95 490083 max 490083 nonzero 60/60
+  block16_s0.1 p50 7212 p95 21796 max 32188 nonzero 45/60
+  drawn_block16_s0.1 p50 536288 p95 536288 max 536288 nonzero 60/60
+
+[water index archipelago] overflow {"block16_s0.1":0,"block16_s0.25":0,"block32_s0.1":0,"block32_s0.25":0}
+  changed p50 3 p95 38 max 75 nonzero 35/60
+  byMask p50 3 p95 38 max 75 nonzero 35/60
+  byDiagOnly p50 0 p95 0 max 0 nonzero 0/60
+  drawnCompact p50 590280 p95 590946 max 590958 nonzero 60/60
+  drawnFixed p50 1966068 p95 1966068 max 1966068 nonzero 60/60
+  compactFull p50 7864272 p95 7864272 max 7864272 nonzero 35/60
+  compactSuffix p50 889416 p95 1665480 max 1912260 nonzero 35/60
+  fixedSlot p50 144 p95 1824 max 3600 nonzero 35/60
+  block32_s0.1 p50 10880 p95 63856 max 87060 nonzero 35/60
+  drawn_block32_s0.1 p50 664496 p95 664496 max 664496 nonzero 60/60
+  block16_s0.1 p50 3936 p95 34316 max 42304 nonzero 35/60
+  drawn_block16_s0.1 p50 710750 p95 710750 max 710750 nonzero 60/60
+
+[replay_real.json standard] art realm-style-v1:realm-style-v1 clipped true
+  total p50 47.75 p95 80.89  (timing: reference only)
+  bridgeScanMs p50 2.04 p95 2.69  (timing: reference only)
+  terrainUpdateMs p50 18.80 p95 37.07  (timing: reference only)
+  waterUpdateMs p50 13.08 p95 37.74  (timing: reference only)
+  vegetationUpdateMs p50 14.47 p95 19.11  (timing: reference only)
+  queued bytes/step p50 41905580 max 41943584
+    terrain.position: steps 30/30 p50 1966080
+    terrain.color: steps 30/30 p50 18732
+    terrain.index: steps 30/30 p50 3912216
+    water.position: steps 30/30 p50 23592816
+    tex.height: steps 30/30 p50 2621440
+    tex.type: steps 30/30 p50 636792
+    tex.surface: steps 30/30 p50 655360
+    veg2.matrix: steps 30/30 p50 640000
+    water.index: steps 24/30 p50 7864272
+
+[replay_real.json archipelago] art realm-style-v1:realm-style-v1 clipped true
+  total p50 43.76 p95 56.82  (timing: reference only)
+  bridgeScanMs p50 2.15 p95 2.20  (timing: reference only)
+  terrainUpdateMs p50 19.92 p95 33.04  (timing: reference only)
+  waterUpdateMs p50 15.03 p95 22.41  (timing: reference only)
+  vegetationUpdateMs p50 6.34 p95 8.51  (timing: reference only)
+  queued bytes/step p50 41905224 max 41931696
+    terrain.position: steps 30/30 p50 1966080
+    terrain.color: steps 30/30 p50 28932
+    terrain.index: steps 30/30 p50 3912216
+    water.position: steps 30/30 p50 23592816
+    water.index: steps 26/30 p50 7864272
+    tex.height: steps 30/30 p50 2621440
+    tex.type: steps 30/30 p50 627440
+    tex.surface: steps 30/30 p50 655360
+    veg2.matrix: steps 30/30 p50 637888
+
+[replay_typeonly.json standard] art realm-style-v1:realm-style-v1 clipped true
+  total p50 12.50 p95 21.43  (timing: reference only)
+  bridgeScanMs p50 1.61 p95 1.86  (timing: reference only)
+  terrainUpdateMs p50 0.02 p95 0.05  (timing: reference only)
+  waterUpdateMs p50 0.00 p95 0.00  (timing: reference only)
+  vegetationUpdateMs p50 10.81 p95 19.29  (timing: reference only)
+  queued bytes/step p50 16 max 16
+    terrain.color: steps 30/30 p50 12
+    tex.type: steps 30/30 p50 4
+
+[replay_typeonly.json archipelago] art realm-style-v1:realm-style-v1 clipped true
+  total p50 6.31 p95 8.11  (timing: reference only)
+  bridgeScanMs p50 1.74 p95 1.79  (timing: reference only)
+  terrainUpdateMs p50 0.02 p95 0.02  (timing: reference only)
+  waterUpdateMs p50 0.00 p95 0.00  (timing: reference only)
+  vegetationUpdateMs p50 4.50 p95 6.34  (timing: reference only)
+  queued bytes/step p50 16 max 16
+    terrain.color: steps 30/30 p50 12
+    tex.type: steps 30/30 p50 4
+
+VERIFY OK

@@ -1,0 +1,79 @@
+{
+ "inkbox_commit": "bfabe00e3c0865721e5c426c4915a1f879498714",
+ "inkbox_branch": "origin/codex/g2-h3-terrain-color-pilot-luna",
+ "three": "0.186.1",
+ "node": "v24.14.1",
+ "os": "Amazon Linux 2023.12.20260817",
+ "cpu": "Intel(R) Xeon(R) Processor @ 2.90GHz",
+ "cpus": 2,
+ "files": {
+  "census.mjs": {
+   "sha256": "f2f441f49eb5fc0ad048f79cbe2d9e30af0f312c4035e17d1eb43edc2bdbe576",
+   "bytes": 8665
+  },
+  "replay.mjs": {
+   "sha256": "ecc3f9448f55d21de7432891c1f6f82bc2b45102916f011b3dd84b3e3425c71c",
+   "bytes": 5859
+  },
+  "eps_contract.mjs": {
+   "sha256": "282dd271db900d0ba19494ac7088e399fd389c1bb1574e7263278847af79b1f9",
+   "bytes": 9261
+  },
+  "water_index.mjs": {
+   "sha256": "bf645b41953605d3a7133a4e49813ed089f605d1b4b018c0436204acedb07f1b",
+   "bytes": 6481
+  },
+  "verify.mjs": {
+   "sha256": "3abcb8e4c2b4c48be09d60329a4116cb6ec5e26c97423e5f9ab1d919965daac4",
+   "bytes": 4875
+  },
+  "census.json": {
+   "sha256": "9bf8573d67a4b1ec1b0c6eb02b19a7aa389e3f972650dce1c9b282d8a5ee9fe3",
+   "bytes": 95199
+  },
+  "census_rerun.json": {
+   "sha256": "c169c53279118e68f50fbccc369715620eb967bfedb44a37774566c271ea5cf3",
+   "bytes": 95211
+  },
+  "census_original_A0.json": {
+   "sha256": "928ba897e6beec1ea0c8341216a6f13b133557a9104623efd61dc6aeacaeea2d",
+   "bytes": 129696
+  },
+  "eps_contract.json": {
+   "sha256": "8f9b7c7f3c3a0ce6a01a396c1015a90786381e513772bfb218e4df15f187fb94",
+   "bytes": 187093
+  },
+  "water_index.json": {
+   "sha256": "9d373222a237416f2310dc7566b6a796b5c2a8556a3ed877d60d2cdd0ca7a3bf",
+   "bytes": 60594
+  },
+  "replay_real.json": {
+   "sha256": "efc6105c69bd41a302af6d21c15fd2bacc18789cddf390cfec5bd087cc2b7349",
+   "bytes": 32022
+  },
+  "replay_typeonly.json": {
+   "sha256": "55f89ee9b41916a08cff2e0860d2abcfcc694313e3b6f069d80a183e263b8106",
+   "bytes": 22571
+  }
+ },
+ "inkbox_baseline_commit": "74934a8b1360af9007c69935d5becdf8f9809872",
+ "params": {
+  "seed": 673231,
+  "preset": "expanse",
+  "generationVersion": 2,
+  "warm": 30,
+  "census_steps": 60,
+  "replay_steps": 30,
+  "eps_steps": 60,
+  "tmax": 12,
+  "eps": [
+   0.001,
+   0.002,
+   0.005,
+   0.01,
+   0.02
+  ],
+  "plane": "mortal",
+  "water_index_steps": 60
+ }
+}
