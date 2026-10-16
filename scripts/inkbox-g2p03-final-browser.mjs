@@ -231,4 +231,3 @@ try {
 }
 console.log(`G2-P0.3 final browser: ${report.checks.filter(item => item.pass).length}/${report.checks.length}; pass=${report.pass}; report=${OUT}`);
 if (!report.pass) process.exitCode = 1;
-

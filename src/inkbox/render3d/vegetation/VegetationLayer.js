@@ -342,4 +342,3 @@ export class VegetationLayer {
     for (const geometry of this.lodGeometries) geometry.dispose();
   }
 }
-

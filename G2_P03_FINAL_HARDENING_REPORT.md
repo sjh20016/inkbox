@@ -89,4 +89,3 @@ water-only 更新期间实际记录到 6 次 bufferSubData、5,463,576 bytes；i
 建议裁决：HARDENED_READY。含义仅为候选正确性证据已补足，可进入后续集成审查；正式 G2 性能门禁仍为 G2_PERF_BLOCKED。
 
 
-

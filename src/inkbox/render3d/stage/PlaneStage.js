@@ -312,4 +312,3 @@ export class PlaneStage {
     this.root.removeFromParent();
   }
 }
-

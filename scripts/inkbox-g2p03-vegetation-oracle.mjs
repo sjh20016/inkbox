@@ -482,4 +482,3 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(`\n植被等价性 oracle 通过 · ${passed} 项（逐实例矩阵/颜色字节 + 身份排序 + LOD 归属 + 资源身份）`);
-
