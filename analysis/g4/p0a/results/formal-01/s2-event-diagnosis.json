@@ -1,0 +1,44 @@
+{
+  "schema": "g4-p0a-s2-event-diagnosis",
+  "run": "formal-01",
+  "status": "HARNESS_TRIGGER_UNREACHABLE",
+  "evidence": {
+    "v0": {
+      "measuredFrames": 600,
+      "floodActualStep": 15,
+      "sculptActualStep": 35,
+      "sculptFrame": 567,
+      "eventsValid": true
+    },
+    "v3": {
+      "measuredFrames": 600,
+      "floodActualStep": 15,
+      "sculptTrigger": 35,
+      "lastMeasuredHydroStep": 32,
+      "eventsValid": false,
+      "productErrors": 0,
+      "cadenceValid": true
+    }
+  },
+  "interpretation": "The V3 run completed all 600 RAF frames with valid visibility and hydro cadence, but its fixed sample window reached only measured hydro step 32, so a step-35 sculpt could not fire. The preserved raw completion record proves the flood mutation succeeded; no V3 sculpt mutation is claimed. This is a test trigger/window mismatch, not a product failure.",
+  "repair": {
+    "change": "Move the deterministic authoritative sculpt trigger from measured step 35 to step 25; retain flood at step 15 and the required 120 warmup + 600 measured RAF frames.",
+    "basis": "The failed V3 run recorded hydro step 25 by measured RAF 485 and step 32 by RAF 600, leaving seven post-sculpt hydro steps for retreat observation within the unchanged sample window.",
+    "scope": [
+      "scripts/inkbox-g4-p0a-page.mjs",
+      "scripts/inkbox-g4-p0a-run.mjs"
+    ],
+    "productFilesChanged": false,
+    "priorRawRecordsRetained": true
+  },
+  "resolution": {
+    "run": "formal-02",
+    "status": "PASS",
+    "flood": "actualStep 15 in both variants",
+    "sculpt": "actualStep 25 in both variants",
+    "rawCompletionFiles": [
+      "../formal-02/s2-events-V0_current.jsonl.gz",
+      "../formal-02/s2-events-V3_staticSeaStrict.jsonl.gz"
+    ]
+  }
+}

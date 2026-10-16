@@ -1,7 +1,7 @@
 {
   "schema": "g4-p0a-r2.1-delivery",
-  "status": "INCONCLUSIVE",
-  "reason": "S0_INVALID_REPAIR_LIMIT",
+  "status": "GO_P1_REVIEW",
+  "reason": "S1_THRESHOLDS_AND_S2_VALID",
   "baselineSHA": "e1e55039bb56efda7a307513ede07a9fab3bf534",
   "runs": [
     {
@@ -50,27 +50,193 @@
       "summary": null
     }
   ],
-  "validPerformanceFrames": 0,
-  "aa": null,
-  "abba": null,
-  "pairedImprovements": null,
+  "validPerformanceFrames": 8400,
+  "aa": {
+    "attempt": 1,
+    "p95Ms": [
+      44.5,
+      44.599999999999454
+    ],
+    "differenceMs": 0.0999999999994543,
+    "pass": true
+  },
+  "abba": [
+    {
+      "label": "s1-abba-1",
+      "variant": "V0_current",
+      "samples": 600,
+      "raf": {
+        "n": 600,
+        "p50": 5.600000000000364,
+        "p95": 39.100000000000364,
+        "p99": 50.100000000000364,
+        "mean": 9.879666666666669,
+        "gt33_3Percent": 6.166666666666667,
+        "gt50Percent": 2,
+        "gt100Percent": 0,
+        "gt200Percent": 0
+      },
+      "sha256": "0e9ee17f64ec5f90992d387bb631f2263c153320717684e0b289b44e71bd67ac",
+      "rawSHA256": "cf2da7e7dd4cf78d45d069e020f0ccfcf406ffe183e961585bf6ab6df43ccbd7"
+    },
+    {
+      "label": "s1-abba-2",
+      "variant": "V3_staticSeaStrict",
+      "samples": 600,
+      "raf": {
+        "n": 600,
+        "p50": 5.600000000000364,
+        "p95": 11.200000000000273,
+        "p99": 14.199999999999818,
+        "mean": 7.746333333333333,
+        "gt33_3Percent": 0,
+        "gt50Percent": 0,
+        "gt100Percent": 0,
+        "gt200Percent": 0
+      },
+      "sha256": "ab9e9036078bbf64af80ac2f0ccdcce743ef35ab90ac4d9e9c41d29c4b9c96c9",
+      "rawSHA256": "21dc287be42c4df06f79a1d025f07ff9daccd4498ed648e9f435e499cf387081"
+    },
+    {
+      "label": "s1-abba-3",
+      "variant": "V3_staticSeaStrict",
+      "samples": 600,
+      "raf": {
+        "n": 600,
+        "p50": 5.600000000000364,
+        "p95": 11.200000000000728,
+        "p99": 16.700000000000273,
+        "mean": 7.8851666666666675,
+        "gt33_3Percent": 0,
+        "gt50Percent": 0,
+        "gt100Percent": 0,
+        "gt200Percent": 0
+      },
+      "sha256": "3459c33c1f2243af2921488005ef298b591ddf74c55dd5a914dabf3685b53504",
+      "rawSHA256": "44f187a9ef1a815118e30e4fc2af004fa04a3c83cc9b4f6d3e36042955276125"
+    },
+    {
+      "label": "s1-abba-4",
+      "variant": "V0_current",
+      "samples": 600,
+      "raf": {
+        "n": 600,
+        "p50": 5.600000000000364,
+        "p95": 44.5,
+        "p99": 55.599999999999454,
+        "mean": 9.629333333333333,
+        "gt33_3Percent": 6,
+        "gt50Percent": 3.3333333333333335,
+        "gt100Percent": 0,
+        "gt200Percent": 0
+      },
+      "sha256": "6e13f9db772cd41d0adc902c8ad349a328ccbe3196f99fd90f3e9733f5142a4d",
+      "rawSHA256": "0d58476df0de5ed9083e0f32be940a6e1ce19400b37f8da1681ad24ac362b5d1"
+    }
+  ],
+  "pairedImprovements": [
+    27.9,
+    33.3
+  ],
   "stages": {
     "S0": {
-      "status": "FAIL",
-      "reason": "VIEWPORT_DRIFT",
-      "checkpoint": "s0-checkpoint.json"
+      "status": "PASS",
+      "input": "PASS",
+      "sourceBoundary": "PASS",
+      "v0Oracle": "PASS",
+      "initialState": "PASS",
+      "bindingFingerprints": "PASS",
+      "realProductCalls": "PASS",
+      "hardware": "PASS",
+      "nativeMainByteIdentical": "PASS",
+      "checkpoint": "S0 complete; S1 may run."
     },
     "S1": {
-      "status": "NOT_RUN",
-      "reason": "S0_FAILED"
+      "status": "PASS",
+      "aaDifferenceMs": 0.0999999999994543,
+      "abba": [
+        "s1-abba-1",
+        "s1-abba-2",
+        "s1-abba-3",
+        "s1-abba-4"
+      ],
+      "assessment": {
+        "status": "S2_VALID",
+        "reason": "S1_THRESHOLDS_AND_S2_VALID",
+        "pairs": [
+          {
+            "v0": "s1-abba-1",
+            "v3": "s1-abba-2",
+            "improvementMs": 27.90000000000009,
+            "p99IncreaseMs": -35.900000000000546,
+            "p99BudgetMs": 5.010000000000037,
+            "gt50IncreasePercentagePoints": -2
+          },
+          {
+            "v0": "s1-abba-4",
+            "v3": "s1-abba-3",
+            "improvementMs": 33.29999999999927,
+            "p99IncreaseMs": -38.89999999999918,
+            "p99BudgetMs": 5.559999999999945,
+            "gt50IncreasePercentagePoints": -3.3333333333333335
+          }
+        ],
+        "medianImprovementMs": 30.59999999999968,
+        "worstV3P95": 11.200000000000728,
+        "clearBenefit": true,
+        "tailRegression": false
+      },
+      "lowerBound": {
+        "v1": {
+          "n": 300,
+          "p50": 5.600000000000364,
+          "p95": 16.700000000000273,
+          "p99": 27.800000000000182,
+          "mean": 8.293333333333335,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "v9": {
+          "n": 300,
+          "p50": 5.600000000000364,
+          "p95": 11.199999999999818,
+          "p99": 11.299999999999727,
+          "mean": 7.737,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "note": "V9 still follows normal product dirty/render submission; not GPU idle."
+      },
+      "checkpoint": "S1 main rounds complete; later stages depend on this evidence."
     },
     "S2": {
-      "status": "NOT_RUN",
-      "reason": "S0_FAILED"
+      "status": "PASS",
+      "runs": [
+        "s2-events-V0_current",
+        "s2-events-V3_staticSeaStrict"
+      ],
+      "ruleEquivalenceRequired": false,
+      "description": "Authoritative powers.addWater at measured hydro step 15 and powers.sculpt at step 25; step 25 leaves post-sculpt retreat frames inside the fixed 600-RAF window on the slower V3 run. Actual mutations are retained in raw completion records."
     },
     "S3": {
+      "status": "PASS",
+      "runs": [
+        "s3-canvas-V0_current",
+        "s3-canvas-V3_staticSeaStrict",
+        "s3-archipelago-V0_current",
+        "s3-archipelago-V3_staticSeaStrict",
+        "s3-gpu-V0_current",
+        "s3-gpu-V3_staticSeaStrict"
+      ],
+      "diagnosticsPooledWithPrimary": false
+    },
+    "S0R": {
       "status": "NOT_RUN",
-      "reason": "S0_FAILED"
+      "reason": "S1_THRESHOLDS_AND_S2_VALID"
     }
   },
   "s0rRecovery": {
@@ -86,15 +252,39 @@
     "formalS0": "NOT_RUN",
     "S1": "NOT_RUN",
     "attempts": [
-      { "directory": "s0r-recovery-01", "status": "ENV_BLOCKED", "reason": "INPUT_BLOCKED: per-process temp path unavailable to runner" },
-      { "directory": "s0r-recovery-02", "status": "ENV_BLOCKED", "reason": "sandbox CDP connection failure" },
-      { "directory": "s0r-recovery-03", "status": "ENV_BLOCKED", "reason": "diagnostic variable shadowing; captured in failure.json" },
-      { "directory": "s0r-recovery-04", "status": "ENV_BLOCKED", "reason": "exact DPR mismatch: 1.0000000298023224" },
-      { "directory": "s0r-recovery-05", "status": "ENV_BLOCKED", "reason": "exact DPR mismatch persisted after screen metrics override" },
-      { "directory": "s0r-recovery-06", "status": "PASS", "reason": "exact viewport, Oracle, hardware and 24-frame-per-variant smoke passed" }
+      {
+        "directory": "s0r-recovery-01",
+        "status": "ENV_BLOCKED",
+        "reason": "INPUT_BLOCKED: per-process temp path unavailable to runner"
+      },
+      {
+        "directory": "s0r-recovery-02",
+        "status": "ENV_BLOCKED",
+        "reason": "sandbox CDP connection failure"
+      },
+      {
+        "directory": "s0r-recovery-03",
+        "status": "ENV_BLOCKED",
+        "reason": "diagnostic variable shadowing; captured in failure.json"
+      },
+      {
+        "directory": "s0r-recovery-04",
+        "status": "ENV_BLOCKED",
+        "reason": "exact DPR mismatch: 1.0000000298023224"
+      },
+      {
+        "directory": "s0r-recovery-05",
+        "status": "ENV_BLOCKED",
+        "reason": "exact DPR mismatch persisted after screen metrics override"
+      },
+      {
+        "directory": "s0r-recovery-06",
+        "status": "PASS",
+        "reason": "exact viewport, Oracle, hardware and 24-frame-per-variant smoke passed"
+      }
     ]
   },
-  "interpretation": "Compressed structured startup records contain zero measured-frame entries. They are raw failure evidence, not frame samples. The S0-R smoke records are separately indexed above and are not formal performance runs.",
+  "interpretation": "Formal real-browser S0, A/A, ABBA, S2 events and conditional S3 all passed on the AMD Radeon 610M hardware WebGL backend. GO_P1_REVIEW authorizes only separate P1 review, not product implementation. Original startup failures, S0-R attempts and formal-01 event-trigger failure remain archived.",
   "attempts": [
     {
       "directory": "attempt-01",
@@ -120,5 +310,58 @@
     "environment-initial-failure.json",
     "environment-host.json"
   ],
-  "quantiles": "Nearest rank sorted[ceil(p*N)-1]; strict > threshold rates. No distribution is computable here."
+  "quantiles": "Nearest rank: sorted[ceil(p*N)-1]; rates use strict >; adjacent RAF frames are not independent repeats.",
+  "initialR2_1Stages": {
+    "S0": {
+      "status": "FAIL",
+      "reason": "VIEWPORT_DRIFT",
+      "checkpoint": "s0-checkpoint.json"
+    },
+    "S1": {
+      "status": "NOT_RUN",
+      "reason": "S0_FAILED"
+    },
+    "S2": {
+      "status": "NOT_RUN",
+      "reason": "S0_FAILED"
+    },
+    "S3": {
+      "status": "NOT_RUN",
+      "reason": "S0_FAILED"
+    }
+  },
+  "finalDecision": "GO_P1_REVIEW",
+  "baselineRef": "origin/main",
+  "originMainSHAAtMeasurement": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "formalRun": {
+    "directory": "formal-02",
+    "manifest": "formal-02/manifest.json",
+    "provenance": "formal-02/provenance.json",
+    "status": "GO_P1_REVIEW",
+    "runnerSHA": "e045c1f1ba217ca90ab9e1c2e1e894f146a272b0",
+    "validRuns": 21,
+    "measuredFrames": 8616,
+    "formalS1S2S3Frames": 8400,
+    "aaDifferenceMs": 0.1,
+    "pairedP95ImprovementsMs": [
+      27.9,
+      33.3
+    ],
+    "medianImprovementMs": 30.6,
+    "stages": {
+      "S0": "PASS",
+      "S1": "PASS",
+      "S2": "PASS",
+      "S3": "PASS"
+    }
+  },
+  "formalAttempts": [
+    {
+      "directory": "formal-01",
+      "status": "INCONCLUSIVE",
+      "reason": "S2 V3 trigger at step 35 was outside the fixed 600-RAF window; raw failure retained; resolved in formal-02 at step 25."
+    }
+  ],
+  "primaryS1Frames": 3600,
+  "totalMeasuredFrames": 8616
 }

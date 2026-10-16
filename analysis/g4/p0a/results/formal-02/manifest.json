@@ -1,0 +1,2593 @@
+{
+  "schema": "g4-p0a-r2.1",
+  "startedAt": "2026-10-16T15:43:16.208Z",
+  "suite": "all",
+  "status": "GO_P1_REVIEW",
+  "reason": "S1_THRESHOLDS_AND_S2_VALID",
+  "runs": [
+    {
+      "label": "s0-v0-binding",
+      "file": "s0-v0-binding.jsonl.gz",
+      "sha256": "8d9e3b102a7a319411b987c3ce1419b6f76417ec62c0648e90afe27c2e4c1e05",
+      "rawSHA256": "227e47396ed5fd9dca574c8cb4115dc6d7e138c8ace0b09819f03ed38bf3736a",
+      "bytes": 6308,
+      "samples": 24,
+      "warmupSamples": 12,
+      "variant": "V0_current",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "smoke",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 24,
+          "p50": 5.600000000000364,
+          "p95": 61.20000000000027,
+          "p99": 105.80000000000018,
+          "mean": 13.916666666666666,
+          "gt33_3Percent": 8.333333333333332,
+          "gt50Percent": 8.333333333333332,
+          "gt100Percent": 4.166666666666666,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 2,
+        "hydrologyMs": {
+          "n": 24,
+          "p50": 0,
+          "p95": 10.699999988079071,
+          "p99": 24.200000017881393,
+          "mean": 1.4541666669150193,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 22,
+            "p50": 5.600000000000364,
+            "p95": 61.20000000000027,
+            "p99": 105.80000000000018,
+            "mean": 14.427272727272731,
+            "gt33_3Percent": 9.090909090909092,
+            "gt50Percent": 9.090909090909092,
+            "gt100Percent": 4.545454545454546,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 2,
+            "p50": 5.5,
+            "p95": 11.099999999999909,
+            "p99": 11.099999999999909,
+            "mean": 8.299999999999955,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s0-V1_noErosion-binding",
+      "file": "s0-V1_noErosion-binding.jsonl.gz",
+      "sha256": "04820a17717edd8de404320a1c64156ee71e382d838cf9eb8d5c677321d9a218",
+      "rawSHA256": "e2ebbc5798050d4c1e9a65118b04c4eed1ed0099524bd867049882e5fff957d2",
+      "bytes": 6248,
+      "samples": 24,
+      "warmupSamples": 12,
+      "variant": "V1_noErosion",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "smoke",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 24,
+          "p50": 5.599999999999909,
+          "p95": 22.300000000000182,
+          "p99": 55.70000000000027,
+          "mean": 10.204166666666671,
+          "gt33_3Percent": 4.166666666666666,
+          "gt50Percent": 4.166666666666666,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 2,
+        "hydrologyMs": {
+          "n": 24,
+          "p50": 0,
+          "p95": 6.200000017881393,
+          "p99": 15.599999994039536,
+          "mean": 0.9083333338300387,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 22,
+            "p50": 5.599999999999909,
+            "p95": 22.300000000000182,
+            "p99": 55.70000000000027,
+            "mean": 10.627272727272736,
+            "gt33_3Percent": 4.545454545454546,
+            "gt50Percent": 4.545454545454546,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 2,
+            "p50": 5.5,
+            "p95": 5.599999999999909,
+            "p99": 5.599999999999909,
+            "mean": 5.5499999999999545,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s0-V3_staticSeaStrict-binding",
+      "file": "s0-V3_staticSeaStrict-binding.jsonl.gz",
+      "sha256": "1a88899f345f200ebbc22e59d2d7e8598f3f9f1b2d748a3fb629caf326e63bfa",
+      "rawSHA256": "9d14ff0b8a0a357c5c8438b77b63158ac746d8c473f44b9531a9191d22df2a62",
+      "bytes": 6246,
+      "samples": 24,
+      "warmupSamples": 12,
+      "variant": "V3_staticSeaStrict",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "smoke",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 24,
+          "p50": 5.599999999999909,
+          "p95": 16.700000000000273,
+          "p99": 27.799999999999727,
+          "mean": 9.508333333333326,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 2,
+        "hydrologyMs": {
+          "n": 24,
+          "p50": 0,
+          "p95": 3.699999988079071,
+          "p99": 6.5,
+          "mean": 0.42499999950329465,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 22,
+            "p50": 5.599999999999909,
+            "p95": 16.700000000000273,
+            "p99": 16.700000000000273,
+            "mean": 8.604545454545462,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 2,
+            "p50": 11.099999999999909,
+            "p95": 27.799999999999727,
+            "p99": 27.799999999999727,
+            "mean": 19.449999999999818,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s0-V9_hydrologyOff-binding",
+      "file": "s0-V9_hydrologyOff-binding.jsonl.gz",
+      "sha256": "f00d4de9281ed4ab04778ae95c1ce5573c1d002b66033108d7d67e9747333fcd",
+      "rawSHA256": "75ef3d085f094ce64582d1c091c7198cbe559f1daf4b631b037880f33c6b17c0",
+      "bytes": 6283,
+      "samples": 24,
+      "warmupSamples": 12,
+      "variant": "V9_hydrologyOff",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "smoke",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 24,
+          "p50": 10.900000000000091,
+          "p95": 22.299999999999727,
+          "p99": 27.800000000000182,
+          "mean": 9.970833333333323,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 2,
+        "hydrologyMs": {
+          "n": 24,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0.09999999403953552,
+          "mean": 0.00416666641831398,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 22,
+            "p50": 11,
+            "p95": 22.299999999999727,
+            "p99": 27.800000000000182,
+            "mean": 10.127272727272715,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 2,
+            "p50": 5.599999999999909,
+            "p95": 10.900000000000091,
+            "p99": 10.900000000000091,
+            "mean": 8.25,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s0-native-v0-unnormalized",
+      "file": "s0-native-v0-unnormalized.jsonl.gz",
+      "sha256": "9040b855b2cffe5c2e7081fd0b0d929e86f2b065837a469f0e5d9e4add7b8a6a",
+      "rawSHA256": "f77f0d83349032484b870e69cd1c0918d1f50b3b2f06ceff0767b6f4c7cad530",
+      "bytes": 13711,
+      "samples": 120,
+      "warmupSamples": 120,
+      "variant": "V0_native_direct",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "native-description",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 120,
+          "p50": 11,
+          "p95": 44.600000000000364,
+          "p99": 55.69999999999982,
+          "mean": 11.689166666666665,
+          "gt33_3Percent": 7.5,
+          "gt50Percent": 4.166666666666666,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 0,
+        "hydrologyMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "1": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": null,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s1-aa1-a",
+      "file": "s1-aa1-a.jsonl.gz",
+      "sha256": "7c510b4680dbd3e62893fc7f735a81cf558a2d8b1771a8989412b8d8400e371c",
+      "rawSHA256": "47b81f939f08c762a57f88af51e05b22a2744c923db5865ec57dbae88d9e8b0f",
+      "bytes": 31616,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V0_current",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "primary",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.600000000000364,
+          "p95": 44.5,
+          "p99": 50.100000000000364,
+          "mean": 9.963333333333331,
+          "gt33_3Percent": 6.333333333333334,
+          "gt50Percent": 2,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 38,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 9.199999988079071,
+          "p99": 10.299999982118607,
+          "mean": 0.6181666665772597,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 562,
+            "p50": 5.600000000000364,
+            "p95": 44.5,
+            "p99": 50.100000000000364,
+            "mean": 9.922241992882563,
+            "gt33_3Percent": 6.761565836298933,
+            "gt50Percent": 2.135231316725979,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 38,
+            "p50": 11.100000000000364,
+            "p95": 11.300000000000182,
+            "p99": 16.700000000000728,
+            "mean": 10.571052631578906,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s1-aa1-b",
+      "file": "s1-aa1-b.jsonl.gz",
+      "sha256": "2a5cf22426d0da40513fa68fc0a59a0154e3a1dd136f978c6d3db0fbe72258e0",
+      "rawSHA256": "abdc361461a699897a9461889f5d77c56b5d8eb8ba9e1e9eeff937ef705bcf9b",
+      "bytes": 31851,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V0_current",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "primary",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.600000000000364,
+          "p95": 44.599999999999454,
+          "p99": 55.600000000000364,
+          "mean": 10.640666666666668,
+          "gt33_3Percent": 6.666666666666667,
+          "gt50Percent": 4,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 40,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 9.100000023841858,
+          "p99": 10.400000005960464,
+          "mean": 0.6503333334624767,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 560,
+            "p50": 5.600000000000364,
+            "p95": 44.59999999999991,
+            "p99": 55.600000000000364,
+            "mean": 10.655714285714284,
+            "gt33_3Percent": 7.142857142857142,
+            "gt50Percent": 4.285714285714286,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 40,
+            "p50": 11.100000000000364,
+            "p95": 11.300000000000182,
+            "p99": 16.799999999999272,
+            "mean": 10.430000000000017,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s1-abba-1",
+      "file": "s1-abba-1.jsonl.gz",
+      "sha256": "0e9ee17f64ec5f90992d387bb631f2263c153320717684e0b289b44e71bd67ac",
+      "rawSHA256": "cf2da7e7dd4cf78d45d069e020f0ccfcf406ffe183e961585bf6ab6df43ccbd7",
+      "bytes": 31723,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V0_current",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "primary",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.600000000000364,
+          "p95": 39.100000000000364,
+          "p99": 50.100000000000364,
+          "mean": 9.879666666666669,
+          "gt33_3Percent": 6.166666666666667,
+          "gt50Percent": 2,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 37,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 9.199999988079071,
+          "p99": 10.300000011920929,
+          "mean": 0.6028333331147829,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 563,
+            "p50": 5.600000000000364,
+            "p95": 44.400000000000546,
+            "p99": 50.100000000000364,
+            "mean": 9.895026642984016,
+            "gt33_3Percent": 6.571936056838366,
+            "gt50Percent": 2.1314387211367674,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 37,
+            "p50": 11.100000000000364,
+            "p95": 11.300000000000182,
+            "p99": 11.399999999999636,
+            "mean": 9.645945945945948,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s1-abba-2",
+      "file": "s1-abba-2.jsonl.gz",
+      "sha256": "ab9e9036078bbf64af80ac2f0ccdcce743ef35ab90ac4d9e9c41d29c4b9c96c9",
+      "rawSHA256": "21dc287be42c4df06f79a1d025f07ff9daccd4498ed648e9f435e499cf387081",
+      "bytes": 30767,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V3_staticSeaStrict",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "primary",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.600000000000364,
+          "p95": 11.200000000000273,
+          "p99": 14.199999999999818,
+          "mean": 7.746333333333333,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 29,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 0,
+          "p99": 1.5999999940395355,
+          "mean": 0.06683333332339923,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 571,
+            "p50": 5.600000000000364,
+            "p95": 11.200000000000273,
+            "p99": 16.600000000000364,
+            "mean": 7.670928196147107,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 29,
+            "p50": 11.099999999999454,
+            "p95": 11.300000000000182,
+            "p99": 11.300000000000182,
+            "mean": 9.231034482758677,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s1-abba-3",
+      "file": "s1-abba-3.jsonl.gz",
+      "sha256": "3459c33c1f2243af2921488005ef298b591ddf74c55dd5a914dabf3685b53504",
+      "rawSHA256": "44f187a9ef1a815118e30e4fc2af004fa04a3c83cc9b4f6d3e36042955276125",
+      "bytes": 30832,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V3_staticSeaStrict",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "primary",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.600000000000364,
+          "p95": 11.200000000000728,
+          "p99": 16.700000000000273,
+          "mean": 7.8851666666666675,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 29,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 0,
+          "p99": 2.199999988079071,
+          "mean": 0.08616666679581006,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 571,
+            "p50": 5.600000000000364,
+            "p95": 11.200000000000728,
+            "p99": 16.700000000000728,
+            "mean": 7.912959719789841,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 29,
+            "p50": 5.600000000000364,
+            "p95": 11.199999999999818,
+            "p99": 11.199999999999818,
+            "mean": 7.337931034482765,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s1-abba-4",
+      "file": "s1-abba-4.jsonl.gz",
+      "sha256": "6e13f9db772cd41d0adc902c8ad349a328ccbe3196f99fd90f3e9733f5142a4d",
+      "rawSHA256": "0d58476df0de5ed9083e0f32be940a6e1ce19400b37f8da1681ad24ac362b5d1",
+      "bytes": 31618,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V0_current",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "primary",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.600000000000364,
+          "p95": 44.5,
+          "p99": 55.599999999999454,
+          "mean": 9.629333333333333,
+          "gt33_3Percent": 6,
+          "gt50Percent": 3.3333333333333335,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 36,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 9.300000011920929,
+          "p99": 10.699999988079071,
+          "mean": 0.6104999999205272,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 564,
+            "p50": 5.600000000000364,
+            "p95": 44.5,
+            "p99": 55.600000000000364,
+            "mean": 9.602127659574473,
+            "gt33_3Percent": 6.382978723404255,
+            "gt50Percent": 3.546099290780142,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 36,
+            "p50": 11.100000000000364,
+            "p95": 11.200000000000728,
+            "p99": 16.699999999999818,
+            "mean": 10.055555555555518,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s1-diagnostic-v1",
+      "file": "s1-diagnostic-v1.jsonl.gz",
+      "sha256": "3a0efecf6b8dcd289206d2214cf5602f6e0c25cf2d11b52d874521dfc3f83d5b",
+      "rawSHA256": "b27d730a429eb8f157a85a39e57a4656292eb93d81862c81c44ec883aeab1d73",
+      "bytes": 20763,
+      "samples": 300,
+      "warmupSamples": 120,
+      "variant": "V1_noErosion",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "short-raf-diagnostic",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 300,
+          "p50": 5.600000000000364,
+          "p95": 16.700000000000273,
+          "p99": 27.800000000000182,
+          "mean": 8.293333333333335,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 16,
+        "hydrologyMs": {
+          "n": 300,
+          "p50": 0,
+          "p95": 4.5,
+          "p99": 5.9000000059604645,
+          "mean": 0.2873333334922791,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 284,
+            "p50": 5.600000000000364,
+            "p95": 16.800000000000182,
+            "p99": 27.800000000000182,
+            "mean": 8.233450704225358,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 16,
+            "p50": 11.099999999999454,
+            "p95": 11.200000000000273,
+            "p99": 11.200000000000273,
+            "mean": 9.356249999999903,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s1-diagnostic-v9",
+      "file": "s1-diagnostic-v9.jsonl.gz",
+      "sha256": "5938e9dba507e1266161d178fcbd1a30e839add8a308b64412ed3b735874fe4b",
+      "rawSHA256": "a4f261755306edbb62128ae37fb66de9a448b73ce19a4b14c05a5fd0b8dbe18c",
+      "bytes": 20126,
+      "samples": 300,
+      "warmupSamples": 120,
+      "variant": "V9_hydrologyOff",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "short-raf-diagnostic",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 300,
+          "p50": 5.600000000000364,
+          "p95": 11.199999999999818,
+          "p99": 11.299999999999727,
+          "mean": 7.737,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 14,
+        "hydrologyMs": {
+          "n": 300,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0,
+          "mean": 0.00033333341280619304,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 286,
+            "p50": 5.600000000000364,
+            "p95": 11.199999999999818,
+            "p99": 16.700000000000273,
+            "mean": 7.649650349650344,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 14,
+            "p50": 11.099999999999909,
+            "p95": 11.199999999999818,
+            "p99": 11.199999999999818,
+            "mean": 9.521428571428682,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s2-events-V0_current",
+      "file": "s2-events-V0_current.jsonl.gz",
+      "sha256": "1d3ee0aa53faf0ba8540fda5ce7ce8f04e4a239ae6f103a6431b9783443391ac",
+      "rawSHA256": "cb3b7bd5e539a53ff4304b4f52a277ba6d53af7036efcf415ae33dfc901d6037",
+      "bytes": 32528,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V0_current",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "events",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.600000000000364,
+          "p95": 44.5,
+          "p99": 55.600000000000364,
+          "mean": 9.870500000000002,
+          "gt33_3Percent": 6.166666666666667,
+          "gt50Percent": 2.833333333333333,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 37,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 9.5,
+          "p99": 10.699999988079071,
+          "mean": 0.6348333332439263,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 563,
+            "p50": 5.600000000000364,
+            "p95": 44.599999999999454,
+            "p99": 55.69999999999982,
+            "mean": 9.777797513321493,
+            "gt33_3Percent": 6.571936056838366,
+            "gt50Percent": 3.019538188277087,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 37,
+            "p50": 11.100000000000364,
+            "p95": 16.599999999999454,
+            "p99": 16.699999999999818,
+            "mean": 11.281081081081084,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s2-events-V3_staticSeaStrict",
+      "file": "s2-events-V3_staticSeaStrict.jsonl.gz",
+      "sha256": "9bce000c6a20804aa830e89b3119a337a33111fa6f422dd8a61794183d7927b2",
+      "rawSHA256": "c59f44c6990f1176ccf0cbf371c4d7c7a13e6ed722bc080f30e714ec2a1fb1ba",
+      "bytes": 32053,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V3_staticSeaStrict",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "events",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.600000000000364,
+          "p95": 16.600000000000364,
+          "p99": 16.800000000000182,
+          "mean": 8.553500000000001,
+          "gt33_3Percent": 0.16666666666666669,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 32,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 1.0999999940395355,
+          "p99": 2.800000011920929,
+          "mean": 0.14566666682561238,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 568,
+            "p50": 5.600000000000364,
+            "p95": 16.600000000000364,
+            "p99": 22.199999999999818,
+            "mean": 8.456690140845069,
+            "gt33_3Percent": 0.17605633802816903,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 32,
+            "p50": 11.100000000000364,
+            "p95": 11.200000000000728,
+            "p99": 16.699999999999818,
+            "mean": 10.271875000000037,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s3-canvas-V0_current",
+      "file": "s3-canvas-V0_current.jsonl.gz",
+      "sha256": "a958899553f8eaae2d1e2ac34d154f461ecfb336e3119e7525685fc8dc5856c2",
+      "rawSHA256": "5c8a6f043b718cfe3fc30f43935d129e6b4df857d750a6c72725d2796403db69",
+      "bytes": 30071,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V0_current",
+      "map": "standard",
+      "renderer": "Canvas",
+      "mode": "confirmation",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.599999999999909,
+          "p95": 16.800000000000182,
+          "p99": 27.799999999999727,
+          "mean": 6.9855,
+          "gt33_3Percent": 0.6666666666666667,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 26,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 0,
+          "p99": 10.300000011920929,
+          "mean": 0.4343333332737287,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 574,
+            "p50": 5.599999999999909,
+            "p95": 22.09999999999991,
+            "p99": 27.799999999999727,
+            "mean": 7.011324041811847,
+            "gt33_3Percent": 0.6968641114982579,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 26,
+            "p50": 5.599999999999454,
+            "p95": 11.100000000000364,
+            "p99": 11.199999999999818,
+            "mean": 6.415384615384605,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s3-canvas-V3_staticSeaStrict",
+      "file": "s3-canvas-V3_staticSeaStrict.jsonl.gz",
+      "sha256": "a08d57d5a80488a8ca5bb26039873c5993586514f7d3b64f5a6bac799de49bb8",
+      "rawSHA256": "b98710eac643b5c628b5da3177f755e2833fd045070618ede71f6e48a537cf3f",
+      "bytes": 29480,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V3_staticSeaStrict",
+      "map": "standard",
+      "renderer": "Canvas",
+      "mode": "confirmation",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.599999999999909,
+          "p95": 11.199999999999818,
+          "p99": 16.700000000000273,
+          "mean": 6.3175,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 24,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 0,
+          "p99": 1.5,
+          "mean": 0.05600000008940697,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 576,
+            "p50": 5.599999999999909,
+            "p95": 11.199999999999818,
+            "p99": 16.700000000000273,
+            "mean": 6.329513888888886,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 24,
+            "p50": 5.599999999999909,
+            "p95": 11.100000000000364,
+            "p99": 11.199999999999818,
+            "mean": 6.029166666666735,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s3-archipelago-V0_current",
+      "file": "s3-archipelago-V0_current.jsonl.gz",
+      "sha256": "afbdbf57491b00655644833fb67dc33134d2be2221cfe739caa4a30722db7096",
+      "rawSHA256": "2d62476058abb91ee2085356de1ceeb2e13e2860ce328fa71e86b2eb67ecc38b",
+      "bytes": 31553,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V0_current",
+      "map": "archipelago",
+      "renderer": "Three",
+      "mode": "confirmation",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 5.600000000000364,
+          "p95": 44.599999999999454,
+          "p99": 61.19999999999982,
+          "mean": 10.148833333333332,
+          "gt33_3Percent": 6.333333333333334,
+          "gt50Percent": 4.333333333333334,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 38,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 11.200000017881393,
+          "p99": 13.099999994039536,
+          "mean": 0.7791666668156783,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 562,
+            "p50": 5.600000000000364,
+            "p95": 44.600000000000364,
+            "p99": 61.19999999999982,
+            "mean": 10.191814946619209,
+            "gt33_3Percent": 6.761565836298933,
+            "gt50Percent": 4.6263345195729535,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 38,
+            "p50": 11.100000000000364,
+            "p95": 11.200000000000728,
+            "p99": 11.200000000000728,
+            "mean": 9.513157894736926,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s3-archipelago-V3_staticSeaStrict",
+      "file": "s3-archipelago-V3_staticSeaStrict.jsonl.gz",
+      "sha256": "044b356576e05330a14c8aebda79c99f830a75fe31ca5f923a56bb2a8ae5dfe1",
+      "rawSHA256": "c54a059513b79caaf965232816d21a272ff0942725c8a458f09ec073acf4f625",
+      "bytes": 31193,
+      "samples": 600,
+      "warmupSamples": 120,
+      "variant": "V3_staticSeaStrict",
+      "map": "archipelago",
+      "renderer": "Three",
+      "mode": "confirmation",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 600,
+          "p50": 11.100000000000364,
+          "p95": 11.200000000000728,
+          "p99": 16.800000000000182,
+          "mean": 10.362166666666669,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 38,
+        "hydrologyMs": {
+          "n": 600,
+          "p50": 0,
+          "p95": 1.399999976158142,
+          "p99": 1.699999988079071,
+          "mean": 0.0965000002582868,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "renderSubmitMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageUpdateMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "stageRenderMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "gpuMs": {
+          "n": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 562,
+            "p50": 11.100000000000364,
+            "p95": 11.200000000000728,
+            "p99": 16.800000000000182,
+            "mean": 10.339323843416365,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 38,
+            "p50": 11.100000000000364,
+            "p95": 16.700000000000728,
+            "p99": 16.800000000000182,
+            "mean": 10.700000000000093,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s3-gpu-V0_current",
+      "file": "s3-gpu-V0_current.jsonl.gz",
+      "sha256": "456840e96bb83738b96e0bbc2ee2ad54cc94e66e866cb0c4faa1497b706fe7ac",
+      "rawSHA256": "7183a581e2b99e5a6508425519db944eea8f4d3aa0436604603845e6c78fd92c",
+      "bytes": 27861,
+      "samples": 300,
+      "warmupSamples": 120,
+      "variant": "V0_current",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "diagnostic",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 300,
+          "p50": 5.600000000000364,
+          "p95": 44.5,
+          "p99": 55.600000000000364,
+          "mean": 10.483,
+          "gt33_3Percent": 6.333333333333334,
+          "gt50Percent": 3.3333333333333335,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 20,
+        "hydrologyMs": {
+          "n": 300,
+          "p50": 0,
+          "p95": 9.400000005960464,
+          "p99": 10.799999982118607,
+          "mean": 0.6646666662891706,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 300,
+          "p50": 0.20000001788139343,
+          "p95": 9.5,
+          "p99": 10.900000005960464,
+          "mean": 0.9883333323399226,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "renderSubmitMs": {
+          "n": 300,
+          "p50": 1.0999999940395355,
+          "p95": 36.29999998211861,
+          "p99": 44.30000001192093,
+          "mean": 4.141333334346612,
+          "gt33_3Percent": 6.666666666666667,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "stageUpdateMs": {
+          "n": 300,
+          "p50": 0.7999999821186066,
+          "p95": 25.599999994039536,
+          "p99": 35.20000001788139,
+          "mean": 3.1333333337306977,
+          "gt33_3Percent": 2.3333333333333335,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "stageRenderMs": {
+          "n": 300,
+          "p50": 0.20000001788139343,
+          "p95": 8.700000017881393,
+          "p99": 11.5,
+          "mean": 0.9209999998410543,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "gpuMs": {
+          "n": 300,
+          "p50": 7.52288,
+          "p95": 16.61179,
+          "p99": 19.40081,
+          "mean": 8.16184113333333,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 280,
+            "p50": 5.600000000000364,
+            "p95": 44.5,
+            "p99": 55.600000000000364,
+            "mean": 10.455357142857144,
+            "gt33_3Percent": 6.785714285714286,
+            "gt50Percent": 3.571428571428571,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 20,
+            "p50": 11.100000000000364,
+            "p95": 11.199999999999818,
+            "p99": 11.200000000000728,
+            "mean": 10.869999999999981,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    },
+    {
+      "label": "s3-gpu-V3_staticSeaStrict",
+      "file": "s3-gpu-V3_staticSeaStrict.jsonl.gz",
+      "sha256": "b80c0e3d388e4ad15f92bcd80bc6bb71178777d812a05101b82ea05afec5b34b",
+      "rawSHA256": "0d3112b22cb304fd86bcb62c065a7efff17293b87e10e8db3421456e0e864d99",
+      "bytes": 27404,
+      "samples": 300,
+      "warmupSamples": 120,
+      "variant": "V3_staticSeaStrict",
+      "map": "standard",
+      "renderer": "Three",
+      "mode": "diagnostic",
+      "status": "PASS",
+      "summary": {
+        "raf": {
+          "n": 300,
+          "p50": 11.099999999999454,
+          "p95": 11.299999999999272,
+          "p99": 16.700000000000728,
+          "mean": 9.017,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroSteps": 16,
+        "hydrologyMs": {
+          "n": 300,
+          "p50": 0,
+          "p95": 1.2999999821186066,
+          "p99": 2,
+          "mean": 0.08600000003973643,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "updateMs": {
+          "n": 300,
+          "p50": 0.29999998211860657,
+          "p95": 1.7999999821186066,
+          "p99": 2.5,
+          "mean": 0.4289999994635582,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "renderSubmitMs": {
+          "n": 300,
+          "p50": 1.199999988079071,
+          "p95": 9.699999988079071,
+          "p99": 13.599999994039536,
+          "mean": 1.8650000007947285,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "stageUpdateMs": {
+          "n": 300,
+          "p50": 0.800000011920929,
+          "p95": 8.900000005960464,
+          "p99": 12.299999982118607,
+          "mean": 1.4516666666666667,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "stageRenderMs": {
+          "n": 300,
+          "p50": 0.29999998211860657,
+          "p95": 0.8999999761581421,
+          "p99": 1.2000000178813934,
+          "mean": 0.3166666678587596,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "gpuMs": {
+          "n": 300,
+          "p50": 6.63688,
+          "p95": 7.60644,
+          "p99": 8.00268,
+          "mean": 6.780468800000001,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "hydroFrameClasses": {
+          "0": {
+            "n": 284,
+            "p50": 11.099999999999454,
+            "p95": 11.299999999999272,
+            "p99": 16.799999999999727,
+            "mean": 8.957394366197189,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "1": {
+            "n": 16,
+            "p50": 11.099999999999909,
+            "p95": 16.699999999999818,
+            "p99": 16.699999999999818,
+            "mean": 10.074999999999903,
+            "gt33_3Percent": 0,
+            "gt50Percent": 0,
+            "gt100Percent": 0,
+            "gt200Percent": 0
+          },
+          "2": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          },
+          "3": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "p99": null
+          }
+        }
+      },
+      "validity": {
+        "visible": true,
+        "count": true,
+        "hydroCadence": true,
+        "events": true
+      },
+      "pageErrors": []
+    }
+  ],
+  "failures": [],
+  "stages": {
+    "S0": {
+      "status": "PASS",
+      "input": "PASS",
+      "sourceBoundary": "PASS",
+      "v0Oracle": "PASS",
+      "initialState": "PASS",
+      "bindingFingerprints": "PASS",
+      "realProductCalls": "PASS",
+      "hardware": "PASS",
+      "nativeMainByteIdentical": "PASS",
+      "checkpoint": "S0 complete; S1 may run."
+    },
+    "S1": {
+      "status": "PASS",
+      "aaDifferenceMs": 0.0999999999994543,
+      "abba": [
+        "s1-abba-1",
+        "s1-abba-2",
+        "s1-abba-3",
+        "s1-abba-4"
+      ],
+      "assessment": {
+        "status": "S2_VALID",
+        "reason": "S1_THRESHOLDS_AND_S2_VALID",
+        "pairs": [
+          {
+            "v0": "s1-abba-1",
+            "v3": "s1-abba-2",
+            "improvementMs": 27.90000000000009,
+            "p99IncreaseMs": -35.900000000000546,
+            "p99BudgetMs": 5.010000000000037,
+            "gt50IncreasePercentagePoints": -2
+          },
+          {
+            "v0": "s1-abba-4",
+            "v3": "s1-abba-3",
+            "improvementMs": 33.29999999999927,
+            "p99IncreaseMs": -38.89999999999918,
+            "p99BudgetMs": 5.559999999999945,
+            "gt50IncreasePercentagePoints": -3.3333333333333335
+          }
+        ],
+        "medianImprovementMs": 30.59999999999968,
+        "worstV3P95": 11.200000000000728,
+        "clearBenefit": true,
+        "tailRegression": false
+      },
+      "lowerBound": {
+        "v1": {
+          "n": 300,
+          "p50": 5.600000000000364,
+          "p95": 16.700000000000273,
+          "p99": 27.800000000000182,
+          "mean": 8.293333333333335,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "v9": {
+          "n": 300,
+          "p50": 5.600000000000364,
+          "p95": 11.199999999999818,
+          "p99": 11.299999999999727,
+          "mean": 7.737,
+          "gt33_3Percent": 0,
+          "gt50Percent": 0,
+          "gt100Percent": 0,
+          "gt200Percent": 0
+        },
+        "note": "V9 still follows normal product dirty/render submission; not GPU idle."
+      },
+      "checkpoint": "S1 main rounds complete; later stages depend on this evidence."
+    },
+    "S2": {
+      "status": "PASS",
+      "runs": [
+        "s2-events-V0_current",
+        "s2-events-V3_staticSeaStrict"
+      ],
+      "ruleEquivalenceRequired": false,
+      "description": "Authoritative powers.addWater at measured hydro step 15 and powers.sculpt at step 25; step 25 leaves post-sculpt retreat frames inside the fixed 600-RAF window on the slower V3 run. Actual mutations are retained in raw completion records."
+    },
+    "S3": {
+      "status": "PASS",
+      "runs": [
+        "s3-canvas-V0_current",
+        "s3-canvas-V3_staticSeaStrict",
+        "s3-archipelago-V0_current",
+        "s3-archipelago-V3_staticSeaStrict",
+        "s3-gpu-V0_current",
+        "s3-gpu-V3_staticSeaStrict"
+      ],
+      "diagnosticsPooledWithPrimary": false
+    },
+    "S0R": {
+      "status": "NOT_RUN",
+      "reason": "S1_THRESHOLDS_AND_S2_VALID"
+    }
+  },
+  "quantiles": "Nearest rank: sorted[ceil(p*N)-1]; rates use strict >; adjacent RAF frames are not independent repeats.",
+  "baselineSHA": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "regressionBudget": {
+    "formula": "baseline * 1.08 + 1.5ms",
+    "evaluation": null,
+    "reason": "No matching approved product baseline for this device and this experimental protocol; no claim of regression-budget acceptance."
+  },
+  "t0": {
+    "standard": {
+      "mortal": "8053be35b836eccf53e545043af17a0943b127e2e0ae0d889d184fdb08eabdb8",
+      "upper": "afb4bb8ae6d0dcc89500a709e99da366bd84a29b78f5b26a31c39b8e9e9326c7",
+      "nether": "eef334c24726fb6c3348947fd4856d663d76c48350fb36166c79a66786d2610c",
+      "advanceState": {
+        "upper": 0,
+        "nether": 0,
+        "rift": 0,
+        "wraith": 0,
+        "eco": 0,
+        "fire": 0
+      },
+      "seed": 673231,
+      "generation": {
+        "version": 2,
+        "terrainPreset": "standard"
+      }
+    },
+    "archipelago": {
+      "mortal": "d762b4b45b681a1c1b43dbb58a08770f1e6f65d56fd923009917dc16270b067f",
+      "upper": "afb4bb8ae6d0dcc89500a709e99da366bd84a29b78f5b26a31c39b8e9e9326c7",
+      "nether": "eef334c24726fb6c3348947fd4856d663d76c48350fb36166c79a66786d2610c",
+      "advanceState": {
+        "upper": 0,
+        "nether": 0,
+        "rift": 0,
+        "wraith": 0,
+        "eco": 0,
+        "fire": 0
+      },
+      "seed": 673231,
+      "generation": {
+        "version": 2,
+        "terrainPreset": "standard"
+      }
+    }
+  },
+  "aaAttempts": [
+    {
+      "attempt": 1,
+      "p95Ms": [
+        44.5,
+        44.599999999999454
+      ],
+      "differenceMs": 0.0999999999994543,
+      "pass": true
+    }
+  ],
+  "aa": {
+    "attempt": 1,
+    "p95Ms": [
+      44.5,
+      44.599999999999454
+    ],
+    "differenceMs": 0.0999999999994543,
+    "pass": true
+  },
+  "primary": {
+    "status": "S2_VALID",
+    "reason": "S1_THRESHOLDS_AND_S2_VALID",
+    "pairs": [
+      {
+        "v0": "s1-abba-1",
+        "v3": "s1-abba-2",
+        "improvementMs": 27.90000000000009,
+        "p99IncreaseMs": -35.900000000000546,
+        "p99BudgetMs": 5.010000000000037,
+        "gt50IncreasePercentagePoints": -2
+      },
+      {
+        "v0": "s1-abba-4",
+        "v3": "s1-abba-3",
+        "improvementMs": 33.29999999999927,
+        "p99IncreaseMs": -38.89999999999918,
+        "p99BudgetMs": 5.559999999999945,
+        "gt50IncreasePercentagePoints": -3.3333333333333335
+      }
+    ],
+    "medianImprovementMs": 30.59999999999968,
+    "worstV3P95": 11.200000000000728,
+    "clearBenefit": true,
+    "tailRegression": false
+  },
+  "finishedAt": "2026-10-16T15:45:45.528Z",
+  "baselineRef": "origin/main",
+  "originMainSHA": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "runnerSHA": "e045c1f1ba217ca90ab9e1c2e1e894f146a272b0"
+}

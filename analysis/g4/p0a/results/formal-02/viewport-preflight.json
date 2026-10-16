@@ -1,0 +1,111 @@
+{
+  "label": "about-blank-before-product-navigation",
+  "capturedAt": "2026-10-16T15:43:17.475Z",
+  "requested": {
+    "width": 1366,
+    "height": 768,
+    "dpr": 1
+  },
+  "page": {
+    "href": "about:blank",
+    "readyState": "complete",
+    "visibility": "visible",
+    "innerWidth": 1366,
+    "innerHeight": 768,
+    "dpr": 1,
+    "outerWidth": 1366,
+    "outerHeight": 768,
+    "screen": {
+      "width": 1366,
+      "height": 768,
+      "availWidth": 1366,
+      "availHeight": 768,
+      "colorDepth": 24,
+      "pixelDepth": 24
+    },
+    "visualViewport": {
+      "width": 1366,
+      "height": 768,
+      "scale": 1,
+      "offsetLeft": 0,
+      "offsetTop": 0
+    },
+    "documentStartViewport": null,
+    "product": {
+      "hasInkbox": false,
+      "hasWorld": false,
+      "speedIndex": null,
+      "hasThreeRenderer": false,
+      "canvases": []
+    }
+  },
+  "pageError": null,
+  "cdp": {
+    "layoutViewport": {
+      "pageX": 0,
+      "pageY": 0,
+      "clientWidth": 1366,
+      "clientHeight": 768
+    },
+    "visualViewport": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "pageX": 0,
+      "pageY": 0,
+      "clientWidth": 1366,
+      "clientHeight": 768,
+      "scale": 1,
+      "zoom": 1
+    },
+    "screenInfos": {
+      "screenInfos": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 2560,
+          "height": 1600,
+          "availLeft": 0,
+          "availTop": 0,
+          "availWidth": 2560,
+          "availHeight": 1528,
+          "devicePixelRatio": 1,
+          "orientation": {
+            "type": "landscapePrimary",
+            "angle": 0
+          },
+          "colorDepth": 24,
+          "isExtended": false,
+          "isInternal": true,
+          "isPrimary": true,
+          "label": "Lecoo",
+          "id": "2724875912"
+        }
+      ]
+    },
+    "screenInfosError": null,
+    "legacyLayoutViewport": {
+      "pageX": 0,
+      "pageY": 0,
+      "clientWidth": 1366,
+      "clientHeight": 768
+    },
+    "legacyVisualViewport": {
+      "offsetX": 0,
+      "offsetY": 0,
+      "pageX": 0,
+      "pageY": 0,
+      "clientWidth": 1366,
+      "clientHeight": 768,
+      "scale": 1,
+      "zoom": 1
+    }
+  },
+  "cdpError": null,
+  "activeCanvas": null,
+  "outerWindowIsDiagnosticOnly": true,
+  "validation": {
+    "pass": true,
+    "violations": [],
+    "rule": "Exact CSS viewport, DPR, visual viewport and CDP layout/visual viewport; outer window dimensions are recorded as browser-chrome diagnostics; product canvas backing and CSS dimensions are retained."
+  }
+}

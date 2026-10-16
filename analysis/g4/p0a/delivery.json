@@ -1,81 +1,79 @@
 {
-  "finalDecision": "INCONCLUSIVE",
+  "schema": "g4-p0a-r2.1-delivery",
+  "finalDecision": "GO_P1_REVIEW",
+  "decisionReason": "S1_THRESHOLDS_AND_S2_VALID",
+  "baselineRef": "origin/main",
   "baselineSHA": "e1e55039bb56efda7a307513ede07a9fab3bf534",
-  "runnerCommit": "a39e2f6cd788bf7ee0dfb6b10114be2b8bfa3b0c",
-  "evidenceCommit": "This evidence commit; resolve with git rev-parse HEAD on analysis/g4-p0a-hydro-ablation.",
-  "repairsUsed": 2,
-  "performanceRuns": 0,
-  "stoppedAt": "S0 viewport gate",
-  "recovery": {
-    "phase": "S0-R",
-    "status": "PASS",
-    "selectedRun": "results/s0r-recovery-06",
-    "runnerCommit": "e464016815ae258769315acbccd423c9a39147b9",
-    "evidenceCommit": "This S0-R recovery evidence commit; resolve with git rev-parse HEAD on analysis/g4-p0a-hydro-ablation.",
-    "viewportChecks": 11,
-    "viewportExact": { "width": 1366, "height": 768, "dpr": 1 },
-    "oracle": "PASS: 10 steps, dtDays=4, zero differences across height/water/type/qi",
-    "sampleFrames": 96,
-    "sampleRuns": 4,
-    "formalPerformanceRuns": 0,
-    "formalS0": "NOT_RUN",
-    "S1": "NOT_RUN",
-    "overallDecision": "INCONCLUSIVE"
+  "originMainSHAAtFormalRun": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "branch": "analysis/g4-p0a-hydro-ablation",
+  "formalRun": "results/formal-02",
+  "formalRunStatus": "GO_P1_REVIEW",
+  "formalRunRunnerHEAD": "e045c1f1ba217ca90ab9e1c2e1e894f146a272b0",
+  "currentRunnerCommit": "515a2edd4789c4cd3e8c6ab3c0ee80dcacb31add",
+  "evidenceCommit": "This delivery commit; resolve with git rev-parse HEAD on analysis/g4-p0a-hydro-ablation.",
+  "stages": {
+    "S0": "PASS",
+    "S1": "PASS",
+    "S2": "PASS",
+    "S3": "PASS"
   },
-  "checks": [
-    {
-      "command": "node --check scripts/inkbox-g4-p0a-adapter.mjs",
-      "exitCode": 0
-    },
-    {
-      "command": "node --check scripts/inkbox-g4-p0a-browser.mjs",
-      "exitCode": 0
-    },
-    {
-      "command": "node --check scripts/inkbox-g4-p0a-page.mjs",
-      "exitCode": 0
-    },
-    {
-      "command": "node --check scripts/inkbox-g4-p0a-run.mjs",
-      "exitCode": 0
-    },
-    {
-      "command": "node --check scripts/inkbox-g4-p0a-server.mjs",
-      "exitCode": 0
-    },
-    {
-      "command": "node --check scripts/inkbox-g4-p0a-smoke.mjs",
-      "exitCode": 0
-    },
-    {
-      "command": "node --check scripts/inkbox-g4-p0a-stats.mjs",
-      "exitCode": 0
-    },
-    {
-      "command": "node --check analysis/g4/p0a/reference/variants-r2.mjs",
-      "exitCode": 0
-    },
-    {
-      "command": "node --check analysis/g4/p0a/reference/env-r2.mjs",
-      "exitCode": 0
-    },
-    {
-      "command": "npm run test:core",
-      "exitCode": 0
-    },
-    {
-      "command": "node scripts/inkbox-g4-p0a-smoke.mjs",
-      "exitCode": 0
-    }
-  ],
-  "allMinimumChecksPassed": true,
-  "liveBrowserS0Passed": false,
-  "whitelist": [
-    "scripts/inkbox-g4-p0a-*.mjs",
-    "analysis/g4/p0a/**"
-  ],
-  "forbiddenProductChanges": [],
-  "pullRequestCreated": false,
-  "merged": false,
-  "sourceLineEndings": "LF; clone with git -c core.autocrlf=false to preserve archived source bytes."
+  "counts": {
+    "formalRuns": 21,
+    "allFormalRunsPass": true,
+    "totalMeasuredFrames": 8616,
+    "s1ThroughS3AndShortDiagnosticsFrames": 8400,
+    "nativeV0DescriptionFrames": 120,
+    "s0BindingSmokeFrames": 96,
+    "validS1PrimaryFrames": 3600
+  },
+  "s1": {
+    "aaP95Ms": [44.5, 44.6],
+    "aaDifferenceMs": 0.1,
+    "abbaLabels": ["s1-abba-1", "s1-abba-2", "s1-abba-3", "s1-abba-4"],
+    "pairedP95ImprovementsMs": [27.9, 33.3],
+    "medianImprovementMs": 30.6,
+    "worstV3P95Ms": 11.2,
+    "tailRegression": false
+  },
+  "environment": {
+    "os": "Windows 10.0.26200 x64",
+    "cpu": "AMD Ryzen 9 8940HX",
+    "browser": "Edge 155.0.4283.45 headed",
+    "gpuRenderer": "ANGLE (AMD Radeon(TM) 610M, Direct3D11)",
+    "hardwareAcceleration": "PASS",
+    "viewport": { "width": 1366, "height": 768, "dpr": 1 },
+    "refreshRateHz": null
+  },
+  "artifacts": {
+    "report": "p0a-report.md",
+    "reproduce": "reproduce.md",
+    "provenance": "provenance.json",
+    "formalManifest": "results/formal-02/manifest.json",
+    "formalVerification": "results/formal-02/verification.json",
+    "preservedInvalidEventAttempt": "results/formal-01",
+    "s0rRecovery": "results/s0r-recovery-06"
+  },
+  "commits": {
+    "eventWindowRunnerFix": "e045c1f1ba217ca90ab9e1c2e1e894f146a272b0",
+    "baseMetadataRunnerFix": "515a2edd4789c4cd3e8c6ab3c0ee80dcacb31add",
+    "evidenceCommit": "See containing evidence commit SHA in final report."
+  },
+  "checks": {
+    "nodeCheckAllHarnessScripts": "PASS",
+    "npmRunTestCore": "PASS",
+    "adapterSmoke": "PASS",
+    "formalBrowserS0S1S2S3": "PASS",
+    "formalStatsRawRecheck": "PASS",
+    "protectedProductDiff": [],
+    "whitelist": ["scripts/inkbox-g4-p0a-*.mjs", "analysis/g4/p0a/**"],
+    "pullRequestCreated": false,
+    "merged": false,
+    "p1Implemented": false
+  },
+  "priorRecovery": {
+    "s0rStatus": "PASS",
+    "s0rRun": "results/s0r-recovery-06",
+    "s0rFormalPerformanceRuns": 0,
+    "initialR2_1AttemptsPreserved": ["results/attempt-01", "results/attempt-02", "results/attempt-03"]
+  }
 }

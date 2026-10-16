@@ -1,0 +1,1126 @@
+[
+  {
+    "label": "s0-v0-binding",
+    "proof": {
+      "variant": "V0_current",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V0_current:0c8ad05b",
+      "hydroStepCount": 2,
+      "hydroTotalMs": 34.900000005960464,
+      "productWorldCalls": 2,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 3.4000000059604645,
+      "lastStep": {
+        "before": {
+          "revision": 147,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 151,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214989840984344,
+            0.26825010776519775
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 10.699999988079071
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s0-V1_noErosion-binding",
+    "proof": {
+      "variant": "V1_noErosion",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V1_noErosion:7595ba28",
+      "hydroStepCount": 2,
+      "hydroTotalMs": 21.80000001192093,
+      "productWorldCalls": 2,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 3.5,
+      "lastStep": {
+        "before": {
+          "revision": 145,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 146,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 6.200000017881393
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s0-V3_staticSeaStrict-binding",
+    "proof": {
+      "variant": "V3_staticSeaStrict",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V3_staticSeaStrict:0aa2d3f0",
+      "hydroStepCount": 2,
+      "hydroTotalMs": 10.199999988079071,
+      "productWorldCalls": 2,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 2
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.5,
+      "lastStep": {
+        "before": {
+          "revision": 144,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 144,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 3.800000011920929
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s0-V9_hydrologyOff-binding",
+    "proof": {
+      "variant": "V9_hydrologyOff",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V9_hydrologyOff:5c07877d",
+      "hydroStepCount": 2,
+      "hydroTotalMs": 0.09999999403953552,
+      "productWorldCalls": 2,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 5.200000017881393,
+      "lastStep": {
+        "before": {
+          "revision": 144,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 144,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 0
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s0-native-v0-unnormalized",
+    "proof": null
+  },
+  {
+    "label": "s1-aa1-a",
+    "proof": {
+      "variant": "V0_current",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V0_current:0c8ad05b",
+      "hydroStepCount": 45,
+      "hydroTotalMs": 460.1999998986721,
+      "productWorldCalls": 45,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.699999988079071,
+      "lastStep": {
+        "before": {
+          "revision": 327,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.0921856164932251,
+            0.2688082754611969
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 331,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09218533337116241,
+            0.26881924271583557
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 9.400000005960464
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s1-aa1-b",
+    "proof": {
+      "variant": "V0_current",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V0_current:0c8ad05b",
+      "hydroStepCount": 48,
+      "hydroTotalMs": 495.6000000834465,
+      "productWorldCalls": 48,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.5,
+      "lastStep": {
+        "before": {
+          "revision": 340,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.0921843871474266,
+            0.268839955329895
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 344,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09218402951955795,
+            0.26884976029396057
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 9
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s1-abba-1",
+    "proof": {
+      "variant": "V0_current",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V0_current:0c8ad05b",
+      "hydroStepCount": 45,
+      "hydroTotalMs": 463.69999983906746,
+      "productWorldCalls": 45,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.5999999940395355,
+      "lastStep": {
+        "before": {
+          "revision": 327,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.0921856164932251,
+            0.2688082754611969
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 331,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09218533337116241,
+            0.26881924271583557
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 10.599999994039536
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s1-abba-2",
+    "proof": {
+      "variant": "V3_staticSeaStrict",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V3_staticSeaStrict:0aa2d3f0",
+      "hydroStepCount": 36,
+      "hydroTotalMs": 59.59999996423721,
+      "productWorldCalls": 36,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 36
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 5.4000000059604645,
+      "lastStep": {
+        "before": {
+          "revision": 150,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 150,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 1.2000000178813934
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s1-abba-3",
+    "proof": {
+      "variant": "V3_staticSeaStrict",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V3_staticSeaStrict:0aa2d3f0",
+      "hydroStepCount": 36,
+      "hydroTotalMs": 68.5,
+      "productWorldCalls": 36,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 36
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 6.100000023841858,
+      "lastStep": {
+        "before": {
+          "revision": 150,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 150,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 2.0999999940395355
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s1-abba-4",
+    "proof": {
+      "variant": "V0_current",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V0_current:0c8ad05b",
+      "hydroStepCount": 45,
+      "hydroTotalMs": 504.5999999344349,
+      "productWorldCalls": 45,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.9000000059604645,
+      "lastStep": {
+        "before": {
+          "revision": 327,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.0921856164932251,
+            0.2688082754611969
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 331,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09218533337116241,
+            0.26881924271583557
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 10
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s1-diagnostic-v1",
+    "proof": {
+      "variant": "V1_noErosion",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V1_noErosion:7595ba28",
+      "hydroStepCount": 22,
+      "hydroTotalMs": 124.00000005960464,
+      "productWorldCalls": 22,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 5,
+      "lastStep": {
+        "before": {
+          "revision": 169,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 170,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 6.200000017881393
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s1-diagnostic-v9",
+    "proof": {
+      "variant": "V9_hydrologyOff",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V9_hydrologyOff:5c07877d",
+      "hydroStepCount": 21,
+      "hydroTotalMs": 0.20000001788139343,
+      "productWorldCalls": 21,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.5999999940395355,
+      "lastStep": {
+        "before": {
+          "revision": 148,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 148,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 0
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s2-events-V0_current",
+    "proof": {
+      "variant": "V0_current",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V0_current:0c8ad05b",
+      "hydroStepCount": 45,
+      "hydroTotalMs": 490.1999998986721,
+      "productWorldCalls": 45,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.5999999940395355,
+      "lastStep": {
+        "before": {
+          "revision": 329,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.0921856164932251,
+            0.2688082754611969
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 333,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09218533337116241,
+            0.26881924271583557
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 9.400000005960464
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s2-events-V3_staticSeaStrict",
+    "proof": {
+      "variant": "V3_staticSeaStrict",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V3_staticSeaStrict:0aa2d3f0",
+      "hydroStepCount": 38,
+      "hydroTotalMs": 103.90000012516975,
+      "productWorldCalls": 38,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 38
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.5,
+      "lastStep": {
+        "before": {
+          "revision": 201,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 204,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 2.199999988079071
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s3-canvas-V0_current",
+    "proof": {
+      "variant": "V0_current",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V0_current:0c8ad05b",
+      "hydroStepCount": 31,
+      "hydroTotalMs": 336,
+      "productWorldCalls": 31,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 3.5,
+      "lastStep": {
+        "before": {
+          "revision": 268,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09218746423721313,
+            0.2686557173728943
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 272,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09218667447566986,
+            0.2686683237552643
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 9.400000005960464
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s3-canvas-V3_staticSeaStrict",
+    "proof": {
+      "variant": "V3_staticSeaStrict",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V3_staticSeaStrict:0aa2d3f0",
+      "hydroStepCount": 28,
+      "hydroTotalMs": 45.00000002980232,
+      "productWorldCalls": 28,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 28
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.100000023841858,
+      "lastStep": {
+        "before": {
+          "revision": 149,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 149,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 1.5
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s3-archipelago-V0_current",
+    "proof": {
+      "variant": "V0_current",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V0_current:0c8ad05b",
+      "hydroStepCount": 46,
+      "hydroTotalMs": 605.4000000953674,
+      "productWorldCalls": 46,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 94730,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 5.5999999940395355,
+      "lastStep": {
+        "before": {
+          "revision": 334,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.014004005119204521,
+            0.06747119128704071,
+            0.1643010377883911
+          ],
+          "heightSamples": [
+            0.28600001335144043,
+            0.2325572520494461,
+            0.13600000739097595
+          ]
+        },
+        "after": {
+          "revision": 338,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.014003956690430641,
+            0.06747117638587952,
+            0.16430822014808655
+          ],
+          "heightSamples": [
+            0.28600001335144043,
+            0.2325572520494461,
+            0.13600000739097595
+          ]
+        },
+        "elapsedMs": 11.200000017881393
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s3-archipelago-V3_staticSeaStrict",
+    "proof": {
+      "variant": "V3_staticSeaStrict",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V3_staticSeaStrict:0aa2d3f0",
+      "hydroStepCount": 46,
+      "hydroTotalMs": 85.4000001847744,
+      "productWorldCalls": 46,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 46
+      },
+      "normalizationChangedCells": {
+        "prepare": 94730,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.5,
+      "lastStep": {
+        "before": {
+          "revision": 158,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.013999986462295055,
+            0.06744274497032166,
+            0.1639999896287918
+          ],
+          "heightSamples": [
+            0.28600001335144043,
+            0.2325572520494461,
+            0.13600000739097595
+          ]
+        },
+        "after": {
+          "revision": 158,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.013999986462295055,
+            0.06744274497032166,
+            0.1639999896287918
+          ],
+          "heightSamples": [
+            0.28600001335144043,
+            0.2325572520494461,
+            0.13600000739097595
+          ]
+        },
+        "elapsedMs": 1.7000000178813934
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s3-gpu-V0_current",
+    "proof": {
+      "variant": "V0_current",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V0_current:0c8ad05b",
+      "hydroStepCount": 30,
+      "hydroTotalMs": 349.1999998986721,
+      "productWorldCalls": 30,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 0
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 4.299999982118607,
+      "lastStep": {
+        "before": {
+          "revision": 264,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09218819439411163,
+            0.2686433792114258
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 268,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09218746423721313,
+            0.2686557173728943
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 9.599999994039536
+      },
+      "errors": []
+    }
+  },
+  {
+    "label": "s3-gpu-V3_staticSeaStrict",
+    "proof": {
+      "variant": "V3_staticSeaStrict",
+      "adapterSHA": "af064df7004932e9cc1ed8514b8e00cc7807d4de2cd477b27359cbb33d850910",
+      "fingerprint": "V3_staticSeaStrict:0aa2d3f0",
+      "hydroStepCount": 23,
+      "hydroTotalMs": 43.80000004172325,
+      "productWorldCalls": 23,
+      "worldIsProductWorld": true,
+      "lastDtDays": 4,
+      "normalizationCalls": {
+        "prepare": 1,
+        "v3Steps": 23
+      },
+      "normalizationChangedCells": {
+        "prepare": 69751,
+        "v3Steps": 0
+      },
+      "prepareTotalMs": 3.899999976158142,
+      "lastStep": {
+        "before": {
+          "revision": 148,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "after": {
+          "revision": 148,
+          "terrainDirty": true,
+          "size": 163840,
+          "waterSamples": [
+            0.0000031074168873601593,
+            0.09214265644550323,
+            0.2682403326034546
+          ],
+          "heightSamples": [
+            0.300019770860672,
+            0.20785734057426453,
+            0.03175966814160347
+          ]
+        },
+        "elapsedMs": 1.5
+      },
+      "errors": []
+    }
+  }
+]

@@ -1,0 +1,56 @@
+{
+  "schema": "g4-p0a-r2.1-formal-verification",
+  "run": "formal-02",
+  "finalDecision": "GO_P1_REVIEW",
+  "baselineRef": "origin/main",
+  "baselineSHA": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "originMainSHAAtRun": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+  "measurementRunnerSHA": "e045c1f1ba217ca90ab9e1c2e1e894f146a272b0",
+  "currentRunnerSHA": "515a2edd4789c4cd3e8c6ab3c0ee80dcacb31add; only output metadata labels changed after measurement",
+  "stages": { "S0": "PASS", "S1": "PASS", "S2": "PASS", "S3": "PASS" },
+  "counts": {
+    "runRecords": 21,
+    "allRunRecordsPassed": true,
+    "measuredFrames": 8616,
+    "formalS1S2S3AndDiagnosticsFrames": 8400,
+    "nativeV0DescriptionFrames": 120,
+    "s0BindingSmokeFrames": 96,
+    "s1PrimaryFrames": 3600,
+    "viewportSnapshots": 45,
+    "viewportExactChecksPassed": true,
+    "pageErrors": 0
+  },
+  "decisionMetrics": {
+    "aaP95Ms": [44.5, 44.6],
+    "aaDifferenceMs": 0.1,
+    "abbaP95Ms": [39.1, 11.2, 11.2, 44.5],
+    "pairedImprovementsMs": [27.9, 33.3],
+    "medianImprovementMs": 30.6,
+    "worstV3P95Ms": 11.2,
+    "s2EventsValid": true,
+    "s3Status": "PASS"
+  },
+  "checks": [
+    { "command": "node --check scripts/inkbox-g4-p0a-*.mjs and R2/fixture modules", "exitCode": 0 },
+    { "command": "npm run test:core", "exitCode": 0 },
+    { "command": "node scripts/inkbox-g4-p0a-smoke.mjs", "exitCode": 0, "scope": "HTTP/ESM/native-byte adapter check; not a substitute for live browser" },
+    { "command": "node scripts/inkbox-g4-p0a-run.mjs --suite=all --r2-zip=G4-PERF-天地有度-R2.zip --out=analysis/g4/p0a/results/formal-02", "exitCode": 0, "result": "21/21 runs PASS; S0-S3 PASS" },
+    { "command": "node scripts/inkbox-g4-p0a-stats.mjs --out=analysis/g4/p0a/results/formal-02", "exitCode": 0, "result": "all 21 raw files re-read; compressed/uncompressed hashes and sample counts verified" },
+    { "command": "parse every JSON under analysis/g4/p0a", "exitCode": 0, "files": 68 },
+    { "command": "SHA256 G4-PERF-天地有度-R2.zip", "exitCode": 0, "sha256": "f7f99fdf50e36f590c328d730aad49e507815260e8a40e1a08bd96efe52efe43" }
+  ],
+  "protectedProductDiff": [],
+  "scope": {
+    "whitelistOnly": true,
+    "productSourceModified": false,
+    "p1Implemented": false,
+    "pullRequestCreated": false,
+    "merged": false
+  },
+  "preservedInvalidAttempt": "../formal-01",
+  "rawDirectory": ".",
+  "manifest": "manifest.json",
+  "provenance": "provenance.json",
+  "bindings": "variant-bindings.json",
+  "oracle": "v0-oracle.json"
+}
