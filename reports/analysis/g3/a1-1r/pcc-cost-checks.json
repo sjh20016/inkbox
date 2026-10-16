@@ -1,0 +1,61 @@
+{
+  "schema": "inkbox.g3.pcc-cost.checks.v1",
+  "source": {
+    "gitSha": "8b291a5bb25e80d2e9231520132f90d87081072e",
+    "workingTreeDirty": true,
+    "sha256": {
+      "scripts/inkbox-g3-pcc-cost.mjs": "020a8a2d6f82e77d5bacd7756cf407edce81ff7ca481b9611ffaaa19dec0dc55",
+      "src/inkbox/render3d/WorldRenderBridge.js": "7849695c947cc252d5f63344b1dae49c78bf37f55fafd321c821bf9c853e03f2",
+      "src/inkbox/render3d/change/PresentationChangeLayer.js": "fe5f4c9d3e1f87ad1c69fd0a2cb2096aa2219f214d9932d98f8e4f9963ee23eb",
+      "src/inkbox/render3d/stage/PlaneStage.js": "f1dba8d3e33d0ca7b8697251eb08c6f7750ac13eff4e89d69e2b178de07b9e79",
+      "scripts/fixtures/pcc-a11-reference.mjs": "26a33dc09cd268bd92089e2ac9b7dc277963d1e025b59a1d79b50735c75e5a6b"
+    }
+  },
+  "checks": {
+    "frames": 13,
+    "oracleChannelFrames": 13,
+    "profileParityFrames": 39,
+    "scenarios": [
+      "trace",
+      "diagonal-flip",
+      "field-only",
+      "multiple-fields",
+      "trace",
+      "trace",
+      "edge-a",
+      "edge-b",
+      "tmax-same-step",
+      "tmax-skip",
+      "trace",
+      "trace",
+      "trace"
+    ],
+    "temporalGeometryDifferences": [],
+    "rulesTmaxBounded": {
+      "waterStepFrames": 12,
+      "sameStepRafFrames": 4,
+      "normalAdvanceSyncBy": 12,
+      "skippedAdvanceSync": true,
+      "epsImmediateSync": true,
+      "exactGeoAndWaterGeoOracle": true
+    }
+  },
+  "lifecycle": {
+    "bridge": {
+      "observerErrorsVisible": true,
+      "finallyCommitRecovered": true,
+      "disabledNoEvents": true,
+      "setWorldDisposeCapacity": 0
+    },
+    "stage": {
+      "failureVisible": true,
+      "failureFrameDirtyConsumed": true,
+      "recovery": true,
+      "modeTransitions": 4,
+      "hiddenRestore": true,
+      "setWorldOldBridgeCapacity": 0,
+      "disposeCapacity": 0
+    }
+  },
+  "pass": true
+}
