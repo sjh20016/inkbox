@@ -27,6 +27,14 @@ import { recordLifeEvent } from '../sim/biography.js';
  */
 export const MILESTONE_CAP = 600;
 
+// History locations contain only saved scalar facts, never a World or entity reference.
+function historyLocation(world, location) {
+  if (!location || !['mortal', 'upper', 'nether'].includes(location.plane)
+    || !Number.isInteger(location.x) || !Number.isInteger(location.y)
+    || location.x < 0 || location.y < 0 || location.x >= world.w || location.y >= world.h) return null;
+  return { x: location.x, y: location.y, plane: location.plane };
+}
+
 export class World {
   constructor(w, h, seed = 1) {
     this.w = w | 0;
@@ -521,8 +529,9 @@ export class World {
     if (this.ascended.length > 120) this.ascended.splice(0, this.ascended.length - 120);
   }
 
-  record(text, kind = 'world', actors = null) {
-    this.chronicle.push({ day: this.day, year: Math.floor(this.day / 360), text, kind });
+  record(text, kind = 'world', actors = null, location = null) {
+    const place = historyLocation(this, location);
+    this.chronicle.push({ day: this.day, year: Math.floor(this.day / 360), text, kind, ...(place || {}) });
     if (this.chronicle.length > 400) this.chronicle.splice(0, this.chronicle.length - 400);
     // ── 人物个人事件流（见 sim/biography.js）────────────────
     // 同一条事，除了进世界的编年史，也记到**当事人**身上。
@@ -538,7 +547,7 @@ export class World {
     if (actors) {
       const list = Array.isArray(actors) ? actors : [actors];
       for (let i = 0; i < list.length; i += 1) {
-        if (list[i]) recordLifeEvent(this, list[i], kind, text);
+        if (list[i]) recordLifeEvent(this, list[i], kind, text, place ? { location: place } : {});
       }
     }
   }
@@ -559,9 +568,10 @@ export class World {
    *    所以把某个调用点从 `record` 换成 `milestone` **不会移动任何随机流**
    *    （这一点很重要，否则一次「让事件更可见」的改动会把几百年的世界整个挪位）。
    */
-  milestone(text, kind = 'world', actors = null) {
-    this.record(text, kind, actors);
-    this.milestones.push({ day: this.day, year: Math.floor(this.day / 360), text, kind });
+  milestone(text, kind = 'world', actors = null, location = null) {
+    const place = historyLocation(this, location);
+    this.record(text, kind, actors, place);
+    this.milestones.push({ day: this.day, year: Math.floor(this.day / 360), text, kind, ...(place || {}) });
     if (this.milestones.length > MILESTONE_CAP) {
       this.milestones.splice(0, this.milestones.length - MILESTONE_CAP);
     }

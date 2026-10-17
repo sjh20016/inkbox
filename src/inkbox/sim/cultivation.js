@@ -180,6 +180,8 @@ export function initEntity(entity, rng, { cultivator = false } = {}) {
   // 用 `-1e9` 而不是 `0`：`0 > world.day` 在 `world.day === 0` 那天为假，
   // 但 `-1e9` 在任何一天都为假——「从没养过伤」要的是一个恒假的哨兵。
   entity.restUntil = -1e9;
+  // Persistent combat-fire attempt cooldown; old saves restore the same sentinel.
+  entity.lastFireCastDay = -1e9;
   entity.trialCount = 0;
   entity.lastTrialDay = -1e9;
   entity.lastDemonDay = -1e9;
