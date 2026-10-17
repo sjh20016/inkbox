@@ -1,16 +1,16 @@
 # 坐天观井 · Inkbox 1.0.0
 
-## 当前仓库状态（2026-10-16）
+## 正式产品状态（按 main 最新提交核对）
 
-正式产品基线为 **M2-C2E + G1**。`origin/main` 当前为 `e1e55039bb56efda7a307513ede07a9fab3bf534`，G1 已由 PR #2 合并。
+正式产品基线为 **M2-C2E + G1**，G1 已由 PR #2 合并。RG 治理前的历史基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`；实际开发从 GitHub 当前 `main` HEAD 起步，不把历史 SHA 当作最新主线。
 
-PR #12 候选提交 `74934a8b1360af9007c69935d5becdf8f9809872` 的范围仅为 **G2-P1 闭环 READY**；G2 性能 **BLOCKED**，候选整体未合并，不能把 G2 全功能标为 READY。PR #17 的 G3 cost 研究为 **BLOCKED**。PR #4–17 均为 open Draft；#10 已是 #12 的祖先，不能重复合并。独立 B 线与产品线没有共同祖先。
+PR #12 候选提交 `74934a8b1360af9007c69935d5becdf8f9809872` 的范围仅为 **G2-P1 闭环 READY**；G2 性能 **BLOCKED**，候选整体未合并，不能把 G2 全功能标为 READY。PR #17 的 G3 cost 研究为 **BLOCKED**。G2/G3 的 PR 是否仍开放以 GitHub 当前状态为准；#10 的有效代码已成为 #12 的祖先，不得重复合并。独立 B 线与产品线没有共同祖先。
 
 导航：[`HANDOFF.md`](./HANDOFF.md) · [`ROADMAP.md`](./ROADMAP.md) · [`BACKLOG.md`](./BACKLOG.md) · [`tests/README.md`](./tests/README.md) · [`docs/development/REPOSITORY_WORKFLOW.md`](./docs/development/REPOSITORY_WORKFLOW.md)。
 
-## 仓库治理 RG-P2（2026-10-17，待合并）
+## 仓库治理 RG-P1～P4（2026-10-17 收官）
 
-本治理分支移除旧阶段报告、委托书与 `reports/release/` 已跟踪输出；历史内容可从 [清理前的 main 快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 追溯，不改写 Git 历史。默认将新的测试截图、性能报告与 Golden 保存在被忽略的 `reports/` 或 Actions artifact，不随运行包分发。正式程序、3D 美术资源与核心回归没有在此治理中删除；实际验收仍看相应源码 SHA 的 CI 与实测。
+RG 治理移除旧阶段报告、委托书与 `reports/release/` 已跟踪输出；历史内容可从 [清理前的 main 快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 追溯，不改写 Git 历史。默认将新的测试截图、性能报告与 Golden 保存在被忽略的 `reports/` 或 Actions artifact，不随运行包分发。正式程序、3D 美术资源与核心回归没有在此治理中删除；所有测试入口按 [`tests/README.md`](./tests/README.md) 分层，本地小型 UI 改动可运行 `npm run check:ui`，正式候选仍须 Fast/Heavy 全绿。实际验收看相应源码 SHA 的 CI 与实测，不以治理 PR 历史成功替代新产品验证。
 
 ## 启动
 

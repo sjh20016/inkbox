@@ -1,6 +1,6 @@
 # 仓库开发工作流与 RG-P1 审计
 
-**RG-P2 · 2026-10-17 补充：**本页除这条补充外记录 RG-P1 当时的盘点结果，不作为当前删除清单。RG-P2 从 PR #18 叠加分支执行：旧根目录阶段报告、委托书与 160 份 release 证据已改从 [清理前固定提交](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 追溯；当前工作树的 reports/ 默认忽略，发布包不再携带 release JSON。新增工作以 AGENTS、README 和实际 CI 为准，不误将本页旧“待授权任务”当作现行状态。
+**RG-P1～P4 · 2026-10-17 治理收官：**本页其余内容是 RG-P1 的历史盘点快照，不是当前分支/PR 清单，也不构成新的删除授权。收官修改包含文档真相、历史材料瘦身、旧测试脚本鉴别与 CI 同分支去重。RG-P2 从 PR #18 叠加分支执行：旧根目录阶段报告、委托书与 160 份 release 证据已改从 [清理前固定提交](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 追溯；当前工作树的 reports/ 默认忽略，发布包不再携带 release JSON。新增工作以最新 `main`、AGENTS、README、tests/README、实际 PR/CI 为准，不误将本页旧“待授权任务”或旧 HEAD 当作现行状态。测试截图默认走 ignored reports/ 与限期 Actions artifact；需要长期保留的最终性能裁决应额外保存固定摘要。
 
 
 核查日期：2026-10-16（Asia/Shanghai）。正式 main 基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`，[G1 PR #2](https://github.com/sjh20016/inkbox/pull/2) 已于 2026-10-12 合并，正式产品为 M2-C2E + G1。

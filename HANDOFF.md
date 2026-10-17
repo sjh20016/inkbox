@@ -1,6 +1,10 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-## 当前交接 · RG-P1 · 2026-10-16
+## 2026-10-17 · RG-P1～P4 仓库治理收官
+
+治理移除跟踪的旧阶段报告、早期委托书及 `reports/release/`，工作树只保留必要文档、生产源码/资产和有效测试；旧文件可从 [治理前 Git 固定提交](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 追溯。`reports/` 默认忽略，运行包不携带历史报告。`tests/README.md` 为当前测试分层入口，`npm run check:ui` 为局部 UI CPU 检查；GitHub Fast/Heavy 仍保留全量契约，手动 Browser/GPU 另行执行。后续产品开发从最新 `main` HEAD 创建分支，先检查真实 PR 和 Actions 状态。旧研究分支不会因为此次治理自动合入或失效。
+
+## 历史交接 · RG-P1 · 2026-10-16
 
 核查日期：2026-10-16（Asia/Shanghai）。正式 main 基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`，[G1 PR #2](https://github.com/sjh20016/inkbox/pull/2) 已于 2026-10-12 合并，正式产品为 M2-C2E + G1。
 
@@ -10,7 +14,7 @@
 
 风险：H2/H3/G3 Fast Gate 失败，Heavy 通过不能覆盖失败；P1 READY 不代表 G2 性能封板。STATUS 与下方旧日期交接仅作历史证据，不是当前施工授权；不执行旧交接中的工作区改名 / 恢复指令。
 
-2026-10-17 RG-P2（待审 Draft）进一步清理根目录阶段报告、早期委托书及 `reports/release/`，打包不再依赖历史 JSON；源程序和主要测试不改动，清理前全部文件可从 [main 固定快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 读取。以下历史交接描述的“Git 保留 Golden/summary”不再是现行收录规则，新产物默认进 ignored `reports/` 或 Actions artifact。此治理未获批准合入 main。
+2026-10-17 RG-P2 的实施记录：进一步清理根目录阶段报告、早期委托书及 `reports/release/`，打包不再依赖历史 JSON；源程序和主要测试不改动，清理前全部文件可从 [main 固定快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 读取。以下历史交接描述的“Git 保留 Golden/summary”不再是现行收录规则，新产物默认进 ignored `reports/` 或 Actions artifact。本段为治理施工时的历史快照，是否合入以最新 Git `main` 为准。
 
 ---
 

@@ -1,6 +1,6 @@
 # ARCHITECTURE · 工作区与模块地图
 
-2026-10-16 状态以 [ROADMAP](./ROADMAP.md) 与 [HANDOFF](./HANDOFF.md) 顶部为准：main 已合并 G1，G2 / G3 为候选与研究。下方阶段性状态均为历史快照；模块职责和契约结合当前源码阅读。
+2026-10-17 RG 收官后工作树的结构以本页 §1 和实际 Git 树为准；历史报告固定于 [治理前 Git 快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534)。产品状态以 [ROADMAP](./ROADMAP.md) 与 [HANDOFF](./HANDOFF.md) 顶部为准：main 已合并 G1，G2 / G3 为候选与研究。下方阶段性状态均为历史快照；模块职责和契约结合当前源码阅读。
 
 
 ## Current Truth · 2026-10-08
@@ -37,18 +37,13 @@
 | `src/inkbox/` | 唯一活跃源码 | 是 | 是 |
 | `vendor/three/` | 固定版本浏览器运行时与许可证 | 是 | 是 |
 | `scripts/inkbox-*.mjs`、`scripts/cdp.mjs` | npm 命令及浏览器驱动；精确范围看 package.json / 打包清单 | 是 | 清单所列文件 |
-| `scripts/_*.mjs` | D8 / M1 历史一次性研究探针 | 是 | 否 |
+| `scripts/_*.mjs`（历史） | 一次性研究探针，RG-P2 已退役 | 仅旧 Git 提交 | 否 |
 | `.github/workflows/`、`tests/README.md` | 门禁与测试说明 | 是 | 是 |
 | `剧情文案素材/` | 活跃文案资产；00 册为接线约束 | 是 | 是 |
 | `美术素材/` | 美术方向与生产参考；运行使用代码母版与有限色板 | 使用的设计资料 | 仅白名单方向文档/索引/委托书 |
-| `reports/release/render3d-m2a/` | 历史正式 M2-A 证据 | 保留历史 | 仅 performance.json |
-| `reports/release/render3d-m2c/` | 历史 M2-C 证据 | 保留历史 | 否 |
-| `reports/release/render3d-m2c2a/` | C2A 代表图片与摘要 | 小集合；完整矩阵走 artifact | 仅 acceptance-summary.json / tree-gate.json |
-| `reports/release/render3d-m2c2b0/` | 三界 summary 与 8 张代表 golden | 小集合 | 否 |
-| `M2C2C_*REPORT.md`、`M2C2C_READINESS.md`、`M2C2C_VISUAL_ACCEPTANCE.md` | 当前工程、性能、视觉与就绪报告 | 是 | 是 |
-| `reports/release/render3d-m2c2c/` | compact summary 与最多 8 张正常 Golden | 小集合；全量走本地 / artifact | 仅白名单 acceptance-summary.json；Golden 否 |
+| `reports/`（含旧 `reports/release/`） | 新的浏览器、性能与发布证据；旧样本在固定 Git 快照 | 当前默认忽略；历史由 Git / Actions 追溯 | 否 |
+| 旧根目录 `M2C2C_*REPORT.md` 等阶段报告 | 历史就绪、视觉、性能证据 | 仅旧 Git 提交 | 否 |
 | `research/` | 只读空间关系 / 流量研究与脚本结果 | 研究资料 | 否；文档只写开发路径，不链接运行包缺失文件 |
-| 其他 `reports/` 输出 | 本机探针、日志、发布核验；CI 证据由 Actions artifact 保存 | 否 | 否 |
 | `.workbuddy-ai/memory/` | 本地交接索引；历史记录压缩归档 | 否 | 否 |
 | `.local-backups/` | 经校验的原工程 / Git 历史 / 清理备份 | 否 | 否 |
 | node_modules、dist | npm 安装与构建产物 | 否 | 不嵌套收录 |
