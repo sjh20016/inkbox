@@ -1,0 +1,585 @@
+{
+  "generatedAt": "2026-10-17T14:43:39.317Z",
+  "pass": true,
+  "creatures": {
+    "jingwei": {
+      "file": "mesh/creature-jingwei.glb",
+      "bytes": 103956,
+      "nodes": 9,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 24
+        },
+        {
+          "name": "idle",
+          "channels": 24
+        },
+        {
+          "name": "walk",
+          "channels": 24
+        },
+        {
+          "name": "run",
+          "channels": 24
+        },
+        {
+          "name": "eat",
+          "channels": 24
+        },
+        {
+          "name": "dance",
+          "channels": 24
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 24
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 24
+        }
+      ],
+      "triangles": 508,
+      "feetY": 0
+    },
+    "biyi": {
+      "file": "mesh/creature-biyi.glb",
+      "bytes": 116768,
+      "nodes": 11,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 30
+        },
+        {
+          "name": "idle",
+          "channels": 30
+        },
+        {
+          "name": "walk",
+          "channels": 30
+        },
+        {
+          "name": "run",
+          "channels": 30
+        },
+        {
+          "name": "eat",
+          "channels": 30
+        },
+        {
+          "name": "dance",
+          "channels": 30
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 30
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 30
+        }
+      ],
+      "triangles": 492,
+      "feetY": 0
+    },
+    "chiru": {
+      "file": "mesh/creature-chiru.glb",
+      "bytes": 63400,
+      "nodes": 6,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 15
+        },
+        {
+          "name": "idle",
+          "channels": 15
+        },
+        {
+          "name": "walk",
+          "channels": 15
+        },
+        {
+          "name": "run",
+          "channels": 15
+        },
+        {
+          "name": "eat",
+          "channels": 15
+        },
+        {
+          "name": "dance",
+          "channels": 15
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 15
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 15
+        }
+      ],
+      "triangles": 272,
+      "feetY": 0.098
+    },
+    "xuangui": {
+      "file": "mesh/creature-xuangui.glb",
+      "bytes": 110120,
+      "nodes": 11,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 30
+        },
+        {
+          "name": "idle",
+          "channels": 30
+        },
+        {
+          "name": "walk",
+          "channels": 30
+        },
+        {
+          "name": "run",
+          "channels": 30
+        },
+        {
+          "name": "eat",
+          "channels": 30
+        },
+        {
+          "name": "dance",
+          "channels": 30
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 30
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 30
+        }
+      ],
+      "triangles": 400,
+      "feetY": 0
+    },
+    "tiangou": {
+      "file": "mesh/creature-tiangou.glb",
+      "bytes": 90008,
+      "nodes": 9,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 24
+        },
+        {
+          "name": "idle",
+          "channels": 24
+        },
+        {
+          "name": "walk",
+          "channels": 24
+        },
+        {
+          "name": "run",
+          "channels": 24
+        },
+        {
+          "name": "eat",
+          "channels": 24
+        },
+        {
+          "name": "dance",
+          "channels": 24
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 24
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 24
+        }
+      ],
+      "triangles": 352,
+      "feetY": 0
+    },
+    "dangkang": {
+      "file": "mesh/creature-dangkang.glb",
+      "bytes": 83896,
+      "nodes": 8,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 21
+        },
+        {
+          "name": "idle",
+          "channels": 21
+        },
+        {
+          "name": "walk",
+          "channels": 21
+        },
+        {
+          "name": "run",
+          "channels": 21
+        },
+        {
+          "name": "eat",
+          "channels": 21
+        },
+        {
+          "name": "dance",
+          "channels": 21
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 21
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 21
+        }
+      ],
+      "triangles": 380,
+      "feetY": 0
+    },
+    "jiuweihu": {
+      "file": "mesh/creature-jiuweihu.glb",
+      "bytes": 154608,
+      "nodes": 16,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 45
+        },
+        {
+          "name": "idle",
+          "channels": 45
+        },
+        {
+          "name": "walk",
+          "channels": 45
+        },
+        {
+          "name": "run",
+          "channels": 45
+        },
+        {
+          "name": "eat",
+          "channels": 45
+        },
+        {
+          "name": "dance",
+          "channels": 45
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 45
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 45
+        }
+      ],
+      "triangles": 456,
+      "feetY": 0
+    },
+    "lushu": {
+      "file": "mesh/creature-lushu.glb",
+      "bytes": 100864,
+      "nodes": 9,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 24
+        },
+        {
+          "name": "idle",
+          "channels": 24
+        },
+        {
+          "name": "walk",
+          "channels": 24
+        },
+        {
+          "name": "run",
+          "channels": 24
+        },
+        {
+          "name": "eat",
+          "channels": 24
+        },
+        {
+          "name": "dance",
+          "channels": 24
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 24
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 24
+        }
+      ],
+      "triangles": 504,
+      "feetY": 0
+    },
+    "dijiang": {
+      "file": "mesh/creature-dijiang.glb",
+      "bytes": 132956,
+      "nodes": 13,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 36
+        },
+        {
+          "name": "idle",
+          "channels": 36
+        },
+        {
+          "name": "walk",
+          "channels": 36
+        },
+        {
+          "name": "run",
+          "channels": 36
+        },
+        {
+          "name": "eat",
+          "channels": 36
+        },
+        {
+          "name": "dance",
+          "channels": 36
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 36
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 36
+        }
+      ],
+      "triangles": 512,
+      "feetY": 0
+    },
+    "zheng": {
+      "file": "mesh/creature-zheng.glb",
+      "bytes": 120652,
+      "nodes": 12,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 33
+        },
+        {
+          "name": "idle",
+          "channels": 33
+        },
+        {
+          "name": "walk",
+          "channels": 33
+        },
+        {
+          "name": "run",
+          "channels": 33
+        },
+        {
+          "name": "eat",
+          "channels": 33
+        },
+        {
+          "name": "dance",
+          "channels": 33
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 33
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 33
+        }
+      ],
+      "triangles": 442,
+      "feetY": 0
+    },
+    "qiongqi": {
+      "file": "mesh/creature-qiongqi.glb",
+      "bytes": 127900,
+      "nodes": 10,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 27
+        },
+        {
+          "name": "idle",
+          "channels": 27
+        },
+        {
+          "name": "walk",
+          "channels": 27
+        },
+        {
+          "name": "run",
+          "channels": 27
+        },
+        {
+          "name": "eat",
+          "channels": 27
+        },
+        {
+          "name": "dance",
+          "channels": 27
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 27
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 27
+        }
+      ],
+      "triangles": 752,
+      "feetY": 0
+    },
+    "fei": {
+      "file": "mesh/creature-fei.glb",
+      "bytes": 123516,
+      "nodes": 11,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 30
+        },
+        {
+          "name": "idle",
+          "channels": 30
+        },
+        {
+          "name": "walk",
+          "channels": 30
+        },
+        {
+          "name": "run",
+          "channels": 30
+        },
+        {
+          "name": "eat",
+          "channels": 30
+        },
+        {
+          "name": "dance",
+          "channels": 30
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 30
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 30
+        }
+      ],
+      "triangles": 576,
+      "feetY": 0
+    },
+    "kaiming": {
+      "file": "mesh/creature-kaiming.glb",
+      "bytes": 177784,
+      "nodes": 17,
+      "animations": [
+        {
+          "name": "static",
+          "channels": 48
+        },
+        {
+          "name": "idle",
+          "channels": 48
+        },
+        {
+          "name": "walk",
+          "channels": 48
+        },
+        {
+          "name": "run",
+          "channels": 48
+        },
+        {
+          "name": "eat",
+          "channels": 48
+        },
+        {
+          "name": "dance",
+          "channels": 48
+        },
+        {
+          "name": "gesture-positive",
+          "channels": 48
+        },
+        {
+          "name": "gesture-negative",
+          "channels": 48
+        }
+      ],
+      "triangles": 674,
+      "feetY": 0
+    }
+  },
+  "checks": 21996,
+  "warnings": [],
+  "palette": {
+    "file": "materials/creature_palette.png",
+    "sha256": "00F4CDE4F0CD9A1AA28DFE01E3DA2594AE7850801A1EB91F5CD047E8BBCA1A8F",
+    "colours": [
+      "#F4C9AC",
+      "#ECE6DE",
+      "#D4BEA8",
+      "#302D32",
+      "#8597B0",
+      "#355B91",
+      "#806A5D",
+      "#8D3A3A",
+      "#36676A",
+      "#E8B454",
+      "#A6A0AB",
+      "#6E7B56",
+      "#D9824A",
+      "#F2DFAE",
+      "#C9452F",
+      "#8FC1A2"
+    ]
+  },
+  "worldTrial": [
+    "tiangou",
+    "dangkang",
+    "lushu",
+    "xuangui"
+  ],
+  "summary": {
+    "species": 13,
+    "clips": [
+      "static",
+      "idle",
+      "walk",
+      "run",
+      "eat",
+      "dance",
+      "gesture-positive",
+      "gesture-negative"
+    ],
+    "totalTriangles": 6320,
+    "smallest": "xuangui",
+    "largest": "kaiming"
+  }
+}
