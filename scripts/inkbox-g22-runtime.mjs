@@ -9,6 +9,8 @@ import { MERCY, MERCY_SEED_KEY } from '../src/inkbox/sim/life.js';
 import { mulberry32 } from '../src/inkbox/core/noise.js';
 import { advanceWorld } from '../src/inkbox/sim/advance.js';
 import { accessBounds } from '../src/inkbox/core/mapAccess.js';
+import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
+import { RegionGeometry } from '../src/inkbox/render3d/region/RegionGeometry.js';
 let checks=0;
 function check(label,run){run();checks++;console.log('✓ '+label);}
 function pair(seed=801){
@@ -81,6 +83,21 @@ check('交战近讯遵守实际绘制的渐进边界，不暴露边界外的小�
   assert.equal(combatPointVisible(sb,'mortal',bounds.x1+.9,bounds.y1+.9),false);
   assert.equal(combatPointVisible(sb,'mortal',bounds.x1+1,bounds.y1),false);
   assert.equal(combatPointVisible(sb,'mortal',bounds.x0-.01,bounds.y0),false);
+});
+check('Three 斜边近讯归属与实体几何一致，Canvas 保留精确多边形裁剪',()=>{
+  const f=pair(),region=new RegionMask({path:[[2,2],[18,2],[2,10]],x0:2,y0:2,x1:18,y1:10,area:64});
+  const geometry=new RegionGeometry(f.world,region);
+  const sb={world:f.world,render3d:{active:true,renderer:{activePlane:'mortal'}},getRealmViewState:()=>({open:true,targetPlane:'upper',region})};
+  for(const [x,y] of [[7.1,7.1],[8.9,6.9]]){
+    const quadInside=geometry.isInsideCell(x,y),pointInside=region.contains(x,y);
+    assert.notEqual(quadInside,pointInside,'Fixture must straddle a real sloping boundary');
+    sb.render3d.active=true;
+    assert.equal(combatPointVisible(sb,'upper',x,y),quadInside);
+    assert.equal(combatPointVisible(sb,'mortal',x,y),!quadInside);
+    sb.render3d.active=false;
+    assert.equal(combatPointVisible(sb,'upper',x,y),pointInside);
+    assert.equal(combatPointVisible(sb,'mortal',x,y),!pointInside);
+  }
 });
 check('隐藏近讯不泄露人物；readiness标记不复制Stage；无关子界替换保留凡间近讯',()=>{
   const f=pair();f.life.attack(f.a,f.b,.1);f.setVisible(false);assert.deepEqual(f.ingest().events,[]);f.setVisible(true);assert.equal(f.runtime.refresh().events.length,1);

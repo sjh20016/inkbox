@@ -15,7 +15,11 @@ export function combatPointVisible(sb, plane, x, y) {
   const view = sb.getRealmViewState?.();
   const active = sb.render3d?.active ? sb.render3d.renderer?.activePlane || 'mortal' : 'mortal';
   if (active !== 'mortal') return plane === active;
-  const inWindow = !!(view?.open && view.region?.contains(x,y));
+  // Three submits whole quads; match RegionGeometry.isInsideCell used by its
+  // entity layer. Canvas clips the polygon at the actual floating point.
+  const windowX = sb.render3d?.active ? Math.floor(x)+.5 : x;
+  const windowY = sb.render3d?.active ? Math.floor(y)+.5 : y;
+  const inWindow = !!(view?.open && view.region?.contains(windowX,windowY));
   return plane === 'mortal' ? !inWindow : inWindow && view.targetPlane === plane;
 }
 
