@@ -281,25 +281,8 @@ const DIRECTORIES = [
   'assets/environment/materials',
   'assets/environment/docs',
 ];
-const RELEASE_SUMMARIES = [
-  'reports/release/render3d-m2c2e/summary/acceptance-summary.json',
-  'reports/release/render3d-m2c2d/summary/acceptance-summary.json',
-  'reports/release/render3d-m2c2d1/summary/acceptance-summary.json',
-  'reports/release/render3d-m2c2c/summary/acceptance-summary.json',
-  'reports/release/render3d-m2a/performance.json',
-  'reports/release/render3d-m2c2a/acceptance-summary.json',
-  'reports/release/render3d-m2c2a/tree-gate.json',
-  'reports/release/render3d-m2c2b-pass1/b0-summary.json',
-  'reports/release/render3d-m2c2b-pass1/sample-summary.json',
-  'reports/release/render3d-m2c2b-pass1/family-summary.json',
-  'reports/release/render3d-m2c2b-pass1/hall-summary.json',
-  'reports/release/render3d-m2c2b-pass1/content-summary.json',
-  'reports/release/render3d-m2c2b-pass1/decorations-summary.json',
-  'reports/release/render3d-m2c2b-pass1/artifacts-summary.json',
-  'reports/release/render3d-m2c2b-pass1/matrix-summary.json',
-  'reports/release/render3d-m2c2b-pass1/durability-summary.json',
-  'reports/release/render3d-m2c2b-pass1/acceptance-summary.json',
-];
+// Historical release evidence is kept in Git history, not in the runtime ZIP.
+const RELEASE_SUMMARIES = [];
 
 function copyRelative(relative) {
   let from = path.join(ROOT, relative);
