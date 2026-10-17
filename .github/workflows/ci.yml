@@ -86,6 +86,9 @@ jobs:
       - name: G2.3 真实灾迹、会话对照与恢复
         run: npm run test:g23
 
+      - name: G2.4 真实斗法点燃、生态延续与存档冷却
+        run: npm run test:g24
+
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0
 

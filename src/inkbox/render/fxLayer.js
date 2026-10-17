@@ -70,11 +70,19 @@ export function fxStats(fx) {
     combatMerged: fx?.combatMerged || 0, combatDropped: fx?.combatDropped || 0, combatEvicted: fx?.combatEvicted || 0 });
 }
 function validCombat(event) {
+  const ignition = event.data?.ignition;
+  const validIgnition = ignition === undefined || (event.data?.style === 'fire' && ignition && Object.keys(ignition).length === 7
+    && Number.isSafeInteger(ignition.cells) && ignition.cells > 0
+    && Number.isSafeInteger(ignition.x) && ignition.x >= 0
+    && Number.isSafeInteger(ignition.y) && ignition.y >= 0
+    && ignition.plane === event.plane && ignition.day === event.day
+    && ignition.actorId === event.subjectId && ignition.targetId === event.targetId);
   return ['mortal', 'upper', 'nether'].includes(event.plane) && Number.isFinite(event.day)
     && Number.isSafeInteger(event.subjectId) && event.subjectId > 0
     && Number.isSafeInteger(event.targetId) && event.targetId > 0 && event.subjectId !== event.targetId
     && Number.isFinite(event.intensity) && Number.isFinite(event.data?.fromX) && Number.isFinite(event.data?.fromY)
-    && Object.hasOwn(COMBAT_TTL, event.data?.style) && ['low', 'mid', 'high'].includes(event.data?.tier);
+    && Object.hasOwn(COMBAT_TTL, event.data?.style) && ['low', 'mid', 'high'].includes(event.data?.tier)
+    && validIgnition;
 }
 function admitFx(fx, item) {
   const combat = item.kind === 'combat';
@@ -151,7 +159,8 @@ export function ingestRuntimeEvents(fx, events, world) {
       ttl,
       age: 0,
       seed,
-      data: kind === 'combat' ? { style: event.data.style, fromX: event.data.fromX, fromY: event.data.fromY, tier: event.data.tier } : event.data || null,
+      data: kind === 'combat' ? { style: event.data.style, fromX: event.data.fromX, fromY: event.data.fromY,
+        tier: event.data.tier, ...(event.data.ignition ? { ignition: { ...event.data.ignition } } : {}) } : event.data || null,
       intensity: kind === 'combat' ? Math.max(0.2, Math.min(1, event.intensity)) : event.intensity ?? null,
       subjectId: event.subjectId ?? null,
       targetId: event.targetId ?? null,
@@ -257,6 +266,18 @@ function drawCombat(ctx, camera, world, item, k, zoom) {
   if (d.style !== 'thunder') {
     const mark = Math.min(4, 1.4 + scale * 0.35) * tier * (1 - k * 0.5);
     ctx.beginPath(); ctx.moveTo(tx - nx * mark, ty - ny * mark); ctx.lineTo(tx + nx * mark, ty + ny * mark); ctx.stroke();
+  }
+  // A confirmed ignition earns one restrained orange ember at its real tile.
+  // It is presentation-only and remains inside the same access-filtered renderer.
+  const ignition = d.ignition;
+  if (d.style === 'fire' && ignition && (!camera.canAccess || camera.canAccess(ignition.x, ignition.y))) {
+    const [ix, iy] = projectEntity(camera, world, ignition.x + 0.5, ignition.y + 0.5);
+    const ember = Math.max(1.2, Math.min(2.6, scale * 0.42));
+    ctx.strokeStyle = `rgba(235,104,34,${(alpha * 0.95).toFixed(3)})`;
+    ctx.lineWidth = Math.max(1, scale * 0.22);
+    ctx.beginPath(); ctx.arc(ix, iy, ember, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = `rgba(248,178,76,${(alpha * 0.85).toFixed(3)})`;
+    ctx.beginPath(); ctx.moveTo(ix - ember * 0.45, iy); ctx.lineTo(ix + ember * 0.35, iy - ember * 0.8); ctx.stroke();
   }
 }
 // ── 雷霆 / 渡劫 ─────────────────────────────────────────────

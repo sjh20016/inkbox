@@ -8,6 +8,7 @@
 .g2-combat__item-text{display:grid;gap:3px;min-width:0}.g2-combat__item-text strong{font-size:13px;font-weight:500}
 .g2-combat__item-text small,.g2-combat__item-text span{font-size:11px;color:#68716d;overflow-wrap:anywhere}
 .g2-combat__watch{flex:none;border:1px solid #b3bdb6;background:#fbfaf5;color:#375850;padding:8px;cursor:pointer;font-size:12px;font-family:inherit}
+.g2-combat__land{border-color:#d2a06d;color:#98512e}
 .g2-combat__watch:disabled{opacity:.42;cursor:not-allowed}.g2-combat__watch:focus-visible{outline:2px solid #9b473c}
 .g2-combat__empty{color:#8a9087;font-size:12px;padding:16px 0}
 #inkCombatObserver .g2-combat{padding:12px}
