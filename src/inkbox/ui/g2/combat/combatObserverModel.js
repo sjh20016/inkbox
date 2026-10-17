@@ -26,10 +26,17 @@ export function normalizeCombatEvents(events){
     const x=typeof entry.x==="number"&&Number.isFinite(entry.x)?entry.x:null;
     const y=typeof entry.y==="number"&&Number.isFinite(entry.y)?entry.y:null;
     const canObserve=entry.canObserve===true && x!==null&&y!==null&&plane!=="unknown";
+    const rawIgnition=entry.ignition;
+    const ignition=canObserve && rawIgnition && rawIgnition.plane===plane
+      && Number.isSafeInteger(rawIgnition.x) && rawIgnition.x>=0
+      && Number.isSafeInteger(rawIgnition.y) && rawIgnition.y>=0
+      && Number.isSafeInteger(rawIgnition.cells) && rawIgnition.cells>0
+      ? {x:rawIgnition.x,y:rawIgnition.y,plane,cells:rawIgnition.cells} : null;
     result.push({id:key,type,title,detail,plane,x,y,canObserve,
       actor:str(entry.actor,""),target:str(entry.target,""),
       // Echo externally verified labels only; never derive persistent facts from FX.
       timeLabel:str(entry.timeLabel,""),
+      ignition,
     });
   }
   return result.reverse();

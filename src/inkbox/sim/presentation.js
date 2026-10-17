@@ -188,7 +188,7 @@ function combatStyle(attacker) {
  * event construction and emission stay inside this exception boundary.
  * Style is an affinity hint, not a claim that the ordinary attack casts a spell.
  */
-export function emitCombatHit(world, attacker, target, hit, hpBefore) {
+export function emitCombatHit(world, attacker, target, hit, hpBefore, ignition = null) {
   let state;
   try {
     state = combatSource(world);
@@ -215,9 +215,19 @@ export function emitCombatHit(world, attacker, target, hit, hpBefore) {
     const tier = level >= 30 ? 'high' : level >= 10 ? 'mid' : 'low';
     const hpScale = Number.isFinite(target.maxHp) && target.maxHp > 0 ? target.maxHp : hpBefore;
     const intensity = Math.min(1,Math.max(0.2,0.2 + Math.min(60,level) / 60 * 0.4 + Math.min(1,actualHit / hpScale) * 0.4));
+    const ignitionFact = ignition && combatStyle(attacker) === 'fire'
+      && Number.isSafeInteger(ignition.cells) && ignition.cells > 0
+      && Number.isSafeInteger(ignition.x) && ignition.x >= 0
+      && Number.isSafeInteger(ignition.y) && ignition.y >= 0
+      && ignition.plane === plane && Number.isFinite(ignition.day)
+      && ignition.day === day && ignition.actorId === attacker.id && ignition.targetId === target.id
+      ? { cells: ignition.cells, x: ignition.x, y: ignition.y, plane, day, actorId: attacker.id, targetId: target.id }
+      : null;
+    const data = {style:combatStyle(attacker),fromX:attacker.x,fromY:attacker.y,tier};
+    if (ignitionFact) data.ignition = ignitionFact;
     const result = state.emitter(world,'combat-hit',{
       plane,day,x:target.x,y:target.y,subjectId:attacker.id,targetId:target.id,intensity,
-      data:{style:combatStyle(attacker),fromX:attacker.x,fromY:attacker.y,tier},
+      data,
     });
     if (!result) { state.queueDropped += 1; return null; }
     state.bucketEmitted += 1; state.emitted += 1;

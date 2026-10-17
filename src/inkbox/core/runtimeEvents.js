@@ -104,9 +104,24 @@ function validateCombatEvent(event) {
   for (const field of ['x','y','intensity']) finiteNumber(event[field],field);
   if (event.intensity < 0 || event.intensity > 1) throw new TypeError('Combat intensity must be within 0..1');
   const data = event.data;
-  if (!data || Object.keys(data).length !== 4 || !['blade','fire','thunder'].includes(data.style)
+  const hasIgnition = !!data && Object.hasOwn(data, 'ignition');
+  const dataKeys = data && Object.keys(data);
+  if (!data || dataKeys.length !== (hasIgnition ? 5 : 4)
+    || dataKeys.some(key => !['style','fromX','fromY','tier','ignition'].includes(key))
+    || !['blade','fire','thunder'].includes(data.style)
     || !['low','mid','high'].includes(data.tier)) throw new TypeError('Combat data must contain style, fromX, fromY and tier');
   finiteNumber(data.fromX,'fromX'); finiteNumber(data.fromY,'fromY');
+  if (hasIgnition) {
+    const fact = data.ignition;
+    if (data.style !== 'fire' || !fact || typeof fact !== 'object' || Object.keys(fact).length !== 7
+      || !Number.isSafeInteger(fact.cells) || fact.cells < 1
+      || !Number.isSafeInteger(fact.x) || fact.x < 0
+      || !Number.isSafeInteger(fact.y) || fact.y < 0
+      || fact.plane !== event.plane || fact.day !== event.day
+      || fact.actorId !== event.subjectId || fact.targetId !== event.targetId) {
+      throw new TypeError('Combat ignition must match its confirmed event coordinates and participants');
+    }
+  }
 }
 function countersFor(world) {
   let counters = queueCounters.get(world);

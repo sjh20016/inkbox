@@ -255,6 +255,7 @@ export const KIND_TAG = Object.freeze({
   'rift-in': 'cultivation',
   sect: 'sect',
   war: 'battle', forbidden: 'battle',
+  'combat-fire': 'battle',
   // ⚠️ 下面这 5 个 kind 都曾被漏配，于是全部落到默认的 `world`：
   // 玩家点「修行」筛选看不到天劫/突破（最戏剧化的修行事件），
   // 点「幽冥」看不到夺舍（只看到转世）。漏配和「认不出」在代码里
@@ -529,6 +530,13 @@ export function recordLifeEvent(world, entity, kind, text, opts = {}) {
     importance: importanceOf({ kind, text: body, importance: opts.importance }, 'log', body),
   };
   if (Number.isFinite(opts.level)) entry.level = opts.level;
+  const location = opts.location;
+  if (location && ['mortal', 'upper', 'nether'].includes(location.plane)
+    && Number.isInteger(location.x) && Number.isInteger(location.y)) {
+    entry.x = location.x;
+    entry.y = location.y;
+    entry.plane = location.plane;
+  }
 
   log.push(entry);
 

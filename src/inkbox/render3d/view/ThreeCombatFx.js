@@ -64,7 +64,9 @@ function brushMaterial(style){
     fragmentShader: `uniform vec3 inkColor; varying float vOpacity; varying float vDetail; varying float vPart;
       void main(){
         if(vOpacity<.002 || (vPart>.5 && vDetail<.5))discard;
-        gl_FragColor=vec4(inkColor,vOpacity);
+        vec3 color=inkColor;
+        if(vDetail>1.5 && vPart>.5) color=vec3(1.0,.34,.075);
+        gl_FragColor=vec4(color,vOpacity);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }`,
@@ -142,7 +144,7 @@ export class ThreeCombatFx{
       const b=this.batches[style],index=b.mesh.count++;
       b.mesh.setMatrixAt(index,this.matrix);
       b.opacity.setX(index,(1-progress)*(style==='blade'?.9:.8));
-      b.detail.setX(index,tier==='low'?0:1);
+      b.detail.setX(index,data?.ignition && style==='fire'?2:tier==='low'?0:1);
       this.stats.active++;this.stats[lightning?'lightningActive':'combatActive']++;
       this.stats.styleCounts[style]++;
     }

@@ -8,7 +8,7 @@
 // 判定标准分两层（原因见 src/inkbox/io/save.js 头注释）：
 //   硬要求 —— 读档瞬间结构完整：除地形层的量化误差与 tick 内一次性标记
 //             （_justAwakened）外，逐字段一致；
-//   可接受 —— 继续演化后轨迹缓慢分叉，量级与 7.6e-6 的量化误差相符。
+//   观察项 —— 历史 RNG 游标未持久化，地形另有量化误差；继续演化不承诺逐位一致。
 //
 // ── 一条比「逐字段一致」更要紧的规矩：判据看的是**键**，不是值 ──
 //
@@ -32,6 +32,7 @@ import { readFileSync } from 'node:fs';
 import { WORLD_PRESETS } from '../src/inkbox/core/config.js';
 import { generateWorld } from '../src/inkbox/world/worldgen.js';
 import { Life } from '../src/inkbox/sim/life.js';
+import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
 import { mulberry32 } from '../src/inkbox/core/noise.js';
 import { serializeWorld, deserializeWorld } from '../src/inkbox/io/save.js';
 import { busanziRecent } from '../src/inkbox/sim/busanzi.js';
@@ -118,12 +119,13 @@ const VOLATILE = new Set([
  * 非幽冥实体这五格一律稳定默认值，凡间 / 上界存档形状一格没变）。
  * **D6-3 工程包 D（2026-09-26）追加 possessionScar → 69**（跨位面夺舍 / 附身的
  * 不良状态印记快照，见 `sim/possession.js`；非被夺舍者一律 `null`）。
+ * G2.4（2026-10-17）追加 lastFireCastDay → 70（真实火系尝试冷却日）。
  *
  * ⚠️ 这个常量与 save.js 里那个实体行数组必须同源。那边加一列而这里没跟上，
  * 「实体行最长长度 == 本常量」那条断言会当场红——这正是它存在的意义。
  * 反过来说，若哪天要动这个数，**先去 save.js 数一遍列**，别只改这里。
  */
-const ENTITY_COLUMNS = 69;
+const ENTITY_COLUMNS = 70;
 /**
  * 从 `src/inkbox/io/save.js` 的源码里，把 `world.entities.map((e) => [ … ])`
  * 这个**实体行数组**的顶层元素表达式逐个切出来（注释剥掉，字符串保留）。
@@ -445,8 +447,18 @@ function splitNonFinite(hits) {
 }
 
 function run(world, life, years) {
+  const state = createAdvanceState();
+  const ecologyRng = mulberry32(SEED);
+  // G2.4 can create real fire during Life.step. Use the production clock entry
+  // so those fires also spread/extinguish and vegetation recovers. A Life-only
+  // loop leaves permanent fires and no longer represents a valid mortal world.
+  // Keep the fixture's upper/nether/rift population boundaries as before; those
+  // saved structures are checked below, and full realm clocks have their suite.
   for (let y = 0; y < years; y += 1) {
-    for (let d = 0; d < 360; d += STEP) { world.day += STEP; life.step(STEP); }
+    for (let d = 0; d < 360; d += STEP) {
+      advanceWorld(world, STEP, { life, state, rng: ecologyRng,
+        nether: false, wraith: false, riftActive: false });
+    }
   }
 }
 
@@ -2802,7 +2814,7 @@ console.log(`  连续运行：生灵 ${world.entities.length} · 村 ${world.vil
 console.log(`  存读档后：生灵 ${clone.entities.length} · 村 ${clone.villages.length}`
   + ` · 宗 ${clone.factions.length} · 地点 ${clone.sites.length} · 飞升 ${clone.ascended.length}`);
 const drift = Math.abs(world.entities.length - clone.entities.length);
-console.log(`  生灵数偏差 ${drift}（量化误差在混沌系统中被放大的结果，不是漏存字段）`);
+console.log(`  生灵数偏差 ${drift}（历史 RNG 游标与地形量化均可能影响未来轨迹；不作逐位续接保证）`);
 
 console.log(`\n${'='.repeat(56)}`);
 if (failures === 0) {
