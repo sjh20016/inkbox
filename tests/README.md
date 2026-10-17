@@ -2,6 +2,14 @@
 
 > RG-P3 · 2026-10-17 现行指南。历史阶段细节从 [原测试说明](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/tests/README.md) 查阅。此处只保留当前开发真正要用的入口。
 
+## G2-R1 候选新增入口
+
+本地恢复功能可运行 `npm run test:g2`、`test:g21:terrain`、`test:g22`、`test:g23`、`test:g2p0` 与 `test:p1`（后五项同样使用 `npm run`）。它们覆盖真实战斗、双 renderer 快照、气血 / 养伤、灾迹 / 恢复、生态 / 缓存等价及导航，已加入 Fast；原 Fast / Heavy 全部保留。
+
+`npm run test:browser-tools` 检查隔离 CDP 端点和 IPC 自有服务器。G2 浏览器入口为 `test:g2:browser`、`test:g22:browser`、`test:g23:browser`；`INKBOX_GPU=0` 只作软件光栅功能验证。`npm run test:p1:browser` 依次运行五种分辨率的双 renderer 布局与真实创世→选人→受伤 / 养伤→灾迹恢复→记挂→存读档闭环，要求真实 GPU，本机按需串行执行，不把托管 Windows 软件渲染冒充硬件验收。脚本优先 Edge，可回退本机 Chrome，实际版本和 GPU 以报告 metadata 为准。
+
+本轮不导入性能研究脚本、原始报告或放宽断言。新输出仍在忽略的 `reports/`；CI 新增 G2 功能门禁，不代表既有 G2 性能封板。详细范围见 [G2-R1](../docs/development/G2_R1_PLAYABLE_INTEGRATION.md)。
+
 ## RG-P4 · 低成本本地验证和 CI 同分支去重
 
 `npm run check:ui` 是面向**小型人物卡 / 面板 / 文案 / CSS 改动**的轻量 CPU 检查，依次跑 G1 Web、QoL、视界与表现回归。它不测实际屏幕截图、Three 真 GPU，也不包含 Heavy；交互 / 窄屏变化仍需按任务做一次真实浏览器验收，正式集成等待完整 CI。不要用它替代 `npm test` 或声明全套测试通过。

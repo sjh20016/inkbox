@@ -1,5 +1,9 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 2026-10-17 · G2-R1 可玩集成候选
+
+独立新克隆从治理后 main `4852d89` 建立 `feat/g2-r1-playable-integration`，按文件迁移 #12 的 G2.1 / G2.2 / G2.3 / P0 生态及 P1 玩家入口。旧报告、性能仪器和研究实验不回流；RG 文档组织、测试分层、CI 与报告忽略规则保留。范围、启动、验证与回滚见 [本轮交接](./docs/development/G2_R1_PLAYABLE_INTEGRATION.md)。本候选保持 Draft，**PERF BLOCKED**；不自动合入 main。
+
 ## 2026-10-17 · RG-P1～P4 仓库治理收官
 
 治理移除跟踪的旧阶段报告、早期委托书及 `reports/release/`，工作树只保留必要文档、生产源码/资产和有效测试；旧文件可从 [治理前 Git 固定提交](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 追溯。`reports/` 默认忽略，运行包不携带历史报告。`tests/README.md` 为当前测试分层入口，`npm run check:ui` 为局部 UI CPU 检查；GitHub Fast/Heavy 仍保留全量契约，手动 Browser/GPU 另行执行。后续产品开发从最新 `main` HEAD 创建分支，先检查真实 PR 和 Actions 状态。旧研究分支不会因为此次治理自动合入或失效。

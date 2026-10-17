@@ -1,5 +1,7 @@
 # 坐天观井 · Inkbox 1.0.0
 
+本分支为 **G2-R1 可玩集成候选**：从治理后 main `4852d89` 定向恢复 G2 战斗、伤势、灾迹与玩家导航，保持 **PERF BLOCKED / Draft**。迁移范围、试玩与本轮验证见 [G2-R1 交接](./docs/development/G2_R1_PLAYABLE_INTEGRATION.md)；下方正式产品状态描述 main，不代表本候选已合并。
+
 ## 正式产品状态（按 main 最新提交核对）
 
 正式产品基线为 **M2-C2E + G1**，G1 已由 PR #2 合并。RG 治理前的历史基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`；实际开发从 GitHub 当前 `main` HEAD 起步，不把历史 SHA 当作最新主线。
