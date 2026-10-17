@@ -71,6 +71,24 @@ jobs:
       - name: G1 正式集成（身份 / 命簿四卷 / 权限 / 地图成长 / Web 组件）
         run: npm run test:g1
 
+      - name: G2 真实命中、双 renderer 墨痕与资源生命周期
+        run: npm run test:g2
+
+      - name: G2.1 地形像素等价
+        run: npm run test:g21:terrain
+
+      - name: G2.2 气血、养伤与只读交战观察
+        run: npm run test:g22
+
+      - name: G2.3 真实灾迹、会话对照与恢复
+        run: npm run test:g23
+
+      - name: G2-P0 真实生态与 Canvas 颜色缓存等价
+        run: npm run test:g2p0
+
+      - name: P1 观察导航与浏览器工具归属
+        run: npm run test:p1 && npm run test:browser-tools
+
       - name: Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）
         run: npm run test:render3d
 
@@ -200,6 +218,24 @@ jobs:
         run: npm run test:g1:browser
         env:
           INKBOX_REPORT_DIR: reports/ci/g1-browser
+
+      - name: G2 真实战斗 Canvas / Three 浏览器回归
+        run: npm run test:g2:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g2-browser
+          INKBOX_GPU: '0'
+
+      - name: G2.2 气血养伤与交战近讯
+        run: npm run test:g22:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g22-browser
+          INKBOX_GPU: '0'
+
+      - name: G2.3 灾迹、恢复与存读档
+        run: npm run test:g23:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g23-browser
+          INKBOX_GPU: '0'
 
       - name: Canvas + M2-A / M2-B / M2-C / M2-C2A / M2-C2B0 Edge（共享服务器生命周期）
         run: node scripts/inkbox-browser-smoke.mjs

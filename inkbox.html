@@ -498,13 +498,15 @@
       <div class="pill" id="inkTimePill">仙历 1 年 · 第 1 日</div>
       <div class="pill" id="inkSpeedPill">常速 ×2</div>
       <div class="pill" id="inkFpsPill">-- FPS</div>
+      <label class="pill" title="显示真实交战留下的短暂墨痕"><input id="inkCombatFx" type="checkbox" checked> 战斗墨痕</label>
       <!-- Q31：帮助入口。与键盘 `?` 走**同一条**路径（`qol.openHelp()`）。 -->
       <button class="btn" id="inkBtnHelp" title="快捷键与门道（按 ?）">? 帮助</button>
     </div>
   </header>
 
   <div class="main">
-    <aside class="rail left">
+    <aside class="rail left" id="inkToolsRail">
+      <button class="p1-tools-close" id="inkToolsClose" type="button">✕ 返回山河</button>
       <div class="sec-title">神格</div>
       <div class="groups" id="inkGroups"></div>
       <div class="tools" id="inkTools"></div>
@@ -517,6 +519,8 @@
 
     <section class="stage">
       <canvas id="inkCanvas" aria-label="水墨世界"></canvas>
+      <button class="p1-launcher p1-launcher-observe" id="inkExperienceOpen" type="button" aria-controls="inkExperienceRail" aria-expanded="false">观测</button>
+      <button class="p1-launcher p1-launcher-tools" id="inkToolsOpen" type="button" aria-controls="inkToolsRail" aria-expanded="false">神力</button>
       <!-- Q8：视界开着时才浮出来的「关闭视界」。判据只有 `sb.selection`
            （见 main.js 的 syncCloseViewBtn），所以这里**初始 hidden**。 -->
       <button class="btn close-view" id="inkBtnCloseView" hidden title="关闭当前视界（Esc）">✕ 关闭视界</button>
@@ -550,7 +554,13 @@
       </div>
     </section>
 
-    <aside class="rail right">
+    <aside class="rail right" id="inkExperienceRail" aria-label="世界观察">
+      <nav class="p1-observe-nav" aria-label="快速找到观察面板">
+        <button type="button" data-experience-target="combat">交战</button>
+        <button type="button" data-experience-target="environment">灾迹</button>
+        <button type="button" data-experience-target="watch">记挂</button>
+        <button type="button" class="p1-observe-close" id="inkExperienceClose" aria-label="关闭观察面板">✕</button>
+      </nav>
       <!-- Q30：一次收起右栏。放在**第一个 sec-title 之前**是有意的——
            setupSectionTogglesPanel 把每个 sec-title 之后的兄弟收进 .sec-body，
            所以它不会被折进任何一节里，永远留在最上面。
@@ -635,6 +645,10 @@
 
       <div class="sec-title">值得关注</div>
       <div class="chronicle" id="inkNotables"></div>
+      <div class="sec-title p1-target" id="inkCombatTitle" tabindex="-1" data-sec-key="交战近讯">交战近讯 · 短时观测</div>
+      <div id="inkCombatObserver"></div>
+      <div class="sec-title p1-target" id="inkEnvironmentTitle" tabindex="-1">山河灾迹 · 此地观测</div>
+      <div id="inkEnvironmentObserver"></div>
       <!-- ── 天道记挂（D7-E，见 sim/watch.js）──────────────────────────
            玩家「指着一个人说：这个人我想继续看」的观察列表。**不是世界规律**——
            它存在 `world.watch`，不进三界人口守恒、不抽 RNG、不给任何数值 buff、
@@ -646,7 +660,7 @@
            未读数（「天道记挂 · 3」），拿 textContent 当折叠键的话键会随计数变，
            表现为「折起来、刷新一次又展开了」，而且偏好里会攒下一串只差一个
            数字的垃圾键（见 railPanels.js 的 sectionKey）。 -->
-      <div class="sec-title" id="inkWatchTitle" data-sec-key="记挂">天道记挂 · <span id="inkWatchCount">0</span><span id="inkWatchDot" style="display:none;color:var(--cinnabar)"> ●</span></div>
+      <div class="sec-title p1-target" id="inkWatchTitle" tabindex="-1" data-sec-key="记挂">天道<span id="inkWatchCount">记挂 · 0</span><span id="inkWatchDot" style="display:none;color:var(--cinnabar)"> ●</span></div>
       <div class="chronicle" id="inkWatch"></div>
 
       <div class="sec-title">编年</div>
@@ -714,6 +728,7 @@
         右键拖拽 平移
       </div>
     </aside>
+    <div class="p1-scrim" id="inkExperienceScrim" hidden aria-hidden="true"></div>
   </div>
 
   <footer class="bottom">
@@ -809,9 +824,13 @@
     </div>
   </div>
 </div>
+<link rel="stylesheet" href="./src/inkbox/ui/playerExperienceNav.css" />
+<link rel="stylesheet" href="./src/inkbox/ui/g2/combat/combatObserver.css" />
+<link rel="stylesheet" href="./src/inkbox/ui/g2/environment/environmentObserver.css" />
 <link rel="stylesheet" href="./src/inkbox/ui/g1/presentation/characterCard.css" />
 <link rel="stylesheet" href="./src/inkbox/ui/g1/presentation/worldProgress.css" />
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
 <script type="module" src="./src/inkbox/main.js"></script>
+<script type="module" src="./src/inkbox/ui/playerExperienceNav.js"></script>
 </body>
 </html>

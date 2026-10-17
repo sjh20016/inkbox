@@ -10,6 +10,8 @@ import { mulberry32 } from './core/noise.js';
 import { generateWorld } from './world/worldgen.js';
 import { createSandboxWorld, creationOptions, parseSeed, syncCreationControls, syncMapProgress, expandSandboxMap } from './ui/worldCreation.js';
 import { accessBounds, canAccess } from './world/mapProgress.js';
+import { createSandboxCombatObservation } from './g2/combatObservationRuntime.js';
+import { createSandboxEnvironmentObservation } from './g2/environmentObservationRuntime.js';
 import { createSandboxCharacterRuntime } from './g1/sandboxRuntime.js';
 // 上界：`generateUpperWorld` 的 seed 收的是**凡间种子**，内部自己派生上界 seed
 // （所以这里绝不能先 xor 一次再传进去，那会双重派生）。
@@ -356,6 +358,8 @@ class Sandbox {
   // ── 启动 ────────────────────────────────────────────────
   boot() {
     this.qol = createQol(this);
+    this.combatObservation = createSandboxCombatObservation(this, $('inkCombatObserver'));
+    this.environmentObservation = createSandboxEnvironmentObservation(this, $('inkEnvironmentObserver'));
     this.buildToolPanel();
     this.bindEvents();
     this.setupSectionToggles();
@@ -377,6 +381,7 @@ class Sandbox {
     this.presetKey = presetKey;
     this.seed = seed >>> 0;
     this.world = createSandboxWorld(preset, this.seed, options);
+    this.combatObservation?.reset();
     this.life = new Life(this.world, mulberry32(this.seed ^ 0xa5a5a5a5));
     this.terrain = new TerrainLayer(this.world, { relief: this.camera.relief });
     // 上界：与凡间同尺寸的另一张地图 + 第二个 TerrainLayer。
@@ -418,6 +423,7 @@ class Sandbox {
     // 卜算子登场。台词只在「第一次见面」时说一次（met 存在世界里，读档不会重说）。
     greetOnBoot(this.world, this.rng);
     this.refreshBusanzi();
+    this.environmentObservation?.reset();
   }
 
   /**
@@ -736,6 +742,11 @@ class Sandbox {
   // ── 事件 ────────────────────────────────────────────────
   bindEvents() {
     bindBusanziTogglePanel(this);
+    const combatFxControl = $('inkCombatFx');
+    if (combatFxControl) {
+      combatFxControl.checked = this.stage.combatEnabled;
+      combatFxControl.addEventListener('change', () => this.stage.setCombatEnabled(combatFxControl.checked));
+    }
     window.addEventListener('resize', () => this.resize());
 
     const canvas = this.canvas;
@@ -776,6 +787,7 @@ class Sandbox {
         return;
       }
       if (tool.readonly) {
+        this.environmentObservation?.select({ plane: 'mortal', x: this.hoverTile.x, y: this.hoverTile.y });
         if (!this.g1.inspectCanvas(this.pointer.x, this.pointer.y)) this.inspectAt(this.hoverTile.x, this.hoverTile.y);
         return;
       }
@@ -1051,6 +1063,8 @@ class Sandbox {
             return;
           }
           this.world = world;
+          this.combatObservation?.reset();
+          this.environmentObservation?.reset();
           this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
           this.terrain.setWorld(this.world);
           // 上界也要跟着换：存档里带 upper 就复用，没带就按凡间 seed 重新派生
@@ -1137,6 +1151,8 @@ class Sandbox {
       try {
         const world = await importFile(file);
         this.world = world;
+        this.combatObservation?.reset();
+        this.environmentObservation?.reset();
         this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
         this.terrain.setWorld(this.world);
         // 同读档：导入的世界也要挂上它自己的上界，否则视界贴的是上一个世界的上界。
@@ -1294,7 +1310,7 @@ class Sandbox {
   refreshSlots() { return refreshSlotsPanel(this); }
 
   // ── 落笔 ────────────────────────────────────────────────
-  applyTool(isFirst) {
+  applyTool(isFirst, { point = this.hoverTile, radius = this.brushRadius } = {}) {
     const tool = this.tool;
     if (tool.mode === 'click' && !isFirst) return;
     // 划选工具没有「一个落点 + 半径」可言：它要的是一片自由形状，走 commitSelection。
@@ -1302,11 +1318,12 @@ class Sandbox {
     // 而抛错。试玩测试第 9 节会无差别地对每个工具调 applyTool，这条守卫也是为它存在的。
     if (tool.mode === 'select') return;
     const world = this.world;
-    const x = this.hoverTile.x;
-    const y = this.hoverTile.y;
+    const x = point.x;
+    const y = point.y;
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(radius)
+      || radius < 1 || radius > Math.max(...LIMITS.brushSizes)) return;
     if (!world.inside(x, y)) return;
     const bounds = accessBounds(world);
-    const radius = this.brushRadius;
     if (!canAccess(world, x, y) || (world.mapProgress && world.mapProgress.stage < 3 &&
       (x-radius < bounds.x0 || x+radius > bounds.x1 || y-radius < bounds.y0 || y+radius > bounds.y1))) {
       this.notify('此处尚未开放 · 请拓展地图或将笔刷移入开放区域', 2400); return;
@@ -1321,7 +1338,7 @@ class Sandbox {
       events: this.life.events,
       x: x + 0.5,
       y: y + 0.5,
-      radius: this.brushRadius,
+      radius,
       amount: tool.amount,
       history: this.history,
       rng: this.rng,
@@ -1605,6 +1622,7 @@ class Sandbox {
    */
   inspectRealmAt(x, y) {
     const plane = this.getRealmViewState().targetPlane;
+    this.environmentObservation?.select({ plane, x, y });
     if (this.g1.inspectCanvas(this.pointer.x, this.pointer.y, plane)) return;
     return this.inspectPlaneAt(plane, x, y);
   }
@@ -1648,6 +1666,7 @@ class Sandbox {
     if (planeId !== 'upper' && planeId !== 'nether') return;
     if (!canAccess(this.world, x, y)) { this.notify('此处尚未开放 · 请先拓展地图', 2400); return; }
     const nether = planeId === 'nether';
+    this.environmentObservation?.select({ plane: planeId, x, y });
     const plane = {
       plane: planeId,
       world: (this.world && this.world[planeId]) || (nether ? this.nether : this.upper),
@@ -1700,6 +1719,7 @@ class Sandbox {
       return;
     }
     if (!canAccess(this.world, x, y)) { this.notify('此处尚未开放 · 请先拓展地图', 2400); return; }
+    this.environmentObservation?.select({ plane: 'mortal', x, y });
     this.selected = { x, y };
     const world = this.world;
     const i = world.idx(x, y);
@@ -2051,6 +2071,7 @@ class Sandbox {
     // ⚠️ 收队列这一步收进 `PresentationStage`——本文件**不**写三遍
     //    `drainRuntimeEvents(world / world.upper / world.nether)`（那是「加一界改 N 处」）。
     this.stage.ingestWorlds(world).update(dt);
+    this.combatObservation?.refresh({ ingestedWorld: world, readyOnly: true });
 
     const speed = TIME.speeds[this.speedIndex].mult;
     const paused = this.speedIndex === 0 || editingTerrain;
@@ -2290,6 +2311,8 @@ class Sandbox {
     if (!world) return;
     syncMapProgress(this);
     this.g1.refresh();
+    this.combatObservation?.refresh();
+    this.environmentObservation?.refresh();
     const stats = world.stats();
     const day = Math.floor(world.day);
     const year = Math.floor(day / TIME.daysPerYear) + 1;

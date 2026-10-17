@@ -3,10 +3,13 @@
 // `day` is simulation time. Consumers may attach a real timestamp only after draining the queue.
 
 const queues = new WeakMap();
+const queueCounters = new WeakMap();
 
 export const RUNTIME_EVENT_CAP = 256;
+export const COMBAT_RUNTIME_EVENT_CAP = 64;
 export const RUNTIME_EVENT_TYPES = Object.freeze([
   'tool-impact',
+  'combat-hit',
   'tribulation',
   'ascension',
   'rift-open',
@@ -93,6 +96,31 @@ function snapshot(event) {
   return copy;
 }
 
+function validateCombatEvent(event) {
+  if (!Number.isSafeInteger(event.subjectId) || event.subjectId <= 0
+    || !Number.isSafeInteger(event.targetId) || event.targetId <= 0 || event.subjectId === event.targetId) {
+    throw new TypeError('Combat events require distinct positive safe integer IDs');
+  }
+  for (const field of ['x','y','intensity']) finiteNumber(event[field],field);
+  if (event.intensity < 0 || event.intensity > 1) throw new TypeError('Combat intensity must be within 0..1');
+  const data = event.data;
+  if (!data || Object.keys(data).length !== 4 || !['blade','fire','thunder'].includes(data.style)
+    || !['low','mid','high'].includes(data.tier)) throw new TypeError('Combat data must contain style, fromX, fromY and tier');
+  finiteNumber(data.fromX,'fromX'); finiteNumber(data.fromY,'fromY');
+}
+function countersFor(world) {
+  let counters = queueCounters.get(world);
+  if (!counters) { counters = {combatDropped:0,combatEvicted:0}; queueCounters.set(world,counters); }
+  return counters;
+}
+/** Queue diagnostics are transient and never expose the mutable queue. */
+export function runtimeEventStats(world) {
+  const queue = world && queues.get(world) || [];
+  const counters = world && queueCounters.get(world);
+  return Object.freeze({queued:queue.length,combatQueued:queue.filter(e => e.type === 'combat-hit').length,
+    combatDropped:counters?.combatDropped || 0,combatEvicted:counters?.combatEvicted || 0});
+}
+
 /** Add one short-lived presentation event without touching simulation state or RNG. */
 export function emitRuntimeEvent(world, type, payload = {}) {
   if (!EVENT_TYPE_SET.has(type)) throw new TypeError(`Unsupported runtime event type: ${type}`);
@@ -118,8 +146,19 @@ export function emitRuntimeEvent(world, type, payload = {}) {
   }
   if (payload.data !== undefined) event.data = cloneJsonValue(payload.data);
 
+  if (type === 'combat-hit') validateCombatEvent(event);
   const queue = queueFor(world);
-  if (queue.length === RUNTIME_EVENT_CAP) queue.shift();
+  const combat = type === 'combat-hit';
+  if (combat && (queue.length >= RUNTIME_EVENT_CAP
+    || queue.filter(e => e.type === 'combat-hit').length >= COMBAT_RUNTIME_EVENT_CAP)) {
+    countersFor(world).combatDropped += 1;
+    return null;
+  }
+  if (queue.length >= RUNTIME_EVENT_CAP) {
+    const combatIndex = queue.findIndex(e => e.type === 'combat-hit');
+    if (combatIndex >= 0) { queue.splice(combatIndex,1); countersFor(world).combatEvicted += 1; }
+    else queue.shift();
+  }
   queue.push(event);
   return snapshot(event);
 }
