@@ -19,6 +19,23 @@
 
 每个三角形的三个 UV 都取色块中心 `((index + 0.5) / 12, 0.5)`；Nearest 采样。不要展开成传统高密度 UV，不要在两个色块间插值。Flat normals 保留大几何平面。
 
+当前 runtime 为 2026-10 v2 重建版（legacy cells 版）：内嵌调色板 PNG 与 `../materials/cultivator_palette_12.png` 字节一致（SHA256 `d8eff33c…7a99`，12×1），材质/采样器定义未变。`scripts/inkbox-characters-check.mjs` 会逐三角形断言所有 UV 落在单一色格中心，并把实测色格三角数写入 `../data/structural_validation.json` 的 `moduleUvCells`。
+
+### v2 legacy 色格实测
+
+| 区域 | 色格 | 说明 |
+|---|---:|---|
+| 外袍、上袖（faction 可换色区） | 5 sect_blue | body 实测 88 三角形；`CharacterLibrary` 只重定向这一格 |
+| 交领、腰带、袖口 | 4 blue_gray | body 实测 62 三角形 |
+| 裤 | 6 earth_brown | body 实测 32 三角形（v1 语义一致） |
+| 眼、靴 | 3 ink_black | body 实测 24 三角形 |
+| 肤色（脸、手、耳） | 0 skin | body 实测 136 三角形 |
+| 基础发 | 3 ink_black + 发冠/发带 10 gray_purple | body 之外的 hair_base：78 + 8 |
+| 长老发 | 1 paper_white + 发带 4 blue_gray | hair_elder：74 + 8 |
+| 鬼发 | 3 ink_black + 红梢 7 dark_red | hair_ghost：78 + 16 |
+
+发带是 v2 新增的独立色格（基础发 cell 10），运行时不会按身份换色（游戏只重映射 factionSlot 5）。资产包 README 中的“02 宗门弟子发带 10→5”等六身份重映射属于作者预览配色，本仓库 runtime 未实现逐部件重映射：身份仍由模块组合 + role `paletteIndex` 改外袍主色表达。另：`sect_token` 在 v2 带 12 面 cell 5 区域，因此令牌蓝色部分会随 faction 主色一起变化（v1 令牌无 cell 5）。
+
 共享身体中袍身、上袖的 UV 固定使用 **index 5**，表示可替换的主色区域。它既是宗门蓝色块，也是运行时指定区域的语义标记。`instancePaletteIndex` 只重定向这一 UV 色块；basic、游修、长老、鬼修、丹修的默认主色来自 role 配置。皮肤 index0、眼睛/鞋/黑发 index3、领口/腰带/袖口 index4 均保持原样，不用整体 instanceColor 把人脸一起染色。
 
 宗门色映射到蓝5、红7、绿11、灰10、黑3这五种受控主色，几何不变。具有宗门的高阶修士和丹修同样可以使用宗门主色，白发/丹炉标记继续表达身份；没有宗门时使用职业默认色。所有主色调整只存在于表现数据，不回写实体或存档。

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>坐天观井 · 山海异兽资产库</title>
+  <link rel="icon" href="data:,">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#d5d8dc;color:#28303b;font-family:system-ui,"Microsoft YaHei",sans-serif;overflow:hidden}
+    header{height:86px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 24px;background:#f0eeea;border-bottom:1px solid #b6b9bc}
+    h1{font-size:20px;margin:0 0 4px;letter-spacing:.08em}header p{font-size:12px;margin:0;color:#626973}
+    nav{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:66%}
+    button{font:inherit;padding:7px 10px;background:#e1e2df;border:1px solid #a3adb6;border-radius:4px;cursor:pointer;white-space:nowrap}
+    button[aria-pressed=true]{background:#354b5e;color:#fff;border-color:#354b5e}
+    button[data-trial=true]{border-color:#8a6a3f}
+    main{position:relative;height:calc(100vh - 152px)}
+    canvas{display:block;width:100%;height:100%}
+    #status{position:absolute;left:22px;top:16px;background:#f5f3eedc;padding:10px 14px;border-radius:4px;font-size:13px;line-height:1.7;pointer-events:none;white-space:pre-line}
+    #info{position:absolute;right:18px;top:16px;background:#f5f3eee6;padding:10px 14px;border-radius:4px;font-size:12px;line-height:1.8;pointer-events:none;min-width:220px}
+    #info b{font-size:14px}
+    footer{height:66px;display:flex;align-items:center;justify-content:center;gap:8px;border-top:1px solid #b6b9bc;background:#f0eeea;font-size:13px;flex-wrap:wrap;padding:8px 16px}
+    footer span.label{color:#626973;margin-right:4px}
+    @media(max-width:900px){header{height:auto;display:block;padding:10px}nav{max-width:100%;justify-content:flex-start;margin-top:8px}main{height:calc(100vh - 210px)}#info{display:none}}
+  </style>
+  <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+</head>
+<body>
+  <header>
+    <div><h1>坐天观井 · 山海异兽库</h1><p>13 种 · 8 套同名动画 · 共享 16 色调色板 · 与修士同一单位制</p></div>
+    <nav id="speciesNav" aria-label="异兽物种"></nav>
+  </header>
+  <main>
+    <canvas id="creatures" aria-label="山海异兽三维展示"></canvas>
+    <div id="status">正在加载 13 种异兽资产…</div>
+    <div id="info"></div>
+  </main>
+  <footer>
+    <span class="label">动画</span>
+    <button data-action="rest" aria-pressed="true">默认姿态</button>
+    <button data-clip="static">static</button>
+    <button data-clip="idle">idle</button>
+    <button data-clip="walk">walk</button>
+    <button data-clip="run">run</button>
+    <button data-clip="eat">eat</button>
+    <button data-clip="dance">dance</button>
+    <button data-clip="gesture-positive">gesture-positive</button>
+    <button data-clip="gesture-negative">gesture-negative</button>
+    <span class="label" style="margin-left:14px">拖拽旋转 · 滚轮缩放</span>
+  </footer>
+  <script type="module" src="./src/inkbox/render3d/creaturesLab.js"></script>
+</body>
+</html>

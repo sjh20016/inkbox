@@ -1,0 +1,85 @@
+{
+  "generatedAt": "2026-10-17T14:43:38.724Z",
+  "asset": "busanzi",
+  "pass": true,
+  "windBodyEqualsIdle": true,
+  "cultivatorCompatibility": {
+    "joints": [
+      "root",
+      "pelvis",
+      "spine",
+      "head",
+      "l_upperarm",
+      "l_lowerarm",
+      "l_hand",
+      "r_upperarm",
+      "r_lowerarm",
+      "r_hand",
+      "l_upperleg",
+      "l_lowerleg",
+      "l_foot",
+      "r_upperleg",
+      "r_lowerleg",
+      "r_foot"
+    ],
+    "ibmBytesCompared": 1024,
+    "animationChannels": "Idle/Walk × 48 channels byte-identical"
+  },
+  "glb": {
+    "bytes": 316528,
+    "sha256": "F90F400D60B3B16BCD3D67F4619D915D54657F2571C55F0BDA2970076257A554",
+    "meshes": {
+      "buzuanzi_body": 714,
+      "buzuanzi_hair": 182,
+      "buzuanzi_talisman": 50,
+      "buzuanzi_accessories": 330,
+      "buzuanzi_umbrella": 258
+    },
+    "totalTriangles": 1534
+  },
+  "palette": {
+    "width": 20,
+    "height": 1,
+    "count": 20,
+    "nearest": true,
+    "sha256": "394FDDB1C5A40CDFE1A0595BF9D698C7760E9B6E37435E65F436918074D48597"
+  },
+  "rig": {
+    "joints": 38,
+    "baseJoints": 16,
+    "addOnBones": 22
+  },
+  "animations": [
+    {
+      "name": "Idle",
+      "channels": 70,
+      "duration": 1.375,
+      "minKeyframes": 2,
+      "maxKeyframes": 33
+    },
+    {
+      "name": "Walk",
+      "channels": 70,
+      "duration": 1.375,
+      "minKeyframes": 2,
+      "maxKeyframes": 33
+    },
+    {
+      "name": "Wind",
+      "channels": 70,
+      "duration": 1.375,
+      "minKeyframes": 2,
+      "maxKeyframes": 33
+    }
+  ],
+  "manifest": {
+    "schema": "inkbox.busanzi.manifest/1",
+    "sourceZip": "buzuanzi.zip",
+    "sourceZipSha256": "8C92A7F67B68EC7DD3EC70F2462980FF5C6EBD85F564AEE8C3ECCA8FF3606657"
+  },
+  "portrait": {
+    "width": 456,
+    "height": 576,
+    "sha256": "DCC931B84DED0C256D1F5422263AAFE303754177E4BB01D2A3091413D87A3F11"
+  }
+}

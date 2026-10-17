@@ -157,7 +157,7 @@
   }
   .busanzi.on { opacity: 1; transform: none; }
   .busanzi button { pointer-events: auto; border: 1px solid var(--line); border-radius: 3px; background: var(--paper); color: var(--ink-mid); font: inherit; font-size: 10px; padding: 2px 4px; cursor: pointer; }
-  .busanzi.is-collapsed .busanzi-meter, .busanzi.is-collapsed #inkBusanziLines { display: none; }
+  .busanzi.is-collapsed .busanzi-bodyrow { display: none; }
   .busanzi.is-collapsed .busanzi-head { margin-bottom: 0; }
   .busanzi.is-collapsed { width: auto; }
   .busanzi-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
@@ -167,6 +167,26 @@
     margin-left: auto; font-size: 10px; color: var(--ink-soft); letter-spacing: 1px;
     border: 1px solid var(--line-strong); border-radius: 999px; padding: 1px 7px; white-space: nowrap;
   }
+  /* T2：卜算子肖像入口。图是**真实模型**在 three.js 里渲染的 456×576 透明底 PNG
+     （assets/characters/busanzi/materials/busanzi_portrait.png），点开独立三维小窗。
+     放在标题与亲缘 meter 之间，不改原对话条与折叠判据。 */
+  .busanzi-bodyrow { display: flex; gap: 8px; align-items: flex-start; }
+  .busanzi .busanzi-portrait {
+    position: relative; flex: 0 0 62px; width: 62px; height: 78px; padding: 0; margin: 0;
+    border: 1px solid var(--line-strong); border-radius: 4px; overflow: hidden; cursor: pointer;
+    background: radial-gradient(circle at 50% 26%, rgba(247,243,235,.96), rgba(214,203,178,.55) 72%, rgba(168,157,130,.38));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.4);
+  }
+  .busanzi .busanzi-portrait:hover { border-color: var(--ink-soft); }
+  .busanzi .busanzi-portrait:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 1px; }
+  .busanzi .busanzi-portrait img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; pointer-events: none; }
+  .busanzi .busanzi-portrait-label {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 1px 0 2px;
+    font-size: 9px; line-height: 1.3; letter-spacing: 1px; text-align: center; color: var(--paper);
+    background: linear-gradient(0deg, rgba(34,32,28,.74), rgba(34,32,28,0)); pointer-events: none;
+  }
+  .busanzi .busanzi-portrait.is-missing { display: none; }
+  .busanzi-copy { flex: 1 1 auto; min-width: 0; }
   .busanzi-meter { height: 3px; background: rgba(34,32,28,.1); border-radius: 2px; overflow: hidden; margin-bottom: 7px; }
   .busanzi-meter i { display: block; height: 100%; background: var(--ink-mid); transition: width .5s ease; }
   .busanzi-line { font-size: 12px; line-height: 1.62; color: var(--ink-mid); }
@@ -541,8 +561,20 @@
           <span class="busanzi-tier" id="inkBusanziTier">井外生客</span>
           <button type="button" id="inkBusanziToggle" aria-expanded="true" aria-controls="inkBusanziLines">收起引导</button>
         </div>
-        <div class="busanzi-meter"><i id="inkBusanziMeter" style="width:0%"></i></div>
-        <div id="inkBusanziLines"></div>
+        <div class="busanzi-bodyrow">
+          <!-- T2：肖像入口。PNG 是真实模型的渲染结果（随运行包放 materials/）；
+               点击打开独立 three.js 小窗，Idle / Walk / Wind 三动画可切。 -->
+          <button type="button" class="busanzi-portrait" id="inkBusanziPortrait"
+            title="观其真形 · 卜算子（三维形象，Idle / Walk / 风起）"
+            aria-label="观其真形，打开卜算子三维形象">
+            <img src="./assets/characters/busanzi/materials/busanzi_portrait.png" alt="" width="62" height="78" draggable="false">
+            <span class="busanzi-portrait-label">观其真形</span>
+          </button>
+          <div class="busanzi-copy">
+            <div class="busanzi-meter"><i id="inkBusanziMeter" style="width:0%"></i></div>
+            <div id="inkBusanziLines"></div>
+          </div>
+        </div>
       </div>
       <!-- Q21：未保存保护用的**轻量**确认条（不是 modal）。
            `guardDiscard()` 只在「有未保存变化」时把它显示出来；

@@ -22,5 +22,11 @@
     "family": "preview/cultivator_family_six.png",
     "modules": "preview/cultivator_modules.png",
     "turnaround": "preview/cultivator_color_turnaround.png"
+  },
+  "superseded": {
+    "by": "data/structural_validation.json + data/cultivator_manifest.json provenance",
+    "reason": "2026-10-17 runtime GLB was replaced by the external cultivator_rebuild legacy-cells export (SHA256 d31c4af5...3DBAA7). This report still records the earlier 2026-10 Blender v1 build only; its role_triangles/base_budget_including_hair are NOT current runtime measurements.",
+    "runtime_glb_sha256": "d31c4af5136e8d16e9da6cac059bea18826d933b3eb8a5693ce75264323dbaa7",
+    "previous_glb_sha256": "a9326d49bf0e994c0fca6d4aca90acc25bc4c54640ed27afd52a7a7216bfd10f"
   }
 }

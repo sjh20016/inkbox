@@ -33,6 +33,8 @@ import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { createCultivatorPilot } from '../art/PilotAssets.js';
 import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
 import { CharacterBatch } from '../characters/CharacterBatch.js';
+import { CreatureBatch } from '../creatures/CreatureBatch.js';
+import { creatureFacingFor, creatureSpeciesFor } from '../creatures/creatureSpecies.js';
 import { createCharacterLODGeometries } from '../lod/CharacterLODAssets.js';
 import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
 import { EnvironmentBatch } from '../environment/EnvironmentBatch.js';
@@ -44,6 +46,12 @@ import { GHOST_ASSET_IDS, ghostAssetFor, ordinaryNetherGhost } from './ghostFami
  * 一次性分配、**不随帧增长**。
  */
 const CAPACITY = LIMITS.maxEntities + 256;
+
+/**
+ * 异兽实例批每物种容量。可见灵兽日常约 35 头（`sim/life.js` WILDLIFE_TARGET），
+ * 极端世界上限 2200 ⇒ 1024 已足够覆盖；溢出只会丢表现，不会改世界事实。
+ */
+const CREATURE_CAPACITY = 1024;
 
 /** 每类视觉语言（蓝图 M1-A2）。几何体**底面在 y=0**，实例位置直接落在地表。 */
 const STYLE = Object.freeze({
@@ -78,7 +86,7 @@ function geometryFor(cls) {
 }
 
 export class EntityLayer {
-  constructor(world, coordinates, elevation = new ElevationField(world), { derive = deriveEntities, characterLibrary = null } = {}) {
+  constructor(world, coordinates, elevation = new ElevationField(world), { derive = deriveEntities, characterLibrary = null, creatureLibrary = null } = {}) {
     this.world = world;
     this.coordinates = coordinates;
     this.elevation = elevation;
@@ -94,6 +102,8 @@ export class EntityLayer {
     this.meshes = {};
     this.placeholderMeshes = {};
     this.characterBatch = null;
+    this.creatureBatch = null;
+    this.creatureSpecies = [];
     this.ghostBatch = null; this.productionAssetsEnabled = false;
     this.lodEnabled = false;
     this.artView = {};
@@ -102,7 +112,7 @@ export class EntityLayer {
     this._cameraMatrix.fill(NaN);
     this._projectPoint = new THREE.Vector3();
     this._lodByEntity = new Map();
-    this.stats = { instances: 0, byClass: {}, lod: [0, 0, 0], triangles: 0,
+    this.stats = { instances: 0, byClass: {}, lod: [0, 0, 0], triangles: 0, creatures: 0,
       overflow: 0, capacityOverflow: 0, capacity: LOD_BUDGETS.categories.character.capacity, budgetDemotions: 0 };
 
     this.group = new THREE.Group();
@@ -150,6 +160,7 @@ export class EntityLayer {
     }
     this.legacyCultivator = { geometry: this.placeholderMeshes.cultivator.geometry, material: this.placeholderMeshes.cultivator.material };
     if (characterLibrary) this.setCharacterLibrary(characterLibrary);
+    if (creatureLibrary) this.setCreatureLibrary(creatureLibrary);
   }
 
   setArtProfile(profile) {
@@ -251,6 +262,60 @@ export class EntityLayer {
     this.clock = Infinity;
   }
 
+  /**
+   * 装配 / 卸下异兽资产库。
+   *
+   * `library == null`（或已 dispose）⇒ 完全回退旧灵兽占位几何，游戏照常。
+   * 世界事实一律不碰：这里只换「灵兽画成什么」。
+   */
+  setCreatureLibrary(library) {
+    const next = library && !library.disposed ? library : null;
+    if (!next) {
+      if (!this.creatureBatch) return;
+      this.creatureBatch.dispose();
+      this.creatureBatch = null;
+      this.creatureSpecies = [];
+      const placeholder = this.placeholderMeshes.beast;
+      if (placeholder && placeholder.parent !== this.group) this.group.add(placeholder);
+      this.lastDerived = null;
+      this.clock = Infinity;
+      return;
+    }
+    if (this.creatureBatch?.library === next) return;
+    this.creatureBatch?.dispose();
+    this.creatureBatch = new CreatureBatch(next, { capacity: CREATURE_CAPACITY });
+    this.group.add(this.creatureBatch.group);
+    this.creatureSpecies = next.worldSpecies;
+    const placeholder = this.placeholderMeshes.beast;
+    placeholder.visible = false;
+    placeholder.count = 0;
+    placeholder.boundingBox = null;
+    placeholder.boundingSphere = null;
+    placeholder.removeFromParent();
+    this.lastDerived = null;
+    this.clock = Infinity;
+  }
+
+  /** 灵兽 → 异兽物种。只读 `world.seed` 与 `entity.id`，不抽模拟 RNG、不写实体。 */
+  creatureSpeciesOf(item) {
+    return creatureSpeciesFor(this.world?.seed ?? 0, item.id, this.creatureSpecies);
+  }
+
+  creatureRecord(item) {
+    const species = this.creatureSpeciesOf(item);
+    if (!species) return null;
+    const p = this.coordinates.worldToRender(item.x, item.y, 0);
+    return {
+      species,
+      x: p.x,
+      y: this.elevation.at(item.x, item.y) + item.lift,
+      z: p.z,
+      rotationY: creatureFacingFor(this.world?.seed ?? 0, item.id),
+      scale: 1,
+      source: item,
+    };
+  }
+
   setEnvironmentAssets(library, material, enabled) {
     const supported=library&&material&&this.world?.plane==='nether';
     if (this.ghostBatch && (!supported||this.ghostBatch.library!==library||this.ghostBatch.material!==material)) {
@@ -350,6 +415,8 @@ export class EntityLayer {
     for (const meshes of Object.values(this.lodMeshes)) for (const mesh of meshes) register(mesh);
     const byClass = Object.fromEntries(ENTITY_CLASSES.map(cls => [cls, 0]));
     const characterRecords = [];
+    const creatureRecords = [];
+    const creatureLevels = [];
     const ghostRecords = [];
     let instances = 0, overflow = 0;
     const lod = [0, 0, 0];
@@ -359,6 +426,14 @@ export class EntityLayer {
       if (level === 0 && this.characterBatch && (cls === 'cultivator' || ghost)) {
         characterRecords.push(this.characterRecord(item));
         continue;
+      }
+      // 灵兽 LOD0/LOD1 ⇒ 真实异兽模型（单只仅 272–752 tris，批量成本可控）；
+      // 只有 LOD2（≤7px 剪影级）仍走既有简化占位。
+      // 委托书要求「玩家在世界运行时确实能看到不同造型的灵兽活动」：默认镜头下
+      // 灵兽高度约 8–15px，落在 LOD1；若只 LOD0 用真模型，正常镜头看到的仍是旧方块。
+      if (level <= 1 && this.creatureBatch && cls === 'beast') {
+        const record = this.creatureRecord(item);
+        if (record) { creatureRecords.push(record); creatureLevels.push(level); continue; }
       }
       const target = level === 0 ? this.placeholderMeshes[cls]
         : this.lodMeshes[ghost ? 'ghost' : cls][level - 1];
@@ -393,10 +468,23 @@ export class EntityLayer {
         byClass[cls]++; instances++; lod[0]++;
       }
     }
+    if (this.creatureBatch) {
+      const creatureStats = this.creatureBatch.write(creatureRecords);
+      overflow += creatureStats.overflow;
+      byClass.beast += creatureStats.instances;
+      instances += creatureStats.instances;
+      // 真实模型同时承担 LOD0 / LOD1；正常世界不会溢出，溢出只会丢表现。
+      let missed = creatureStats.overflow;
+      for (let i = creatureLevels.length - 1; i >= 0 && missed > 0; i -= 1) {
+        if (creatureLevels[i] >= 0) { creatureLevels[i] = -1; missed -= 1; }
+      }
+      for (const level of creatureLevels) if (level >= 0) lod[level] += 1;
+    }
     this._lodByEntity = selection.states;
     this.ghostBatch?.write(ghostRecords);
     const capacityOverflow = Math.max(0, selection.entries.length - LOD_BUDGETS.categories.character.capacity);
     this.stats = { instances, byClass, lod, triangles: this.submittedTriangles(),
+      creatures: this.creatureBatch?.stats.instances || 0,
       overflow, capacityOverflow, capacity: LOD_BUDGETS.categories.character.capacity,
       budgetDemotions: selection.budgetDemotions };
     this.lastDerived = derived;
@@ -411,12 +499,22 @@ export class EntityLayer {
     let instances = 0; let overflow = 0;
     const byClass = {};
     const characterRecords = [];
+    const creatureRecords = [];
     const ghostRecords = [];
     for (const cls of ENTITY_CLASSES) {
       const mesh = this.placeholderMeshes[cls];
       const list = this.visibleList(derived, cls);
       if (this.characterBatch && cls === 'cultivator') {
         for (const item of list) characterRecords.push(this.characterRecord(item));
+        byClass[cls] = 0;
+        continue;
+      }
+      // LOD 关闭时灵兽也直接用真实模型（不受屏幕尺寸门槛影响）。
+      if (this.creatureBatch && cls === 'beast') {
+        for (const item of list) {
+          const record = this.creatureRecord(item);
+          if (record) creatureRecords.push(record);
+        }
         byClass[cls] = 0;
         continue;
       }
@@ -462,8 +560,15 @@ export class EntityLayer {
         instances += 1;
       }
     }
+    if (this.creatureBatch) {
+      const creatureStats = this.creatureBatch.write(creatureRecords);
+      overflow += creatureStats.overflow;
+      byClass.beast = (byClass.beast || 0) + creatureStats.instances;
+      instances += creatureStats.instances;
+    }
     this.ghostBatch?.write(ghostRecords);
     this.stats = { instances, byClass, lod: [instances, 0, 0], triangles: this.submittedTriangles(),
+      creatures: this.creatureBatch?.stats.instances || 0,
       overflow, capacityOverflow: Math.max(0, instances - LOD_BUDGETS.categories.character.capacity),
       capacity: LOD_BUDGETS.categories.character.capacity, budgetDemotions: 0 };
   }
@@ -520,6 +625,10 @@ export class EntityLayer {
     this.pilotGhostMaterial?.dispose();
     this.characterBatch?.dispose();
     this.characterBatch = null;
+    // CreatureBatch 只释放自己的 InstancedMesh 包装；共享几何/材质归 CreatureLibrary。
+    this.creatureBatch?.dispose();
+    this.creatureBatch = null;
+    this.creatureSpecies = [];
     this.ghostBatch?.dispose(); this.ghostBatch = null;
     for (const meshes of Object.values(this.lodMeshes)) for (const mesh of meshes) {
       mesh.dispose(); mesh.userData.renderEntities = [];

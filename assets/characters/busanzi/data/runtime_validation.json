@@ -1,0 +1,273 @@
+{
+  "generatedAt": "2026-10-17T14:21:56.803Z",
+  "asset": "busanzi",
+  "lab": {
+    "metrics": {
+      "clips": [
+        "Idle",
+        "Walk",
+        "Wind"
+      ],
+      "metrics": {
+        "ready": true,
+        "clips": [
+          {
+            "name": "Idle",
+            "duration": 1.375,
+            "tracks": 70
+          },
+          {
+            "name": "Walk",
+            "duration": 1.375,
+            "tracks": 70
+          },
+          {
+            "name": "Wind",
+            "duration": 1.375,
+            "tracks": 70
+          }
+        ],
+        "meshes": 5,
+        "triangles": 1534,
+        "bones": 38,
+        "baseJoints": 16,
+        "materialCount": 1,
+        "material": "MeshLambertMaterial",
+        "textures": 1,
+        "palette": {
+          "count": 20,
+          "uvFormula": "(index + 0.5) / 20",
+          "nearest": true,
+          "imageSize": [
+            20,
+            1
+          ]
+        },
+        "activeClip": "Idle",
+        "mixerTime": 0.1002999999523163,
+        "mixerRunning": true,
+        "geometries": 7,
+        "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "frames": 2,
+        "errors": []
+      },
+      "loaded": [
+        "http://127.0.0.1:4187/assets/characters/busanzi/data/busanzi_manifest.json",
+        "http://127.0.0.1:4187/assets/characters/busanzi/mesh/busanzi.glb"
+      ],
+      "paletteSwatches": 20,
+      "statusText": "Idle · Idle 1.375s / Walk 1.375s / Wind 1.375s\n1534 三角面 · 5 网格 · 38 骨 · 1 材质 · 调色板 20 色（最近邻）\n渲染器 ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11) · 0 帧"
+    },
+    "clips": [
+      {
+        "clip": "Idle",
+        "mixerTime": 0.8962999999523156,
+        "frames": 135
+      },
+      {
+        "clip": "Walk",
+        "mixerTime": 1.8917999999523176,
+        "frames": 313
+      },
+      {
+        "clip": "Wind",
+        "mixerTime": 2.887599999964234,
+        "frames": 470
+      }
+    ],
+    "windDeltas": {
+      "talisman_1": 0.1263230581348175,
+      "hair_back_1": 0.8140518790102148,
+      "hem_f": 0.6566255211826889,
+      "sleeve_flap_l": 0.6259197301111684,
+      "l_upperleg": 0.0000023940374563330442,
+      "spine": 0
+    }
+  },
+  "portrait": {
+    "generated": false,
+    "width": 456,
+    "height": 576,
+    "bytes": 38698,
+    "sha256": "DCC931B84DED0C256D1F5422263AAFE303754177E4BB01D2A3091413D87A3F11"
+  },
+  "game": {
+    "canvas": {
+      "panel": {
+        "panelOn": true,
+        "lineCount": 3,
+        "tier": "井外生客",
+        "meterWidth": "0%",
+        "portraitButton": true,
+        "imageComplete": true,
+        "imageSize": [
+          456,
+          576
+        ],
+        "speed": 0
+      },
+      "viewer": {
+        "state": {
+          "opened": true,
+          "loading": false,
+          "ready": true,
+          "activeClip": "Idle",
+          "error": null,
+          "clips": [
+            "Idle",
+            "Walk",
+            "Wind"
+          ]
+        },
+        "metrics": {
+          "opened": true,
+          "ready": true,
+          "activeClip": "Idle",
+          "mixerRunning": true,
+          "drawCalls": 6,
+          "triangles": 1536,
+          "geometries": 6,
+          "textures": 3,
+          "contextLost": false,
+          "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "size": [
+            518,
+            468
+          ]
+        },
+        "canvas": true,
+        "viewerReadyFlag": true
+      },
+      "viewerAfterWalk": {
+        "opened": true,
+        "ready": true,
+        "activeClip": "Walk",
+        "mixerRunning": true,
+        "drawCalls": 6,
+        "triangles": 1536,
+        "geometries": 6,
+        "textures": 3,
+        "contextLost": false,
+        "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "size": [
+          518,
+          468
+        ]
+      },
+      "windDeltas": {
+        "talisman_1": 0.12632446352133167,
+        "hair_back_1": 0.814062688766987,
+        "hem_f": 0.6566255211826889,
+        "sleeve_flap_l": 0.6259768130424399,
+        "l_upperleg": 0.0000023940374563330442,
+        "spine": 0
+      },
+      "windAutoReturn": "Idle",
+      "afterClose": {
+        "viewerState": {
+          "opened": false,
+          "loading": false,
+          "ready": false,
+          "activeClip": null,
+          "error": null,
+          "clips": [
+            "Idle",
+            "Walk",
+            "Wind"
+          ]
+        },
+        "viewerReadyIsThenable": true,
+        "gameCanvas": true,
+        "worldStable": "{\"day\":1.44,\"entities\":73,\"busanzi\":{\"met\":true,\"acts\":0,\"milestones\":[],\"peakPop\":73,\"tier\":0,\"log\":[{\"day\":0,\"year\":0,\"text\":\"井中有一线，方才还不在。\"},{\"day\":0,\"year\":0,\"text\":\"我的天，你终于醒了！小爷我在这堆破烂世道里蹲了快一千年……\"},{\"day\":0,\"year\":0,\"text\":\"别慌！对面那片山山水水，还有跑来跑去的小蚂蚁，都是你的世界。\"},{\"day\":0,\"year\":0,\"text\":\"你可以当我是你给自己留的「说明书」。你睡太久，忘了很多事。小爷我负责在你犯蠢的时候，往你脑门上拍一巴掌。\"}]}}",
+        "fps": 87.92965627497986
+      },
+      "viewerReadyAfter": false,
+      "collapse": {
+        "collapsed": true,
+        "expandedAgain": true
+      },
+      "worldSwitch": {
+        "closed": true
+      }
+    },
+    "three": {
+      "before": {
+        "canvas": true,
+        "hidden": false,
+        "geometries": 8,
+        "textures": 3,
+        "calls": 8
+      },
+      "withViewer": {
+        "viewerClip": "Idle",
+        "viewerMetrics": {
+          "opened": true,
+          "ready": true,
+          "activeClip": "Idle",
+          "mixerRunning": true,
+          "drawCalls": 6,
+          "triangles": 1536,
+          "geometries": 6,
+          "textures": 3,
+          "contextLost": false,
+          "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "size": [
+            518,
+            468
+          ]
+        },
+        "mainCanvas": true,
+        "mainContextLost": false,
+        "mainGeometries": 9,
+        "mainTextures": 4,
+        "active": true
+      },
+      "afterClose": {
+        "mainCanvas": true,
+        "mainContextLost": false,
+        "geometries": 9,
+        "textures": 4,
+        "viewerDom": false,
+        "viewerState": {
+          "opened": false,
+          "loading": false,
+          "ready": false,
+          "activeClip": null,
+          "error": null,
+          "clips": [
+            "Idle",
+            "Walk",
+            "Wind"
+          ]
+        }
+      }
+    },
+    "failurePath": {
+      "state": {
+        "opened": true,
+        "loading": false,
+        "ready": false,
+        "activeClip": null,
+        "error": "Failed to fetch",
+        "clips": [
+          "Idle",
+          "Walk",
+          "Wind"
+        ]
+      },
+      "errorShown": true,
+      "retryButton": true,
+      "gameCanvas": true,
+      "gameWorld": true,
+      "loadingHidden": true
+    }
+  },
+  "errors": [],
+  "pass": true,
+  "browser": {
+    "browser": "Edg/155.0.4283.45",
+    "debugPort": 62651,
+    "width": 1440,
+    "height": 900
+  }
+}

@@ -1,0 +1,913 @@
+{
+  "generatedAt": "2026-10-17T14:28:58.726Z",
+  "lab": {
+    "loaded": {
+      "species": [
+        "jingwei",
+        "biyi",
+        "chiru",
+        "xuangui",
+        "tiangou",
+        "dangkang",
+        "jiuweihu",
+        "lushu",
+        "dijiang",
+        "zheng",
+        "qiongqi",
+        "fei",
+        "kaiming"
+      ],
+      "names": [
+        "精卫",
+        "比翼鸟",
+        "赤鱬",
+        "旋龟",
+        "天狗",
+        "当康",
+        "九尾狐",
+        "鹿蜀",
+        "帝江",
+        "狰",
+        "穷奇",
+        "蜚",
+        "开明兽"
+      ],
+      "heights": [
+        0.584,
+        0.571,
+        0.58,
+        0.462,
+        0.858,
+        1.178,
+        1.633,
+        2.12,
+        1.504,
+        2.184,
+        2.797,
+        3.532,
+        5.954
+      ],
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "errors": [],
+      "loadedFrom": [
+        "http://127.0.0.1:4187/assets/creatures/data/creature_manifest.json",
+        "http://127.0.0.1:4187/assets/creatures/materials/creature_palette.png",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-jingwei.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-biyi.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-chiru.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-xuangui.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-tiangou.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-dangkang.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-jiuweihu.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-lushu.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-dijiang.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-zheng.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-qiongqi.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-fei.glb",
+        "http://127.0.0.1:4187/assets/creatures/mesh/creature-kaiming.glb"
+      ]
+    },
+    "lineup": {
+      "species": 13,
+      "rigs": 13,
+      "selected": "all",
+      "currentClip": "rest",
+      "drawCalls": 116,
+      "triangles": 6320,
+      "meshCount": 116,
+      "materialCount": 1,
+      "textureCount": 1,
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "clipsPerRig": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "allClipsMatch": true,
+      "mixerCount": 13,
+      "viewport": [
+        1440,
+        748
+      ],
+      "dpr": 1,
+      "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    "info": {
+      "pick": {
+        "id": "lushu",
+        "name_zh": "鹿蜀",
+        "size_class": "中",
+        "source": "《南山经》杻阳之山",
+        "quote": "状如马而白首，其文如虎而赤尾，其音如谣，佩之宜子孙",
+        "height": 2.12,
+        "height_vs_cultivator": 1,
+        "size": [
+          1.03,
+          2.12,
+          3.12
+        ],
+        "triangles": 504,
+        "parts": 7,
+        "nodes": [
+          "body",
+          "head",
+          "tail",
+          "leg-front-left",
+          "leg-front-right",
+          "leg-back-left",
+          "leg-back-right"
+        ],
+        "clips": [
+          "static",
+          "idle",
+          "walk",
+          "run",
+          "eat",
+          "dance",
+          "gesture-positive",
+          "gesture-negative"
+        ],
+        "worldTrial": true
+      },
+      "speciesCount": 13,
+      "defaultRigVisible": true,
+      "worldTrial": [
+        "xuangui",
+        "tiangou",
+        "dangkang",
+        "lushu"
+      ]
+    },
+    "animation": {
+      "rest": {
+        "p": [
+          0,
+          0,
+          0
+        ],
+        "q": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "walking": {
+        "p": [
+          0,
+          0.05283446796955651,
+          0
+        ],
+        "q": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "gesturing": {
+        "p": [
+          0,
+          0,
+          0
+        ],
+        "q": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "isolated": [
+        "lushu"
+      ],
+      "metrics": {
+        "species": 13,
+        "rigs": 13,
+        "selected": "lushu",
+        "currentClip": "gesture-positive",
+        "drawCalls": 7,
+        "triangles": 504,
+        "meshCount": 116,
+        "materialCount": 1,
+        "textureCount": 1,
+        "clips": [
+          "static",
+          "idle",
+          "walk",
+          "run",
+          "eat",
+          "dance",
+          "gesture-positive",
+          "gesture-negative"
+        ],
+        "clipsPerRig": [
+          8,
+          8,
+          8,
+          8,
+          8,
+          8,
+          8,
+          8,
+          8,
+          8,
+          8,
+          8,
+          8
+        ],
+        "allClipsMatch": true,
+        "mixerCount": 13,
+        "viewport": [
+          1440,
+          748
+        ],
+        "dpr": 1,
+        "renderer": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      }
+    },
+    "defaultPose": {
+      "currentClip": "rest",
+      "selected": "lushu"
+    }
+  },
+  "game": {
+    "library": {
+      "ready": true,
+      "error": null,
+      "worldSpecies": [
+        "tiangou",
+        "dangkang",
+        "lushu",
+        "xuangui"
+      ],
+      "speciesCount": 4
+    },
+    "spawn": {
+      "made": 24,
+      "beasts": 24,
+      "entities": 24
+    },
+    "defaultLod": {
+      "ppu": 2.6584191083378954,
+      "zoom": 1,
+      "visible": {
+        "human": 0,
+        "cultivator": 0,
+        "beast": 24,
+        "spirit": 0,
+        "wraith": 0
+      },
+      "visibleTotal": 24,
+      "creatureInstances": 0,
+      "bySpecies": {},
+      "batch": {
+        "creatures": 0,
+        "instances": 0,
+        "drawCalls": 0,
+        "triangles": 0,
+        "overflow": 0
+      },
+      "stats": {
+        "instances": 24,
+        "byClass": {
+          "human": 0,
+          "cultivator": 0,
+          "beast": 24,
+          "spirit": 0,
+          "wraith": 0
+        },
+        "lod": [
+          0,
+          0,
+          24
+        ],
+        "triangles": 96,
+        "creatures": 0,
+        "overflow": 0,
+        "capacityOverflow": 0,
+        "capacity": 3256,
+        "budgetDemotions": 0
+      },
+      "placeholderCount": 0,
+      "lodMeshCounts": [
+        0,
+        24
+      ]
+    },
+    "lod1": {
+      "ppu": 6.646047770844738,
+      "zoom": 2.5,
+      "visible": {
+        "human": 0,
+        "cultivator": 0,
+        "beast": 24,
+        "spirit": 0,
+        "wraith": 0
+      },
+      "visibleTotal": 24,
+      "creatureInstances": 24,
+      "bySpecies": {
+        "xuangui": 12,
+        "tiangou": 4,
+        "dangkang": 5,
+        "lushu": 3
+      },
+      "batch": {
+        "creatures": 24,
+        "instances": 24,
+        "drawCalls": 4,
+        "triangles": 9620,
+        "overflow": 0
+      },
+      "stats": {
+        "instances": 24,
+        "byClass": {
+          "human": 0,
+          "cultivator": 0,
+          "beast": 24,
+          "spirit": 0,
+          "wraith": 0
+        },
+        "lod": [
+          0,
+          24,
+          0
+        ],
+        "triangles": 9620,
+        "creatures": 24,
+        "overflow": 0,
+        "capacityOverflow": 0,
+        "capacity": 3256,
+        "budgetDemotions": 0
+      },
+      "placeholderCount": 0,
+      "lodMeshCounts": [
+        0,
+        0
+      ]
+    },
+    "lod0": {
+      "ppu": 31.90102930005474,
+      "zoom": 12,
+      "visible": {
+        "human": 0,
+        "cultivator": 0,
+        "beast": 24,
+        "spirit": 0,
+        "wraith": 0
+      },
+      "visibleTotal": 24,
+      "creatureInstances": 24,
+      "bySpecies": {
+        "xuangui": 12,
+        "tiangou": 4,
+        "dangkang": 5,
+        "lushu": 3
+      },
+      "batch": {
+        "creatures": 24,
+        "instances": 24,
+        "drawCalls": 4,
+        "triangles": 9620,
+        "overflow": 0
+      },
+      "stats": {
+        "instances": 24,
+        "byClass": {
+          "human": 0,
+          "cultivator": 0,
+          "beast": 24,
+          "spirit": 0,
+          "wraith": 0
+        },
+        "lod": [
+          24,
+          0,
+          0
+        ],
+        "triangles": 9620,
+        "creatures": 24,
+        "overflow": 0,
+        "capacityOverflow": 0,
+        "capacity": 3256,
+        "budgetDemotions": 0
+      },
+      "placeholderCount": 0,
+      "lodMeshCounts": [
+        0,
+        0
+      ]
+    },
+    "world": {
+      "pure": true,
+      "visibleBeasts": 24,
+      "batch": {
+        "creatures": 24,
+        "instances": 24,
+        "drawCalls": 4,
+        "triangles": 9620,
+        "overflow": 0
+      },
+      "bySpecies": {
+        "xuangui": 12,
+        "tiangou": 4,
+        "dangkang": 5,
+        "lushu": 3
+      },
+      "placements": [
+        {
+          "id": 2,
+          "species": "xuangui",
+          "y": 0.15928955376148224,
+          "expectedY": 0.15928955655544996,
+          "dy": 2.7939677238464355e-9,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 4,
+          "species": "xuangui",
+          "y": -0.6608149409294128,
+          "expectedY": -0.660814955830574,
+          "dy": 1.4901161193847656e-8,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 5,
+          "species": "xuangui",
+          "y": 0.2204040288925171,
+          "expectedY": 0.2204040326178074,
+          "dy": 3.725290298461914e-9,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 6,
+          "species": "xuangui",
+          "y": 0.028818514198064804,
+          "expectedY": 0.02881851326674223,
+          "dy": 9.313225746154785e-10,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 8,
+          "species": "xuangui",
+          "y": 0.30946972966194153,
+          "expectedY": 0.30946972966194153,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 14,
+          "species": "xuangui",
+          "y": 0.656934916973114,
+          "expectedY": 0.656934916973114,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 15,
+          "species": "xuangui",
+          "y": 1.687605381011963,
+          "expectedY": 1.687605381011963,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 16,
+          "species": "xuangui",
+          "y": 1.687605381011963,
+          "expectedY": 1.687605381011963,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 17,
+          "species": "xuangui",
+          "y": 0.4557236433029175,
+          "expectedY": 0.4557236582040787,
+          "dy": 1.4901161193847656e-8,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 19,
+          "species": "xuangui",
+          "y": 1.5441746711730957,
+          "expectedY": 1.544174611568451,
+          "dy": 5.960464477539063e-8,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 22,
+          "species": "xuangui",
+          "y": 1.0898551940917969,
+          "expectedY": 1.0898551940917969,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 24,
+          "species": "xuangui",
+          "y": 2.6831130981445312,
+          "expectedY": 2.6831130981445312,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 9,
+          "species": "tiangou",
+          "y": 0.13946396112442017,
+          "expectedY": 0.13946395739912987,
+          "dy": 3.725290298461914e-9,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 12,
+          "species": "tiangou",
+          "y": 0.21958398818969727,
+          "expectedY": 0.21958398818969727,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 20,
+          "species": "tiangou",
+          "y": 0.5892105102539062,
+          "expectedY": 0.5892105400562286,
+          "dy": 2.9802322387695312e-8,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 21,
+          "species": "tiangou",
+          "y": 0.24549929797649384,
+          "expectedY": 0.24549929797649384,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 1,
+          "species": "dangkang",
+          "y": 0.6484048366546631,
+          "expectedY": 0.6484048664569855,
+          "dy": 2.9802322387695312e-8,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 3,
+          "species": "dangkang",
+          "y": 0.010990719310939312,
+          "expectedY": 0.010990719718392938,
+          "dy": 4.0745362639427185e-10,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 7,
+          "species": "dangkang",
+          "y": 0.10620754957199097,
+          "expectedY": 0.10620755329728127,
+          "dy": 3.725290298461914e-9,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 13,
+          "species": "dangkang",
+          "y": 0.16658267378807068,
+          "expectedY": 0.16658268123865128,
+          "dy": 7.450580596923828e-9,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 23,
+          "species": "dangkang",
+          "y": 1.692986011505127,
+          "expectedY": 1.692986011505127,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 10,
+          "species": "lushu",
+          "y": 0.7109298706054688,
+          "expectedY": 0.7109299004077911,
+          "dy": 2.9802322387695312e-8,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 11,
+          "species": "lushu",
+          "y": 0.7430768013000488,
+          "expectedY": 0.7430768013000488,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": 18,
+          "species": "lushu",
+          "y": 0.2818189263343811,
+          "expectedY": 0.2818189263343811,
+          "dy": 0,
+          "tilt": [
+            0,
+            0
+          ]
+        }
+      ],
+      "stats": {
+        "instances": 24,
+        "byClass": {
+          "human": 0,
+          "cultivator": 0,
+          "beast": 24,
+          "spirit": 0,
+          "wraith": 0
+        },
+        "lod": [
+          24,
+          0,
+          0
+        ],
+        "triangles": 9620,
+        "creatures": 24,
+        "overflow": 0,
+        "capacityOverflow": 0,
+        "capacity": 3256,
+        "budgetDemotions": 0
+      },
+      "materialCount": 1,
+      "placeholderCount": 0,
+      "entities": 24,
+      "creatures": 24
+    },
+    "stableFacing": {
+      "stable": true,
+      "meshes": 4
+    },
+    "picking": [
+      {
+        "expected": 2,
+        "picked": 2,
+        "mesh": "Creature:xuangui",
+        "mapped": true
+      },
+      {
+        "expected": 4,
+        "picked": 4,
+        "mesh": "Creature:xuangui",
+        "mapped": true
+      },
+      {
+        "expected": 9,
+        "picked": 9,
+        "mesh": "Creature:tiangou",
+        "mapped": true
+      },
+      {
+        "expected": 12,
+        "picked": 12,
+        "mesh": "Creature:tiangou",
+        "mapped": true
+      },
+      {
+        "expected": 1,
+        "picked": 1,
+        "mesh": "Creature:dangkang",
+        "mapped": true
+      },
+      {
+        "expected": 3,
+        "picked": 3,
+        "mesh": "Creature:dangkang",
+        "mapped": true
+      },
+      {
+        "expected": 10,
+        "picked": 11,
+        "mesh": "Creature:lushu",
+        "mapped": true
+      },
+      {
+        "expected": 11,
+        "picked": 11,
+        "mesh": "Creature:lushu",
+        "mapped": true
+      }
+    ],
+    "baseline": {
+      "geometries": 13,
+      "textures": 5,
+      "programs": 6,
+      "libraryMaterial": "1e562bf6-5d95-4bf9-8e9b-fd127ffd288a"
+    },
+    "afterRebuild": {
+      "geometries": 11,
+      "textures": 5,
+      "programs": 6,
+      "sameLibrary": true,
+      "materialUuid": "1e562bf6-5d95-4bf9-8e9b-fd127ffd288a",
+      "creatureBatchAlive": true
+    }
+  },
+  "lodOff": {
+    "library": {
+      "ready": true,
+      "lodEnabled": false
+    },
+    "spawn": {
+      "made": 24,
+      "beasts": 24,
+      "entities": 24
+    },
+    "stats": {
+      "ppu": 2.6584191083378954,
+      "zoom": 1,
+      "visible": {
+        "human": 0,
+        "cultivator": 0,
+        "beast": 24,
+        "spirit": 0,
+        "wraith": 0
+      },
+      "visibleTotal": 24,
+      "creatureInstances": 24,
+      "bySpecies": {
+        "xuangui": 12,
+        "tiangou": 4,
+        "dangkang": 5,
+        "lushu": 3
+      },
+      "batch": {
+        "creatures": 24,
+        "instances": 24,
+        "drawCalls": 4,
+        "triangles": 9620,
+        "overflow": 0
+      },
+      "stats": {
+        "instances": 24,
+        "byClass": {
+          "human": 0,
+          "cultivator": 0,
+          "beast": 24,
+          "spirit": 0,
+          "wraith": 0
+        },
+        "lod": [
+          24,
+          0,
+          0
+        ],
+        "triangles": 9620,
+        "creatures": 24,
+        "overflow": 0,
+        "capacityOverflow": 0,
+        "capacity": 3256,
+        "budgetDemotions": 0
+      },
+      "placeholderCount": 0,
+      "lodMeshCounts": [
+        0,
+        0
+      ]
+    }
+  },
+  "fallback": {
+    "library": {
+      "creatureLibrary": false,
+      "loadPromise": false,
+      "error": ""
+    },
+    "spawn": {
+      "made": 8,
+      "beasts": 8,
+      "entities": 8
+    },
+    "placeholder": {
+      "creatureBatch": false,
+      "creatures": 0,
+      "beastInstances": 8,
+      "placeholderCount": 8,
+      "beastCount": 8
+    }
+  },
+  "errors": [],
+  "pass": true,
+  "browser": {
+    "browser": "Edg/155.0.4283.45",
+    "debugPort": 65137,
+    "width": 1440,
+    "height": 900,
+    "profileCleanup": {
+      "removed": true,
+      "attempts": 1,
+      "processesExited": true,
+      "complete": true,
+      "processEvidence": {
+        "supported": true,
+        "frozen": 12,
+        "remaining": 0,
+        "discoveryError": null,
+        "termination": {
+          "errors": [],
+          "attempted": 0
+        }
+      }
+    }
+  }
+}

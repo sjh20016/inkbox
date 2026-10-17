@@ -1,21 +1,160 @@
 {
-  "generatedAt": "2026-10-03T15:15:33.614Z",
+  "generatedAt": "2026-10-17T14:43:38.186Z",
   "pass": true,
-  "glbBytes": 145188,
-  "baseTriangles": 434,
+  "glbBytes": 181268,
+  "assetSha256": "d31c4af5136e8d16e9da6cac059bea18826d933b3eb8a5693ce75264323dbaa7",
+  "previousAssetSha256": "a9326d49bf0e994c0fca6d4aca90acc25bc4c54640ed27afd52a7a7216bfd10f",
+  "baseTriangles": 428,
   "modules": {
-    "body_base": 384,
-    "hair_base": 50,
-    "hair_elder": 50,
-    "hair_ghost": 50,
-    "sword_simple": 36,
+    "body_base": 342,
+    "hair_base": 86,
+    "hair_elder": 82,
+    "hair_ghost": 94,
+    "sword_simple": 52,
     "pack_traveler": 60,
-    "gourd_small": 68,
-    "soul_lamp": 100,
-    "sect_token": 24,
-    "alchemy_tag": 32,
-    "elder_mantle": 12,
-    "ghost_torn_hem": 16
+    "gourd_small": 70,
+    "soul_lamp": 60,
+    "sect_token": 38,
+    "alchemy_tag": 28,
+    "elder_mantle": 32,
+    "ghost_torn_hem": 10
+  },
+  "moduleUvCells": {
+    "body_base": {
+      "0": 136,
+      "3": 24,
+      "4": 62,
+      "5": 88,
+      "6": 32
+    },
+    "hair_base": {
+      "3": 78,
+      "10": 8
+    },
+    "hair_elder": {
+      "1": 74,
+      "4": 8
+    },
+    "hair_ghost": {
+      "3": 78,
+      "7": 16
+    },
+    "sword_simple": {
+      "3": 12,
+      "4": 8,
+      "9": 32
+    },
+    "pack_traveler": {
+      "2": 12,
+      "6": 36,
+      "7": 12
+    },
+    "gourd_small": {
+      "6": 10,
+      "9": 60
+    },
+    "soul_lamp": {
+      "3": 48,
+      "8": 12
+    },
+    "sect_token": {
+      "5": 12,
+      "6": 12,
+      "9": 14
+    },
+    "alchemy_tag": {
+      "3": 2,
+      "6": 24,
+      "9": 2
+    },
+    "elder_mantle": {
+      "3": 16,
+      "4": 16
+    },
+    "ghost_torn_hem": {
+      "3": 8,
+      "7": 2
+    }
+  },
+  "roleBudget": {
+    "basic": {
+      "core": 428,
+      "attachments": {},
+      "attachmentTotal": 0,
+      "full": 428
+    },
+    "sect_disciple": {
+      "core": 428,
+      "attachments": {
+        "sword_simple": 52,
+        "sect_token": 38
+      },
+      "attachmentTotal": 90,
+      "full": 518
+    },
+    "wanderer": {
+      "core": 428,
+      "attachments": {
+        "pack_traveler": 60,
+        "gourd_small": 70
+      },
+      "attachmentTotal": 130,
+      "full": 558
+    },
+    "elder": {
+      "core": 424,
+      "attachments": {
+        "elder_mantle": 32,
+        "sword_simple": 52
+      },
+      "attachmentTotal": 84,
+      "full": 508
+    },
+    "ghost": {
+      "core": 436,
+      "attachments": {
+        "ghost_torn_hem": 10,
+        "soul_lamp": 60
+      },
+      "attachmentTotal": 70,
+      "full": 506
+    },
+    "alchemist": {
+      "core": 428,
+      "attachments": {
+        "alchemy_tag": 28
+      },
+      "attachmentTotal": 28,
+      "full": 456
+    }
+  },
+  "silhouette": {
+    "coreBodyHair": [
+      424,
+      436
+    ],
+    "attachmentTotalMax": 130,
+    "fullOutfitMax": 558,
+    "policy": {
+      "core_body_hair_min": 250,
+      "core_body_hair_max": 450,
+      "attachment_module_max": 100,
+      "attachment_total_max": 200,
+      "full_outfit_max": 650,
+      "attachment_slots": [
+        "robe",
+        "weapon",
+        "back",
+        "prop",
+        "tag"
+      ],
+      "basis": [
+        "v1 的 250–450 是共享身体 + 发型的核心剪影预算；重建包 README 明确该规范不含可选附件，robe/weapon/back/prop/tag 因此单列。",
+        "实测核心剪影：basic 428 / sect_disciple 428 / wanderer 428 / elder 424 / ghost 436 / alchemist 428，全部 ≤ 450；旧的 robe 并入剪影时 elder = 342+82+32 = 456 越界 6。",
+        "附件单件上限 100 沿用旧库最大单件（soul_lamp 100）；附件合计上限 200 高于实测最大 130（wanderer 葫芦 70 + 背包 60）。",
+        "full_outfit_max 650 = 450 + 200，作为单角色全装总面上限。实测与逐角色明细见 ../data/structural_validation.json 与 docs/CULTIVATOR_REBUILD_INTEGRATION.md。"
+      ]
+    }
   },
   "sharedMeshCount": 12,
   "materialCount": 1,

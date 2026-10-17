@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>坐天观井 · 卜算子资产验收</title>
+  <link rel="icon" href="data:,">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#d9d2c2;color:#282420;font-family:system-ui,"Microsoft YaHei",sans-serif;height:100vh;display:flex;flex-direction:column}
+    header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 26px;background:#efe9db;border-bottom:1px solid #b3a98f;flex-wrap:wrap}
+    h1{font-size:21px;margin:0 0 4px;letter-spacing:.08em}header p{font-size:12.5px;margin:0;color:#6b6353}
+    nav{display:flex;gap:8px}button{font:inherit;padding:8px 16px;background:#e3ddcf;border:1px solid #a99f8a;border-radius:4px;cursor:pointer;letter-spacing:.06em}
+    button:hover{background:#eee8da}button[aria-pressed=true]{background:#3d4a3f;color:#f3efe4;border-color:#3d4a3f}
+    main{flex:1;position:relative;min-height:0}canvas{display:block;width:100%;height:100%}
+    #status{position:absolute;left:24px;top:18px;background:#f4efe4d9;padding:10px 14px;border-radius:4px;font-size:12.5px;line-height:1.75;pointer-events:none;white-space:pre-line;max-width:76%}
+    #legend{position:absolute;right:24px;top:18px;background:#f4efe4d9;padding:8px 12px;border-radius:4px;font-size:12px;line-height:1.8;color:#5e5648;pointer-events:none}
+    footer{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 26px;background:#efe9db;border-top:1px solid #b3a98f;flex-wrap:wrap}
+    #palette{display:flex;gap:4px;align-items:center}#palette .swatch{width:15px;height:15px;border-radius:2px;border:1px solid rgba(40,36,32,.18)}
+    footer small{color:#6b6353;font-size:12px;letter-spacing:.04em}
+    @media(max-width:760px){header{padding:10px 14px}h1{font-size:17px}#status{left:12px;top:10px;font-size:11px;max-width:92%}#legend{display:none}footer{padding:8px 12px}}
+  </style>
+  <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>坐天观井 · 卜算子</h1>
+      <p>天道引路人 · 38 骨 · 5 网格 · 1534 面 · 20 色 / 20×1 调色板（最近邻）</p>
+    </div>
+    <nav id="clips" aria-label="卜算子动画"></nav>
+  </header>
+  <main>
+    <canvas id="busanzi" aria-label="卜算子三维资产预览"></canvas>
+    <div id="status">正在加载卜算子资产…</div>
+    <div id="legend">
+      Idle = 静立（身体 2 关键帧 + 附加骨微动）<br>
+      Walk = 行步（双腿 33 关键帧 STEP）<br>
+      Wind = 风起（只有附加骨动：符纸 / 头发 / 衣摆 / 铃 / 伞）
+    </div>
+  </main>
+  <footer>
+    <div id="palette" aria-label="20 色调色板"></div>
+    <small>模型渲染 · 不是立绘 · BusanziLibrary + AnimationMixer</small>
+  </footer>
+  <script type="module" src="./src/inkbox/render3d/busanziLab.js"></script>
+</body>
+</html>

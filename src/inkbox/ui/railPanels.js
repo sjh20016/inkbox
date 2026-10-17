@@ -1051,6 +1051,30 @@ export function bindBusanziTogglePanel(sb) {
   });
   syncBusanziCollapsedPanel(sb);
 }
+
+/**
+ * T2：卜算子肖像入口（面板里那张真实模型渲染的 PNG）。
+ *
+ * 只做两件事：点一下 → 走沙盒的 `openBusanziViewer()`（懒加载 + 独立 renderer，
+ * 见 render3d/busanzi/BusanziViewerHost.js）；PNG 缺失时把入口藏掉，别留一个
+ * 点了没反应的死按钮。**不新增任何世界/模拟状态**。
+ */
+export function bindBusanziPortraitPanel(sb) {
+  const button = $('inkBusanziPortrait');
+  if (!button || button.dataset.busanziPortraitBound) return;
+  button.dataset.busanziPortraitBound = 'true';
+  const image = button.querySelector('img');
+  if (image) {
+    if (image.complete && image.naturalWidth === 0) button.classList.add('is-missing');
+    image.addEventListener('error', () => button.classList.add('is-missing'));
+  }
+  button.addEventListener('click', () => {
+    // 加载失败只提示（Viewer 内部已经 console.error + 通知），不抛到事件循环外。
+    Promise.resolve(sb.openBusanziViewer?.()).catch((error) => {
+      console.error('[inkbox] 卜算子三维形象打开失败', error);
+    });
+  });
+}
 export function refreshBusanziPanel(sb) {
   syncBusanziCollapsedPanel(sb);
   const box = $('inkBusanzi');

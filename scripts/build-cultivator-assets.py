@@ -3,9 +3,17 @@
 The gray gate intentionally produces only the shared base character.  Later
 production phases must be added after the silhouette and rig gate is accepted.
 Run: blender -b --python scripts/build-cultivator-assets.py -- --phase gray
+
+Overwrite safety: since 2026-10 the accepted runtime GLB is the external
+`cultivator_rebuild` legacy-cells export, not this Blender pipeline's output
+(see assets/characters/cultivator/docs/CULTIVATOR_REBUILD_INTEGRATION.md).
+`--phase material/full` therefore refuses to overwrite an existing accepted
+runtime GLB/manifest unless `--replace-existing` is passed or the manifest
+records that the existing file is this script's own Blender output.
 """
 
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -21,6 +29,9 @@ DATA = ROOT / "data"
 PREVIEW = ROOT / "preview"
 MESH = ROOT / "mesh"
 MATERIALS = ROOT / "materials"
+GLB_PATH = MESH / "cultivator_library.glb"
+MANIFEST_PATH = DATA / "cultivator_manifest.json"
+
 
 
 class MeshBuilder:
@@ -910,10 +921,73 @@ def material(full=False):
         "role_count":len(manifest["roles"])},ensure_ascii=False))
 
 
+def file_sha256(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def recorded_runtime_provenance():
+    """Return (asset_sha256, production_line, delivered_sha256) from the manifest."""
+    if not MANIFEST_PATH.exists():
+        return None, None, None
+    try:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None, None, None
+    provenance = manifest.get("provenance") or {}
+    return (manifest.get("asset_sha256") or None, provenance.get("production_line") or None,
+            provenance.get("delivered_sha256") or None)
+
+
+def guard_runtime_outputs(replace_existing):
+    """Refuse to silently overwrite the accepted runtime cultivator asset.
+
+    The accepted GLB is the external `cultivator_rebuild --legacy-cells` export
+    recorded in the manifest provenance, not this Blender pipeline's output.
+    Regeneration through this script is only allowed when the caller passes
+    `--replace-existing`, or when the current files are provably this script's
+    own prior Blender output (manifest production line starts with "Blender").
+    """
+    recorded_sha, production_line, delivered_sha = recorded_runtime_provenance()
+    accepted_external = bool(delivered_sha) and "external" in (production_line or "").lower()
+    if replace_existing:
+        print(f"REPLACE_EXISTING: explicit overwrite consent for {GLB_PATH}")
+        if GLB_PATH.exists():
+            print(f"REPLACE_EXISTING: current sha256 {file_sha256(GLB_PATH)}")
+        if accepted_external:
+            print("REPLACE_EXISTING: WARNING current asset provenance is the external "
+                  "cultivator_rebuild pipeline; accepted art will be replaced.")
+        return
+    actual = file_sha256(GLB_PATH) if GLB_PATH.exists() else None
+    own_prior_output = bool(recorded_sha and actual and actual == recorded_sha.lower()
+                            and (production_line or "").lower().startswith("blender"))
+    if accepted_external or (actual and not own_prior_output):
+        raise SystemExit(
+            "Refusing to overwrite the accepted runtime cultivator asset without "
+            "--replace-existing.\n"
+            f"  target: {GLB_PATH}\n"
+            f"  current sha256: {actual or 'missing'}\n"
+            f"  manifest asset_sha256: {recorded_sha or 'unrecorded'}\n"
+            f"  manifest production_line: {production_line or 'unrecorded'}\n"
+            "The shipping asset comes from the external cultivator_rebuild pipeline. "
+            "Re-running this Blender phase would replace accepted art and drop the "
+            "manifest provenance. If that is intended, pass --replace-existing and "
+            "update provenance/docs afterwards; see "
+            "assets/characters/cultivator/docs/CULTIVATOR_REBUILD_INTEGRATION.md."
+        )
+
+
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument("--phase",choices=("gray","material","full"),required=True)
+    parser.add_argument("--replace-existing",action="store_true",
+                        help="Explicitly allow overwriting the accepted runtime GLB and manifest")
     args=parser.parse_args(sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else [])
+    if args.phase in ("material","full"):
+        guard_runtime_outputs(args.replace_existing)
     if args.phase=="gray":
         gray()
     elif args.phase=="material":
