@@ -215,7 +215,7 @@ export function emitCombatHit(world, attacker, target, hit, hpBefore, ignition =
     const tier = level >= 30 ? 'high' : level >= 10 ? 'mid' : 'low';
     const hpScale = Number.isFinite(target.maxHp) && target.maxHp > 0 ? target.maxHp : hpBefore;
     const intensity = Math.min(1,Math.max(0.2,0.2 + Math.min(60,level) / 60 * 0.4 + Math.min(1,actualHit / hpScale) * 0.4));
-    const ignitionFact = ignition && combatStyle(attacker) === 'fire'
+    const ignitionFact = ignition
       && Number.isSafeInteger(ignition.cells) && ignition.cells > 0
       && Number.isSafeInteger(ignition.x) && ignition.x >= 0
       && Number.isSafeInteger(ignition.y) && ignition.y >= 0

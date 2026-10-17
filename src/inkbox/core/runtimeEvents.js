@@ -113,7 +113,7 @@ function validateCombatEvent(event) {
   finiteNumber(data.fromX,'fromX'); finiteNumber(data.fromY,'fromY');
   if (hasIgnition) {
     const fact = data.ignition;
-    if (data.style !== 'fire' || !fact || typeof fact !== 'object' || Object.keys(fact).length !== 7
+    if (!fact || typeof fact !== 'object' || Object.keys(fact).length !== 7
       || !Number.isSafeInteger(fact.cells) || fact.cells < 1
       || !Number.isSafeInteger(fact.x) || fact.x < 0
       || !Number.isSafeInteger(fact.y) || fact.y < 0

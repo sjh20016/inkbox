@@ -144,7 +144,7 @@ export class ThreeCombatFx{
       const b=this.batches[style],index=b.mesh.count++;
       b.mesh.setMatrixAt(index,this.matrix);
       b.opacity.setX(index,(1-progress)*(style==='blade'?.9:.8));
-      b.detail.setX(index,data?.ignition && style==='fire'?2:tier==='low'?0:1);
+      b.detail.setX(index,data?.ignition?2:tier==='low'?0:1);
       this.stats.active++;this.stats[lightning?'lightningActive':'combatActive']++;
       this.stats.styleCounts[style]++;
     }

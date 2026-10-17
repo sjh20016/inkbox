@@ -9,6 +9,7 @@ import { stepFire, stepVegetation } from '../src/inkbox/sim/ecology.js';
 import { OVER } from '../src/inkbox/world/terrain.js';
 import { deserializeWorld, serializeWorld } from '../src/inkbox/io/save.js';
 import { Life } from '../src/inkbox/sim/life.js';
+import { MANUALS } from '../src/inkbox/core/lore.js';
 
 const roots = findCombatRoots();
 const checks = [];
@@ -81,6 +82,33 @@ check('正式 Life.attack：合格火根命中点燃真实格，冷却与世界/
   const nextHp = b.hp;
   life.attack(a, b, 0.1);
   assert.ok(b.hp < nextHp); assert.equal(a.lastFireCastDay, w.day - 1, 'cooldown blocks next-day cast');
+});
+
+check('雷系主表现保留正式火根的真实引燃事实；未引燃雷击不带火事实', () => {
+  const manual = MANUALS.find(item => item.kind === 'thunder');
+  assert.ok(manual, 'fixture uses the formal thunder manual');
+  const f = combat(82432), { world: w, a, b, life } = f;
+  a.techniques = [manual]; fertile(w); w.day = successfulDay(w, a, b);
+  const hp = b.hp; life.attack(a, b, 0.1);
+  assert.ok(b.hp < hp, 'mixed-style real Life.attack damages target');
+  assert.ok(Array.from(w.fire).some(value => value > 0.01), 'confirmed terrain ignition occurred');
+  const event = peekRuntimeEvents(w).find(item => item.type === 'combat-hit');
+  assert.equal(event?.data?.style, 'thunder', 'thunder remains the primary combat style');
+  assert.deepEqual(event?.data?.ignition && Object.keys(event.data.ignition).sort(),
+    ['actorId', 'cells', 'day', 'plane', 'targetId', 'x', 'y']);
+  const fact = event.data.ignition;
+  assert.equal(fact.actorId, a.id); assert.equal(fact.targetId, b.id); assert.equal(fact.plane, 'mortal');
+  assert.equal(fact.day, w.day); assert.ok(w.fire[w.idx(fact.x, fact.y)] > 0.01, 'fact points at real fire');
+
+  const noFire = combat(82433), { world: nw, a: na, b: nb, life: nl } = noFire;
+  na.techniques = [manual]; fertile(nw);
+  nw.day = Array.from({ length: 500 }, (_, day) => day).find(day => combatIgnitionRoll(nw.seed, na.id, nb.id, day) >= 0.25);
+  const noFireHp = nb.hp; nl.attack(na, nb, 0.1);
+  assert.ok(nb.hp < noFireHp, 'non-igniting thunder hit still occurs');
+  const noFireEvent = peekRuntimeEvents(nw).find(item => item.type === 'combat-hit');
+  assert.equal(noFireEvent?.data?.style, 'thunder');
+  assert.equal(Object.hasOwn(noFireEvent.data, 'ignition'), false, 'no confirmed ignition means no ember fact');
+  assert.equal(Array.from(nw.fire).some(value => value > 0.01), false);
 });
 
 check('资格、真实扣血、距离、死目标、地表阻断与冷却门槛', () => {

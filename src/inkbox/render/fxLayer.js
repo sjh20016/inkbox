@@ -71,7 +71,7 @@ export function fxStats(fx) {
 }
 function validCombat(event) {
   const ignition = event.data?.ignition;
-  const validIgnition = ignition === undefined || (event.data?.style === 'fire' && ignition && Object.keys(ignition).length === 7
+  const validIgnition = ignition === undefined || (ignition && Object.keys(ignition).length === 7
     && Number.isSafeInteger(ignition.cells) && ignition.cells > 0
     && Number.isSafeInteger(ignition.x) && ignition.x >= 0
     && Number.isSafeInteger(ignition.y) && ignition.y >= 0
@@ -270,7 +270,7 @@ function drawCombat(ctx, camera, world, item, k, zoom) {
   // A confirmed ignition earns one restrained orange ember at its real tile.
   // It is presentation-only and remains inside the same access-filtered renderer.
   const ignition = d.ignition;
-  if (d.style === 'fire' && ignition && (!camera.canAccess || camera.canAccess(ignition.x, ignition.y))) {
+  if (ignition && (!camera.canAccess || camera.canAccess(ignition.x, ignition.y))) {
     const [ix, iy] = projectEntity(camera, world, ignition.x + 0.5, ignition.y + 0.5);
     const ember = Math.max(1.2, Math.min(2.6, scale * 0.42));
     ctx.strokeStyle = `rgba(235,104,34,${(alpha * 0.95).toFixed(3)})`;
