@@ -1,7 +1,7 @@
 # Inkbox 开发入口
 
 1. 先读 README.md、HANDOFF.md 顶部、ROADMAP.md、BACKLOG.md。
-2. 当前状态以这些入口为准；STATUS.md 与旧日期报告作历史证据。
+2. 当前状态以这些入口为准；已清理的 STATUS.md 与阶段报告仅从固定历史提交 e1e55039 读取。
 3. 分支与审计见 docs/development/REPOSITORY_WORKFLOW.md。
 4. 日期快照会过期，施工前重新核对 Git 与 PR / Actions。
 5. main 是唯一正式产品线；G1 已合并。
@@ -31,7 +31,7 @@
 29. 打包是显式清单；文档链接变动后查 build / test:package。
 30. 新开发文档不自动入运行包，包外引用由打包器标明。
 31. 不擅改 World / Sim / RNG / 保存 / Canvas / Three 行为。
-32. 历史迁移、Golden 去重与 B2 重跑作为独立授权任务。
+32. 历史材料在 Git 基线 e1e55039；B2 重跑独立授权。
 33. 清理仅限本任务可再生输出，保留用途不明的证据。
 34. 只清理由本任务创建且归属明确的服务器 / 浏览器。
 35. 交付列基线 / HEAD、文件原因、命令退出码与回滚方法。
