@@ -1,0 +1,119 @@
+{
+  "baseSha": "f4c05d825467217a95b3c2f9f271e97e9f2b357d",
+  "headSha": "f4c05d825467217a95b3c2f9f271e97e9f2b357d",
+  "deliveryBranch": "verify/g4-p1b-r-environment-browser",
+  "deliveryCommit": null,
+  "remoteRefsAtStart": {
+    "main": "e1e55039bb56efda7a307513ede07a9fab3bf534",
+    "feat/g4-p1b-hydrology-rules-optin": "f4c05d825467217a95b3c2f9f271e97e9f2b357d",
+    "verificationBranchExisted": false
+  },
+  "checkout": {
+    "path": "E:/world4/坐天观井-实验分支D1/.worktrees/g4-p1b-hydrology-rules-optin",
+    "complete": false,
+    "cleanAtStart": true,
+    "sparseCheckout": true,
+    "shallow": true,
+    "promisor": true,
+    "sparsePatterns": [
+      "reports/analysis/g4",
+      "scripts",
+      "src/inkbox",
+      "tests"
+    ],
+    "physicalFiles": {
+      ".github/workflows/ci.yml": true,
+      "美术素材/参考资产索引.md": false,
+      "package-lock.json": true,
+      "vendor/three": true,
+      "inkbox.html": true,
+      "src/inkbox/main.js": true,
+      "src/inkbox/sim/hydrologyRules.js": true,
+      "src/inkbox/sim/hydrologyStaticSea.js": true
+    },
+    "attempts": [
+      {
+        "action": "git fetch origin",
+        "exitCode": 128,
+        "result": "HTTPS connection reset"
+      },
+      {
+        "action": "full clone using system Schannel",
+        "exitCode": 1,
+        "result": "SEC_E_NO_CREDENTIALS"
+      },
+      {
+        "action": "full clone with http.sslBackend=openssl",
+        "exitCode": 1,
+        "durationSeconds": 41,
+        "result": "HTTPS connection reset; target checkout not left behind"
+      }
+    ]
+  },
+  "node": {
+    "version": "v24.11.1"
+  },
+  "npm": {
+    "version": "11.6.2"
+  },
+  "build": {
+    "command": "npm run build",
+    "status": "NOT_RUN",
+    "exitCode": null
+  },
+  "packageAudit": {
+    "command": "npm run test:package",
+    "status": "NOT_RUN",
+    "exitCode": null,
+    "artifactCoreFiles": "NOT_RUN"
+  },
+  "dependencyInstall": {
+    "command": "npm ci",
+    "status": "NOT_RUN",
+    "exitCode": null
+  },
+  "cdp": {
+    "status": "NOT_RUN",
+    "browserExecutable": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+    "browserVersion": "155.0.4283.45",
+    "chromeCommonPathsFound": false,
+    "port": null,
+    "webSocket": null,
+    "temporaryProfile": null,
+    "cleanup": "No browser or service process started"
+  },
+  "browser": {
+    "status": "NOT_RUN",
+    "canvas": "NOT_RUN",
+    "three": "NOT_RUN",
+    "viewport": null,
+    "dpr": null,
+    "webgl2": null,
+    "renderer": null,
+    "B0_B6": "NOT_RUN",
+    "pageErrors": null
+  },
+  "largeWorld": {
+    "status": "NOT_RUN",
+    "dimensions": null,
+    "normalizationCellCount": null,
+    "maximumDifference": null
+  },
+  "sourceDiff": {
+    "src/inkbox": [],
+    "productSourceChanged": false
+  },
+  "deliveryDiffAllowedPaths": [
+    "reports/analysis/g4/g4-p1b-r/REPORT.md",
+    "reports/analysis/g4/g4-p1b-r/summary.json"
+  ],
+  "verdict": "ENV_BLOCKED",
+  "blockers": [
+    "S0 cannot obtain a complete checkout: the available checkout is shallow, sparse, and promisor-backed.",
+    "Tracked build input 美术素材/参考资产索引.md is absent from the available working tree.",
+    "Git fetch failed with exit 128 due to HTTPS connection reset.",
+    "The Schannel full clone failed with SEC_E_NO_CREDENTIALS; the single OpenSSL retry failed with HTTPS connection reset.",
+    "Per the S0 stop gate, npm install/build/package audit, CDP, Canvas/Three, and the 512x320 scenario were not run."
+  ],
+  "nextStep": "Retry from a stable GitHub Git HTTPS environment using a non-shallow, non-promisor, non-sparse checkout of the fixed base SHA; verify tracked build inputs physically exist before S1."
+}
