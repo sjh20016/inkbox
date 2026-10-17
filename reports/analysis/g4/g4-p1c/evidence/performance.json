@@ -1,0 +1,1314 @@
+{
+  "schemaVersion": 1,
+  "task": "Inkbox-G4-P1C-Luna-海陆连通性原型",
+  "status": "PASS",
+  "fixedBaseline": "f4c05d825467217a95b3c2f9f271e97e9f2b357d",
+  "machine": {
+    "node": "v24.11.1",
+    "platform": "win32",
+    "arch": "x64",
+    "osRelease": "10.0.19045",
+    "cpu": "12th Gen Intel(R) Core(TM) i3-12100",
+    "logicalCpus": 8
+  },
+  "method": {
+    "timer": "node:perf_hooks performance.now",
+    "gpuPerformanceClaim": false,
+    "warmupTicks": 5,
+    "measuredSingleTicks": 8,
+    "sustainedTicks": 16,
+    "topologyEventRoundsPerSize": 3,
+    "seeds": [
+      173,
+      73519,
+      912037
+    ],
+    "sizes": [
+      {
+        "w": 200,
+        "h": 128
+      },
+      {
+        "w": 288,
+        "h": 180
+      },
+      {
+        "w": 512,
+        "h": 320
+      }
+    ],
+    "generation": "src/inkbox/world/worldgen.js generateWorld, generationVersion=2, terrainPreset=standard, scatter=false"
+  },
+  "byWorld": [
+    {
+      "size": {
+        "w": 200,
+        "h": 128
+      },
+      "seed": 173,
+      "generationMs": 49.124,
+      "cells": 25600,
+      "v3": {
+        "engine": "V3",
+        "prepareWallMs": 0.523,
+        "initialMaskBuildMs": null,
+        "singleTick": {
+          "samples": [
+            1.051,
+            0.969,
+            0.863,
+            0.758,
+            0.599,
+            0.59,
+            0.757,
+            0.585
+          ],
+          "count": 8,
+          "medianMs": 0.757,
+          "p95Ms": 1.051,
+          "maxMs": 1.051
+        },
+        "soakTicks": 16,
+        "soakWallMs": 10.687,
+        "maskRebuildEventsDuringSimulation": null,
+        "latestMaskRebuildMs": null,
+        "cachedMaskQueueDeltaBytes": null,
+        "existingV3DeltaBufferBytes": 307200,
+        "seaCellsAtStart": null
+      },
+      "p1c": {
+        "engine": "P1C",
+        "prepareWallMs": 1.626,
+        "initialMaskBuildMs": 0.833,
+        "singleTick": {
+          "samples": [
+            1.081,
+            1.313,
+            1.652,
+            1.488,
+            1.04,
+            0.898,
+            0.776,
+            0.647
+          ],
+          "count": 8,
+          "medianMs": 1.04,
+          "p95Ms": 1.652,
+          "maxMs": 1.652
+        },
+        "soakTicks": 16,
+        "soakWallMs": 13.938,
+        "maskRebuildEventsDuringSimulation": 0,
+        "latestMaskRebuildMs": 0.833,
+        "cachedMaskQueueDeltaBytes": 230400,
+        "existingV3DeltaBufferBytes": null,
+        "seaCellsAtStart": 11231
+      }
+    },
+    {
+      "size": {
+        "w": 200,
+        "h": 128
+      },
+      "seed": 73519,
+      "generationMs": 30.73,
+      "cells": 25600,
+      "v3": {
+        "engine": "V3",
+        "prepareWallMs": 0.082,
+        "initialMaskBuildMs": null,
+        "singleTick": {
+          "samples": [
+            1.137,
+            1.176,
+            1.145,
+            1.123,
+            0.886,
+            0.804,
+            0.433,
+            0.402
+          ],
+          "count": 8,
+          "medianMs": 0.886,
+          "p95Ms": 1.176,
+          "maxMs": 1.176
+        },
+        "soakTicks": 16,
+        "soakWallMs": 10.542,
+        "maskRebuildEventsDuringSimulation": null,
+        "latestMaskRebuildMs": null,
+        "cachedMaskQueueDeltaBytes": null,
+        "existingV3DeltaBufferBytes": 307200,
+        "seaCellsAtStart": null
+      },
+      "p1c": {
+        "engine": "P1C",
+        "prepareWallMs": 0.39,
+        "initialMaskBuildMs": 0.226,
+        "singleTick": {
+          "samples": [
+            0.686,
+            0.608,
+            0.475,
+            0.473,
+            0.467,
+            0.335,
+            0.34,
+            0.351
+          ],
+          "count": 8,
+          "medianMs": 0.467,
+          "p95Ms": 0.686,
+          "maxMs": 0.686
+        },
+        "soakTicks": 16,
+        "soakWallMs": 6.605,
+        "maskRebuildEventsDuringSimulation": 0,
+        "latestMaskRebuildMs": 0.226,
+        "cachedMaskQueueDeltaBytes": 230400,
+        "existingV3DeltaBufferBytes": null,
+        "seaCellsAtStart": 11240
+      }
+    },
+    {
+      "size": {
+        "w": 200,
+        "h": 128
+      },
+      "seed": 912037,
+      "generationMs": 24.932,
+      "cells": 25600,
+      "v3": {
+        "engine": "V3",
+        "prepareWallMs": 0.092,
+        "initialMaskBuildMs": null,
+        "singleTick": {
+          "samples": [
+            0.561,
+            0.554,
+            0.556,
+            0.555,
+            0.554,
+            0.554,
+            0.556,
+            0.561
+          ],
+          "count": 8,
+          "medianMs": 0.555,
+          "p95Ms": 0.561,
+          "maxMs": 0.561
+        },
+        "soakTicks": 16,
+        "soakWallMs": 8.889,
+        "maskRebuildEventsDuringSimulation": null,
+        "latestMaskRebuildMs": null,
+        "cachedMaskQueueDeltaBytes": null,
+        "existingV3DeltaBufferBytes": 307200,
+        "seaCellsAtStart": null
+      },
+      "p1c": {
+        "engine": "P1C",
+        "prepareWallMs": 0.342,
+        "initialMaskBuildMs": 0.202,
+        "singleTick": {
+          "samples": [
+            0.603,
+            0.621,
+            0.647,
+            0.949,
+            1.11,
+            0.62,
+            0.695,
+            0.603
+          ],
+          "count": 8,
+          "medianMs": 0.621,
+          "p95Ms": 1.11,
+          "maxMs": 1.11
+        },
+        "soakTicks": 16,
+        "soakWallMs": 11.601,
+        "maskRebuildEventsDuringSimulation": 2,
+        "latestMaskRebuildMs": 0.11,
+        "cachedMaskQueueDeltaBytes": 230400,
+        "existingV3DeltaBufferBytes": null,
+        "seaCellsAtStart": 11246
+      }
+    },
+    {
+      "size": {
+        "w": 288,
+        "h": 180
+      },
+      "seed": 173,
+      "generationMs": 66.84,
+      "cells": 51840,
+      "v3": {
+        "engine": "V3",
+        "prepareWallMs": 0.56,
+        "initialMaskBuildMs": null,
+        "singleTick": {
+          "samples": [
+            0.784,
+            0.75,
+            0.792,
+            0.629,
+            0.631,
+            0.623,
+            0.623,
+            0.623
+          ],
+          "count": 8,
+          "medianMs": 0.629,
+          "p95Ms": 0.792,
+          "maxMs": 0.792
+        },
+        "soakTicks": 16,
+        "soakWallMs": 10.462,
+        "maskRebuildEventsDuringSimulation": null,
+        "latestMaskRebuildMs": null,
+        "cachedMaskQueueDeltaBytes": null,
+        "existingV3DeltaBufferBytes": 622080,
+        "seaCellsAtStart": null
+      },
+      "p1c": {
+        "engine": "P1C",
+        "prepareWallMs": 0.615,
+        "initialMaskBuildMs": 0.217,
+        "singleTick": {
+          "samples": [
+            0.645,
+            0.629,
+            0.627,
+            0.66,
+            0.633,
+            0.727,
+            0.624,
+            0.617
+          ],
+          "count": 8,
+          "medianMs": 0.629,
+          "p95Ms": 0.727,
+          "maxMs": 0.727
+        },
+        "soakTicks": 16,
+        "soakWallMs": 10.14,
+        "maskRebuildEventsDuringSimulation": 0,
+        "latestMaskRebuildMs": 0.217,
+        "cachedMaskQueueDeltaBytes": 466560,
+        "existingV3DeltaBufferBytes": null,
+        "seaCellsAtStart": 22614
+      }
+    },
+    {
+      "size": {
+        "w": 288,
+        "h": 180
+      },
+      "seed": 73519,
+      "generationMs": 53.575,
+      "cells": 51840,
+      "v3": {
+        "engine": "V3",
+        "prepareWallMs": 0.115,
+        "initialMaskBuildMs": null,
+        "singleTick": {
+          "samples": [
+            3.863,
+            1.375,
+            1.086,
+            1.101,
+            1.161,
+            1.04,
+            1.09,
+            1.034
+          ],
+          "count": 8,
+          "medianMs": 1.09,
+          "p95Ms": 3.863,
+          "maxMs": 3.863
+        },
+        "soakTicks": 16,
+        "soakWallMs": 20.061,
+        "maskRebuildEventsDuringSimulation": null,
+        "latestMaskRebuildMs": null,
+        "cachedMaskQueueDeltaBytes": null,
+        "existingV3DeltaBufferBytes": 622080,
+        "seaCellsAtStart": null
+      },
+      "p1c": {
+        "engine": "P1C",
+        "prepareWallMs": 0.52,
+        "initialMaskBuildMs": 0.234,
+        "singleTick": {
+          "samples": [
+            0.827,
+            0.812,
+            0.758,
+            0.753,
+            0.761,
+            0.776,
+            0.774,
+            0.746
+          ],
+          "count": 8,
+          "medianMs": 0.761,
+          "p95Ms": 0.827,
+          "maxMs": 0.827
+        },
+        "soakTicks": 16,
+        "soakWallMs": 11.76,
+        "maskRebuildEventsDuringSimulation": 0,
+        "latestMaskRebuildMs": 0.234,
+        "cachedMaskQueueDeltaBytes": 466560,
+        "existingV3DeltaBufferBytes": null,
+        "seaCellsAtStart": 22586
+      }
+    },
+    {
+      "size": {
+        "w": 288,
+        "h": 180
+      },
+      "seed": 912037,
+      "generationMs": 49.908,
+      "cells": 51840,
+      "v3": {
+        "engine": "V3",
+        "prepareWallMs": 0.117,
+        "initialMaskBuildMs": null,
+        "singleTick": {
+          "samples": [
+            1.032,
+            0.93,
+            0.995,
+            0.928,
+            0.935,
+            0.952,
+            0.93,
+            0.93
+          ],
+          "count": 8,
+          "medianMs": 0.93,
+          "p95Ms": 1.032,
+          "maxMs": 1.032
+        },
+        "soakTicks": 16,
+        "soakWallMs": 15.082,
+        "maskRebuildEventsDuringSimulation": null,
+        "latestMaskRebuildMs": null,
+        "cachedMaskQueueDeltaBytes": null,
+        "existingV3DeltaBufferBytes": 622080,
+        "seaCellsAtStart": null
+      },
+      "p1c": {
+        "engine": "P1C",
+        "prepareWallMs": 0.551,
+        "initialMaskBuildMs": 0.274,
+        "singleTick": {
+          "samples": [
+            0.65,
+            0.651,
+            0.65,
+            0.658,
+            0.648,
+            0.652,
+            0.662,
+            0.663
+          ],
+          "count": 8,
+          "medianMs": 0.651,
+          "p95Ms": 0.663,
+          "maxMs": 0.663
+        },
+        "soakTicks": 16,
+        "soakWallMs": 10.504,
+        "maskRebuildEventsDuringSimulation": 0,
+        "latestMaskRebuildMs": 0.274,
+        "cachedMaskQueueDeltaBytes": 466560,
+        "existingV3DeltaBufferBytes": null,
+        "seaCellsAtStart": 22588
+      }
+    },
+    {
+      "size": {
+        "w": 512,
+        "h": 320
+      },
+      "seed": 173,
+      "generationMs": 159.569,
+      "cells": 163840,
+      "v3": {
+        "engine": "V3",
+        "prepareWallMs": 0.358,
+        "initialMaskBuildMs": null,
+        "singleTick": {
+          "samples": [
+            3.647,
+            2.964,
+            2.986,
+            2.525,
+            2.808,
+            2.711,
+            2.441,
+            2.358
+          ],
+          "count": 8,
+          "medianMs": 2.711,
+          "p95Ms": 3.647,
+          "maxMs": 3.647
+        },
+        "soakTicks": 16,
+        "soakWallMs": 41.235,
+        "maskRebuildEventsDuringSimulation": null,
+        "latestMaskRebuildMs": null,
+        "cachedMaskQueueDeltaBytes": null,
+        "existingV3DeltaBufferBytes": 1310720,
+        "seaCellsAtStart": null
+      },
+      "p1c": {
+        "engine": "P1C",
+        "prepareWallMs": 1.429,
+        "initialMaskBuildMs": 0.612,
+        "singleTick": {
+          "samples": [
+            2.035,
+            2.153,
+            2.043,
+            2.011,
+            2.065,
+            2.353,
+            2.024,
+            2.018
+          ],
+          "count": 8,
+          "medianMs": 2.035,
+          "p95Ms": 2.353,
+          "maxMs": 2.353
+        },
+        "soakTicks": 16,
+        "soakWallMs": 33.3,
+        "maskRebuildEventsDuringSimulation": 0,
+        "latestMaskRebuildMs": 0.612,
+        "cachedMaskQueueDeltaBytes": 1474560,
+        "existingV3DeltaBufferBytes": null,
+        "seaCellsAtStart": 70606
+      }
+    },
+    {
+      "size": {
+        "w": 512,
+        "h": 320
+      },
+      "seed": 73519,
+      "generationMs": 151.338,
+      "cells": 163840,
+      "v3": {
+        "engine": "V3",
+        "prepareWallMs": 0.421,
+        "initialMaskBuildMs": null,
+        "singleTick": {
+          "samples": [
+            2.343,
+            2.332,
+            2.324,
+            2.322,
+            2.518,
+            2.391,
+            3.49,
+            2.722
+          ],
+          "count": 8,
+          "medianMs": 2.343,
+          "p95Ms": 3.49,
+          "maxMs": 3.49
+        },
+        "soakTicks": 16,
+        "soakWallMs": 39.643,
+        "maskRebuildEventsDuringSimulation": null,
+        "latestMaskRebuildMs": null,
+        "cachedMaskQueueDeltaBytes": null,
+        "existingV3DeltaBufferBytes": 1310720,
+        "seaCellsAtStart": null
+      },
+      "p1c": {
+        "engine": "P1C",
+        "prepareWallMs": 1.497,
+        "initialMaskBuildMs": 0.636,
+        "singleTick": {
+          "samples": [
+            2.744,
+            2.47,
+            2.517,
+            2.263,
+            2.25,
+            2.259,
+            2.169,
+            2.046
+          ],
+          "count": 8,
+          "medianMs": 2.259,
+          "p95Ms": 2.744,
+          "maxMs": 2.744
+        },
+        "soakTicks": 16,
+        "soakWallMs": 35.393,
+        "maskRebuildEventsDuringSimulation": 0,
+        "latestMaskRebuildMs": 0.636,
+        "cachedMaskQueueDeltaBytes": 1474560,
+        "existingV3DeltaBufferBytes": null,
+        "seaCellsAtStart": 70583
+      }
+    },
+    {
+      "size": {
+        "w": 512,
+        "h": 320
+      },
+      "seed": 912037,
+      "generationMs": 145.157,
+      "cells": 163840,
+      "v3": {
+        "engine": "V3",
+        "prepareWallMs": 0.424,
+        "initialMaskBuildMs": null,
+        "singleTick": {
+          "samples": [
+            2.315,
+            2.314,
+            2.298,
+            2.297,
+            2.47,
+            2.348,
+            2.377,
+            2.373
+          ],
+          "count": 8,
+          "medianMs": 2.315,
+          "p95Ms": 2.47,
+          "maxMs": 2.47
+        },
+        "soakTicks": 16,
+        "soakWallMs": 38.063,
+        "maskRebuildEventsDuringSimulation": null,
+        "latestMaskRebuildMs": null,
+        "cachedMaskQueueDeltaBytes": null,
+        "existingV3DeltaBufferBytes": 1310720,
+        "seaCellsAtStart": null
+      },
+      "p1c": {
+        "engine": "P1C",
+        "prepareWallMs": 2.194,
+        "initialMaskBuildMs": 0.985,
+        "singleTick": {
+          "samples": [
+            2.143,
+            2.074,
+            2.019,
+            2.056,
+            2.02,
+            2.103,
+            2.05,
+            2.036
+          ],
+          "count": 8,
+          "medianMs": 2.05,
+          "p95Ms": 2.143,
+          "maxMs": 2.143
+        },
+        "soakTicks": 16,
+        "soakWallMs": 33.685,
+        "maskRebuildEventsDuringSimulation": 0,
+        "latestMaskRebuildMs": 0.985,
+        "cachedMaskQueueDeltaBytes": 1474560,
+        "existingV3DeltaBufferBytes": null,
+        "seaCellsAtStart": 70704
+      }
+    }
+  ],
+  "summaryBySize": [
+    {
+      "size": {
+        "w": 200,
+        "h": 128
+      },
+      "seeds": [
+        173,
+        73519,
+        912037
+      ],
+      "v3SingleTickMs": {
+        "samples": [
+          1.051,
+          0.969,
+          0.863,
+          0.758,
+          0.599,
+          0.59,
+          0.757,
+          0.585,
+          1.137,
+          1.176,
+          1.145,
+          1.123,
+          0.886,
+          0.804,
+          0.433,
+          0.402,
+          0.561,
+          0.554,
+          0.556,
+          0.555,
+          0.554,
+          0.554,
+          0.556,
+          0.561
+        ],
+        "count": 24,
+        "medianMs": 0.59,
+        "p95Ms": 1.145,
+        "maxMs": 1.176
+      },
+      "p1cSingleTickMs": {
+        "samples": [
+          1.081,
+          1.313,
+          1.652,
+          1.488,
+          1.04,
+          0.898,
+          0.776,
+          0.647,
+          0.686,
+          0.608,
+          0.475,
+          0.473,
+          0.467,
+          0.335,
+          0.34,
+          0.351,
+          0.603,
+          0.621,
+          0.647,
+          0.949,
+          1.11,
+          0.62,
+          0.695,
+          0.603
+        ],
+        "count": 24,
+        "medianMs": 0.647,
+        "p95Ms": 1.488,
+        "maxMs": 1.652
+      },
+      "v3SixteenTickSoakMs": {
+        "samples": [
+          10.687,
+          10.542,
+          8.889
+        ],
+        "count": 3,
+        "medianMs": 10.542,
+        "p95Ms": 10.687,
+        "maxMs": 10.687
+      },
+      "p1cSixteenTickSoakMs": {
+        "samples": [
+          13.938,
+          6.605,
+          11.601
+        ],
+        "count": 3,
+        "medianMs": 11.601,
+        "p95Ms": 13.938,
+        "maxMs": 13.938
+      },
+      "p1cInitialMaskBuildMs": {
+        "samples": [
+          0.833,
+          0.226,
+          0.202
+        ],
+        "count": 3,
+        "medianMs": 0.226,
+        "p95Ms": 0.833,
+        "maxMs": 0.833
+      },
+      "p1cCachedBytes": {
+        "samples": [
+          230400,
+          230400,
+          230400
+        ],
+        "count": 3,
+        "medianBytes": 230400,
+        "p95Bytes": 230400,
+        "maxBytes": 230400
+      },
+      "v3ExistingDeltaBufferBytes": {
+        "samples": [
+          307200,
+          307200,
+          307200
+        ],
+        "count": 3,
+        "medianBytes": 307200,
+        "p95Bytes": 307200,
+        "maxBytes": 307200
+      },
+      "p1cRebuildEventsAcrossRuns": 2
+    },
+    {
+      "size": {
+        "w": 288,
+        "h": 180
+      },
+      "seeds": [
+        173,
+        73519,
+        912037
+      ],
+      "v3SingleTickMs": {
+        "samples": [
+          0.784,
+          0.75,
+          0.792,
+          0.629,
+          0.631,
+          0.623,
+          0.623,
+          0.623,
+          3.863,
+          1.375,
+          1.086,
+          1.101,
+          1.161,
+          1.04,
+          1.09,
+          1.034,
+          1.032,
+          0.93,
+          0.995,
+          0.928,
+          0.935,
+          0.952,
+          0.93,
+          0.93
+        ],
+        "count": 24,
+        "medianMs": 0.93,
+        "p95Ms": 1.375,
+        "maxMs": 3.863
+      },
+      "p1cSingleTickMs": {
+        "samples": [
+          0.645,
+          0.629,
+          0.627,
+          0.66,
+          0.633,
+          0.727,
+          0.624,
+          0.617,
+          0.827,
+          0.812,
+          0.758,
+          0.753,
+          0.761,
+          0.776,
+          0.774,
+          0.746,
+          0.65,
+          0.651,
+          0.65,
+          0.658,
+          0.648,
+          0.652,
+          0.662,
+          0.663
+        ],
+        "count": 24,
+        "medianMs": 0.658,
+        "p95Ms": 0.812,
+        "maxMs": 0.827
+      },
+      "v3SixteenTickSoakMs": {
+        "samples": [
+          10.462,
+          20.061,
+          15.082
+        ],
+        "count": 3,
+        "medianMs": 15.082,
+        "p95Ms": 20.061,
+        "maxMs": 20.061
+      },
+      "p1cSixteenTickSoakMs": {
+        "samples": [
+          10.14,
+          11.76,
+          10.504
+        ],
+        "count": 3,
+        "medianMs": 10.504,
+        "p95Ms": 11.76,
+        "maxMs": 11.76
+      },
+      "p1cInitialMaskBuildMs": {
+        "samples": [
+          0.217,
+          0.234,
+          0.274
+        ],
+        "count": 3,
+        "medianMs": 0.234,
+        "p95Ms": 0.274,
+        "maxMs": 0.274
+      },
+      "p1cCachedBytes": {
+        "samples": [
+          466560,
+          466560,
+          466560
+        ],
+        "count": 3,
+        "medianBytes": 466560,
+        "p95Bytes": 466560,
+        "maxBytes": 466560
+      },
+      "v3ExistingDeltaBufferBytes": {
+        "samples": [
+          622080,
+          622080,
+          622080
+        ],
+        "count": 3,
+        "medianBytes": 622080,
+        "p95Bytes": 622080,
+        "maxBytes": 622080
+      },
+      "p1cRebuildEventsAcrossRuns": 0
+    },
+    {
+      "size": {
+        "w": 512,
+        "h": 320
+      },
+      "seeds": [
+        173,
+        73519,
+        912037
+      ],
+      "v3SingleTickMs": {
+        "samples": [
+          3.647,
+          2.964,
+          2.986,
+          2.525,
+          2.808,
+          2.711,
+          2.441,
+          2.358,
+          2.343,
+          2.332,
+          2.324,
+          2.322,
+          2.518,
+          2.391,
+          3.49,
+          2.722,
+          2.315,
+          2.314,
+          2.298,
+          2.297,
+          2.47,
+          2.348,
+          2.377,
+          2.373
+        ],
+        "count": 24,
+        "medianMs": 2.377,
+        "p95Ms": 3.49,
+        "maxMs": 3.647
+      },
+      "p1cSingleTickMs": {
+        "samples": [
+          2.035,
+          2.153,
+          2.043,
+          2.011,
+          2.065,
+          2.353,
+          2.024,
+          2.018,
+          2.744,
+          2.47,
+          2.517,
+          2.263,
+          2.25,
+          2.259,
+          2.169,
+          2.046,
+          2.143,
+          2.074,
+          2.019,
+          2.056,
+          2.02,
+          2.103,
+          2.05,
+          2.036
+        ],
+        "count": 24,
+        "medianMs": 2.065,
+        "p95Ms": 2.517,
+        "maxMs": 2.744
+      },
+      "v3SixteenTickSoakMs": {
+        "samples": [
+          41.235,
+          39.643,
+          38.063
+        ],
+        "count": 3,
+        "medianMs": 39.643,
+        "p95Ms": 41.235,
+        "maxMs": 41.235
+      },
+      "p1cSixteenTickSoakMs": {
+        "samples": [
+          33.3,
+          35.393,
+          33.685
+        ],
+        "count": 3,
+        "medianMs": 33.685,
+        "p95Ms": 35.393,
+        "maxMs": 35.393
+      },
+      "p1cInitialMaskBuildMs": {
+        "samples": [
+          0.612,
+          0.636,
+          0.985
+        ],
+        "count": 3,
+        "medianMs": 0.636,
+        "p95Ms": 0.985,
+        "maxMs": 0.985
+      },
+      "p1cCachedBytes": {
+        "samples": [
+          1474560,
+          1474560,
+          1474560
+        ],
+        "count": 3,
+        "medianBytes": 1474560,
+        "p95Bytes": 1474560,
+        "maxBytes": 1474560
+      },
+      "v3ExistingDeltaBufferBytes": {
+        "samples": [
+          1310720,
+          1310720,
+          1310720
+        ],
+        "count": 3,
+        "medianBytes": 1310720,
+        "p95Bytes": 1310720,
+        "maxBytes": 1310720
+      },
+      "p1cRebuildEventsAcrossRuns": 0
+    }
+  ],
+  "topologyEvents": [
+    {
+      "size": {
+        "w": 200,
+        "h": 128
+      },
+      "seed": 173,
+      "openedCells": 103,
+      "gate": 12900,
+      "openNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "closeNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "open": {
+        "wallMs": 0.991,
+        "floodFillMs": 0.278,
+        "rebuildCount": 2,
+        "normalizedCells": 10
+      },
+      "dam": {
+        "wallMs": 0.988,
+        "floodFillMs": 0.306,
+        "rebuildCount": 3,
+        "retainedInlandWaterBefore": 0.05000000074505806,
+        "retainedInlandWaterAfter": 0.05218616873025894
+      }
+    },
+    {
+      "size": {
+        "w": 200,
+        "h": 128
+      },
+      "seed": 73519,
+      "openedCells": 103,
+      "gate": 12900,
+      "openNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "closeNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "open": {
+        "wallMs": 0.935,
+        "floodFillMs": 0.211,
+        "rebuildCount": 2,
+        "normalizedCells": 5
+      },
+      "dam": {
+        "wallMs": 0.925,
+        "floodFillMs": 0.213,
+        "rebuildCount": 3,
+        "retainedInlandWaterBefore": 0.05000000074505806,
+        "retainedInlandWaterAfter": 0.052207257598638535
+      }
+    },
+    {
+      "size": {
+        "w": 200,
+        "h": 128
+      },
+      "seed": 912037,
+      "openedCells": 103,
+      "gate": 12900,
+      "openNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "closeNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "open": {
+        "wallMs": 3.005,
+        "floodFillMs": 0.395,
+        "rebuildCount": 2,
+        "normalizedCells": 6
+      },
+      "dam": {
+        "wallMs": 1.569,
+        "floodFillMs": 0.111,
+        "rebuildCount": 3,
+        "retainedInlandWaterBefore": 0.05000000074505806,
+        "retainedInlandWaterAfter": 0.05217893421649933
+      }
+    },
+    {
+      "size": {
+        "w": 288,
+        "h": 180
+      },
+      "seed": 173,
+      "openedCells": 147,
+      "gate": 26064,
+      "openNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "closeNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "open": {
+        "wallMs": 1.215,
+        "floodFillMs": 0.214,
+        "rebuildCount": 2,
+        "normalizedCells": 3
+      },
+      "dam": {
+        "wallMs": 1.145,
+        "floodFillMs": 0.204,
+        "rebuildCount": 3,
+        "retainedInlandWaterBefore": 0.05000000074505806,
+        "retainedInlandWaterAfter": 0.05220445990562439
+      }
+    },
+    {
+      "size": {
+        "w": 288,
+        "h": 180
+      },
+      "seed": 73519,
+      "openedCells": 147,
+      "gate": 26064,
+      "openNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "closeNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "open": {
+        "wallMs": 1.416,
+        "floodFillMs": 0.218,
+        "rebuildCount": 2,
+        "normalizedCells": 3
+      },
+      "dam": {
+        "wallMs": 1.28,
+        "floodFillMs": 0.214,
+        "rebuildCount": 3,
+        "retainedInlandWaterBefore": 0.05000000074505806,
+        "retainedInlandWaterAfter": 0.052207134664058685
+      }
+    },
+    {
+      "size": {
+        "w": 288,
+        "h": 180
+      },
+      "seed": 912037,
+      "openedCells": 147,
+      "gate": 26064,
+      "openNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "closeNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "open": {
+        "wallMs": 2.626,
+        "floodFillMs": 0.201,
+        "rebuildCount": 2,
+        "normalizedCells": 3
+      },
+      "dam": {
+        "wallMs": 1.285,
+        "floodFillMs": 0.221,
+        "rebuildCount": 3,
+        "retainedInlandWaterBefore": 0.05000000074505806,
+        "retainedInlandWaterAfter": 0.05218113586306572
+      }
+    },
+    {
+      "size": {
+        "w": 512,
+        "h": 320
+      },
+      "seed": 173,
+      "openedCells": 259,
+      "gate": 82176,
+      "openNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "closeNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "open": {
+        "wallMs": 3.621,
+        "floodFillMs": 0.594,
+        "rebuildCount": 2,
+        "normalizedCells": 3
+      },
+      "dam": {
+        "wallMs": 3.641,
+        "floodFillMs": 0.582,
+        "rebuildCount": 3,
+        "retainedInlandWaterBefore": 0.05000000074505806,
+        "retainedInlandWaterAfter": 0.05220026895403862
+      }
+    },
+    {
+      "size": {
+        "w": 512,
+        "h": 320
+      },
+      "seed": 73519,
+      "openedCells": 259,
+      "gate": 82176,
+      "openNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "closeNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "open": {
+        "wallMs": 3.933,
+        "floodFillMs": 0.749,
+        "rebuildCount": 2,
+        "normalizedCells": 3
+      },
+      "dam": {
+        "wallMs": 3.773,
+        "floodFillMs": 0.617,
+        "rebuildCount": 3,
+        "retainedInlandWaterBefore": 0.05000000074505806,
+        "retainedInlandWaterAfter": 0.052208028733730316
+      }
+    },
+    {
+      "size": {
+        "w": 512,
+        "h": 320
+      },
+      "seed": 912037,
+      "openedCells": 259,
+      "gate": 82176,
+      "openNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "closeNotice": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "open": {
+        "wallMs": 3.25,
+        "floodFillMs": 0.597,
+        "rebuildCount": 2,
+        "normalizedCells": 3
+      },
+      "dam": {
+        "wallMs": 3.253,
+        "floodFillMs": 0.58,
+        "rebuildCount": 3,
+        "retainedInlandWaterBefore": 0.05000000074505806,
+        "retainedInlandWaterAfter": 0.05219107121229172
+      }
+    }
+  ]
+}

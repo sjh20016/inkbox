@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "task": "Inkbox-G4-P1C-Luna-海陆连通性原型开发委托书-v1.0",
+  "date": "2026-10-17",
+  "verdict": "P1C_FEASIBLE_WITH_COST",
+  "fixedBaseline": "f4c05d825467217a95b3c2f9f271e97e9f2b357d",
+  "branch": "research/g4-p1c-ocean-connectivity",
+  "prototypeRuleId": "ocean-connected-prototype-v1",
+  "proposedProductionRuleId": "ocean-connected-v3",
+  "productSourceChanged": false,
+  "p1aOracleChanged": false,
+  "p1bV3BehaviorChanged": false,
+  "saveVersionChanged": false,
+  "prCreated": false,
+  "mainMerged": false,
+  "prototype": {
+    "source": "research/g4-p1c/oceanHydrologyPrototype.js",
+    "connectivity": "four-neighbor flood from all edge cells with height < SEA_LEVEL",
+    "noBoundarySource": "no static ocean",
+    "diagonalOnlyConnection": false,
+    "eventEffectiveAt": "next fixed four-day hydrology tick",
+    "closedBasinWaterClearedOnDisconnect": false,
+    "dynamicProcesses": ["flow", "evaporation", "water erosion", "thermal erosion", "riverBase"],
+    "cachePersistence": "WeakMap runtime-only; rebuilt from height after restore",
+    "cacheInvalidation": "explicit height mutation notification when strict sea-level passability changes; dimensions/height-layer replacement auto-detected"
+  },
+  "scenarioRun": {
+    "command": "node scripts/inkbox-g4-p1c-scenarios.mjs",
+    "status": "PASS",
+    "groupsPassed": 7,
+    "evidence": "reports/analysis/g4/g4-p1c/evidence/scenarios.json",
+    "coverage": [
+      "edge ocean and world without ocean",
+      "diagonal non-connectivity",
+      "closed low basin, canal opening and dam closure",
+      "residual water, pump, injection and riverBase",
+      "actual sculpt and History.undo",
+      "erosion-created topology change and next-tick event ordering",
+      "evaporation-driven terrain type refresh",
+      "same-seed natural map V3 comparison",
+      "save/restore classification rebuild",
+      "map progress expansion without array resize",
+      "generated upper/nether plane isolation",
+      "five-tick determinism"
+    ]
+  },
+  "naturalMapComparison": {
+    "dimensions": [128, 80],
+    "ticks": 16,
+    "seeds": [173, 73519, 912037],
+    "initialDisconnectedSubseaCells": [9, 7, 10],
+    "finalDisconnectedSubseaCells": [9, 7, 10],
+    "initialInlandWater": [0.049995, 0.02463, 0.060809],
+    "waterAfter16Ticks": [0.072039, 0.048546, 0.095275],
+    "maxPerCellWaterDifferenceFromV3": [0.00729, 0.010111, 0.006945],
+    "interpretation": "Existing generator supplies one-time water to all below-sea cells; disconnected cells then participate in finite flow/evaporation rather than receiving static sea refill."
+  },
+  "performance": {
+    "command": "node scripts/inkbox-g4-p1c-bench.mjs",
+    "status": "PASS",
+    "evidence": "reports/analysis/g4/g4-p1c/evidence/performance.json",
+    "machine": "Windows 10, Node v24.11.1, Intel Core i3-12100",
+    "method": "three seeds per size, five warmup ticks, eight single-tick samples, sixteen-tick sustained segment; Node CPU timing, no GPU claim",
+    "sizes": [
+      {
+        "dimensions": [200, 128],
+        "cells": 25600,
+        "v3SingleTickMedianP95Ms": [0.59, 1.145],
+        "p1cSingleTickMedianP95Ms": [0.647, 1.488],
+        "p1cInitialMaskBuildMedianWorstMs": [0.226, 0.833],
+        "v3SixteenTickMedianWorstMs": [10.542, 10.687],
+        "p1cSixteenTickMedianWorstMs": [11.601, 13.938],
+        "p1cCachedBytes": 230400,
+        "p1cTopologyRebuildEventsAcrossThreeRuns": 2
+      },
+      {
+        "dimensions": [288, 180],
+        "cells": 51840,
+        "v3SingleTickMedianP95Ms": [0.93, 1.375],
+        "p1cSingleTickMedianP95Ms": [0.658, 0.812],
+        "p1cInitialMaskBuildMedianWorstMs": [0.234, 0.274],
+        "v3SixteenTickMedianWorstMs": [15.082, 20.061],
+        "p1cSixteenTickMedianWorstMs": [10.504, 11.76],
+        "p1cCachedBytes": 466560,
+        "p1cTopologyRebuildEventsAcrossThreeRuns": 0
+      },
+      {
+        "dimensions": [512, 320],
+        "cells": 163840,
+        "v3SingleTickMedianP95Ms": [2.377, 3.49],
+        "p1cSingleTickMedianP95Ms": [2.065, 2.517],
+        "p1cInitialMaskBuildMedianWorstMs": [0.636, 0.985],
+        "v3SixteenTickMedianWorstMs": [39.643, 41.235],
+        "p1cSixteenTickMedianWorstMs": [33.685, 35.393],
+        "p1cCachedBytes": 1474560,
+        "p1cTopologyRebuildEventsAcrossThreeRuns": 0
+      }
+    ],
+    "nineCanalAndDamEvents": {
+      "maxOpenFloodFillMs": 0.749,
+      "maxDamFloodFillMs": 0.617,
+      "maxOpenHydrologyTickMs": 3.933,
+      "maxDamHydrologyTickMs": 3.773
+    },
+    "memoryModel": "nine bytes per cell: one-byte mask + four-byte queue + shared four-byte delta buffer; object and engine memory not measured",
+    "performanceClaim": "no consistent speedup claim; measured cost is near the existing V3 order of magnitude and topology reflood occurs only after explicit passability crossings"
+  },
+  "knownRisks": [
+    "Initial generated disconnected lowlands retain the generator's one-time static-sea water as finite water.",
+    "Four-neighbor connectivity treats diagonal-only contact as closed; one cell below SEA_LEVEL is enough to connect a canal.",
+    "The prototype relies on event notifications for in-place terrain writes; missed product hooks would leave a stale cache.",
+    "P1C was not connected to the product Canvas/Three loop and did not receive real-browser acceptance in this task.",
+    "A small natural-map sample has very few enclosed subsea cells; gameplay value mainly appears after player terrain edits."
+  ],
+  "integrationTouchpoints": [
+    "world creation and restore boundaries",
+    "hydrologyRules and Sandbox.update dispatch",
+    "powers.js terrain brushes, History.undo, and UI tool dispatch",
+    "Three terrain sculpt beforeChange path",
+    "automatic water and thermal erosion threshold crossings",
+    "derived type/qi and dirty rendering updates",
+    "Canvas/Three browser and mortal/upper/nether isolation acceptance"
+  ],
+  "nextMinimumAction": "Create an isolated opt-in integration task for ocean-connected-v3; wire all height threshold events and restore rebuild; define initial generated inland-water semantics; run actual Canvas and Three save/undo/canal/dam/erosion scenarios before any default-rule decision.",
+  "deliveryCommit": null,
+  "deliveryCommitNote": "Reported with the final branch ref; this summary is part of its own content-addressed commit."
+}

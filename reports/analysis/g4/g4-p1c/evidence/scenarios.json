@@ -1,0 +1,399 @@
+{
+  "schemaVersion": 1,
+  "task": "Inkbox-G4-P1C-Luna-海陆连通性原型",
+  "status": "PASS",
+  "fixedBaseline": "f4c05d825467217a95b3c2f9f271e97e9f2b357d",
+  "rule": "ocean-connected-prototype-v1",
+  "seaLevel": 0.3,
+  "runtime": {
+    "node": "v24.11.1",
+    "platform": "win32",
+    "arch": "x64",
+    "release": "10.0.19045"
+  },
+  "groups": {
+    "boundary-ocean-and-no-ocean": {
+      "status": "PASS",
+      "openOceanCells": 7,
+      "noOceanCells": 0,
+      "closedBasinWaterAfter12Ticks": 0,
+      "diagonalNeighborsConnect": false,
+      "connectivity": "four-neighbor; boundary cells strictly below SEA_LEVEL seed the ocean"
+    },
+    "canal-dam-pump-inject-and-river": {
+      "status": "PASS",
+      "gate": 97,
+      "basin": 98,
+      "openEvent": {
+        "changedCells": 1,
+        "seaLevelCrossings": 1,
+        "invalidated": true
+      },
+      "openNormalized": 2,
+      "damReclassification": {
+        "oceanAfter": false,
+        "waterBefore": 0.11999998986721039,
+        "waterAfter": 0.15112198889255524,
+        "topologyPending": false
+      },
+      "tools": {
+        "afterPump": 0.07112199068069458,
+        "afterInject": 0.15112198889255524,
+        "classificationUnchanged": true
+      },
+      "riverBase": 0.05999999865889549,
+      "riverWaterAfterTick": 0.05999999865889549
+    },
+    "real-brush-undo-and-event-cache": {
+      "status": "PASS",
+      "brush": {
+        "dig": {
+          "changedCells": 1,
+          "seaLevelCrossings": 1,
+          "invalidated": true
+        },
+        "undo": {
+          "changedCells": 1,
+          "seaLevelCrossings": 1,
+          "invalidated": true
+        },
+        "finalOceanBasin": false
+      },
+      "cache": {
+        "rebuildsAfterEditAndUndo": 3,
+        "rebuildsAfter40UnchangedTicks": 1,
+        "ticksWithoutEdit": 40
+      }
+    },
+    "automatic-erosion-topology-transition": {
+      "status": "PASS",
+      "gate": 95,
+      "basin": 96,
+      "beforeHeight": 0.3000999987125397,
+      "afterFirstTick": 0.29983553290367126,
+      "firstTick": {
+        "topologyPending": true,
+        "rebuilds": 1
+      },
+      "secondTick": {
+        "topologyPending": false,
+        "rebuilds": 2,
+        "normalizedCells": 2
+      }
+    },
+    "inland-evaporation-refreshes-terrain-type": {
+      "status": "PASS",
+      "cell": 97,
+      "beforeWater": 0.0020000000949949026,
+      "afterWater": 0.000572000106330961,
+      "beforeType": 3,
+      "afterType": 4,
+      "evaporationDirtyWasFlushed": true,
+      "metrics": {
+        "moved": 0,
+        "eroded": 0,
+        "thermalTouched": 0,
+        "normalizedCells": 0,
+        "oceanCells": 0,
+        "maskRebuildCount": 1,
+        "maskRebuiltMs": 0.005200000000002092,
+        "topologyPending": false
+      }
+    },
+    "natural-map-v3-comparison-determinism-and-rebuild": {
+      "status": "PASS",
+      "naturalMap": {
+        "w": 128,
+        "h": 80,
+        "seed": 73519,
+        "boundaryConnectedOceanCells": 4565,
+        "disconnectedBelowSeaCells": 7,
+        "p1cWaterChangesFromGenerated": 51
+      },
+      "firstTickComparison": {
+        "v3": {
+          "moved": 0.012255648577120155,
+          "eroded": 25
+        },
+        "p1c": {
+          "moved": 0.01243182849837467,
+          "eroded": 25,
+          "thermalTouched": 985,
+          "normalizedCells": 1,
+          "oceanCells": 4565,
+          "maskRebuildCount": 1,
+          "maskRebuiltMs": 0.478999999999985,
+          "topologyPending": true
+        },
+        "layerHashesV3": {
+          "height": "519db2b9c9d404d8eb53a4037b88feb365d234a825a87f37b9b35f1b7a524ee4",
+          "water": "3083f0ecaa3f2afaa1e2302a9769aac948b5d0486225ceb3929fb86836fc4c5c",
+          "temp": "07e3ad2777b7e6c70933e54dc8765803de4a09cfbb0ced1baec6aca28c019f4d",
+          "moist": "b4663f799cb1dcb73f159ff8e8e36a9759b485e70469531903d675e0c57e6ac9",
+          "veg": "416dc1cb18acef77214d70fa0652785cef0a5247bd1091fbd3bb40ea53c63b87",
+          "fire": "02b1c2234680617802901a77eae606ad02e4ddb4282ccbc60061eac5b2d90bba",
+          "riverBase": "aa7374624a1e33f7191701e7b65067297d06601902d4a4efd10a4b9b1c0bf24b",
+          "type": "c5c067dbdd927aec56652ff88717aff5c8601444e53d66d6a81d67d84ffb1533",
+          "qi": "15c99699b72d2b957de8e9f5b3a20e9128cbcf73f66697e357ce6f7f8acc4977",
+          "over": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+          "struct": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+          "owner": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652"
+        },
+        "layerHashesP1C": {
+          "height": "f430d1148642651665b95cafa9ffa1d260607773bef685ba64fc282b63802c85",
+          "water": "3524e23c578ad71e8d051df46feffcf19f35a233140f5489d7b89f298a520081",
+          "temp": "07e3ad2777b7e6c70933e54dc8765803de4a09cfbb0ced1baec6aca28c019f4d",
+          "moist": "b4663f799cb1dcb73f159ff8e8e36a9759b485e70469531903d675e0c57e6ac9",
+          "veg": "416dc1cb18acef77214d70fa0652785cef0a5247bd1091fbd3bb40ea53c63b87",
+          "fire": "02b1c2234680617802901a77eae606ad02e4ddb4282ccbc60061eac5b2d90bba",
+          "riverBase": "aa7374624a1e33f7191701e7b65067297d06601902d4a4efd10a4b9b1c0bf24b",
+          "type": "35cdfc0383ab20107a4491aa54312ea89732c850b6686823d8da1be343fa8f01",
+          "qi": "e4618edfcd8b15f07faa24c11def27439eaf8a0b8c5ecf0a178a3feec16a1281",
+          "over": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+          "struct": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+          "owner": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652"
+        }
+      },
+      "determinism": {
+        "fiveTicksSameLayers": true,
+        "hashes": {
+          "height": "d3551c28cd613a7820013dbace681876e54419bd1b21c278827ac229b1682f92",
+          "water": "17cc8f4c44cfb36d8b4d3283a72d0c3c88efdef30d794e11ed97db1bc4640858",
+          "temp": "07e3ad2777b7e6c70933e54dc8765803de4a09cfbb0ced1baec6aca28c019f4d",
+          "moist": "b4663f799cb1dcb73f159ff8e8e36a9759b485e70469531903d675e0c57e6ac9",
+          "veg": "416dc1cb18acef77214d70fa0652785cef0a5247bd1091fbd3bb40ea53c63b87",
+          "fire": "02b1c2234680617802901a77eae606ad02e4ddb4282ccbc60061eac5b2d90bba",
+          "riverBase": "aa7374624a1e33f7191701e7b65067297d06601902d4a4efd10a4b9b1c0bf24b",
+          "type": "1bd4a2812b846ae3cc29330d36d4c92e9dcfbf70dff3ffa33f97f37c1333ccb2",
+          "qi": "826b4df23b31e91ee19530beccefc913b5281cbfd57467afc80fe15120ee147c",
+          "over": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+          "struct": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+          "owner": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652"
+        }
+      },
+      "restore": {
+        "serializedBytes": 247086,
+        "cacheStored": false,
+        "rebuiltOceanCells": 4565,
+        "matchesPreSaveMask": true
+      },
+      "mapExpansion": {
+        "changedAccessStage": true,
+        "dimensionsUnchanged": true,
+        "maskRebuilds": 0
+      },
+      "threePlaneIsolation": "actual generated upper and nether Worlds rejected; no World property or save-format changes"
+    },
+    "natural-seed-v3-versus-p1c-water-lifecycle": {
+      "status": "PASS",
+      "sameWorlds": "128x80 generated Worlds, identical seed and generation inputs; V3 and P1C stepped independently",
+      "ticks": 16,
+      "comparisons": [
+        {
+          "seed": 173,
+          "dimensions": [
+            128,
+            80
+          ],
+          "start": {
+            "boundaryOceanCells": 4551,
+            "disconnectedSubseaCells": 9,
+            "disconnectedInlandWater": 0.049995
+          },
+          "after16Ticks": {
+            "remainingDisconnectedSubseaCells": 9,
+            "disconnectedInlandWater": 0.072039,
+            "changedWaterCells": 9,
+            "maxWaterDifferenceFromV3": 0.00729,
+            "firstDifferingCell": {
+              "index": 2715,
+              "x": 27,
+              "y": 21,
+              "height": 0.29888954758644104,
+              "water": 0.008294237777590752,
+              "ocean": false,
+              "neighbors": [
+                {
+                  "index": 2716,
+                  "x": 28,
+                  "y": 21,
+                  "height": 0.3028636872768402,
+                  "water": 0.006906389258801937,
+                  "ocean": false
+                },
+                {
+                  "index": 2714,
+                  "x": 26,
+                  "y": 21,
+                  "height": 0.2960299253463745,
+                  "water": 0.008941722102463245,
+                  "ocean": false
+                },
+                {
+                  "index": 2843,
+                  "x": 27,
+                  "y": 22,
+                  "height": 0.3131239116191864,
+                  "water": 0,
+                  "ocean": false
+                },
+                {
+                  "index": 2587,
+                  "x": 27,
+                  "y": 20,
+                  "height": 0.3097749948501587,
+                  "water": 0,
+                  "ocean": false
+                }
+              ],
+              "eventSequence": [
+                "create",
+                "16 hydrology ticks",
+                "classification rebuilt from final heights"
+              ]
+            },
+            "topologyPendingAtTick16": false,
+            "staticV3Moved": 0.363193,
+            "p1cMoved": 0.382469
+          }
+        },
+        {
+          "seed": 73519,
+          "dimensions": [
+            128,
+            80
+          ],
+          "start": {
+            "boundaryOceanCells": 4565,
+            "disconnectedSubseaCells": 7,
+            "disconnectedInlandWater": 0.02463
+          },
+          "after16Ticks": {
+            "remainingDisconnectedSubseaCells": 7,
+            "disconnectedInlandWater": 0.048546,
+            "changedWaterCells": 4,
+            "maxWaterDifferenceFromV3": 0.010111,
+            "firstDifferingCell": {
+              "index": 7063,
+              "x": 23,
+              "y": 55,
+              "height": 0.2988854944705963,
+              "water": 0.012333380989730358,
+              "ocean": false,
+              "neighbors": [
+                {
+                  "index": 7064,
+                  "x": 24,
+                  "y": 55,
+                  "height": 0.3061618506908417,
+                  "water": 0.007169415708631277,
+                  "ocean": false
+                },
+                {
+                  "index": 7062,
+                  "x": 22,
+                  "y": 55,
+                  "height": 0.31497922539711,
+                  "water": 0,
+                  "ocean": false
+                },
+                {
+                  "index": 7191,
+                  "x": 23,
+                  "y": 56,
+                  "height": 0.2973293960094452,
+                  "water": 0.011267082765698433,
+                  "ocean": false
+                },
+                {
+                  "index": 6935,
+                  "x": 23,
+                  "y": 54,
+                  "height": 0.3290659487247467,
+                  "water": 0,
+                  "ocean": false
+                }
+              ],
+              "eventSequence": [
+                "create",
+                "16 hydrology ticks",
+                "classification rebuilt from final heights"
+              ]
+            },
+            "topologyPendingAtTick16": false,
+            "staticV3Moved": 0.194047,
+            "p1cMoved": 0.203736
+          }
+        },
+        {
+          "seed": 912037,
+          "dimensions": [
+            128,
+            80
+          ],
+          "start": {
+            "boundaryOceanCells": 4555,
+            "disconnectedSubseaCells": 10,
+            "disconnectedInlandWater": 0.060809
+          },
+          "after16Ticks": {
+            "remainingDisconnectedSubseaCells": 10,
+            "disconnectedInlandWater": 0.095275,
+            "changedWaterCells": 10,
+            "maxWaterDifferenceFromV3": 0.006945,
+            "firstDifferingCell": {
+              "index": 3431,
+              "x": 103,
+              "y": 26,
+              "height": 0.29803818464279175,
+              "water": 0.009540632367134094,
+              "ocean": false,
+              "neighbors": [
+                {
+                  "index": 3432,
+                  "x": 104,
+                  "y": 26,
+                  "height": 0.3127603828907013,
+                  "water": 0,
+                  "ocean": false
+                },
+                {
+                  "index": 3430,
+                  "x": 102,
+                  "y": 26,
+                  "height": 0.31718024611473083,
+                  "water": 0,
+                  "ocean": false
+                },
+                {
+                  "index": 3559,
+                  "x": 103,
+                  "y": 27,
+                  "height": 0.30869483947753906,
+                  "water": 0.00644152145832777,
+                  "ocean": false
+                },
+                {
+                  "index": 3303,
+                  "x": 103,
+                  "y": 25,
+                  "height": 0.294113427400589,
+                  "water": 0.010676298290491104,
+                  "ocean": false
+                }
+              ],
+              "eventSequence": [
+                "create",
+                "16 hydrology ticks",
+                "classification rebuilt from final heights"
+              ]
+            },
+            "topologyPendingAtTick16": false,
+            "staticV3Moved": 0.242792,
+            "p1cMoved": 0.275669
+          }
+        }
+      ]
+    }
+  }
+}
