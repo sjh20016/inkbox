@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "task": "Inkbox-G4-P1B-R2-Luna-A6-v1.0",
+  "verdict": "P1B_REVIEW_READY",
+  "date": "2026-10-17",
+  "source": {
+    "fixedP1BSha": "f4c05d825467217a95b3c2f9f271e97e9f2b357d",
+    "productSourceChanged": false,
+    "srcInkboxDiff": [],
+    "mainAtStart": "e1e55039bb56efda7a307513ede07a9fab3bf534"
+  },
+  "verificationBranch": {
+    "name": "verify/g4-p1b-r-environment-browser",
+    "headAtStart": "a0396d1d3005674898e858bb6199b435a728dcf9",
+    "localEquivalentTree": "bd61bc8e39f9e766b076fd02d874c037db8b5f74",
+    "deliveryCommit": null,
+    "deliveryCommitNote": "This file is content-addressed and cannot contain its own final commit SHA; the final branch SHA is returned in the delivery message.",
+    "noForceUpdate": true
+  },
+  "checkout": {
+    "kind": "existing verification worktree",
+    "sparse": true,
+    "shallow": true,
+    "promisor": true,
+    "productInputsFromFixedRef": true,
+    "missingPackageInputsRestoredFromGitHubApi": 26,
+    "restoredGitBlobHashesVerified": 26,
+    "packageInputsMissingAfterRestore": 0,
+    "packageManifestPreflight": "PASS"
+  },
+  "runtime": {
+    "node": "v24.11.1",
+    "npm": "11.6.2",
+    "os": "Windows 10.0.19045.0"
+  },
+  "dependencyInstall": {
+    "command": "npm ci",
+    "status": "PASS",
+    "exitCode": 0,
+    "packagesAdded": 1,
+    "packagesAudited": 2,
+    "vulnerabilities": 0
+  },
+  "build": {
+    "command": "npm run build",
+    "status": "PASS",
+    "exitCode": 0,
+    "packageFileCount": 411,
+    "outputDirectory": "dist/zuotian-guan-jing-inkbox-1.0.0",
+    "archive": "dist/zuotian-guan-jing-inkbox-1.0.0.zip",
+    "archiveBytes": 3138195,
+    "archiveSha256": "b85aab1c634ac4e25e5cb48d6b39fadaa3b90bb9c68932b88acc1c0240149fa6"
+  },
+  "packageAudit": {
+    "command": "npm run test:package",
+    "status": "PASS",
+    "exitCode": 0,
+    "packageFileCount": 411,
+    "glbCount": 2,
+    "scriptTargets": 85,
+    "markdownDocuments": 101,
+    "coreFiles": {
+      "inkbox.html": "PASS",
+      "hydrologyRules.js": "PASS",
+      "hydrologyStaticSea.js": "PASS",
+      "staticImportTargets": "PASS",
+      "vendorThree": "PASS"
+    },
+    "moduleHashesMatchFixedSource": true
+  },
+  "ciWorkflowRun": "NOT_RUN",
+  "cdp": {
+    "status": "FALLBACK_USED",
+    "edgeVersion": "155.0.4283.45",
+    "attempt": "WebSocket closed before Page.enable returned",
+    "temporaryProfileCleaned": true,
+    "alternateBrowser": "Codex in-app browser"
+  },
+  "browser": {
+    "status": "PASS",
+    "pageSource": "built dist package inkbox.html",
+    "browserVersion": "not exposed by in-app browser API",
+    "viewport": {
+      "width": 1366,
+      "height": 768,
+      "dpr": 1
+    },
+    "testOrigin": "loopback-only ephemeral port",
+    "canvas": {
+      "status": "PASS",
+      "B0DefaultV0": "PASS",
+      "B1ExplicitV3": "PASS",
+      "B2WorldLifecycle": "PASS",
+      "B3SaveLoadAndRejection": "PASS",
+      "B4PauseBrushUndo": "PASS",
+      "B6Expanse512x320": "PASS",
+      "actualRafAndProductUpdate": true,
+      "unexpectedPageExceptions": 0,
+      "unexpectedConsoleErrors": 0,
+      "failedPackageRequests": 0,
+      "expectedInvalidSaveErrorCount": 1
+    },
+    "three": {
+      "status": "PASS",
+      "B5ActualThree": "PASS",
+      "defaultV0ActualRaf": true,
+      "optInV3ActualRaf": true,
+      "worldReplacementBoundToMortalStage": true,
+      "webgl2": true,
+      "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 730) Direct3D11",
+      "unexpectedPageExceptions": 0,
+      "unexpectedConsoleErrors": 0,
+      "failedPackageRequests": 0
+    }
+  },
+  "largeWorld": {
+    "status": "PASS",
+    "dimensions": [512, 320],
+    "cells": 163840,
+    "seed": 673231,
+    "legacyCreationMs": 592.7,
+    "v3CreationMs": 599.1,
+    "seaCells": 70477,
+    "normalizationCellCount": 0,
+    "maxWaterDifference": 0,
+    "heightChanges": 0,
+    "typeChanges": 0,
+    "qiChanges": 0
+  },
+  "evidence": [
+    "reports/analysis/g4/g4-p1b-r/evidence-r2/canvas-r2.json",
+    "reports/analysis/g4/g4-p1b-r/evidence-r2/three-r2.json",
+    "scripts/inkbox-g4-p1b-r2-harness.html",
+    "scripts/inkbox-g4-p1b-r2-server.mjs"
+  ],
+  "productBug": "NONE_FOUND",
+  "productPatch": "NONE",
+  "knownRuleQuestions": [
+    "Paused terrain edits restore static-sea normalization on the next V3 water tick.",
+    "V3 save water-depth quantization may cause small restore normalization changes.",
+    "Every cell below SEA_LEVEL, including enclosed low basins, is treated as sea."
+  ],
+  "nextMinimumAction": "Human review and rule adjudication of the listed policy questions, followed by a separate G2 combination acceptance on the approved baseline.",
+  "mergeOrDefaultChange": false,
+  "p1cStarted": false
+}
