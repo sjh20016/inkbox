@@ -134,7 +134,7 @@ $env:INKBOX_REPORT_DIR = 'reports/local/m2a-recheck'
 npm run test:render3d:m2a:browser
 ```
 
-正式封板截图 / JSON 在 [reports/release/render3d-m2a](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/reports/release/render3d-m2a)，对应 [M2-A 工程报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/Render3D%20M2-A%20%E6%9E%B6%E6%9E%84%E5%8E%9F%E5%9E%8B%E5%B7%A5%E7%A8%8B%E6%8A%A5%E5%91%8A.md)。
+正式封板截图 / JSON 在 [reports/release/render3d-m2a](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/reports/release/render3d-m2a)，对应 [M2-A 工程报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/%E5%8E%86%E5%8F%B2%E5%A7%94%E6%89%98%E4%B9%A6/Render3D%20M2-A%20%E6%9E%B6%E6%9E%84%E5%8E%9F%E5%9E%8B%E5%B7%A5%E7%A8%8B%E6%8A%A5%E5%91%8A.md)。
 M2-A 本地记录为 view 113、M2-A 13 组、160 点拾取零错误；历史计数只描述对应基线，不充当永久测试规格。
 
 ## GitHub 浏览器复验
