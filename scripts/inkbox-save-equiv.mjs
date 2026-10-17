@@ -454,6 +454,8 @@ console.log('水墨沙盒 · 存读档等价测试');
 console.log('='.repeat(56));
 
 const world = generateWorld({ preset: WORLD_PRESETS.medium, seed: SEED, scatter: true });
+// The equivalence fixture models a fully initialized product World; ordinary worlds are V0.
+world.hydrologyRules = 'legacy-v1';
 
 // ── 挂上界（v8）────────────────────────────────────────────
 //

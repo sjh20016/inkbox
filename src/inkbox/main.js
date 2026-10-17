@@ -36,7 +36,7 @@ import { wraithStats } from './sim/wraiths.js';
 // D6-3 工程包 D：`isControlled` 是「此刻被附身接管」的唯一判据（`life.js` 的行为锁
 // 与这里的面板都读它）。**只读**，不引入任何写路径。
 import { isControlled } from './sim/possession.js';
-import { stepHydrology } from './sim/hydrology.js';
+import { stepHydrologyForWorld, bindHydrologyWorld } from './sim/hydrologyRules.js';
 import { decayOverlay } from './sim/ecology.js';
 // 空间裂缝（阶段三）：**开缝**这个动作只在 pointerup 的提交点（commitSelection）
 // 发生；**判定 / 漏物 / 闭合**走低频时钟，那个时钟已搬进 `sim/advance.js`
@@ -374,9 +374,11 @@ class Sandbox {
 
   newWorld(presetKey = this.presetKey, seed = this.seed, options = {}) {
     const preset = WORLD_PRESETS[presetKey] || WORLD_PRESETS.medium;
+    const world = createSandboxWorld(preset, seed >>> 0, options);
+    bindHydrologyWorld(this, world);
     this.presetKey = presetKey;
     this.seed = seed >>> 0;
-    this.world = createSandboxWorld(preset, this.seed, options);
+    this.world = world;
     this.life = new Life(this.world, mulberry32(this.seed ^ 0xa5a5a5a5));
     this.terrain = new TerrainLayer(this.world, { relief: this.camera.relief });
     // 上界：与凡间同尺寸的另一张地图 + 第二个 TerrainLayer。
@@ -1050,6 +1052,7 @@ class Sandbox {
             this.notify(`「${this.qol.slotLabel(slot)}」没有存档`);
             return;
           }
+          bindHydrologyWorld(this, world);
           this.world = world;
           this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
           this.terrain.setWorld(this.world);
@@ -1136,6 +1139,7 @@ class Sandbox {
       void this.qol.runOnce('inkBtnImport', async () => {
       try {
         const world = await importFile(file);
+        bindHydrologyWorld(this, world);
         this.world = world;
         this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
         this.terrain.setWorld(this.world);
@@ -2074,7 +2078,7 @@ class Sandbox {
       while (this.hydroAccum >= 0.16 && hydroSteps < 3) {
         this.hydroAccum -= 0.16;
         hydroSteps += 1;
-        stepHydrology(world, 4, null);
+        stepHydrologyForWorld(world, 4);
         this.dirty = true;
       }
 

@@ -1,3 +1,4 @@
+import { LEGACY_RULE, parseHydrologyRule, prepareHydrologyWorld } from '../sim/hydrologyRules.js';
 import { generateWorld } from '../world/worldgen.js';
 import { createMapProgress, accessBounds, expandMap, mapProgressSummary } from '../world/mapProgress.js';
 
@@ -45,12 +46,15 @@ export function creationOptions(overrides = {}) {
   const terrain = overrides.terrainPreset ?? element('inkTerrainSelect')?.value ?? 'standard';
   const generationVersion = overrides.generationVersion ?? (terrain === 'legacy' ? 1 : 2);
   return { generationVersion, terrainPreset: terrain === 'legacy' ? 'standard' : terrain,
-    progressive: overrides.progressive ?? element('inkProgressive')?.checked ?? false };
+    progressive: overrides.progressive ?? element('inkProgressive')?.checked ?? false,
+    hydrologyRules: Object.prototype.hasOwnProperty.call(overrides, 'hydrologyRules')
+      ? parseHydrologyRule(overrides.hydrologyRules) : LEGACY_RULE };
 }
 export function createSandboxWorld(preset, seed, options = {}) {
-  const { progressive, ...generation } = creationOptions(options);
+  const { progressive, hydrologyRules, ...generation } = creationOptions(options);
   const world = generateWorld({ preset, seed: parseSeed(seed), scatter: true, ...generation });
   createMapProgress(world, progressive);
+  prepareHydrologyWorld(world, hydrologyRules, 'create');
   return world;
 }
 export function syncCreationControls(sandbox) {

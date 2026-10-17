@@ -23,6 +23,7 @@
 //   · 可接受：继续演化后的轨迹分叉，量级与量化误差相符。
 // 见 scripts/inkbox-save-equiv.mjs。
 
+import { LEGACY_RULE, parseHydrologyRule, prepareHydrologyWorld, hydrologyRuleForWorld } from '../sim/hydrologyRules.js';
 import { APP, NEVER_DECAY_DAY, WORLD_PRESETS } from '../core/config.js';
 import { World } from '../world/World.js';
 import { recomputeAll, recomputeQi } from '../world/terrain.js';
@@ -278,6 +279,7 @@ function base64ToBytes(text) {
 export function serializeWorld(world, meta = {}) {
   return {
     v: SAVE_VERSION,
+    hydrologyRules: world.plane && world.plane !== 'mortal' ? LEGACY_RULE : hydrologyRuleForWorld(world),
     app: APP.version,
     w: world.w,
     h: world.h,
@@ -713,6 +715,9 @@ export function serializeWorld(world, meta = {}) {
 }
 
 export function deserializeWorld(data) {
+  const rule = parseHydrologyRule(data.hydrologyRules, {
+    missing: !Object.prototype.hasOwnProperty.call(data, 'hydrologyRules'), missingIsLegacy: true,
+  });
   const preset = { w: data.w, h: data.h };
   const world = new World(preset.w, preset.h, data.seed);
   // Optional metadata never regenerates the saved terrain or changes legacy key sets.
@@ -781,6 +786,7 @@ export function deserializeWorld(data) {
   world.nether = data.nether
     ? deserializeNetherWorld(data.nether, data.seed)
     : generateNetherWorld({ preset: { w: data.w, h: data.h }, seed: data.seed });
+  prepareHydrologyWorld(world, rule, 'restore');
   return world;
 }
 
@@ -832,6 +838,7 @@ const UPPER_ONLY_KEYS = ['popLog', 'arrivedLog', 'mortalLog'];
  */
 function serializeUpperWorld(upper) {
   const payload = serializeWorld(upper);
+  delete payload.hydrologyRules;
 
   const t = payload.terrain;
   payload.terrain = {
@@ -1001,6 +1008,7 @@ const NETHER_ONLY_KEYS = ['popLog'];
  */
 function serializeNetherWorld(nether) {
   const payload = serializeWorld(nether);
+  delete payload.hydrologyRules;
 
   const t = payload.terrain;
   payload.terrain = {
