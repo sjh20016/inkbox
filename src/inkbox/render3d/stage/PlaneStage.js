@@ -48,7 +48,7 @@ export class PlaneStage {
     const p = this.profile;
     // M2-B §6：每个 Stage 持有一份高程单源（默认 RAW ⇒ 与 M2-A 逐位一致）。
     this.elevation = new ElevationField(world, p.elevation);
-    this.terrain = p.terrain ? new TerrainMesh(world, this.coordinates, this.elevation) : null;
+    this.terrain = p.terrain ? new TerrainMesh(world, this.coordinates, this.elevation, this.plane === 'mortal') : null;
     this.terrainSides=this.terrain?new TerrainSideLayer(world,this.coordinates,this.elevation):null;
     if(this.terrainSides)this.root.add(this.terrainSides.mesh);
     this.scalarField=this.plane==='upper'?new ScalarFieldTexture(world,'qi',1)
@@ -241,6 +241,7 @@ export class PlaneStage {
     const bridgeScanMs = performance.now() - scanStart;
     const heightRegion = mergeRegion(this.pending, dirty?.height ?? null);
     const typeRegion = dirty?.type ?? null;
+    const fireRegion = this.plane === 'mortal' ? dirty?.fire ?? null : null;
     const waterRegion = dirty?.water ?? null;
     const vegRegion = dirty?.veg ?? null;
     this.pending = null;
@@ -251,6 +252,7 @@ export class PlaneStage {
     if (heightRegion) this.terrain?.update(heightRegion, { height: true, type: false });
     if(heightRegion)this.terrainSides?.update(heightRegion);
     if (typeRegion) this.terrain?.update(typeRegion, { height: false, type: true });
+    if (fireRegion) this.terrain?.update(fireRegion, { height: false, type: false, fire: true });
     const t1 = performance.now();
     if ((heightChanged || waterRegion) && this.water) this.water.update(mergeRegion(heightRegion, waterRegion));
     // P1：视觉场只接现有 water dirty（值只编码水深）；扩核由场自己负责。

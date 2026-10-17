@@ -1,6 +1,6 @@
 # Inkbox Backlog
 
-本文件区分产品阻塞、研究问题、人工裁决和未来优化，不授予实现授权。正式产品基线为 **M2-C2E + G1**（`origin/main` `e1e55039bb56efda7a307513ede07a9fab3bf534`）；G1 已由 PR #2 合并。
+本文件区分产品阻塞、研究问题、人工裁决和未来优化，不授予实现授权。正式产品基线为 **M2-C2E + G1**（本轮核查 `origin/main` `4852d89c8ad29e59841fa81aa86318b0ad8c54ba`）；G1 已由 PR #2 合并。G2-R1 在独立分支恢复可玩功能，范围见 [本轮交接](./docs/development/G2_R1_PLAYABLE_INTEGRATION.md)，仍保持 Draft 与性能阻塞。
 
 ## 产品阻塞
 

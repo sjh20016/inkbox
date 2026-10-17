@@ -4,8 +4,8 @@
 // 这一层负责什么
 // ───────────────────────────────────────────────────────────────────────
 //
-// 渲染器**自己的只读快照**：把 `world` 的四个地形数组（`height` / `water` /
-// `type` / `veg`）各存一份，每帧 diff 出「这一帧到底哪几层、在哪一块矩形里变了」。
+// 渲染器**自己的只读快照**：把 `world` 的四个传统地形数组（`height` / `water` /
+// `type` / `veg`）各存一份，另存活动火势快照；每帧 diff 出分类脏区。
 //
 // ⚠️ **dirty 状态永远属于 Render3D 自己**，绝不往 `World` 上加
 //    `heightDirty` / `renderDirty` / `threeDirty` 之类的字段（M1.1D D4.3）。
@@ -22,7 +22,7 @@
 //
 // 现在改成**每层各报一条脏区**，各消费方只吃自己真正依赖的那几层：
 //
-//   TerrainMesh      ← height（改 Y）+ type（改顶点色）
+//   TerrainMesh      ← height（改 Y）+ type / mortal fire（改顶点色）
 //   WaterLayer       ← height + water（水面高度 = height + water）
 //   VegetationLayer  ← height + veg + type（树的位置与存活判据）
 //   EntityLayer      ← 只有 height
@@ -34,7 +34,7 @@
 
 import { createCoordinates } from './coordinates.js';
 
-/** 四层地形数组的键（顺序即渲染顺序契约）。 */
+/** 历史四层地形数组的键（顺序即渲染顺序契约）；fire 单列快照。 */
 export const BRIDGE_LAYERS = Object.freeze(['height', 'water', 'type', 'veg']);
 
 /**
@@ -74,31 +74,33 @@ export class WorldRenderBridge {
     this.world = world;
     this.coordinates = createCoordinates(world);
     this.snapshots = Object.fromEntries(BRIDGE_LAYERS.map(key => [key, world[key].slice()]));
+    this.fireSnapshot = world.fire.slice();
   }
 
   /**
-   * 对比本帧与上一帧的四个地形数组。
+   * 对比本帧与上一帧的地形数组和活动火势。
    *
-   * @returns {{any:true, height:Region|null, water:Region|null, type:Region|null, veg:Region|null}|null}
-   *   **四层全都没变 ⇒ `null`**（调用方据此跳过整条地形更新路径）。
+   * @returns {{any:true, height:Region|null, water:Region|null, type:Region|null, veg:Region|null, fire:Region|null}|null}
+   *   **各层全都没变 ⇒ `null`**（调用方据此跳过整条地形更新路径）。
    *   每一层要么是 `null`，要么是**闭区间**格坐标矩形 `{x0, y0, x1, y1}`。
    */
   changes() {
     const w = this.world;
-    const { height, water, type, veg } = w;
+    const { height, water, type, veg, fire } = w;
     const old = this.snapshots;
     // 每层各一条包围盒：`[x0, y0, x1, y1]`，`x1 < 0` = 这层没脏。
     // ⚠️ 四层**分开记**——揉成一个 region 就是 M1 那套过粗的 dirty。
     const box = {
       height: [w.w, w.h, -1, -1], water: [w.w, w.h, -1, -1],
-      type: [w.w, w.h, -1, -1], veg: [w.w, w.h, -1, -1],
+      type: [w.w, w.h, -1, -1], veg: [w.w, w.h, -1, -1], fire: [w.w, w.h, -1, -1],
     };
     for (let i = 0; i < w.size; i++) {
       const dHeight = old.height[i] !== height[i];
       const dWater = old.water[i] !== water[i];
       const dType = old.type[i] !== type[i];
       const dVeg = old.veg[i] !== veg[i];
-      if (!dHeight && !dWater && !dType && !dVeg) continue;
+      const dFire = this.fireSnapshot[i] !== fire[i];
+      if (!dHeight && !dWater && !dType && !dVeg && !dFire) continue;
       const x = i % w.w, y = (i / w.w) | 0;
       // ⚠️ 每层**各自**更新快照：漏更一层，那一层会「只脏一次」然后永久沉默，
       //    而且不报错——症状是「地形改完画面不再跟」。
@@ -106,12 +108,13 @@ export class WorldRenderBridge {
       if (dWater) { old.water[i] = water[i]; grow(box.water, x, y); }
       if (dType) { old.type[i] = type[i]; grow(box.type, x, y); }
       if (dVeg) { old.veg[i] = veg[i]; grow(box.veg, x, y); }
+      if (dFire) { this.fireSnapshot[i] = fire[i]; grow(box.fire, x, y); }
     }
     const out = {
       any: false, height: toRegion(box.height), water: toRegion(box.water),
-      type: toRegion(box.type), veg: toRegion(box.veg),
+      type: toRegion(box.type), veg: toRegion(box.veg), fire: toRegion(box.fire),
     };
-    if (!out.height && !out.water && !out.type && !out.veg) return null;
+    if (!out.height && !out.water && !out.type && !out.veg && !out.fire) return null;
     out.any = true;
     return out;
   }

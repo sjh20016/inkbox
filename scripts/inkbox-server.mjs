@@ -86,5 +86,9 @@ server.on('error', (error) => {
 });
 
 server.listen(port, '127.0.0.1', () => {
-  console.log(`水墨沙盒：http://127.0.0.1:${port}/${entry}`);
+  const actualPort = server.address().port;
+  console.log(`水墨沙盒：http://127.0.0.1:${actualPort}/${entry}`);
+  // An IPC channel belongs to the spawning test, so readiness cannot be
+  // confused with an unrelated server already listening on a fixed port.
+  process.send?.({ type: 'inkbox-server-ready', pid: process.pid, root: ROOT, port: actualPort });
 });

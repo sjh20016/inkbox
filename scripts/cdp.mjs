@@ -7,7 +7,6 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import net from 'node:net';
 import os from 'node:os';
 import { spawn, execFileSync } from 'node:child_process';
 
@@ -51,6 +50,130 @@ function stopOwnedBrowser(child) {
   try { child.kill(); } catch { /* already exited */ }
 }
 
+// Edge can release its profile handles after Browser.close has returned.
+// Retry only the isolated profile created by launch(), with a bounded wait.
+async function removeOwnedProfile(profile) {
+  const target = path.resolve(profile);
+  if (path.dirname(target).toLowerCase() !== path.resolve(os.tmpdir()).toLowerCase()
+    || !/^cdp-[a-z0-9]{6}$/i.test(path.basename(target))) {
+    throw new Error('Refusing cleanup outside an owned temporary CDP profile');
+  }
+  let lastError;
+  // One shared bound replaces the former two independent ten-attempt callers.
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (!fs.existsSync(target)) return { removed: true, attempts: attempt };
+    try { fs.rmSync(target, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 }); }
+    catch (error) { lastError = error.code || error.message; }
+    if (!fs.existsSync(target)) return { removed: true, attempts: attempt + 1 };
+    await sleep(200);
+  }
+  return { removed: false, attempts: 20, lastError };
+}
+
+// Freeze owned Windows process identities before Browser.close can remove the
+// leader. A PID alone is insufficient after exit because Windows can reuse it.
+function ownedWindowsProcesses(child, profile, frozen = []) {
+  if (process.platform !== 'win32') return { supported: false, processes: [] };
+  const target = path.resolve(profile);
+  if (path.dirname(target).toLowerCase() !== path.resolve(os.tmpdir()).toLowerCase()
+    || !/^cdp-[a-z0-9]{6}$/i.test(path.basename(target))) {
+    throw new Error('Refusing process discovery outside an owned CDP profile');
+  }
+  const executable = child?.spawnfile;
+  if (!executable || !path.isAbsolute(executable)) return { supported: true, error: 'Unknown owned browser executable', processes: [] };
+  const script = `
+$ErrorActionPreference = 'Stop'
+$all = @(Get-CimInstance Win32_Process)
+$byId = @{}; foreach ($p in $all) { $byId[[int]$p.ProcessId] = $p }
+$escaped = [regex]::Escape($env:INKBOX_CDP_PROFILE)
+$pattern = '(?i)(?:^|\\s)(?:"--user-data-dir=' + $escaped + '"|--user-data-dir="' + $escaped + '"|--user-data-dir=' + $escaped + ')(?=\\s|$)'
+$browsers = @($all | Where-Object { [string]::Equals([string]$_.ExecutablePath, $env:INKBOX_CDP_EXECUTABLE, [StringComparison]::OrdinalIgnoreCase) })
+$roots = @{}; foreach ($p in $browsers) { if ([string]$p.CommandLine -match $pattern) { $roots[[int]$p.ProcessId] = $true } }
+$prior = @{}; foreach ($f in (ConvertFrom-Json -InputObject $env:INKBOX_CDP_PRIOR_IDENTITIES)) { $prior[[int]$f.pid] = $f }
+$rows = @(); foreach ($p in $browsers) {
+  $cursor = [int]$p.ProcessId; $seen = @{}; $owned = $false; $depth = 0
+  while ($cursor -gt 0 -and -not $seen.ContainsKey($cursor)) {
+    $seen[$cursor] = $true
+    if ($roots.ContainsKey($cursor)) { $owned = $true; break }
+    if (-not $byId.ContainsKey($cursor)) { break }
+    $parent = [int]$byId[$cursor].ParentProcessId
+    if ($byId.ContainsKey($parent) -and $byId[$parent].CreationDate -gt $byId[$cursor].CreationDate) { break }
+    $cursor = $parent; $depth++
+  }
+  if (-not $owned -and $prior.ContainsKey([int]$p.ProcessId)) {
+    $f = $prior[[int]$p.ProcessId]
+    $owned = $p.CreationDate.ToUniversalTime().Ticks.ToString() -eq [string]$f.created -and
+      [string]::Equals([string]$p.ExecutablePath,[string]$f.executable,[StringComparison]::OrdinalIgnoreCase) -and
+      [string]$p.CommandLine -ceq [string]$f.commandLine
+  }
+  if ($owned) { $rows += @{ pid=[int]$p.ProcessId; created=$p.CreationDate.ToUniversalTime().Ticks.ToString(); executable=[string]$p.ExecutablePath; commandLine=[string]$p.CommandLine; depth=$depth } }
+}
+$unattributed = $env:INKBOX_CDP_LAUNCHER_PENDING -eq 'true' -and $byId.ContainsKey([int]$env:INKBOX_CDP_LAUNCHER_PID) -and -not @($rows | Where-Object pid -eq ([int]$env:INKBOX_CDP_LAUNCHER_PID)).Count
+@{ supported=$true; processes=@($rows); error=$(if($unattributed){'Live launcher ownership could not be proven'}else{$null}) } | ConvertTo-Json -Depth 5 -Compress`;
+  try {
+    return JSON.parse(execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
+      encoding: 'utf8', timeout: 8000, windowsHide: true,
+      env: { ...process.env, INKBOX_CDP_PROFILE: target, INKBOX_CDP_EXECUTABLE: executable,
+        INKBOX_CDP_PRIOR_IDENTITIES: JSON.stringify(frozen), INKBOX_CDP_LAUNCHER_PID: String(child.pid || 0),
+        INKBOX_CDP_LAUNCHER_PENDING: String(child.exitCode === null && child.signalCode === null) },
+    }).trim());
+  } catch (error) { return { supported: true, error: error.message, processes: [] }; }
+}
+
+function stopFrozenWindowsProcesses(snapshot) {
+  if (!snapshot.supported || snapshot.error || !snapshot.processes.length) return { attempted: 0, errors: [] };
+  const script = `
+$ErrorActionPreference = 'Stop'
+$frozen = ConvertFrom-Json -InputObject $env:INKBOX_CDP_FROZEN
+$all = @{}; foreach ($p in @(Get-CimInstance Win32_Process)) { $all[[int]$p.ProcessId] = $p }
+$attempted = 0; $problems = @()
+foreach ($f in @($frozen | Sort-Object depth -Descending)) {
+  if (-not $all.ContainsKey([int]$f.pid)) { continue }
+  $p = $all[[int]$f.pid]
+  if ($p.CreationDate.ToUniversalTime().Ticks.ToString() -ne [string]$f.created -or
+      -not [string]::Equals([string]$p.ExecutablePath,[string]$f.executable,[StringComparison]::OrdinalIgnoreCase) -or
+      [string]$p.CommandLine -cne [string]$f.commandLine) { continue }
+  try { Stop-Process -Id ([int]$f.pid) -Force -ErrorAction Stop; $attempted++ }
+  catch { if (Get-Process -Id ([int]$f.pid) -ErrorAction SilentlyContinue) { $problems += $_.Exception.Message } }
+}
+@{ attempted=$attempted; errors=@($problems) } | ConvertTo-Json -Depth 4 -Compress`;
+  try {
+    return JSON.parse(execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
+      encoding: 'utf8', timeout: 8000, windowsHide: true,
+      env: { ...process.env, INKBOX_CDP_FROZEN: JSON.stringify(snapshot.processes) },
+    }).trim());
+  } catch (error) { return { attempted: 0, errors: [error.message] }; }
+}
+
+async function finalizeOwnedBrowser(child, profile, cdp) {
+  const target = path.resolve(profile);
+  if (path.dirname(target).toLowerCase() !== path.resolve(os.tmpdir()).toLowerCase()
+    || !/^cdp-[a-z0-9]{6}$/i.test(path.basename(target))) {
+    return { removed: false, attempts: 0, processesExited: false, complete: false,
+      lastError: 'Refusing cleanup outside an owned temporary CDP profile' };
+  }
+  const frozen = ownedWindowsProcesses(child, profile);
+  if (cdp?.ws.readyState === 1) {
+    try { await cdp.send('Browser.close', {}, 2000); } catch { /* terminate frozen identities below */ }
+  }
+  cdp?.rejectPending(new Error('CDP session closed'));
+  try { cdp?.ws.close(); } catch { /* already closed */ }
+  const termination = stopFrozenWindowsProcesses(frozen);
+  if (!frozen.supported) stopOwnedBrowser(child);
+  await sleep(400);
+  let remaining = ownedWindowsProcesses(child, profile, frozen.processes);
+  for (let attempt = 0; !remaining.error && remaining.processes.length && attempt < 4; attempt++) {
+    await sleep(200);
+    remaining = ownedWindowsProcesses(child, profile, frozen.processes);
+  }
+  const processesExited = !frozen.supported || (!frozen.error && !remaining.error && remaining.processes.length === 0);
+  const cleanup = processesExited ? await removeOwnedProfile(profile)
+    : { removed: false, attempts: 0, lastError: 'Owned process exit could not be verified; profile retained' };
+  return { ...cleanup, processesExited, complete: cleanup.removed && processesExited,
+    processEvidence: { supported: frozen.supported, frozen: frozen.processes.length, remaining: remaining.processes.length,
+      discoveryError: frozen.error || remaining.error || null, termination } };
+}
+
 // CDP 的修饰键是位掩码，不是布尔
 export const input = {
   ALT: 1,
@@ -83,27 +206,63 @@ export const KEYS = {
   ])),
 };
 
-async function waitForPort(port, timeoutMs = 15000) {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    const ok = await new Promise((resolve) => {
-      const socket = net.createConnection({ host: '127.0.0.1', port });
-      socket.once('connect', () => { socket.destroy(); resolve(true); });
-      socket.once('error', () => resolve(false));
-    });
-    if (ok) return true;
-    await sleep(200);
+// Chromium writes this file inside the profile only after it has bound its
+// OS-assigned debugging port. A listening port by itself proves no ownership.
+function readOwnedEndpoint(profile) {
+  let contents;
+  try { contents = fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8'); }
+  catch (error) { if (error.code === 'ENOENT') return null; throw error; }
+  // An in-progress write may contain just the first line; keep waiting for it.
+  if (/^\d{0,5}\r?\n?$/.test(contents)) return null;
+  const match = /^([1-9]\d{0,4})\r?\n(\/devtools\/browser\/[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12})\r?\n?$/.exec(contents);
+  if (/^\d{1,5}\r?\n\/devtools\/browser\/[a-fA-F0-9-]{0,35}$/.test(contents)) return null;
+  if (!match || Number(match[1]) > 65535) throw new Error('Invalid owned DevToolsActivePort');
+  return { port: Number(match[1]), browserPath: match[2] };
+}
+
+async function waitForOwnedEndpoint(profile, child, timeoutMs, launchError) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const endpoint = readOwnedEndpoint(profile);
+    if (endpoint) return endpoint;
+    if (launchError.current) throw launchError.current;
+    // Edge may hand off to its real browser process and exit successfully before
+    // the isolated profile publishes DevToolsActivePort. The profile + endpoint
+    // token below prove ownership; launcher exit 0 alone proves neither failure
+    // nor readiness. Abnormal exits still fail immediately, and the wait is bounded.
+    if ((child.exitCode !== null && child.exitCode !== 0) || child.signalCode !== null) throw new Error('Owned browser exited before DevToolsActivePort was ready');
+    await sleep(Math.min(100, Math.max(1, deadline - Date.now())));
   }
-  return false;
+  throw new Error('Timed out waiting for owned DevToolsActivePort');
+}
+
+function verifyOwnedBrowserEndpoint(debuggerUrl, endpoint) {
+  let parsed;
+  try { parsed = new URL(debuggerUrl); } catch { throw new Error('Invalid browser WebSocket endpoint'); }
+  if (parsed.protocol !== 'ws:' || parsed.hostname !== '127.0.0.1'
+    || Number(parsed.port) !== endpoint.port || parsed.pathname !== endpoint.browserPath
+    || parsed.search || parsed.hash || parsed.username || parsed.password) {
+    throw new Error('Browser endpoint does not match owned DevToolsActivePort');
+  }
+}
+
+async function fetchOwnedJson(url, deadline) {
+  const remaining = deadline - Date.now();
+  if (remaining <= 0) throw new Error('Timed out verifying owned browser endpoint');
+  const response = await fetch(url, { signal: AbortSignal.timeout(remaining) });
+  if (!response.ok) throw new Error(`Browser endpoint returned HTTP ${response.status}`);
+  return response.json();
 }
 
 // 新版 Chrome/Edge 对 /json/new 只接受 PUT，旧版接受 GET，两种都试。
 // 不能只看 fetch 有没有抛错——405 也是「成功返回」，要查 response.ok。
-async function openTarget(base) {
+async function openTarget(base, deadline) {
   let lastError = null;
   for (const method of ['GET', 'PUT']) {
     try {
-      const response = await fetch(`${base}/json/new?about:blank`, { method });
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) throw new Error('Timed out creating owned debug target');
+      const response = await fetch(`${base}/json/new?about:blank`, { method, signal: AbortSignal.timeout(remaining) });
       if (!response.ok) continue;
       const data = await response.json();
       if (data && data.webSocketDebuggerUrl) return data;
@@ -296,14 +455,15 @@ export class Session {
   }
 
   async close() {
-    if (this.cdp.ws.readyState === 1) {
-      try { await this.cdp.send('Browser.close', {}, 2000); } catch { /* fallback below */ }
-    }
-    this.cdp.rejectPending(new Error('CDP session closed'));
-    try { this.cdp.ws.close(); } catch { /* ignore */ }
-    stopOwnedBrowser(this.child);
-    await sleep(400);
-    try { fs.rmSync(this.userDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    this._closePromise ??= (async () => {
+      this.meta.profileCleanup = await finalizeOwnedBrowser(this.child, this.userDataDir, this.cdp);
+      if (!this.meta.profileCleanup.complete) {
+        process.exitCode = 1;
+        console.error('Owned CDP cleanup failed: ' + JSON.stringify(this.meta.profileCleanup));
+      }
+      return this.meta.profileCleanup;
+    })();
+    return this._closePromise;
   }
 }
 
@@ -312,16 +472,17 @@ export class Session {
  *
  * @param {object}  options
  * @param {string}  options.url          要打开的地址
- * @param {number} [options.port]        CDP 调试端口，默认随机挑一个
+ * @param {number} [options.port]        保留兼容；实际端口由浏览器分配并从隔离 profile 读取
  * @param {number} [options.width]       视口宽
  * @param {number} [options.height]      视口高
  * @param {string} [options.browser]     浏览器可执行文件路径，默认自动探测
- * @param {number} [options.timeoutMs]   等待调试端口就绪的超时
+ * @param {number} [options.timeoutMs]   等待本次浏览器调试端点就绪的超时
  * @param {boolean} [options.gpu]        **默认 `false`**：加 `--disable-gpu`，WebGL 落到
  *   软件光栅器（SwiftShader）。这样同一台机器上的读数**可比**（渲染器名会自报
  *   `Microsoft Basic Render Driver` 之类），但它**不是**真实 GPU 性能。
  *   传 `true` 会去掉这个开关去试真显卡——⚠️ 只在做「真实 GPU 基线」时用，
  *   而且**必须如实标注渲染器名**：换开关会让历史读数不再可比（M1.1D D5.3/D5.4）。
+ * @param {boolean} [options.headless]   默认 `true`；false 时创建可见浏览器窗口。
  */
 export async function launch({
   url = 'about:blank',
@@ -331,38 +492,58 @@ export async function launch({
   browser,
   timeoutMs = 15000,
   gpu = false,
+  headless = true,
 } = {}) {
+  if (typeof headless !== 'boolean') throw new TypeError('headless must be a boolean');
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new TypeError('timeoutMs must be positive and finite');
   const executable = browser || findBrowser();
   if (!executable) throw new Error('找不到 Edge / Chrome，请显式传 browser 路径');
 
-  const debugPort = port || (9300 + Math.floor(Math.random() * 500));
+  void port; // Retained in the public API; a requested fixed port cannot establish ownership.
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cdp-'));
-  const child = spawn(executable, [
-    '--headless=new',
+  let child;
+  let cdp = null;
+  let ws = null;
+  try {
+    child = spawn(executable, [
+    ...(headless ? ['--headless=new'] : []),
     ...(gpu ? [] : ['--disable-gpu']),
     '--no-first-run',
     '--no-default-browser-check',
     '--hide-scrollbars',
     '--disable-extensions',
     '--disable-background-networking',
-    `--remote-debugging-port=${debugPort}`,
+    '--remote-debugging-port=0',
     `--user-data-dir=${userDataDir}`,
     `--window-size=${width},${height}`,
     'about:blank',
-  ], { stdio: 'ignore', detached: false, windowsHide: true });
+    ], { stdio: 'ignore', detached: false, windowsHide: headless });
+    const launchError = { current: null };
+    child.on('error', (error) => { launchError.current = error; });
+    const deadline = Date.now() + timeoutMs;
+    const endpoint = await waitForOwnedEndpoint(userDataDir, child, timeoutMs, launchError);
+    if (launchError.current) throw launchError.current;
+    const base = `http://127.0.0.1:${endpoint.port}`;
+    const version = await fetchOwnedJson(`${base}/json/version`, deadline);
+    verifyOwnedBrowserEndpoint(version.webSocketDebuggerUrl, endpoint);
+    if (launchError.current || (child.exitCode !== null && child.exitCode !== 0) || child.signalCode !== null) {
+      throw launchError.current || new Error('Owned browser exited before target creation');
+    }
+    const target = await openTarget(base, deadline);
+    let targetUrl;
+    try { targetUrl = new URL(target.webSocketDebuggerUrl); } catch { throw new Error('Invalid owned target WebSocket endpoint'); }
+    if (targetUrl.protocol !== 'ws:' || targetUrl.hostname !== '127.0.0.1'
+      || Number(targetUrl.port) !== endpoint.port || !/^\/devtools\/page\/[A-Za-z0-9_-]+$/.test(targetUrl.pathname)
+      || targetUrl.search || targetUrl.hash || targetUrl.username || targetUrl.password) {
+      throw new Error('Target endpoint does not match owned browser port');
+    }
 
-  const base = `http://127.0.0.1:${debugPort}`;
-  let cdp = null;
-  try {
-    if (!(await waitForPort(debugPort, timeoutMs))) throw new Error('调试端口未就绪');
-
-    const version = await (await fetch(`${base}/json/version`)).json();
-    const target = await openTarget(base);
-
-    const ws = new WebSocket(target.webSocketDebuggerUrl);
+    ws = new WebSocket(target.webSocketDebuggerUrl);
     await new Promise((resolve, reject) => {
-      ws.addEventListener('open', resolve, { once: true });
-      ws.addEventListener('error', reject, { once: true });
+      const timer = setTimeout(() => reject(new Error('Timed out connecting to owned CDP target')),
+        Math.max(1, deadline - Date.now()));
+      ws.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
+      ws.addEventListener('error', (error) => { clearTimeout(timer); reject(error); }, { once: true });
     });
 
     cdp = new Cdp(ws);
@@ -374,15 +555,14 @@ export async function launch({
     });
     await cdp.send('Page.navigate', { url });
 
-    return new Session(cdp, child, userDataDir, { browser: version.Browser, debugPort, width, height });
+    return new Session(cdp, child, userDataDir, { browser: version.Browser, debugPort: endpoint.port, width, height });
   } catch (error) {
-    if (cdp?.ws.readyState === 1) {
-      try { await cdp.send('Browser.close', {}, 2000); } catch { /* process fallback below */ }
-      try { cdp.ws.close(); } catch { /* already closed */ }
-    }
-    stopOwnedBrowser(child);
-    await sleep(300);
-    try { fs.rmSync(userDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    if (!cdp) try { ws?.close(); } catch { /* connection never opened */ }
+    const cleanup = child?.pid ? await finalizeOwnedBrowser(child, userDataDir, cdp)
+      : await removeOwnedProfile(userDataDir).then((result) => ({ ...result, processesExited: true, complete: result.removed }));
+    if (!cleanup.complete) throw new AggregateError([error,
+      new Error('Owned CDP profile cleanup failed: ' + JSON.stringify(cleanup))],
+    'CDP launch and owned profile cleanup failed');
     throw error;
   }
 }

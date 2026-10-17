@@ -35,7 +35,7 @@
 // ⚠️ **一个系统，按 plane 过滤**——**不做三份 FX 类**（蓝图 §D8-C 逐字）。
 //    三个位面共用同一份 `fxLayer` 绘制代码，唯一的分流就是 `item.plane`。
 
-import { createFxState, drawFx, ingestRuntimeEvents, updateFx } from './fxLayer.js';
+import { createFxState, drawFx, ingestRuntimeEvents, updateFx, fxStats } from './fxLayer.js';
 import { drainRuntimeEvents } from '../core/runtimeEvents.js';
 
 /** 三界位面名（与 `core/runtimeEvents.js` 的 `PLANES`、`world.plane` 一致）。 */
@@ -68,6 +68,11 @@ export class PresentationStage {
   constructor() {
     /** FX 状态（`fxLayer.createFxState()` 的产物：`{ items: [] }`）。 */
     this.fx = createFxState();
+    this._combatEnabled = true;
+    this._combatDisabledSkipped = 0;
+    this._root = null;
+    this._worlds = new Map();
+    this._disposed = false;
   }
 
   /**
@@ -81,7 +86,16 @@ export class PresentationStage {
    * @returns {this}
    */
   ingestWorlds(world) {
+    if (this._disposed) return this;
+    if (world !== this._root) {
+      this.clear(); this._worlds.clear(); this._root = world || null;
+    }
     if (!world) return this;
+    for (const plane of ['upper', 'nether']) {
+      if (this._worlds.has(plane) && this._worlds.get(plane) !== world[plane]) {
+        this.clear(plane); this._worlds.delete(plane);
+      }
+    }
     this.ingestWorld(world);
     if (world.upper) this.ingestWorld(world.upper);
     if (world.nether) this.ingestWorld(world.nether);
@@ -94,8 +108,14 @@ export class PresentationStage {
    * `world.nether` 常是 `undefined`。
    */
   ingestWorld(world) {
-    if (!world) return this;
-    ingestRuntimeEvents(this.fx, drainRuntimeEvents(world), world);
+    if (!world || this._disposed) return this;
+    const plane = world.plane || 'mortal';
+    if (this._worlds.has(plane) && this._worlds.get(plane) !== world) this.clear(plane);
+    this._worlds.set(plane, world);
+    const events = drainRuntimeEvents(world);
+    const shown = this._combatEnabled ? events : events.filter(event => event.type !== 'combat-hit');
+    this._combatDisabledSkipped += events.length - shown.length;
+    ingestRuntimeEvents(this.fx, shown, world);
     return this;
   }
 
@@ -105,10 +125,37 @@ export class PresentationStage {
    * 零 RNG。
    */
   update(dt) {
-    updateFx(this.fx, dt);
+    if (!this._disposed) updateFx(this.fx, dt);
     return this;
   }
 
+  get combatEnabled() { return this._combatEnabled; }
+  get stats() {
+    return Object.freeze({ ...fxStats(this.fx), combatEnabled: this._combatEnabled,
+      combatDisabledSkipped: this._combatDisabledSkipped, disposed: this._disposed });
+  }
+  setCombatEnabled(enabled) {
+    if (typeof enabled !== 'boolean') throw new TypeError('combatEnabled must be a boolean');
+    if (this._disposed) return this;
+    this._combatEnabled = enabled;
+    if (!enabled) this.fx.items = this.fx.items.filter(item => item.kind !== 'combat');
+    return this;
+  }
+  /** Clear feedback, not runtime queues or simulation fields. Renderer switches do not call this. */
+  clear(plane = null) {
+    if (plane !== null) this.fx.items = this.fx.items.filter(item => item.plane !== plane);
+    else {
+      this.fx.items.length = 0;
+      this.fx.combatReceived = 0; this.fx.combatAccepted = 0;
+      this.fx.combatMerged = 0; this.fx.combatDropped = 0; this.fx.combatEvicted = 0;
+      this._combatDisabledSkipped = 0;
+    }
+    return this;
+  }
+  dispose() {
+    if (this._disposed) return;
+    this.clear(); this._worlds.clear(); this._root = null; this._disposed = true;
+  }
   /** Read-only, plane-filtered copy of the already ingested presentation state. */
   snapshotPlane(plane) {
     const items = this.fx.items.filter(item => item.plane === plane).map(readonlyCopy);
@@ -125,7 +172,7 @@ export class PresentationStage {
    * @returns {this}
    */
   drawPlane(plane, ctx, camera, world) {
-    drawFx(ctx, camera, world, this.fx, plane);
+    if (!this._disposed) drawFx(ctx, camera, world, this.fx, plane);
     return this;
   }
 }

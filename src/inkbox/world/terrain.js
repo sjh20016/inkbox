@@ -258,9 +258,11 @@ export function decayOverlay(world, dtDays, rng) {
     if (rng() > rate) continue;
     if (value === OVER.SCORCHED) {
       over[i] = world.veg[i] > 0.4 ? OVER.NONE : OVER.ASH;
+      markDirty(world, i);
       changed = true;
     } else if (value === OVER.ASH) {
       over[i] = OVER.NONE;
+      markDirty(world, i);
       changed = true;
     } else if (value === OVER.LAVA) {
       over[i] = OVER.ASH;
@@ -269,21 +271,24 @@ export function decayOverlay(world, dtDays, rng) {
       changed = true;
     } else if (value === OVER.RUINS) {
       over[i] = OVER.NONE;
+      markDirty(world, i);
       changed = true;
     } else if (value === OVER.SAND) {
       // 荒漠要靠长年湿润才能退回草原
       if (world.moist[i] > 0.55) {
         over[i] = OVER.NONE;
+        markDirty(world, i);
         changed = true;
       }
     } else if (value === OVER.SNOW) {
       if (world.temp[i] > 0.5) {
         over[i] = OVER.NONE;
+        markDirty(world, i);
         changed = true;
       }
     }
   }
-  if (changed) world.touch();
+  if (changed) flushDirty(world);
   return changed;
 }
 

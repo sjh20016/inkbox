@@ -27,6 +27,29 @@ const MIST_LAYERS = 3;
 
 const tmpA = [0, 0, 0];
 const tmpB = [0, 0, 0];
+const tmpHeat = [255, 0, 0];
+const QI_TINT = [118, 178, 178];
+const paperPixel = new Uint8ClampedArray(4);
+const paperWord = new Uint32Array(paperPixel.buffer);
+// Bayer repeats every four cells; the XOR grain only consumes four low bits.
+// Keep each original floating-point operation, storing its result as Float64.
+const GRAIN = new Float64Array(16 * 16);
+for (let y = 0; y < 16; y += 1) {
+  for (let x = 0; x < 16; x += 1) {
+    const grain = (BAYER4[(y & 3) * 4 + (x & 3)] / 15 - 0.5) * 7;
+    const noise = (((x * 73856093) ^ (y * 19349663)) & 15) / 15 - 0.5;
+    GRAIN[y * 16 + x] = grain + noise * 3.2;
+  }
+}
+
+// Preserve mixRgb channel arithmetic without allocating a transient RGB tuple
+// for each color blend. Output arrays and dynamic fire tint remain reused scratch.
+function mixCellRgb(r, g, b, tint, amount, out) {
+  out[0] = r + (tint[0] - r) * amount;
+  out[1] = g + (tint[1] - g) * amount;
+  out[2] = b + (tint[2] - b) * amount;
+  return out;
+}
 
 export class TerrainLayer {
   constructor(world, options = {}) {
@@ -50,6 +73,14 @@ export class TerrainLayer {
     this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
     this.image = this.ctx.createImageData(w, this.bufferH);
     this.data = this.image.data;
+    this.words = new Uint32Array(this.data.buffer, this.data.byteOffset, this.data.byteLength / 4);
+    // Cache only the land color prefix before animated mist. Float64 preserves
+    // the original Number arithmetic; water, mist, qi, fire and relief still draw.
+    // The Three host also constructs TerrainLayers, but never needs this cache.
+    this.landColor = null;
+    this.landValid = null;
+    this.landInputs = null;
+    this.landPalette = null;
     this.lastRender = -1e9;
     this.buildWash();
   }
@@ -123,6 +154,45 @@ export class TerrainLayer {
     return dirty || now - this.lastRender > 0.11;
   }
 
+  prepareLandCache() {
+    const { world, wash, w, h } = this;
+    if (!this.landInputs) {
+      const size = w * h;
+      this.landColor = new Float64Array(size * 3);
+      this.landValid = new Uint8Array(size);
+      this.landInputs = {
+        height: new Float32Array(size), water: new Float32Array(size),
+        veg: new Float32Array(size), temp: new Float32Array(size),
+        type: new Uint8Array(size), wash: new Float32Array(size),
+      };
+    }
+    const old = this.landInputs, valid = this.landValid;
+    // Palette vectors are mutable even though INK_RGB's outer object is frozen.
+    const palette = [...TERRAIN_RGB.flat(), ...INK_RGB.paper,
+      ...INK_RGB.shadow, ...INK_RGB.mist, ...INK_RGB.azurite].join(',');
+    if (palette !== this.landPalette) {
+      valid.fill(0);
+      this.landPalette = palette;
+    } else {
+      for (let y = 0, i = 0; y < h; y += 1) {
+        for (let x = 0; x < w; x += 1, i += 1) {
+          if (world.height[i] !== old.height[i] || world.water[i] !== old.water[i]) {
+            // Slopes, ridges and shoreline ink read neighbouring height/water.
+            for (let ny = Math.max(0, y - 1); ny <= Math.min(h - 1, y + 1); ny += 1) {
+              for (let nx = Math.max(0, x - 1); nx <= Math.min(w - 1, x + 1); nx += 1) {
+                valid[ny * w + nx] = 0;
+              }
+            }
+          }
+          if (world.type[i] !== old.type[i] || world.veg[i] !== old.veg[i]
+            || world.temp[i] !== old.temp[i] || wash[i] !== old.wash[i]) valid[i] = 0;
+        }
+      }
+    }
+    for (const key of ['height', 'water', 'veg', 'temp', 'type']) old[key].set(world[key]);
+    old.wash.set(wash);
+  }
+
   render(time, force = false) {
     this.time = time;
     const world = this.world;
@@ -135,12 +205,10 @@ export class TerrainLayer {
 
     // 纸底：留白处露出的就是宣纸色
     const paper = INK_RGB.paper;
-    for (let p = 0; p < data.length; p += 4) {
-      data[p] = paper[0];
-      data[p + 1] = paper[1];
-      data[p + 2] = paper[2];
-      data[p + 3] = 255;
-    }
+    // Reinterpret the clamped paper bytes in native endianness; do not assume
+    // a packed RGB order or that the palette cannot change between renders.
+    paperPixel[0] = paper[0]; paperPixel[1] = paper[1]; paperPixel[2] = paper[2]; paperPixel[3] = 255;
+    this.words.fill(paperWord[0]);
 
     const wash = this.wash;
     const shimmer = Math.sin(time * 0.9);
@@ -169,6 +237,9 @@ export class TerrainLayer {
     const prevR = this._prevR;
     const prevG = this._prevG;
     const prevB = this._prevB;
+    this.prepareLandCache();
+    const landColor = this.landColor;
+    const landValid = this.landValid;
 
     for (let y = bounds.y0; y <= bounds.y1; y += 1) {
       for (let x = bounds.x0; x <= bounds.x1; x += 1) {
@@ -188,12 +259,7 @@ export class TerrainLayer {
         let g = base[1];
         let b = base[2];
 
-        const xm = x > 0 ? x - 1 : x;
-        const xp = x < w - 1 ? x + 1 : x;
-        const ym = y > 0 ? y - 1 : y;
-        const yp = y < h - 1 ? y + 1 : y;
-        const dzdx = (height[y * w + xp] - height[y * w + xm]) * 22;
-        const dzdy = (height[yp * w + x] - height[ym * w + x]) * 22;
+
 
         if (depth > 0.0015) {
           // ── 水面 ───────────────────────────────────────
@@ -222,6 +288,18 @@ export class TerrainLayer {
           b = tmpA[2] * lum;
         } else {
           // ── 陆地 ───────────────────────────────────────
+          const colorOffset = i * 3;
+          if (landValid[i]) {
+            r = landColor[colorOffset];
+            g = landColor[colorOffset + 1];
+            b = landColor[colorOffset + 2];
+          } else {
+        const xm = x > 0 ? x - 1 : x;
+        const xp = x < w - 1 ? x + 1 : x;
+        const ym = y > 0 ? y - 1 : y;
+        const yp = y < h - 1 ? y + 1 : y;
+        const dzdx = (height[y * w + xp] - height[y * w + xm]) * 22;
+        const dzdy = (height[yp * w + x] - height[ym * w + x]) * 22;
           const len = Math.sqrt(dzdx * dzdx + dzdy * dzdy + 1);
           const nx = -dzdx / len;
           const ny = -dzdy / len;
@@ -233,7 +311,7 @@ export class TerrainLayer {
           if (slope > 0.062 && hv > seaLevel) {
             const rockMix = Math.min(0.8, (slope - 0.062) * 5.4);
             const rock = hv > 0.78 ? TERRAIN_RGB[TERRAIN.PEAK] : TERRAIN_RGB[TERRAIN.ROCK];
-            mixRgb([r, g, b], rock, rockMix, tmpA);
+            mixCellRgb(r, g, b, rock, rockMix, tmpA);
             r = tmpA[0];
             g = tmpA[1];
             b = tmpA[2];
@@ -242,9 +320,9 @@ export class TerrainLayer {
           // 墨韵浓淡：让整片地表的墨色不匀，像分几次染的
           const wv = (wash[i] - 0.5) * 0.3;
           if (wv > 0) {
-            mixRgb([r, g, b], INK_RGB.paper, wv, tmpA);
+            mixCellRgb(r, g, b, INK_RGB.paper, wv, tmpA);
           } else {
-            mixRgb([r, g, b], INK_RGB.shadow, -wv * 0.55, tmpA);
+            mixCellRgb(r, g, b, INK_RGB.shadow, -wv * 0.55, tmpA);
           }
           r = tmpA[0];
           g = tmpA[1];
@@ -253,7 +331,7 @@ export class TerrainLayer {
           // 植被深浅：同一片林子也有浓淡
           const v = veg[i];
           if (v > 0.12 && t !== TERRAIN.DESERT && t !== TERRAIN.SNOW) {
-            mixRgb([r, g, b], TERRAIN_RGB[TERRAIN.JUNGLE], Math.min(0.4, v * 0.38), tmpA);
+            mixCellRgb(r, g, b, TERRAIN_RGB[TERRAIN.JUNGLE], Math.min(0.4, v * 0.38), tmpA);
             r = tmpA[0];
             g = tmpA[1];
             b = tmpA[2];
@@ -264,7 +342,7 @@ export class TerrainLayer {
           // 这条线是整幅画最抢眼的一笔，所以给得干脆些。
           if (hv > SNOWLINE) {
             const cap = Math.min(1, (hv - SNOWLINE) / 0.07);
-            mixRgb([r, g, b], INK_RGB.mist, 0.52 + cap * 0.4, tmpA);
+            mixCellRgb(r, g, b, INK_RGB.mist, 0.52 + cap * 0.4, tmpA);
             // 纯白死板，掺一点石青
             mixRgb(tmpA, INK_RGB.azurite, 0.07, tmpA);
             r = tmpA[0];
@@ -273,7 +351,7 @@ export class TerrainLayer {
           } else if (hv > ROCKLINE) {
             // 高处露岩：越接近雪线越秃
             const bare = Math.min(1, (hv - ROCKLINE) / (SNOWLINE - ROCKLINE));
-            mixRgb([r, g, b], TERRAIN_RGB[TERRAIN.ROCK], bare * 0.5, tmpA);
+            mixCellRgb(r, g, b, TERRAIN_RGB[TERRAIN.ROCK], bare * 0.5, tmpA);
             r = tmpA[0];
             g = tmpA[1];
             b = tmpA[2];
@@ -286,7 +364,7 @@ export class TerrainLayer {
             const drop = northH - hv;
             if (drop > 0.07 && drop < 0.24) {
               const mist = Math.min(0.22, (drop - 0.07) * 1.2);
-              mixRgb([r, g, b], INK_RGB.mist, mist, tmpA);
+              mixCellRgb(r, g, b, INK_RGB.mist, mist, tmpA);
               r = tmpA[0];
               g = tmpA[1];
               b = tmpA[2];
@@ -297,14 +375,14 @@ export class TerrainLayer {
           // 而是「留白」。这是整张图看起来像水墨而不是像卫星图的关键。
           const shade = (0.5 - dot) * 1.2;
           if (shade > 0.012) {
-            mixRgb([r, g, b], INK_RGB.shadow, shade > 0.62 ? 0.62 : shade, tmpA);
+            mixCellRgb(r, g, b, INK_RGB.shadow, shade > 0.62 ? 0.62 : shade, tmpA);
             r = tmpA[0];
             g = tmpA[1];
             b = tmpA[2];
           }
           const glow = (dot - 0.62) * 0.85;
           if (glow > 0.012) {
-            mixRgb([r, g, b], INK_RGB.mist, glow > 0.32 ? 0.32 : glow, tmpA);
+            mixCellRgb(r, g, b, INK_RGB.mist, glow > 0.32 ? 0.32 : glow, tmpA);
             r = tmpA[0];
             g = tmpA[1];
             b = tmpA[2];
@@ -317,7 +395,7 @@ export class TerrainLayer {
             const hUp = height[ym * w + xm];
             const hDn = height[yp * w + xp];
             if (hv > hUp + 0.010 && hv > hDn + 0.004) {
-              mixRgb([r, g, b], INK_RGB.mist, 0.26, tmpA);
+              mixCellRgb(r, g, b, INK_RGB.mist, 0.26, tmpA);
               r = tmpA[0];
               g = tmpA[1];
               b = tmpA[2];
@@ -350,10 +428,16 @@ export class TerrainLayer {
 
           // 雪线：高处带一点冷调，避免纯白死板
           if (t === TERRAIN.SNOW && temp[i] < 0.3) {
-            mixRgb([r, g, b], INK_RGB.azurite, 0.1, tmpA);
+            mixCellRgb(r, g, b, INK_RGB.azurite, 0.1, tmpA);
             r = tmpA[0];
             g = tmpA[1];
             b = tmpA[2];
+          }
+
+          landColor[colorOffset] = r;
+          landColor[colorOffset + 1] = g;
+          landColor[colorOffset + 2] = b;
+          landValid[i] = 1;
           }
 
           // ── 云雾带 ───────────────────────────────────
@@ -364,7 +448,7 @@ export class TerrainLayer {
             const alt = Math.min(1, (hv - seaLevel - 0.16) / 0.5);
             const amount = Math.max(0, m - 0.5) * 1.7 * alt * 0.6;
             if (amount > 0.012) {
-              mixRgb([r, g, b], INK_RGB.mist, amount > 0.4 ? 0.4 : amount, tmpA);
+              mixCellRgb(r, g, b, INK_RGB.mist, amount > 0.4 ? 0.4 : amount, tmpA);
               r = tmpA[0];
               g = tmpA[1];
               b = tmpA[2];
@@ -378,7 +462,7 @@ export class TerrainLayer {
           const q = qi[i];
           if (q > 0.6) {
             const qg = Math.min(0.16, (q - 0.6) * 0.42);
-            mixRgb([r, g, b], [118, 178, 178], qg, tmpA);
+            mixCellRgb(r, g, b, QI_TINT, qg, tmpA);
             r = tmpA[0];
             g = tmpA[1];
             b = tmpA[2];
@@ -389,7 +473,9 @@ export class TerrainLayer {
         const f = fire[i];
         if (f > 0.02) {
           const heat = Math.min(1, f * 1.15);
-          mixRgb([r, g, b], [255, 214 - heat * 70, 120 - heat * 90], heat * 0.86, tmpA);
+          tmpHeat[1] = 214 - heat * 70;
+          tmpHeat[2] = 120 - heat * 90;
+          mixCellRgb(r, g, b, tmpHeat, heat * 0.86, tmpA);
           r = tmpA[0];
           g = tmpA[1];
           b = tmpA[2];
@@ -429,10 +515,8 @@ export class TerrainLayer {
         }
 
         // 宣纸颗粒：有序抖动 + 一点位置噪声
-        const grain = (BAYER4[(y & 3) * 4 + (x & 3)] / 15 - 0.5) * 7;
-        const noise = (((x * 73856093) ^ (y * 19349663)) & 15) / 15 - 0.5;
-        mixRgb([r, g, b], INK_RGB.paper, PAPER_MIX, tmpB);
-        const gv = grain + noise * 3.2;
+        mixCellRgb(r, g, b, INK_RGB.paper, PAPER_MIX, tmpB);
+        const gv = GRAIN[(y & 15) * 16 + (x & 15)];
         data[p] = tmpB[0] + gv;
         data[p + 1] = tmpB[1] + gv;
         data[p + 2] = tmpB[2] + gv;
