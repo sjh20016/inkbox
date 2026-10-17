@@ -2,7 +2,7 @@
 
 ## 2026-10-17 · A1 · 众生入画（修士 / 卜算子 / 山海异兽资产接入候选）
 
-从 G2-R1 候选 `e6fb8c6` 起`feat/a1-creature-character-assets`，把三组原创 3D 资产接进正式游戏：**修士** runtime 换为 `cultivator_rebuild` legacy-cells 版（六身份/12 色/16 骨/模块槽语义不变，旧模型随包 `mesh/cultivator_library_prev.glb` 可回退）；**卜算子** 面板新增真实模型渲染肖像与独立 three.js 三维小窗（Idle / Walk / Wind，风起为可演示效果而非天气机制）；**山海异兽** 13 种统一入库（`assets/creatures/`，每只 8 套动画），其中天狗 / 当康 / 鹿蜀 / 旋龟 4 种以真实模型进入正式世界灵兽表现，其余 9 种为 Lab / 未来秘境候选。世界模拟、存档、RNG、Canvas 与三界视界架构未改；资源加载失败回退旧表现；G2 性能结论不变（仍 PERF BLOCKED，保持 Draft）。范围、验证与回滚见 [A1 交付](./docs/development/A1_CREATURE_CHARACTER_ASSETS.md)；新 Lab 为 `busanzi-lab.html` / `creature-lab.html`。
+从 G2-R1 候选 `e6fb8c6` 起`feat/a1-creature-character-assets`，把三组原创 3D 资产接进正式游戏：**修士** runtime 换为 `cultivator_rebuild` legacy-cells 版（六身份/12 色/16 骨/模块槽语义不变，旧模型随包 `mesh/cultivator_library_prev.glb` 可回退）；**卜算子** 面板新增真实模型渲染肖像与独立 three.js 三维小窗（Idle / Walk / Wind，风起为可演示效果而非天气机制）；**山海异兽** 13 种统一入库（`assets/creatures/`，每只 8 套动画），其中天狗 / 当康 / 鹿蜀 / 旋龟 4 种以真实模型进入正式世界灵兽表现，其余 9 种为 Lab / 未来秘境候选。世界模拟、存档、RNG、Canvas 与三界视界架构未改；资源加载失败回退旧表现；G2 性能结论不变（仍 PERF BLOCKED，保持 Draft）。范围、验证与回滚见 [A1 交付](./docs/development/A1_CREATURE_CHARACTER_ASSETS.md)；新 Lab 为 `busanzi-lab.html` / `creature-lab.html`。候选提交与远端状态以 [Draft PR #24](https://github.com/sjh20016/inkbox/pull/24)（目标基线 `feat/g2-r1-playable-integration`）为准。
 
 ## 2026-10-17 · G2-R1 可玩集成候选
 

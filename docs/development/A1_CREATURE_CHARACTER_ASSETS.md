@@ -101,3 +101,11 @@ QA 独立组合验收 `A1_VERIFY_STRICT=1 node scripts/inkbox-a1-verify.mjs`：*
 - 放弃本开发分支 / Draft PR 即可整体回滚。
 - 只回滚修士模型：`assets/characters/cultivator/mesh/cultivator_library_prev.glb` 覆盖当前 runtime GLB，并按 `data/cultivator_manifest.json` 的 `rollback.steps` 还原 manifest 数字与校验，见 `docs/CULTIVATOR_REBUILD_INTEGRATION.md`。
 - 卜算子 / 异兽为纯新增目录与新增接线；删除对应资产目录并回退 `EntityLayer` / `main.js` 等接线即可回到 G2-R1 表现（不涉及模拟与存档）。
+
+## 7. 提交与远端
+
+- 分支：`feat/a1-creature-character-assets`，起点 `e6fb8c602aca90326f4f28a7a5dce5256f00ef5a`。
+- 代码提交（按功能组拆分）：修士 → 卜算子 → 异兽 → 打包 / 文档 / 独立验收。
+- Draft PR：[#24](https://github.com/sjh20016/inkbox/pull/24)，目标基线 `feat/g2-r1-playable-integration`（不合并 main）。
+- 远端 Fast / Heavy CI 状态以 PR #24 对应提交的 Actions 结果为准；本文件不复制运行日志。
+
