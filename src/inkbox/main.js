@@ -554,7 +554,7 @@ class Sandbox {
 
   /** Q34：顶部那颗「seed / 幅面 / 渲染器」信息丸。 */
   syncWorldInfo() {
-    this.qol.syncWorldInfo(this.render3d ? '3D' : 'Canvas');
+    this.qol.syncWorldInfo(this.render3d?.active ? '3D' : 'Canvas');
     syncMapProgress(this);
   }
 

@@ -40,13 +40,16 @@ async function shot(name) {
   report.screenshots.push(p);
 }
 async function evaluateLayout(renderer, w, h) {
-  return page(`const rail=document.getElementById('inkExperienceRail');
+  const result=await page(`const rail=document.getElementById('inkExperienceRail');
     const nav=document.querySelector('.p1-observe-nav'),stage=document.querySelector('.stage'),rect=rail.getBoundingClientRect();
     return {renderer:${JSON.stringify(renderer)},width:innerWidth,height:innerHeight,
       railDisplay:getComputedStyle(rail).display,railWidth:rect.width,
       navVisible:getComputedStyle(nav).display!=='none',stageWidth:stage.getBoundingClientRect().width,
       openButton:getComputedStyle(document.getElementById('inkExperienceOpen')).display,
-      title:document.getElementById('inkWatchTitle').textContent.trim()};`);
+      title:document.getElementById('inkWatchTitle').textContent.trim(),
+      rendererLabel:document.getElementById('inkInfoRenderer').textContent.trim()};`);
+  assert.equal(result.rendererLabel,renderer==='3d'?'3D':'Canvas','World information must name the active renderer');
+  return result;
 }
 async function exerciseDesktop(renderer,w,h) {
   await viewport(w,h);
