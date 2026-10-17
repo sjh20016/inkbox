@@ -2,6 +2,14 @@
 
 > RG-P3 · 2026-10-17 现行指南。历史阶段细节从 [原测试说明](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/tests/README.md) 查阅。此处只保留当前开发真正要用的入口。
 
+## RG-P4 · 低成本本地验证和 CI 同分支去重
+
+`npm run check:ui` 是面向**小型人物卡 / 面板 / 文案 / CSS 改动**的轻量 CPU 检查，依次跑 G1 Web、QoL、视界与表现回归。它不测实际屏幕截图、Three 真 GPU，也不包含 Heavy；交互 / 窄屏变化仍需按任务做一次真实浏览器验收，正式集成等待完整 CI。不要用它替代 `npm test` 或声明全套测试通过。
+
+CI 继续保留全部原有 Fast / Heavy 检查项。RG-P4 新增同分支并发分组：Push 和同仓 PR 的自动运行同组，较新的自动 run 取消旧 run；`workflow_dispatch` 使用唯一 run ID，手动 Browser Smoke 不被推送打断。取消的 run 不算通过，只有**当前提交对应且完成成功**的存活 run 才能作为验收证据；如果自动 run 竞争导致 PR 仍显示待验证或取消，须重新触发完整检查，不可直接合并。分组只消除重复执行，不根据文件名跳过 Heavy。
+
+2026-10-17 [RG-P3 PR #21](https://github.com/sjh20016/inkbox/actions/runs/39007908817) 的实际样本：Fast 62 秒，Heavy 391 秒，其中三界 153 秒、存读档等价 130 秒、G1 长局 101 秒；旧 Nightly 样本 800 年 1400 秒、全量 smoke 505 秒。这些是特定 GitHub 托管机实测，不是每台机器固定预算；手动 GPU 不在普通 Fast/Heavy 中。
+
 ## 基本原则
 
 **本地按修改范围选择最小充分验证，远端现有 CI 完整保留。** `npm test` 只运行核心，不代表所有门禁通过。建议 Node 24 / `npm ci` 对齐 CI。任何改动都不可借此弱化现有断言、跳过必须的发布门禁或掩盖失败。

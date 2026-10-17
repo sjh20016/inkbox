@@ -99,7 +99,8 @@
     "test:g1:web": "node scripts/inkbox-g1-web-check.mjs",
     "test:g1:integration": "node scripts/inkbox-g1-integration.mjs",
     "test:g1:longrun": "node scripts/inkbox-g1-longrun.mjs",
-    "test:g1:browser": "node scripts/inkbox-g1-browser.mjs"
+    "test:g1:browser": "node scripts/inkbox-g1-browser.mjs",
+    "check:ui": "npm run test:g1:web && npm run test:qol && npm run test:view && npm run test:presentation"
   },
   "dependencies": {
     "three": "0.186.1"
