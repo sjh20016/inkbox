@@ -56,6 +56,9 @@ jobs:
       - name: Three vendor 一致性（版本 / 许可证 / 字节）
         run: npm run test:vendor
 
+      - name: A1 三组资产结构与 provenance（修士 / 卜算子 / 异兽）
+        run: npm run test:a1
+
       - name: 核心检查（导入图 / 核心 / 启动 / 运行事件）
         run: npm run test:core
 
