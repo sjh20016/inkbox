@@ -1,5 +1,8 @@
 # ARCHITECTURE · 工作区与模块地图
 
+2026-10-17 RG 收官后工作树的结构以本页 §1 和实际 Git 树为准；历史报告固定于 [治理前 Git 快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534)。产品状态以 [ROADMAP](./ROADMAP.md) 与 [HANDOFF](./HANDOFF.md) 顶部为准：main 已合并 G1，G2 / G3 为候选与研究。下方阶段性状态均为历史快照；模块职责和契约结合当前源码阅读。
+
+
 ## Current Truth · 2026-10-08
 
 稳定模块地图以当前 GitHub main 为基线；当前正式阶段为 M2-C2E，工程接入已完成。产品主线、实验分支、归档 tag 与本地部署规则见 [HANDOFF](./HANDOFF.md)。阶段时间线见 [ROADMAP](./ROADMAP.md)，未完成事项见 [BACKLOG](./BACKLOG.md)。 下方阶段性叙述中标为“当前”的内容属于对应日期快照。
@@ -15,7 +18,7 @@
 - `worldGeneration` 负责版本化地貌 / seed 生成；`core/mapAccess` 计算访问范围，World `mapProgress` 保存进度。`AccessGeometry` 把访问几何与既有 Realm Region 几何组合，不改变 `RealmMask` 的身份职责。
 - Host 将访问权限传给 Canvas 与 Three；两种 renderer 共用权限语义。世界完整预生成，渐进开放控制可访问区域，不是 chunk streaming。
 
-模块边界与详细实现见 [C2E 实现报告](./M2C2E_IMPLEMENTATION_REPORT.md)；性能 / 容量限制见 [C2E 就绪报告](./M2C2E_READINESS.md)。
+模块边界与详细实现见 [C2E 实现报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_IMPLEMENTATION_REPORT.md)；性能 / 容量限制见 [C2E 就绪报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_READINESS.md)。
 
 ---
 
@@ -34,18 +37,13 @@
 | `src/inkbox/` | 唯一活跃源码 | 是 | 是 |
 | `vendor/three/` | 固定版本浏览器运行时与许可证 | 是 | 是 |
 | `scripts/inkbox-*.mjs`、`scripts/cdp.mjs` | npm 命令及浏览器驱动；精确范围看 package.json / 打包清单 | 是 | 清单所列文件 |
-| `scripts/_*.mjs` | D8 / M1 历史一次性研究探针 | 是 | 否 |
+| `scripts/_*.mjs`（历史） | 一次性研究探针，RG-P2 已退役 | 仅旧 Git 提交 | 否 |
 | `.github/workflows/`、`tests/README.md` | 门禁与测试说明 | 是 | 是 |
 | `剧情文案素材/` | 活跃文案资产；00 册为接线约束 | 是 | 是 |
 | `美术素材/` | 美术方向与生产参考；运行使用代码母版与有限色板 | 使用的设计资料 | 仅白名单方向文档/索引/委托书 |
-| `reports/release/render3d-m2a/` | 历史正式 M2-A 证据 | 保留历史 | 仅 performance.json |
-| `reports/release/render3d-m2c/` | 历史 M2-C 证据 | 保留历史 | 否 |
-| `reports/release/render3d-m2c2a/` | C2A 代表图片与摘要 | 小集合；完整矩阵走 artifact | 仅 acceptance-summary.json / tree-gate.json |
-| `reports/release/render3d-m2c2b0/` | 三界 summary 与 8 张代表 golden | 小集合 | 否 |
-| `M2C2C_*REPORT.md`、`M2C2C_READINESS.md`、`M2C2C_VISUAL_ACCEPTANCE.md` | 当前工程、性能、视觉与就绪报告 | 是 | 是 |
-| `reports/release/render3d-m2c2c/` | compact summary 与最多 8 张正常 Golden | 小集合；全量走本地 / artifact | 仅白名单 acceptance-summary.json；Golden 否 |
+| `reports/`（含旧 `reports/release/`） | 新的浏览器、性能与发布证据；旧样本在固定 Git 快照 | 当前默认忽略；历史由 Git / Actions 追溯 | 否 |
+| 旧根目录 `M2C2C_*REPORT.md` 等阶段报告 | 历史就绪、视觉、性能证据 | 仅旧 Git 提交 | 否 |
 | `research/` | 只读空间关系 / 流量研究与脚本结果 | 研究资料 | 否；文档只写开发路径，不链接运行包缺失文件 |
-| 其他 `reports/` 输出 | 本机探针、日志、发布核验；CI 证据由 Actions artifact 保存 | 否 | 否 |
 | `.workbuddy-ai/memory/` | 本地交接索引；历史记录压缩归档 | 否 | 否 |
 | `.local-backups/` | 经校验的原工程 / Git 历史 / 清理备份 | 否 | 否 |
 | node_modules、dist | npm 安装与构建产物 | 否 | 不嵌套收录 |
@@ -118,7 +116,7 @@ Canvas 把 Region 投影成 screen path 后 clip；Three 按 quad / entity 所�
 
 M2-B 已扩展 Mask 到全部已有 Layer，M2-C 复用其判据。上界/幽冥不额外伪造凡间式水体和植被；ThreeFxProbe 沿用既有 Presentation snapshot。
 一格边缘、跨边实体轮廓和高差侧向缺口是已声明局限；Slab 的矩形封边没有变成自由 Region 的 boundary skirt。
-常驻 Stage、可见 Stage、实际更新 Stage 是不同成本，最新实测见 [M2-C2A 性能报告](./M2C2A_PERFORMANCE_REPORT.md)，M2-A 历史数据保留在原阶段目录。
+常驻 Stage、可见 Stage、实际更新 Stage 是不同成本，最新实测见 [M2-C2A 性能报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2A_PERFORMANCE_REPORT.md)，M2-A 历史数据保留在原阶段目录。
 
 ## 5. 文档维护与提交边界
 
@@ -143,6 +141,6 @@ terrain/topology统一v2网格对角与ElevationField插值，v1原对角保持�
 
 TerrainStroke是正式雕刻写边界：固定距离采样，height/water/riverBase去重before/after，canonical矩形按帧flush，Undo/Redo走同路径。main持有stroke期间隔离模拟且不补跑，不改变倍速。
 
-worldGeneration配置v2生成，save显式可选generation/mapProgress。core/mapAccess只读访问策略，world/mapProgress只写进度；region/AccessGeometry组合访问与原RegionGeometry指定侧，真实Region仍只属于RealmMask。Host传播三界，Canvas/3D共用权限，闭区完整模拟。详见[M2-C2E实现](./M2C2E_IMPLEMENTATION_REPORT.md)。
+worldGeneration配置v2生成，save显式可选generation/mapProgress。core/mapAccess只读访问策略，world/mapProgress只写进度；region/AccessGeometry组合访问与原RegionGeometry指定侧，真实Region仍只属于RealmMask。Host传播三界，Canvas/3D共用权限，闭区完整模拟。详见[M2-C2E实现](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_IMPLEMENTATION_REPORT.md)。
 
 WaterLayer独占节点与裁切scratch缓存（约32字节/格）：World dirty更新邻域，profile/world变更全量初始化，Region/style变更重建可见索引；legacy回切先同步，dispose/Host换世界释放。TerrainMesh仅在对角变化时重传拓扑索引。Undo/Redo写前对整笔height/water/riverBase预期快照作原子校验，后续模拟冲突会拒绝和清空历史。

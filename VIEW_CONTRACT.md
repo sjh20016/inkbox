@@ -96,8 +96,8 @@ D8 的成功跨界仍按源 depart / 目标 arrive 发事件；失败与 cap 满
 - `test:three-realms` / `test:save-equivalence`：模拟 / 存档底座；`test:presentation`：表现层纯度、按位面事件与历史边界。
 
 Fast / Heavy Gate 每次 push / PR 运行；两套浏览器检查只在手动 Browser Smoke 中运行，JSON / 截图作为 artifact 保存。
-本机实显卡的 [M2-A 基线](./reports/release/render3d-m2a/performance.json) 与 CI runner 的功能复验区分；两者都保留 GPU 标识、首次 / 重复开窗、驻留 / 可见 / 更新成本。
-CI 的软件光栅读数不能替代实显卡性能结论。完整本地证据见 [M2-A 工程报告](./Render3D%20M2-A%20架构原型工程报告.md)。
+本机实显卡的 [M2-A 基线](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/reports/release/render3d-m2a/performance.json) 与 CI runner 的功能复验区分；两者都保留 GPU 标识、首次 / 重复开窗、驻留 / 可见 / 更新成本。
+CI 的软件光栅读数不能替代实显卡性能结论。完整本地证据见 [M2-A 工程报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/%E5%8E%86%E5%8F%B2%E5%A7%94%E6%89%98%E4%B9%A6/Render3D%20M2-A%20%E6%9E%B6%E6%9E%84%E5%8E%9F%E5%9E%8B%E5%B7%A5%E7%A8%8B%E6%8A%A5%E5%91%8A.md)。
 
 ## 7. 后续边界
 

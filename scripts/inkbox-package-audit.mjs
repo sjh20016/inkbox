@@ -6,25 +6,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const ALLOWED_RELEASE_JSON = new Set([
-  'reports/release/render3d-m2c2e/summary/acceptance-summary.json',
-  'reports/release/render3d-m2c2d/summary/acceptance-summary.json',
-  'reports/release/render3d-m2c2d1/summary/acceptance-summary.json',
-  'reports/release/render3d-m2c2c/summary/acceptance-summary.json',
-  'reports/release/render3d-m2a/performance.json',
-  'reports/release/render3d-m2c2a/acceptance-summary.json',
-  'reports/release/render3d-m2c2a/tree-gate.json',
-  'reports/release/render3d-m2c2b-pass1/b0-summary.json',
-  'reports/release/render3d-m2c2b-pass1/sample-summary.json',
-  'reports/release/render3d-m2c2b-pass1/family-summary.json',
-  'reports/release/render3d-m2c2b-pass1/hall-summary.json',
-  'reports/release/render3d-m2c2b-pass1/content-summary.json',
-  'reports/release/render3d-m2c2b-pass1/decorations-summary.json',
-  'reports/release/render3d-m2c2b-pass1/artifacts-summary.json',
-  'reports/release/render3d-m2c2b-pass1/matrix-summary.json',
-  'reports/release/render3d-m2c2b-pass1/durability-summary.json',
-  'reports/release/render3d-m2c2b-pass1/acceptance-summary.json',
-]);
+// Historical release evidence is no longer shipped in runtime packages.
+const ALLOWED_RELEASE_JSON = new Set();
 const problems = [];
 const checks = [];
 

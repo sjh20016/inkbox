@@ -1,10 +1,31 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-## 当前交接 · 2026-10-09 · G1-R Runtime
+## 2026-10-17 · RG-P1～P4 仓库治理收官
+
+治理移除跟踪的旧阶段报告、早期委托书及 `reports/release/`，工作树只保留必要文档、生产源码/资产和有效测试；旧文件可从 [治理前 Git 固定提交](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 追溯。`reports/` 默认忽略，运行包不携带历史报告。`tests/README.md` 为当前测试分层入口，`npm run check:ui` 为局部 UI CPU 检查；GitHub Fast/Heavy 仍保留全量契约，手动 Browser/GPU 另行执行。后续产品开发从最新 `main` HEAD 创建分支，先检查真实 PR 和 Actions 状态。旧研究分支不会因为此次治理自动合入或失效。
+
+## 历史交接 · RG-P1 · 2026-10-16
+
+核查日期：2026-10-16（Asia/Shanghai）。正式 main 基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`，[G1 PR #2](https://github.com/sjh20016/inkbox/pull/2) 已于 2026-10-12 合并，正式产品为 M2-C2E + G1。
+
+[Draft PR #12](https://github.com/sjh20016/inkbox/pull/12) HEAD `74934a8b1360af9007c69935d5becdf8f9809872`：Canvas / Three 的 P1 玩家闭环 READY，G2 性能仍 BLOCKED，尚未合入 main；#12 已继承 #10，不重复合并。G3 #17 PCC Observer 成本超限，A1-1 BLOCKED，未进入 A1-2。B2 数值研究为无共同 Git 祖先的独立实验，不是正式产品参数。
+
+接手先核对远端 SHA / PR / Actions，再阅读 [开发工作流与审计](./docs/development/REPOSITORY_WORKFLOW.md)、[路线图](./ROADMAP.md)、[未完成事项](./BACKLOG.md)、[测试入口](./tests/README.md)。从任务指定基线建隔离 worktree；不覆盖现有研究工作区和未提交材料。G1 契约见 [集成报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_INTEGRATION_REPORT.md)。
+
+风险：H2/H3/G3 Fast Gate 失败，Heavy 通过不能覆盖失败；P1 READY 不代表 G2 性能封板。STATUS 与下方旧日期交接仅作历史证据，不是当前施工授权；不执行旧交接中的工作区改名 / 恢复指令。
+
+2026-10-17 RG-P2 的实施记录：进一步清理根目录阶段报告、早期委托书及 `reports/release/`，打包不再依赖历史 JSON；源程序和主要测试不改动，清理前全部文件可从 [main 固定快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 读取。以下历史交接描述的“Git 保留 Golden/summary”不再是现行收录规则，新产物默认进 ignored `reports/` 或 Actions artifact。本段为治理施工时的历史快照，是否合入以最新 Git `main` 为准。
+
+---
+
+以下均为历史快照，其中“当前”、未合并与等待集成等措辞仅对当时有效。
+
+
+## 历史交接 · 2026-10-09 · G1-R Runtime
 
 产品主线仍为 GitHub main。Runtime 分支 `feat/g1-runtime-codex` 从双方共同基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 开工，独立交付人物真实身份、快照、敕令、记挂、地图成长和回归体系。正式人物卡仍归 `feat/g1-presentation-web`；Runtime 沿用旧展示，不修改 Presentation 目录或 B数值系统，不单独合并 main。用户明确发出“开始 G1 集成”后才进入双方集成和正式 UI 验收；C5 视觉协调已按委托书延期。
 
-优先阅读 [G1 Runtime 交接](./G1_RUNTIME_HANDOFF.md)，其中列明新增文件、ViewModel / controller 契约、地图保存语义和待集成清单。`test:g1` / `test:g1:longrun` 分别加入 Fast / Heavy；`test:g1:browser` 验证已有 Canvas / 3D 宿主和存读档，不能代替正式人物卡或真实 GPU 性能验收。
+优先阅读 [G1 Runtime 交接](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_RUNTIME_HANDOFF.md)，其中列明新增文件、ViewModel / controller 契约、地图保存语义和待集成清单。`test:g1` / `test:g1:longrun` 分别加入 Fast / Heavy；`test:g1:browser` 验证已有 Canvas / 3D 宿主和存读档，不能代替正式人物卡或真实 GPU 性能验收。
 
 ## 2026-10-08 历史交接
 
@@ -16,19 +37,19 @@
 - 报告策略：保留 M2-C2C、M2-C2D、M2-C2D.1、M2-C2E 的关键摘要与视觉基线；M2-C 保留核心 JSON 与 8 张 pilot 图片及各自 manifest，重复原始门禁和旧浏览器副本不纳入 release。
 - 本地部署：先将旧工作区完整改名为同级备份，再从 origin/main fresh clone 到原工作路径；本地专有目录先列明并由用户决定是否恢复。
 
-施工状态和证据索引见 [STATUS](./STATUS.md)，正式阶段见 [ROADMAP](./ROADMAP.md)，未完成事项见 [BACKLOG](./BACKLOG.md)，模块地图见 [ARCHITECTURE](./ARCHITECTURE.md)。
+施工状态和证据索引见 [STATUS](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/STATUS.md)，正式阶段见 [ROADMAP](./ROADMAP.md)，未完成事项见 [BACKLOG](./BACKLOG.md)，模块地图见 [ARCHITECTURE](./ARCHITECTURE.md)。
 
 ---
 
 以下旧段落保留为历史阶段记录；其中的当前状态、分支和施工指令以本交接顶部及当前 main 为准。
 
-2026-10-08 当前交接：M2-C2E 委托书 v1.0，本地工程验收完成（44CPU、108种子、14GPU、12固定镜、600/6000耐久），分支 `codex/m2-c2e-living-terrain`。最大图/密集模拟有帧长尾，最终美术由用户裁决。接手先看 [READINESS](./M2C2E_READINESS.md)、[实现](./M2C2E_IMPLEMENTATION_REPORT.md)、[性能](./M2C2E_PERFORMANCE_REPORT.md)。本轮保持用户历史文档目录迁移，不合并 main；下列 C2C/早期门禁是历史记录。
+2026-10-08 当前交接：M2-C2E 委托书 v1.0，本地工程验收完成（44CPU、108种子、14GPU、12固定镜、600/6000耐久），分支 `codex/m2-c2e-living-terrain`。最大图/密集模拟有帧长尾，最终美术由用户裁决。接手先看 [READINESS](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_READINESS.md)、[实现](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_IMPLEMENTATION_REPORT.md)、[性能](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_PERFORMANCE_REPORT.md)。本轮保持用户历史文档目录迁移，不合并 main；下列 C2C/早期门禁是历史记录。
 
-2026-10-08 历史阶段：**M2-C2D.1 本机工程验收完成，最终美术待人工裁决**。指定分支 `codex/m2-c2d1-painterly-reconciliation` 从 WIP `daf78c0` 续作；完整十二镜四轮 GPU 零正向预算、CPU、六层/GPU 契约、历史对照与原套件 600/6000 soak 通过。用户已授权完成后上传该分支，远端 CI 以最新对应提交为准。没有合并 main，未把旧 C2B/C2C 的 Actions 作为本阶段证明。入口：[就绪](./M2C2D1_READINESS.md)、[视觉](./M2C2D1_VISUAL_ACCEPTANCE.md)、[性能](./M2C2D1_PERFORMANCE_REPORT.md)。
+2026-10-08 历史阶段：**M2-C2D.1 本机工程验收完成，最终美术待人工裁决**。指定分支 `codex/m2-c2d1-painterly-reconciliation` 从 WIP `daf78c0` 续作；完整十二镜四轮 GPU 零正向预算、CPU、六层/GPU 契约、历史对照与原套件 600/6000 soak 通过。用户已授权完成后上传该分支，远端 CI 以最新对应提交为准。没有合并 main，未把旧 C2B/C2C 的 Actions 作为本阶段证明。入口：[就绪](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2D1_READINESS.md)、[视觉](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2D1_VISUAL_ACCEPTANCE.md)、[性能](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2D1_PERFORMANCE_REPORT.md)。
 
 以下 2026-10-06 段落为历史阶段记录。
 
-2026-10-06 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。**M2-C2C Meaningful Geography 已本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行**；范围限于呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。入口：[资产](./M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](./M2C2B_PERFORMANCE_REPORT.md)、[视觉](./M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](./M2C2B_READINESS.md)。
+2026-10-06 当前真相：**M2-C2B Pass 1 已在主线 `e0a851c` 远端封板，第一代正式资产生产体系成立。**Push CI [37224093479](https://github.com/sjh20016/inkbox/actions/runs/37224093479)、手动 Windows Browser / C2B 矩阵与 soak [37224107941](https://github.com/sjh20016/inkbox/actions/runs/37224107941)、800 年 Nightly [37233858438](https://github.com/sjh20016/inkbox/actions/runs/37233858438) 均成功。**M2-C2C Meaningful Geography 已本地完成，远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行**；范围限于呈现已有 World 语义，不扩展上界文明、幽冥城市或浮空岛拓扑。入口：[资产](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2B_ASSET_PRODUCTION_REPORT.md)、[性能](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2B_PERFORMANCE_REPORT.md)、[视觉](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2B_VISUAL_ACCEPTANCE.md)、[就绪与20项答复](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2B_READINESS.md)。
 
 > 历史基线：2026-10-04，M2-C2A.1 / M2-C2B0 三界视觉阶段。读序：README → 本文 → 当前任务涉及的契约 / 源码。
 > 阶段看 ROADMAP，目录和模块责任看 ARCHITECTURE，历史查 STATUS；本地 MEMORY 只作索引。
@@ -41,15 +62,15 @@
 
 2026-10-06 C2C 实现与本地验收完成：既有四类 Site、Leyline、Upper `qi`、Nether `veg`、持久 Rift 与短命 FX。六个只读开关 `sites` / `leylines` / `upperQi` / `netherYin` / `rifts` / `riftFx` 由 Host 编排；production on 使用正式资源，`geography=off` / `assets=off`、缺资产或完整 footprint 拒绝时保留旧基线与诚实回退。真实 id 必须解析当前 World；不复制半径公式或事件消费口。
 
-本地 11 模式 × 600 日 / 11 RNG / 49 save keys 一致，full SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`。完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。6000 帧分为 20 × 300 帧，200 段检查均保持 114 geometry / 10 texture / 16 program。M2-B 祖先的 Upper / Nether / boundary 分别有 173 / 235 / 91 个可见几何命中，visible geometry === hit；C2B sample 三档真实 GLB 点击通过。 远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行，C2B 三个历史 Actions 不能作本轮证明。入口：[就绪](./M2C2C_READINESS.md)、[工程与24项答复](./M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](./M2C2C_PERFORMANCE_REPORT.md)、[视觉](./M2C2C_VISUAL_ACCEPTANCE.md)。运行包为 333 文件，目录约 8.8MB、ZIP 约 2.7MB；compact acceptance summary 保持不超过 256KiB。8 张正常 Golden 共 7206282 bytes，选择 case 1 / 3 / 4 / 5 / 6 / 8 / 12 / 14，位于开发路径 reports/release/render3d-m2c2c/golden/，不进入 runtime。
+本地 11 模式 × 600 日 / 11 RNG / 49 save keys 一致，full SHA `4b37e9605591ef48e986833513a5f633da7ef28bc080f326dc884efe44abb498`。完整 23 对 GPU off/on 矩阵通过，四类真实 Site 在约 90px 正常视角的生产几何与 CDP 点击通过；600 生命周期实际 update / render 各 600 次，6000 产品 RAF 帧及两个关键祖先 Browser 通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过。6000 帧分为 20 × 300 帧，200 段检查均保持 114 geometry / 10 texture / 16 program。M2-B 祖先的 Upper / Nether / boundary 分别有 173 / 235 / 91 个可见几何命中，visible geometry === hit；C2B sample 三档真实 GLB 点击通过。 远端 Push 门禁以本轮 main 提交的 Actions 状态为准，手动 C2C Browser / Nightly 尚未运行，C2B 三个历史 Actions 不能作本轮证明。入口：[就绪](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2C_READINESS.md)、[工程与24项答复](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[性能](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2C_PERFORMANCE_REPORT.md)、[视觉](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2C_VISUAL_ACCEPTANCE.md)。运行包为 333 文件，目录约 8.8MB、ZIP 约 2.7MB；compact acceptance summary 保持不超过 256KiB。8 张正常 Golden 共 7206282 bytes，选择 case 1 / 3 / 4 / 5 / 6 / 8 / 12 / 14，位于开发路径 reports/release/render3d-m2c2c/golden/，不进入 runtime。
 
-C2A.1 包清单、真实聚落 HLOD 与密林测量已封板；C2B0 的 24 对截图、600 日全部 11 RNG、600+6000 帧及 21 次 GC 峰值门禁已通过。单源是 [RealmStyleProfile](./src/inkbox/render3d/art/RealmStyleProfile.js)，以 stage.plane 选色。文档入口：[视觉](./M2C2B0_VISUAL_REPORT.md)、[性能](./M2C2B0_PERFORMANCE_REPORT.md)、[终验与就绪条件](./M2C2B0_READINESS.md)。该段只记录 C2B0 当时事实；C2B Pass 1 随后建立了第一代正式资产生产体系。
+C2A.1 包清单、真实聚落 HLOD 与密林测量已封板；C2B0 的 24 对截图、600 日全部 11 RNG、600+6000 帧及 21 次 GC 峰值门禁已通过。单源是 [RealmStyleProfile](./src/inkbox/render3d/art/RealmStyleProfile.js)，以 stage.plane 选色。文档入口：[视觉](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2B0_VISUAL_REPORT.md)、[性能](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2B0_PERFORMANCE_REPORT.md)、[终验与就绪条件](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2B0_READINESS.md)。该段只记录 C2B0 当时事实；C2B Pass 1 随后建立了第一代正式资产生产体系。
 
-M2-B 的完整 Layer Mask、共享 ElevationField / RegionGeometry、界缘、3D 划窗与拾取已完成。M2-C 在同一个 Host/Renderer/Camera、三个 Stage 上增加薄 ArtPass；不改变模拟、存档或视界定义。范围与证据见 [M2-C 工程报告](./M2C_EXPRESSIVE_INK_REPORT.md)。
+M2-B 的完整 Layer Mask、共享 ElevationField / RegionGeometry、界缘、3D 划窗与拾取已完成。M2-C 在同一个 Host/Renderer/Camera、三个 Stage 上增加薄 ArtPass；不改变模拟、存档或视界定义。范围与证据见 [M2-C 工程报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C_EXPRESSIVE_INK_REPORT.md)。
 
-M2-C2A 接入三档真实几何 LOD、迟滞、密度预算与凡间小聚落 HLOD 原型；[实施与验收](./M2C2A_LOD_REPORT.md)、[性能](./M2C2A_PERFORMANCE_REPORT.md)、[视觉](./M2C2A_VISUAL_ACCEPTANCE.md) 保存 C2A 当时证据。3D 默认 `art=realm-style-v1` 且 LOD 开启；`art=legacy` 保留旧 pilot 对照，`lod=off` 保留全 LOD0；`artdebug=1` 才出现调参面板。现有 GLB 近景角色保留。后续资产扩产、完整群体动画、Trace Field 和 Gameplay G 留到后续授权。
+M2-C2A 接入三档真实几何 LOD、迟滞、密度预算与凡间小聚落 HLOD 原型；[实施与验收](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2A_LOD_REPORT.md)、[性能](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2A_PERFORMANCE_REPORT.md)、[视觉](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2A_VISUAL_ACCEPTANCE.md) 保存 C2A 当时证据。3D 默认 `art=realm-style-v1` 且 LOD 开启；`art=legacy` 保留旧 pilot 对照，`lod=off` 保留全 LOD0；`artdebug=1` 才出现调参面板。现有 GLB 近景角色保留。后续资产扩产、完整群体动画、Trace Field 和 Gameplay G 留到后续授权。
 
-历史封板检查：C2A核心8组、旧CLI14项、浏览器矩阵15项、600+6000帧及本机五套Browser Smoke通过。其后 C2B Pass 1 已通过远端封板；详细 Actions 证据见本文顶部与 [M2-C2B 就绪报告](./M2C2B_READINESS.md)。
+历史封板检查：C2A核心8组、旧CLI14项、浏览器矩阵15项、600+6000帧及本机五套Browser Smoke通过。其后 C2B Pass 1 已通过远端封板；详细 Actions 证据见本文顶部与 [M2-C2B 就绪报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2B_READINESS.md)。
 
 用户允许实验建筑资产自由修改，并指定 `美术素材/配色参考` 为后续颜色参考；使用索引见 [参考资产索引](./美术素材/参考资产索引.md)。范式包用于研究，产品不依赖整套第三方素材。
 
@@ -93,7 +114,7 @@ Three 固定为 `0.186.1`：浏览器 importmap 读 `vendor/three/`，Node 测�
 | [VIEW_CONTRACT](./VIEW_CONTRACT.md) | renderer-independent 视界规则 V1–V11 |
 | [文案使用说明](./剧情文案素材/00_文案使用说明（AI与开发者必读）.md) | 文案声音、UI 禁令、考古定名与素材接线 |
 | [BACKLOG](./BACKLOG.md) | 未完成事项；已完成编号只留关闭记录 |
-| [STATUS](./STATUS.md)、各阶段委托书 / 报告 | 按日期保留的历史与证据，不充当当前施工指令 |
+| [STATUS](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/STATUS.md)、各阶段委托书 / 报告 | 按日期保留的历史与证据，不充当当前施工指令 |
 
 用户最新明确指令决定范围；源码与实际执行结果决定“已经做了什么”。若实现与契约冲突，记录差异并处理当前授权范围，不能为通过测试静默改规则。
 历史文档里的旧阶段编号、旧禁令、旧计数不覆盖当前契约。本地 `.workbuddy-ai/memory/` 不新增另一套规则，也不作为发布包必读依赖。

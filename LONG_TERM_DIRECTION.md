@@ -443,7 +443,7 @@ v1.0 最有价值的部分完全保留：**世界不等待玩家，天道不接�
 **文档来源层级：**
 
 - 用户提供：《坐天观井Inkbox长期开发方向与目标记忆 v1.0.md》，继承其自主世界、观察与干预、长期因果、设计公理、人物/地区/宗门/三界和编年史愿景。
-- GitHub 主线快照（2026-10-10 当次核对）：[`ROADMAP.md`](https://github.com/sjh20016/inkbox/blob/main/ROADMAP.md)、[`HANDOFF.md`](https://github.com/sjh20016/inkbox/blob/main/HANDOFF.md)、[`BACKLOG.md`](https://github.com/sjh20016/inkbox/blob/main/BACKLOG.md)、[`ARCHITECTURE.md`](https://github.com/sjh20016/inkbox/blob/main/ARCHITECTURE.md)、[`STATUS.md`](https://github.com/sjh20016/inkbox/blob/main/STATUS.md)、[`M2C2E_READINESS.md`](https://github.com/sjh20016/inkbox/blob/main/M2C2E_READINESS.md)。
+- GitHub 主线快照（2026-10-10 当次核对）：[`ROADMAP.md`](https://github.com/sjh20016/inkbox/blob/main/ROADMAP.md)、[`HANDOFF.md`](https://github.com/sjh20016/inkbox/blob/main/HANDOFF.md)、[`BACKLOG.md`](https://github.com/sjh20016/inkbox/blob/main/BACKLOG.md)、[`ARCHITECTURE.md`](https://github.com/sjh20016/inkbox/blob/main/ARCHITECTURE.md)、[`STATUS.md`](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/STATUS.md)、[`M2C2E_READINESS.md`](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_READINESS.md)。
 - G1 分支/PR：[`PR #2`](https://github.com/sjh20016/inkbox/pull/2)、`integrate/g1-gameplay-shell` 下的 `G1_INTEGRATION_REPORT.md`。
 - G2 独立分支：`feat/g2-presentation-web` 的 `G2_WEB_HANDOFF.md`；`feat/g2-p-portrait-engine-web` 的 `G2_PORTRAIT_HANDOFF.md`；`feat/g2-p-psd-master-codex` 的 `PORTRAIT_MASTER_ASSET_CONTRACT.md` / `PORTRAIT_MASTER_HANDOFF.md`。
 - B 数值分支：`B数值系统` 的 `B0_WORLD_LAB_REPORT.md`、`B01_PATCH_REPORT.md`。它们的实验结论附带当时版本与运行条件。
