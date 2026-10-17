@@ -10,6 +10,8 @@
 
 风险：H2/H3/G3 Fast Gate 失败，Heavy 通过不能覆盖失败；P1 READY 不代表 G2 性能封板。STATUS 与下方旧日期交接仅作历史证据，不是当前施工授权；不执行旧交接中的工作区改名 / 恢复指令。
 
+2026-10-17 RG-P2（待审 Draft）进一步清理根目录阶段报告、早期委托书及 `reports/release/`，打包不再依赖历史 JSON；源程序和主要测试不改动，清理前全部文件可从 [main 固定快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 读取。以下历史交接描述的“Git 保留 Golden/summary”不再是现行收录规则，新产物默认进 ignored `reports/` 或 Actions artifact。此治理未获批准合入 main。
+
 ---
 
 以下均为历史快照，其中“当前”、未合并与等待集成等措辞仅对当时有效。

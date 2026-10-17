@@ -8,6 +8,10 @@ PR #12 候选提交 `74934a8b1360af9007c69935d5becdf8f9809872` 的范围仅为 *
 
 导航：[`HANDOFF.md`](./HANDOFF.md) · [`ROADMAP.md`](./ROADMAP.md) · [`BACKLOG.md`](./BACKLOG.md) · [`tests/README.md`](./tests/README.md) · [`docs/development/REPOSITORY_WORKFLOW.md`](./docs/development/REPOSITORY_WORKFLOW.md)。
 
+## 仓库治理 RG-P2（2026-10-17，待合并）
+
+本治理分支移除旧阶段报告、委托书与 `reports/release/` 已跟踪输出；历史内容可从 [清理前的 main 快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 追溯，不改写 Git 历史。默认将新的测试截图、性能报告与 Golden 保存在被忽略的 `reports/` 或 Actions artifact，不随运行包分发。正式程序、3D 美术资源与核心回归没有在此治理中删除；实际验收仍看相应源码 SHA 的 CI 与实测。
+
 ## 启动
 
 需要 Node.js 18 或更新版本。建议使用 Node.js 24 与 `npm ci` 对齐 CI。运行依赖**只有一项**：`three@0.186.1`——供可选的 **Render3D 立体沙盘**使用。
@@ -106,7 +110,7 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
 
 当前产品与候选状态见本文顶部。M2-C2E 的最大地图性能边界、最终视觉裁决与历史 RNG 游标存档决策见 [BACKLOG](./BACKLOG.md)。G1 行为与契约见 [集成报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_INTEGRATION_REPORT.md)，模块职责见 [ARCHITECTURE](./ARCHITECTURE.md)，三界与视界约束见 [THREE_REALMS](./THREE_REALMS.md) / [VIEW_CONTRACT](./VIEW_CONTRACT.md)。
 
-当前工作树没有旧 V3/V4 的 `src/main.js`、demo 或 `scripts/v*`；需要考古时查 Git 历史。根 `index.html` / `game.html` 是跳转到 Inkbox 的入口。`scripts/_*.mjs` 已入 Git，仅保留历史研究参考，不在发布包中。
+当前工作树没有旧 V3/V4 的 `src/main.js`、demo 或 `scripts/v*`；需要考古时查 Git 历史。根 `index.html` / `game.html` 是跳转到 Inkbox 的入口。旧 `scripts/_*.mjs` 一次性视图探针已移出当前工作树，按需查阅历史提交。
 
 > ⚠️ **`剧情文案素材/` 不在「历史材料」之列**（2026-09-29 修正）：它是**活跃**的文案资产。
 > `00_文案使用说明（AI与开发者必读）.md` 是 [`HANDOFF.md`](./HANDOFF.md) §4 列为**有约束力**的文档

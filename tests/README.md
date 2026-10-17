@@ -21,6 +21,8 @@ main `e1e55039bb56` 已含 G1 集成；G2 / P1 候选与 G3 尚未合入。分�
 ---
 
 
+**2026-10-17 RG-P2 备注（尚未合入 main）：**历史阶段报告、提交过的 Golden/summary 与 `scripts/_*.mjs` 已从本治理分支移出工作树；查证请使用 [清理前固定提交](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534)。本文下方关于“Git 仅保存 release/golden”的措辞属当时的封板记录，不是未来收录规则。测试仍按实际 package.json / CI 运行，不因删除历史证据而删除断言。
+
 ## 历史快照 · 2026-10-09 · G1 Runtime 分支
 
 G1-R 从共同 main 基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 在 `feat/g1-runtime-codex` 独立开发。人物真实身份、只读模型、三项敕令、记挂、地图成长和独立 Runtime 回归已接线，正式 Presentation 和 C5 视觉协调留待后续集成。接口、保存语义和后续步骤见 [G1 Runtime 交接](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_RUNTIME_HANDOFF.md)。

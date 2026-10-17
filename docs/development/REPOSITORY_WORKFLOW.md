@@ -1,5 +1,8 @@
 # 仓库开发工作流与 RG-P1 审计
 
+**RG-P2 · 2026-10-17 补充：**本页除这条补充外记录 RG-P1 当时的盘点结果，不作为当前删除清单。RG-P2 从 PR #18 叠加分支执行：旧根目录阶段报告、委托书与 160 份 release 证据已改从 [清理前固定提交](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 追溯；当前工作树的 reports/ 默认忽略，发布包不再携带 release JSON。新增工作以 AGENTS、README 和实际 CI 为准，不误将本页旧“待授权任务”当作现行状态。
+
+
 核查日期：2026-10-16（Asia/Shanghai）。正式 main 基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`，[G1 PR #2](https://github.com/sjh20016/inkbox/pull/2) 已于 2026-10-12 合并，正式产品为 M2-C2E + G1。
 
 [Draft PR #12](https://github.com/sjh20016/inkbox/pull/12) HEAD `74934a8b1360af9007c69935d5becdf8f9809872`：Canvas / Three 的 P1 玩家闭环 READY，G2 性能仍 BLOCKED，尚未合入 main；#12 已继承 #10，不重复合并。G3 #17 PCC Observer 成本超限，A1-1 BLOCKED，未进入 A1-2。B2 数值研究为无共同 Git 祖先的独立实验，不是正式产品参数。
