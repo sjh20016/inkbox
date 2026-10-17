@@ -20,23 +20,9 @@ __pycache__/
 **/tmp-traces/
 *.trace.zip
 
-# reports 默认是可重建输出；下面只放行归档与经过筛选的正式证据。
+# 所有报告、日志与历史 Golden 均为可再生成输出或 Git 旧提交证据。
+# 普通 git add 不再重新纳入 release/summary/golden。
 reports/
-!reports/
-reports/*
-!reports/archive/
-!reports/archive/**
-!reports/release/
-# New release evidence is opt-in: compact summaries and selected golden images only.
-# Existing tracked release evidence remains tracked and is not rewritten by ignore rules.
-reports/release/**
-!reports/release/**/
-!reports/release/**/summary/
-!reports/release/**/summary/*.json
-!reports/release/**/golden/
-!reports/release/**/golden/*.png
-# proof/, matrix/, source images and logs remain ignored. The evidence audit
-# limits each new stage to eight representative golden PNGs plus compact JSON.
 run/
 # 一次性日志与压缩输出。
 *.log
