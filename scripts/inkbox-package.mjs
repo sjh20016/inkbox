@@ -70,7 +70,6 @@ const FILES = [
   'scripts/inkbox-g1-web-check.mjs',
   'scripts/inkbox-g1-integration.mjs',
   'scripts/inkbox-render3d.mjs',
-  'scripts/inkbox-render3d-browser.mjs',
   'scripts/inkbox-render3d-m1.mjs',
   'scripts/inkbox-render3d-bridge.mjs',
   'scripts/inkbox-render3d-perf.mjs',
