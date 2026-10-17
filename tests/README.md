@@ -23,7 +23,7 @@ main `e1e55039bb56` 已含 G1 集成；G2 / P1 候选与 G3 尚未合入。分�
 
 ## 历史快照 · 2026-10-09 · G1 Runtime 分支
 
-G1-R 从共同 main 基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 在 `feat/g1-runtime-codex` 独立开发。人物真实身份、只读模型、三项敕令、记挂、地图成长和独立 Runtime 回归已接线，正式 Presentation 和 C5 视觉协调留待后续集成。接口、保存语义和后续步骤见 [G1 Runtime 交接](../G1_RUNTIME_HANDOFF.md)。
+G1-R 从共同 main 基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 在 `feat/g1-runtime-codex` 独立开发。人物真实身份、只读模型、三项敕令、记挂、地图成长和独立 Runtime 回归已接线，正式 Presentation 和 C5 视觉协调留待后续集成。接口、保存语义和后续步骤见 [G1 Runtime 交接](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_RUNTIME_HANDOFF.md)。
 
 `npm run test:g1` 进入 Fast（Runtime、宿主、地图三个入口），`npm run test:g1:longrun` 进入 Heavy（30 / 100 年观察纯度和敕令后确定性）。`npm run test:g1:browser` 使用已有 Edge CDP 对真实 Canvas / 3D 鼠标接线、敕令、记挂和产品存读档做六项工程验收；它也加入手动 Browser Smoke。本轮使用软件 D3D11，不能作为真实 GPU 性能证明，正式人物卡 Browser 验收仍在集成阶段。
 
@@ -31,13 +31,13 @@ G1-R 从共同 main 基线 `fc612ac9470b48aaaa3291b7fc39a9e0bdf87fff` 在 `feat/
 
 当前 CI 基线是 GitHub `main` `1cd8d36`，M2-C2E 已合并。公开 run [37749151683](https://github.com/sjh20016/inkbox/actions/runs/37749151683) 的 Heavy Gate 通过；Fast Gate 仅因历史 C2D 水拓扑长度断言失败。整理分支修正该旧断言后，本机完整 Fast / Heavy Gate、build 和 package audit 均通过；集成后的新 run 才能确认公开门禁恢复。可选 Browser Smoke 在本机 Edge CDP 启动阶段失败，未到应用断言。
 
-C2E 当前入口：`test:render3d:m2c2e` 覆盖地形 / 创建 / Canvas / 雕刻事务 / CPU 访问策略；`test:render3d:m2c2e:generation` 覆盖种子、存档与三界访问纯度；`test:render3d:m2c2e:browser` 覆盖真实产品交互；`test:render3d:m2c2e:soak` 覆盖 GPU 与耐久。44 CPU、108 seed、14 GPU、12 固定镜头及 600/6000 联合耐久证据见 [C2E READINESS](../M2C2E_READINESS.md)。
+C2E 当前入口：`test:render3d:m2c2e` 覆盖地形 / 创建 / Canvas / 雕刻事务 / CPU 访问策略；`test:render3d:m2c2e:generation` 覆盖种子、存档与三界访问纯度；`test:render3d:m2c2e:browser` 覆盖真实产品交互；`test:render3d:m2c2e:soak` 覆盖 GPU 与耐久。44 CPU、108 seed、14 GPU、12 固定镜头及 600/6000 联合耐久证据见 [C2E READINESS](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_READINESS.md)。
 
 下方 C2C、C2D 与更早门禁章节均按其标题 / 日期作为历史记录阅读；旧 C2C 的成功结果不描述当前 CI 状态。
 
 2026-10-08 M2-C2E：`npm run test:render3d:m2c2e` 运行44项几何、创建/Canvas、雕刻事务、独立访问 CPU 门禁；`npm run test:render3d:m2c2e:generation` 运行 108 组种子/保存与实际三界开放纯度。Fast Gate 已加入前者。旧断言不删。
 
-`npm run test:render3d:m2c2e:browser` 为真实产品创建、鼠标雕刻、Undo/Redo、importFile读档与扩图；`npm run test:render3d:m2c2e:soak` 为同机实 GPU 的 600/6000 产品 RAF、资源/内存/单笔成本。需要 Node 24 与本机 Edge；不要与任何 GPU 或重型 CPU 测量并发。`INKBOX_REPORT_DIR` 指向独立 ignored 目录。失败 PNG、错误栈和现场状态保留，修复后另开 run 目录；完整本轮解释见 [READINESS](../M2C2E_READINESS.md)。
+`npm run test:render3d:m2c2e:browser` 为真实产品创建、鼠标雕刻、Undo/Redo、importFile读档与扩图；`npm run test:render3d:m2c2e:soak` 为同机实 GPU 的 600/6000 产品 RAF、资源/内存/单笔成本。需要 Node 24 与本机 Edge；不要与任何 GPU 或重型 CPU 测量并发。`INKBOX_REPORT_DIR` 指向独立 ignored 目录。失败 PNG、错误栈和现场状态保留，修复后另开 run 目录；完整本轮解释见 [READINESS](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_READINESS.md)。
 
 ## M2-C2C 历史阶段（2026-10-06 本地完成）
 
@@ -64,7 +64,7 @@ Browser 与 Soak 在 GPU 测量前共同调用 `ensureCanonicalMortalCache`：�
 
 本地 CDP 测试需 Node 22+ 与 Microsoft Edge，CI 为 Node 24；先 `npm ci` 安装 Node 的 Three。C2C Browser / Soak 默认自管服务器，也接受明确受控 `INKBOX_URL`；`INKBOX_REPORT_DIR` 指向独立输出目录。GPU 矩阵、Soak 和祖先顺序运行，不并发采样。完整 PNG / JSON / 日志在开发路径 `reports/local/m2c2c/` 或 Actions artifact，最多 8 张正常 Golden 保存在开发路径 `reports/release/render3d-m2c2c/golden/`，不进入 runtime；`research/` 也不随包，文档不链接这些排除文件。
 
-本轮结果：四类真实 Site 的约 90px 正常生产几何及 CDP 点击通过；441 个历史前景 GL 点中 87 点变化，RGB 总差 133。600 lifecycle 实际 update / render 各 600 次；20 × 300 = 6000 产品帧，200 段检查均为 114 geometry / 10 texture / 16 program。M2-B Upper / Nether / boundary 的 173 / 235 / 91 个可见几何全部命中；sample 三档实际 GLB 点击通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过，包 333 文件，约 8.8MB 目录 / 2.7MB ZIP。8 张 Golden 共 7206282 bytes，compact summary ≤256KiB。独立干净克隆 d9ca78b 的 cold 复验通过：缺 Mortal 缓存时自动自然生成，Realms 旧 metadata 自动重建；新 Mortal / Realms save 与 World / advance / history SHA 均与原完整 23 对矩阵一致。诊断 case 1 / 4 两对的 World / advance / camera 不变，Formation105 约 90px、38/96 前景三角，真实点击返回 105，error 0。报告保留 diagnosticComplete=true、pass=false，表示仅完成诊断，不替代 23 对全矩阵。8 项显式坏 save / source / engine / missing 拒绝检查通过。初次 cold 失败与修复后证据均独立留 proof。当前四报告：[工程与24项答复](../M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[就绪](../M2C2C_READINESS.md)、[性能](../M2C2C_PERFORMANCE_REPORT.md)、[视觉](../M2C2C_VISUAL_ACCEPTANCE.md)；下方 C2B run 与旧计数仅代表各自历史基线。
+本轮结果：四类真实 Site 的约 90px 正常生产几何及 CDP 点击通过；441 个历史前景 GL 点中 87 点变化，RGB 总差 133。600 lifecycle 实际 update / render 各 600 次；20 × 300 = 6000 产品帧，200 段检查均为 114 geometry / 10 texture / 16 program。M2-B Upper / Nether / boundary 的 173 / 235 / 91 个可见几何全部命中；sample 三档实际 GLB 点击通过。干净克隆 ccac961 独立 npm ci 与 16 项安装 / CPU / 旧资产 / build 命令通过，包 333 文件，约 8.8MB 目录 / 2.7MB ZIP。8 张 Golden 共 7206282 bytes，compact summary ≤256KiB。独立干净克隆 d9ca78b 的 cold 复验通过：缺 Mortal 缓存时自动自然生成，Realms 旧 metadata 自动重建；新 Mortal / Realms save 与 World / advance / history SHA 均与原完整 23 对矩阵一致。诊断 case 1 / 4 两对的 World / advance / camera 不变，Formation105 约 90px、38/96 前景三角，真实点击返回 105，error 0。报告保留 diagnosticComplete=true、pass=false，表示仅完成诊断，不替代 23 对全矩阵。8 项显式坏 save / source / engine / missing 拒绝检查通过。初次 cold 失败与修复后证据均独立留 proof。当前四报告：[工程与24项答复](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2C_MEANINGFUL_GEOGRAPHY_REPORT.md)、[就绪](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2C_READINESS.md)、[性能](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2C_PERFORMANCE_REPORT.md)、[视觉](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2C_VISUAL_ACCEPTANCE.md)；下方 C2B run 与旧计数仅代表各自历史基线。
 
 ## M2-C2D.1 绘画化收束（2026-10-08 本机工程验收完成）
 
@@ -80,7 +80,7 @@ Browser 与 Soak 在 GPU 测量前共同调用 `ensureCanonicalMortalCache`：�
 
 配对性能必须以 Microsoft Edge 在同一次浏览器会话完成全部 12 个固定镜头；每镜头 C2D 与 candidate 各跑 4 轮，轮次按镜头奇偶交错 AB/BA，使用固定预热与每轮 120 个产品采样。预热固定为 48 个外部 RAF 与 12 个现有探针 RAF。保留所有预定义轮次，不重试、不丢弃无效轮次；候选与基线各自以四轮中位数聚合，候选中位数必须在每个镜头都小于或等于 C2D 中位数，容差为 0。p95 取四轮 p95 的最大值，max 取四轮最大值，有效 GPU 样本数跨四轮求和，不用 pooled p95。每个镜头都须达到零正向差值，任何正差、缺失轮次或不可用计时都不能被其他镜头的余量抵消。GPU 计时与其他浏览器 soak / 性能采样串行运行；缺失有效计时为 pending，不能当作通过。
 
-Safety Gate 只检查运行安全、状态稳定和资源契约；`test:render3d:m2c2d1:diagnostics` 不会把 Safety PASS 提升为美术验收，所有图像统计和截图仍需单独人工判断。性能与视觉结论分别记录：本机工程完成，最终美术仍为 human-review-required。终验数字与源码 SHA 见 [C2D.1 就绪](../M2C2D1_READINESS.md)。
+Safety Gate 只检查运行安全、状态稳定和资源契约；`test:render3d:m2c2d1:diagnostics` 不会把 Safety PASS 提升为美术验收，所有图像统计和截图仍需单独人工判断。性能与视觉结论分别记录：本机工程完成，最终美术仍为 human-review-required。终验数字与源码 SHA 见 [C2D.1 就绪](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2D1_READINESS.md)。
 
 ## M2-C2B.1 生产契约
 
@@ -132,7 +132,7 @@ $env:INKBOX_REPORT_DIR = 'reports/local/m2a-recheck'
 npm run test:render3d:m2a:browser
 ```
 
-正式封板截图 / JSON 在 [reports/release/render3d-m2a](../reports/release/render3d-m2a/)，对应 [M2-A 工程报告](../Render3D%20M2-A%20架构原型工程报告.md)。
+正式封板截图 / JSON 在 [reports/release/render3d-m2a](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/reports/release/render3d-m2a)，对应 [M2-A 工程报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/Render3D%20M2-A%20%E6%9E%B6%E6%9E%84%E5%8E%9F%E5%9E%8B%E5%B7%A5%E7%A8%8B%E6%8A%A5%E5%91%8A.md)。
 M2-A 本地记录为 view 113、M2-A 13 组、160 点拾取零错误；历史计数只描述对应基线，不充当永久测试规格。
 
 ## GitHub 浏览器复验
@@ -169,7 +169,7 @@ scripts/_*.mjs 是已入 Git 的 D8 / M1 一次性研究探针，不进 npm 门�
 
 `npm run test:render3d:m2c2a:soak`：600帧生命周期 +6000帧连续旋转/缩放、Art/LOD/两界切换、资源与World指纹；不要和性能矩阵并发。C2A脚本可自管服务器，也接受 `INKBOX_URL` 根地址或完整 inkbox.html 地址；`INKBOX_REPORT_DIR` 改本地输出目录，`INKBOX_RELEASE_DIR` 可改代表截图目录。
 
-默认完整产物在 `reports/m2c2a/`，Git仅保存 `reports/release/render3d-m2c2a/` 的代表图片与摘要。正式解释见 [LOD报告](../M2C2A_LOD_REPORT.md)、[性能报告](../M2C2A_PERFORMANCE_REPORT.md)、[视觉验收](../M2C2A_VISUAL_ACCEPTANCE.md)。CPU renderer submission 不称GPU时间；未执行timer query时写GPU time unavailable。
+默认完整产物在 `reports/m2c2a/`，Git仅保存 `reports/release/render3d-m2c2a/` 的代表图片与摘要。正式解释见 [LOD报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2A_LOD_REPORT.md)、[性能报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2A_PERFORMANCE_REPORT.md)、[视觉验收](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2A_VISUAL_ACCEPTANCE.md)。CPU renderer submission 不称GPU时间；未执行timer query时写GPU time unavailable。
 
 ## M2-C2B0 三界门禁
 
@@ -185,4 +185,4 @@ scripts/_*.mjs 是已入 Git 的 D8 / M1 一次性研究探针，不进 npm 门�
 
 M2-C2E本轮本机结果：44/44 CPU、108固定种子与120日实际三界/11RNG纯度、browser-optimized14/14、6行24GPU视角、final-canonical-r3十二镜及soak-optimized600/6000采样通过。完整数据与缓存源码SHA在release精简摘要；远端CI本分支未运行。GPU顺序独占，不把6000帧采样块之间的真实操作额外RAF计作连续持笔帧。
 
-G1-I 正式命簿/地图 VM：`npm run test:g1:web`、`npm run test:g1:integration` 已纳入 `test:g1` / CI Fast；Edge `test:g1:browser` 验收四卷、真实命令、文件导入、引导及渲染器切换。见 [集成报告](../G1_INTEGRATION_REPORT.md)。
+G1-I 正式命簿/地图 VM：`npm run test:g1:web`、`npm run test:g1:integration` 已纳入 `test:g1` / CI Fast；Edge `test:g1:browser` 验收四卷、真实命令、文件导入、引导及渲染器切换。见 [集成报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_INTEGRATION_REPORT.md)。

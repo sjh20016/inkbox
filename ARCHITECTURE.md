@@ -18,7 +18,7 @@
 - `worldGeneration` 负责版本化地貌 / seed 生成；`core/mapAccess` 计算访问范围，World `mapProgress` 保存进度。`AccessGeometry` 把访问几何与既有 Realm Region 几何组合，不改变 `RealmMask` 的身份职责。
 - Host 将访问权限传给 Canvas 与 Three；两种 renderer 共用权限语义。世界完整预生成，渐进开放控制可访问区域，不是 chunk streaming。
 
-模块边界与详细实现见 [C2E 实现报告](./M2C2E_IMPLEMENTATION_REPORT.md)；性能 / 容量限制见 [C2E 就绪报告](./M2C2E_READINESS.md)。
+模块边界与详细实现见 [C2E 实现报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_IMPLEMENTATION_REPORT.md)；性能 / 容量限制见 [C2E 就绪报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_READINESS.md)。
 
 ---
 
@@ -121,7 +121,7 @@ Canvas 把 Region 投影成 screen path 后 clip；Three 按 quad / entity 所�
 
 M2-B 已扩展 Mask 到全部已有 Layer，M2-C 复用其判据。上界/幽冥不额外伪造凡间式水体和植被；ThreeFxProbe 沿用既有 Presentation snapshot。
 一格边缘、跨边实体轮廓和高差侧向缺口是已声明局限；Slab 的矩形封边没有变成自由 Region 的 boundary skirt。
-常驻 Stage、可见 Stage、实际更新 Stage 是不同成本，最新实测见 [M2-C2A 性能报告](./M2C2A_PERFORMANCE_REPORT.md)，M2-A 历史数据保留在原阶段目录。
+常驻 Stage、可见 Stage、实际更新 Stage 是不同成本，最新实测见 [M2-C2A 性能报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2A_PERFORMANCE_REPORT.md)，M2-A 历史数据保留在原阶段目录。
 
 ## 5. 文档维护与提交边界
 
@@ -146,6 +146,6 @@ terrain/topology统一v2网格对角与ElevationField插值，v1原对角保持�
 
 TerrainStroke是正式雕刻写边界：固定距离采样，height/water/riverBase去重before/after，canonical矩形按帧flush，Undo/Redo走同路径。main持有stroke期间隔离模拟且不补跑，不改变倍速。
 
-worldGeneration配置v2生成，save显式可选generation/mapProgress。core/mapAccess只读访问策略，world/mapProgress只写进度；region/AccessGeometry组合访问与原RegionGeometry指定侧，真实Region仍只属于RealmMask。Host传播三界，Canvas/3D共用权限，闭区完整模拟。详见[M2-C2E实现](./M2C2E_IMPLEMENTATION_REPORT.md)。
+worldGeneration配置v2生成，save显式可选generation/mapProgress。core/mapAccess只读访问策略，world/mapProgress只写进度；region/AccessGeometry组合访问与原RegionGeometry指定侧，真实Region仍只属于RealmMask。Host传播三界，Canvas/3D共用权限，闭区完整模拟。详见[M2-C2E实现](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2E_IMPLEMENTATION_REPORT.md)。
 
 WaterLayer独占节点与裁切scratch缓存（约32字节/格）：World dirty更新邻域，profile/world变更全量初始化，Region/style变更重建可见索引；legacy回切先同步，dispose/Host换世界释放。TerrainMesh仅在对角变化时重传拓扑索引。Undo/Redo写前对整笔height/water/riverBase预期快照作原子校验，后续模拟冲突会拒绝和清空历史。

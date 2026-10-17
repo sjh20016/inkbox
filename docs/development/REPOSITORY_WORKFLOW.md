@@ -4,7 +4,7 @@
 
 [Draft PR #12](https://github.com/sjh20016/inkbox/pull/12) HEAD `74934a8b1360af9007c69935d5becdf8f9809872`：Canvas / Three 的 P1 玩家闭环 READY，G2 性能仍 BLOCKED，尚未合入 main；#12 已继承 #10，不重复合并。G3 #17 PCC Observer 成本超限，A1-1 BLOCKED，未进入 A1-2。B2 数值研究为无共同 Git 祖先的独立实验，不是正式产品参数。
 
-接手先核对远端 SHA / PR / Actions，再阅读 [开发工作流与审计](../../docs/development/REPOSITORY_WORKFLOW.md)、[路线图](../../ROADMAP.md)、[未完成事项](../../BACKLOG.md)、[测试入口](../../tests/README.md)。从任务指定基线建隔离 worktree；不覆盖现有研究工作区和未提交材料。G1 契约见 [集成报告](../../G1_INTEGRATION_REPORT.md)。
+接手先核对远端 SHA / PR / Actions，再阅读 [开发工作流与审计](../../docs/development/REPOSITORY_WORKFLOW.md)、[路线图](../../ROADMAP.md)、[未完成事项](../../BACKLOG.md)、[测试入口](../../tests/README.md)。从任务指定基线建隔离 worktree；不覆盖现有研究工作区和未提交材料。G1 契约见 [集成报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_INTEGRATION_REPORT.md)。
 
 风险：H2/H3/G3 Fast Gate 失败，Heavy 通过不能覆盖失败；P1 READY 不代表 G2 性能封板。STATUS 与下方旧日期交接仅作历史证据，不是当前施工授权；不执行旧交接中的工作区改名 / 恢复指令。
 

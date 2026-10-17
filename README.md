@@ -49,7 +49,7 @@ Windows 上直接双击 **`启动水墨沙盒.bat`** 即可：它会检查 Node�
 **两种垂直表现的对比**（M2-B 需要人眼裁决的一项）：把地址栏里的 `boundary=strata`
 改成 `boundary=raw` 再回车——同一世界、不重载。Raw 下窗内与凡间几乎齐平、界缘断面时有时无；
 Strata 下窗口被明确抬起（幽冥压下），四周出现连续断面。取舍依据见
-[`Render3D M2-B 工程报告.md`](./Render3D%20M2-B%20工程报告.md) 的 Q5。
+[`Render3D M2-B 工程报告.md`](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/Render3D%20M2-B%20%E5%B7%A5%E7%A8%8B%E6%8A%A5%E5%91%8A.md) 的 Q5。
 
 ⚠️ 顶栏里折叠起来的 **「调试探针」**（固定矩形 Mask / Slab 20×20 / 位面切换）是**研究探针**，
 不是玩家功能——正式划窗请用上面的「上界视界 / 幽冥视界」。另：从 M2-B 起，遮罩覆盖
@@ -104,7 +104,7 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
 
 ## 工程状态
 
-当前产品与候选状态见本文顶部。M2-C2E 的最大地图性能边界、最终视觉裁决与历史 RNG 游标存档决策见 [BACKLOG](./BACKLOG.md)。G1 行为与契约见 [集成报告](./G1_INTEGRATION_REPORT.md)，模块职责见 [ARCHITECTURE](./ARCHITECTURE.md)，三界与视界约束见 [THREE_REALMS](./THREE_REALMS.md) / [VIEW_CONTRACT](./VIEW_CONTRACT.md)。
+当前产品与候选状态见本文顶部。M2-C2E 的最大地图性能边界、最终视觉裁决与历史 RNG 游标存档决策见 [BACKLOG](./BACKLOG.md)。G1 行为与契约见 [集成报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_INTEGRATION_REPORT.md)，模块职责见 [ARCHITECTURE](./ARCHITECTURE.md)，三界与视界约束见 [THREE_REALMS](./THREE_REALMS.md) / [VIEW_CONTRACT](./VIEW_CONTRACT.md)。
 
 当前工作树没有旧 V3/V4 的 `src/main.js`、demo 或 `scripts/v*`；需要考古时查 Git 历史。根 `index.html` / `game.html` 是跳转到 Inkbox 的入口。`scripts/_*.mjs` 已入 Git，仅保留历史研究参考，不在发布包中。
 
@@ -114,6 +114,6 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
 > 台词 / 编年史 / 墓志 / 世界内文本 / 界面 / 三界预留文案库。**本包随包出货。**
 
 `美术素材/初期素材构思/` 保留早期 163 张 PNG、生成器与说明；`配色参考/`、`实验建筑资产/`、Sonnet 参考包作为后续设计输入。当前运行使用代码生成的实例母版，不加载这些参考素材；约451MB第三方范式整包保留本地。见 [参考资产索引](./美术素材/参考资产索引.md)。
-M2-A / M2-C 与 C2A 的证据按阶段报告和 ARCHITECTURE 中的清单保存；C2B Pass 1 的完整 Browser / soak 证据保留为 Actions artifact，摘要入口见 [READINESS](./M2C2B_READINESS.md)。本地 MEMORY、备份与安装 / 构建产物不入 Git。具体清单见 ARCHITECTURE。
+M2-A / M2-C 与 C2A 的证据按阶段报告和 ARCHITECTURE 中的清单保存；C2B Pass 1 的完整 Browser / soak 证据保留为 Actions artifact，摘要入口见 [READINESS](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/M2C2B_READINESS.md)。本地 MEMORY、备份与安装 / 构建产物不入 Git。具体清单见 ARCHITECTURE。
 
-G1 正式集成开发分支的验证与接口见 [G1_INTEGRATION_REPORT](./G1_INTEGRATION_REPORT.md)。
+G1 正式集成开发分支的验证与接口见 [G1_INTEGRATION_REPORT](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_INTEGRATION_REPORT.md)。
