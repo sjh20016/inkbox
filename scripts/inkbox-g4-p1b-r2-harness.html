@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>G4-P1B-R2 浏览器验收</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#d9cdb4;font:13px/1.45 system-ui,sans-serif}
+    #product{position:absolute;inset:0;width:100%;height:100%;border:0;background:#eee}
+    #panel{position:fixed;z-index:100;top:8px;right:8px;width:min(470px,38vw);max-height:36vh;overflow:auto;padding:9px 12px;border:1px solid #6f6758;border-radius:7px;background:#fff9e9ed;box-shadow:0 2px 12px #0003;color:#241d16}
+    #panel h1{font-size:14px;margin:0 0 5px}#phase{font-weight:700;color:#324f3a}#result{white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.35 ui-monospace,Consolas,monospace;margin:6px 0 0}
+    #finish-edit{margin-top:7px;padding:5px 9px}#finish-edit[hidden]{display:none}
+  </style>
+</head>
+<body>
+  <iframe id="product" title="固定 P1B 构建包中的 Inkbox 产品页面"></iframe>
+  <section id="panel" aria-live="polite">
+    <h1>G4-P1B-R2 · 构建包真实页面验收</h1>
+    <div id="phase">正在打开产品…</div>
+    <button id="finish-edit" hidden>检查笔刷编辑、撤销并继续大世界测试</button>
+    <pre id="result"></pre>
+  </section>
+  <script type="module">
+    const mode = new URLSearchParams(location.search).get('mode') === 'three' ? 'three' : 'canvas';
+    const iframe = document.querySelector('#product');
+    iframe.src = mode === 'three' ? '/inkbox.html?renderer=3d' : '/inkbox.html';
+    const phaseEl = document.querySelector('#phase'), resultEl = document.querySelector('#result'), finishEdit = document.querySelector('#finish-edit');
+    const failures = [];
+    const result = { mode, productUrl: iframe.src, builtPackagePage: true, viewport: null, app: {}, assertions: failures, pageErrors: [], consoleErrors: [], failedResources: [] };
+    const fail = (label, detail='') => failures.push({ label, detail: String(detail) });
+    const check = (label, condition, detail='') => { if (!condition) fail(label, detail); };
+    const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const waitFor = async (predicate, timeoutMs=15000) => { const start=Date.now(); while(Date.now()-start<timeoutMs){try{if(predicate())return true}catch{} await pause(50)} return false; };
+    const appWin = () => iframe.contentWindow;
+    const state = () => { const w=appWin(), s=w.inkbox, world=s?.world; return {
+      ready:!!s&&!!world, rule:world?.hydrologyRules??'(missing)', width:world?.w,height:world?.h,seed:world?.seed,
+      hydroAccum:s?.hydroAccum,speedIndex:s?.speedIndex,dirty:s?.qol?.isDirty?.(),worldDay:world?.day,
+      rafCallbacks:w.__g4Probe?.rafCallbacks,updateCalls:w.__g4Probe?.updateCalls,
+      renderer:s?.render3d?.renderer?.gpu?{activePlane:s.render3d.renderer.activePlane,webgl2:s.render3d.renderer.gpu.getContext() instanceof w.WebGL2RenderingContext}:null
+    }; };
+    const show = () => { phaseEl.textContent = result.phase || '运行中'; resultEl.textContent = JSON.stringify(result,null,2); };
+    const assertTick = async () => {
+      const w=appWin(), s=w.inkbox, before={raf:w.__g4Probe.rafCallbacks,updates:w.__g4Probe.updateCalls,rule:s.world.hydrologyRules};
+      s.hydroAccum=0.159;
+      const ticked=await waitFor(()=>w.__g4Probe.updateCalls>before.updates&&s.hydroAccum<0.159,6000);
+      return {before,after:{raf:w.__g4Probe.rafCallbacks,updates:w.__g4Probe.updateCalls,rule:s.world.hydrologyRules,hydroAccum:s.hydroAccum,worldDay:s.world.day},ticked};
+    };
+    const postResult = async () => {
+      const w=appWin();
+      try {
+        const resources=w.performance.getEntriesByType('resource').map(e=>({name:e.name,status:e.responseStatus||0}));
+        result.failedResources=resources.filter(e=>e.status>=400);
+      } catch {}
+      result.status=failures.length?'FAIL':'PASS';
+      result.completedAt=new Date().toISOString();
+      show();
+      try { await fetch(`/__g4r2/${mode}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(result)}); result.persisted=true; show(); }
+      catch(error) { fail('Could not persist browser evidence',error); result.status='FAIL'; show(); }
+    };
+    const instrument = () => {
+      const w=appWin(), s=w.inkbox; w.__g4Probe={rafCallbacks:0,updateCalls:0};
+      const raf=w.requestAnimationFrame.bind(w); w.requestAnimationFrame=cb=>raf(ts=>{w.__g4Probe.rafCallbacks++;cb(ts)});
+      const update=s.update.bind(s); s.update=dt=>{w.__g4Probe.updateCalls++;return update(dt)};
+      w.addEventListener('error',e=>result.pageErrors.push(e.message||String(e.error||e)));
+      w.addEventListener('unhandledrejection',e=>result.pageErrors.push(String(e.reason?.stack||e.reason)));
+      const originalError=w.console.error.bind(w.console); w.console.error=(...args)=>{result.consoleErrors.push(args.map(x=>typeof x==='string'?x:String(x?.message||x)).join(' '));originalError(...args)};
+      result.viewport={width:w.innerWidth,height:w.innerHeight,dpr:w.devicePixelRatio};
+    };
+    const chooseSlot = (slot) => { const d=appWin().document, e=d.querySelector('#inkSlotSelect');e.value=slot;e.dispatchEvent(new Event('change',{bubbles:true})); };
+    const saveSlot = async slot => { const w=appWin(),d=w.document;chooseSlot(slot);d.querySelector('#inkBtnSave').click();return waitFor(()=>!!w.localStorage.getItem(`inkbox_sandbox_v1:${slot}`),12000); };
+    const loadSlot = async slot => {
+      const w=appWin(),d=w.document,old=w.inkbox.world;chooseSlot(slot);d.querySelector('#inkBtnLoad').click();await pause(100);
+      if(!d.querySelector('#inkConfirm').hidden)d.querySelector('#inkConfirmOk').click();
+      await waitFor(()=>!d.querySelector('#inkBtnLoad').disabled,12000);await pause(300);
+      return {sameWorld:w.inkbox.world===old,rule:w.inkbox.world.hydrologyRules,seed:w.inkbox.world.seed,confirmShown:!d.querySelector('#inkConfirm').hidden};
+    };
+    const waitApp = async () => {
+      const ready=await waitFor(()=>appWin()?.inkbox?.world&&appWin().document.readyState==='complete',40000);
+      if(!ready)throw new Error('The built Inkbox page did not finish booting');
+      if(mode==='three'){
+        const rendererReady=await waitFor(()=>appWin().inkbox.render3d?.renderer?.gpu,60000);
+        check('Three renderer initialized',rendererReady,'Render3DAdapter/WebGLRenderer missing');
+        await waitFor(()=>appWin().inkbox.render3d.renderer.stages.get('mortal')?.world===appWin().inkbox.world,20000);
+      }
+      instrument();await pause(500);
+      result.app={productPage:appWin().location.href,sameOriginHarness:true,hasCanvas:!!appWin().document.querySelector('#inkCanvas')};
+    };
+    async function runCanvas() {
+      const w=appWin(), s=w.inkbox;
+      result.initial=state(); result.defaultRule=result.initial.rule;
+      result.b0Tick=await assertTick();
+      check('B0 default legacy-v1',result.initial.rule==='legacy-v1',JSON.stringify(result.initial));
+      check('B0 actual requestAnimationFrame and product update',result.initial.rafCallbacks>0&&result.initial.updateCalls>0,JSON.stringify(result.initial));
+      check('B0 actual RAF water-rule tick',result.b0Tick.ticked&&result.b0Tick.after.updates>result.b0Tick.before.updates,JSON.stringify(result.b0Tick));
+
+      const prior=s.world, oldAccum=s.hydroAccum;s.newWorld('small',4132026,{hydrologyRules:'static-sea-v2'});const v3=s.world;
+      let sea=0,bad=0,maxBoundaryError=0;for(let i=0;i<v3.size;i++)if(v3.height[i]<0.3){sea++;const e=Math.abs(v3.water[i]-Math.fround(0.3-v3.height[i]));if(e>1e-7)bad++;maxBoundaryError=Math.max(maxBoundaryError,e)}
+      result.b1Creation={identityChanged:v3!==prior,hydroAccumReset:oldAccum!==s.hydroAccum,rule:v3.hydrologyRules,width:v3.w,height:v3.h,seaCells:sea,boundaryBad:bad,maxBoundaryError};
+      result.b1Tick=await assertTick();
+      check('B1 explicit V3 creation and clean boundary',result.b1Creation.identityChanged&&result.b1Creation.hydroAccumReset&&result.b1Creation.rule==='static-sea-v2'&&bad===0,JSON.stringify(result.b1Creation));
+      check('B1 actual RAF V3 tick',result.b1Tick.ticked&&result.b1Tick.after.rule==='static-sea-v2',JSON.stringify(result.b1Tick));
+
+      const v3World=s.world;s.newWorld('small',4132027);result.b2Default={identityChanged:s.world!==v3World,rule:s.world.hydrologyRules,seed:s.world.seed};
+      check('B2 next default world returns to V0',result.b2Default.identityChanged&&result.b2Default.rule==='legacy-v1',JSON.stringify(result.b2Default));
+      result.b3SavedV0=await saveSlot('slot1');
+      s.newWorld('small',4132028,{hydrologyRules:'static-sea-v2'});result.b3SavedV3=await saveSlot('slot2');
+      result.b3LoadV0=await loadSlot('slot1');result.b3LoadV3=await loadSlot('slot2');
+      check('B3 real UI save V0/V3',result.b3SavedV0&&result.b3SavedV3,JSON.stringify({v0:result.b3SavedV0,v3:result.b3SavedV3}));
+      check('B3 real UI load restores V0 and V3',result.b3LoadV0.rule==='legacy-v1'&&result.b3LoadV3.rule==='static-sea-v2',JSON.stringify({v0:result.b3LoadV0,v3:result.b3LoadV3}));
+
+      // Import in the product frame's realm so its module-scoped preparation WeakSet is shared.
+      const {serializeWorld}=await appWin().eval('import("/src/inkbox/io/save.js")');
+      let legacy=serializeWorld(s.world);delete legacy.hydrologyRules;w.localStorage.setItem('inkbox_sandbox_v1:slot4',JSON.stringify(legacy));
+      let invalid={...legacy,hydrologyRules:'not-a-real-rule'};w.localStorage.setItem('inkbox_sandbox_v1:slot3',JSON.stringify(invalid));s.refreshSlots();
+      result.b3LegacyLoad=await loadSlot('slot4');
+      s.newWorld('small',4132030,{hydrologyRules:'static-sea-v2'});const invalidWorld=s.world;s.refreshSlots();
+      result.b3InvalidLoad=await loadSlot('slot3');result.b3InvalidLoad.sameWorld=s.world===invalidWorld;
+      check('B3 missing-rule legacy payload defaults V0',result.b3LegacyLoad.rule==='legacy-v1',JSON.stringify(result.b3LegacyLoad));
+      check('B3 invalid rule cannot replace live V3 World',result.b3InvalidLoad.sameWorld&&result.b3InvalidLoad.rule==='static-sea-v2',JSON.stringify(result.b3InvalidLoad));
+
+      const pauseButton=w.document.querySelector('#inkBtnPause');pauseButton.click();
+      const p0={speed:s.speedIndex,hydroAccum:s.hydroAccum,raf:w.__g4Probe.rafCallbacks};await pause(450);
+      const p1={speed:s.speedIndex,hydroAccum:s.hydroAccum,raf:w.__g4Probe.rafCallbacks};
+      result.b4Pause={before:p0,after:p1};
+      check('B4 pause freezes hydrology and leaves RAF active',p0.speed===0&&p0.hydroAccum===p1.hydroAccum&&p1.raf>p0.raf,JSON.stringify({p0,p1}));
+      w.document.querySelector('#inkTools [data-tool="raise"]').click();
+      const canvas=w.document.querySelector('#inkCanvas'),rect=canvas.getBoundingClientRect(),x=rect.width/2,y=rect.height/2,tile=s.camera.pick(x,y,s.world),index=tile.y*s.world.w+tile.x;
+      result.b4Brush={status:'WAITING_FOR_REAL_BROWSER_POINTER',x,y,tile,index,before:s.world.height[index],historyBefore:s.history.stack.length,rule:s.world.hydrologyRules};
+      result.phase='请在应用画布中央实际点一次“抬山”，再按下面按钮完成撤销验证。';finishEdit.hidden=false;
+      window.__g4R2Results=result;show();
+    }
+    async function finishCanvas() {
+      finishEdit.disabled=true;const w=appWin(),s=w.inkbox,b=result.b4Brush,index=b.index;
+      b.after=s.world.height[index];b.historyAfter=s.history.stack.length;b.editChanged=b.after!==b.before;
+      w.document.querySelector('#inkBtnUndo').click();await pause(200);
+      b.undone=s.world.height[index];b.historyAfterUndo=s.history.stack.length;b.undoRestored=b.undone===b.before;b.ruleAfterUndo=s.world.hydrologyRules;
+      b.status=b.editChanged&&b.undoRestored?'PASS':'FAIL';
+      check('B4 real Canvas brush edit recorded',b.editChanged&&b.historyAfter>b.historyBefore,JSON.stringify(b));
+      check('B4 product UI undo restores edited cell',b.undoRestored&&b.ruleAfterUndo==='static-sea-v2',JSON.stringify(b));
+      w.document.querySelector('#inkBtnPause').click();
+      const seed=673231;let t=w.performance.now();s.newWorld('expanse',seed);const legacyMs=w.performance.now()-t,a=s.world;
+      const before={height:a.height.slice(),water:a.water.slice(),type:a.type.slice(),qi:a.qi?.slice?.()||null};
+      t=w.performance.now();s.newWorld('expanse',seed,{hydrologyRules:'static-sea-v2'});const v3Ms=w.performance.now()-t,c=s.world;
+      let sea=0,normalized=0,maxWaterDifference=0,heightChanges=0,typeChanges=0,qiChanges=0;
+      for(let i=0;i<c.size;i++){if(c.height[i]<0.3){sea++;const d=Math.abs(c.water[i]-before.water[i]);if(d>0){normalized++;maxWaterDifference=Math.max(maxWaterDifference,d)}}if(c.height[i]!==before.height[i])heightChanges++;if(c.type[i]!==before.type[i])typeChanges++;if(before.qi&&c.qi&&c.qi[i]!==before.qi[i])qiChanges++}
+      result.b6={dimensions:[c.w,c.h],cells:c.size,seed,legacyMs,v3Ms,rule:c.hydrologyRules,seaCells:sea,normalizationCellCount:normalized,maxWaterDifference,heightChanges,typeChanges,qiChanges,identityChanged:a!==c};
+      check('B6 512x320 expanse V3 created',c.w===512&&c.h===320&&c.hydrologyRules==='static-sea-v2',JSON.stringify(result.b6));
+      check('B6 preparation only changes water',heightChanges===0&&typeChanges===0&&qiChanges===0,JSON.stringify(result.b6));
+      await pause(350);result.canvasFinal=state();await collectBrowserErrors();result.phase='Canvas 验收完成';await postResult();
+    }
+    async function collectBrowserErrors() {
+      const w=appWin();
+      result.failedResources=w.performance.getEntriesByType('resource').map(e=>({name:e.name,status:e.responseStatus||0})).filter(e=>e.status>=400);
+      result.expectedInvalidSaveErrors=result.consoleErrors.filter(x=>x.includes('[inkbox] 存档损坏'));
+      result.unexpectedConsoleErrors=result.consoleErrors.filter(x=>!x.includes('[inkbox] 存档损坏'));
+      check('No uncaught product exceptions',result.pageErrors.length===0,JSON.stringify(result.pageErrors));
+      check('No unexpected product console errors',result.unexpectedConsoleErrors.length===0,JSON.stringify(result.unexpectedConsoleErrors));
+      check('No failed package requests',result.failedResources.length===0,JSON.stringify(result.failedResources));
+    }
+    async function runThree() {
+      const w=appWin(),s=w.inkbox,r=s.render3d.renderer,gpu=r.gpu,gl=gpu.getContext(),ext=gl.getExtension('WEBGL_debug_renderer_info');
+      result.initial=state();result.renderer={webgl2:gl instanceof w.WebGL2RenderingContext,
+        renderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),
+        vendor:ext?gl.getParameter(ext.UNMASKED_VENDOR_WEBGL):gl.getParameter(gl.VENDOR),activePlane:r.activePlane,
+        drawCalls:gpu.info.render.calls,triangles:gpu.info.render.triangles,canvas:{width:gpu.domElement.width,height:gpu.domElement.height,cssWidth:gpu.domElement.clientWidth,cssHeight:gpu.domElement.clientHeight}};
+      result.threeV0Tick=await assertTick();
+      check('B5 Three loads V0 mortal stage and WebGL2',result.initial.rule==='legacy-v1'&&result.initial.renderer?.webgl2&&r.stages.get('mortal')?.world===s.world,JSON.stringify({state:result.initial,renderer:result.renderer}));
+      check('B5 V0 water rule ticks on actual Three RAF',result.threeV0Tick.ticked&&result.threeV0Tick.after.rule==='legacy-v1',JSON.stringify(result.threeV0Tick));
+      const previous=s.world;s.newWorld('small',883112,{hydrologyRules:'static-sea-v2'});
+      const stageBound=await waitFor(()=>r.stages.get('mortal')?.world===s.world,25000);result.threeWorldReplacement={identityChanged:s.world!==previous,stageBound,rule:s.world.hydrologyRules};
+      result.threeV3Tick=await assertTick();let sea=0,bad=0;for(let i=0;i<s.world.size;i++)if(s.world.height[i]<0.3){sea++;if(Math.abs(s.world.water[i]-Math.fround(0.3-s.world.height[i]))>1e-7)bad++}
+      result.threeV3={rule:s.world.hydrologyRules,activePlane:r.activePlane,stageBound,seaCells:sea,boundaryBad:bad,drawCalls:gpu.info.render.calls,triangles:gpu.info.render.triangles};
+      check('B5 Three world replacement binds V3 World',stageBound&&s.world!==previous&&s.world.hydrologyRules==='static-sea-v2',JSON.stringify(result.threeWorldReplacement));
+      check('B5 V3 steps on real Three RAF and preserves invariant',result.threeV3Tick.ticked&&result.threeV3Tick.after.rule==='static-sea-v2'&&bad===0,JSON.stringify({tick:result.threeV3Tick,state:result.threeV3}));
+      await pause(700);result.threeFinal=state();await collectBrowserErrors();result.phase='Three 验收完成';await postResult();
+    }
+    finishEdit.addEventListener('click',()=>finishCanvas().catch(e=>{fail('Canvas completion',e.stack||e);postResult()}));
+    (async()=>{
+      try { await waitApp();result.initial=state();result.phase=`已加载构建包产品页：${mode==='three'?'Three':'Canvas'}`;show();
+        if(mode==='three')await runThree();else await runCanvas();
+      } catch(error) { fail(`${mode} harness`,error.stack||error);result.phase='验收发生错误';await collectBrowserErrors().catch(()=>{});await postResult(); }
+    })();
+  </script>
+</body>
+</html>

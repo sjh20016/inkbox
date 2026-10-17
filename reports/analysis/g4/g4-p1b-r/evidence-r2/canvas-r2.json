@@ -1,0 +1,178 @@
+{
+  "mode": "canvas",
+  "productUrl": "http://127.0.0.1:49394/inkbox.html",
+  "builtPackagePage": true,
+  "viewport": {
+    "width": 1366,
+    "height": 768,
+    "dpr": 1
+  },
+  "app": {
+    "productPage": "http://127.0.0.1:49394/inkbox.html",
+    "sameOriginHarness": true,
+    "hasCanvas": true
+  },
+  "assertions": [],
+  "pageErrors": [],
+  "consoleErrors": [
+    "[inkbox] 存档损坏 Invalid hydrologyRules: not-a-real-rule"
+  ],
+  "failedResources": [],
+  "initial": {
+    "ready": true,
+    "rule": "legacy-v1",
+    "width": 288,
+    "height": 180,
+    "seed": 20260914,
+    "hydroAccum": 0.13339999999999994,
+    "speedIndex": 2,
+    "dirty": true,
+    "worldDay": 3.6804,
+    "rafCallbacks": 27,
+    "updateCalls": 28,
+    "renderer": null
+  },
+  "phase": "Canvas 验收完成",
+  "defaultRule": "legacy-v1",
+  "b0Tick": {
+    "before": {
+      "raf": 27,
+      "updates": 28,
+      "rule": "legacy-v1"
+    },
+    "after": {
+      "raf": 31,
+      "updates": 32,
+      "rule": "legacy-v1",
+      "hydroAccum": 0.06750000000000012,
+      "worldDay": 4.0914
+    },
+    "ticked": true
+  },
+  "b1Creation": {
+    "identityChanged": true,
+    "hydroAccumReset": true,
+    "rule": "static-sea-v2",
+    "width": 200,
+    "height": 128,
+    "seaCells": 11161,
+    "boundaryBad": 0,
+    "maxBoundaryError": 0
+  },
+  "b1Tick": {
+    "before": {
+      "raf": 31,
+      "updates": 32,
+      "rule": "static-sea-v2"
+    },
+    "after": {
+      "raf": 35,
+      "updates": 36,
+      "rule": "static-sea-v2",
+      "hydroAccum": 0.008899999999999936,
+      "worldDay": 1.0193999999999996
+    },
+    "ticked": true
+  },
+  "b2Default": {
+    "identityChanged": true,
+    "rule": "legacy-v1",
+    "seed": 4132027
+  },
+  "b3SavedV0": true,
+  "b3SavedV3": true,
+  "b3LoadV0": {
+    "sameWorld": false,
+    "rule": "legacy-v1",
+    "seed": 4132027,
+    "confirmShown": false
+  },
+  "b3LoadV3": {
+    "sameWorld": false,
+    "rule": "static-sea-v2",
+    "seed": 4132028,
+    "confirmShown": false
+  },
+  "b3LegacyLoad": {
+    "sameWorld": false,
+    "rule": "legacy-v1",
+    "seed": 4132028,
+    "confirmShown": false
+  },
+  "b3InvalidLoad": {
+    "sameWorld": true,
+    "rule": "static-sea-v2",
+    "seed": 4132030,
+    "confirmShown": false
+  },
+  "b4Pause": {
+    "before": {
+      "speed": 0,
+      "hydroAccum": 0.11160000000000012,
+      "raf": 132
+    },
+    "after": {
+      "speed": 0,
+      "hydroAccum": 0.11160000000000012,
+      "raf": 158
+    }
+  },
+  "b4Brush": {
+    "status": "PASS",
+    "x": 476,
+    "y": 317,
+    "tile": {
+      "x": 100,
+      "y": 73
+    },
+    "index": 14700,
+    "before": 0.9007336497306824,
+    "historyBefore": 0,
+    "rule": "static-sea-v2",
+    "after": 0.926733672618866,
+    "historyAfter": 1,
+    "editChanged": true,
+    "undone": 0.9007336497306824,
+    "historyAfterUndo": 0,
+    "undoRestored": true,
+    "ruleAfterUndo": "static-sea-v2"
+  },
+  "b6": {
+    "dimensions": [
+      512,
+      320
+    ],
+    "cells": 163840,
+    "seed": 673231,
+    "legacyMs": 592.7000000001863,
+    "v3Ms": 599.0999999996275,
+    "rule": "static-sea-v2",
+    "seaCells": 70477,
+    "normalizationCellCount": 0,
+    "maxWaterDifference": 0,
+    "heightChanges": 0,
+    "typeChanges": 0,
+    "qiChanges": 0,
+    "identityChanged": true
+  },
+  "canvasFinal": {
+    "ready": true,
+    "rule": "static-sea-v2",
+    "width": 512,
+    "height": 320,
+    "seed": 673231,
+    "hydroAccum": 0.15539999999999948,
+    "speedIndex": 2,
+    "dirty": true,
+    "worldDay": 2.8523999999999967,
+    "rafCallbacks": 396,
+    "updateCalls": 395,
+    "renderer": null
+  },
+  "expectedInvalidSaveErrors": [
+    "[inkbox] 存档损坏 Invalid hydrologyRules: not-a-real-rule"
+  ],
+  "unexpectedConsoleErrors": [],
+  "status": "PASS",
+  "completedAt": "2026-10-17T03:34:38.734Z"
+}

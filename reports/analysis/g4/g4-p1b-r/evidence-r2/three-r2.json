@@ -1,0 +1,116 @@
+{
+  "mode": "three",
+  "productUrl": "http://127.0.0.1:49394/inkbox.html?renderer=3d",
+  "builtPackagePage": true,
+  "viewport": {
+    "width": 1366,
+    "height": 768,
+    "dpr": 1
+  },
+  "app": {
+    "productPage": "http://127.0.0.1:49394/inkbox.html?renderer=3d",
+    "sameOriginHarness": true,
+    "hasCanvas": true
+  },
+  "assertions": [],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "failedResources": [],
+  "initial": {
+    "ready": true,
+    "rule": "legacy-v1",
+    "width": 288,
+    "height": 180,
+    "seed": 20260914,
+    "hydroAccum": 0.01999999999999988,
+    "speedIndex": 2,
+    "dirty": true,
+    "worldDay": 6.84,
+    "rafCallbacks": 21,
+    "updateCalls": 22,
+    "renderer": {
+      "activePlane": "mortal",
+      "webgl2": true
+    }
+  },
+  "phase": "Three 验收完成",
+  "renderer": {
+    "webgl2": true,
+    "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "vendor": "Google Inc. (Intel)",
+    "activePlane": "mortal",
+    "drawCalls": 8,
+    "triangles": 214847,
+    "canvas": {
+      "width": 952,
+      "height": 634,
+      "cssWidth": 952,
+      "cssHeight": 634
+    }
+  },
+  "threeV0Tick": {
+    "before": {
+      "raf": 21,
+      "updates": 22,
+      "rule": "legacy-v1"
+    },
+    "after": {
+      "raf": 25,
+      "updates": 26,
+      "rule": "legacy-v1",
+      "hydroAccum": 0.0676,
+      "worldDay": 7.2516
+    },
+    "ticked": true
+  },
+  "threeWorldReplacement": {
+    "identityChanged": true,
+    "stageBound": true,
+    "rule": "static-sea-v2"
+  },
+  "threeV3Tick": {
+    "before": {
+      "raf": 27,
+      "updates": 28,
+      "rule": "static-sea-v2"
+    },
+    "after": {
+      "raf": 29,
+      "updates": 30,
+      "rule": "static-sea-v2",
+      "hydroAccum": 0.06740000000000002,
+      "worldDay": 1.2360000000000018
+    },
+    "ticked": true
+  },
+  "threeV3": {
+    "rule": "static-sea-v2",
+    "activePlane": "mortal",
+    "stageBound": true,
+    "seaCells": 11225,
+    "boundaryBad": 0,
+    "drawCalls": 8,
+    "triangles": 114338
+  },
+  "threeFinal": {
+    "ready": true,
+    "rule": "static-sea-v2",
+    "width": 200,
+    "height": 128,
+    "seed": 883112,
+    "hydroAccum": 0.14119999999999955,
+    "speedIndex": 2,
+    "dirty": true,
+    "worldDay": 5.518799999999999,
+    "rafCallbacks": 70,
+    "updateCalls": 71,
+    "renderer": {
+      "activePlane": "mortal",
+      "webgl2": true
+    }
+  },
+  "expectedInvalidSaveErrors": [],
+  "unexpectedConsoleErrors": [],
+  "status": "PASS",
+  "completedAt": "2026-10-17T03:34:49.787Z"
+}
