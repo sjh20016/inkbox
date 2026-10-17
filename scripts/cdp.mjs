@@ -226,7 +226,11 @@ async function waitForOwnedEndpoint(profile, child, timeoutMs, launchError) {
     const endpoint = readOwnedEndpoint(profile);
     if (endpoint) return endpoint;
     if (launchError.current) throw launchError.current;
-    if (child.exitCode !== null || child.signalCode !== null) throw new Error('Owned browser exited before DevToolsActivePort was ready');
+    // Edge may hand off to its real browser process and exit successfully before
+    // the isolated profile publishes DevToolsActivePort. The profile + endpoint
+    // token below prove ownership; launcher exit 0 alone proves neither failure
+    // nor readiness. Abnormal exits still fail immediately, and the wait is bounded.
+    if ((child.exitCode !== null && child.exitCode !== 0) || child.signalCode !== null) throw new Error('Owned browser exited before DevToolsActivePort was ready');
     await sleep(Math.min(100, Math.max(1, deadline - Date.now())));
   }
   throw new Error('Timed out waiting for owned DevToolsActivePort');
@@ -522,7 +526,7 @@ export async function launch({
     const base = `http://127.0.0.1:${endpoint.port}`;
     const version = await fetchOwnedJson(`${base}/json/version`, deadline);
     verifyOwnedBrowserEndpoint(version.webSocketDebuggerUrl, endpoint);
-    if (launchError.current || child.exitCode !== null || child.signalCode !== null) {
+    if (launchError.current || (child.exitCode !== null && child.exitCode !== 0) || child.signalCode !== null) {
       throw launchError.current || new Error('Owned browser exited before target creation');
     }
     const target = await openTarget(base, deadline);

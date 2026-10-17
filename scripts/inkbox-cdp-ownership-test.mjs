@@ -13,6 +13,7 @@ const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'cdp-'));
 const file = path.join(profile, 'DevToolsActivePort');
 const fakeProcess = { platform: 'linux', env: process.env, exitCode: undefined };
 let child;
+let launcherExitCode = null;
 let requests = [];
 let browserWs = `ws://127.0.0.1:43210${browserPath}`;
 const context = {
@@ -22,7 +23,7 @@ const context = {
   spawn(_exe, args) {
     assert(args.includes('--remote-debugging-port=0'));
     assert(args.includes(`--user-data-dir=${profile}`));
-    child = { pid: 12345, exitCode: null, signalCode: null, spawnfile: '/fake/edge',
+    child = { pid: 12345, exitCode: launcherExitCode, signalCode: null, spawnfile: '/fake/edge',
       on() {}, kill() { this.exitCode = 0; } };
     return child;
   },
@@ -60,6 +61,13 @@ try {
   assert.throws(() => api.verifyOwnedBrowserEndpoint(`ws://127.0.0.1:9300${browserPath}`, api.readOwnedEndpoint(profile)), /does not match/);
   assert.throws(() => api.verifyOwnedBrowserEndpoint('ws://127.0.0.1:43210/devtools/browser/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', api.readOwnedEndpoint(profile)), /does not match/);
 
+  // Edge's launcher can exit 0 before its browser process publishes the owned
+  // endpoint. Still require that exact profile file, not an arbitrary listener.
+  fs.unlinkSync(file);
+  const handedOff = api.waitForOwnedEndpoint(profile, { exitCode: 0, signalCode: null }, 1000, { current: null });
+  setTimeout(() => fs.writeFileSync(file, `43210\n${browserPath}`), 20);
+  assert.equal((await handedOff).port, 43210);
+
   // An unrelated listener at the formerly random port cannot be queried.
   browserWs = `ws://127.0.0.1:9300${browserPath}`;
   await assert.rejects(api.launch({ browser: '/fake/edge', port: 9300 }), /does not match/);
@@ -69,6 +77,7 @@ try {
   fs.writeFileSync(file, `43210\n${browserPath}`);
   requests = [];
   browserWs = `ws://127.0.0.1:43210${browserPath}`;
+  launcherExitCode = 0;
   const session = await api.launch({ browser: '/fake/edge', port: 9300 });
   assert.equal(session.meta.debugPort, 43210);
   assert.equal(requests.length, 2);
@@ -78,7 +87,9 @@ try {
     /exited before/);
   await assert.rejects(api.waitForOwnedEndpoint(profile, { exitCode: null, signalCode: null }, 1, { current: null }),
     /Timed out/);
+  await assert.rejects(api.waitForOwnedEndpoint(profile, { exitCode: 0, signalCode: null }, 1, { current: null }),
+    /Timed out/, 'Successful launcher exit without an owned endpoint is never readiness');
 } finally {
   fs.rmSync(profile, { recursive: true, force: true });
 }
-console.log('PASS owned endpoint parsing, partial/invalid file, conflicting port, browser token mismatch, correct profile launch and cleanup, early exit and timeout');
+console.log('PASS owned endpoint parsing, partial/invalid file, conflicting port, browser token mismatch, successful Edge handoff, correct profile launch and cleanup, early exit and timeout');
