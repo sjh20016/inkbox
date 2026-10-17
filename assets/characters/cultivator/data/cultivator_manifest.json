@@ -1,6 +1,32 @@
 {
   "schema": "cultivator-library-v1",
   "asset": "mesh/cultivator_library.glb",
+  "asset_sha256": "d31c4af5136e8d16e9da6cac059bea18826d933b3eb8a5693ce75264323dbaa7",
+  "provenance": {
+    "revision": "2026-10-17 · cultivator_rebuild v2 (legacy cells)",
+    "production_line": "external GLB rebuild; NOT the Blender project under source/",
+    "source_archive": {
+      "name": "cultivator_rebuild.zip",
+      "sha256": "a8065f87c405719dfa74fceb77fda6b53583f784df5b9253e849be401a91b82f"
+    },
+    "delivered_file": "cultivator_library_legacycells.glb",
+    "delivered_sha256": "d31c4af5136e8d16e9da6cac059bea18826d933b3eb8a5693ce75264323dbaa7",
+    "generator": "cultivator_rebuild/tools/rebuild_library.py --legacy-cells (numpy; deterministic; no RNG)",
+    "generator_notes": "Rig nodes/TRS, skin joints, inverse bind matrices, Idle/Walk clip data and the embedded 12×1 palette are byte-identical to mesh/cultivator_library_prev.glb; only mesh geometry and palette UVs were rebuilt. The .blend files in source/ predate this asset and are not its editable master; import the GLB into Blender for edits. Legacy cell table lives in palette.legacy_cells.",
+    "recorded_by": "A1 · T1 cultivator-dev",
+    "recorded_at": "2026-10-17"
+  },
+  "rollback": {
+    "previous_asset": "mesh/cultivator_library_prev.glb",
+    "previous_asset_sha256": "a9326d49bf0e994c0fca6d4aca90acc25bc4c54640ed27afd52a7a7216bfd10f",
+    "previous_production_line": "Blender v1, scripts/build-cultivator-assets.py --phase full",
+    "steps": [
+      "1. 从仓库根目录恢复旧 GLB：Copy-Item assets/characters/cultivator/mesh/cultivator_library_prev.glb assets/characters/cultivator/mesh/cultivator_library.glb -Force",
+      "2. 校验恢复后的 SHA256 为 a9326d49bf0e994c0fca6d4aca90acc25bc4c54640ed27afd52a7a7216bfd10f",
+      "3. 将 data/cultivator_manifest.json 的 modules[*].triangles、asset_sha256、provenance、rollback、limits.silhouette 还原为旧版（或 git 恢复该文件），并同步 docs",
+      "4. 复验：node scripts/inkbox-characters-check.mjs && node scripts/inkbox-characters-browser.mjs"
+    ]
+  },
   "coordinate_system": {
     "blender": "Z-up, front -Y, feet/root at origin",
     "gltf": "Y-up, front +Z, feet/root at origin",
@@ -108,13 +134,21 @@
         "hex": "#6E7B56"
       }
     ],
-    "uv_rule": "face loop UV at ((index+0.5)/12, 0.5); nearest sampling"
+    "uv_rule": "face loop UV at ((index+0.5)/12, 0.5); nearest sampling",
+    "legacy_cells": {
+      "faction_robe": 5,
+      "trim": 4,
+      "trousers": 6,
+      "boots": 3,
+      "hairband": 10,
+      "contract": "preserves the v1 region→palette-cell semantics so the CharacterLibrary slot-5 faction swap stays valid"
+    }
   },
   "modules": {
     "body_base": {
       "node": "cultivator_body_base",
       "slot": "body",
-      "triangles": 384,
+      "triangles": 342,
       "socket": null,
       "local_transform": "identity",
       "palette": {
@@ -146,7 +180,7 @@
     "hair_base": {
       "node": "cultivator_hair_base",
       "slot": "hair",
-      "triangles": 50,
+      "triangles": 86,
       "socket": "socket_hair",
       "local_transform": "identity",
       "palette": {
@@ -162,7 +196,7 @@
     "hair_elder": {
       "node": "cultivator_hair_elder",
       "slot": "hair",
-      "triangles": 50,
+      "triangles": 82,
       "socket": "socket_hair",
       "local_transform": "identity",
       "palette": {
@@ -177,7 +211,7 @@
     "hair_ghost": {
       "node": "cultivator_hair_ghost",
       "slot": "hair",
-      "triangles": 50,
+      "triangles": 94,
       "socket": "socket_hair",
       "local_transform": "identity",
       "palette": {
@@ -193,7 +227,7 @@
     "sword_simple": {
       "node": "cultivator_sword_simple",
       "slot": "weapon",
-      "triangles": 36,
+      "triangles": 52,
       "socket": "socket_weapon",
       "local_transform": "identity",
       "palette": {
@@ -224,7 +258,7 @@
     "gourd_small": {
       "node": "cultivator_gourd_small",
       "slot": "prop",
-      "triangles": 68,
+      "triangles": 70,
       "socket": "socket_waist",
       "local_transform": "identity",
       "palette": {
@@ -238,7 +272,7 @@
     "soul_lamp": {
       "node": "cultivator_soul_lamp",
       "slot": "prop",
-      "triangles": 100,
+      "triangles": 60,
       "socket": "socket_weapon",
       "local_transform": "identity",
       "palette": {
@@ -254,7 +288,7 @@
     "sect_token": {
       "node": "cultivator_sect_token",
       "slot": "tag",
-      "triangles": 24,
+      "triangles": 38,
       "socket": "socket_waist",
       "local_transform": "identity",
       "palette": {
@@ -268,7 +302,7 @@
     "alchemy_tag": {
       "node": "cultivator_alchemy_tag",
       "slot": "tag",
-      "triangles": 32,
+      "triangles": 28,
       "socket": "socket_waist",
       "local_transform": "identity",
       "palette": {
@@ -283,7 +317,7 @@
     "elder_mantle": {
       "node": "cultivator_elder_mantle",
       "slot": "robe",
-      "triangles": 12,
+      "triangles": 32,
       "socket": "socket_back",
       "local_transform": "identity",
       "palette": {
@@ -296,7 +330,7 @@
     "ghost_torn_hem": {
       "node": "cultivator_ghost_torn_hem",
       "slot": "robe",
-      "triangles": 16,
+      "triangles": 10,
       "socket": "socket_waist",
       "local_transform": "identity",
       "palette": {
@@ -431,7 +465,27 @@
     "weapon": 1,
     "prop": 1,
     "tag": 1,
-    "weapon_prop_tag_combined": 2
+    "weapon_prop_tag_combined": 2,
+    "silhouette": {
+      "core_body_hair_min": 250,
+      "core_body_hair_max": 450,
+      "attachment_module_max": 100,
+      "attachment_total_max": 200,
+      "full_outfit_max": 650,
+      "attachment_slots": [
+        "robe",
+        "weapon",
+        "back",
+        "prop",
+        "tag"
+      ],
+      "basis": [
+        "v1 的 250–450 是共享身体 + 发型的核心剪影预算；重建包 README 明确该规范不含可选附件，robe/weapon/back/prop/tag 因此单列。",
+        "实测核心剪影：basic 428 / sect_disciple 428 / wanderer 428 / elder 424 / ghost 436 / alchemist 428，全部 ≤ 450；旧的 robe 并入剪影时 elder = 342+82+32 = 456 越界 6。",
+        "附件单件上限 100 沿用旧库最大单件（soul_lamp 100）；附件合计上限 200 高于实测最大 130（wanderer 葫芦 70 + 背包 60）。",
+        "full_outfit_max 650 = 450 + 200，作为单角色全装总面上限。实测与逐角色明细见 ../data/structural_validation.json 与 docs/CULTIVATOR_REBUILD_INTEGRATION.md。"
+      ]
+    }
   },
   "phase": "full"
 }

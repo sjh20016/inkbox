@@ -5,6 +5,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { launch, sleep } from './cdp.mjs';
+import * as THREE from 'three';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.CHARACTER_PORT || 4186);
@@ -38,7 +39,11 @@ try {
     return { modules:l.modules.size, roles:Object.keys(l.roles), animations:l.animations.map(a=>a.name), loadedFrom:performance.getEntriesByType('resource').filter(r=>/cultivator.*(glb|json)$/.test(r.name)).map(r=>r.name) };
   `);
   if (process.env.CHARACTER_PHASE === 'material') {
-    assert.deepEqual(report.library.roles, ['basic']);
+    // The material evidence phase originally ran against the phase=material
+    // manifest. The runtime manifest is now the full shipping library, so the
+    // same shared-material contract is measured against it instead of skipping
+    // the evidence file (see docs/CULTIVATOR_REBUILD_INTEGRATION.md).
+    assert(report.library.roles.includes('basic'), 'Material evidence requires the basic role');
     report.materialPrototype = await browser.js(`
       const lab=window.cultivatorLab,c=lab.camera;
       lab.batch.write([{id:1,role:'basic',x:0,y:0,z:0}]);
@@ -49,10 +54,22 @@ try {
       document.querySelector('#status').textContent=['材质原型 · 普通修士','共享身体 + 基础发型 · 无附件'].join(String.fromCharCode(10));
       document.querySelector('h1').textContent='坐天观井 · 普通修士材质验收';
       lab.renderer.render(lab.scene,c);
-      return { characters:lab.batch.stats.characters, draws:lab.batch.stats.drawCalls, material:lab.library.material.type };
+      return { characters:lab.batch.stats.characters, draws:lab.batch.stats.drawCalls,
+        material:lab.library.material.type, modules:lab.library.modules.size,
+        materialCount:new Set(Object.values(lab.batch.meshes).map(mesh=>mesh.material)).size,
+        paletteCount:lab.library.manifest.palette.count,
+        paletteSize:[lab.library.texture.image.width,lab.library.texture.image.height],
+        paletteFilter:[lab.library.texture.magFilter,lab.library.texture.minFilter] };
     `);
     assert.equal(report.materialPrototype.characters, 1);
+    assert.equal(report.materialPrototype.draws, 2, 'A bare cultivator is body plus one hair draw');
     assert.equal(report.materialPrototype.material, 'MeshLambertMaterial');
+    assert.equal(report.materialPrototype.modules, 12, 'Material evidence covers the full shared module library');
+    assert.equal(report.materialPrototype.materialCount, 1, 'All modules share one runtime material');
+    assert.equal(report.materialPrototype.paletteCount, 12, 'Palette atlas keeps 12 colours');
+    assert.deepEqual(report.materialPrototype.paletteSize, [12, 1], 'Palette texture is a 12×1 atlas');
+    assert.deepEqual(report.materialPrototype.paletteFilter,
+      [THREE.NearestFilter, THREE.NearestFilter], 'Palette sampling stays nearest');
     await browser.screenshot(path.join(output, 'material_base.png'));
     assert.deepEqual(browser.errors(), []);
     report.pass = true;
@@ -90,8 +107,21 @@ try {
   assert.deepEqual(report.errors, [], 'Lab must have no runtime or resource errors');
 
   // Exercise the actual Host -> Stage -> EntityLayer integration using a separate, temporary browser profile.
-  await browser.cdp.send('Page.navigate', { url: `${base}/inkbox.html?renderer=3d` });
+  // `lod=off` is the supported full-LOD0 product path: under the default overview
+  // camera all world entities sit at LOD2 (by design), so the character batch is
+  // legitimately empty there. This acceptance asserts the shipped GLB character
+  // batches, so it forces the documented full-LOD0 path instead of relying on a
+  // camera framing that the default view no longer guarantees.
+  await browser.cdp.send('Page.navigate', { url: `${base}/inkbox.html?renderer=3d&lod=off` });
   assert(await browser.waitFor('return !!window.inkbox?.render3d?.renderer', { timeoutMs: 30000 }), 'Game Render3D must boot');
+  assert(await browser.js(`
+    const r=window.inkbox.render3d.renderer;
+    return (r.characterLoadPromise||Promise.resolve()).then(()=>{
+      if(r.characterLoadError) throw new Error('Cultivator library failed in game: '+r.characterLoadError.message);
+      return true;
+    });
+  `), 'Cultivator character library must load in the game host');
+  assert.equal(await browser.js('return window.inkbox.render3d.renderer.lodEnabled'), false, 'lod=off must disable level-of-detail selection');
   report.game.spawn = await browser.js(`
     const k=window.inkbox;k.newWorld('small',20261002);k.speedIndex=0;
     const w=k.world;let made=0;

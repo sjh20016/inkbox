@@ -1,18 +1,23 @@
 {
-  "generatedAt": "2026-10-02T11:26:06.594Z",
+  "generatedAt": "2026-10-17T14:18:42.928Z",
   "scales": [],
   "game": {},
   "errors": [],
   "browser": {
-    "browser": "Edg/154.0.4258.48",
-    "debugPort": 9300,
+    "browser": "Edg/155.0.4283.45",
+    "debugPort": 50390,
     "width": 1440,
     "height": 900
   },
   "library": {
-    "modules": 2,
+    "modules": 12,
     "roles": [
-      "basic"
+      "basic",
+      "sect_disciple",
+      "wanderer",
+      "elder",
+      "ghost",
+      "alchemist"
     ],
     "animations": [
       "Idle",
@@ -26,7 +31,18 @@
   "materialPrototype": {
     "characters": 1,
     "draws": 2,
-    "material": "MeshLambertMaterial"
+    "material": "MeshLambertMaterial",
+    "modules": 12,
+    "materialCount": 1,
+    "paletteCount": 12,
+    "paletteSize": [
+      12,
+      1
+    ],
+    "paletteFilter": [
+      1003,
+      1003
+    ]
   },
   "pass": true
 }
