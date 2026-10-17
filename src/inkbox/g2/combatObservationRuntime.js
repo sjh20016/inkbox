@@ -11,13 +11,11 @@ const sourceFor = (world, plane) => plane === 'mortal' ? world : world?.[plane];
 /** Match what the host currently renders. No tool switch or invented realm window. */
 export function combatPointVisible(sb, plane, x, y) {
   const source=sourceFor(sb.world,plane);
-  if (!source || !Number.isFinite(x) || !Number.isFinite(y) || x<0 || y<0 || x>=source.w || y>=source.h) return false;
-  const cellX=Math.floor(x),cellY=Math.floor(y);
-  if (!canAccess(sb.world,cellX,cellY)) return false;
+  if (!source || !Number.isFinite(x) || !Number.isFinite(y) || x<0 || y<0 || x>=source.w || y>=source.h || !canAccess(sb.world,x,y)) return false;
   const view = sb.getRealmViewState?.();
   const active = sb.render3d?.active ? sb.render3d.renderer?.activePlane || 'mortal' : 'mortal';
   if (active !== 'mortal') return plane === active;
-  const inWindow = !!(view?.open && view.region?.contains(cellX+.5,cellY+.5));
+  const inWindow = !!(view?.open && view.region?.contains(x,y));
   return plane === 'mortal' ? !inWindow : inWindow && view.targetPlane === plane;
 }
 

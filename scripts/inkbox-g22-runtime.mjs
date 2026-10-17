@@ -74,10 +74,11 @@ check('可见性与可达plane契约：Canvas窗遮蔽、Three单界、越界、
   sb.getRealmViewState=()=>({open:false});assert.equal(combatPointVisible(sb,'upper',f.a.x,f.a.y),false);sb.render3d={active:true,renderer:{activePlane:'nether'}};
   assert.equal(combatPointVisible(sb,'nether',f.a.x,f.a.y),true);assert.equal(combatPointVisible(sb,'mortal',f.a.x,f.a.y),false);assert.equal(combatPointVisible(sb,'nether',-1,1),false);
 });
-check('渐进地图最后可达格内的小数人物可观察，下一格仍拒绝',()=>{
+check('交战近讯遵守实际绘制的渐进边界，不暴露边界外的小数人物',()=>{
   const f=pair();f.world.mapProgress={stage:0};
   const bounds=accessBounds(f.world),sb={world:f.world,getRealmViewState:()=>({open:false})};
-  assert.equal(combatPointVisible(sb,'mortal',bounds.x1+.9,bounds.y1+.9),true);
+  assert.equal(combatPointVisible(sb,'mortal',bounds.x1,bounds.y1),true);
+  assert.equal(combatPointVisible(sb,'mortal',bounds.x1+.9,bounds.y1+.9),false);
   assert.equal(combatPointVisible(sb,'mortal',bounds.x1+1,bounds.y1),false);
   assert.equal(combatPointVisible(sb,'mortal',bounds.x0-.01,bounds.y0),false);
 });
