@@ -1,6 +1,6 @@
 # Inkbox Backlog
 
-本文件区分产品阻塞、研究问题、人工裁决和未来优化，不授予实现授权。正式产品基线为 **M2-C2E + G1**（本轮核查 `origin/main` `4852d89c8ad29e59841fa81aa86318b0ad8c54ba`）；G1 已由 PR #2 合并。G2-R1 在独立分支恢复可玩功能，范围见 [本轮交接](./docs/development/G2_R1_PLAYABLE_INTEGRATION.md)，仍保持 Draft 与性能阻塞。
+本文件区分产品阻塞、研究问题、人工裁决和未来优化，不授予额外实现授权。2026-10-18 正式 main 为 `768b870949ffe6d17e74e8fc8656e5eadf6f6130`，已合并 #23 G2-R1、#24 A1、#25 G2.4-C；当前独立开发转入 G2.5「破境有相 · 改命布缘」。已合并功能不再标作未接纳 Draft，性能阻塞仍保留。
 
 ## 产品阻塞
 
@@ -8,9 +8,9 @@
 
 ## 研究
 
-- **H2/H3/G3 CI**：当前 SHA 的 Fast Gate 因浏览器进程归属与清理一致性 step 失败；Heavy PASS 不代表整体验收通过。另立定向复现 / 修复任务，保留断言与失败证据。
+- **H2/H3/G3 历史 CI**：旧研究 SHA 的 Fast Gate 有浏览器进程归属与清理一致性失败记录；不以产品主线通过覆盖旧研究失败，也不把旧失败写成当前主线结论。后续研究另行定向验证。
 
-- **G2 性能**：PR #12 候选仍为 BLOCKED 且未合并；目前仅 G2-P1 闭环 READY。不得将 G2 全功能记为 READY。固定候选证据见 [P1 验证报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_P1_INTEGRATION_VALIDATION_REPORT.md) 和[性能收束报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_PERFORMANCE_FINALIZATION_REPORT.md)。
+- **G2 性能**：功能已随 #23～#25 合并，性能预算仍为 **PERF BLOCKED**。固定历史证据见 [P1 验证报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_P1_INTEGRATION_VALIDATION_REPORT.md) 和[性能收束报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_PERFORMANCE_FINALIZATION_REPORT.md)；更大地图/其他设备不能由有限规格功能通过推定合格。
 - **G3 cost**：PR #17 研究状态为 BLOCKED，继续研究或实现需单独明确范围。
 - **独立 B 线**：与正式产品线没有共同祖先，保持独立研究状态；产品化或合并需要单独裁决。
 

@@ -1,12 +1,12 @@
 # 坐天观井 · Inkbox 1.0.0
 
-本分支为 **G2-R1 可玩集成候选**：从治理后 main `4852d89` 定向恢复 G2 战斗、伤势、灾迹与玩家导航，保持 **PERF BLOCKED / Draft**。迁移范围、试玩与本轮验证见 [G2-R1 交接](./docs/development/G2_R1_PLAYABLE_INTEGRATION.md)；下方正式产品状态描述 main，不代表本候选已合并。
+正式 main 已于 2026-10-18 接纳 G2-R1、A1 和 G2.4-C（PR #23、#24、#25），核查基线为 `768b870949ffe6d17e74e8fc8656e5eadf6f6130`。当前独立开发阶段为 **G2.5「破境有相 · 改命布缘」**；G2 功能已进入主线，性能仍为 **PERF BLOCKED**。
 
 ## 正式产品状态（按 main 最新提交核对）
 
-正式产品基线为 **M2-C2E + G1**，G1 已由 PR #2 合并。RG 治理前的历史基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`；实际开发从 GitHub 当前 `main` HEAD 起步，不把历史 SHA 当作最新主线。
+正式产品基线为 **M2-C2E + G1 + G2-R1 + A1 + G2.4-C**，包含人物命簿、战斗/伤势、生态灾迹、真实火系引燃与角色资产。RG 治理前的历史基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`；实际开发从 GitHub 当前 `main` HEAD 起步，不把历史 SHA 当作最新主线。
 
-PR #12 候选提交 `74934a8b1360af9007c69935d5becdf8f9809872` 的范围仅为 **G2-P1 闭环 READY**；G2 性能 **BLOCKED**，候选整体未合并，不能把 G2 全功能标为 READY。PR #17 的 G3 cost 研究为 **BLOCKED**。G2/G3 的 PR 是否仍开放以 GitHub 当前状态为准；#10 的有效代码已成为 #12 的祖先，不得重复合并。独立 B 线与产品线没有共同祖先。
+G2 的功能接纳不代表性能预算封板。PR #12、#4～17 等旧候选只作来源与研究索引，不重复合并已迁入主线的功能。G3 cost 仍为 **BLOCKED**，独立 B 线与产品线没有共同祖先，历史 RNG 游标持久化仍未决。
 
 导航：[`HANDOFF.md`](./HANDOFF.md) · [`ROADMAP.md`](./ROADMAP.md) · [`BACKLOG.md`](./BACKLOG.md) · [`tests/README.md`](./tests/README.md) · [`docs/development/REPOSITORY_WORKFLOW.md`](./docs/development/REPOSITORY_WORKFLOW.md)。
 

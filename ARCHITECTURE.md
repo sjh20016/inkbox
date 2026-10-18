@@ -1,6 +1,6 @@
 # ARCHITECTURE · 工作区与模块地图
 
-2026-10-17 RG 收官后工作树的结构以本页 §1 和实际 Git 树为准；历史报告固定于 [治理前 Git 快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534)。产品状态以 [ROADMAP](./ROADMAP.md) 与 [HANDOFF](./HANDOFF.md) 顶部为准：main 已合并 G1，G2 / G3 为候选与研究。下方阶段性状态均为历史快照；模块职责和契约结合当前源码阅读。
+2026-10-18 产品状态以 [ROADMAP](./ROADMAP.md) 与 [HANDOFF](./HANDOFF.md) 顶部为准：main 已合并 G1、G2-R1、A1、G2.4-C，当前开发转入 G2.5，G2 性能及 G3 成本研究仍有阻塞。工作树结构以本页 §1 和实际 Git 树为准；历史报告固定于 [治理前 Git 快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534)。下方阶段性状态均为历史快照；模块职责和契约结合当前源码阅读。
 
 
 ## Current Truth · 2026-10-08
