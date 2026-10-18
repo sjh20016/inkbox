@@ -122,6 +122,24 @@ check('complete footprints reject window crossings, access edges and expired str
   }finally{fx.dispose();}
 });
 
+check('lightning-style ignition detail requires its confirmed terrain cell to be visible',()=>{
+  const fx=new ThreeCombatFx(options),item=combat('thunder',{data:{style:'thunder',fromX:25,fromY:22,tier:'mid',ignition:{
+    cells:1,x:32,y:22,plane:'mortal',day:1,actorId:1,targetId:2,
+  }}});
+  const detail=()=>fx.batches.thunder.detail.getX(0);
+  try{
+    fx.update([item],world);assert.equal(fx.stats.combatActive,1);assert.equal(detail(),2,'a confirmed visible fact keeps its orange detail');
+    const noFact=combat('thunder',{data:{style:'thunder',fromX:25,fromY:22,tier:'mid'}});
+    fx.update([noFact],world);assert.equal(fx.stats.combatActive,1);assert.equal(detail(),1,'a hit without a fact uses ordinary mid-tier detail');
+    const hidden=new RegionGeometry(world,new RegionMask(normalizeRegion([[18,15],[30,15],[30,35],[18,35]],world,.45)));
+    fx.update([item],world,hidden,true);
+    assert.equal(fx.stats.combatActive,1,'the brush remains visible when its own footprint is inside');
+    assert.equal(detail(),1,'a confirmed fact in a hidden cell cannot color the brush orange');
+    const visible=new RegionGeometry(world,new RegionMask(normalizeRegion([[18,15],[34,15],[34,35],[18,35]],world,.45)));
+    fx.update([item],world,visible,true);assert.equal(fx.stats.combatActive,1);assert.equal(detail(),2,'including the fact cell restores orange detail');
+  }finally{fx.dispose();}
+});
+
 check('Host hidden planes clear and World replacement disposes every shared resource exactly once',()=>{
   assert(emitPresentation(world.upper,'combat-hit',{
     x:26,y:22,subjectId:1,targetId:2,intensity:.6,

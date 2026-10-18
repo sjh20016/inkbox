@@ -64,7 +64,9 @@ function brushMaterial(style){
     fragmentShader: `uniform vec3 inkColor; varying float vOpacity; varying float vDetail; varying float vPart;
       void main(){
         if(vOpacity<.002 || (vPart>.5 && vDetail<.5))discard;
-        gl_FragColor=vec4(inkColor,vOpacity);
+        vec3 color=inkColor;
+        if(vDetail>1.5 && vPart>.5) color=vec3(1.0,.34,.075);
+        gl_FragColor=vec4(color,vOpacity);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }`,
@@ -119,6 +121,9 @@ export class ThreeCombatFx{
       f.width=Math.abs(dx)+width*2;f.depth=Math.abs(dy)+width*2;
       if(!lightning && distance<=.35)f.width=f.depth=width*3;
       if(!decorationFootprintOwned(world,region,inside,f)){this.stats.regionRejected++;continue;}
+      const ignition=data?.ignition;
+      const hasVisibleIgnition=!!ignition&&Number.isSafeInteger(ignition.x)&&Number.isSafeInteger(ignition.y)
+        &&decorationFootprintOwned(world,region,inside,{x:ignition.x+.5,y:ignition.y+.5,width:1,depth:1,rotationY:0});
       const az=this.elevation.at(ax,ay)+.17,bz=this.elevation.at(bx,by)+.17;
       if(![az,bz].every(Number.isFinite))continue;
       if(lightning){
@@ -142,7 +147,7 @@ export class ThreeCombatFx{
       const b=this.batches[style],index=b.mesh.count++;
       b.mesh.setMatrixAt(index,this.matrix);
       b.opacity.setX(index,(1-progress)*(style==='blade'?.9:.8));
-      b.detail.setX(index,tier==='low'?0:1);
+      b.detail.setX(index,hasVisibleIgnition?2:tier==='low'?0:1);
       this.stats.active++;this.stats[lightning?'lightningActive':'combatActive']++;
       this.stats.styleCounts[style]++;
     }

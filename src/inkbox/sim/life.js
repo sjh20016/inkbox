@@ -1,4 +1,5 @@
 import { recordCombatAttempt, emitCombatHit } from './presentation.js';
+import { tryCombatIgnition } from './combatEnvironment.js';
 // 水墨沙盒 · 生灵、聚落与宗门
 //
 // 这是沙盒的「活」的部分。小人自己觅食、结庐、修行、拜师、结仇、开宗立派；
@@ -1098,7 +1099,8 @@ export class Life {
     const hit = damage * (10 / (10 + defense * 0.35));
     const hpBefore = target.hp;
     target.hp -= hit;
-    emitCombatHit(this.world, e, target, hit, hpBefore);
+    const ignition = tryCombatIgnition(this.world, e, target, hit, hpBefore);
+    emitCombatHit(this.world, e, target, hit, hpBefore, ignition);
 
     // ── 养伤（轻伤档）：打了一架、被打伤但没死 ⇒ 半年不出战 ──────────
     // ⚠️ 三条守卫缺一不可：

@@ -433,6 +433,8 @@ export function serializeWorld(world, meta = {}) {
       //    而**那种错不报错**（同 row[62] / row[63..67] 的警告）。
       // ⚠️ 老档（68 列）这一格是 `undefined`，读侧必须逐键兜底。
       e.possessionScar || null,
+      // G2.4 combat-fire attempt day (row[69]); append only.
+      e.lastFireCastDay ?? -1e9,
     ]),
     villages: world.villages.map((v) => ({
       id: v.id, x: v.x, y: v.y, faction: v.faction, name: v.name,
@@ -1481,6 +1483,7 @@ function restoreEntity(row, id) {
     // `undefined`，兜成 `null`（= 没有印记）。**要真的写进对象**——只读不写就成了
     // 「活对象有键、读档后缺键」，save-equiv 的键集并集判据当场红（同 `restUntil`）。
     possessionScar: row[68] || null,
+    lastFireCastDay: row[69] ?? -1e9,
     relations: new Map(),
   };
   // 道途只存了 key，靠 DAO_PATHS 还原成完整对象（含 name/evil/stages/thresholds）。
@@ -1529,7 +1532,7 @@ function restoreLegacyEntity(row, id) {
     fromMortal: false, fromSect: null,
     // 养伤（row[62]，2026-09-22 追加）。v1 档当然没有，但**键必须存在**——
     // 缺键就是「只在一侧存在的字段」，save-equiv 那条判据会红。
-    restUntil: -1e9,
+    restUntil: -1e9, lastFireCastDay: -1e9,
     // 幽冥鬼魂（v11 内追加，row[63..67]）。v1 档当然没有，但**键必须存在**——
     // 缺键就是「只在一侧存在的字段」（同上面 v6 / v8 那两组）。
     // `soulBind`（列 67 的魂池链接）与上面转世那三列的 `soulId`（来源）**不是一回事**。

@@ -587,6 +587,7 @@ const GHOST_TEMPLATE = Object.freeze({
   fromMortal: false,
   fromSect: null,
   restUntil: -1e9,
+  lastFireCastDay: -1e9,
   // ── 幽冥专属五列（契约 §三 row[63..67]）────────────────────────
   //   ⚠️ 列 67 的「魂池链接」用**独立属性 `soulBind`**，**不是**上面的 `soulId`：
   //      `soulId` 的语义是「这一世由哪个神魂**转来**」（来源），

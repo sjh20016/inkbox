@@ -391,12 +391,9 @@ export function refreshChroniclePanel(sb) {
       // 卜算子的话单独标一下，免得读者分不清哪句是旁白、哪句是史实
       const cls = c.kind === 'busanzi' ? 'ink-log is-busanzi' : 'ink-log';
       const who = c.kind === 'busanzi' ? '卜算子' : `${Math.floor(c.day / 360) + 1} 年`;
-      // Q19：**只有**记录本身携带定位信息时才给「查看」。
-      // 当前的 `world.record()` 只写 `{day, year, text, kind}`，没有坐标也没有 id
-      // ⇒ 这一支今天恒不出现，历史保持纯文字（正是规格要的降级）。
-      // 留着它是因为「以后某个事件源真的带上坐标」时，这里不用再改一次。
-      const loc = chronicleLocation(c);
-      const view = loc ? `<button class="btn log-view" data-goto-log="${c.day}:${loc.x},${loc.y}">查看</button>` : '';
+      // Q19：**只有**记录本身携带有效定位信息时才给「查看」；旧史条目保持纯文字。
+      const loc = chronicleTarget(c);
+      const view = loc ? `<button class="btn log-view" data-goto-log="${loc.plane}:${loc.x},${loc.y}">查看</button>` : '';
       return `<div class="${cls}"><b>${who}</b>${c.text}${view}</div>`;
     }).join('') + foldControl(sb, 'chronicle', hidden, expanded, '条')
     : '<div class="ink-empty">世界还很安静。</div>';
@@ -407,7 +404,7 @@ export function refreshChroniclePanel(sb) {
 /**
  * 编年史的点击委托（Q19「查看」+ Q28 折叠）。
  *
- * ⚠️ 挂在**常驻的 `#inkChronicle`** 上，只挂一次（面板每 2.5 秒重建 innerHTML）。
+ * ⚠️ 挂在**常驻的编年 / 大事记容器**上，每个容器只挂一次（行内容每 2.5 秒重建）。
  * ⚠️ 「查看」**只导航**：把镜头挪到那条记录的位置并检视那一格。
  *    它**不**改世界——Q19 明令「不要重新设计记录数据」，本方法只消费已有字段。
  */
@@ -418,24 +415,41 @@ function bindChronicle(box, sb) {
   box.addEventListener('click', (ev) => {
     const el = ev.target.closest('[data-goto-log]');
     if (!el) return;
-    const [dayText, xy] = String(el.dataset.gotoLog).split(':');
+    const [planeText, xy] = String(el.dataset.gotoLog).split(':');
     const [x, y] = String(xy || '').split(',').map(Number);
+    const plane = ['mortal','upper','nether'].includes(planeText) ? planeText : 'mortal';
     if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-    void dayText;
-    sb.camera.focusOn(x, y, { zoom: Math.max(sb.camera.zoom, 7), duration: 0.75 });
-    spawnFocusPulse(sb.focusPulses, x, y);
+    const cellX = Math.round(x), cellY = Math.round(y);
+    // Reuse the live environment observer as the permission gate. Old or stale
+    // records cannot force a camera into an inaccessible cell or hidden plane.
+    const selected = sb.environmentObservation?.select({ plane, x: cellX, y: cellY });
+    if (!selected?.ok) { sb.notify?.('此处当前不可观察'); return; }
+    document.querySelector('[data-experience-target="environment"]')?.click();
+    if (sb.render3d?.active) sb.render3d.renderer.focusOn(cellX, cellY, { duration: 0.75 }, plane);
+    else sb.camera.focusOn(cellX, cellY, { zoom: Math.max(sb.camera.zoom, 7), duration: 0.75 });
+    if (plane === 'mortal' && !sb.render3d?.active) spawnFocusPulse(sb.focusPulses, cellX, cellY);
     sb.dirty = true;
-    sb.inspectAt?.(Math.round(x), Math.round(y));
+    if (!sb.render3d?.active) {
+      if (plane === 'mortal') sb.inspectAt?.(cellX, cellY);
+      else sb.inspectPlaneAt?.(plane, cellX, cellY);
+    }
   });
 }
 
 /** 一条编年记录能不能定位。**只消费已有字段**，不为它改 `World.record`。 */
 export function chronicleLocation(record) {
   if (!record) return null;
-  const x = Number(record.x);
-  const y = Number(record.y);
-  if (Number.isFinite(x) && Number.isFinite(y)) return { x, y };
+  const x = record.x;
+  const y = record.y;
+  if (typeof x === 'number' && Number.isFinite(x) && typeof y === 'number' && Number.isFinite(y)) return { x, y };
   return null;
+}
+
+function chronicleTarget(record) {
+  const location = chronicleLocation(record);
+  const plane = record.plane === undefined || record.plane === null ? 'mortal' : record.plane;
+  if (!location || !['mortal','upper','nether'].includes(plane)) return null;
+  return { ...location, plane };
 }
 
 /**
@@ -496,8 +510,8 @@ export function refreshMilestonesPanel(sb) {
   });
   const milestoneRows = shown.map((m) => {
     const year = Math.floor((m.day || 0) / 360) + 1;
-    const loc = chronicleLocation(m);
-    const view = loc ? `<button class="btn log-view" data-goto-log="${m.day}:${loc.x},${loc.y}">查看</button>` : '';
+    const loc = chronicleTarget(m);
+    const view = loc ? `<button class="btn log-view" data-goto-log="${loc.plane}:${loc.x},${loc.y}">查看</button>` : '';
     return `<div class="ink-log"><b>仙历 ${year} 年</b>${m.text}${view}</div>`;
   });
   const rows = [...activeRows, ...milestoneRows];
@@ -505,7 +519,7 @@ export function refreshMilestonesPanel(sb) {
   const rail = document.querySelector('.rail.right');
   preserveRailScroll(rail, () => setPeriodicMarkup(box,
     body + foldControl(sb, 'milestones', hidden, expanded, '条')));
-  bindFold(box, sb);
+  bindChronicle(box, sb);
 }
 
 // ── 值得关注（Q9 / Q13 / Q28 / Q36）─────────────────────────────────

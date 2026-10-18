@@ -85,6 +85,7 @@ const FILES = [
   'scripts/inkbox-g23-terrain.mjs',
   'scripts/inkbox-g23-browser.mjs',
   'scripts/inkbox-g23-render-browser.mjs',
+  'scripts/inkbox-g24-fire.mjs',
   'scripts/inkbox-g2p0-ecology.mjs',
   'scripts/inkbox-g2p0-terrain-cache.mjs',
   'scripts/inkbox-p1-navigation.mjs',

@@ -107,6 +107,7 @@
     "test:g1:browser": "node scripts/inkbox-g1-browser.mjs",
     "check:ui": "npm run test:g1:web && npm run test:qol && npm run test:view && npm run test:presentation",
     "test:g2:combat": "node scripts/inkbox-g2-combat.mjs",
+    "test:g24": "node scripts/inkbox-g24-fire.mjs",
     "test:g2:presentation": "node scripts/inkbox-g2-presentation.mjs && node scripts/inkbox-g2-three.mjs",
     "test:g2": "npm run test:g2:combat && npm run test:g2:presentation",
     "test:g2:browser": "node scripts/inkbox-g2-browser.mjs",

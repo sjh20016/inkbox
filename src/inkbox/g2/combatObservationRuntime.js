@@ -5,7 +5,7 @@ import { canAccess } from '../core/mapAccess.js';
 const PLANES = ['mortal', 'upper', 'nether'];
 const LIMIT = 24;
 const freeze = value => { if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
-const fingerprint = item => JSON.stringify([item.plane,item.day,item.subjectId,item.targetId,item.seed,item.x,item.y,item.data?.fromX,item.data?.fromY,item.data?.style]);
+const fingerprint = item => JSON.stringify([item.plane,item.day,item.subjectId,item.targetId,item.seed,item.x,item.y,item.data?.fromX,item.data?.fromY,item.data?.style,item.data?.ignition]);
 const sourceFor = (world, plane) => plane === 'mortal' ? world : world?.[plane];
 
 /** Match what the host currently renders. No tool switch or invented realm window. */
@@ -24,7 +24,7 @@ export function combatPointVisible(sb, plane, x, y) {
 }
 
 /** Session-only bindings to already ingested snapshots; never a second consumer/history. */
-export function createCombatObservationRuntime({getWorld,getStage,getCharacter=()=>null,isVisible=()=>false,onFocus=()=>{},view}={}) {
+export function createCombatObservationRuntime({getWorld,getStage,getCharacter=()=>null,isVisible=()=>false,onFocus=()=>{},onObserveEnvironment=()=>false,view}={}) {
   let world=null, ingested=null, epoch=0, sequence=0, ingestedSources=new Map(), entries=new Map(), vm=null, rendered='', destroyed=false;
   function reset() { if(destroyed)return null;world=getWorld();ingested=null;ingestedSources.clear();epoch++;sequence=0;entries.clear();rendered='';vm=freeze({enabled:true,events:[],focusedCharacter:null,summary:{text:'近讯只覆盖仍存续的采样反馈，不代表完整交手史。'}});view?.render(vm);return vm; }
   function sync() { if(world!==getWorld())reset(); }
@@ -59,9 +59,13 @@ export function createCombatObservationRuntime({getWorld,getStage,getCharacter=(
     const events=[...entries.values()].map(entry=>{
       const row=now.find(row=>row.signature===entry.signature), valid=resolveEntry(entry,now), item=row.item;
       if(!valid)return null;
+      const ignition=item.data?.ignition;
+      const visibleIgnition=ignition?.plane===item.plane && isVisible(ignition.plane,ignition.x,ignition.y) ? ignition : null;
       return {id:entry.id,day:item.day,type:'damage',title:'交手留痕',detail:'眼下的命中动静，不说明持续交战、胜败或伤因。',plane:item.plane,
         actor:entry.actorToken?.entity?.name||`人物 #${item.subjectId}`,target:entry.targetToken?.entity?.name||`人物 #${item.targetId}`,
-        timeLabel:Number.isFinite(item.day)?`第 ${item.day} 日`:'发生日不可考',x:valid?.target.x??null,y:valid?.target.y??null,canObserve:!!valid};
+        timeLabel:Number.isFinite(item.day)?`第 ${Math.round(item.day*10)/10} 日`:'发生日不可考',x:valid?.target.x??null,y:valid?.target.y??null,
+        ignition:visibleIgnition?{plane:visibleIgnition.plane,x:visibleIgnition.x,y:visibleIgnition.y,cells:visibleIgnition.cells,day:visibleIgnition.day,actorId:visibleIgnition.actorId,targetId:visibleIgnition.targetId}:null,
+        canObserve:!!valid};
     }).filter(Boolean).slice(-LIMIT);
     vm=freeze({enabled:true,events,focusedCharacter:focused?{name:focused.identity.name,combatStatus:['wounded','recovering'].includes(health?.state)?health.state:'unknown'}:null,
       summary:{text:(health?`气血：${health.hpText}；${health.restText}。`:'')+'近讯只显示眼下可观测的交手动静，可能有所遗漏；气血与生平以命簿保留记录为准。墨痕散去不说明胜负。'}});
@@ -69,10 +73,18 @@ export function createCombatObservationRuntime({getWorld,getStage,getCharacter=(
   }
   function handleAction(action) {
     if(destroyed)return {ok:false,reason:'destroyed'};sync();
-    if(action?.type!=='locate-combat')return {ok:false,reason:'invalid-action'};
+    if(!['locate-combat','observe-ignition'].includes(action?.type))return {ok:false,reason:'invalid-action'};
     const valid=resolveEntry(entries.get(action.eventId),snapshots());
     if(!valid)return {ok:false,reason:'stale-or-inaccessible-event'};
     const entry=entries.get(action.eventId);
+    if(action.type==='observe-ignition'){
+      const ignition=valid.item.data?.ignition;
+      if(!ignition || ignition.plane!==entry.plane || !isVisible(ignition.plane,ignition.x,ignition.y))
+        return {ok:false,reason:'stale-or-inaccessible-ignition'};
+      const result=onObserveEnvironment({plane:ignition.plane,x:ignition.x,y:ignition.y});
+      return result ? {ok:true,effect:{type:'observe-environment',plane:ignition.plane,x:ignition.x,y:ignition.y}}
+        : {ok:false,reason:'stale-or-inaccessible-ignition'};
+    }
     onFocus({plane:entry.plane,x:valid.target.x,y:valid.target.y});
     return {ok:true,effect:{type:'focus',plane:entry.plane,x:valid.target.x,y:valid.target.y}};
   }
@@ -82,11 +94,18 @@ export function createCombatObservationRuntime({getWorld,getStage,getCharacter=(
 export function createSandboxCombatObservation(sb,root) {
   let runtime;
   const view=root?createCombatObserverView(root,{onAction:action=>runtime.handleAction(action)}):null;
+  const focus=({plane,x,y})=>{
+    if(sb.render3d?.active)sb.render3d.renderer.focusOn(x,y,{duration:.75},plane);
+    else sb.camera.focusOn(x,y,{zoom:Math.max(sb.camera.zoom,7),duration:.75});
+    sb.dirty=true;
+  };
   runtime=createCombatObservationRuntime({getWorld:()=>sb.world,getStage:()=>sb.stage,getCharacter:()=>sb.g1.current(),view,
-    isVisible:(plane,x,y)=>combatPointVisible(sb,plane,x,y),onFocus:({plane,x,y})=>{
-      if(sb.render3d?.active)sb.render3d.renderer.focusOn(x,y,{duration:.75},plane);
-      else sb.camera.focusOn(x,y,{zoom:Math.max(sb.camera.zoom,7),duration:.75});
-      sb.dirty=true;
+    isVisible:(plane,x,y)=>combatPointVisible(sb,plane,x,y),onFocus:focus,
+    onObserveEnvironment:({plane,x,y})=>{
+      const selected=sb.environmentObservation?.select({plane,x,y});
+      if(!selected?.ok)return false;
+      if(typeof document!=='undefined')document.querySelector('[data-experience-target="environment"]')?.click();
+      focus({plane,x,y});return true;
     }});
   return runtime;
 }

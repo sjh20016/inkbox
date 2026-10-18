@@ -26,7 +26,7 @@ export function createCombatObserverView(root,{onAction}={}){
     const item=valid.get(btn.dataset.combatKey);
     if(!item?.canObserve)return;
     if(typeof onAction==="function")onAction({
-      type:"locate-combat",eventId:item.id,plane:item.plane,x:item.x,y:item.y,
+      type:btn.dataset.combatAction || "locate-combat",eventId:item.id,plane:item.plane,x:item.x,y:item.y,
     });
   }
   frame.addEventListener("click",onClick);
@@ -54,10 +54,18 @@ export function createCombatObserverView(root,{onAction}={}){
         const inner=row.children[0],watch=row.children[1];
         update(inner.children[0],item.title);
         update(inner.children[1],[item.timeLabel,item.actor,item.target].filter(Boolean).join(" · "));
-        update(inner.children[2],item.detail);
+        update(inner.children[2],item.ignition
+          ? `已确认引燃 ${item.ignition.cells} 格 · ${item.ignition.plane==='mortal'?'凡间':item.ignition.plane==='upper'?'上界':'幽冥'} (${item.ignition.x}, ${item.ignition.y})`
+          : item.detail);
         watch.dataset.combatKey=item.id;
         watch.disabled=!item.canObserve;
         watch.title=item.canObserve?"请求镜头定位":"当前位置不可考";
+        let land=row.children[2];
+        if(item.ignition){
+          if(!land){land=n(doc,"button","g2-combat__watch g2-combat__land","察看山河");land.type="button";row.append(land);}
+          land.dataset.combatKey=item.id;land.dataset.combatAction="observe-ignition";
+          land.disabled=!item.canObserve;land.title=item.canObserve?"在环境观察中查看已引燃地点":"位置当前不可观察";
+        }else if(land)land.remove();
       });
       while(list.children.length>shown.length)list.lastChild.remove();
       // Frequent snapshot updates must preserve scroll position, never grab focus.

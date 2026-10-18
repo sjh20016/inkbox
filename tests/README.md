@@ -4,6 +4,8 @@
 
 ## G2-R1 候选新增入口
 
+G2.4 使用一个聚焦入口 `npm run test:g24`，覆盖真实攻击到点燃的资格、地表条件、冷却、生态延续、表现开关独立性和存档兼容；已加入 Fast。固定种子夹具只辅助选择可复现的真实施术，不能用表现事件代替 `Life.attack()`。浏览器继续用隔离 Edge/CDP，在 Canvas / Three 串行检查实际火势、焦土、观察定位与存读档；不把功能验收当作性能封板。
+
 本地恢复功能可运行 `npm run test:g2`、`test:g21:terrain`、`test:g22`、`test:g23`、`test:g2p0` 与 `test:p1`（后五项同样使用 `npm run`）。它们覆盖真实战斗、双 renderer 快照、气血 / 养伤、灾迹 / 恢复、生态 / 缓存等价及导航，已加入 Fast；原 Fast / Heavy 全部保留。
 
 `npm run test:browser-tools` 检查隔离 CDP 端点和 IPC 自有服务器。G2 浏览器入口为 `test:g2:browser`、`test:g22:browser`、`test:g23:browser`；`INKBOX_GPU=0` 只作软件光栅功能验证。`npm run test:p1:browser` 依次运行五种分辨率的双 renderer 布局与真实创世→选人→受伤 / 养伤→灾迹恢复→记挂→存读档闭环，要求真实 GPU，本机按需串行执行，不把托管 Windows 软件渲染冒充硬件验收。脚本优先 Edge，可回退本机 Chrome，实际版本和 GPU 以报告 metadata 为准。
