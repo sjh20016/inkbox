@@ -5,7 +5,10 @@ import { RENDER_ORDER } from '../shared/RenderOrder.js';
 export const BREAKTHROUGH_3D_CAP = 16;
 const STYLES = Object.freeze(['minorSuccess', 'minorFailure', 'majorSuccess', 'majorFailure']);
 const COLORS = Object.freeze({ minorSuccess: 0x7aa5a2, minorFailure: 0x6d3835,
-  majorSuccess: 0xe8c66d, majorFailure: 0x963f39 });
+  majorSuccess: 0xc59427, majorFailure: 0x9c302a });
+// The default 200/288-cell overview needs broad ink strokes, not subpixel lines.
+// Keep the whole enlarged seal inside the same ownership check as its center.
+const REACH = Object.freeze({ major: 7.4, minor: 1.4 });
 
 function geometryFor(style) {
   const major = style.startsWith('major'), success = style.endsWith('Success');
@@ -19,18 +22,18 @@ function geometryFor(style) {
   }
   const rings = major ? 3 : 1, segments = major ? 32 : 20;
   for (let ring = 0; ring < rings; ring++) {
-    const radius = (major ? 1.32 : .53) * (1 - ring * .23);
+    const radius = (major ? 6.2 : 1.25) * (1 - ring * .23);
     for (let j = 0; j < segments; j++) {
       const a = j / segments * Math.PI * 2, b = (j + 1) / segments * Math.PI * 2;
       stroke(Math.cos(a) * radius, Math.sin(a) * radius * .82,
-        Math.cos(b) * radius, Math.sin(b) * radius * .82, major ? .028 : .022);
+        Math.cos(b) * radius, Math.sin(b) * radius * .82, major ? .18 : .085);
     }
   }
   if (major) for (let i = 0; i < 8; i++) {
     const a = i / 8 * Math.PI * 2;
-    const inner = success ? .8 : .35, outer = success ? 1.55 : 1.05;
+    const inner = success ? 3.7 : 1.7, outer = success ? 7.1 : 5.0;
     stroke(Math.cos(a) * inner, Math.sin(a) * inner * .82,
-      Math.cos(a) * outer, Math.sin(a) * outer * .82, .025);
+      Math.cos(a) * outer, Math.sin(a) * outer * .82, .18);
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -47,7 +50,7 @@ export class ThreeBreakthroughFx {
     for (const style of STYLES) {
       const geometry = geometryFor(style);
       const material = new THREE.MeshBasicMaterial({ color: COLORS[style], transparent: true,
-        opacity: style.startsWith('major') ? .88 : .7, side: THREE.DoubleSide,
+        opacity: style.startsWith('major') ? .94 : .8, side: THREE.DoubleSide,
         depthWrite: false, depthTest: false });
       const mesh = new THREE.InstancedMesh(geometry, material, BREAKTHROUGH_3D_CAP);
       mesh.name = `BreakthroughFx:${plane}:${style}`; mesh.count = 0; mesh.visible = false;
@@ -75,7 +78,7 @@ export class ThreeBreakthroughFx {
         || ![item.x, item.y, item.age, item.ttl].every(Number.isFinite)
         || !(item.ttl > 0) || item.age < 0 || item.age >= item.ttl) continue;
       if (this.stats.active >= BREAKTHROUGH_3D_CAP) { this.stats.overflow++; continue; }
-      const reach = major ? 1.6 : .56, f = this.footprint;
+      const reach = major ? REACH.major : REACH.minor, f = this.footprint;
       f.x = item.x; f.y = item.y; f.width = f.depth = reach * 2;
       if (!decorationFootprintOwned(world, region, inside, f)) { this.stats.regionRejected++; continue; }
       const z = this.elevation.at(item.x, item.y);
