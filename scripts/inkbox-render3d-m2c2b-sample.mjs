@@ -199,22 +199,45 @@ try {
       await check('actual house geometry raycasts to its original house key and exact village', () => {
         const stage = host.stages.get('mortal'), layer = stage.settlements, mesh = layer.environmentBatch.meshes.get('env_house_base_lod0');
         const source = mesh.userData.renderBuildings[0], matrix = new THREE.Matrix4(); mesh.getMatrixAt(0, matrix);
-        const target = new THREE.Vector3(0, .6, 0).applyMatrix4(matrix);
         const camera = host.cameraRig.camera;
-        camera.position.copy(target).add(new THREE.Vector3(0,30,.1)); camera.lookAt(target); camera.updateMatrixWorld(true); camera.updateProjectionMatrix();
-        const ndc = target.clone().project(camera);
-        const hit = host.pick((ndc.x + 1) * host.width / 2, (1 - ndc.y) * host.height / 2);
+        const geometry = mesh.geometry, positions = geometry.getAttribute('position'), indices = geometry.index;
+        let target = null, ndc = null, hit = null;
+        // The natural roof center can be covered by opaque vegetation after a
+        // style scale change. Sample actual roof faces and keep a visible one.
+        for (let i = 0; i < indices.count && !hit; i += 3) {
+          const a = new THREE.Vector3().fromBufferAttribute(positions, indices.getX(i));
+          const b = new THREE.Vector3().fromBufferAttribute(positions, indices.getX(i + 1));
+          const c = new THREE.Vector3().fromBufferAttribute(positions, indices.getX(i + 2));
+          const local = a.add(b).add(c).multiplyScalar(1 / 3);
+          if (local.y < .55) continue;
+          const surface = local.applyMatrix4(matrix);
+          camera.position.copy(surface).add(new THREE.Vector3(0,30,.1)); camera.lookAt(surface);
+          camera.updateMatrixWorld(true); camera.updateProjectionMatrix();
+          const projected = surface.clone().project(camera);
+          const picked = host.pick((projected.x + 1) * host.width / 2, (1 - projected.y) * host.height / 2);
+          if (picked?.kind === 'house' && picked.houseKey === source.houseKey) {
+            target = surface; ndc = projected; hit = picked;
+          }
+        }
+        assert(hit, 'at least one actual roof face remains visible on the natural house');
         assert.equal(hit?.kind, 'house'); assert.equal(hit.houseKey, source.houseKey);
         const resolved = resolvePlaneSubject(world, hit.plane, hit);
         assert(resolved); assert.equal(resolved.village.id, source.settlementId);
         const terrainOnly = host.pickPlane((ndc.x + 1) * host.width / 2, (1 - ndc.y) * host.height / 2, 'mortal');
         assert.equal(terrainOnly.kind, 'terrain');
-        report.pick = { houseKey: hit.houseKey, settlementId: hit.settlementId, originalXY: [hit.houseX,hit.houseY] };
+        report.pick = { houseKey: hit.houseKey, settlementId: hit.settlementId, originalXY: [hit.houseX,hit.houseY], roofTarget: target.toArray() };
         // Choose a genuinely visible center surface. Its center may lie underneath
         // a taller real house; a fixed center ray would then test the wrong object.
         let checkedSurfaces = 0;
         const objects = [stage.terrain.mesh];
         layer.group.traverse(m=>{if(m.isInstancedMesh&&m.visible&&m.count)objects.push(m);});
+        for (const part of [stage.entities, stage.markers, stage.realmArtifacts, stage.decorations, stage.vegetation]) {
+          part?.group.traverse(m => {
+            const material = m.material;
+            if (m.isInstancedMesh && m.visible && m.count && material
+              && !Array.isArray(material) && !material.transparent && !(material.alphaTest > 0)) objects.push(m);
+          });
+        }
         const ray = new THREE.Raycaster(); host.scene.updateMatrixWorld(true);
         for (const center of layer._selectedBuildings.filter(b => b.type === 'center')) {
           const at = stage.coordinates.worldToRender(center.x, center.y, stage.elevation.at(center.x,center.y));
