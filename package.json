@@ -100,7 +100,23 @@
     "test:g1:integration": "node scripts/inkbox-g1-integration.mjs",
     "test:g1:longrun": "node scripts/inkbox-g1-longrun.mjs",
     "test:g1:browser": "node scripts/inkbox-g1-browser.mjs",
-    "check:ui": "npm run test:g1:web && npm run test:qol && npm run test:view && npm run test:presentation"
+    "check:ui": "npm run test:g1:web && npm run test:qol && npm run test:view && npm run test:presentation",
+    "test:g2:combat": "node scripts/inkbox-g2-combat.mjs",
+    "test:g2:presentation": "node scripts/inkbox-g2-presentation.mjs && node scripts/inkbox-g2-three.mjs",
+    "test:g2": "npm run test:g2:combat && npm run test:g2:presentation",
+    "test:g2:browser": "node scripts/inkbox-g2-browser.mjs",
+    "test:g21:terrain": "node scripts/inkbox-g21-terrain-equivalence.mjs",
+    "test:g22:runtime": "node scripts/inkbox-g22-runtime.mjs",
+    "test:g22:web": "node scripts/inkbox-g22-web.mjs",
+    "test:g22": "npm run test:g22:runtime && npm run test:g22:web",
+    "test:g22:browser": "node scripts/inkbox-g22-browser.mjs",
+    "test:g23": "node scripts/inkbox-g23-observation.mjs && node scripts/inkbox-g23-runtime.mjs && node scripts/inkbox-g23-terrain.mjs",
+    "test:g23:browser": "node scripts/inkbox-g23-browser.mjs && node scripts/inkbox-g23-render-browser.mjs",
+    "test:g2p0": "node scripts/inkbox-g2p0-terrain-cache.mjs && node scripts/inkbox-g2p0-ecology.mjs --long",
+    "test:p1": "node scripts/inkbox-p1-navigation.mjs",
+    "test:p1:browser": "node scripts/inkbox-p1-browser.mjs && node scripts/inkbox-p1-loop-browser.mjs",
+    "test:p1:loop:browser": "node scripts/inkbox-p1-loop-browser.mjs",
+    "test:browser-tools": "node scripts/inkbox-cdp-ownership-test.mjs && node scripts/inkbox-owned-server-check.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

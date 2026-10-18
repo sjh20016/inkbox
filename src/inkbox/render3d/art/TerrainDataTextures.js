@@ -15,8 +15,8 @@ function texture(data, w, h, format, type) {
  * Dirty dispatch is TerrainMesh.update's existing height/type channel, not a new scan.
  */
 export class TerrainDataTextures {
-  constructor(world, elevation) {
-    this.world = world; this.elevation = elevation; this.disposed = false;
+  constructor(world, elevation, fireEnabled = false) {
+    this.world = world; this.elevation = elevation; this.fireEnabled = fireEnabled; this.disposed = false;
     this.packedBroadRadius = 2.5;
     this.packedBroadGradient = true;
     this.heights = new Float32Array(world.size * 4);
@@ -34,7 +34,8 @@ export class TerrainDataTextures {
     const y0 = Math.max(0, Math.floor(region.y0)), y1 = Math.min(w.h - 1, Math.ceil(region.y1));
     if (x0 > x1 || y0 > y1) return;
     const height = flags.height !== false, type = flags.type !== false;
-    if (!height && !type) return;
+    const fire = this.fireEnabled && (type || flags.fire === true);
+    if (!height && !type && !fire) return;
     for (let y = y0; y <= y1; y++) {
       for (let x = x0; x <= x1; x++) {
         const i = y * w.w + x;
@@ -43,8 +44,9 @@ export class TerrainDataTextures {
           this.heights[i * 4 + 1] = this.elevation.node(x, y);
         }
         if (type) this.types[i * 4] = w.type[i] < TERRAIN_INFO.length ? w.type[i] : 5;
+        if (fire) this.types[i * 4 + 3] = w.fire[i] > 0.02 ? Math.round(Math.min(1, w.fire[i]) * 255) : 0;
       }
-      if (type) this.typeTexture.addUpdateRange((y * w.w + x0) * 4, (x1 - x0 + 1) * 4);
+      if (type || fire) this.typeTexture.addUpdateRange((y * w.w + x0) * 4, (x1 - x0 + 1) * 4);
     }
     if (height) {
       // Each gradient touches only G on the same axis at offsets ±2.5. The
@@ -72,7 +74,7 @@ export class TerrainDataTextures {
       }
       this.heightTexture.needsUpdate = true; this.uploads.height++;
     }
-    if (type) { this.typeTexture.needsUpdate = true; this.uploads.type++; }
+    if (type || fire) { this.typeTexture.needsUpdate = true; this.uploads.type++; }
     this.uploads.cells += (x1 - x0 + 1) * (y1 - y0 + 1);
   }
   dispose() {

@@ -1,3 +1,4 @@
+import { recordCombatAttempt, emitCombatHit } from './presentation.js';
 // 水墨沙盒 · 生灵、聚落与宗门
 //
 // 这是沙盒的「活」的部分。小人自己觅食、结庐、修行、拜师、结仇、开宗立派；
@@ -1086,6 +1087,7 @@ export class Life {
   }
 
   attack(e, target, dtDays) {
+    recordCombatAttempt(this.world);
     const dist = Math.hypot(target.x - e.x, target.y - e.y);
     if (dist > 1.6) return;
     const power = combatPower(e);
@@ -1094,7 +1096,9 @@ export class Life {
     // ⚠️ 减伤后的伤害**只算一次**存进 `hit`。原代码在下面的致死判定里
     //    **重算了一遍**同一个表达式——两处一旦分叉，击杀记账会静默算错。
     const hit = damage * (10 / (10 + defense * 0.35));
+    const hpBefore = target.hp;
     target.hp -= hit;
+    emitCombatHit(this.world, e, target, hit, hpBefore);
 
     // ── 养伤（轻伤档）：打了一架、被打伤但没死 ⇒ 半年不出战 ──────────
     // ⚠️ 三条守卫缺一不可：

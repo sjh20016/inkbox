@@ -523,6 +523,10 @@ export function attemptBreakthrough(world, entity, rng) {
       entity,
     );
     entity._lastOmen = omen;
+    // Ordinary bottleneck tribulations are real in UpperLife too; no combat rules are added.
+    emitPresentation(world, 'tribulation', {
+      x: Math.floor(entity.x), y: Math.floor(entity.y), subjectId: entity.id,
+    });
     // 走 speak 而不是直接 record：tribulation 词池只有一句，直录会复读成唱片
     if (rng() < 0.25) speak(world, rng, 'tribulation');
   }

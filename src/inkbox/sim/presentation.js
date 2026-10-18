@@ -137,3 +137,93 @@ export function emitRiftCross(world, spec = {}) {
   }
   return out.filter((e) => e !== null);
 }
+
+// Combat is an observation of real Life.attack HP subtraction, never a new rule.
+// These counters, toggles, sampler and injectable test emitter are all transient.
+const combatSources = new WeakMap();
+export const COMBAT_DAY_BUDGET = 24;
+const COMBAT_COUNTERS = ['attempts','hits','sampled','emitted','pairSkipped','budgetSkipped','disabled','sourceOff','invalid','queueDropped'];
+function combatSource(world) {
+  if (!world || typeof world !== 'object') return null;
+  let state = combatSources.get(world);
+  if (!state) {
+    state = {enabled:true,sourceEnabled:true,emitter:emitPresentation,dayBucket:null,pairs:new Set(),bucketSampled:0,bucketEmitted:0};
+    for (const key of COMBAT_COUNTERS) state[key] = 0;
+    combatSources.set(world,state);
+  }
+  return state;
+}
+export function configureCombatPresentation(world, options = {}) {
+  const state = combatSource(world);
+  if (!state) return false;
+  if (typeof options.enabled === 'boolean') state.enabled = options.enabled;
+  if (typeof options.sourceEnabled === 'boolean') state.sourceEnabled = options.sourceEnabled;
+  if (options.emitter === null) state.emitter = emitPresentation;
+  else if (typeof options.emitter === 'function') state.emitter = options.emitter;
+  return true;
+}
+export function combatPresentationStats(world) {
+  const state = world && combatSources.get(world);
+  const snapshot = {};
+  for (const key of COMBAT_COUNTERS) snapshot[key] = state?.[key] || 0;
+  snapshot.dayBucket = state?.dayBucket ?? null;
+  snapshot.bucketPairs = state?.pairs.size || 0;
+  snapshot.bucketSampled = state?.bucketSampled || 0;
+  snapshot.bucketEmitted = state?.bucketEmitted || 0;
+  return Object.freeze(snapshot);
+}
+/** Called at the actual attack entrance, including attacks rejected for distance. */
+export function recordCombatAttempt(world) {
+  try { const state = combatSource(world); if (state) state.attempts += 1; } catch { /* Presentation must never stop simulation. */ }
+}
+function combatStyle(attacker) {
+  const root = attacker.root;
+  const names = [root?.rootName,root?.mutated?.name];
+  if (names.some(name => name === '雷灵根' || name === '九天雷灵根')
+    || Array.isArray(attacker.techniques) && attacker.techniques.some(manual => manual?.kind === 'thunder')) return 'thunder';
+  return Array.isArray(root?.elements) && root.elements.includes('火') ? 'fire' : 'blade';
+}
+/**
+ * The caller has already subtracted real HP. All property reads, style inference,
+ * event construction and emission stay inside this exception boundary.
+ * Style is an affinity hint, not a claim that the ordinary attack casts a spell.
+ */
+export function emitCombatHit(world, attacker, target, hit, hpBefore) {
+  let state;
+  try {
+    state = combatSource(world);
+    if (!state) return null;
+    const actualHit = hpBefore - target.hp;
+    if (!(hpBefore > 0) || !Number.isFinite(hit) || !(hit > 0) || !Number.isFinite(actualHit) || !(actualHit > 0)) return null;
+    state.hits += 1;
+    if (!state.sourceEnabled) { state.sourceOff += 1; return null; }
+    if (!state.enabled) { state.disabled += 1; return null; }
+    const plane = world.plane || 'mortal', day = world.day;
+    if (plane !== 'mortal' || !Number.isFinite(day)
+      || !Number.isSafeInteger(attacker.id) || attacker.id <= 0 || !Number.isSafeInteger(target.id)
+      || target.id <= 0 || attacker.id === target.id) { state.invalid += 1; return null; }
+    const bucket = Math.floor(day);
+    if (state.dayBucket !== bucket) { state.dayBucket = bucket; state.pairs.clear(); state.bucketSampled = 0; state.bucketEmitted = 0; }
+    const pair = `${attacker.id}:${target.id}`;
+    if (state.pairs.has(pair)) { state.pairSkipped += 1; return null; }
+    if (state.bucketSampled >= COMBAT_DAY_BUDGET) { state.budgetSkipped += 1; return null; }
+    if (!Array.isArray(world.entities) || !world.entities.includes(attacker) || !world.entities.includes(target)
+      || ![attacker.x,attacker.y,target.x,target.y].every(Number.isFinite)) { state.invalid += 1; return null; }
+    // Charge the bounded work budget even if the queue is full or the emitter fails.
+    state.pairs.add(pair); state.bucketSampled += 1; state.sampled += 1;
+    const level = Number.isFinite(attacker.level) ? Math.max(0,attacker.level) : 0;
+    const tier = level >= 30 ? 'high' : level >= 10 ? 'mid' : 'low';
+    const hpScale = Number.isFinite(target.maxHp) && target.maxHp > 0 ? target.maxHp : hpBefore;
+    const intensity = Math.min(1,Math.max(0.2,0.2 + Math.min(60,level) / 60 * 0.4 + Math.min(1,actualHit / hpScale) * 0.4));
+    const result = state.emitter(world,'combat-hit',{
+      plane,day,x:target.x,y:target.y,subjectId:attacker.id,targetId:target.id,intensity,
+      data:{style:combatStyle(attacker),fromX:attacker.x,fromY:attacker.y,tier},
+    });
+    if (!result) { state.queueDropped += 1; return null; }
+    state.bucketEmitted += 1; state.emitted += 1;
+    return result;
+  } catch {
+    if (state) state.invalid += 1;
+    return null;
+  }
+}

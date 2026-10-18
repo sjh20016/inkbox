@@ -2,32 +2,34 @@
 
 import { SEA_LEVEL, TERRAIN } from '../core/config.js';
 import { clamp } from '../core/noise.js';
-import { OVER, decayOverlay, recomputeRect, markDirty, flushDirty } from '../world/terrain.js';
+import { OVER, decayOverlay, markDirty, flushDirty } from '../world/terrain.js';
 
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 
-const GROWABLE = new Set([
-  TERRAIN.GRASS, TERRAIN.MEADOW, TERRAIN.FOREST, TERRAIN.JUNGLE,
-  TERRAIN.SAVANNA, TERRAIN.SWAMP, TERRAIN.ASH, TERRAIN.SCORCHED,
-]);
-
 /** 植被：湿润温暖处向 1 生长，干旱寒冷处衰退；玩家烧过的地会先长草再成林 */
 export function stepVegetation(world, dtDays, rng) {
-  const { w, h, veg, moist, temp, height, over, type } = world;
+  const { w, h, veg, moist, temp, height, water, over, type } = world;
   const rate = clamp(dtDays * 0.0022, 0, 0.05);
   let touched = 0;
-  const dirty = [];
+  let changedOverlay = false;
 
   for (let y = 0; y < h; y += 1) {
     for (let x = 0; x < w; x += 1) {
       const i = y * w + x;
-      if (height[i] < SEA_LEVEL + 0.004) {
-        if (veg[i] !== 0) veg[i] = 0;
+      if (height[i] < SEA_LEVEL + 0.004 || water[i] > 0.0015) {
+        if (veg[i] !== 0) {
+          veg[i] = 0;
+          touched += 1;
+        }
         continue;
       }
       const t = type[i];
       if (t === TERRAIN.ROCK || t === TERRAIN.MOUNTAIN || t === TERRAIN.PEAK || t === TERRAIN.SNOW || t === TERRAIN.LAVA) {
-        veg[i] = Math.max(0, veg[i] - rate * 2);
+        const next = Math.max(0, veg[i] - rate * 2);
+        if (next !== veg[i]) {
+          veg[i] = next;
+          touched += 1;
+        }
         continue;
       }
       if (world.fire[i] > 0.05) continue;
@@ -48,16 +50,15 @@ export function stepVegetation(world, dtDays, rng) {
         // 焦土长草：植被回到一定密度后，覆盖层自动褪去
         if (over[i] === OVER.SCORCHED && veg[i] > 0.35) {
           over[i] = OVER.NONE;
-          dirty.push(x, y);
+          markDirty(world, i);
+          changedOverlay = true;
         }
       }
     }
   }
 
-  for (let k = 0; k < dirty.length; k += 2) {
-    recomputeRect(world, dirty[k], dirty[k + 1], dirty[k], dirty[k + 1]);
-  }
-  if (touched > 0) world.touch();
+  if (changedOverlay) flushDirty(world);
+  else if (touched > 0) world.touch();
   return touched;
 }
 
@@ -72,11 +73,18 @@ export function stepFire(world, dtDays, rng) {
   next.set(fire);
 
   let active = 0;
-  for (let y = 1; y < h - 1; y += 1) {
-    for (let x = 1; x < w - 1; x += 1) {
+  let scorched = false;
+  let clearedResidue = false;
+  const burnCell = (x, y) => {
       const i = y * w + x;
       const f = fire[i];
-      if (f <= 0.01) continue;
+      if (f <= 0.01) {
+        if (f > 0 && next[i] <= 0.01) {
+          next[i] = 0;
+          clearedResidue = true;
+        }
+        return;
+      }
       active += 1;
 
       // 燃烧消耗植被
@@ -87,17 +95,20 @@ export function stepFire(world, dtDays, rng) {
         if (over[i] !== OVER.SCORCHED) {
           over[i] = OVER.SCORCHED;
           markDirty(world, i);
+          scorched = true;
         }
         next[i] = Math.min(1, f + consumed * 0.5);
       } else {
         next[i] = Math.max(0, f - burn * 0.7);
+        if (next[i] <= 0.01) next[i] = 0;
       }
 
       // 向邻格蔓延：湿度、植被决定成功率
-      if (f < 0.12) continue;
+      if (f < 0.12) return;
       for (let d = 0; d < 8; d += 1) {
         const nx = x + DIRS[d][0];
         const ny = y + DIRS[d][1];
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
         const ni = ny * w + nx;
         if (height[ni] < SEA_LEVEL + 0.004) continue;
         if (world.type[ni] === TERRAIN.LAVA) continue;
@@ -110,11 +121,20 @@ export function stepFire(world, dtDays, rng) {
           next[ni] = Math.max(next[ni], 0.25 + rng() * 0.35);
         }
       }
+  };
+  // Keep the historical interior traversal (and its RNG order) before processing
+  // ignited edge cells, which otherwise never burn out.
+  for (let y = 1; y < h - 1; y += 1) {
+    for (let x = 1; x < w - 1; x += 1) {
+      burnCell(x, y);
     }
   }
+  for (let x = 0; x < w; x += 1) { burnCell(x, 0); if (h > 1) burnCell(x, h - 1); }
+  for (let y = 1; y < h - 1; y += 1) { burnCell(0, y); if (w > 1) burnCell(w - 1, y); }
 
   for (let i = 0; i < world.size; i += 1) fire[i] = next[i];
-  if (active > 0) world.touch();
+  if (scorched) flushDirty(world);
+  if (active > 0 || clearedResidue) world.touch();
   return active;
 }
 

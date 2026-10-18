@@ -53,13 +53,16 @@ check('four audited API event kinds map to torn brushes without a second queue d
   let reads=0;const reader={snapshotPlane:()=>{reads++;return frozen;}};
   try{probe.update(reader,current,{enabled:true});
     assert.equal(reads,1);assert.equal(probe.stats.events,4);assert.equal(probe.stats.active,12);
-    assert.equal(probe.mesh.count,1,'unrelated legacy tribulation remains');
+    assert.equal(probe.mesh.count,0,'tribulation now uses a pooled lightning brush, never a combat debug ring');
+    assert.equal(probe.combat.stats.lightningActive,1);
+    assert.equal(probe.combat.stats.combatActive,0);
     assert.equal(sha(frozen),snapshotSha);assert.equal(sha(current),before);
     assert.deepEqual(peekRuntimeEvents(current),queued);
     const ids=[probe.narrative.mesh.uuid,probe.narrative.geometry.uuid,probe.narrative.material.uuid];
     for(let i=0;i<60;i++)probe.update(reader,current,{enabled:i%2===0});
     assert.deepEqual([probe.narrative.mesh.uuid,probe.narrative.geometry.uuid,probe.narrative.material.uuid],ids);
-    assert.equal(probe.stats.active,0);assert.equal(probe.mesh.count,5,'off retains former debug representation');
+    assert.equal(probe.stats.active,0);assert.equal(probe.mesh.count,4,'off retains the four former rift debug representations');
+    assert.equal(probe.combat.stats.lightningActive,1,'tribulation remains visible when narrative brushes are off');
   }finally{probe.dispose();}
 });
 
