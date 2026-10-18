@@ -109,6 +109,7 @@
     "test:g2:combat": "node scripts/inkbox-g2-combat.mjs",
     "test:g24": "node scripts/inkbox-g24-fire.mjs",
     "test:g25": "node scripts/inkbox-g25-fate.mjs && node scripts/inkbox-g25-sites.mjs && node scripts/inkbox-g25-breakthrough.mjs",
+    "test:g26": "node scripts/inkbox-g26-controls.mjs && node scripts/inkbox-g26-picking.mjs && node scripts/inkbox-g26-settlement.mjs && node scripts/inkbox-g26-human.mjs && node scripts/inkbox-g26-style.mjs && node scripts/inkbox-g26-fx.mjs && node scripts/inkbox-g26-watch.mjs",
     "test:g2:presentation": "node scripts/inkbox-g2-presentation.mjs && node scripts/inkbox-g2-three.mjs",
     "test:g2": "npm run test:g2:combat && npm run test:g2:presentation",
     "test:g2:browser": "node scripts/inkbox-g2-browser.mjs",

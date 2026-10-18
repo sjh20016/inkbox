@@ -19,6 +19,11 @@
 
 import { findEntity } from './biography.js';
 import { findDead } from './necrology.js';
+import { SOUL_ROUTES } from './reincarnation.js';
+
+const CURRENT_GHOST_ROUTES = new Set([
+  SOUL_ROUTES.NATURAL, SOUL_ROUTES.LINGER, SOUL_ROUTES.GHOST, SOUL_ROUTES.WRAITH,
+]);
 
 /** 记挂上限。满了要玩家先取关一个，**不静默顶掉**。 */
 export const WATCH_CAP = 12;
@@ -132,6 +137,21 @@ export function netherGhostOf(world, key) {
   return null;
 }
 
+/** A living Nether ghost of this specific recorded death; separate from rift falls. */
+export function currentGhostOf(world, key, dead) {
+  if (!dead || key !== `mortal:${dead.id}` || !Number.isFinite(dead.died)) return null;
+  const list = world?.nether?.entities;
+  if (!Array.isArray(list)) return null;
+  for (let i = list.length - 1; i >= 0; i -= 1) {
+    const ghost = list[i], origin = ghost?.ghostOf;
+    if (ghost?.sp === 'ghost' && ghost.hp > 0 && Number.isSafeInteger(ghost.id) && ghost.id > 0
+      && Number.isFinite(ghost.x) && Number.isFinite(ghost.y)
+      && origin?.ref === key && origin.deathDay === dead.died
+      && CURRENT_GHOST_ROUTES.has(origin.route)) return ghost;
+  }
+  return null;
+}
+
 /**
  * 解析一条记挂的当前状态。**纯读、不抛错**（人不存在也返回 `unknown`）。
  *
@@ -161,7 +181,8 @@ export function resolveWatch(world, entry) {
   const dead = findDead(world, entry.lastKnownId);
   if (dead) {
     const year = Math.floor((Number(dead.died) || 0) / 360) + 1;
-    return { state: 'dead', label: `故人 · 故于仙历 ${year} 年`, dead };
+    return { state: 'dead', label: `故人 · 故于仙历 ${year} 年`, dead,
+      currentGhost: currentGhostOf(world, entry.key, dead) };
   }
   const ghost = netherGhostOf(world, entry.key);
   if (ghost) return { state: 'nether', label: '已落幽冥', netherId: ghost.id, ghost };

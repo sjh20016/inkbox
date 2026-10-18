@@ -240,6 +240,19 @@ export function paintLife(life, x, y, radius, species, count) {
   return life.spawn(x, y, species, count);
 }
 
+/** Player-only human placement; ordinary simulation spawns keep their existing path. */
+export function paintPlayerHumans(life, x, y, count = 8) {
+  const anchor = { x: Math.floor(x), y: Math.floor(y) }, points = [];
+  const placed = life.spawn(x, y, SPECIES.HUMAN, count, 0, {
+    playerPlacement: true,
+    onSpawn: entity => {
+      const px = Math.floor(entity.x), py = Math.floor(entity.y);
+      points.push({ x: px, y: py, dx: px - anchor.x, dy: py - anchor.y });
+    },
+  });
+  return { placed, requested: count, anchor, points };
+}
+
 /** 抹除：范围内生灵消散 */
 export function eraseLife(world, x, y, radius) {
   const r2 = radius * radius;

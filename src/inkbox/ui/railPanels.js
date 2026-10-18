@@ -40,6 +40,7 @@ import {
   reincarnationStats, ROUTE_LABEL, SOUL_ROUTES, SOUL_ROUTE_POSSESS,
 } from '../sim/reincarnation.js';
 import { netherGhostStats, netherEcoStats, netherItemStats } from '../sim/netherLife.js';
+import { environmentPointVisible } from '../g2/environmentObservationRuntime.js';
 import { upperEcoStats } from '../world/planes.js';
 import {
   WATCH_CAP, watchRows, ensureWatch,
@@ -719,9 +720,13 @@ export function refreshWatchPanel(sb) {
       const extra = (r.upper && world.upper)
         ? `<div class="necro-epitaph">${upperFateOf(world.upper, r.upper)}</div>`
         : '';
+      const ghost = r.state === 'dead' ? r.currentGhost : null;
+      const canViewGhost = !!(ghost && sb.environmentObservation
+        && environmentPointVisible(sb, 'nether', Math.floor(ghost.x), Math.floor(ghost.y)));
+      const ghostAction = canViewGhost ? '<button class="btn" data-watch-ghost>查看幽冥魂</button>' : '';
       return `<div class="ink-log notable-row" data-watch="${e.key}">`
         + `<span class="notable-reason">★</span>${e.name}（${tags.join(' · ')}）`
-        + `${extra}</div>`;
+        + `${extra}${ghostAction}</div>`;
     }).join('') + foldControl(sb, 'watch', hidden, expanded, '人')
     : '<div class="ink-empty">尚未记挂任何人。点开一个人物卡，按「☆ 记挂此人」。</div>');
   bindFold(box, sb);
@@ -730,7 +735,11 @@ export function refreshWatchPanel(sb) {
   if (!sb.watchBound) {
     box.addEventListener('click', (ev) => {
       const el = ev.target.closest('[data-watch]');
-      if (el) sb.openWatchRow(el.dataset.watch);
+      if (!el) return;
+      if (ev.target.closest('[data-watch-ghost]')) {
+        ev.stopPropagation();
+        sb.focusWatchedGhost(el.dataset.watch);
+      } else sb.openWatchRow(el.dataset.watch);
     });
     // 点标题 = 把全部记挂标为已读（红点熄灭、未读数归零）。第一版**不造通知中心**，
     // 只用这一下「清红点」的手势。标题是常驻元素，挂一次即可。

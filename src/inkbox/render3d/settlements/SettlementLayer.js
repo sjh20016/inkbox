@@ -34,6 +34,8 @@ import { createBuildingLODBatches, createSettlementClusterGeometry } from '../lo
 import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
 import { EnvironmentBatch } from '../environment/EnvironmentBatch.js';
 import { houseFamilyFor, MORTAL_HOUSE_ASSET_IDS } from './houseFamily.js';
+import { G26_STYLE_SCALES, getG26Style, subscribeG26Style } from '../characters/CharacterLibrary.js';
+import { liveSettlementHouseType } from '../../sim/settlementFlood.js';
 
 /** 建筑实例容量：`maxVillages`(220) × 每村最多 19 屋 + 中心建筑 + 宗门（max 10）。 */
 const CAPACITY = 4608;
@@ -73,17 +75,13 @@ export function deriveSettlements(world, { productionAssets = false } = {}) {
     for (const h of houses) {
       if (!h || !Number.isFinite(h.x) || !Number.isFinite(h.y)) continue;
       const houseX = Math.floor(h.x), houseY = Math.floor(h.y);
-      const inside = typeof world.inside !== 'function' || world.inside(houseX, houseY);
-      const cellIndex = inside && typeof world.idx === 'function' ? world.idx(houseX, houseY) : -1;
-      const structType = Number.isInteger(cellIndex) && cellIndex >= 0 ? world.struct?.[cellIndex] : undefined;
+      const structType = liveSettlementHouseType(world, h);
       out.historicalCandidates++;
       if (structType === STRUCT.HOUSE) out.currentHouses++;
       else if (structType === STRUCT.HALL) out.currentHalls++;
       else out.excludedHouses++;
-      if (useProductionAssets && structType !== STRUCT.HOUSE && structType !== STRUCT.HALL) continue;
-      // The legacy presentation keeps its build-time sizing. Production uses the live structure
-      // to decide which fallback still represents a true hall after damage or rebuilding.
-      const hall = useProductionAssets ? structType === STRUCT.HALL : h.type === STRUCT.HALL;
+      if (structType !== STRUCT.HOUSE && structType !== STRUCT.HALL) continue;
+      const hall = structType === STRUCT.HALL;
       const s = scale * (hall ? 1.6 : 1);
       const houseKey = `house:${String(settlementId)}:${houseX}:${houseY}`;
       let family = useProductionAssets ? houseFamilyFor(world.seed, v, houseX, houseY) : null;
@@ -100,7 +98,9 @@ export function deriveSettlements(world, { productionAssets = false } = {}) {
     }
     // 中心建筑：等级 ≥ 2 的聚落在自己的中心格加一座明显更高的楼——
     // 这是「村落 / 集镇 / 城池 / 王都」体量差异最直观的读法（**派生量，不是新规则**）。
-    if ((Number(v.level) || 1) >= 2) {
+    const centerHasLiveHouse = houses.some(h => h && Math.floor(h.x) === Math.floor(v.x)
+      && Math.floor(h.y) === Math.floor(v.y) && liveSettlementHouseType(world, h));
+    if ((Number(v.level) || 1) >= 2 && centerHasLiveHouse) {
       const s = scale * 1.9 * (useProductionAssets ? .4 : 1);
       out.buildings.push({
         x: v.x + 0.5, y: v.y + 0.5,
@@ -157,6 +157,9 @@ export class SettlementLayer {
     this.interval = 1 / 4;                  // 半静态：4 Hz
     this.clock = Infinity;
     this.lastDerived = null;
+    this._unsubscribeG26Style = subscribeG26Style(() => {
+      if (this.lastDerived) this._reassignAndWrite(true);
+    });
     this.environmentLibrary = null; this.environmentMaterial = null; this.environmentBatch = null;
     this.productionAssetsEnabled = false;
     this.colorCache = new Map();
@@ -458,7 +461,8 @@ export class SettlementLayer {
     nextHlod.clear();
     for (const group of this._groups) {
       const prior = previousHlod.get(group.id) ? 2 : 1;
-      const groupPixels = projectedPixels(group.maxHeight, this.artView, Math.max(group.width, group.depth));
+      const groupPixels = projectedPixels(group.maxHeight * this.houseVisualScale(), this.artView,
+        Math.max(group.width, group.depth));
       const wantsHlod = !!(this.world?.plane === 'mortal' && this.artProfile && this.lodEnabled && !group.mixed
         && group.houseCount > 1 && group.selectedHouses.length === group.houseCount
         && chooseLOD('settlement', groupPixels, prior, true) === 2);
@@ -487,7 +491,8 @@ export class SettlementLayer {
     for (let i = 0; i < count; i++) {
       const b = selected[i];
       if (this._nextLods[i] === 3) continue;
-      const pixels = projectedPixels(b.h + b.roofH, this.artView, Math.max(b.w, b.d));
+      const scale = this.houseVisualScale(b);
+      const pixels = projectedPixels((b.h + b.roofH) * scale, this.artView, Math.max(b.w, b.d) * scale);
       this._pixelsBySource[i] = pixels;
       this._desiredLods[i] = activeLOD
         ? chooseLOD('building', pixels, this._currentLods[i] < 0 ? undefined : this._currentLods[i], true) : 0;
@@ -533,10 +538,11 @@ export class SettlementLayer {
 
   _priorityVisible(building) {
     const p = this.coordinates.worldToRender(building.x, building.y, this.elevation.at(building.x, building.y));
-    const height = building.h + building.roofH;
+    const scale = this.houseVisualScale(building);
+    const height = (building.h + building.roofH) * scale;
     this._priorityPoint.set(p.x, p.y + height / 2, p.z);
     this._prioritySphere.center.copy(this._priorityPoint);
-    this._prioritySphere.radius = Math.hypot(building.w, building.d, height) / 2;
+    this._prioritySphere.radius = Math.hypot(building.w * scale, building.d * scale, height) / 2;
     return this._priorityFrustum.intersectsSphere(this._prioritySphere) ? 1 : 0;
   }
 
@@ -549,24 +555,29 @@ export class SettlementLayer {
     for (let i = 0; i < bodyCount; i++) {
       const b = this._selectedBuildings[i], lod = this._currentLods[i];
       if (lod === 3) continue;
+      const visualScale = this.houseVisualScale(b);
       const p = this.coordinates.worldToRender(b.x, b.y, 0), ground = this.elevation.at(b.x, b.y);
       const useProductionHouse = this.productionAssetsEnabled && this.world?.plane === 'mortal' && this.environmentBatch
         && b.type === 'house' && (b.structType === STRUCT.HOUSE || b.structType === STRUCT.HALL) && lod >= 0 && lod <= 2;
       if (useProductionHouse) {
         productionRecords.push({ assetId: b.productionAssetId, lod,
           position: { x: p.x, y: ground, z: p.z },
-          scale: { x: b.w, y: b.h + b.roofH, z: b.d }, rotationY: b.rotationY, source: b });
+          scale: { x: b.w * visualScale, y: (b.h + b.roofH) * visualScale, z: b.d * visualScale },
+          rotationY: b.rotationY, source: b });
         continue;
       }
       this.dummy.rotation.set(0, 0, 0);
       if (lod === 0) {
-        this.dummy.position.set(p.x, ground, p.z); this.dummy.scale.set(b.w, b.h, b.d); this.dummy.updateMatrix();
+        this.dummy.position.set(p.x, ground, p.z);
+        this.dummy.scale.set(b.w * visualScale, b.h * visualScale, b.d * visualScale); this.dummy.updateMatrix();
         this.bodies.setMatrixAt(counts[0], this.dummy.matrix); this.bodies.setColorAt(counts[0]++, this.colorOf(b.body));
-        this.dummy.position.set(p.x, ground + b.h, p.z); this.dummy.scale.set(b.w, b.roofH, b.d); this.dummy.updateMatrix();
+        this.dummy.position.set(p.x, ground + b.h * visualScale, p.z);
+        this.dummy.scale.set(b.w * visualScale, b.roofH * visualScale, b.d * visualScale); this.dummy.updateMatrix();
         this.roofs.setMatrixAt(counts[1], this.dummy.matrix); this.roofs.setColorAt(counts[1]++, this.colorOf(b.roof));
         lists[0].push(b);
       } else {
-        this.dummy.position.set(p.x, ground, p.z); this.dummy.scale.set(b.w, b.h + b.roofH, b.d); this.dummy.updateMatrix();
+        this.dummy.position.set(p.x, ground, p.z);
+        this.dummy.scale.set(b.w * visualScale, (b.h + b.roofH) * visualScale, b.d * visualScale); this.dummy.updateMatrix();
         const target = lod === 1 ? this.lod1 : this.lod2, slot = lod === 1 ? 2 : 3;
         target.setMatrixAt(counts[slot]++, this.dummy.matrix); lists[lod].push(b);
       }
@@ -583,14 +594,17 @@ export class SettlementLayer {
           this._hlodPickEntries.push(source);
           productionRecords.push({ assetId: cluster.productionAssetId, lod: 3, source,
             position: { x: p.x, y: this.elevation.at(cluster.groundX,cluster.groundY), z: p.z },
-            scale: { x: quarter ? cluster.depth : cluster.width, y: cluster.height, z: quarter ? cluster.width : cluster.depth },
+            scale: { x: quarter ? cluster.depth : cluster.width,
+              y: cluster.height * this.houseVisualScale(), z: quarter ? cluster.width : cluster.depth },
             rotationY: cluster.rotationY });
         }
         continue;
       }
       if (this.hlodMode === 'legacy') {
         const p = this.coordinates.worldToRender(group.centerX, group.centerY, 0), ground = this.elevation.at(group.centerX, group.centerY);
-        this.dummy.position.set(p.x, ground, p.z); this.dummy.scale.set(group.width, group.maxHeight, group.depth); this.dummy.rotation.set(0, 0, 0); this.dummy.updateMatrix();
+        this.dummy.position.set(p.x, ground, p.z);
+        this.dummy.scale.set(group.width, group.maxHeight * this.houseVisualScale(), group.depth);
+        this.dummy.rotation.set(0, 0, 0); this.dummy.updateMatrix();
         this.hlodLegacy.setMatrixAt(counts[4], this.dummy.matrix);
         this._hlodLegacyPickEntries[counts[4]] = { id: group.id, settlementId: group.id, x: group.centerX, y: group.centerY,
           source: 'village-hlod-legacy', members: group.memberIds };
@@ -600,7 +614,9 @@ export class SettlementLayer {
       for (const cluster of group.clusters) {
         const p = this.coordinates.worldToRender(cluster.centerX, cluster.centerY, 0);
         const ground = this.elevation.at(cluster.groundX, cluster.groundY);
-        this.dummy.position.set(p.x, ground, p.z); this.dummy.scale.set(cluster.width, cluster.height, cluster.depth); this.dummy.rotation.set(0, 0, 0); this.dummy.updateMatrix();
+        this.dummy.position.set(p.x, ground, p.z);
+        this.dummy.scale.set(cluster.width, cluster.height * this.houseVisualScale(), cluster.depth);
+        this.dummy.rotation.set(0, 0, 0); this.dummy.updateMatrix();
         this.hlodCluster.setMatrixAt(counts[5], this.dummy.matrix);
         this._hlodPickEntries[counts[5]] = { id: group.id, settlementId: group.id, x: cluster.centerX, y: cluster.centerY,
           source: 'village-hlod-cluster', members: cluster.memberIds, buildings: cluster.buildingIds };
@@ -652,7 +668,13 @@ export class SettlementLayer {
     return color;
   }
 
+  houseVisualScale(building = null) {
+    return getG26Style() === 'candidate' && (!building || building.type === 'house')
+      ? G26_STYLE_SCALES.house : 1;
+  }
+
   dispose() {
+    this._unsubscribeG26Style?.(); this._unsubscribeG26Style = null;
     this.environmentBatch?.dispose(); this.environmentBatch = null;
     this.setArtProfile(null);
     this.pilotBody?.dispose(); this.pilotRoof?.dispose(); this.pilotMaterial?.dispose();

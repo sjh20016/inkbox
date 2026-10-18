@@ -353,7 +353,7 @@ export class Render3DHost {
   }
   brush(hit, radius) { this.brushOverlay.update(hit, radius, this.stages.get('mortal')); }
   /** 默认拾取：可见几何优先（§61）——界缘也能被命中（§62）。 */
-  pick(x, y) { return this.picker.pick(x, y, this.width, this.height); }
+  pick(x, y, options = {}) { return this.picker.pick(x, y, this.width, this.height, null, options); }
   /** M2-B B3（§52）：划窗时**只**拾凡间——目标界已经开着也不能把路径点写到它上面。 */
   pickPlane(x, y, plane) { return this.picker.pick(x, y, this.width, this.height, plane); }
   /** 拖拽中的路径预览（世界坐标，纯表现）。 */
@@ -411,6 +411,7 @@ export class Render3DHost {
   }
   resize(width, height) { this.width = width; this.height = height; this.gpu.setSize(width, height, false); this.cameraRig.resize(width, height); }
   releaseWorld() {
+    this.picker?.clearHoverCache();
     this.slabProbe?.dispose(); this.slabProbe = null; this.slabRegion = null;
     this.boundary?.dispose(); this.boundary = null; this.boundaryKey = null; this.boundaryField = null;
     for (const stage of this.stages.values()) { stage.fxProbe?.dispose(); stage.dispose(); stage.root.removeFromParent(); }

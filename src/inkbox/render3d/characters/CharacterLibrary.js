@@ -4,6 +4,28 @@ import { CHARACTER_ROLES } from './characterAppearance.js';
 
 const DEFAULT_GLB = new URL('../../../../assets/characters/cultivator/mesh/cultivator_library.glb', import.meta.url).href;
 const DEFAULT_MANIFEST = new URL('../../../../assets/characters/cultivator/data/cultivator_manifest.json', import.meta.url).href;
+const styleListeners = new Set();
+const celUniform = { value: 0 };
+let styleMode = 'baseline';
+
+/** Temporary visual comparison, scoped to Render3D and excluded from world state. */
+export const G26_STYLE_SCALES = Object.freeze({ character: 0.75, house: 0.76 });
+export function getG26Style() { return styleMode; }
+export function setG26Style(mode) {
+  if (mode !== 'baseline' && mode !== 'candidate') throw new RangeError('G2.6 style must be baseline or candidate');
+  if (styleMode === mode) return mode;
+  styleMode = mode;
+  celUniform.value = mode === 'candidate' ? 1 : 0;
+  for (const listener of [...styleListeners]) listener(mode);
+  return mode;
+}
+export function subscribeG26Style(listener) {
+  styleListeners.add(listener);
+  return () => styleListeners.delete(listener);
+}
+if (typeof window !== 'undefined') {
+  window.inkboxG26Style = Object.freeze({ get: getG26Style, set: setG26Style, scales: G26_STYLE_SCALES });
+}
 const ROLE_MODULE_SLOTS = Object.freeze({
   basic: ['weapon', 'back', 'prop', 'tag'],
   sect_disciple: ['weapon', 'tag'],
@@ -32,12 +54,13 @@ function paletteMaterial(source, palette) {
   const count = palette?.count || 12;
   const factionSlot = palette?.factionSlot ?? 5;
   material.onBeforeCompile = shader => {
+    shader.uniforms.g26CelStyle = celUniform;
     shader.vertexShader = shader.vertexShader.replace('#include <common>',
       '#include <common>\nattribute float instancePaletteIndex;\nvarying float vInstancePaletteIndex;');
     shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
       '#include <begin_vertex>\nvInstancePaletteIndex = instancePaletteIndex;');
     shader.fragmentShader = shader.fragmentShader.replace('#include <common>',
-      '#include <common>\nvarying float vInstancePaletteIndex;');
+      '#include <common>\nvarying float vInstancePaletteIndex;\nuniform float g26CelStyle;');
     shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', `
       #ifdef USE_MAP
         vec2 paletteUv = vMapUv;
@@ -48,8 +71,18 @@ function paletteMaterial(source, palette) {
         vec4 sampledDiffuseColor = texture2D(map, paletteUv);
         diffuseColor *= sampledDiffuseColor;
       #endif`);
+    const lightEnd = 'vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + totalEmissiveRadiance;';
+    if (!shader.fragmentShader.includes(lightEnd)) throw new Error('Cultivator Lambert light contract changed');
+    shader.fragmentShader = shader.fragmentShader.replace(lightEnd, `${lightEnd}
+      if (g26CelStyle > 0.5) {
+        float baseLight = max(dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722)), 0.04);
+        float receivedLight = dot(outgoingLight, vec3(0.2126, 0.7152, 0.0722)) / baseLight;
+        // Two broad shadow bands and one lit plane. The atlas still owns every hue.
+        float celLight = receivedLight < 0.64 ? 0.63 : (receivedLight < 1.12 ? 0.86 : 1.04);
+        outgoingLight = diffuseColor.rgb * celLight;
+      }`);
   };
-  material.customProgramCacheKey = () => `cultivator_palette_${count}_${factionSlot}`;
+  material.customProgramCacheKey = () => `cultivator_palette_${count}_${factionSlot}_g26_cel1`;
   material.needsUpdate = true;
   return material;
 }

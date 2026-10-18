@@ -20,6 +20,7 @@ import { INK_RGB, toCss } from './palette.js';
 // 本项目「字段存在 ≠ 字段生效」的典型坑。公式的唯一真源在 `sim/rifts.js`
 // （`riftRadiusAt` / `riftIsActive`），这里**绝不**复制一份曲线，免得两处漂移。
 import { riftRadiusAt, riftIsActive } from '../sim/rifts.js';
+import { liveSettlementHouseType } from '../sim/settlementFlood.js';
 
 // ── 人形 ─────────────────────────────────────────────────
 // 两帧：A 并腿，B 迈步。其余部分完全相同。
@@ -475,10 +476,12 @@ export class UnitsLayer {
       const colors = { 1: wall, 2: roof, 3: toCss(INK_RGB.ink) };
       for (let hIdx = 0; hIdx < v.houses.length; hIdx += 1) {
         const h = v.houses[hIdx];
-      if (camera.canAccess && !camera.canAccess(h.x, h.y)) continue;
+        if (camera.canAccess && !camera.canAccess(h.x, h.y)) continue;
+        const liveType = liveSettlementHouseType(world, h);
+        if (!liveType) continue;
         const idx = world.idx(h.x, h.y);
         const [sx, sy] = UnitsLayer.project(camera, h.x + 0.5, h.y + 1, world.height[idx]);
-        const rows = h.type === 2 ? HOUSE_LARGE : HOUSE_SMALL;
+        const rows = liveType === 2 ? HOUSE_LARGE : HOUSE_SMALL;
         const hc = cell * 1.35;
         drawSprite(ctx, rows, sx - rows[0].length * hc / 2, sy - rows.length * hc, hc, colors, false);
       }

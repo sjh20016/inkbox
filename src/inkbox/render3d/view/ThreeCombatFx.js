@@ -28,15 +28,18 @@ function brushGeometry(style) {
     ribbon([[-.37,-.4],[-.12,-.75],[.18,-.55],[.36,-.2]],.06,1);
     triangle([.42,.15,0],[.49,.68,0],[.5,.28,0],1);
     triangle([.35,-.15,0],[.43,-.65,0],[.48,-.2,0],1);
+    triangle([.36,-.34,0],[.48,-.06,0],[.5,-.58,0],1);
   }else if(style==='fire'){
     // Three pointed vermilion licks. They do not ignite terrain.
     triangle([-.5,-.18,0],[.5,0,0],[-.12,.58,0]);
     triangle([-.25,-.25,0],[.42,-.8,0],[.28,.1,0],1);
     triangle([-.16,.15,0],[.36,.86,0],[.47,.06,0],1);
+    triangle([.28,-.22,0],[.5,.38,0],[.49,-.36,0],1);
   }else{
     // The same short, jagged stroke language as the Canvas tribulation FX.
     ribbon([[-.5,0],[-.27,.62],[-.10,-.58],[.14,.38],[.29,-.40],[.5,0]],.09);
     ribbon([[.04,.15],[.25,.92],[.39,.58]],.04,1);
+    triangle([.31,-.38,0],[.5,-.1,0],[.49,.45,0],1);
   }
   const geometry=new THREE.BufferGeometry();
   geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
@@ -114,12 +117,13 @@ export class ThreeCombatFx{
       if(![ax,ay].every(Number.isFinite))continue;
       if(this.stats.active>=COMBAT_3D_CAP){this.stats.overflow++;continue;}
       const tier=lightning?'high':data.tier,progress=item.age/item.ttl;
-      const width=(lightning?.13:tier==='high'?.55:tier==='mid'?.4:.25)*(1-.3*progress);
+      const width=(lightning?.38:tier==='high'?.77:tier==='mid'?.55:.34)
+        *(lightning?1:Math.max(.75,Math.min(1.25,item.intensity||.8)))*(1-.42*progress);
       const dx=bx-ax,dy=by-ay,distance=Math.hypot(dx,dy),f=this.footprint;
       // The entire submitted brush footprint uses PlaneStage's access/window geometry.
       f.x=(ax+bx)/2;f.y=(ay+by)/2;
-      f.width=Math.abs(dx)+width*2;f.depth=Math.abs(dy)+width*2;
-      if(!lightning && distance<=.35)f.width=f.depth=width*3;
+      f.width=Math.abs(dx)+width*3;f.depth=Math.abs(dy)+width*3;
+      if(!lightning && distance<=.35)f.width=f.depth=width*4;
       if(!decorationFootprintOwned(world,region,inside,f)){this.stats.regionRejected++;continue;}
       const ignition=data?.ignition;
       const hasVisibleIgnition=!!ignition&&Number.isSafeInteger(ignition.x)&&Number.isSafeInteger(ignition.y)
@@ -127,18 +131,19 @@ export class ThreeCombatFx{
       const az=this.elevation.at(ax,ay)+.17,bz=this.elevation.at(bx,by)+.17;
       if(![az,bz].every(Number.isFinite))continue;
       if(lightning){
-        this.axis.set(0,.8,0);
+        // Formal tribulation is the third scale above ordinary and major seals.
+        this.axis.set(0,4.4,0);
         const angle=(Number.isFinite(item.seed)?item.seed:0)*Math.PI*2;
         this.widthAxis.set(Math.cos(angle)*width,0,Math.sin(angle)*width);
       }else if(distance>.35){
         this.axis.set(dx,bz-az,dy);
-        this.widthAxis.set(-dy/distance*width,0,dx/distance*width);
+        this.widthAxis.set(-dy/distance*width,width*.85,dx/distance*width);
       }else{
         // Near-contact hits spread a local impact around their true midpoint.
         // A sub-pixel ground segment would be entirely hidden below overlapping feet.
         const angle=distance>1e-6?Math.atan2(dy,dx):(Number.isFinite(item.seed)?item.seed:0)*Math.PI*2;
         this.axis.set(Math.cos(angle)*width,0,Math.sin(angle)*width);
-        this.widthAxis.set(-Math.sin(angle)*width,0,Math.cos(angle)*width);
+        this.widthAxis.set(-Math.sin(angle)*width,width*.85,Math.cos(angle)*width);
       }
       this.normal.crossVectors(this.axis,this.widthAxis).normalize();
       this.matrix.makeBasis(this.axis,this.widthAxis,this.normal);
@@ -146,7 +151,8 @@ export class ThreeCombatFx{
       this.matrix.setPosition(p.x,p.y,p.z);
       const b=this.batches[style],index=b.mesh.count++;
       b.mesh.setMatrixAt(index,this.matrix);
-      b.opacity.setX(index,(1-progress)*(style==='blade'?.9:.8));
+      const attack=Math.min(1,progress*9),trail=Math.pow(1-progress,.68);
+      b.opacity.setX(index,attack*trail*(style==='blade'?.98:.9));
       b.detail.setX(index,hasVisibleIgnition?2:tier==='low'?0:1);
       this.stats.active++;this.stats[lightning?'lightningActive':'combatActive']++;
       this.stats.styleCounts[style]++;
