@@ -25,6 +25,8 @@ function brushGeometry(style) {
     // Broken ink stroke, a restrained slash arc, and two tiny impact flecks.
     ribbon([[-.5,0],[-.12,.08]],.16);
     ribbon([[-.06,.06],[.37,0],[.5,-.08]],.10);
+    // A pale inner edge separates a settled sword hit from dark robes/terrain.
+    ribbon([[-.43,.015],[-.15,.06],[.16,.03],[.44,-.055]],.045,2);
     ribbon([[-.37,-.4],[-.12,-.75],[.18,-.55],[.36,-.2]],.06,1);
     triangle([.42,.15,0],[.49,.68,0],[.5,.28,0],1);
     triangle([.35,-.15,0],[.43,-.65,0],[.48,-.2,0],1);
@@ -70,6 +72,7 @@ function brushMaterial(style){
       void main(){
         if(vOpacity<.002 || (vPart>.5 && vDetail<.5))discard;
         vec3 color=inkColor;
+        if(vPart>1.5) color=vec3(.95,.86,.65);
         if(vDetail>1.5 && vPart>.5) color=vec3(1.0,.34,.075);
         gl_FragColor=vec4(color,vOpacity);
         #include <tonemapping_fragment>
@@ -124,13 +127,15 @@ export class ThreeCombatFx{
       const dx=bx-ax,dy=by-ay,distance=Math.hypot(dx,dy),f=this.footprint;
       // The entire submitted brush footprint uses PlaneStage's access/window geometry.
       f.x=(ax+bx)/2;f.y=(ay+by)/2;
-      f.width=Math.abs(dx)+width*3;f.depth=Math.abs(dy)+width*3;
+      f.width=Math.abs(dx)+width*4;f.depth=Math.abs(dy)+width*4;
       if(!lightning && distance<=.35)f.width=f.depth=width*4;
       if(!decorationFootprintOwned(world,region,inside,f)){this.stats.regionRejected++;continue;}
       const ignition=data?.ignition;
       const hasVisibleIgnition=!!ignition&&Number.isSafeInteger(ignition.x)&&Number.isSafeInteger(ignition.y)
         &&decorationFootprintOwned(world,region,inside,{x:ignition.x+.5,y:ignition.y+.5,width:1,depth:1,rotationY:0});
-      const az=this.elevation.at(ax,ay)+.17,bz=this.elevation.at(bx,by)+.17;
+      // Put the short hit at torso height so it reads around overlapping feet.
+      const lift = lightning ? .17 : .6;
+      const az=this.elevation.at(ax,ay)+lift,bz=this.elevation.at(bx,by)+lift;
       if(![az,bz].every(Number.isFinite))continue;
       if(lightning){
         // Formal tribulation is the third scale above ordinary and major seals.
@@ -138,14 +143,15 @@ export class ThreeCombatFx{
         const angle=(Number.isFinite(item.seed)?item.seed:0)*Math.PI*2;
         this.widthAxis.set(Math.cos(angle)*width,0,Math.sin(angle)*width);
       }else if(distance>.35){
-        this.axis.set(dx,bz-az,dy);
-        this.widthAxis.set(-dy/distance*width,width*.85,dx/distance*width);
+        const reach=1+2*width/distance;
+        this.axis.set(dx*reach,bz-az,dy*reach);
+        this.widthAxis.set(-dy/distance*width,width*(tier==='high'?2.4:tier==='mid'?1.9:1.1),dx/distance*width);
       }else{
         // Near-contact hits spread a local impact around their true midpoint.
         // A sub-pixel ground segment would be entirely hidden below overlapping feet.
         const angle=distance>1e-6?Math.atan2(dy,dx):(Number.isFinite(item.seed)?item.seed:0)*Math.PI*2;
-        this.axis.set(Math.cos(angle)*width,0,Math.sin(angle)*width);
-        this.widthAxis.set(-Math.sin(angle)*width,width*.85,Math.cos(angle)*width);
+        this.axis.set(Math.cos(angle)*width*2,0,Math.sin(angle)*width*2);
+        this.widthAxis.set(-Math.sin(angle)*width,width*(tier==='high'?2.4:tier==='mid'?1.9:1.1),Math.cos(angle)*width);
       }
       this.normal.crossVectors(this.axis,this.widthAxis).normalize();
       this.matrix.makeBasis(this.axis,this.widthAxis,this.normal);
