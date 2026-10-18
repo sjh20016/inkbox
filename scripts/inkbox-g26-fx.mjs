@@ -89,6 +89,20 @@ for (const [level, draw, outcome, major] of [[8,0,'success',false],[8,.99999,'fa
     assert(item&&item.ttl>=.65&&item.data.tier==='high');
     assert.equal(probe.combat.stats.combatActive,1);
     assert(probe.combat.stats.drawCalls<=3);
+    const batch=probe.combat.batches[item.data.style],matrix=new THREE.Matrix4();
+    batch.mesh.getMatrixAt(0,matrix);
+    const center=new THREE.Vector3().setFromMatrixPosition(matrix);
+    const formerWidth=new THREE.Vector3().setFromMatrixColumn(matrix,1).normalize();
+    const camera=new THREE.OrthographicCamera(-10,10,10,-10,.1,500);
+    camera.position.copy(center).addScaledVector(formerWidth,100);camera.lookAt(center);
+    camera.updateMatrixWorld(true);camera.updateProjectionMatrix();
+    probe.update(stage,world,{camera});batch.mesh.getMatrixAt(0,matrix);
+    const geometry=batch.geometry,positions=geometry.getAttribute('position');
+    const projected=[0,1,2].map(i=>new THREE.Vector3().fromBufferAttribute(positions,geometry.index.getX(i))
+      .applyMatrix4(matrix).project(camera));
+    const [a,b,c]=projected;
+    const area=Math.abs((b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x));
+    assert(area>1e-5,'actual hit keeps projected area when the former ribbon plane is edge-on');
     stage.update(1);probe.update(stage,world);assert.equal(probe.combat.stats.active,0);
   } finally {probe.dispose();stage.dispose();}
 }

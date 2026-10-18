@@ -326,6 +326,7 @@ export class Render3DHost {
       // ——stage.root.visible 已经负责「这一界这帧画不画」，这里不需要再加一条。
       stage.fxProbe.root.visible = true;
       stage.fxProbe.update(this.presentation, stage.world, {
+        camera: this.cameraRig.camera,
         enabled: stage.productionAssetsEnabled && stage.geographyFeatures.riftFx,
         region: stage.contentGeometry, inside: stage.contentInside,
       });

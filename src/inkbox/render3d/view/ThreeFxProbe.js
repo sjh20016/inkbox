@@ -47,11 +47,11 @@ export class ThreeFxProbe {
     this.stats = { ...this.narrative.stats, debugActive: 0, combat: this.combat.stats, breakthrough: this.breakthrough.stats };
   }
 
-  update(presentation, world, { enabled = false, region = null, inside = true } = {}) {
+  update(presentation, world, { enabled = false, region = null, inside = true, camera = null } = {}) {
     // PresentationStage owns the event queue. This probe only reads its snapshot.
     if (this.disposed) return;
     const items = presentation?.snapshotPlane?.(this.plane)?.items ?? [];
-    this.combat.update(items, world, region, inside, { combatEnabled: presentation?.combatEnabled !== false });
+    this.combat.update(items, world, region, inside, { combatEnabled: presentation?.combatEnabled !== false, camera });
     this.breakthrough.update(items, world, region, inside);
     if (enabled) this.narrative.update(items, world, region, inside);
     else this.narrative.clear();
