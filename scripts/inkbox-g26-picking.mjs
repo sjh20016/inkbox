@@ -55,7 +55,7 @@ terrain.geometry.attributes.position.needsUpdate=true;
 assert.notEqual(sign().staticKey,beforeTerrain,'terrain dirty invalidates static key');
 const beforeWater=sign().staticKey;
 water.geometry.attributes.position.needsUpdate=true;
-assert.notEqual(sign().staticKey,beforeWater,'water dirty invalidates static key');
+assert.equal(sign().staticKey,beforeWater,'visual water is not a picking surface and must preserve static intersections');
 const beforeRegion=sign().staticKey;
 stage.contentGeometry={};
 assert.notEqual(sign().staticKey,beforeRegion,'region replacement invalidates static key');
@@ -76,6 +76,9 @@ actor.setMatrixAt(0,new THREE.Matrix4().makeTranslation(5,2,1));actor.instanceMa
 assert.equal(adapterHover()?.siteId,7);
 assert.equal(adapter.hoverStats.staticRaycasts,initialStatic,'adapter reuses terrain while actor moves');
 assert(adapter.hoverStats.dynamicQueries>=2&&adapter.hoverStats.staticCacheHits>=1);
+water.geometry.attributes.position.needsUpdate=true;
+assert.equal(adapterHover()?.siteId,7);
+assert.equal(adapter.hoverStats.staticRaycasts,initialStatic,'water animation cannot trigger another terrain raycast');
 host.world.sites.length=0;
 assert.equal(adapterHover()?.kind,'terrain','removed Site cannot survive an unchanged hover signature');
 picker.clearHoverCache();assert.equal(picker.hoverStatic,null,'lifecycle release clears cached intersections');

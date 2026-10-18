@@ -230,7 +230,9 @@ export class Render3DAdapter {
         hoverObjectId(stage.contentGeometry), stage.contentInside ? 1 : 0, hoverObjectId(stage.regionGeometry),
         stage.regionInside ? 1 : 0, stage.accessKey, ...(stage.root?.matrix?.elements || [])];
       staticValues.push(...identity); dynamicValues.push(...identity);
-      for (const key of ['terrain', 'terrainSides', 'water', 'settlements', 'markers', 'realmArtifacts', 'decorations', 'vegetation']) {
+      // PlanePicker does not intersect the visual water mesh. Flowing water
+      // must not invalidate cached terrain; actual terrain/structure edits do.
+      for (const key of ['terrain', 'terrainSides', 'settlements', 'markers', 'realmArtifacts', 'decorations', 'vegetation']) {
         const root = stage[key]?.mesh || stage[key]?.group;
         staticValues.push(key, hoverObjectId(root), root?.visible ? 1 : 0);
         root?.traverse?.(mesh => addMesh(mesh, staticValues));
