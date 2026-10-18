@@ -20,7 +20,7 @@ import { INK_RGB, toCss } from './palette.js';
 // 本项目「字段存在 ≠ 字段生效」的典型坑。公式的唯一真源在 `sim/rifts.js`
 // （`riftRadiusAt` / `riftIsActive`），这里**绝不**复制一份曲线，免得两处漂移。
 import { riftRadiusAt, riftIsActive } from '../sim/rifts.js';
-import { liveSettlementHouseType } from '../sim/settlementFlood.js';
+import { liveSettlementHouseType } from '../world/settlementState.js';
 
 // ── 人形 ─────────────────────────────────────────────────
 // 两帧：A 并腿，B 迈步。其余部分完全相同。

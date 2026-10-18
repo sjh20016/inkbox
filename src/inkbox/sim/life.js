@@ -45,7 +45,7 @@ import { WorldEvents } from './worldEvents.js';
 import {
   SETTLEMENT_FLOOD_DEPTH, HOUSE_FLOOD_DAYS,
   isDryBuildableSettlementTile, liveSettlementHouseType,
-} from './settlementFlood.js';
+} from '../world/settlementState.js';
 
 const TERRAIN_SPEED = Object.freeze({
   [TERRAIN.SAND]: 0.82,

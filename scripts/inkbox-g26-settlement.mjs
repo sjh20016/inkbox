@@ -9,7 +9,7 @@ import { serializeWorld, deserializeWorld } from '../src/inkbox/io/save.js';
 import { deriveSettlements } from '../src/inkbox/render3d/settlements/SettlementLayer.js';
 import {
   HOUSE_FLOOD_DAYS, SETTLEMENT_FLOOD_DEPTH, isDryBuildableSettlementTile, liveSettlementHouseType,
-} from '../src/inkbox/sim/settlementFlood.js';
+} from '../src/inkbox/world/settlementState.js';
 
 function fixture() {
   const world = new World(24, 24, 26);

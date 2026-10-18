@@ -1,5 +1,7 @@
 import { STRUCT } from '../core/config.js';
 
+// Shared read-only settlement facts; presentation does not import simulation.
+
 // Shallow surface water is useful to fields; sustained water at this depth is
 // visibly inundating a settlement tile.
 export const SETTLEMENT_FLOOD_DEPTH = 0.02;

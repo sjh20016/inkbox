@@ -35,7 +35,7 @@ import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/Prese
 import { EnvironmentBatch } from '../environment/EnvironmentBatch.js';
 import { houseFamilyFor, MORTAL_HOUSE_ASSET_IDS } from './houseFamily.js';
 import { G26_STYLE_SCALES, getG26Style, subscribeG26Style } from '../characters/CharacterLibrary.js';
-import { liveSettlementHouseType } from '../../sim/settlementFlood.js';
+import { liveSettlementHouseType } from '../../world/settlementState.js';
 
 /** 建筑实例容量：`maxVillages`(220) × 每村最多 19 屋 + 中心建筑 + 宗门（max 10）。 */
 const CAPACITY = 4608;
