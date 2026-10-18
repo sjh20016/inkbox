@@ -40,6 +40,8 @@
 | `scripts/_*.mjs`（历史） | 一次性研究探针，RG-P2 已退役 | 仅旧 Git 提交 | 否 |
 | `.github/workflows/`、`tests/README.md` | 门禁与测试说明 | 是 | 是 |
 | `剧情文案素材/` | 活跃文案资产；00 册为接线约束 | 是 | 是 |
+| `assets/characters/` | 角色运行资产：修士（mesh/data/materials/docs，含回退 GLB）与卜算子（mesh/data/materials/docs） | 是 | 是（source/preview 除外） |
+| `assets/creatures/` | 13 种《山海经》异兽运行资产（mesh/data/materials/docs；每只 8 套动画，共享 16×1 调色板） | 是 | 是（preview 除外） |
 | `美术素材/` | 美术方向与生产参考；运行使用代码母版与有限色板 | 使用的设计资料 | 仅白名单方向文档/索引/委托书 |
 | `reports/`（含旧 `reports/release/`） | 新的浏览器、性能与发布证据；旧样本在固定 Git 快照 | 当前默认忽略；历史由 Git / Actions 追溯 | 否 |
 | 旧根目录 `M2C2C_*REPORT.md` 等阶段报告 | 历史就绪、视觉、性能证据 | 仅旧 Git 提交 | 否 |
@@ -90,6 +92,11 @@ render3d/Render3DHost.js          1 GPU + 1 Scene + 1 CameraRig；Stage 生命�
   view/SlabPrototype.js           每边 ≤20 格的矩形面片与侧壁探针
   view/ThreeFxProbe.js            Presentation snapshot 的小型消费探针
   readers/riftViewModel.js        已有 sim 裂隙公式的只读入口
+  characters/CharacterLibrary.js  修士 GLB 模块读取与共享调色材质
+  characters/CharacterBatch.js    每模块 InstancedMesh 批次（灵兽批次与此同构）
+  creatures/CreatureLibrary.js    13 种异兽 GLB：合并静态几何 + 共享 16×1 调色板
+  creatures/CreatureBatch.js      每物种 InstancedMesh；EntityLayer 用于 beast 类别
+  busanzi/BusanziViewerHost.js    卜算子懒加载门面（首开才 import three / GLB）
   shared/RenderOrder.js           集中渲染顺序
 ```
 

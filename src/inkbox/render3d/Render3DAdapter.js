@@ -47,6 +47,11 @@ export class Render3DAdapter {
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
       artDevelopment: diagnostics.development, artDebugView: diagnostics.debugView,
       productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off',
+      // 异兽库：默认异步加载世界试装 4 种；测试可从 sandbox 注入库/加载器，`?creatures=off` 回退旧占位。
+      creatureLibrary: sandbox.creatureLibrary || undefined,
+      loadCreatureLibrary: sandbox.loadCreatureLibrary,
+      creatureIds: sandbox.creatureIds,
+      creatures: artParams.get('creatures') !== 'off',
       geography: artParams.get('geography') !== 'off' && artParams.get('assets') !== 'off' }); }
     catch (error) { this.canvas.remove(); throw error; }
     // The product and evidence harness await art.comparisonReady before capturing.

@@ -22,7 +22,7 @@ import { SurfaceVisualFieldTexture } from '../art/SurfaceVisualFieldTexture.js';
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
   constructor({ plane, world, profile = renderProfileFor(plane), coordinates, characterLibrary = null,
-    environmentLibrary = null, productionAssets = false, decorations = true, geography = false } = {}) {
+    creatureLibrary = null, environmentLibrary = null, productionAssets = false, decorations = true, geography = false } = {}) {
     if (!world) throw new Error(`PlaneStage ${plane}: world is required`);
     this.plane = plane;
     this.profile = profile;
@@ -31,6 +31,7 @@ export class PlaneStage {
     this.visible = true;
     this.timings = {};
     this.characterLibrary = characterLibrary;
+    this.creatureLibrary = creatureLibrary;
     this.environmentLibrary = environmentLibrary;
     this.productionAssetsEnabled = !!productionAssets;
     this.decorationsEnabled = !!decorations;
@@ -67,7 +68,7 @@ export class PlaneStage {
     this.vegetation = p.vegetation ? new VegetationLayer(world, this.coordinates, this.elevation) : null;
     if (this.vegetation) this.root.add(this.vegetation.group || this.vegetation.mesh);
     this.entities = p.entities ? new EntityLayer(world, this.coordinates, this.elevation,
-      { derive: p.entities, characterLibrary: this.characterLibrary }) : null;
+      { derive: p.entities, characterLibrary: this.characterLibrary, creatureLibrary: this.creatureLibrary }) : null;
     if (this.entities) this.root.add(this.entities.group);
     this.settlements = p.settlements ? new SettlementLayer(world, this.coordinates, this.elevation) : null;
     if (this.settlements) this.root.add(this.settlements.group);
@@ -123,6 +124,13 @@ export class PlaneStage {
       this.realmArtifacts?.setEnvironmentAssets(library,this.environmentMaterial,this.productionAssetsEnabled);
       this.markers?.setEnvironmentAssets?.(library, this.environmentMaterial, this.productionAssetsEnabled);
     }
+  }
+
+  /** 异兽资产库装配 / 卸下；`null` ⇒ 灵兽回到旧占位几何。 */
+  setCreatureLibrary(library) {
+    if (library && library.disposed) library = null;
+    this.creatureLibrary = library || null;
+    this.entities?.setCreatureLibrary(this.creatureLibrary);
   }
 
   setEnvironmentArtProfile(profile) {

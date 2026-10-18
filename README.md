@@ -63,18 +63,34 @@ Strata 下窗口被明确抬起（幽冥压下），四周出现连续断面。�
 熟悉 M2-A 的读者注意，`?renderer=3d&plane=upper` 之类的初始位面参数仍然有效，
 但「上界 Mask / 幽冥 Mask」按钮已经折进调试探针，不再是正式入口。
 
-## Mini 修士资产
+## A1 · 众生入画：修士 / 卜算子 / 山海异兽
 
-3D 模式从 `assets/characters/cultivator/mesh/cultivator_library.glb` 加载原创低模修士。身体、发型与身份道具共享实例批次；职业和宗门色只是只读视觉投影。
+A1 轮把三组原创 3D 资产接进了正式游戏（详见 [A1 交付文档](./docs/development/A1_CREATURE_CHARACTER_ASSETS.md)）：
 
-启动服务器后，打开 [`cultivator-lab.html`](./cultivator-lab.html) 可查看六种组合、6/20/50 人固定尺度与300人压力场景。源工程、模块配置、调色图、实测截图和报告均在 [`assets/characters/cultivator`](./assets/characters/cultivator/docs/CHARACTER_SPEC.md)。继续生产前阅读 [`CHARACTER_SPEC.md`](./assets/characters/cultivator/docs/CHARACTER_SPEC.md)，并使用 `source/cultivator_master.blend`。
+- **修士**：3D 模式从 `assets/characters/cultivator/mesh/cultivator_library.glb` 加载 2026-10 重做版（legacy cells 版，保留旧色格 / 16 骨 / Idle·Walk 语义）；旧模型以 `mesh/cultivator_library_prev.glb` 随包保留可回退。六身份、宗门色、LOD、拾取与实例化路径不变。
+- **卜算子**：左下浮条新增「观其真形」肖像入口（真实模型渲染 PNG），点开是独立 three.js 三维小窗，Idle / Walk / 风起（Wind）三动画可切换；关闭 / 换世界 / 读档释放独立 renderer。没有风力事实，因此只提供可演示的风起，不伪造天气机制。
+- **山海异兽**：`assets/creatures/` 收录 13 种《山海经》异兽 GLB（每只 8 套动画，共享 16×1 调色板，与修士同单位制）。正式世界里 4 种（天狗 / 当康 / 鹿蜀 / 旋龟）以真实模型作为灵兽表现，物种由 `world.seed + entity.id` 稳定哈希选择；其余 9 种保留为 Lab / 未来秘境候选。LOD0/LOD1 用真实模型，LOD2 剪影级保留旧简化占位，`lod=off` 时全部真实模型。
+
+启动服务器后可打开三个资产 Lab：
+
+| Lab | 内容 |
+| --- | --- |
+| [`cultivator-lab.html`](./cultivator-lab.html) | 修士六身份、6/20/50 人固定尺度、300 人压力场景 |
+| [`busanzi-lab.html`](./busanzi-lab.html) | 卜算子 38 骨 / 5 网格 / 1534 面、Idle / Walk / Wind 三动画 |
+| [`creature-lab.html`](./creature-lab.html) | 13 种异兽统一加载、体型 / 材质 / 默认姿态与 8 套动画 |
 
 ```bash
-npm run test:characters          # GLB真实结构、预算、共享和组合纪律
-npm run test:characters:browser  # 本机Edge/Chrome实载、尺度截图和生命周期
+npm run test:characters          # 修士 GLB 真实结构 / 预算 / provenance / 组合纪律
+npm run test:busanzi             # 卜算子 GLB 结构（38 骨 / 3 clip / 20 色调色板 / 面数）
+npm run test:creatures           # 13 种异兽 GLB 结构 + manifest + 合并几何 + 世界接线契约
+npm run test:a1                  # 以上三组结构检查
+npm run test:characters:browser  # 本机 Edge/Chrome 实载、尺度截图和生命周期
+npm run test:busanzi:browser     # 真实 three.js：三动画 / 风起位移 / 游戏面板→Viewer
+npm run test:creatures:browser   # 真实 WebGL：13 只 Lab + 世界试装 + 资源生命周期
 ```
 
-角色资产随发布包收录；运行游戏不需要安装 Blender。Blender 只用于修改或重建源资产。当前群体采用休止姿态实例绘制；原生 GLB 保留 Idle/Walk，完整群体动画仍是后续工作。几何 LOD 保留现有 GLB 近景与真实身份。
+资产随发布包收录；运行游戏不需要安装 Blender。修士群体仍是休止姿态实例绘制（原生 GLB 保留 Idle/Walk），卜算子与 Lab 内异兽是真实骨骼 / 部件动画；异兽在正式世界内是静态实例化，近景动画池是后续可选工作。
+
 
 ## 检查与测试
 

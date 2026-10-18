@@ -17,6 +17,7 @@ import { RenderDebug } from './debug/RenderDebug.js';
 import { visibleRift } from './readers/riftViewModel.js';
 import { ArtPass } from './art/ArtPass.js';
 import { loadCharacterLibrary } from './characters/CharacterLibrary.js';
+import { DEFAULT_WORLD_TRIAL_IDS, loadCreatureLibrary } from './creatures/CreatureLibrary.js';
 import { loadEnvironmentAssetLibrary } from './environment/EnvironmentAssetLibrary.js';
 import { GEOGRAPHY_FEATURES, geographyFeatures } from './stage/GeographyFeatures.js';
 
@@ -63,6 +64,8 @@ export class Render3DHost {
     this.lodEnabled = !!options.lodEnabled;
     this.characterLibrary = options.characterLibrary || null;
     this.ownsCharacterLibrary = !options.characterLibrary;
+    this.creatureLibrary = options.creatureLibrary || null;
+    this.ownsCreatureLibrary = !options.creatureLibrary;
     this.environmentLibrary = options.environmentLibrary || null;
     this.ownsEnvironmentLibrary = !options.environmentLibrary;
     this.productionAssetsEnabled = !!options.productionAssets;
@@ -83,6 +86,24 @@ export class Render3DHost {
       }).catch(error => {
         this.characterLoadError = error;
         if (!this.disposed) console.error('Cultivator character library failed to load', error);
+      });
+    }
+    // 山海异兽库：默认只预载世界试装 4 种；失败只 console.error，绝不阻断游戏。
+    const loadCreatures = options.loadCreatureLibrary
+      || (typeof window !== 'undefined' && options.creatures !== false ? loadCreatureLibrary : null);
+    if (!this.creatureLibrary && loadCreatures) {
+      const ids = options.creatureIds === undefined ? DEFAULT_WORLD_TRIAL_IDS : options.creatureIds;
+      this.creatureLoadPromise = Promise.resolve().then(() => loadCreatures({ ids, keepRigs: false })).then(library => {
+        if (this.disposed) { library.dispose(); return; }
+        this.creatureLibrary = library;
+        for (const stage of this.stages.values()) {
+          stage.creatureLibrary = library;
+          stage.entities?.setCreatureLibrary(library);
+        }
+        return library;
+      }).catch(error => {
+        this.creatureLoadError = error;
+        if (!this.disposed) console.error('Creature asset library failed to load', error);
       });
     }
     const loadEnvironment = options.loadEnvironmentAssetLibrary
@@ -118,6 +139,7 @@ export class Render3DHost {
         const plane = PLANES[i];
         const stage = new PlaneStage({ plane, world: entry.world, profile: PLANE_RENDER_PROFILE[plane],
           coordinates: this.coordinates, characterLibrary: this.characterLibrary,
+          creatureLibrary: this.creatureLibrary,
           environmentLibrary: this.environmentLibrary, productionAssets: this.productionAssetsEnabled,
           decorations: this.decorationsEnabled, geography: this.geographyFeatures });
         this.stages.set(plane, stage); this.scene.add(stage.root);
@@ -368,6 +390,9 @@ export class Render3DHost {
       lodEnabled: this.lodEnabled, lod: this.getLODStats(),
       productionAssetsEnabled: this.productionAssetsEnabled,
       environmentAssetsReady: !!this.environmentLibrary && !this.environmentLibrary.disposed,
+      creatureLibraryReady: !!this.creatureLibrary && !this.creatureLibrary.disposed,
+      creatureSpecies: this.creatureLibrary ? [...(this.creatureLibrary.worldSpecies || [])] : [],
+      creatureInstances: sum(s => s.entities?.creatureBatch?.stats.instances || 0),
       geography: this.getGeographyStats(),
     });
   }
@@ -397,6 +422,8 @@ export class Render3DHost {
     this.art.dispose(); this.brushOverlay.dispose(); this.cameraRig.dispose(); this.gpu.dispose(); this.scene.clear();
     if (this.ownsCharacterLibrary) this.characterLibrary?.dispose();
     this.characterLibrary = null;
+    if (this.ownsCreatureLibrary) this.creatureLibrary?.dispose();
+    this.creatureLibrary = null;
     if (this.ownsEnvironmentLibrary) this.environmentLibrary?.dispose();
     this.environmentLibrary = null;
 

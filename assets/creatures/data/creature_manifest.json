@@ -1,0 +1,709 @@
+{
+  "schema": "creature-library-v1",
+  "asset": "mesh/creature-<id>.glb",
+  "units": {
+    "cultivator_height": 2.125,
+    "note": "每一只的相对体型已烘进几何；世界摆放 scale=1，无需再缩放"
+  },
+  "coordinate_system": {
+    "up": "+Y",
+    "facing": "+Z",
+    "left": "+X",
+    "feet": "y=0（赤鱬为无腿鱼，设计上略悬空 0.098）"
+  },
+  "structure": "root → body → 部件 + legs/wings/tails；无骨骼层级，纯刚体部件",
+  "palette": {
+    "file": "materials/creature_palette.png",
+    "count": 16,
+    "height": 1,
+    "uv_rule": "face loop UV at ((index+0.5)/16, 0.5); nearest sampling",
+    "flatShading": true,
+    "doubleSided": true,
+    "colors": [
+      {
+        "index": 0,
+        "hex": "#F4C9AC",
+        "name": "肤色",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 1,
+        "hex": "#ECE6DE",
+        "name": "纸白",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 2,
+        "hex": "#D4BEA8",
+        "name": "米色",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 3,
+        "hex": "#302D32",
+        "name": "墨黑",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 4,
+        "hex": "#8597B0",
+        "name": "蓝灰",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 5,
+        "hex": "#355B91",
+        "name": "宗门蓝",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 6,
+        "hex": "#806A5D",
+        "name": "土褐",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 7,
+        "hex": "#8D3A3A",
+        "name": "暗红",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 8,
+        "hex": "#36676A",
+        "name": "幽青",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 9,
+        "hex": "#E8B454",
+        "name": "药黄",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 10,
+        "hex": "#A6A0AB",
+        "name": "灰紫",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 11,
+        "hex": "#6E7B56",
+        "name": "草绿",
+        "sameAsCultivatorLibrary": true
+      },
+      {
+        "index": 12,
+        "hex": "#D9824A",
+        "name": "狐橙(新)",
+        "sameAsCultivatorLibrary": false
+      },
+      {
+        "index": 13,
+        "hex": "#F2DFAE",
+        "name": "浅金(新)",
+        "sameAsCultivatorLibrary": false
+      },
+      {
+        "index": 14,
+        "hex": "#C9452F",
+        "name": "朱红(新)",
+        "sameAsCultivatorLibrary": false
+      },
+      {
+        "index": 15,
+        "hex": "#8FC1A2",
+        "name": "青玉(新)",
+        "sameAsCultivatorLibrary": false
+      }
+    ],
+    "sha256": "00F4CDE4F0CD9A1AA28DFE01E3DA2594AE7850801A1EB91F5CD047E8BBCA1A8F"
+  },
+  "clips": [
+    "static",
+    "idle",
+    "walk",
+    "run",
+    "eat",
+    "dance",
+    "gesture-positive",
+    "gesture-negative"
+  ],
+  "worldTrial": [
+    "tiangou",
+    "dangkang",
+    "lushu",
+    "xuangui"
+  ],
+  "animations": {
+    "interpolation": "LINEAR",
+    "names": [
+      "static",
+      "idle",
+      "walk",
+      "run",
+      "eat",
+      "dance",
+      "gesture-positive",
+      "gesture-negative"
+    ],
+    "durations": {
+      "static": 0.1,
+      "idle": 1,
+      "walk": 0.5,
+      "run": 0.25,
+      "eat": 0.5,
+      "dance": 0.5,
+      "gesture-positive": 0.25,
+      "gesture-negative": 0.25
+    },
+    "channels": "(root + parts) × T/R/S"
+  },
+  "creatures": [
+    {
+      "id": "jingwei",
+      "name_zh": "精卫",
+      "size_class": "小",
+      "source": "《北山经》发鸠之山",
+      "quote": "状如乌，文首，白喙，赤足；衔西山木石以堙东海",
+      "scale_k": 0.42,
+      "triangles": 508,
+      "size": [
+        0.588,
+        0.584,
+        0.655
+      ],
+      "height": 0.584,
+      "height_vs_cultivator": 0.27,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "wing-left",
+        "wing-right",
+        "tail",
+        "pebble",
+        "leg-front-left",
+        "leg-front-right"
+      ],
+      "parts": 7,
+      "file": "mesh/creature-jingwei.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": false,
+      "sha256": "D5B8B94FD1E2856D18C92EC862DDD4786108FBD62249A21ED1433D66A7616B5D"
+    },
+    {
+      "id": "biyi",
+      "name_zh": "比翼鸟",
+      "size_class": "小",
+      "source": "《海外南经》《西山经》",
+      "quote": "为鸟青、赤，两鸟比翼；蛮蛮一翼一目，相得乃飞",
+      "scale_k": 0.48,
+      "triangles": 492,
+      "size": [
+        0.95,
+        0.571,
+        0.605
+      ],
+      "height": 0.571,
+      "height_vs_cultivator": 0.27,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "wing-left",
+        "wing-right",
+        "tail",
+        "tail-2",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 9,
+      "file": "mesh/creature-biyi.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": false,
+      "sha256": "06B34202E78929E41BE54EB30F52B0EDAC2EBFC9F18E9AC359FAF1A18C695438"
+    },
+    {
+      "id": "chiru",
+      "name_zh": "赤鱬",
+      "size_class": "小",
+      "source": "《南山经》青丘之山",
+      "quote": "状如鱼而人面，其音如鸳鸯，食之不疥",
+      "scale_k": 0.4,
+      "triangles": 272,
+      "size": [
+        0.584,
+        0.482,
+        0.692
+      ],
+      "height": 0.58,
+      "height_vs_cultivator": 0.27,
+      "feet_y": 0.098,
+      "nodes": [
+        "body",
+        "wing-left",
+        "wing-right",
+        "tail"
+      ],
+      "parts": 4,
+      "file": "mesh/creature-chiru.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": false,
+      "sha256": "3570BDE5629695557D39B23EA5315E054A2331E40343D69AF3C9CFAAE570E2C5"
+    },
+    {
+      "id": "xuangui",
+      "name_zh": "旋龟",
+      "size_class": "小",
+      "source": "《南山经》杻阳之山",
+      "quote": "状如龟而鸟首虺尾，其音如判木，佩之不聋",
+      "scale_k": 0.42,
+      "triangles": 400,
+      "size": [
+        0.525,
+        0.462,
+        1.105
+      ],
+      "height": 0.462,
+      "height_vs_cultivator": 0.22,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "head",
+        "tail",
+        "tail-2",
+        "tail-3",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 9,
+      "file": "mesh/creature-xuangui.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": true,
+      "sha256": "E38BC850CF439BC4811D114E512CAEFBA9E13BBA4AE3D7EB02CC954C1155ED41"
+    },
+    {
+      "id": "tiangou",
+      "name_zh": "天狗",
+      "size_class": "小",
+      "source": "《西山经》阴山",
+      "quote": "状如狸而白首，其音如榴榴，可以御凶",
+      "scale_k": 0.5,
+      "triangles": 352,
+      "size": [
+        0.49,
+        0.858,
+        1.115
+      ],
+      "height": 0.858,
+      "height_vs_cultivator": 0.4,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "head",
+        "tail",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 7,
+      "file": "mesh/creature-tiangou.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": true,
+      "sha256": "4446B1D8659242793A909CF5DF0EA5B052612D45E6B9D9F42C77CB37EB26FE95"
+    },
+    {
+      "id": "dangkang",
+      "name_zh": "当康",
+      "size_class": "小",
+      "source": "《东山经》钦山",
+      "quote": "状如豚而有牙，其鸣自叫，见则天下大穰",
+      "scale_k": 0.62,
+      "triangles": 380,
+      "size": [
+        0.805,
+        1.178,
+        1.069
+      ],
+      "height": 1.178,
+      "height_vs_cultivator": 0.55,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "tail",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 6,
+      "file": "mesh/creature-dangkang.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": true,
+      "sha256": "3C3F5EBBF240BB751432AD413D5CEE7CA71E1312F92A862E4A571398611F5CEA"
+    },
+    {
+      "id": "jiuweihu",
+      "name_zh": "九尾狐",
+      "size_class": "中",
+      "source": "《南山经》青丘之山",
+      "quote": "状如狐而九尾，其音如婴儿，能食人，食者不蛊",
+      "scale_k": 0.8,
+      "triangles": 456,
+      "size": [
+        1.779,
+        1.633,
+        1.832
+      ],
+      "height": 1.633,
+      "height_vs_cultivator": 0.77,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "tail",
+        "tail-2",
+        "tail-3",
+        "tail-4",
+        "tail-5",
+        "tail-6",
+        "tail-7",
+        "tail-8",
+        "tail-9",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 14,
+      "file": "mesh/creature-jiuweihu.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": false,
+      "sha256": "73E8865641BB1551D438C5A605074A9E1EBB16F0B1366E0F917729C640BE0F68"
+    },
+    {
+      "id": "lushu",
+      "name_zh": "鹿蜀",
+      "size_class": "中",
+      "source": "《南山经》杻阳之山",
+      "quote": "状如马而白首，其文如虎而赤尾，其音如谣，佩之宜子孙",
+      "scale_k": 1,
+      "triangles": 504,
+      "size": [
+        1.03,
+        2.12,
+        3.12
+      ],
+      "height": 2.12,
+      "height_vs_cultivator": 1,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "head",
+        "tail",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 7,
+      "file": "mesh/creature-lushu.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": true,
+      "sha256": "52B4DCCEB27E9D571332B9145D5052ED86E9BB12FE13506383E7710E31DAE28F"
+    },
+    {
+      "id": "dijiang",
+      "name_zh": "帝江",
+      "size_class": "中",
+      "source": "《西山经》天山",
+      "quote": "神鸟，状如黄囊，赤如丹火，六足四翼，浑敦无面目，是识歌舞",
+      "scale_k": 0.85,
+      "triangles": 512,
+      "size": [
+        2.023,
+        1.504,
+        1.105
+      ],
+      "height": 1.504,
+      "height_vs_cultivator": 0.71,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "wing-front-left",
+        "wing-back-left",
+        "wing-front-right",
+        "wing-back-right",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-mid-left",
+        "leg-mid-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 11,
+      "file": "mesh/creature-dijiang.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": false,
+      "sha256": "1D91104604D6B73A50758A8B58DA8D3579FDEAB9ED3A4DFCAA3F70BD48EF4715"
+    },
+    {
+      "id": "zheng",
+      "name_zh": "狰",
+      "size_class": "中",
+      "source": "《西山经》章莪之山",
+      "quote": "状如赤豹，五尾一角，其音如击石",
+      "scale_k": 1.05,
+      "triangles": 442,
+      "size": [
+        1.506,
+        2.184,
+        2.439
+      ],
+      "height": 2.184,
+      "height_vs_cultivator": 1.03,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "tail",
+        "tail-2",
+        "tail-3",
+        "tail-4",
+        "tail-5",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 10,
+      "file": "mesh/creature-zheng.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": false,
+      "sha256": "A8CDD67F9D66BADF47E70B042963EEF5E40AE59B42A088EF559C1E709292B3A5"
+    },
+    {
+      "id": "qiongqi",
+      "name_zh": "穷奇",
+      "size_class": "大",
+      "source": "《海内北经》",
+      "quote": "状如虎，有翼，食人从首始",
+      "scale_k": 1.5,
+      "triangles": 752,
+      "size": [
+        6.879,
+        2.797,
+        4.127
+      ],
+      "height": 2.797,
+      "height_vs_cultivator": 1.32,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "wing-left",
+        "wing-right",
+        "tail",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 8,
+      "file": "mesh/creature-qiongqi.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": false,
+      "sha256": "B6C89A66E1A2CAB78DFCF32E209B0E90620D22F5D2ED44D649C881CF22270B1A"
+    },
+    {
+      "id": "fei",
+      "name_zh": "蜚",
+      "size_class": "大",
+      "source": "《东山经》太山",
+      "quote": "状如牛而白首，一目而蛇尾，行水则竭，行草则死，见则天下大疫",
+      "scale_k": 1.8,
+      "triangles": 576,
+      "size": [
+        2.844,
+        3.532,
+        6.732
+      ],
+      "height": 3.532,
+      "height_vs_cultivator": 1.66,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "head",
+        "tail",
+        "tail-2",
+        "tail-3",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 9,
+      "file": "mesh/creature-fei.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": false,
+      "sha256": "A6585C4D1E809C5F7162AD1268D503969CA31E63945011A038BA4AB84064FBF0"
+    },
+    {
+      "id": "kaiming",
+      "name_zh": "开明兽",
+      "size_class": "巨",
+      "source": "《海内西经》",
+      "quote": "身大类虎而九首，皆人面，东向立昆仑上",
+      "scale_k": 2.6,
+      "triangles": 674,
+      "size": [
+        4.758,
+        5.954,
+        9.569
+      ],
+      "height": 5.954,
+      "height_vs_cultivator": 2.8,
+      "feet_y": 0,
+      "nodes": [
+        "body",
+        "head-1",
+        "head-2",
+        "head-3",
+        "head-4",
+        "head-5",
+        "head-6",
+        "head-7",
+        "head-8",
+        "head-9",
+        "tail",
+        "leg-front-left",
+        "leg-front-right",
+        "leg-back-left",
+        "leg-back-right"
+      ],
+      "parts": 15,
+      "file": "mesh/creature-kaiming.glb",
+      "clips": [
+        "static",
+        "idle",
+        "walk",
+        "run",
+        "eat",
+        "dance",
+        "gesture-positive",
+        "gesture-negative"
+      ],
+      "worldTrial": false,
+      "sha256": "97108BB80BFF0FD8465CD06FB72CB34D2F346752012DE17AF967F5C0AA9D99FD"
+    }
+  ]
+}

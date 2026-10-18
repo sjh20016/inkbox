@@ -131,6 +131,7 @@ import {
   refreshThreeRealmsPanel, refreshUpperRealmPanel, refreshNetherRealmPanel,
   refreshNecrologyPanel, setNecroSortPanel, showDeadBiographyPanel,
   hideDeadBiographyPanel, downloadTextPanel, refreshBusanziPanel, bindBusanziTogglePanel,
+  bindBusanziPortraitPanel,
   refreshSlotsPanel, setupSectionTogglesPanel, refreshRecentPanel,
   showCharacterChoicesPanel, showCharacterRelationsPanel,
 } from './ui/railPanels.js';
@@ -138,6 +139,9 @@ import {
 // Toast 定位 / 忙碌按钮 / 世界信息。**判定**在 `ui/qolState.js`（零 import 纯逻辑），
 // 本文件只跟这个控制器说话——不直接 import `qolState.js`，免得判定散回主程序。
 import { createQol } from './ui/qol.js';
+// T2：卜算子独立三维形象入口。这里只是**懒加载门面**：不 import three、不拉 GLB，
+// 玩家第一次点面板上的肖像时才动态加载（见 render3d/busanzi/BusanziViewerHost.js）。
+import { createBusanziViewerHost } from './render3d/busanzi/BusanziViewerHost.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -332,6 +336,9 @@ class Sandbox {
     this.focusedSectId = null;
     this.relationOpen = false;
     this.busanziCollapsed = false; // Session UI choice survives World changes.
+    // T2：卜算子三维形象。这里只建懒加载门面——独立 renderer / GLB / mixer 都在
+    // 玩家第一次点面板肖像时出现，关窗/换世界/页面卸载时释放（见 BusanziViewer）。
+    this.busanziViewer = createBusanziViewerHost({ onError: (text) => this.notify(text, 6000) });
     /** 关系图的点击委托只挂一次（容器常驻，见 bindRelationGraph） */
     this.relationBound = false;
     this.clock = 0;
@@ -403,6 +410,9 @@ class Sandbox {
     this.hideDeadBiography();
     // 活人卡同理（Q36）：上一个世界的人，在新世界里查不到——留着就是一张空卡。
     this.hidePersonCard();
+    // T2：卜算子三维小窗展示的是「上一个世界打开的那一具」，换世界必须关掉并释放
+    // 独立 renderer / GLB / 贴图（不关的话会白白占一个 WebGL 上下文）。
+    this.closeBusanziViewer();
     // Q13：最近看过是**上一个世界**的导航记录，换世界必须清空。
     // ⚠️ 它只在 UI runtime 里，不进 World、不进正式存档。
     this.qol.clearRecent();
@@ -742,6 +752,7 @@ class Sandbox {
   // ── 事件 ────────────────────────────────────────────────
   bindEvents() {
     bindBusanziTogglePanel(this);
+    bindBusanziPortraitPanel(this);
     const combatFxControl = $('inkCombatFx');
     if (combatFxControl) {
       combatFxControl.checked = this.stage.combatEnabled;
@@ -1081,6 +1092,8 @@ class Sandbox {
           this.selectPath = null;
           this.hideDeadBiography();
           this.hidePersonCard();
+          // T2：读档换世界，卜算子三维小窗跟着关掉（独立 renderer 释放）。
+          this.closeBusanziViewer();
           // Q13：最近看过属于上一个世界，读档必须清空。
           this.qol.clearRecent();
           this.dirty = true;
@@ -1167,6 +1180,8 @@ class Sandbox {
         this.selectPath = null;
         this.hideDeadBiography();
         this.hidePersonCard();
+        // T2：导入换世界，卜算子三维小窗跟着关掉（独立 renderer 释放）。
+        this.closeBusanziViewer();
         // Q13：最近看过属于上一个世界，导入也要清空。
         this.qol.clearRecent();
         this.dirty = true;
@@ -2577,6 +2592,25 @@ class Sandbox {
    * 亲缘同理：它是推导量，这里只负责画出来。
    */
   refreshBusanzi() { return refreshBusanziPanel(this); }
+
+  // ── 卜算子 · 三维形象（T2）──────────────────────────────────
+  /**
+   * 打开独立的三维小窗（面板肖像入口 / QA 的 `window.inkbox.busanziViewer.open()`）。
+   *
+   * **首开按需加载**：门面里第一步才动态 import `BusanziViewer.js` 并拉 GLB；
+   * 加载失败只发一条提示，游戏继续用 Canvas（不抛、不阻断帧循环）。
+   * @returns {Promise<boolean>} 窗口打开且模型可播 → true；失败 → false
+   */
+  openBusanziViewer() { return this.busanziViewer.open(); }
+
+  /** 关闭三维小窗并释放独立 renderer / 几何 / 材质 / 贴图 / mixer（换世界也走这里）。 */
+  closeBusanziViewer() { this.busanziViewer.close(); }
+
+  /**
+   * 可等待的加载状态：`await window.inkbox.busanziViewerReady` 得到 true/false。
+   * 从未打开过时立即 resolve false（**不会**触发加载，保持「首开按需」）。
+   */
+  get busanziViewerReady() { return this.busanziViewer.ready(); }
 }
 
 const sandbox = new Sandbox();
