@@ -7,10 +7,12 @@ const queueCounters = new WeakMap();
 
 export const RUNTIME_EVENT_CAP = 256;
 export const COMBAT_RUNTIME_EVENT_CAP = 64;
+export const BREAKTHROUGH_RUNTIME_EVENT_CAP = 32;
 export const RUNTIME_EVENT_TYPES = Object.freeze([
   'tool-impact',
   'combat-hit',
   'tribulation',
+  'breakthrough',
   'ascension',
   'rift-open',
   'rift-cross',
@@ -123,6 +125,22 @@ function validateCombatEvent(event) {
     }
   }
 }
+function validateBreakthroughEvent(event) {
+  if (!Number.isFinite(event.x) || !Number.isFinite(event.y)
+    || !(typeof event.subjectId === 'string' && event.subjectId.length > 0
+      || Number.isSafeInteger(event.subjectId) && event.subjectId > 0)) {
+    throw new TypeError('Breakthrough events require a position and subject ID');
+  }
+  const data = event.data;
+  if (!data || Object.keys(data).length !== 4
+    || !['outcome', 'major', 'fromLevel', 'toLevel'].every(key => Object.hasOwn(data, key))
+    || !['success', 'failure'].includes(data.outcome) || typeof data.major !== 'boolean'
+    || !Number.isSafeInteger(data.fromLevel) || data.fromLevel < 1
+    || !Number.isSafeInteger(data.toLevel) || data.toLevel < 1
+    || (data.outcome === 'success' ? data.toLevel !== data.fromLevel + 1 : data.toLevel > data.fromLevel)) {
+    throw new TypeError('Breakthrough data must describe a consistent settled result');
+  }
+}
 function countersFor(world) {
   let counters = queueCounters.get(world);
   if (!counters) { counters = {combatDropped:0,combatEvicted:0}; queueCounters.set(world,counters); }
@@ -162,6 +180,7 @@ export function emitRuntimeEvent(world, type, payload = {}) {
   if (payload.data !== undefined) event.data = cloneJsonValue(payload.data);
 
   if (type === 'combat-hit') validateCombatEvent(event);
+  if (type === 'breakthrough') validateBreakthroughEvent(event);
   const queue = queueFor(world);
   const combat = type === 'combat-hit';
   if (combat && (queue.length >= RUNTIME_EVENT_CAP
@@ -169,8 +188,17 @@ export function emitRuntimeEvent(world, type, payload = {}) {
     countersFor(world).combatDropped += 1;
     return null;
   }
+  if (type === 'breakthrough') {
+    const breakthroughs = queue.filter(e => e.type === 'breakthrough');
+    if (breakthroughs.length >= BREAKTHROUGH_RUNTIME_EVENT_CAP) {
+      const replace = event.data.major ? queue.findIndex(e => e.type === 'breakthrough' && !e.data.major) : -1;
+      if (replace < 0) return null;
+      queue.splice(replace, 1);
+    }
+  }
   if (queue.length >= RUNTIME_EVENT_CAP) {
     const combatIndex = queue.findIndex(e => e.type === 'combat-hit');
+    if (type === 'breakthrough' && combatIndex < 0) return null;
     if (combatIndex >= 0) { queue.splice(combatIndex,1); countersFor(world).combatEvicted += 1; }
     else queue.shift();
   }

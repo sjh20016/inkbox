@@ -6,6 +6,8 @@ export const CHARACTER_REASONS = Object.freeze({
   'invalid-selection':'请先选择当前人物', 'not-living-mortal':'只有凡间在世人物可受敕令',
   'locked-area':'此人位于尚未开放的区域', 'not-cultivator':'此人尚未踏入修行',
   'realm-cap':'已达凡间修行上限', 'missing-value':'缺少可靠数值，无法施行敕令',
+  'root-missing':'此人尚无可考灵根，无法洗髓', 'mutated-root':'变异灵根自有命数，洗髓不能将其改作普通灵根',
+  'root-quality-cap':'灵根已达洗髓上限（优品及以上）',
   'at-cap':'此项数值已达上限', 'missing-history':'当前世界无法记录正式历史',
   'destroyed':'命簿已关闭', 'stale-target':'选择已改变，请重新打开命簿',
   'invalid-or-inaccessible-target':'此人身份无效或位于尚未开放的区域',

@@ -1,6 +1,6 @@
 import { ghostTierOf, GHOST_TIER_NAMES } from '../sim/netherLife.js';
 import { characterReason } from './characterMessages.js';
-import { expToNext, realmLabel } from '../core/cultivation.js';
+import { expToNext, realmLabel, QUALITIES } from '../core/cultivation.js';
 import { cultivationRate } from '../sim/cultivation.js';
 import { toggleWatch, removeWatch, WATCH_CAP, WATCH_MAJOR_KINDS } from '../sim/watch.js';
 import { compileBiography, importantRelations } from '../sim/biography.js';
@@ -86,12 +86,14 @@ export function buildCharacterViewModel(world,keyOrToken) {
   const edictToken = token || createSelectionToken(world,key);
   const permissions = characterPermissions(world,r);
   const health = characterHealth(r, world);
+  const root = e.root;
+  const rootLabel = root ? `${root.rootName || '灵根'}${Number.isInteger(root.quality) && QUALITIES[root.quality] ? ` · ${QUALITIES[root.quality]}` : ''}` : e.rootName || '不可考';
   return freeze({
     schemaVersion:1, permissions, health,
     identity:{key:r.key,id:r.id,plane:r.plane,currentPlane:r.currentPlane || r.plane,status:r.status,name:e.name || '不可考',canFocus:r.accessible},
     header:{realm:realmText(e),ageText:Number.isFinite(e.age) ? `${Math.floor(e.age / 360)} 岁` : '年龄不可考',affiliation,stateText:e.sp === 'ghost' && r.status === 'alive' ? '鬼魂存续' : r.status === 'ascended' && !r.arrival ? '已飞升 · 去向不可定位' : STATUS[r.status]},
     cultivation:{exp,required,percent:exp !== null && required !== null ? exp / required * 100 : null,rate,rateText:rate === null ? '修炼速度不可考' : `每日修为 ${rate.toFixed(3)}`,stateText:required === null || exp === null ? '修为不可考' : exp >= required ? '等待模拟突破' : '积累修为'},
-    overview:[{label:'气血',value:health.hpText},{label:'养伤',value:health.restText},{label:'灵根',value:e.root?.rootName || e.rootName || '不可考'},{label:'位置',value:r.accessible ? `${planeText(r.currentPlane || r.plane)} (${e.x}, ${e.y})` : '当前不可定位'}],
+    overview:[{label:'气血',value:health.hpText},{label:'养伤',value:health.restText},{label:'灵根',value:rootLabel},{label:'位置',value:r.accessible ? `${planeText(r.currentPlane || r.plane)} (${e.x}, ${e.y})` : '当前不可定位'}],
     cultivationRows:[{label:'气运',value:shown(numeric(e.fortune))},{label:'心境',value:shown(numeric(e.mind))}],
     history,
     historyCoverage:{retained:true,capped:true,cap:32,description:'仅显示正式人物日志保留的事件，不能视为完整一生'},

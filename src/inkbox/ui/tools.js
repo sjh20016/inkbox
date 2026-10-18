@@ -258,9 +258,9 @@ export const TOOLS = Object.freeze([
   }),
   T('secret', '播秘境', '✦', 'dao', '落一处秘境，修士会自己寻来', {
     mode: 'click',
-    apply: (c) => D.placeSecret(c.world, c.x, c.y, c.rng),
+    apply: (c) => D.placeSecret(c.world, c.x, c.y, c.rng, c.siteTheme || 'random'),
   }),
-  T('cave', '埋洞府', '⌂', 'dao', '埋一处前人遗泽，等后人来取', {
+  T('cave', '埋洞府', '⌂', 'dao', '埋一份前人功法传承，修士须自行探索，先得者取走', {
     mode: 'click',
     apply: (c) => D.placeCave(c.world, c.x, c.y, c.rng),
   }),

@@ -26,7 +26,7 @@ import { applyHeritage } from './family.js';
 import { speak } from './busanzi.js';
 // 表现事件发射口（D7-D）：只入 transient 队列，不写世界、不抽 RNG。
 // 这里发的是「天雷落下」「某人飞升」——让模拟里的戏剧性第一次真的发生在画面上。
-import { emitPresentation } from './presentation.js';
+import { emitPresentation, emitBreakthroughResult } from './presentation.js';
 // 逝者名录（见 sim/necrology.js）。⚠️ 这里与 necrology.js 之间有一条 import 环：
 // 本文件的 `ascend()` 要在 `leaveArtifacts` **之前**把飞升者入册（否则随葬法宝永远是空的），
 // 而 necrology.js 要用本文件的 `placeName`。ESM 的环在这里安全——两边都只在
@@ -506,6 +506,7 @@ export function forgeChance(entity) {
 }
 
 export function attemptBreakthrough(world, entity, rng) {
+  const fromLevel = entity.level;
   const bottleneck = isBottleneck(entity.level);
   const targetLevel = entity.level + 1;
   let omen = null;
@@ -589,6 +590,7 @@ export function attemptBreakthrough(world, entity, rng) {
       wearArtifacts(world, entity, TRIBULATION_WEAR, rng);
       if (rng() < forgeChance(entity)) forgeArtifact(world, entity, rng);
     }
+    emitBreakthroughResult(world, entity, 'success', bottleneck, fromLevel);
     return 'alive';
   }
 
@@ -601,6 +603,7 @@ export function attemptBreakthrough(world, entity, rng) {
       entity,
     );
   }
+  emitBreakthroughResult(world, entity, 'failure', bottleneck, fromLevel);
   return 'alive';
 }
 

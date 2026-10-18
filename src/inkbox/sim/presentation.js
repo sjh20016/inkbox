@@ -35,6 +35,21 @@ export function emitPresentation(world, type, payload = {}) {
   }
 }
 
+// Presentation source switch for deterministic comparison and optional visual suppression.
+const breakthroughSources = new WeakMap();
+export function configureBreakthroughPresentation(world, enabled) {
+  if (!world || typeof world !== 'object' || typeof enabled !== 'boolean') return false;
+  breakthroughSources.set(world, enabled);
+  return true;
+}
+export function emitBreakthroughResult(world, entity, outcome, major, fromLevel) {
+  if (breakthroughSources.get(world) === false) return null;
+  return emitPresentation(world, 'breakthrough', {
+    x: entity.x, y: entity.y, subjectId: entity.id,
+    data: { outcome, major, fromLevel, toLevel: entity.level },
+  });
+}
+
 // ══════════════════════════════════════════════════════════════════
 // D8-E：跨界动作「在两边发生」——统一的 `rift-cross` 发射口
 // ══════════════════════════════════════════════════════════════════
