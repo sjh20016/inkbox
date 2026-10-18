@@ -55,12 +55,15 @@ check('deferred stamps leave canonical type/qi and touch unchanged until the act
 });
 check('real Adapter.render never generates stationary RAF stamps across frame cadence',()=>{
  const w=make(),a=Object.create(Render3DAdapter.prototype);a.active=true;a.mode='raise';a.radius=2;a.lastNow=100;a.lastDebug=100;a.lastStamp=0;a.pointer={x:0,y:0};
+ a.heldCameraKeys=new Set();let cameraUpdates=0;
  a.sandbox={world:w,getRealmViewState:()=>({open:false}),stage:null};a.renderer={setWorld:()=>false,setRealmViewState:()=>{},setPresentation:()=>{},update:()=>{},
+  cameraRig:{moveLocal:(right,forward,dt,fast)=>{assert.equal(right,0);assert.equal(forward,0);assert.equal(fast,false);assert.ok(dt>=0);cameraUpdates++;}},
   brush:()=>{},render:()=>({}),stages:new Map(),activePlane:'mortal',realmPrototype:{open:false},markTerrainDirty:()=>{}};
  a.panel={querySelector:()=>null};a.readout={};a.undoStack=[];a.redoStack=[];
- a.hit=()=>({plane:'mortal',world:{x:12,y:10},x:12,y:10});a.stroke=new TerrainStroke(w,{x:12,y:10},{radius:2});
+ a.hoverHit=()=>({plane:'mortal',world:{x:12,y:10},x:12,y:10});a.stroke=new TerrainStroke(w,{x:12,y:10},{radius:2});
  a.stamp=()=>assert.fail('render must not stamp');a.flushStroke();const before=channels(w),stamps=a.stroke.stats.stamps;
  for(let i=0;i<100;i++)assert.equal(a.render(100+i*.001),true);same(w,before);assert.equal(a.stroke.stats.stamps,stamps);
+ assert.equal(cameraUpdates,100);
 });
 check('one canonical flush per pending batch and finished commands are idempotent',()=>{
  const w=make(),s=new TerrainStroke(w,{x:12,y:10},{radius:4});s.sample({x:15,y:10});assert.ok(s.flush());assert.equal(s.flush(),null);
