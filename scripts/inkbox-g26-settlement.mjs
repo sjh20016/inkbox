@@ -8,7 +8,7 @@ import { OVER } from '../src/inkbox/world/terrain.js';
 import { serializeWorld, deserializeWorld } from '../src/inkbox/io/save.js';
 import { deriveSettlements } from '../src/inkbox/render3d/settlements/SettlementLayer.js';
 import {
-  HOUSE_FLOOD_DAYS, isDryBuildableSettlementTile, liveSettlementHouseType,
+  HOUSE_FLOOD_DAYS, SETTLEMENT_FLOOD_DEPTH, isDryBuildableSettlementTile, liveSettlementHouseType,
 } from '../src/inkbox/sim/settlementFlood.js';
 
 function fixture() {
@@ -143,11 +143,13 @@ if (process.argv[2]) {
   const originalHouses = data.villages.map((v) => v.houses.map((h) => [h.x, h.y, h.type]));
   const world = deserializeWorld(data);
   assert.deepEqual(world.villages.map((v) => v.houses.map((h) => [h.x, h.y, h.type])), originalHouses);
-  const before = world.villages.flatMap((v) => v.houses).length;
-  assert.equal(before, 216);
-  assert.equal(world.villages.length, 13);
-  assert.equal(world.struct[world.idx(91, 127)], STRUCT.HOUSE);
-  assert.ok(world.water[world.idx(91, 127)] >= 0.02);
+  const before = originalHouses.reduce((count, houses) => count + houses.length, 0);
+  assert.equal(world.villages.length, data.villages.length);
+  const wetLiveHouses = world.villages.flatMap((v) => v.houses).filter((h) =>
+    [STRUCT.HOUSE, STRUCT.HALL].includes(world.struct[world.idx(h.x, h.y)])
+      && world.water[world.idx(h.x, h.y)] >= SETTLEMENT_FLOOD_DEPTH);
+  assert.ok(wetLiveHouses.length > 0, 'legacy reference retains live inundated houses on load');
+  assert.deepEqual(serializeWorld(world).villages.map((v) => v.houses.map((h) => [h.x, h.y, h.type])), originalHouses);
   assert.equal(world.villages.flatMap((v) => v.houses).length, before);
   console.log(`legacy read only: ${world.villages.length} villages, ${before} historical houses retained`);
 }
