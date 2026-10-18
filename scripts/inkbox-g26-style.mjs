@@ -9,6 +9,9 @@ import { CharacterLibrary, getG26Style, setG26Style, subscribeG26Style } from '.
 import { CharacterBatch } from '../src/inkbox/render3d/characters/CharacterBatch.js';
 import { SettlementLayer, deriveSettlements } from '../src/inkbox/render3d/settlements/SettlementLayer.js';
 
+assert.equal(getG26Style(), 'candidate', 'Reviewed G2.6 style is the cold-start default');
+setG26Style('baseline');
+
 const texture = new THREE.DataTexture(new Uint8Array(12 * 4).fill(255), 12, 1);
 const sourceMaterial = new THREE.MeshLambertMaterial({ map: texture });
 const scene = new THREE.Group();

@@ -92,7 +92,9 @@ export class ThreeBreakthroughFx {
       const auraGeometry = auraGeometryFor(style);
       const auraMaterial = new THREE.MeshBasicMaterial({ color: COLORS[style], transparent: true,
         opacity: style.endsWith('Success') ? .76 : .82, side: THREE.DoubleSide,
-        depthWrite: false, depthTest: true });
+        // Read as an event ink mark, like the seal. Steep terrain can otherwise
+        // bury every vertical sheet; footprint ownership still gates the whole FX.
+        depthWrite: false, depthTest: false });
       const aura = new THREE.InstancedMesh(auraGeometry, auraMaterial, BREAKTHROUGH_3D_CAP);
       aura.name = `BreakthroughAura:${plane}:${style}`; aura.count = 0; aura.visible = false;
       aura.frustumCulled = false; aura.renderOrder = RENDER_ORDER.fx + 2;

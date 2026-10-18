@@ -52,7 +52,9 @@ function brushGeometry(style) {
 
 function brushMaterial(style){
   return new THREE.ShaderMaterial({
-    transparent:true,depthWrite:false,depthTest:true,side:THREE.DoubleSide,
+    // A brief foreground ink mark stays readable against cliffs and canopies.
+    // Access/window ownership is checked before any instance is submitted.
+    transparent:true,depthWrite:false,depthTest:false,side:THREE.DoubleSide,
     uniforms:{inkColor:{value:new THREE.Color(COLORS[style])}},
     vertexShader: `attribute float inkOpacity; attribute float inkDetail; attribute float detailPart;
       varying float vOpacity; varying float vDetail; varying float vPart;

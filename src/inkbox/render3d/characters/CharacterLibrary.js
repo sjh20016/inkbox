@@ -5,10 +5,10 @@ import { CHARACTER_ROLES } from './characterAppearance.js';
 const DEFAULT_GLB = new URL('../../../../assets/characters/cultivator/mesh/cultivator_library.glb', import.meta.url).href;
 const DEFAULT_MANIFEST = new URL('../../../../assets/characters/cultivator/data/cultivator_manifest.json', import.meta.url).href;
 const styleListeners = new Set();
-const celUniform = { value: 0 };
-let styleMode = 'baseline';
+const celUniform = { value: 1 };
+let styleMode = 'candidate';
 
-/** Temporary visual comparison, scoped to Render3D and excluded from world state. */
+/** G2.6 default and session-local comparison; excluded from world state. */
 export const G26_STYLE_SCALES = Object.freeze({ character: 0.75, house: 0.76 });
 export function getG26Style() { return styleMode; }
 export function setG26Style(mode) {
