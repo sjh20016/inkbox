@@ -268,7 +268,11 @@ export class PlaneStage {
     // §22：Region 变化也要重建植被实例（走同一条节流通道，不是每帧全量重写）。
     if (this.vegetation && (dirty?.vegetationMembership || this.vegetation.pendingRegionRebuild)) this.vegetationPending = true;
     this.treeClock += Number.isFinite(dt) ? dt : 0;
-    if (this.vegetationPending && (heightChanged || this.treeClock >= 0.15)) {
+    // 长帧专项：大范围高度帧（水文步的脏框通常是整图）不再当场叠加成员重建（整图派生 + 全量写实例）——
+    // 那一帧已有地形 / 水面 / 贴地的全部成本。大范围高度帧只做贴地，重建顺延到下一个节流帧
+    // （高度持续大范围变化时最迟 0.6 s）；小范围编辑（雕刻、单格事件）仍当场重建，交互即时性不变。
+    const wideHeight = heightChanged && (heightRegion.x1 - heightRegion.x0 + 1) * (heightRegion.y1 - heightRegion.y0 + 1) >= 4096;
+    if (this.vegetationPending && (wideHeight ? this.treeClock >= 0.6 : heightChanged || this.treeClock >= 0.15)) {
       this.vegetation.update(); this.vegetationPending = false; this.treeClock = 0;
     } else if (heightRegion) this.vegetation?.updateGround(heightRegion);
     const t3 = performance.now();

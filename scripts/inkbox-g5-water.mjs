@@ -64,7 +64,8 @@ idx.onUploadCallback(); idx.clearUpdateRanges();
 w.height[w.w + 1] = 4;
 gpu.update({ x0: 1, y0: 1, x1: 1, y1: 1 });
 assert.deepEqual(Array.from(idx.array.slice(0, 6)), [0, 9, 1, 1, 9, 10]);
-assert.ok(idx.updateRanges.some(r => r.start === 0 && r.count === 6));
+// P1 水面索引合并回退：只标记真正翻转的 quad，避免为少量调用上传大量未变索引。
+assert.deepEqual(idx.updateRanges, [{ start: 0, count: 6 }, { start: 6, count: 6 }, { start: 48, count: 6 }]);
 const sample = gpu.geometry.attributes.waterSample;
 s.rimEdges.forEach(([ax, ay, bx, by], k) => {
   const v = w.size + k * 4;
