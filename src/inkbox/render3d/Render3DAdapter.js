@@ -1,3 +1,4 @@
+import { configureTerrainGpu } from './terrain/terrainGpuConfig.js';
 import { Renderer3D } from './Renderer3D.js';
 import { ArtDebugPanel } from './art/ArtDebugPanel.js';
 import { artDebugOptions } from './art/ArtDiagnostics.js';
@@ -63,6 +64,7 @@ export class Render3DAdapter {
     stage.append(this.canvas);
     const artParams = new URLSearchParams(globalThis.location?.search || '');
     const requestedArt = artParams.get('art');
+    configureTerrainGpu(artParams);
     const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'realm-style-v1';
     const diagnostics = artDebugOptions();
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
@@ -221,7 +223,7 @@ export class Render3DAdapter {
       if (!mesh) return;
       const geometry = mesh.geometry;
       values.push(hoverObjectId(mesh), mesh.visible ? 1 : 0, hoverObjectId(geometry), mesh.count,
-        mesh.instanceMatrix?.version ?? -1, geometry?.index?.version ?? -1,
+        mesh.instanceMatrix?.version ?? -1, geometry?.index?.version ?? -1, geometry?.userData?.cpuHeightVersion ?? -1,
         ...(mesh.matrix?.elements || []));
       if (geometry?.attributes) for (const [name, attribute] of Object.entries(geometry.attributes)) values.push(name, attribute?.version ?? -1);
     };
@@ -242,7 +244,7 @@ export class Render3DAdapter {
       entities?.traverse?.(mesh => addMesh(mesh, dynamicValues));
     }
     if (host.boundary?.mesh?.visible) {
-      staticValues.push(hoverObjectId(host.boundary), hoverObjectId(host.boundary.edges));
+      staticValues.push(hoverObjectId(host.boundary), host.boundary.edges);
       addMesh(host.boundary.mesh, staticValues);
     }
     return { staticKey: staticValues.join('|'), dynamicKey: dynamicValues.join('|') };

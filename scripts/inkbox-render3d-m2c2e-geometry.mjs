@@ -61,9 +61,12 @@ check('outside walls cover only world perimeter and track terrain/profile/Region
   w.height[0]=.6;side.update({x0:0,y0:0,x1:0,y1:0});assert.equal(side.geometry.attributes.position.getY(0),Math.fround(e.at(0,0)));
   e.setProfile({datum:3,relief:.7});side.update();assert.equal(side.geometry.attributes.position.getY(0),Math.fround(e.at(0,0)));side.dispose();
 });
-check('height edits refresh vegetation and outside sides in the same Stage update',()=>{
+check('height edits refresh vegetation ground and outside sides in the same Stage update',()=>{
   const w=generateWorld({preset:{w:16,h:12},seed:1234,scatter:false});const stage=new PlaneStage({plane:'mortal',world:w});
-  stage.update(.2);let rebuilt=0;stage.vegetation.update=()=>rebuilt++;w.height[0]+=.05;stage.update(.001);assert.equal(rebuilt,1);
+  stage.update(.2);let rebuilt=0,ground=0;stage.vegetation.update=()=>rebuilt++;
+  const updateGround=stage.vegetation.updateGround.bind(stage.vegetation);
+  stage.vegetation.updateGround=region=>{ground++;return updateGround(region);};
+  w.height[0]+=.05;stage.update(.001);assert.equal(rebuilt,0);assert.equal(ground,1);
   assert.equal(stage.terrainSides.geometry.attributes.position.getY(0),Math.fround(stage.elevation.at(0,0)));stage.dispose();
 });
 check('opaque world edge wins depth; onlyPlane still samples terrain',()=>{

@@ -83,6 +83,15 @@ host.world.sites.length=0;
 assert.equal(adapterHover()?.kind,'terrain','removed Site cannot survive an unchanged hover signature');
 picker.clearHoverCache();assert.equal(picker.hoverStatic,null,'lifecycle release clears cached intersections');
 
+// RealmBoundaryLayer.edges is a numeric count, not an object identity.
+const boundary = new THREE.Mesh(new THREE.PlaneGeometry(2,2), new THREE.MeshBasicMaterial());
+host.boundary = { mesh: boundary, edges: 4 };
+let boundaryKey;
+assert.doesNotThrow(() => { boundaryKey = sign().staticKey; }, 'an open realm cannot stop the frame loop with a WeakMap key error');
+host.boundary.edges = 6;
+assert.notEqual(sign().staticKey, boundaryKey, 'boundary edge count participates as a value');
+host.boundary = null; boundary.geometry.dispose(); boundary.material.dispose();
+
 terrain.geometry.dispose();terrain.material.dispose();site.geometry.dispose();site.material.dispose();site.dispose();
 actor.geometry.dispose();actor.material.dispose();actor.dispose();water.geometry.dispose();water.material.dispose();
 console.log('G2.6 picking: static reuse, dynamic depth, fresh click/drag, dirty keys and lifecycle passed');

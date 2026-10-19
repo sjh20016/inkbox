@@ -5,6 +5,7 @@ import { ElevationField } from '../terrain/ElevationField.js';
 import { applyQuadMask } from '../region/quadMask.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { WaterPigmentMaterial } from './WaterPigmentMaterial.js';
+import { WaterGpuSurface, waterGpuConfig } from './WaterGpuSurface.js';
 const BC_ORDER=Object.freeze([0,2,1,1,2,3]),AD_ORDER=Object.freeze([0,2,3,0,3,1]);
 function writeNode(out,o,i,xy,heights){const p=i*3;out[o]=xy[p];out[o+1]=heights[i];out[o+2]=xy[p+2];}
 
@@ -42,13 +43,28 @@ export class WaterLayer {
   /**
    * M2-C2D P1：realm-style 艺术档案把水面材质换成连续绘画水面；
    * `null` 恢复 legacy MeshBasicMaterial（art=legacy / pilot 等路径不变）。
-   * realm-style 同时启用湿域裁切与世界外缘水体侧面；Region 判据和 dirty 来源保持同源，水面及侧面仍共用一次 draw call。
+   * realm-style 默认用固定 GPU 网格、精确节点纹理与湿域 discard；water=cpu 可对照原裁切。
+   * 两条路径均保留世界外缘侧面与唯一 Region 判据，水面及侧面仍共用一次 draw call。
    */
-  setArtProfile(profile) {
-    this.setClipped(!!profile?.realmStyle);
+  setArtProfile(profile, { gpu = true } = {}) {
+    this.gpuActive = !!profile?.realmStyle && waterGpuConfig.enabled && gpu;
+    if(this.gpuActive){
+      // Legacy and CPU-clipped buffers sleep while GPU owns rendering. Catch
+      // them up only when selected, including switches with no intervening tick.
+      this.clipped=false;this.legacyStale=true;
+      if(!this.gpuSurface)this.gpuSurface=new WaterGpuSurface(this.world,this.coordinates,this.elevation,this.legacyGeometry);
+      else this.gpuSurface.update({x0:0,y0:0,x1:this.world.w-1,y1:this.world.h-1});
+      this.gpuSurface.setRegionGeometry(this.regionGeometry,this.regionInside);
+      this.geometry=this.gpuSurface.geometry;this.mesh.geometry=this.geometry;
+    }else{
+      this.setClipped(!!profile?.realmStyle);
+      this.geometry=this.clipped?this.clipGeometry:this.legacyGeometry;this.mesh.geometry=this.geometry;
+      if(!this.clipped&&this.legacyStale){this.update({x0:0,y0:0,x1:this.world.w-1,y1:this.world.h-1});this.legacyStale=false;}
+    }
     if (profile?.realmStyle) {
       if (!this.inkMaterial) this.inkMaterial = new WaterPigmentMaterial(this.world, this.surfaceField, profile);
       else this.inkMaterial.setProfile(profile);
+      this.inkMaterial.setGpuSurface(this.gpuActive?this.gpuSurface:null);
       this.mesh.material = this.inkMaterial;
     } else {
       this.mesh.material = this.material;
@@ -62,6 +78,7 @@ export class WaterLayer {
   }
   update(region) {
     if(!region)return;
+    if(this.gpuActive&&this.gpuSurface){this.legacyStale=true;this.gpuSurface.update(region);return;}
     if(this.clipped){this.legacyStale=true;this.updateClipped(region);return;}
     const w = this.world, attr = this.legacyGeometry.attributes.position;
     for (let y = region.y0; y <= region.y1; y++) {
@@ -92,6 +109,7 @@ export class WaterLayer {
     this.regionGeometry = geometry || null;
     this.regionInside = !!inside;
     this.legacyMaskStale=true;
+    if(this.gpuActive){this.gpuSurface.setRegionGeometry(this.regionGeometry,this.regionInside);return;}
     if(this.clipped){this.clipIndexDirty=true;this.applyClipMask();}
     else {this.applyLegacyMask();this.legacyMaskStale=false;}
   }
@@ -215,5 +233,5 @@ export class WaterLayer {
     });
     index.needsUpdate=true;this.clipIndexDirty=false;this.clipGeometry.setDrawRange(0,n);this.clippedQuads=quads;
   }
-  dispose() { this.clipGeometry?.dispose();this.legacyGeometry.dispose(); this.material.dispose(); this.inkMaterial?.dispose(); }
+  dispose() { this.gpuSurface?.dispose();this.clipGeometry?.dispose();this.legacyGeometry.dispose(); this.material.dispose(); this.inkMaterial?.dispose(); }
 }

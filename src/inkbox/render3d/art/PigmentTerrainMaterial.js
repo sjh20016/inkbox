@@ -44,11 +44,15 @@ uniform sampler2D heightTexture;
 uniform vec2 mapSize;
 uniform float broadRadius;
 uniform float packedBroadRadius;
+uniform float gpuDisplacement;
 varying vec3 vWorld;
 varying vec2 vBroadGradient;
 ${heightSampling}
 void main() {
-  vec4 p = modelMatrix * vec4(position, 1.0);
+  vec3 local = position;
+  // G is the same Float32 stage elevation retained in CPU positions for picking.
+  if (gpuDisplacement > 0.5) local.y = texture2D(heightTexture, uv).g;
+  vec4 p = modelMatrix * vec4(local, 1.0);
   vWorld = p.xyz;
   vec2 grid=p.xz+(mapSize-1.0)*0.5;
   float R=clamp(broadRadius,2.0,4.0);
@@ -331,7 +335,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
     super({ vertexShader, fragmentShader, side: THREE.DoubleSide, defines: { INKBOX_ART_DEBUG: 0 }, uniforms: {
       heightTexture: { value: data.heightTexture }, typeTexture: { value: data.typeTexture },
       fieldTexture: { value: data.typeTexture },fieldMode:{value:0},
-      artDebugMode: { value: 0 },
+      artDebugMode: { value: 0 }, gpuDisplacement: { value: 0 },
       // PlaneStage may bind its continuous surface field before the terrain is rendered.
       // Keep the no-field fallback valid for legacy profiles and test-created stages.
       surfaceTexture: { value: data.typeTexture }, surfaceMode: { value: 0 }, surfaceDepthRef: { value: 0.5 },

@@ -1,5 +1,7 @@
 # 坐天观井 · Inkbox 1.0.0
 
+本候选在 `feat/g2-6-living-landscape@062ce3b` 上落地 G5：3D 默认使用纹理地形位移、固定水面网格与 GPU 湿域裁切，并把植被高度更新与成员重建分开。`?renderer=3d&terrain=cpu&water=cpu` 可回退对照，写意实验未接入。定向检查为 `npm run test:g5`，实测与限制见 [HANDOFF](./HANDOFF.md) 顶部；广卷性能仍为 **PERF BLOCKED**。
+
 正式 main 已于 2026-10-18 接纳 G2-R1、A1 和 G2.4-C（PR #23、#24、#25），核查基线为 `768b870949ffe6d17e74e8fc8656e5eadf6f6130`。当前独立开发阶段为 **G2.6「山河有形 · 众生有动」**，依赖尚未合并的 [G2.5 Draft #26](https://github.com/sjh20016/inkbox/pull/26)；性能仍为 **PERF BLOCKED**。
 
 本分支继承 G2.5 的洗髓与主题机缘，继续接通 WASD 视角、建筑水灾、人物平涂与较小比例，以及正式突破/斗法墨痕；从[玩家指南](./PLAYER_GUIDE.md)的「先在立体山河中走一走」开始。候选仍通过 Draft PR 审阅。

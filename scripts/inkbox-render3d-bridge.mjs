@@ -49,6 +49,7 @@ import { WorldRenderBridge, mergeRegion, BRIDGE_LAYERS } from '../src/inkbox/ren
 import { TerrainMesh } from '../src/inkbox/render3d/terrain/TerrainMesh.js';
 import { WaterLayer } from '../src/inkbox/render3d/water/WaterLayer.js';
 import { VegetationLayer } from '../src/inkbox/render3d/vegetation/VegetationLayer.js';
+import { PlaneStage } from '../src/inkbox/render3d/stage/PlaneStage.js';
 import { EntityLayer } from '../src/inkbox/render3d/entities/EntityLayer.js';
 import { deriveEntities } from '../src/inkbox/render3d/entities/deriveEntities.js';
 import { SettlementLayer, deriveSettlements } from '../src/inkbox/render3d/settlements/SettlementLayer.js';
@@ -512,11 +513,32 @@ check('TerrainMesh 分两次调：height 只写 Y、type 只写色', () => {
   assert(/terrain\?\.update\(typeRegion, \{ height: false, type: true \}\)/.test(src), 'type 脏区必须显式关掉 Y');
 });
 
-check('水面吃 height ∨ water；植被吃 height ∨ type ∨ veg', () => {
+check('水面吃 height ∨ water；植被按成员资格重建并局部贴地', () => {
   const src = readSource('src/inkbox/render3d/stage/PlaneStage.js');
   assert(/if \(\(heightChanged \|\| waterRegion\) && this\.water\) this\.water\.update/.test(src), '水面高度依赖 height + water');
-  assert(/if \(this\.vegetation && \(heightChanged \|\| typeRegion \|\| vegRegion \|\| this\.vegetation\.pendingRegionRebuild\)\) this\.vegetationPending = true;/.test(src),
-    '植被派生依赖 height + type + veg（M2-B §22 追加第 4 条：Region 变化也要重建实例，但仍走同一条节流通道）');
+  const world = flatWorld();
+  world.height.fill(.8); world.veg.fill(1); world.water.fill(0);
+  const stage = new PlaneStage({ plane: 'mortal', world, profile: { vegetation: true } });
+  try {
+    const trees = stage.vegetation.trees, tree = trees[0], initial = stage.vegetation.stats.derivations;
+    world.type[tree.cell] = (world.type[tree.cell] + 1) % TERRAIN_INFO.length;
+    stage.update(.2);
+    assert.equal(stage.vegetation.stats.derivations, initial, 'type 不属于树的资格条件');
+    world.height[tree.cell] += .001;
+    stage.update(.2);
+    assert.equal(stage.vegetation.trees, trees, '成员未变时高度只重贴已有实例');
+    assert.ok(stage.vegetation.stats.groundInstancesWritten > 0, '高度变化必须真实重贴');
+    world.water[tree.cell] = .01;
+    stage.update(.2);
+    assert.ok(!stage.vegetation.trees.some(t => t.cell === tree.cell), '水淹必须去掉树');
+    world.water[tree.cell] = 0;
+    stage.update(.2);
+    assert.ok(stage.vegetation.trees.some(t => t.cell === tree.cell), '退水必须恢复树');
+    stage.vegetation.setRegionGeometry({ allInside: false, isInsideCell: x => x < W / 2 });
+    stage.update(.2);
+    assert.ok(stage.vegetation.trees.every(t => t.x < W / 2), 'Region 变化仍沿节流通道重建');
+    assert.equal(stage.vegetation.pendingRegionRebuild, false);
+  } finally { stage.dispose(); }
 });
 
 check('区域合并只走 `mergeRegion`，不在 Renderer3D 里手抄一遍 min/max', () => {

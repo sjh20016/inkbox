@@ -121,7 +121,9 @@ export class ArtPass {
       massShadeStrength: realmStyle.tone?.massShade ?? 0, deepInkStrength: realmStyle.tone?.deepInk ?? 0,
       heightWashStrength: realmStyle.tone?.heightWash ?? 0,
     } : this.profile;
-    stage.terrain?.setArtProfile(profile);
+    // Historical comparison shaders only read CPU vertex positions.
+    const gpu = !this.comparisonSnapshot;
+    stage.terrain?.setArtProfile(profile, { gpu });
     stage.terrainSides?.setArtProfile(profile);
     this.syncComparisonMaterial(stage.terrain?.inkMaterial, 'terrain');
     stage.markers?.setArtProfile(profile, realmStyle ? {
@@ -139,7 +141,7 @@ export class ArtPass {
       if (mainComparison && stage.water.inkActive) stage.water.inkMaterial.dispose();
       if (!mainComparison && realmStyle && stage.water.mesh.material === stage.water.material)
         stage.water.material.dispose();
-      stage.water.setArtProfile(realmStyle && !mainComparison ? profile : null);
+      stage.water.setArtProfile(realmStyle && !mainComparison ? profile : null, { gpu });
       if (!mainComparison) this.syncComparisonMaterial(stage.water.inkMaterial, 'water');
       if (!stage.water.inkActive) {
         const material = stage.water.material;

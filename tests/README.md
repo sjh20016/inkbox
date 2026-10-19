@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:g5` 检查 GPU/CPU 高程与拾取版本、回退与历史 shader 切换、同帧全量/局部上传顺序、精确水面湿域与外缘、植被资格及局部贴地。已加入 Fast；性能对照沿用 G5 固定种子水文逐步账本，真实 GPU/正常推进仍须单独验收，不解除 PERF BLOCKED。
+
 > RG-P3 · 2026-10-17 现行指南。历史阶段细节从 [原测试说明](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/tests/README.md) 查阅。此处只保留当前开发真正要用的入口。
 
 ## G2.5 定向入口

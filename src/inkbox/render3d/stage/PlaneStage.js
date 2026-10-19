@@ -251,7 +251,6 @@ export class PlaneStage {
     const typeRegion = dirty?.type ?? null;
     const fireRegion = this.plane === 'mortal' ? dirty?.fire ?? null : null;
     const waterRegion = dirty?.water ?? null;
-    const vegRegion = dirty?.veg ?? null;
     this.pending = null;
     const heightChanged = heightRegion !== null;
 
@@ -267,11 +266,11 @@ export class PlaneStage {
     if (waterRegion) this.surfaceField?.update(waterRegion);
     const t2 = performance.now();
     // §22：Region 变化也要重建植被实例（走同一条节流通道，不是每帧全量重写）。
-    if (this.vegetation && (heightChanged || typeRegion || vegRegion || this.vegetation.pendingRegionRebuild)) this.vegetationPending = true;
+    if (this.vegetation && (dirty?.vegetationMembership || this.vegetation.pendingRegionRebuild)) this.vegetationPending = true;
     this.treeClock += Number.isFinite(dt) ? dt : 0;
     if (this.vegetationPending && (heightChanged || this.treeClock >= 0.15)) {
       this.vegetation.update(); this.vegetationPending = false; this.treeClock = 0;
-    }
+    } else if (heightRegion) this.vegetation?.updateGround(heightRegion);
     const t3 = performance.now();
     const options = { heightChanged };
     this.entities?.update(dt, this.world, options);

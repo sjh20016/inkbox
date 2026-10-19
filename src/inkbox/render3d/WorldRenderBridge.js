@@ -24,7 +24,7 @@
 //
 //   TerrainMesh      ← height（改 Y）+ type / mortal fire（改顶点色）
 //   WaterLayer       ← height + water（水面高度 = height + water）
-//   VegetationLayer  ← height + veg + type（树的位置与存活判据）
+//   VegetationLayer  ← height（局部贴地）+ height / water / veg 资格变化（成员重建）
 //   EntityLayer      ← 只有 height
 //   SettlementLayer  ← 只有 height
 //   WorldMarkerLayer ← 只有 height
@@ -33,6 +33,7 @@
 // ⚠️ 判据必须按**真实依赖**给，不许「凭感觉全绑」——全绑就退化成 M1 的行为。
 
 import { createCoordinates } from './coordinates.js';
+import { vegetationEligible } from './vegetation/deriveVegetation.js';
 
 /** 历史四层地形数组的键（顺序即渲染顺序契约）；fire 单列快照。 */
 export const BRIDGE_LAYERS = Object.freeze(['height', 'water', 'type', 'veg']);
@@ -80,7 +81,7 @@ export class WorldRenderBridge {
   /**
    * 对比本帧与上一帧的地形数组和活动火势。
    *
-   * @returns {{any:true, height:Region|null, water:Region|null, type:Region|null, veg:Region|null, fire:Region|null}|null}
+   * @returns {{any:true, vegetationMembership:boolean, height:Region|null, water:Region|null, type:Region|null, veg:Region|null, fire:Region|null}|null}
    *   **各层全都没变 ⇒ `null`**（调用方据此跳过整条地形更新路径）。
    *   每一层要么是 `null`，要么是**闭区间**格坐标矩形 `{x0, y0, x1, y1}`。
    */
@@ -88,6 +89,7 @@ export class WorldRenderBridge {
     const w = this.world;
     const { height, water, type, veg, fire } = w;
     const old = this.snapshots;
+    let vegetationMembership = false;
     // 每层各一条包围盒：`[x0, y0, x1, y1]`，`x1 < 0` = 这层没脏。
     // ⚠️ 四层**分开记**——揉成一个 region 就是 M1 那套过粗的 dirty。
     const box = {
@@ -101,6 +103,10 @@ export class WorldRenderBridge {
       const dVeg = old.veg[i] !== veg[i];
       const dFire = this.fireSnapshot[i] !== fire[i];
       if (!dHeight && !dWater && !dType && !dVeg && !dFire) continue;
+      if (!vegetationMembership && (dHeight || dWater || dVeg)) {
+        vegetationMembership = vegetationEligible(w.seed, i, old.height[i], old.water[i], old.veg[i])
+          !== vegetationEligible(w.seed, i, height[i], water[i], veg[i]);
+      }
       const x = i % w.w, y = (i / w.w) | 0;
       // ⚠️ 每层**各自**更新快照：漏更一层，那一层会「只脏一次」然后永久沉默，
       //    而且不报错——症状是「地形改完画面不再跟」。
@@ -111,7 +117,7 @@ export class WorldRenderBridge {
       if (dFire) { this.fireSnapshot[i] = fire[i]; grow(box.fire, x, y); }
     }
     const out = {
-      any: false, height: toRegion(box.height), water: toRegion(box.water),
+      any: false, vegetationMembership, height: toRegion(box.height), water: toRegion(box.water),
       type: toRegion(box.type), veg: toRegion(box.veg), fire: toRegion(box.fire),
     };
     if (!out.height && !out.water && !out.type && !out.veg && !out.fire) return null;
