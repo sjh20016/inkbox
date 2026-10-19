@@ -27,7 +27,7 @@
 import { realmLabel } from '../core/cultivation.js';
 import { ghostTierOf, GHOST_TIER_NAMES } from '../sim/netherLife.js';
 import { STRUCT } from '../core/config.js';
-import { EQUIP_TIERS,EQUIP_QUALITIES } from '../core/lore.js';
+import { EQUIP_TIERS,EQUIP_QUALITIES,SECRET_REALMS } from '../core/lore.js';
 import { visibleRift } from '../render3d/readers/riftViewModel.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
@@ -161,10 +161,21 @@ export function planeSubjectInspectRows(picked, ctx = {}) {
     if(Number.isFinite(s.openedDay))rows.push(['开启日',String(s.openedDay)]);
   }else if (picked.kind === 'site') {
     rows = [['地点', s.name || '无名地点'], ['类型', {secret:'秘境',cave:'洞府',formation:'阵法',ruin:'遗迹'}[s.kind] || String(s.kind || '未知')]];
+    if(Number.isFinite(s.x)&&Number.isFinite(s.y)) rows.push(['落点', `（${s.x}，${s.y}）`]);
     if(Number.isFinite(s.age)) rows.push(['存续', `${Math.floor(s.age/360)} 年`]);
     if(Number.isFinite(s.visits)) rows.push(['访问', String(s.visits)]);
-    for(const [field,label] of [['sub','形态'],['omen','异象'],['element','五行'],['reward','所得'],['note','记述']])
-      if(s[field] != null && s[field] !== '') rows.push([label, typeof s[field] === 'object' ? JSON.stringify(s[field]) : String(s[field])]);
+    for(const [field,label] of [['sub','形态'],['omen','异象'],['element','五行'],['reward','机缘'],['note','记述']])
+      if(s[field] != null && s[field] !== '') rows.push([label, field==='sub'
+        ? SECRET_REALMS.find(kind=>kind.key===s.sub)?.name || String(s.sub)
+        : typeof s[field] === 'object' ? JSON.stringify(s[field]) : String(s[field])]);
+    if(Object.hasOwn(s,'inheritanceManual')) {
+      const taken=!!s.inheritanceExhausted||!!s.inheritanceClaimedBy;
+      rows.push(['遗泽', taken ? '已被先至者取走' : '尚待来人取承']);
+      if(taken) {
+        const claimant=picked.world?.entities?.find(entity=>entity.id===s.inheritanceClaimedBy);
+        if(claimant?.name) rows.push(['取承者', claimant.name]);
+      }
+    }
   } else if (picked.kind === 'leyline') {
     rows = [['灵脉', s.name || `灵脉 ${s.id}`]];
     if(Number.isFinite(s.strength)) rows.push(['强度',s.strength.toFixed(3)]);

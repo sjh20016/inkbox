@@ -13,6 +13,7 @@ import { accessBounds, canAccess } from './world/mapProgress.js';
 import { createSandboxCombatObservation } from './g2/combatObservationRuntime.js';
 import { createSandboxEnvironmentObservation } from './g2/environmentObservationRuntime.js';
 import { createSandboxCharacterRuntime } from './g1/sandboxRuntime.js';
+import { bindOpportunityOptions, syncOpportunityOptions, showOpportunityPlacement } from './ui/opportunityTools.js';
 // 上界：`generateUpperWorld` 的 seed 收的是**凡间种子**，内部自己派生上界 seed
 // （所以这里绝不能先 xor 一次再传进去，那会双重派生）。
 // `recomputeUpperQi` 是上界专用的灵气补算——**不能用凡间的 `recomputeQi`**：
@@ -543,6 +544,7 @@ class Sandbox {
     if (seedInput) seedInput.value = String(this.world.seed);
     this.seed = this.world.seed >>> 0;
     syncCreationControls(this);
+    syncOpportunityOptions(this);
   }
 
   expandMap(all = false) { return expandSandboxMap(this, all); }
@@ -668,6 +670,7 @@ class Sandbox {
       this.selectTool(this.toolId);
     };
 
+    bindOpportunityOptions(this);
     TOOL_GROUPS.forEach((group) => {
       const tab = document.createElement('button');
       // ⚠️ 类名必须与 `inkbox.html` 的样式表一致：那边定义的是 `.group`，
@@ -713,6 +716,7 @@ class Sandbox {
     const tool = TOOL_BY_ID[id];
     const hint = $('inkToolHint');
     if (hint) hint.textContent = `${tool.name} — ${tool.hint}`;
+    syncOpportunityOptions(this);
     this.updateCursor();
     // Q5：工具切换 / 快捷键切换 / 程序切换都必须同步那一行「我手里拿的是什么」。
     this.qol.syncToolState();
@@ -1345,6 +1349,7 @@ class Sandbox {
     }
 
     const eventIdBefore = this.life.events.nextEventId;
+    const priorSites = ['secret', 'cave'].includes(tool.id) ? new Set(world.sites.map(site => site.id)) : null;
     const ctx = {
       world,
       life: this.life,
@@ -1357,8 +1362,10 @@ class Sandbox {
       amount: tool.amount,
       history: this.history,
       rng: this.rng,
+      siteTheme: this.opportunityTheme || 'random',
     };
     ctx.result = tool.apply(ctx);
+    if (priorSites) showOpportunityPlacement(this, world.sites.find(site => !priorSites.has(site.id)), ctx.result);
     this.dirty = true;
     // ── Q21：**玩家真的改了世界** ⇒ 世界与磁盘上的存档不再一致 ──────────
     // ⚠️ 这一行是 Q21 未保存保护的**主要触发点**。原先它不存在：`markDirty` 只在

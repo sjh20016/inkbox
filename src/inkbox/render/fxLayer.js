@@ -22,6 +22,7 @@
 export const FX_CAP = 64;
 export const COMBAT_FX_CAP = 32;
 export const COMBAT_FX_PLANE_CAP = 16;
+export const BREAKTHROUGH_FX_CAP = 16;
 const COMBAT_TTL = Object.freeze({ blade: 0.35, fire: 0.5, thunder: 0.7 });
 
 /** 各事件类型的默认时长（秒）。 */
@@ -36,12 +37,14 @@ const FX_TTL = Object.freeze({
   riftcross: 0.7,
   death: 0.9,
   sectfall: 1.0,
+  breakthrough: 1.4,
 });
 
 /** runtime event type → fx kind（只有列出的类型会被演出）。 */
 const EVENT_TO_FX = Object.freeze({
   'combat-hit': 'combat',
   tribulation: 'lightning',
+  breakthrough: 'breakthrough',
   ascension: 'ascension',
   'rift-open': 'rift',
   'rift-cross': 'riftcross',
@@ -86,6 +89,22 @@ function validCombat(event) {
 }
 function admitFx(fx, item) {
   const combat = item.kind === 'combat';
+  if (item.kind === 'breakthrough') {
+    const active = fx.items.filter(existing => existing.kind === 'breakthrough');
+    if (active.length >= BREAKTHROUGH_FX_CAP) {
+      const replace = item.data.major ? fx.items.findIndex(existing => existing.kind === 'breakthrough' && !existing.data.major) : -1;
+      if (replace < 0) return;
+      fx.items.splice(replace, 1);
+    }
+    if (fx.items.length >= FX_CAP) {
+      const replace = fx.items.findIndex(existing => existing.kind === 'combat' || existing.kind === 'breakthrough' && !existing.data.major);
+      if (replace < 0) return;
+      if (fx.items[replace].kind === 'combat') fx.combatEvicted = (fx.combatEvicted || 0) + 1;
+      fx.items.splice(replace, 1);
+    }
+    fx.items.push(item);
+    return;
+  }
   if (combat) {
     fx.combatReceived = (fx.combatReceived || 0) + 1;
     const match = fx.items.find(existing => existing.kind === 'combat' && existing.plane === item.plane
@@ -148,7 +167,11 @@ export function ingestRuntimeEvents(fx, events, world) {
     if (!kind) continue;
 
     if (kind === 'combat' && !validCombat(event)) continue;
-    const ttl = kind === 'combat' ? COMBAT_TTL[event.data.style] : FX_TTL[kind] ?? 0.8;
+    if (kind === 'breakthrough' && (!event.data || !['success','failure'].includes(event.data.outcome)
+      || typeof event.data.major !== 'boolean' || !Number.isSafeInteger(event.data.fromLevel)
+      || !Number.isSafeInteger(event.data.toLevel))) continue;
+    const ttl = kind === 'combat' ? COMBAT_TTL[event.data.style]
+      : kind === 'breakthrough' ? event.data.major ? 1.8 : 0.75 : FX_TTL[kind] ?? 0.8;
     const seed = visualHash(event.type, event.day ?? 0, event.x, event.y, event.subjectId ?? 0);
     const item = {
       plane,
@@ -210,6 +233,7 @@ export function drawFx(ctx, camera, world, fx, plane = 'mortal') {
     switch (item.kind) {
       case 'combat': drawCombat(ctx, camera, world, item, k, zoom); break;
       case 'lightning': drawLightning(ctx, camera, world, item, k, zoom); break;
+      case 'breakthrough': drawBreakthrough(ctx, camera, world, item, k, zoom); break;
       case 'meteor': drawMeteor(ctx, camera, world, item, k, zoom); break;
       case 'ascension': drawAscension(ctx, camera, world, item, k, zoom); break;
       case 'rift': drawRiftCrack(ctx, camera, world, item, k, zoom); break;
@@ -229,6 +253,44 @@ export function drawFx(ctx, camera, world, fx, plane = 'mortal') {
 function projectEntity(camera, world, x, y) {
   const cx = Math.max(0, Math.min(world.w - 1, Math.floor(x))), cy = Math.max(0, Math.min(world.h - 1, Math.floor(y)));
   return camera.tileScreen(x, y, world.height[world.idx(cx, cy)]);
+}
+function drawBreakthrough(ctx, camera, world, item, k, zoom) {
+  const major = item.data.major, success = item.data.outcome === 'success';
+  const reach = major ? 1.3 : 0.55;
+  if (item.x < reach || item.y < reach || item.x + reach >= world.w || item.y + reach >= world.h) return;
+  // The whole mark must be visible to the active realm/access mask.
+  if (camera.canAccess) for (const [dx, dy] of [[-reach,0],[reach,0],[0,-reach],[0,reach],[-reach,-reach],[reach,-reach],[-reach,reach],[reach,reach]]) {
+    if (!camera.canAccess(item.x + dx, item.y + dy)) return;
+  }
+  const [tx, ty] = projectEntity(camera, world, item.x, item.y);
+  if (![tx, ty].every(Number.isFinite)) return;
+  const radius = major ? Math.max(10, Math.min(28, zoom * 3.5)) : Math.max(3, Math.min(9, zoom * 1.1));
+  const width = camera.viewW ?? ctx.canvas?.width, height = camera.viewH ?? ctx.canvas?.height;
+  if (Number.isFinite(width) && Number.isFinite(height)
+    && (tx + radius < 0 || tx - radius > width || ty + radius < 0 || ty - radius > height)) return;
+  const fade = Math.max(0, 1 - k);
+  const stroke = success ? major ? '191,163,94' : '105,147,145' : '109,47,43';
+  const base = success ? radius * (0.4 + k * 0.55) : radius * (1 - k * 0.65);
+  ctx.strokeStyle = `rgba(${stroke},${(fade * (major ? .88 : .7)).toFixed(3)})`;
+  ctx.lineWidth = major ? Math.max(1.4, Math.min(2.8, zoom * .34)) : 1.1;
+  const rings = major ? 3 : 1;
+  for (let i = 0; i < rings; i++) {
+    const r = Math.max(2, base * (1 - i * .22));
+    ctx.beginPath(); ctx.ellipse(tx, ty, r, r * .68, item.seed * .35, 0, Math.PI * 2); ctx.stroke();
+  }
+  if (!major) return;
+  // A finite array of short ink strokes makes a major success/failure legible at default zoom.
+  ctx.strokeStyle = `rgba(${success ? '214,194,134' : '71,37,36'},${(fade * .72).toFixed(3)})`;
+  ctx.lineWidth = Math.max(1, Math.min(2, zoom * .25));
+  for (let i = 0; i < 8; i++) {
+    const a = i * Math.PI / 4 + item.seed * .5;
+    const inner = success ? radius * .58 : radius * .3;
+    const outer = success ? radius * (1 + visualHash(item.seed, i, 'breakthrough') * .2) : radius * .78;
+    ctx.beginPath();
+    ctx.moveTo(tx + Math.cos(a) * inner, ty + Math.sin(a) * inner * .68);
+    ctx.lineTo(tx + Math.cos(a) * outer, ty + Math.sin(a) * outer * .68);
+    ctx.stroke();
+  }
 }
 function drawCombat(ctx, camera, world, item, k, zoom) {
   const d = item.data;

@@ -78,17 +78,17 @@ export function placeLeyline(world, x, y, rng) {
 }
 
 /** 播秘境：落一处机缘，修士会自己找上门 */
-export function placeSecret(world, x, y, rng) {
-  const site = plantSite(world, rng, 'secret', Math.floor(x), Math.floor(y));
+export function placeSecret(world, x, y, rng, theme = 'random') {
+  const site = plantSite(world, rng, 'secret', Math.floor(x), Math.floor(y), theme);
   if (!site) return '此处落不下秘境';
-  return `秘境「${site.name}」现世`;
+  return `秘境「${site.name}」现世于 (${site.x}, ${site.y})`;
 }
 
 /** 埋洞府：埋一处前人遗泽，等后人来取 */
 export function placeCave(world, x, y, rng) {
   const site = plantSite(world, rng, 'cave', Math.floor(x), Math.floor(y));
   if (!site) return '此处落不下洞府';
-  return `洞府「${site.name}」已埋`;
+  return `洞府「${site.name}」已埋于 (${site.x}, ${site.y})`;
 }
 
 /**

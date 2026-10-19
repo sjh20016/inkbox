@@ -12,6 +12,14 @@
 import { SECRET_REALMS, CAVE_TYPES, CAVE_SITES, FORMATIONS, MANUALS, narrate, pickFrom } from '../core/lore.js';
 import { claimGroundArtifact, ownerLine } from './artifacts.js';
 import { clamp } from '../core/noise.js';
+import { canAccess } from '../core/mapAccess.js';
+
+const THEMED_REWARD = 'theme-v1';
+const CAVE_MANUAL_KINDS = ['sword', 'alchemy', 'formation', 'talisman', null];
+
+function siteLocation(world, site) {
+  return { plane: ['mortal', 'upper', 'nether'].includes(world.plane) ? world.plane : 'mortal', x: site.x, y: site.y };
+}
 
 /**
  * 地点自然消亡的年限（游戏年），秘境与阵法是「机缘有时」，会自己散去。
@@ -38,15 +46,48 @@ export function enterSite(world, entity, site, rng) {
   const successChance = clamp(0.28 + level * 0.022 + (fortune - 50) / 260, 0.1, 0.92);
 
   if (roll < successChance) {
-    const gain = site.reward || '感悟';
-    entity.exp += (entity.level || 1) * 12 + rng() * 40;
+    let gain = site.reward || '感悟';
+    const baseExp = (entity.level || 1) * 12 + rng() * 40;
+    const isAlchemy = site.kind === 'secret' && site.rewardMode === THEMED_REWARD && site.sub === 'alchemy';
+    const expGain = isAlchemy ? baseExp * 1.6 : baseExp;
+    entity.exp += expGain;
     entity.fortune = clamp(entity.fortune + 4, 0, 100);
-    // 有几率带出一本功法
-    if (rng() < 0.45 && entity.techniques.length < 3) {
-      const manual = pickFrom(rng, MANUALS);
-      if (!entity.techniques.some((t) => t.name === manual.name)) {
+    let healed = 0;
+    if (isAlchemy) {
+      const beforeHp = entity.hp;
+      entity.hp = Math.min(entity.maxHp, entity.hp + entity.maxHp * 0.12);
+      healed = entity.hp - beforeHp;
+      gain = `丹道感悟，修为增进 ${expGain.toFixed(1)}，${healed > 0 ? `养元恢复气血 ${healed.toFixed(1)}` : '气血已满'}`;
+    }
+    // 新生洞府只留一部有主传承；满槽或已学不会消耗它，失败亦不会。
+    if (site.kind === 'cave' && Object.hasOwn(site, 'inheritanceManual')) {
+      const manual = MANUALS.find((item) => item.name === site.inheritanceManual);
+      gain = '修为感悟';
+      if (!site.inheritanceExhausted && !site.inheritanceClaimedBy && manual && entity.techniques.length < 3
+        && !entity.techniques.some((item) => item.name === manual.name)) {
         entity.techniques.push(manual);
-        world.record(`【${entity.name}】自${site.name}带出《${manual.name}》。`, 'site', entity);
+        site.inheritanceClaimedBy = entity.id;
+        site.inheritanceExhausted = true;
+        site.reward = '传承已被取走';
+        gain = `修为感悟及《${manual.name}》传承`;
+        world.record(`【${entity.name}】自${site.name}取走前人传承《${manual.name}》。`, 'site', entity, siteLocation(world, site));
+      } else if (site.inheritanceExhausted || site.inheritanceClaimedBy) {
+        gain = '修为感悟；前人传承已被取走';
+      } else if (entity.techniques.length >= 3) {
+        gain = '修为感悟；功法已满，未能取走传承';
+      } else if (manual && entity.techniques.some((item) => item.name === manual.name)) {
+        gain = '修为感悟；已习此法，未能取走传承';
+      }
+    // 旧洞府与秘境仍保留原抽签；新剑冢发书时优先正式剑诀。
+    } else if (rng() < 0.45 && entity.techniques.length < 3) {
+      const manual = pickFrom(rng, MANUALS);
+      const sword = MANUALS.find((item) => item.kind === 'sword');
+      const preferred = site.kind === 'secret' && site.rewardMode === THEMED_REWARD
+        && site.sub === 'sword' && sword && !entity.techniques.some((item) => item.name === sword.name)
+        ? sword : manual;
+      if (!entity.techniques.some((t) => t.name === preferred.name)) {
+        entity.techniques.push(preferred);
+        world.record(`【${entity.name}】自${site.name}带出《${preferred.name}》。`, 'site', entity, siteLocation(world, site));
       }
     }
     // 遗蜕里那件法宝：走这一条，不是「路过捡到」（见 sim/artifacts.js）。
@@ -58,13 +99,14 @@ export function enterSite(world, entity, site, rng) {
           `【${entity.name}】入${site.name}，取走了那件${got.name}。${ownerLine(got).text}`,
           'artifact',
           entity,
+          siteLocation(world, site),
         );
       } else {
-        world.record(`【${entity.name}】入${site.name}，里面已空无一物。`, 'site', entity);
+        world.record(`【${entity.name}】入${site.name}，里面已空无一物。`, 'site', entity, siteLocation(world, site));
       }
       site.artifactId = 0;
     }
-    world.record(`【${entity.name}】入${site.name}，得${gain}。`, 'site', entity);
+    world.record(`【${entity.name}】入${site.name}，得${gain}。`, 'site', entity, siteLocation(world, site));
     return { ok: true, gain };
   }
 
@@ -74,15 +116,16 @@ export function enterSite(world, entity, site, rng) {
   entity.hp -= entity.maxHp * (0.15 + rng() * 0.3);
   entity.mind = clamp(entity.mind - 6, 0, 100);
   entity.heartDemon = clamp(entity.heartDemon + 4, 0, 100);
-  world.record(`【${entity.name}】入${site.name}，重伤而出。`, 'site', entity);
+  world.record(`【${entity.name}】入${site.name}，重伤而出。`, 'site', entity, siteLocation(world, site));
   return { ok: false };
 }
 
 /** 在一处合适的位置落下一个秘境 */
-export function spawnSecretRealm(world, rng, near = null) {
+export function spawnSecretRealm(world, rng, near = null, theme = 'random') {
   const spot = findSiteSpot(world, rng, near, 0.35);
   if (!spot) return null;
-  const kind = SECRET_REALMS[Math.floor(rng() * SECRET_REALMS.length)];
+  const drawn = SECRET_REALMS[Math.floor(rng() * SECRET_REALMS.length)];
+  const kind = theme === 'random' ? drawn : (SECRET_REALMS.find((item) => item.key === theme) || drawn);
   const site = world.addSite({
     kind: 'secret',
     sub: kind.key,
@@ -92,13 +135,14 @@ export function spawnSecretRealm(world, rng, near = null) {
     omen: kind.omen,
     reward: kind.reward,
     note: kind.note,
+    rewardMode: THEMED_REWARD,
     age: 0,
     visits: 0,
   });
   // 文案刻意不点名，没有单一当事人
   world.record(
     narrate(rng, 'secretRealm', { place: placeLabel(world, spot.x, spot.y), omen: kind.omen, name: '数名修士' }),
-    'site',
+    'site', null, siteLocation(world, site),
   );
   return site;
 }
@@ -109,20 +153,26 @@ export function spawnCave(world, rng, near = null) {
   if (!spot) return null;
   const cave = CAVE_TYPES[Math.floor(rng() * CAVE_TYPES.length)];
   const siteName = CAVE_SITES[Math.floor(rng() * CAVE_SITES.length)];
+  const caveIndex = CAVE_TYPES.indexOf(cave);
+  const manualPool = MANUALS.filter((manual) => manual.kind === CAVE_MANUAL_KINDS[caveIndex]);
+  const inheritanceManual = pickFrom(rng, manualPool.length ? manualPool : MANUALS).name;
   const site = world.addSite({
     kind: 'cave',
     x: spot.x,
     y: spot.y,
     name: `${siteName}·${cave.name}`,
-    reward: cave.reward,
+    reward: `《${inheritanceManual}》`,
     element: cave.element,
+    inheritanceManual,
+    inheritanceClaimedBy: null,
+    inheritanceExhausted: false,
     age: 0,
     visits: 0,
   });
   // 洞府自行开启，无当事人
   world.record(
-    narrate(rng, 'caveOpen', { place: siteName, cave: cave.name, reward: cave.reward }),
-    'site',
+    narrate(rng, 'caveOpen', { place: siteName, cave: cave.name, reward: `《${inheritanceManual}》` }),
+    'site', null, siteLocation(world, site),
   );
   return site;
 }
@@ -144,7 +194,7 @@ export function spawnFormation(world, rng, near = null) {
   // 阵法成形，无当事人
   world.record(
     narrate(rng, 'formation', { place: placeLabel(world, spot.x, spot.y), formation: formation.name, note: formation.note }),
-    'site',
+    'site', null, siteLocation(world, site),
   );
   return site;
 }
@@ -169,6 +219,7 @@ function findSiteSpot(world, rng, near, minQi = 0.3) {
     const i = y * world.w + x;
     if (world.water[i] > 0.0015) continue;
     if (!world.isWalkable(i)) continue;
+    if (near?.accessibleOnly && !canAccess(world, x, y)) continue;
     if (world.qi[i] < minQi) continue;
     if (world.sites.some((s) => Math.hypot(s.x - x, s.y - y) < 6)) continue;
     return { x, y };
@@ -205,7 +256,7 @@ export function stepSites(world, dtDays, rng) {
         if (site.kind === 'secret' && site.visits >= 2) {
           // 秘境被人探空后自然消失
           // 秘境闭合，无当事人
-          world.record(`${site.name} 被人探尽，就此闭合。`, 'site');
+          world.record(`${site.name} 被人探尽，就此闭合。`, 'site', null, siteLocation(world, site));
           world.removeSite(site);
           continue;
         }
@@ -215,8 +266,8 @@ export function stepSites(world, dtDays, rng) {
     const lifespan = (SITE_LIFESPAN_YEARS[site.kind] || 200) * 360;
     if (site.age > lifespan) {
       // 地点自行尘封 / 异象散去，无当事人
-      if (site.kind === 'cave') world.record(`${site.name} 尘封，再无人至。`, 'site');
-      else if (site.kind === 'secret') world.record(`${site.name} 的异象散了。`, 'site');
+      if (site.kind === 'cave') world.record(`${site.name} 尘封，再无人至。`, 'site', null, siteLocation(world, site));
+      else if (site.kind === 'secret') world.record(`${site.name} 的异象散了。`, 'site', null, siteLocation(world, site));
       world.removeSite(site);
     }
   }
@@ -228,13 +279,13 @@ function resolveFormation(world, entity, site, rng) {
     entity.exp += 30 + rng() * 60;
     entity.fortune = clamp(entity.fortune + 3, 0, 100);
     if (site.name === '聚灵阵') entity.exp += 60;
-    world.record(`【${entity.name}】误入${site.name}，反得一场造化。`, 'site', entity);
+    world.record(`【${entity.name}】误入${site.name}，反得一场造化。`, 'site', entity, siteLocation(world, site));
   } else {
     // 死因标记：误入阵法被伤致死 ⇒ `deathOther`（不是寿终）。
     entity.diedOf = 'site';
     entity.hp -= entity.maxHp * 0.15;
     entity.mind = clamp(entity.mind - 4, 0, 100);
-    world.record(`【${entity.name}】被${site.name}所伤，仓皇退出。`, 'site', entity);
+    world.record(`【${entity.name}】被${site.name}所伤，仓皇退出。`, 'site', entity, siteLocation(world, site));
   }
 }
 
@@ -258,9 +309,9 @@ function findVisitor(world, site, rng) {
 }
 
 /** 玩家用神力直接往地图上放一处地点 */
-export function plantSite(world, rng, kind, x, y) {
-  if (kind === 'secret') return spawnSecretRealm(world, rng, { x, y, radius: 3 });
-  if (kind === 'cave') return spawnCave(world, rng, { x, y, radius: 3 });
-  if (kind === 'formation') return spawnFormation(world, rng, { x, y, radius: 3 });
+export function plantSite(world, rng, kind, x, y, theme = 'random') {
+  if (kind === 'secret') return spawnSecretRealm(world, rng, { x, y, radius: 3, accessibleOnly: true }, theme);
+  if (kind === 'cave') return spawnCave(world, rng, { x, y, radius: 3, accessibleOnly: true });
+  if (kind === 'formation') return spawnFormation(world, rng, { x, y, radius: 3, accessibleOnly: true });
   return null;
 }

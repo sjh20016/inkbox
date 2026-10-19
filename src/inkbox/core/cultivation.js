@@ -311,6 +311,19 @@ export function rollSpiritRoot(rng) {
   return { elements, quality, rootName, mutated: null, bonus: quality * 0.02 };
 }
 
+/** One deterministic grade of ordinary-root refinement; mutation and top tiers are immutable. */
+export function improveOrdinarySpiritRoot(root) {
+  if (!root || root.mutated || !Array.isArray(root.elements) || !root.elements.length
+    || root.elements.some(element => !ELEMENTS.includes(element))
+    || !Number.isInteger(root.quality) || root.quality < 0 || root.quality > 2) return null;
+  const elements = [...root.elements], quality = root.quality + 1;
+  return {
+    ...root, elements, quality,
+    rootName: elements.length === 1 ? `${elements[0]}灵根` : `${elements[0]}主杂灵根`,
+    mutated: null, bonus: quality * 0.02,
+  };
+}
+
 // ── 道途 ─────────────────────────────────────────────────
 // 来源：src/systems/cultivationTypeSystem.js，9 支正途 + 3 支邪修。
 // stageThresholds 为该支修为累积到多少时晋阶。
