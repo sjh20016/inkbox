@@ -93,6 +93,7 @@ const FILES = [
   'scripts/inkbox-g5-terrain.mjs',
   'scripts/inkbox-g5-water.mjs',
   'scripts/inkbox-g5-vegetation.mjs',
+  'scripts/inkbox-longframe-raycast.mjs',
   'scripts/inkbox-g26-picking.mjs',
   'scripts/inkbox-g26-settlement.mjs',
   'scripts/inkbox-g26-human.mjs',

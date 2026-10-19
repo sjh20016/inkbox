@@ -99,17 +99,25 @@ export class WaterGpuSurface {
     if (y1 - y0 + 1 >= 64) { this.fullTextureUpload = true; t.clearUpdateRanges(); }
     t.needsUpdate = true;
     if (!adaptiveTopology(w)) return;
-    let changed = false;
+    let changed = false, spanStart = -1, spanEnd = -1;
+    const index = this.geometry.index;
     for (let y = Math.max(0, y0 - 1); y <= Math.min(w.h - 2, y1); y++) for (let x = Math.max(0, x0 - 1); x <= Math.min(w.w - 2, x1); x++) {
       const q = y * (w.w - 1) + x, ad = diagonalAD(w, x, y);
       if (this.diagonals[q] === Number(ad)) continue;
       this.writeQuad(x, y, ad);
       if (this.kept(x, y)) {
-        if (!this.fullIndexUpload) this.geometry.index.addUpdateRange(q * 6, 6);
+        // 与地形索引相同：间隙 < 4096 个索引（16 KB）的翻转合并成一段，
+        // 一个水文步从数百次 24 字节的 bufferSubData 降到几十次。
+        if (!this.fullIndexUpload) {
+          const o = q * 6;
+          if (spanEnd >= 0 && o - spanEnd < 4096) spanEnd = o + 6;
+          else { if (spanEnd >= 0) index.addUpdateRange(spanStart, spanEnd - spanStart); spanStart = o; spanEnd = o + 6; }
+        }
         changed = true;
       }
     }
-    if (changed) this.geometry.index.needsUpdate = true;
+    if (spanEnd >= 0) index.addUpdateRange(spanStart, spanEnd - spanStart);
+    if (changed) index.needsUpdate = true;
   }
   dispose() { this.geometry.dispose(); this.texture.dispose(); }
 }

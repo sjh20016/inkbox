@@ -8,6 +8,7 @@ import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { TerrainDataTextures } from '../art/TerrainDataTextures.js';
 import { PigmentTerrainMaterial } from '../art/PigmentTerrainMaterial.js';
 import { terrainGpuConfig } from './terrainGpuConfig.js';
+import { raycastTerrain } from './heightfieldRaycast.js';
 
 export function gridGeometry(world, coordinates) {
   const position = new Float32Array(world.size * 3);
@@ -51,6 +52,11 @@ export class TerrainMesh {
     // Steep boundary slopes can face away even while the camera stays above ground.
     this.material = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
     this.mesh = new THREE.Mesh(this.geometry, this.material);
+    // P1：只测射线 XZ 投影经过的 quad（与逐三角形遍历结果一致）；格网不规则时回退 three 原实现。
+    const terrain = this;
+    this.mesh.raycast = function (raycaster, intersects) {
+      if (!raycastTerrain(terrain, raycaster, intersects)) THREE.Mesh.prototype.raycast.call(this, raycaster, intersects);
+    };
     this.mesh.renderOrder = RENDER_ORDER.terrain;
     this.fullIndices = this.geometry.index.array.slice();
     this.geometry.index.setUsage(THREE.DynamicDrawUsage);

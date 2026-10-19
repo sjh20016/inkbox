@@ -10,7 +10,7 @@
 
 - **H2/H3/G3 历史 CI**：旧研究 SHA 的 Fast Gate 有浏览器进程归属与清理一致性失败记录；不以产品主线通过覆盖旧研究失败，也不把旧失败写成当前主线结论。后续研究另行定向验证。
 
-- **G2/G5 性能**：#23～#28 的产品功能均已接纳。G5 将暂停条件下的 bufferSubData 加纹理上传均值从 43.77 MB 降至 8.08 MB，但 512×320 正常推进 30 秒样本 p95 仍约 1.07 秒，性能预算保持 **PERF BLOCKED**。测量明细与 `?renderer=3d&terrain=cpu&water=cpu` 回退见 [HANDOFF](./HANDOFF.md) 顶部；更大地图/其他设备不能由有限规格功能通过推定合格。历史 G2 证据见 [P1 验证报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_P1_INTEGRATION_VALIDATION_REPORT.md) 和[性能收束报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_PERFORMANCE_FINALIZATION_REPORT.md)。
+- **G2/G5 性能**：#23～#28 的产品功能均已接纳。G5 将暂停条件下的 bufferSubData 加纹理上传均值从 43.77 MB 降至 8.08 MB，但 512×320 正常推进 30 秒样本 p95 仍约 1.07 秒，性能预算保持 **PERF BLOCKED**。P1 长帧专项把老化广卷推进的主线程 JS 帧 p95 从 118.3 ms 降至 69.7 ms（`gpu.render` 置空、SwiftShader 环境，不代表 GPU 结论），待 UHD 730 真机复测，见 [P1 长帧专项](./docs/development/P1_G5_LONGFRAME.md)。测量明细与 `?renderer=3d&terrain=cpu&water=cpu` 回退见 [HANDOFF](./HANDOFF.md) 顶部；更大地图/其他设备不能由有限规格功能通过推定合格。历史 G2 证据见 [P1 验证报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_P1_INTEGRATION_VALIDATION_REPORT.md) 和[性能收束报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_PERFORMANCE_FINALIZATION_REPORT.md)。
 - **G3 cost**：PR #17 研究状态为 BLOCKED，继续研究或实现需单独明确范围。
 - **独立 B 线**：与正式产品线没有共同祖先，保持独立研究状态；产品化或合并需要单独裁决。
 
