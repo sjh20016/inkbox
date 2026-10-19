@@ -2,9 +2,9 @@
 
 截至 2026-10-19 的 P0 合流中，G2.5 PR #26、G2.6 PR #27、G5 PR #28 已按依赖顺序通过 Merge Commit 接纳。对应合流提交为 `59cd08d`、`9ec8ec7`、`3dabf8c`，保留 main → G2.5 → G2.6 → G5 的 Git 祖先关系。
 
-正式主线现包含 G2.5 洗髓、主题机缘与突破异象，G2.6 WASD/视界操作、聚落水灾与众生表现，以及 G5 GPU 地形、水面与植被更新优化。G5 默认使用 GPU 路径，3D CPU 对照/回退 URL 为 `?renderer=3d&terrain=cpu&water=cpu`；定向检查为 `npm run test:g5`，测量与限制见 [HANDOFF](./HANDOFF.md)。
+正式主线现包含 G2.5 洗髓、主题机缘与突破异象，G2.6 WASD/视界操作、聚落水灾与众生表现，以及 G5 GPU 地形、水面与植被更新优化。P1（PR #29）接纳规则格网地形拾取与大范围高度变化时的植被重建错峰；水面索引合并因总上传字节和更新 CPU 变差而回退。G5 默认使用 GPU 路径，3D CPU 对照/回退 URL 为 `?renderer=3d&terrain=cpu&water=cpu`；定向检查为 `npm run test:g5`，测量与限制见 [HANDOFF](./HANDOFF.md)。
 
-广卷性能仍为 **PERF BLOCKED**：G5 明显降低缓冲区及纹理上传，但正常推进仍有约 1.07 秒 p95 长帧。P1 长帧专项（[说明](./docs/development/P1_G5_LONGFRAME.md)）消除了地形暴力拾取和水文帧叠加植被重建两项 CPU 主线程长帧成分，但真实 GPU 侧尚未复测，状态不变。后续工作从开工前重新核对的最新 `main` HEAD 建立，不把本次有限性能优化写成问题已解决。
+**P1 指定场景已验收**：AMD Radeon 610M、Edge 155、广卷 512×320、DPR 1、模拟 ×2 的真实 GPU 浏览器对照中，基线/候选 RAF P95 为 27.9/27.8 ms，超过 50 ms 的 RAF 间隔为 20/14 次，均无超过 100 ms 的间隔。P1 的主要收益是降低地形拾取 CPU 成本；静止鼠标的 A/B 样本不能证明整体 FPS 大幅提升。Intel UHD 730 上 G5 时期约 1.07 s 的长帧尚未通过同条件复测确认消除；DPR 2、其他显卡与更长期负载仍未验证。两版本模拟推进量并非严格一致；GPU 提交时间、CPU 帧耗时和 RAF 间隔是不同指标。因此这项通过仅覆盖已测场景，不能据此宣称项目整体性能问题已经解决。详见 [P1 长帧专项](./docs/development/P1_G5_LONGFRAME.md)。
 
 ## 正式产品状态（按 main 最新提交核对）
 
