@@ -17,7 +17,7 @@ PR #28 于 2026-10-19 以 Merge Commit `3dabf8c48e1939f1de9b874e3c674fc84609e005
 
 针对性回归覆盖高程/拾取、同帧全量与局部上传、CPU 回切、历史美术对照、湿域/外缘、植被水淹与恢复、Region 和释放。浏览器实际验证抬山/撤销/重做、Canvas 注水后返回 3D、上界/幽冥划窗、窗内拾取、关窗及 WASD。修复开窗时旧 hover 签名把 numeric `boundary.edges` 当 WeakMap key 的帧循环异常，并保留失败证据。交付 HEAD `0cc49fd727131d9622b25d9694396bf0a25ba033` 的 [GitHub Actions #39200007595](https://github.com/sjh20016/inkbox/actions/runs/39200007595) Fast Gate 与 Heavy Gate 均通过，Fast 包含 `test:g5` 与构建门禁；Browser Smoke 按工作流设计跳过，真实浏览器验收记录在 PR #28。
 
-运行 `npm run dev` 后打开 `inkbox.html?renderer=3d`；回退 URL 为 `?renderer=3d&terrain=cpu&water=cpu`。`npm run test:g5` 已加入 Fast 与发布包。需要回滚时，对 PR #28 合流提交 `3dabf8c48e1939f1de9b874e3c674fc84609e005` 执行正常 revert。原始浏览器账本、截图与命令退出码留在本任务工作区的 `g5-validation/`，不进运行包。原始浏览器账本、截图与命令退出码留在本任务工作区的 `g5-validation/`，不进运行包。
+运行 `npm run dev` 后打开 `inkbox.html?renderer=3d`；回退 URL 为 `?renderer=3d&terrain=cpu&water=cpu`。`npm run test:g5` 已加入 Fast 与发布包。需要回滚时，对 PR #28 合流提交 `3dabf8c48e1939f1de9b874e3c674fc84609e005` 执行正常 revert。原始浏览器账本、截图与命令退出码留在本任务工作区的 `g5-validation/`，不进运行包。
 
 ## 2026-10-18 · G2.6「山河有形 · 众生有动」（开发快照；PR #27 已合入 main）
 
