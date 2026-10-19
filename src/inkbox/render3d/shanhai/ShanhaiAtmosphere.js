@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { makeCanvas } from './canvas.js';
 import { shanhaiSceneFor } from './ShanhaiStyle.js';
+import { sceneryGeometry } from './ShanhaiSceneryLayer.js';
 
 /**
  * V1 · 山海入画 — Host-level painted atmosphere. Presentation only:
@@ -61,12 +62,15 @@ function paintBackdrop(plane, seed = 7) {
   mist.addColorStop(0, s.mistBand + '00'); mist.addColorStop(0.35, s.mistBand + 'CC'); mist.addColorStop(1, s.sky.bottom);
   g.fillStyle = mist; g.fillRect(0, H * 0.55, W, H * 0.45);
   if (plane === 'upper') {
-    // Distant floating islets + a hairline bridge: a mural motif, not geometry.
-    for (let i = 0; i < 6; i++) {
-      const x = W * (0.08 + r() * 0.84), y = H * (0.16 + r() * 0.22), w = 30 + r() * 70;
-      g.fillStyle = s.hills[1 + (i % 2)]; g.globalAlpha = 0.55;
-      g.beginPath(); g.moveTo(x - w, y); g.quadraticCurveTo(x, y - w * 0.45, x + w, y); g.lineTo(x + w * 0.2, y + w * 0.8); g.closePath(); g.fill();
-      g.fillStyle = '#D2AE4E'; g.globalAlpha = 0.45; g.fillRect(x - w * 0.12, y - w * 0.32, w * 0.24, w * 0.08);
+    // V1.1 远岛：平顶、下垂收束的倒悬山剪影（V1 为倒三角，近看像风筝）。小、淡、成组。
+    for (let i = 0; i < 7; i++) {
+      const x = W * (0.06 + r() * 0.88), y = H * (0.20 + r() * 0.18), w = 14 + r() * (i < 2 ? 46 : 22), d = w * (0.75 + r() * 0.4);
+      g.fillStyle = s.hills[1 + (i % 2)]; g.globalAlpha = 0.30 + r() * 0.15;
+      g.beginPath(); g.moveTo(x - w, y);
+      g.quadraticCurveTo(x - w * 0.4, y - w * 0.16, x, y - w * 0.12); g.quadraticCurveTo(x + w * 0.5, y - w * 0.18, x + w, y);
+      g.lineTo(x + w * 0.62, y + d * 0.30); g.lineTo(x + w * 0.30, y + d * 0.55); g.lineTo(x + w * 0.08, y + d);
+      g.lineTo(x - w * 0.14, y + d * 0.62); g.lineTo(x - w * 0.52, y + d * 0.36); g.closePath(); g.fill();
+      if (i < 3) { g.fillStyle = '#D2AE4E'; g.globalAlpha = 0.35; g.fillRect(x - w * 0.10, y - w * 0.30, w * 0.20, w * 0.10); }
     }
     g.globalAlpha = 1;
     for (let i = 0; i < 9; i++) { // cloud ribbons
@@ -100,16 +104,42 @@ function puffTexture(kind) {
   return texture;
 }
 
-function isletGeometry(radius, height, seed) {
-  const r = rand(seed), geo = new THREE.ConeGeometry(radius, height, 7, 3, false);
-  geo.rotateX(Math.PI); // point downwards
-  const pos = geo.attributes.position;
-  for (let i = 0; i < pos.count; i++) {
-    const y = pos.getY(i); if (y > height / 2 - 1e-3) continue;
-    pos.setX(i, pos.getX(i) * (0.8 + r() * 0.4)); pos.setZ(i, pos.getZ(i) * (0.8 + r() * 0.4));
+/**
+ * V1.1 浮岛：上平下收的「倒悬山」——顶面略隆、沿口不规则；岩身分三折内收，
+ * 比例宽 > 高（约 1 : 0.9–1.3），底部垂一束钟乳状石根。顶点色由上到下：
+ * 草绿顶 → 赭石沿口 → 石青岩身 → 纸色淡出（悬于云中）。
+ */
+function isletGeometry(radius, height, seed, palette) {
+  const r = rand(seed), seg = 11;
+  const prof = [[1.00, 0.18], [1.04, 0.0], [0.96, -0.10], [0.82, -0.26], [0.62, -0.46], [0.44, -0.64], [0.26, -0.82], [0.10, -0.95], [0.0, -1.0]];
+  const jitter = Array.from({ length: seg }, () => 0.82 + r() * 0.34);
+  const pos = [], col = [], idx = [];
+  const cTop = new THREE.Color(palette.top), cLip = new THREE.Color(palette.lip), cRock = new THREE.Color(palette.rock), cFoot = new THREE.Color(palette.foot);
+  const tmp = new THREE.Color();
+  // apex of top dome
+  pos.push(0, radius * 0.30, 0); tmp.copy(cTop); col.push(tmp.r, tmp.g, tmp.b);
+  prof.forEach(([k, yy], ring) => {
+    for (let j = 0; j < seg; j++) {
+      const a = j / seg * Math.PI * 2 + (ring % 2) * 0.12, jj = jitter[j] * (ring > 1 ? 0.92 + r() * 0.16 : 1);
+      const rr = radius * k * jj, y = yy > 0 ? radius * yy : height * yy;
+      pos.push(Math.cos(a) * rr, y, Math.sin(a) * rr);
+      const t = ring <= 1 ? 0 : (ring - 1) / (prof.length - 2);
+      if (ring === 0) tmp.copy(cTop); else if (ring === 1) tmp.copy(cLip);
+      else if (t < 0.45) tmp.copy(cLip).lerp(cRock, Math.min(1, t / 0.30));
+      else tmp.copy(cRock).lerp(cFoot, (t - 0.45) / 0.55);
+      col.push(tmp.r, tmp.g, tmp.b);
+    }
+  });
+  for (let j = 0; j < seg; j++) idx.push(0, 1 + (j + 1) % seg, 1 + j);
+  for (let ring = 0; ring < prof.length - 1; ring++) for (let j = 0; j < seg; j++) {
+    const a = 1 + ring * seg + j, b = 1 + ring * seg + (j + 1) % seg, c = a + seg, d = b + seg;
+    idx.push(a, b, c, b, d, c);
   }
-  geo.computeVertexNormals();
-  return geo;
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx); const flat = g.toNonIndexed(); g.dispose(); flat.computeVertexNormals();
+  return flat;
 }
 
 export class ShanhaiAtmosphere {
@@ -151,7 +181,11 @@ export class ShanhaiAtmosphere {
   }
   worldKey() { const w = this.host.world; return w ? `${w.w}x${w.h}:${w.seed}` : 'none'; }
   clearBase() {
-    for (const child of [...this.root.children]) { child.removeFromParent(); child.geometry?.dispose?.(); }
+    // V1.1: traverse — floater groups own nested geometries (V1 only freed direct children).
+    const owned = new Set();
+    for (const child of [...this.root.children]) { child.traverse(o => { if (o.geometry && !o.userData.sharedGeometry) owned.add(o.geometry); }); child.removeFromParent(); }
+    for (const g of owned) g.dispose();
+    for (const g of this.sharedGeometries || []) g.dispose(); this.sharedGeometries = [];
     for (const m of this.materials || []) { m.map?.dispose(); m.dispose(); }
     this.materials = []; this.puffs = []; this.floaters = [];
   }
@@ -191,37 +225,63 @@ export class ShanhaiAtmosphere {
     if (plane === 'upper' || plane === 'nether') this.buildFloaters(plane, world, r);
     this.stats.puffs = this.puffs.length; this.stats.floaters = this.floaters.length;
   }
-  /** Upper: 浮岛小殿; Nether: 断岩残碑. Placed strictly outside [0,w)×[0,h). */
+  /** Upper: 浮岛（倒悬山 + 云台仙殿 / 松）; Nether: 断岩残碑. Placed strictly outside [0,w)×[0,h). */
   buildFloaters(plane, world, r) {
     const upper = plane === 'upper';
-    const rock = new THREE.MeshLambertMaterial({ color: upper ? '#5C7F86' : '#3B3936', flatShading: true });
-    const top = new THREE.MeshLambertMaterial({ color: upper ? '#5C8D6B' : '#57534C', flatShading: true });
+    const pal = upper ? { top: '#6E9A6A', lip: '#B89A68', rock: '#4F8790', foot: '#E8E4D6' } : { top: '#4A4743', lip: '#2E2C29', rock: '#1E1D1B', foot: '#9A958A' };
+    const rock = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+    const ink = new THREE.MeshBasicMaterial({ color: upper ? '#24333A' : '#0E0D0C', side: THREE.BackSide });
+    ink.onBeforeCompile = shader => { shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n transformed += normalize(normal) * 0.16;'); };
+    const decor = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
     const hall = new THREE.MeshLambertMaterial({ color: upper ? '#F0EDE1' : '#2A2826', flatShading: true });
-    const roof = new THREE.MeshLambertMaterial({ color: upper ? '#2F4955' : '#121110', flatShading: true });
     const gold = new THREE.MeshBasicMaterial({ color: upper ? '#D5B65A' : '#B23A2E' });
-    this.materials.push(rock, top, hall, roof, gold);
-    const count = upper ? 9 : 7, hw = world.w / 2, hh = world.h / 2;
-    for (let i = 0; i < count; i++) {
-      const g = new THREE.Group(); noRaycast(g);
-      const radius = upper ? 2.6 + r() * 3.4 : 2.2 + r() * 2.8, height = radius * (1.6 + r());
-      const body = noRaycast(new THREE.Mesh(isletGeometry(radius, height, i * 97 + 3), rock)); body.position.y = -height / 2; g.add(body);
-      const cap = noRaycast(new THREE.Mesh(new THREE.CylinderGeometry(radius * 1.02, radius * 0.96, 1.2, 7), top)); cap.position.y = 0.4; g.add(cap);
-      if (upper && r() < 0.75) {
-        const base = noRaycast(new THREE.Mesh(new THREE.BoxGeometry(radius * 0.7, radius * 0.45, radius * 0.55), hall)); base.position.y = 1 + radius * 0.22; g.add(base);
-        const rf = noRaycast(new THREE.Mesh(new THREE.ConeGeometry(radius * 0.72, radius * 0.42, 4), roof)); rf.rotation.y = Math.PI / 4; rf.position.y = 1 + radius * 0.66; g.add(rf);
-        const tip = noRaycast(new THREE.Mesh(new THREE.SphereGeometry(radius * 0.06, 6, 4), gold)); tip.position.y = 1 + radius * 0.9; g.add(tip);
-      } else if (!upper) {
-        const stele = noRaycast(new THREE.Mesh(new THREE.BoxGeometry(radius * 0.25, radius * 0.9, radius * 0.1), hall)); stele.position.y = radius * 0.4; stele.rotation.z = (r() - 0.5) * 0.5; g.add(stele);
-        if (r() < 0.6) { const lamp = noRaycast(new THREE.Mesh(new THREE.SphereGeometry(0.7, 6, 4), gold)); lamp.position.set(radius * 0.35, radius * 0.6, 0); g.add(lamp); }
+    this.materials.push(rock, ink, decor, hall, gold);
+    // Shared motif geometries (one per kind), instanced by reference on many isles.
+    const motifs = upper ? { terrace: sceneryGeometry('terrace', 'upper'), stele: sceneryGeometry('stele', 'upper') }
+      : { stele: sceneryGeometry('stele', 'nether'), remnant: sceneryGeometry('remnant', 'nether') };
+    const pine = new THREE.ConeGeometry(0.55, 1.9, 6); pine.translate(0, 0.95, 0);
+    this.sharedGeometries = [...Object.values(motifs), pine];
+    const pineMat = new THREE.MeshLambertMaterial({ color: upper ? '#3F6F57' : '#2A2826', flatShading: true }); this.materials.push(pineMat);
+    const hw = world.w / 2, hh = world.h / 2;
+    // Composition: one or two large anchor isles + a cluster of small ones around each (主宾呼应).
+    const anchors = upper ? 3 : 2, plan = [];
+    for (let a = 0; a < anchors; a++) {
+      const side = (a * 2 + ((world.seed >>> 0) % 4)) % 4, along = 0.2 + r() * 0.6;
+      const x = side === 0 ? -hw - 46 - r() * 30 : side === 1 ? hw + 46 + r() * 30 : (along - 0.5) * world.w;
+      const z = side === 2 ? -hh - 46 - r() * 30 : side === 3 ? hh + 50 + r() * 26 : (along - 0.5) * world.h;
+      const y = upper ? 22 + r() * 20 : 6 + r() * 12;
+      const R = upper ? 8 + r() * 4 : 5 + r() * 3;
+      plan.push({ x, y, z, R, big: true });
+      const n = upper ? 2 + Math.floor(r() * 3) : 2 + Math.floor(r() * 2);
+      for (let i = 0; i < n; i++) {
+        const ang = r() * Math.PI * 2, dist = R * (1.8 + r() * 1.6);
+        plan.push({ x: x + Math.cos(ang) * dist, y: y + (r() - 0.3) * 14, z: z + Math.sin(ang) * dist, R: R * (0.22 + r() * 0.26), big: false });
       }
-      const side = i % 4, along = r();
-      const x = side === 0 ? -hw - 30 - r() * 40 : side === 1 ? hw + 30 + r() * 40 : (along - 0.5) * world.w * 1.1;
-      const z = side === 2 ? -hh - 34 - r() * 40 : side === 3 ? hh + 40 + r() * 30 : (along - 0.5) * world.h * 1.1;
-      g.position.set(x, upper ? 18 + r() * 30 : 4 + r() * 18, z); g.rotation.y = r() * Math.PI * 2;
-      const skirt = noRaycast(new THREE.Sprite(this.materials[0])); skirt.scale.set(radius * 4.2, radius * 1.6, 1); skirt.position.y = -height * 0.55; g.add(skirt);
+    }
+    plan.forEach((q, i) => {
+      const g = new THREE.Group(); noRaycast(g);
+      const height = q.R * (0.9 + r() * 0.45);
+      const geo = isletGeometry(q.R, height, (world.seed >>> 0) + i * 97 + 3, pal);
+      const body = noRaycast(new THREE.Mesh(geo, rock)); g.add(body);
+      const line = noRaycast(new THREE.Mesh(geo, ink)); line.userData.sharedGeometry = true; g.add(line);
+      if (q.big) {
+        const kind = upper ? 'terrace' : 'remnant';
+        const m = noRaycast(new THREE.Mesh(motifs[kind], decor)); m.userData.sharedGeometry = true;
+        m.scale.setScalar(q.R * (upper ? 0.34 : 0.42)); m.position.y = q.R * 0.22; m.rotation.y = r() * Math.PI * 2; g.add(m);
+      } else if (r() < 0.6) {
+        const m = noRaycast(new THREE.Mesh(motifs.stele, decor)); m.userData.sharedGeometry = true; m.scale.setScalar(Math.max(0.6, q.R * 0.35)); m.position.set(q.R * 0.2, q.R * 0.24, 0); g.add(m);
+      }
+      const pines = q.big ? 3 + Math.floor(r() * 3) : Math.floor(r() * 3);
+      for (let p = 0; p < pines; p++) {
+        const ang = r() * Math.PI * 2, d = q.R * (0.55 + r() * 0.35), s = (q.big ? 1.1 : 0.7) * (0.7 + r() * 0.6);
+        const t = noRaycast(new THREE.Mesh(pine, pineMat)); t.userData.sharedGeometry = true; t.scale.set(s, s * (1.1 + r() * 0.5), s);
+        t.position.set(Math.cos(ang) * d, q.R * 0.14, Math.sin(ang) * d); g.add(t);
+      }
+      g.position.set(q.x, q.y, q.z); g.rotation.y = r() * Math.PI * 2;
+      const skirt = noRaycast(new THREE.Sprite(this.materials[0])); skirt.scale.set(q.R * 4.2, q.R * 1.4, 1); skirt.position.y = -height * 0.62; g.add(skirt);
       g.userData.base = g.position.clone(); g.userData.phase = r() * Math.PI * 2;
       this.root.add(g); this.floaters.push(g);
-    }
+    });
   }
   update(dt) {
     if (!this.enabled || !this.root.visible) return;

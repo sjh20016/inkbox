@@ -293,6 +293,9 @@ export class PlaneStage {
     this.decorations?.update({layoutChanged:heightChanged||!!typeRegion});
     this.realmArtifacts?.update(dt,{heightChanged});
     this.scenery?.update(dt, { heightChanged });
+    if (this.scenery && this.vegetation && this.scenery.zonesVersion !== this._sceneryZonesVersion) {
+      this._sceneryZonesVersion = this.scenery.zonesVersion; this.vegetation.setYieldZones?.(this.scenery.zones);
+    }
     this.selectionMarker?.update(this.world, heightChanged);
     const t6 = performance.now();
     this.timings = {

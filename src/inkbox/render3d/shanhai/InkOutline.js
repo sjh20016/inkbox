@@ -6,16 +6,16 @@ import * as THREE from 'three';
  * 因而 PlanePicker 的 `renderEntities` 映射与拾取结果完全不变。
  */
 const materials = new Map();
-function inkMaterial(color, width) {
-  const key = `${color}|${width}`;
+function inkMaterial(color, width, cy = 0) {
+  const key = `${color}|${width}|${cy.toFixed(3)}`;
   if (materials.has(key)) return materials.get(key);
   const material = new THREE.MeshBasicMaterial({ color, side: THREE.BackSide });
   material.name = 'ShanhaiInkOutline';
   material.onBeforeCompile = shader => {
     shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
-      `#include <begin_vertex>\n  transformed += normalize(normal) * ${width.toFixed(4)};`);
+      `#include <begin_vertex>\n  transformed += normalize(normalize(normal) * 0.4 + normalize(position - vec3(0.0, ${cy.toFixed(4)}, 0.0) + vec3(1e-4))) * ${width.toFixed(4)};`);
   };
-  material.customProgramCacheKey = () => `ink-outline-${width.toFixed(4)}`;
+  material.customProgramCacheKey = () => `ink-outline-${width.toFixed(4)}-${cy.toFixed(3)}`;
   materials.set(key, material);
   return material;
 }
@@ -24,7 +24,7 @@ export function attachInkOutline(mesh, { color = '#211F1C', ratio = 0.035 } = {}
   const geometry = mesh.geometry;
   if (!geometry.boundingSphere) geometry.computeBoundingSphere();
   const width = Math.max(0.004, (geometry.boundingSphere?.radius || 1) * ratio);
-  const ink = new THREE.InstancedMesh(geometry, inkMaterial(color, width), mesh.instanceMatrix.count);
+  const ink = new THREE.InstancedMesh(geometry, inkMaterial(color, width, geometry.boundingSphere?.center?.y || 0), mesh.instanceMatrix.count);
   ink.instanceMatrix = mesh.instanceMatrix;
   ink.name = `${mesh.name}:ink`; ink.frustumCulled = false; ink.count = 0; ink.visible = false;
   ink.renderOrder = mesh.renderOrder; ink.raycast = () => {};

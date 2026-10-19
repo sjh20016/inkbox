@@ -109,6 +109,10 @@ export class WaterGpuSurface {
         changed = true;
       }
     }
+    // V1.1: large sculpt strokes flip many diagonals at once; many tiny index ranges were
+    // observed (intermittently) to leave stale triangles stretched across the map. Above a
+    // small budget, upload the whole index once instead.
+    if (changed && this.geometry.index.updateRanges.length > 48) { this.fullIndexUpload = true; this.geometry.index.clearUpdateRanges(); }
     if (changed) this.geometry.index.needsUpdate = true;
   }
   dispose() { this.geometry.dispose(); this.texture.dispose(); }

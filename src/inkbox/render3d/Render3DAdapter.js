@@ -28,6 +28,7 @@ export function boundaryInspectorText(hit) {
   return parts.join(' · ');
 }
 import { TERRAIN_INFO } from '../core/config.js';
+import { SHANHAI_OPTIONS } from './shanhai/ShanhaiStyle.js';
 
 const hoverObjectIds = new WeakMap(); let nextHoverObjectId = 1;
 function hoverObjectId(object) {
@@ -67,6 +68,7 @@ export class Render3DAdapter {
     configureTerrainGpu(artParams);
     const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'shanhai-v1';
     const diagnostics = artDebugOptions();
+    if (['v1', 'print', 'ink'].includes(artParams.get('nether'))) SHANHAI_OPTIONS.nether = artParams.get('nether');
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
       artDevelopment: diagnostics.development, artDebugView: diagnostics.debugView,
       productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off',

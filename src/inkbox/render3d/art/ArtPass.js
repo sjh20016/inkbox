@@ -216,6 +216,8 @@ export class ArtPass {
     // The entry point is here; no second skirt or realm geometry is introduced.
   }
   update() {
+    const nowT = globalThis.performance?.now?.() ?? Date.now();
+    this._bandDt = this._bandT ? Math.min(0.1, Math.max(0, (nowT - this._bandT) / 1000)) : 0.016; this._bandT = nowT;
     const rig = this.host.cameraRig, camera = rig.camera;
     const pixelsPerUnit = (this.host.height || 800) * camera.zoom / Math.max(1, camera.top - camera.bottom);
     camera.updateMatrixWorld();
@@ -228,6 +230,7 @@ export class ArtPass {
       if (stage.terrain?.inkMaterial) {
         stage.terrain.inkMaterial.uniforms.pixelsPerUnit.value = view.pixelsPerUnit;
         stage.terrain.inkMaterial.setShanhaiView?.(camera, rig.controls?.target, (camera.top - camera.bottom) / Math.max(1e-3, camera.zoom));
+        stage.terrain.inkMaterial.updateShanhaiBand?.(stage.world, stage.elevation, this._bandDt ?? 0.016);
       }
       if (stage.water?.inkMaterial?.uniforms.pixelsPerUnit) stage.water.inkMaterial.uniforms.pixelsPerUnit.value = view.pixelsPerUnit;
       stage.setEnvironmentArtView(view);

@@ -5,6 +5,7 @@ import { TREE_VARIANT_SCALES, treeVariantIndex } from './treeVariation.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
 import { createTreeLODBatches } from '../lod/TreeLODAssets.js';
+import { createShanhaiTreeLODs, createShanhaiTreeMaterial, setShanhaiTreeView } from '../shanhai/ShanhaiFlora.js';
 import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
 
 function pixelTree() {
@@ -95,9 +96,26 @@ export class VegetationLayer {
     for (let i = 0; i < 5; i++) this._variantTints[i].set(tints?.[i] || '#ffffff');
     if (profile && !this.pilotMaterial) this.pilotMaterial = createPilotMaterial(profile, 1.5);
     if (profile) updatePilotMaterial(this.pilotMaterial, profile);
-    this.mesh.geometry = profile ? this.pilotGeometry : this.geometry;
-    this.mesh.material = profile ? this.pilotMaterial : this.material;
-    for (let lod = 1; lod <= 2; lod++) this.lodMeshes[lod].material = profile ? this.pilotMaterial : this.material;
+    const shanhai = !!profile?.realmStyle?.shanhai;
+    if (shanhai && !this.shanhaiFlora) {
+      const plane = this.world.plane || 'mortal';
+      this.shanhaiFlora = { geometries: createShanhaiTreeLODs(), material: createShanhaiTreeMaterial(plane), ink: createShanhaiTreeMaterial(plane, { outline: true }), outlines: [] };
+      for (let lod = 0; lod < 2; lod++) {
+        const src = this.lodMeshes[lod];
+        const ink = new THREE.InstancedMesh(this.shanhaiFlora.geometries[lod], this.shanhaiFlora.ink, src.instanceMatrix.count);
+        ink.instanceMatrix = src.instanceMatrix; ink.frustumCulled = false; ink.count = 0; ink.visible = false;
+        ink.raycast = () => {}; ink.userData.presentationOnly = true; ink.userData.inkOutline = true; ink.name = `${src.name || 'VegetationLOD0'}:ink`;
+        ink.renderOrder = src.renderOrder; src.add(ink); this.shanhaiFlora.outlines[lod] = ink;
+      }
+    }
+    this.shanhaiActive = shanhai;
+    this.mesh.geometry = shanhai ? this.shanhaiFlora.geometries[0] : profile ? this.pilotGeometry : this.geometry;
+    this.mesh.material = shanhai ? this.shanhaiFlora.material : profile ? this.pilotMaterial : this.material;
+    for (let lod = 1; lod <= 2; lod++) {
+      this.lodMeshes[lod].geometry = shanhai ? this.shanhaiFlora.geometries[lod] : this.lodGeometries[lod];
+      this.lodMeshes[lod].material = shanhai ? this.shanhaiFlora.material : profile ? this.pilotMaterial : this.material;
+    }
+    this._syncFloraOutlines();
     this.mesh.boundingBox = null; this.mesh.boundingSphere = null;
     if (changed) this._reassignAndUpload(true);
   }
@@ -112,6 +130,7 @@ export class VegetationLayer {
   setArtView(view = {}) {
     this.artView = view || {};
     if (this.pilotMaterial) setPilotView(this.pilotMaterial, this.artView);
+    if (this.shanhaiFlora) { setShanhaiTreeView(this.shanhaiFlora.material, this.artView); setShanhaiTreeView(this.shanhaiFlora.ink, this.artView); }
     const ppu = Number.isFinite(this.artView.pixelsPerUnit) ? this.artView.pixelsPerUnit : 1;
     const verticalPpu = Number.isFinite(this.artView.verticalPixelsPerUnit) ? this.artView.verticalPixelsPerUnit : ppu;
     const scaleChanged = ppu !== this._viewPpu || verticalPpu !== this._viewVerticalPpu;
@@ -154,12 +173,13 @@ export class VegetationLayer {
   updateGround(region = null) {
     const changedMeshes = [false, false, false];
     const s = this.stats; s.groundPasses++;
-    let writes = 0;
+    let writes = 0, cliffChanged = false;
     for (const tree of this.trees) {
       const x = Math.min(this.world.w - 2, Math.floor(tree.x));
       const y = Math.min(this.world.h - 2, Math.floor(tree.y));
       if (region && (x > region.x1 || x + 1 < region.x0 || y > region.y1 || y + 1 < region.y0)) continue;
       s.groundSamples++;
+      if (this.shanhaiActive && this._onCliff(tree) !== !!tree.cliffHidden) cliffChanged = true;
       const nextY = Math.fround(this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y)).y);
       const lod = tree.renderLod, mesh = this.lodMeshes[lod], attribute = mesh.instanceMatrix;
       for (let side = 0; side < tree.renderCount; side++) {
@@ -177,9 +197,37 @@ export class VegetationLayer {
       s.groundUploadMarks++;
     }
     s.groundInstancesWritten += writes;
+    if (cliffChanged) this._writeMatrices();
     return writes;
   }
 
+  _onCliff(tree) {
+    const e = this.elevation, x = tree.x, y = tree.y, c = e.at(x, y);
+    const d = Math.max(Math.abs(e.at(x + 0.8, y) - c), Math.abs(e.at(x - 0.8, y) - c), Math.abs(e.at(x, y + 0.8) - c), Math.abs(e.at(x, y - 0.8) - c));
+    return d > 3.2;
+  }
+  /** Scenery footprints (ShanhaiSceneryLayer) the forest yields to; presentation only. */
+  setYieldZones(zones) {
+    this.yieldZones = zones?.length ? zones : null;
+    if (this.shanhaiActive && this.trees?.length) this._writeMatrices();
+  }
+  _structNear(tree) {
+    const z = this.yieldZones;
+    if (z) for (const q of z) { const d = Math.hypot(q.x - tree.x, q.y - tree.y); if (d < q.r) return 2; if (d < q.r + 1.4) return 1; }
+    const st = this.world.struct; if (!st) return 0;
+    const w = this.world.w, h = this.world.h, cx = Math.round(tree.x), cy = Math.round(tree.y);
+    if (cx >= 0 && cy >= 0 && cx < w && cy < h && st[cy * w + cx]) return 2;
+    for (let y = cy - 1; y <= cy + 1; y++) for (let x = cx - 1; x <= cx + 1; x++) if (x >= 0 && y >= 0 && x < w && y < h && st[y * w + x]) return 1;
+    return 0;
+  }
+  _syncFloraOutlines() {
+    const f = this.shanhaiFlora; if (!f) return;
+    for (let lod = 0; lod < 2; lod++) {
+      const ink = f.outlines[lod], src = this.lodMeshes[lod]; if (!ink) continue;
+      ink.count = src.count; ink.visible = !!this.shanhaiActive && src.visible && src.count > 0;
+      if (src.instanceColor && ink.instanceColor !== src.instanceColor) ink.instanceColor = src.instanceColor;
+    }
+  }
   /** Enable opt-in CPU attribution for the forest LOD assignment path. */
   setLODProbeEnabled(enabled = true) {
     if (!enabled) { this.lodProbe = null; return null; }
@@ -285,11 +333,20 @@ export class VegetationLayer {
       const lod = this._lodByTree.get(tree.cell) ?? 0;
       const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
       dummy.position.set(p.x, p.y, p.z); dummy.scale.setScalar(tree.size);
+      tree.cliffHidden = this.shanhaiActive ? this._onCliff(tree) : false;
       const variant = varied ? treeVariantIndex(this.world.seed, tree.cell) : 0;
       this._variantCounts[variant]++;
       if (varied) {
         const scale = TREE_VARIANT_SCALES[variant];
         dummy.scale.set(tree.size * scale[0], tree.size * scale[1], tree.size * scale[2]);
+      }
+      // 纯表现：人造峭壁的近竖直壁面上不画树（实例与拾取映射保留，只是零尺度）。
+      if (tree.cliffHidden) dummy.scale.setScalar(1e-5);
+      else if (this.shanhaiActive) {
+        // 聚落让景：房屋格上的树不画，紧邻房屋的树收小，让白墙黛瓦从林间露出来。
+        const near = this._structNear(tree);
+        const k = near === 2 ? 1e-5 : near === 1 ? 0.58 : 0.86;
+        dummy.scale.multiplyScalar(k);
       }
       const tint = varied ? this._variantTints[variant] : this._whiteTint;
       const target = this.lodMeshes[lod];
@@ -317,6 +374,7 @@ export class VegetationLayer {
       mesh.boundingBox = null; mesh.boundingSphere = null;
       mesh.visible = counts[lod] > 0;
     }
+    this._syncFloraOutlines();
     return matrixInstancesWritten;
   }
 
@@ -342,6 +400,7 @@ export class VegetationLayer {
   dispose() {
     this.mesh.dispose(); this.geometry.dispose(); this.material.dispose(); this.texture.dispose();
     this.pilotMaterial?.dispose();
+    if (this.shanhaiFlora) { for (const ink of this.shanhaiFlora.outlines) { ink?.removeFromParent(); ink?.dispose(); } for (const g of this.shanhaiFlora.geometries) g.dispose(); this.shanhaiFlora.material.dispose(); this.shanhaiFlora.ink.dispose(); this.shanhaiFlora = null; }
     for (let lod = 1; lod <= 2; lod++) this.lodMeshes[lod].dispose();
     for (const geometry of this.lodGeometries) geometry.dispose();
   }

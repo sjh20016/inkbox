@@ -1,3 +1,4 @@
+import { creatureCelUniform } from './CreatureLibrary.js';
 import { attachInkOutline, syncInkOutline, disposeInkOutline } from '../shanhai/InkOutline.js';
 // 水墨沙盒 · 山海异兽实例批处理（Render3D · A1 众生入画）
 //
@@ -47,7 +48,7 @@ export class CreatureBatch {
   }
 
   /** V1 · 山海入画：墨线外轮廓开关（纯表现，不改实例 / 拾取映射）。 */
-  setInkOutline(enabled) { this.inkOutline = !!enabled; for (const mesh of this.meshes.values()) syncInkOutline(mesh, this.inkOutline); }
+  setInkOutline(enabled) { this.inkOutline = !!enabled; creatureCelUniform.value = this.inkOutline ? 1 : 0; for (const mesh of this.meshes.values()) syncInkOutline(mesh, this.inkOutline); }
 
   hasSpecies(id) { return this.meshes.has(id); }
 

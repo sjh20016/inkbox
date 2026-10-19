@@ -23,18 +23,18 @@ const merge = (base, over) => {
  */
 export const SHANHAI_SCENE = deepFreeze({
   mortal: {
-    terrain: { band: [-4, 36], low: '#C7A678', mid: '#7FA05F', high: '#4F8478', peak: '#F0E9D8', shadow: '#344A50',
-      light: '#F7E8C6', gold: '#C3A25B', mist: '#E7E0CF', strength: 0.74, shade: 0.24, cun: 0.20, ridge: 0.50, wash: 0.26, line: 0.42,
-      goldAmt: 0.0, mistAmt: 0.30, air: 0.38 },
+    terrain: { band: [-4, 36], low: '#C9A574', mid: '#79A25A', high: '#3F7E78', peak: '#F0E9D8', shadow: '#2F4A52',
+      light: '#F7E8C6', gold: '#C3A25B', mist: '#E7E0CF', strength: 0.84, shade: 0.26, cun: 0.22, ridge: 0.50, wash: 0.16, line: 0.40,
+      goldAmt: 0.0, mistAmt: 0.26, air: 0.30 },
     sky: { top: '#E9E1CD', bottom: '#F3EEE1', horizon: '#E4DCC8' },
     hills: ['#B9C2B4', '#9DAEA4', '#7F948E'], hillInk: '#5A6A68', mistBand: '#F4EFE3', sun: { color: '#E2A27A', x: 0.80, y: 0.20, r: 0.040, alpha: 0.16 },
     base: { color: '#EFEADC', ink: '#9BA49A', opacity: 0.92, kind: 'mist' },
     light: { sky: '#FBF1DA', ground: '#6E7A64', hemi: 1.75, sun: '#FFE8C2', sunIntensity: 2.5, sunDir: [-90, 150, -60] },
   },
   upper: {
-    terrain: { band: [-2, 40], low: '#C49B5C', mid: '#3F8A6C', high: '#2C6A8C', peak: '#F4EFE2', shadow: '#22465A',
-      light: '#FFF1CF', gold: '#D2AE4E', mist: '#F2ECDD', strength: 0.80, shade: 0.24, cun: 0.18, ridge: 0.44, wash: 0.22, line: 0.34,
-      goldAmt: 0.75, mistAmt: 0.44, air: 0.40 },
+    terrain: { band: [-2, 40], low: '#C29552', mid: '#3B9270', high: '#1F7A92', peak: '#F4EFE2', shadow: '#1E4A5E',
+      light: '#FFF1CF', gold: '#D2AE4E', mist: '#F2ECDD', strength: 0.92, shade: 0.24, cun: 0.16, ridge: 0.44, wash: 0.12, line: 0.30,
+      goldAmt: 0.75, mistAmt: 0.30, air: 0.30, mineral: 0.75 },
     sky: { top: '#E7EBE2', bottom: '#F4EEDF', horizon: '#EFE6D0' },
     hills: ['#B7CEC6', '#8FB3AE', '#5F8F98'], hillInk: '#355E70', mistBand: '#FBF7EC', sun: { color: '#D9B65A', x: 0.22, y: 0.18, r: 0.05, alpha: 0.38 },
     base: { color: '#FBF8EF', ink: '#B7C6C2', opacity: 0.96, kind: 'cloud' },
@@ -56,7 +56,7 @@ export const SHANHAI_STYLES = deepFreeze({
     name: 'MortalShanhaiV1', shanhai: SHANHAI_SCENE.mortal.terrain, paper: { color: '#EDE5D1', background: '#EDE5D1', exposure: 1.02 },
     vegetation: { palette: ['#A9BC7A', '#7FA08A', '#5E7466'], tints5: ['#A9BC7A', '#8DA46A', '#7FA08A', '#6A9A88', '#C2A27A'], instanceTintWeight: 0.55 },
     water: { color: '#6F9EA2', opacity: 0.90, paperStrength: 0.36, rippleStrength: 0.62 },
-    building: { palette: { wall: '#EEE7D6', roof: '#5E6B73', wood: '#85684D', earth: '#B48A56', accent: '#B64A3B' } },
+    building: { palette: { wall: '#F2EDE0', roof: '#56626B', wood: '#8A7A66', earth: '#7C7A70', accent: '#B64A3B' } },
     pigment: { density: 0.80, saturation: 0.82, colorLayer: 0.35 },
     ink: { structure: 0.62, silhouette: 0.26, density: 0.44, dryBrush: 0.36, feibai: 0.16, color: '#2B2925' },
     contrast: 1.07,
@@ -79,9 +79,46 @@ export const SHANHAI_STYLES = deepFreeze({
   }),
 });
 
+/**
+ * V1.1 · 幽冥黑白方案。`v1` = V1 灰调白描（回退参考）；`print` = A 黑白版画；
+ * `ink` = B 焦墨干笔（默认，融合 A 的大块黑白结构与 B 的笔势飞白）。
+ * 运行时通过 `?nether=v1|print|ink` 切换，只改表现参数。
+ */
+export const SHANHAI_OPTIONS = { nether: 'ink' };
+const NETHER_BW_SCENE = {
+  sky: { top: '#D9D3C6', bottom: '#EEE9DE', horizon: '#E4DED2' },
+  hills: ['#8C877D', '#3B3834', '#121110'], hillInk: '#0B0A09', mistBand: '#EFEAE0',
+  sun: { color: '#B23A2E', x: 0.76, y: 0.16, r: 0.034, alpha: 0.85 },
+  base: { color: '#E8E2D6', ink: '#141311', opacity: 0.94, kind: 'inkfog' },
+  light: { sky: '#F2EEE6', ground: '#6A665E', hemi: 1.9, sun: '#F4F0E6', sunIntensity: 2.1, sunDir: [-110, 140, -40] },
+};
+const NETHER_VARIANTS = deepFreeze({
+  print: {
+    scene: merge(SHANHAI_SCENE.nether, { ...NETHER_BW_SCENE, terrain: { ...SHANHAI_SCENE.nether.terrain, low: '#2A2724', mid: '#8A857B', high: '#D8D2C4', peak: '#F1ECE2',
+      shadow: '#0E0D0C', mist: '#E9E3D7', shade: 0.55, cun: 0.10, ridge: 0.90, line: 0.30, wash: 0.10, inkMode: 'print', inkAmt: 0.94, mistAmt: 0.18, air: 0.22 } }),
+  },
+  ink: {
+    scene: merge(SHANHAI_SCENE.nether, { ...NETHER_BW_SCENE, terrain: { ...SHANHAI_SCENE.nether.terrain, low: '#2A2724', mid: '#8A857B', high: '#D8D2C4', peak: '#F1ECE2',
+      shadow: '#0E0D0C', mist: '#E9E3D7', shade: 0.50, cun: 0.42, ridge: 0.85, line: 0.42, wash: 0.10, inkMode: 'ink', inkAmt: 0.90, mistAmt: 0.18, air: 0.22 } }),
+  },
+});
+const netherVariantStyle = {};
+for (const [key, v] of Object.entries(NETHER_VARIANTS)) netherVariantStyle[key] = deepFreeze(merge(SHANHAI_STYLES.nether, {
+  name: `NetherShanhaiV11_${key}`, shanhai: v.scene.terrain,
+  paper: { color: '#ECE6DA', background: '#ECE6DA', exposure: 1.0 },
+  pigment: { density: 0.70, saturation: 0.10 },
+  ink: { structure: 0.70, silhouette: 0.40, density: 0.40, dryBrush: 0.70, feibai: 0.40, color: '#0E0D0C' },
+  contrast: 1.12, atmosphere: { color: '#ECE6DA', strength: 0.10, low: -20, high: 4 },
+}));
+const netherKey = () => (NETHER_VARIANTS[SHANHAI_OPTIONS.nether] ? SHANHAI_OPTIONS.nether : null);
+
 export function shanhaiStyleFor(plane) {
+  if (plane === 'nether' && netherKey()) return netherVariantStyle[netherKey()];
   const style = SHANHAI_STYLES[plane];
   if (!style) throw new Error(`Unknown shanhai plane: ${plane}`);
   return style;
 }
-export function shanhaiSceneFor(plane) { return SHANHAI_SCENE[plane] || SHANHAI_SCENE.mortal; }
+export function shanhaiSceneFor(plane) {
+  if (plane === 'nether' && netherKey()) return NETHER_VARIANTS[netherKey()].scene;
+  return SHANHAI_SCENE[plane] || SHANHAI_SCENE.mortal;
+}

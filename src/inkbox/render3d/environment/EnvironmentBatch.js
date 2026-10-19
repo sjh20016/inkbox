@@ -54,6 +54,14 @@ export class EnvironmentBatch {
       }
       this.meshes.set(nodeName, mesh);
       this.group.add(mesh);
+      // V1.1 ink outline (presentation only): shares instanceMatrix, never raycast.
+      const outlineMaterial = material.userData?.outlineMaterial;
+      if (outlineMaterial) {
+        const ink = new THREE.InstancedMesh(geometry, outlineMaterial, this.capacityForNode(nodeName));
+        ink.instanceMatrix = mesh.instanceMatrix; ink.count = 0; ink.visible = false; ink.frustumCulled = false;
+        ink.raycast = () => {}; ink.userData.presentationOnly = true; ink.userData.inkOutline = true; ink.name = `${nodeName}:ink`;
+        mesh.add(ink); mesh.userData.inkOutline = ink;
+      }
     }
     this._sourceByNode = new Map();
     this._dummy = new THREE.Object3D();
@@ -114,6 +122,9 @@ export class EnvironmentBatch {
       mesh.boundingBox = null;
       mesh.boundingSphere = null;
       mesh.instanceMatrix.needsUpdate = true;
+      const ink = mesh.userData.inkOutline;
+      // HLOD clusters (lod 3) stay as flat colour blocks; far LOD2 drops the line too.
+      if (ink) { ink.count = count; ink.visible = count > 0 && mesh.userData.lod !== 3 && mesh.userData.lod !== 2; }
       if (!count) continue;
       const module = this.library.modules.get(nodeName);
       instances += count;
@@ -132,6 +143,7 @@ export class EnvironmentBatch {
     this.disposed = true;
     for (const mesh of this.meshes.values()) {
       this.group.remove(mesh);
+      if (mesh.userData.inkOutline) { mesh.userData.inkOutline.removeFromParent(); mesh.userData.inkOutline.dispose(); mesh.userData.inkOutline = null; }
       mesh.dispose();
     }
     this.meshes.clear();
