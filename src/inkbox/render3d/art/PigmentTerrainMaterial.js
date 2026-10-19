@@ -87,6 +87,7 @@ uniform float pigmentDensity, pigmentSaturation, terrainBoundaryStrength;
 uniform float structuralInkStrength, silhouetteInkStrength, inkDensity;
 uniform float dryBrushStrength, distanceFade, paperGrainStrength, pixelsPerUnit;
 uniform float realmStyleEnabled, slopeRampStrength, realmContrast, paperExposure;
+uniform float mountainWashStrength;
 uniform float colorLayerStrength;
 uniform float feibaiStrength, atmosphereStrength, atmosphereLow, atmosphereHigh;
 uniform vec3 slopeRockColor, slopeSoilColor, terrainWaterColor, realmInkColor, atmosphereColor;
@@ -185,12 +186,18 @@ void main() {
   pigment=mix(pigment,terrainWaterColor,water*0.22);
   float rock=step(12.5,id)*(1.0-step(16.5,id));
   float forest=step(6.5,id)*(1.0-step(8.5,id));
+  // A broad, world-anchored dry face joins neighbouring pigment cells after
+  // sculpting. Exact type/water samples and the actual terrain stay unchanged.
+  float mountainFace=smoothstep(0.08,1.2,broadSlope2)*(1.0-water)
+    *(1.0-smoothstep(0.002,0.018,wd))*mountainWashStrength*realmStyleEnabled;
   if (realmStyleEnabled > 0.5) {
     pigment=mix(pigment,slopeRockColor,rock*smoothstep(0.18,1.8,slope)*slopeRampStrength);
     pigment=mix(pigment,slopeSoilColor,(1.0-rock)*(1.0-water)*smoothstep(0.55,2.2,slope)*slopeRampStrength*0.26);
+    pigment=mix(pigment,slopeRockColor,mountainFace*0.70);
   }
   float coverage=mix(0.20,0.64,smoothstep(0.25,0.8,wash));
   coverage+=water*0.10+forest*0.12+rock*smoothstep(0.15,1.5,slope)*0.16;
+  coverage=mix(coverage,0.46+wash*0.12,mountainFace);
   float density=clamp(pigmentDensity*coverage*distant,0.0,0.85);
   // Absorption rather than a LUT: unpainted areas stay at the chosen paper value.
   vec3 color=paperColor*exp(-density*(vec3(1.0)-pigment)*2.9);
@@ -220,7 +227,7 @@ void main() {
     return;
   }
   float boundary=max(abs(id-typeAt(q+vec2(0.38,0))),abs(id-typeAt(q+vec2(0,0.38))));
-  float edge=min(1.0,boundary)*terrainBoundaryStrength*0.16*distant*(1.0-coastSoft*0.75);
+  float edge=min(1.0,boundary)*terrainBoundaryStrength*0.16*distant*(1.0-coastSoft*0.75)*(1.0-mountainFace*0.78);
   // The existing low-frequency warp also supplies sparse brush placement;
   // marks now correlate mildly with type warp, avoiding a second four-hash
   // value-noise evaluation per fragment.
@@ -256,6 +263,7 @@ void main() {
     float c2dStruct=smoothstep(0.12,0.50,abs(curvature))*smoothstep(0.35,1.60,fineSlope);
     float deep=(structure*structure*deepInkStrength+c2dStruct*deepInkStrength)*brushGate*strokeDirection*nearDetail*distant;
     deep=clamp(deep,0.0,0.22);
+    deep*=1.0-mountainFace*0.35;
     if(artDebugMode>=3.5&&artDebugMode<4.5){
       float structureInk=clamp(ink*0.72+edge,0.0,0.82)*(1.0-clearQi*0.35);
       outputColor(mix(mix(paperColor,realmInkColor,structureInk),realmInkColor,deep));
@@ -339,6 +347,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       palette: { value: basePalette.map(color => color.clone()) },
       paperColor: { value: new THREE.Color(profile.paperColor) }, pixelsPerUnit: { value: 2 },
       realmStyleEnabled: { value: 0 }, slopeRampStrength: { value: 0 }, realmContrast: { value: 1 }, paperExposure: { value: 1 },
+      mountainWashStrength: { value: 0 },
       colorLayerStrength: { value: 0 },
       feibaiStrength: { value: 0 }, atmosphereStrength: { value: 0 }, atmosphereLow: { value: -1 }, atmosphereHigh: { value: 1 },
       slopeRockColor: { value: new THREE.Color('#808080') }, slopeSoilColor: { value: new THREE.Color('#808080') },
@@ -356,6 +365,9 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       this.defines.INKBOX_ART_DEBUG = next;
       this.needsUpdate = true;
     }
+  }
+  setMountainWashStrength(strength = 0.65) {
+    this.uniforms.mountainWashStrength.value = Number.isFinite(strength) ? Math.min(1, Math.max(0, strength)) : 0;
   }
   setProfile(profile) {
     const style = profile.realmStyle;

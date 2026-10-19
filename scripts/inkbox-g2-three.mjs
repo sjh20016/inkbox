@@ -41,7 +41,7 @@ check('three styles submit distinct shared geometry at actual entity coordinates
     const m=fx.batches.blade.mesh.instanceMatrix.array;
     assert(Math.abs(m[12]-(25.5-(world.w-1)/2))<1e-5);
     assert(Math.abs(m[14]-(22-(world.h-1)/2))<1e-5,'entity coordinates have no half-cell offset');
-    const expected=(elevation.at(25,22)+elevation.at(26,22))/2+.17;
+    const expected=(elevation.at(25,22)+elevation.at(26,22))/2+.6;
     assert(Math.abs(m[13]-expected)<1e-5,'use the existing stage elevation interface');
     assert.equal(sha(world),before);
     assert(Object.values(fx.batches).every(b=>b.mesh.userData.presentationOnly));

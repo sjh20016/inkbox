@@ -224,12 +224,18 @@ export const TOOLS = Object.freeze([
   }),
 
   // ── 生灵 ──────────────────────────────────────────────
-  T('human', '凡人', '🧍', 'life', '撒下一群凡人，他们会自己结庐成村', {
+  T('human', '凡人', '🧍', 'life', '撒下凡人；附近不便落脚时，会在 12 格内寻找安全、平整的可行走地面', {
     mode: 'click', species: SPECIES.HUMAN, count: 8,
-    apply: (c) => P.paintLife(c.life, c.x, c.y, c.radius, SPECIES.HUMAN, 8),
+    apply: (c) => {
+      const result = P.paintPlayerHumans(c.life, c.x, c.y, 8);
+      if (!result.placed) return '附近没有可行走台地 · 未放置凡人';
+      const places = result.points.map(({ x, y, dx, dy }) => `${x},${y} (Δ${dx >= 0 ? '+' : ''}${dx},${dy >= 0 ? '+' : ''}${dy})`).join('；');
+      const partial = result.placed < result.requested ? `（仅落下 ${result.placed}/${result.requested} 人）` : `（${result.placed} 人）`;
+      return `凡人已落地${partial} · 实际格坐标 ${places}；Δ为相对点选格的偏移`;
+    },
   }),
   T('cultivator', '修士', '🧙', 'life', '引来修士，寿命长、战力高，能立宗建国', {
-    mode: 'click', species: SPECIES.CULTIVATOR, count: 5,
+    mode: 'click', species: SPECIES.CULTIVATOR, count: 5, playerHidden: true,
     apply: (c) => P.paintLife(c.life, c.x, c.y, c.radius, SPECIES.CULTIVATOR, 5),
   }),
   T('beast', '灵兽', '🐾', 'life', '放出灵兽，它们会猎食凡人', {

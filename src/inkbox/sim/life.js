@@ -21,6 +21,7 @@ import { tryCombatIgnition } from './combatEnvironment.js';
 import {
   SEA_LEVEL, SPECIES, SPECIES_INFO, LIMITS, TERRAIN, TIME,
 } from '../core/config.js';
+import { canAccess } from '../core/mapAccess.js';
 import { clamp, mulberry32 } from '../core/noise.js';
 import { OVER, recomputeRect, markDirty, flushDirty } from '../world/terrain.js';
 import { generateNameParts, generateName, generateVillageName, narrate, fillTemplate } from '../core/lore.js';
@@ -41,6 +42,10 @@ import { stepSites } from './sites.js';
 import { stepArtifacts, dropArtifacts, wearArtifacts, ownerLine, KILL_WEAR } from './artifacts.js';
 import { tickBusanzi } from './busanzi.js';
 import { WorldEvents } from './worldEvents.js';
+import {
+  SETTLEMENT_FLOOD_DEPTH, HOUSE_FLOOD_DAYS,
+  isDryBuildableSettlementTile, liveSettlementHouseType,
+} from '../world/settlementState.js';
 
 const TERRAIN_SPEED = Object.freeze({
   [TERRAIN.SAND]: 0.82,
@@ -363,9 +368,12 @@ export class Life {
    */
   spawn(x, y, species = SPECIES.HUMAN, count = 1, factionId = 0, opts = {}) {
     const world = this.world;
+    const playerPlacement = opts.playerPlacement === true && species === SPECIES.HUMAN;
     let created = 0;
     for (let n = 0; n < count; n += 1) {
-      const spot = this.findSpawnSpot(x, y, 6);
+      const spot = playerPlacement
+        ? this.findSpawnSpot(x, y, 6, { playerPlacement: true })
+        : this.findSpawnSpot(x, y, 6);
       if (!spot) break;
       // 转世附魂：只有村庄繁衍才开这个口子（`allowSouls`）。
       // 神力投放的人、野生的灵兽都不该抢神魂——那些不是「投胎」。
@@ -409,6 +417,7 @@ export class Life {
         if (soul) world.souls.push(soul);
         break;
       }
+      if (playerPlacement && typeof opts.onSpawn === 'function') opts.onSpawn(entity);
       initEntity(entity, this.rng, { cultivator: sp === SPECIES.CULTIVATOR });
       entity.surname = surname;
       // ── 先天修士也要留一笔 ─────────────────────────────────
@@ -449,21 +458,57 @@ export class Life {
     return created;
   }
 
-  findSpawnSpot(cx, cy, radius) {
+  findSpawnSpot(cx, cy, radius, options = undefined) {
     const world = this.world;
     // 调用方可能传浮点格坐标（工具笔刷传的是 x + 0.5），
     // 必须先取整——否则 idx() 会算出非整数下标，读到 undefined 而永远找不到落点。
     const baseX = Math.floor(cx);
     const baseY = Math.floor(cy);
     const r = Math.floor(radius);
+    const playerPlacement = options?.playerPlacement === true;
+    const playerTileQuality = playerPlacement ? (x, y, i) => {
+      if (!world.isWalkable(i) || world.struct[i] !== 0 || world.water[i] > 0.0015
+        || world.fire[i] > 0.01 || !canAccess(world, x, y)) return null;
+      let low = Infinity, high = -Infinity;
+      for (let oy = -1; oy <= 1; oy += 1) for (let ox = -1; ox <= 1; ox += 1) {
+        const nx = x + ox, ny = y + oy;
+        // Do not inspect terrain outside the open region, even for a score.
+        if (!world.inside(nx, ny) || !canAccess(world, nx, ny)) return null;
+        const height = world.height[world.idx(nx, ny)];
+        low = Math.min(low, height); high = Math.max(high, height);
+      }
+      const roughness = high - low;
+      return roughness <= 0.05 ? roughness : null;
+    } : null;
     for (let attempt = 0; attempt < 40; attempt += 1) {
       const x = baseX + Math.floor((this.rng() * 2 - 1) * (r + 1));
       const y = baseY + Math.floor((this.rng() * 2 - 1) * (r + 1));
       if (!world.inside(x, y)) continue;
       const i = world.idx(x, y);
-      if (!world.isWalkable(i)) continue;
-      if (world.struct[i] !== 0) continue;
+      if (playerPlacement) {
+        if (playerTileQuality(x, y, i) === null) continue;
+      } else {
+        if (!world.isWalkable(i)) continue;
+        if (world.struct[i] !== 0) continue;
+      }
       return [x, y];
+    }
+    if (playerPlacement) {
+      const limit = Math.min(12, Math.max(0, Math.floor(options.maxRadius ?? 12)));
+      let best = null;
+      for (let y = Math.max(0, baseY - limit); y <= Math.min(world.h - 1, baseY + limit); y += 1) {
+        for (let x = Math.max(0, baseX - limit); x <= Math.min(world.w - 1, baseX + limit); x += 1) {
+          const dx = x - baseX, dy = y - baseY, distance2 = dx * dx + dy * dy;
+          if (distance2 > limit * limit) continue;
+          const i = world.idx(x, y);
+          const roughness = playerTileQuality(x, y, i);
+          if (roughness === null) continue;
+          const score = distance2 + roughness * 64;
+          if (!best || score < best.score || (score === best.score && (y < best.y || (y === best.y && x < best.x))))
+            best = { x, y, score };
+        }
+      }
+      if (best) return [best.x, best.y];
     }
     return null;
   }
@@ -1345,7 +1390,7 @@ export class Life {
       const tx = Math.floor(e.x);
       const ty = Math.floor(e.y);
       const i0 = this.tileAt(tx, ty);
-      if (!world.isBuildable(i0)) continue;
+      if (!isDryBuildableSettlementTile(world, i0)) continue;
       if (world.fertility(i0) < 0.32) continue;
       if (this.villageNear(tx, ty, 11)) continue;
 
@@ -1445,6 +1490,29 @@ export class Life {
       const cy = Math.floor(village.y);
       const center = this.tileAt(cx, cy);
 
+      // Damage only advances with the simulation clock. Old saves may already
+      // contain wet houses; loading one leaves every historic anchor intact.
+      let floodedHousesLost = 0;
+      for (const house of village.houses) {
+        if (!liveSettlementHouseType(world, house)) continue;
+        const idx = world.idx(Math.floor(house.x), Math.floor(house.y));
+        if (world.water[idx] < SETTLEMENT_FLOOD_DEPTH) {
+          if (house.floodDays) delete house.floodDays;
+          continue;
+        }
+        house.floodDays = (house.floodDays || 0) + dtDays;
+        if (house.floodDays < HOUSE_FLOOD_DAYS) continue;
+        house.floodRuined = true;
+        world.struct[idx] = 5;
+        world.over[idx] = OVER.RUINS;
+        markDirty(world, idx);
+        floodedHousesLost += 1;
+      }
+      if (floodedHousesLost) {
+        world.record(`${village.name} 有${floodedHousesLost}处屋舍因积水坍毁`, 'settle');
+        world.touch();
+      }
+
       // 村子被毁：中心不可居 → 废弃。
       //
       // ⚠️ 这里只判「能不能走 + 有没有火」，不能判 isBuildable：
@@ -1476,7 +1544,7 @@ export class Life {
 
       // 领地：把村周边可耕之地标记为田，形成水墨里的「田垄」
       if (this.rng() < dtDays * 0.06) {
-        const spot = this.findVillageTile(village, 5, (i) => world.isBuildable(i) && world.fertility(i) > 0.42);
+        const spot = this.findVillageTile(village, 5, (i) => isDryBuildableSettlementTile(world, i) && world.fertility(i) > 0.42);
         if (spot) {
           const i = world.idx(spot[0], spot[1]);
           if (world.over[i] === OVER.NONE) {
@@ -1504,13 +1572,15 @@ export class Life {
       if (village.buildCooldown <= 0) {
         village.buildCooldown = 30 + this.rng() * 40;
         const capacity = 3 + village.level * 4;
-        if (village.food > 14 && village.houses.length < capacity) {
+        const liveHouseCount = village.houses.reduce((count, house) =>
+          count + (liveSettlementHouseType(world, house) ? 1 : 0), 0);
+        if (village.food > 14 && liveHouseCount < capacity) {
           // 第一座房子就落在村子正中心——那是祠堂，也是村子存在的凭据。
           // 其余房屋随机散布在村周。
-          const first = village.houses.length === 0;
+          const first = liveHouseCount === 0;
           const spot = first
-            ? (world.isBuildable(center) ? [cx, cy] : this.findVillageTile(village, 6, (i) => world.isBuildable(i)))
-            : this.findVillageTile(village, 6, (i) => world.isBuildable(i));
+            ? (isDryBuildableSettlementTile(world, center) ? [cx, cy] : this.findVillageTile(village, 6, (i) => isDryBuildableSettlementTile(world, i)))
+            : this.findVillageTile(village, 6, (i) => isDryBuildableSettlementTile(world, i));
           if (spot) {
             const i = world.idx(spot[0], spot[1]);
             world.struct[i] = first ? 2 : 1;
@@ -1518,7 +1588,7 @@ export class Life {
             village.food -= 8;
             world.touch();
           }
-        } else if (village.level < 4 && village.houses.length >= capacity && village.food > 40) {
+        } else if (village.level < 4 && liveHouseCount >= capacity && village.food > 40) {
           // ⚠️ 必须判断 level < 4：否则升到顶之后每次冷却都会重复「扩为王都」，
           // 编年史会被同一句话刷满（实测 800 年刷出 377 条）。
           village.level += 1;
@@ -1612,7 +1682,7 @@ export class Life {
       const y = Math.floor(village.y + Math.sin(angle) * dist);
       if (!world.inside(x, y)) continue;
       const i = world.idx(x, y);
-      if (!world.isBuildable(i)) continue;
+      if (!isDryBuildableSettlementTile(world, i)) continue;
       if (world.fertility(i) < 0.34) continue;
       if (this.villageNear(x, y, 13)) continue;
       return [x, y];

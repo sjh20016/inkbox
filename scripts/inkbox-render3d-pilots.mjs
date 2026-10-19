@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { generateWorld } from '../src/inkbox/world/worldgen.js';
+import { STRUCT } from '../src/inkbox/core/config.js';
 import { createCoordinates } from '../src/inkbox/render3d/coordinates.js';
 import { EntityLayer } from '../src/inkbox/render3d/entities/EntityLayer.js';
 import { VegetationLayer } from '../src/inkbox/render3d/vegetation/VegetationLayer.js';
@@ -9,6 +10,7 @@ import { createCultivatorPilot, PILOT_PALETTE } from '../src/inkbox/render3d/art
 
 const world = generateWorld({ preset: { w: 24, h: 18 }, seed: 701, scatter: true });
 world.villages = [{ x: 3, y: 4, level: 1, houses: [{ x: 3, y: 4 }] }];
+world.struct[world.idx(3, 4)] = STRUCT.HOUSE;
 world.entities = [{ id: 1, sp: 'human', level: 1, x: 4, y: 5, faction: -1 }];
 world.height.fill(0.8); world.water.fill(0); world.veg.fill(1);
 const before = JSON.stringify(world);
@@ -57,9 +59,11 @@ assert.equal(trees.stats.triangles, trees.stats.trees * 80);
 assert.deepEqual(people.meshes.cultivator.userData.renderEntities.map(e => e.id), [1]);
 const matrix = new THREE.Matrix4();
 people.meshes.cultivator.getMatrixAt(0, matrix);
-const origin = new THREE.Vector3(matrix.elements[12] + 0.8, matrix.elements[13] + 1.6, matrix.elements[14] + 10);
+// Keep the ray on the same local sleeve after the instance's visual scale changes.
+const origin = new THREE.Vector3(0.8, 1.6, 10).applyMatrix4(matrix);
+const direction = new THREE.Vector3(0, 0, -1).transformDirection(matrix);
 people.group.updateMatrixWorld(true);
-const hits = new THREE.Raycaster(origin, new THREE.Vector3(0, 0, -1)).intersectObject(people.meshes.cultivator);
+const hits = new THREE.Raycaster(origin, direction).intersectObject(people.meshes.cultivator);
 assert.ok(hits.some(hit => hit.instanceId === 0));
 trees.mesh.getMatrixAt(0, matrix); assert.equal(matrix.elements[13], 7);
 for (let round = 0; round < 5; round++) {

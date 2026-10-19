@@ -6,7 +6,7 @@ export class CameraRig {
     this.dimensions = { w: dimensions.w, h: dimensions.h }; this.coordinates = coordinates;
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 3000);
     this.controls = new OrbitControls(this.camera, canvas);
-    this.controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.ROTATE, RIGHT: THREE.MOUSE.PAN };
+    this.controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.ROTATE, RIGHT: null };
     this.controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
     this.controls.minPolarAngle = Math.PI / 12; this.controls.maxPolarAngle = Math.PI / 2.65;
     this.controls.minZoom = 0.5; this.controls.maxZoom = 18;
@@ -62,6 +62,21 @@ export class CameraRig {
     this.cancelFocus(); const offset = this.camera.position.clone().sub(this.controls.target);
     offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
     this.camera.position.copy(this.controls.target).add(offset); this.controls.update();
+  }
+  moveLocal(horizontal, forward, dt, fast = false) {
+    if (!horizontal && !forward) return;
+    const camera = this.camera, target = this.controls.target;
+    camera.updateMatrixWorld();
+    const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0); right.y = 0;
+    if (right.lengthSq() < 1e-8) right.set(1, 0, 0); else right.normalize();
+    const ahead = new THREE.Vector3().subVectors(target, camera.position); ahead.y = 0;
+    if (ahead.lengthSq() < 1e-8) ahead.set(0, 0, -1); else ahead.normalize();
+    const speed = Math.max(this.dimensions.w, this.dimensions.h) * 0.72 * (fast ? 2.8 : 1) * Math.max(0, dt || 0);
+    const delta = right.multiplyScalar(horizontal).add(ahead.multiplyScalar(forward));
+    if (delta.lengthSq() > 1) delta.normalize();
+    delta.multiplyScalar(speed);
+    camera.position.add(delta); target.add(delta);
+    this.cancelFocus(); this.controls.update(); this.clampAccessTarget();
   }
   update(dt) {
     if (this.focus) {

@@ -23,7 +23,7 @@ export const FX_CAP = 64;
 export const COMBAT_FX_CAP = 32;
 export const COMBAT_FX_PLANE_CAP = 16;
 export const BREAKTHROUGH_FX_CAP = 16;
-const COMBAT_TTL = Object.freeze({ blade: 0.35, fire: 0.5, thunder: 0.7 });
+const COMBAT_TTL = Object.freeze({ blade: 0.65, fire: 0.8, thunder: 0.9 });
 
 /** 各事件类型的默认时长（秒）。 */
 const FX_TTL = Object.freeze({
@@ -171,7 +171,7 @@ export function ingestRuntimeEvents(fx, events, world) {
       || typeof event.data.major !== 'boolean' || !Number.isSafeInteger(event.data.fromLevel)
       || !Number.isSafeInteger(event.data.toLevel))) continue;
     const ttl = kind === 'combat' ? COMBAT_TTL[event.data.style]
-      : kind === 'breakthrough' ? event.data.major ? 1.8 : 0.75 : FX_TTL[kind] ?? 0.8;
+      : kind === 'breakthrough' ? event.data.major ? 2.4 : 1.1 : FX_TTL[kind] ?? 0.8;
     const seed = visualHash(event.type, event.day ?? 0, event.x, event.y, event.subjectId ?? 0);
     const item = {
       plane,
@@ -278,6 +278,19 @@ function drawBreakthrough(ctx, camera, world, item, k, zoom) {
     const r = Math.max(2, base * (1 - i * .22));
     ctx.beginPath(); ctx.ellipse(tx, ty, r, r * .68, item.seed * .35, 0, Math.PI * 2); ctx.stroke();
   }
+  // Short qi gathering and broken ink follow the same settled outcome as the seal.
+  const surge = Math.sin(Math.PI * Math.min(1, k * 1.2));
+  const strokeHeight = radius * (major ? 1.15 : .8) * surge;
+  ctx.lineWidth = major ? Math.max(1.2, zoom * .3) : 1;
+  for (let i = 0; i < (major ? 7 : 3); i++) {
+    const a = i * Math.PI * 2 / (major ? 7 : 3) + item.seed;
+    const ox = Math.cos(a) * radius * (major ? .28 : .22);
+    const oy = Math.sin(a) * radius * .2;
+    ctx.beginPath();
+    ctx.moveTo(tx + ox, ty + oy);
+    ctx.lineTo(tx + ox + (success ? 0 : ox * .55), ty + oy - (success ? strokeHeight * (.6 + i % 3 * .2) : strokeHeight * .38));
+    ctx.stroke();
+  }
   if (!major) return;
   // A finite array of short ink strokes makes a major success/failure legible at default zoom.
   ctx.strokeStyle = `rgba(${success ? '214,194,134' : '71,37,36'},${(fade * .72).toFixed(3)})`;
@@ -306,11 +319,11 @@ function drawCombat(ctx, camera, world, item, k, zoom) {
     && (Math.max(sx, tx) < -margin || Math.min(sx, tx) > width + margin || Math.max(sy, ty) < -margin || Math.min(sy, ty) > height + margin)) return;
   const scale = Math.max(0.5, Math.min(6, zoom || 1));
   const tier = d.tier === 'high' ? 1.2 : d.tier === 'mid' ? 1 : 0.8;
-  const alpha = (1 - k) * item.intensity * 0.85;
+  const alpha = Math.min(1,k * 10) * Math.pow(1-k,.68) * item.intensity * 1.05;
   const dx = tx - sx, dy = ty - sy, length = Math.hypot(dx, dy) || 1;
   const nx = -dy / length, ny = dx / length;
   ctx.strokeStyle = `rgba(${d.style === 'fire' ? '156,65,48' : d.style === 'thunder' ? COLD_STROKE : INK_STROKE},${alpha.toFixed(3)})`;
-  ctx.lineWidth = Math.max(0.8, Math.min(2, scale * 0.2)) * tier;
+  ctx.lineWidth = Math.max(1, Math.min(3.4, scale * 0.32)) * tier;
   ctx.beginPath();
   ctx.moveTo(sx, sy);
   if (d.style === 'thunder') {
@@ -326,8 +339,10 @@ function drawCombat(ctx, camera, world, item, k, zoom) {
   ctx.stroke();
   // A tiny contact mark, never a column, screen flash or expanding particle burst.
   if (d.style !== 'thunder') {
-    const mark = Math.min(4, 1.4 + scale * 0.35) * tier * (1 - k * 0.5);
-    ctx.beginPath(); ctx.moveTo(tx - nx * mark, ty - ny * mark); ctx.lineTo(tx + nx * mark, ty + ny * mark); ctx.stroke();
+    const mark = Math.min(6, 1.8 + scale * 0.5) * tier * (1 - k * 0.5);
+    const fleck = Math.min(5, (1.2 + scale * .42) * tier) * (1 - k * .55);
+    ctx.beginPath(); ctx.moveTo(tx - nx * mark, ty - ny * mark); ctx.lineTo(tx + nx * mark, ty + ny * mark);
+    ctx.moveTo(tx-fleck,ty-fleck*.55);ctx.lineTo(tx+fleck,ty+fleck*.55);ctx.stroke();
   }
   // A confirmed ignition earns one restrained orange ember at its real tile.
   // It is presentation-only and remains inside the same access-filtered renderer.

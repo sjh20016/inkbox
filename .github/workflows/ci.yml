@@ -92,6 +92,9 @@ jobs:
       - name: G2.5 洗髓成长、主题机缘与突破异象
         run: npm run test:g25
 
+      - name: G2.6 视角、聚落水灾、安全落点与众生表现
+        run: npm run test:g26
+
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0
 

@@ -33,6 +33,7 @@ import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { createCultivatorPilot } from '../art/PilotAssets.js';
 import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
 import { CharacterBatch } from '../characters/CharacterBatch.js';
+import { G26_STYLE_SCALES, getG26Style, subscribeG26Style } from '../characters/CharacterLibrary.js';
 import { CreatureBatch } from '../creatures/CreatureBatch.js';
 import { creatureFacingFor, creatureSpeciesFor } from '../creatures/creatureSpecies.js';
 import { createCharacterLODGeometries } from '../lod/CharacterLODAssets.js';
@@ -112,6 +113,9 @@ export class EntityLayer {
     this._cameraMatrix.fill(NaN);
     this._projectPoint = new THREE.Vector3();
     this._lodByEntity = new Map();
+    this._unsubscribeG26Style = subscribeG26Style(() => {
+      if (this.lastDerived) this.write(this.lastDerived);
+    });
     this.stats = { instances: 0, byClass: {}, lod: [0, 0, 0], triangles: 0, creatures: 0,
       overflow: 0, capacityOverflow: 0, capacity: LOD_BUDGETS.categories.character.capacity, budgetDemotions: 0 };
 
@@ -398,7 +402,8 @@ export class EntityLayer {
         const { cls, item } = entry;
         const key = `${cls}:${item.id}`;
         const [width, height] = STYLE[cls].size;
-        const pixels = projectedPixels(height, this.artView, width);
+        const visualScale = this.characterVisualScale(cls);
+        const pixels = projectedPixels(height * visualScale, this.artView, width * visualScale);
         const desired = chooseLOD('character', pixels, this._lodByEntity.get(key), true);
         const result = budgetLOD('character', desired, counts);
         if (result.demoted) budgetDemotions++;
@@ -442,7 +447,7 @@ export class EntityLayer {
       const p = this.coordinates.worldToRender(item.x, item.y, 0);
       this.dummy.position.set(p.x, this.elevation.at(item.x, item.y) + item.lift, p.z);
       this.dummy.rotation.set(0, 0, 0);
-      this.dummy.scale.setScalar(1);
+      this.dummy.scale.setScalar(this.characterVisualScale(cls));
       this.dummy.updateMatrix();
       target.setMatrixAt(batch.count, this.dummy.matrix);
       target.setColorAt(batch.count, this.colorOf(item.color));
@@ -535,7 +540,7 @@ export class EntityLayer {
         const p = this.coordinates.worldToRender(item.x, item.y, 0);
         this.dummy.position.set(p.x, this.elevation.at(item.x, item.y) + item.lift, p.z);
         this.dummy.rotation.set(0, 0, 0);
-        this.dummy.scale.setScalar(1);
+        this.dummy.scale.setScalar(this.characterVisualScale(cls));
         this.dummy.updateMatrix();
         mesh.setMatrixAt(i, this.dummy.matrix);
         mesh.setColorAt(i, this.colorOf(item.color));
@@ -589,7 +594,13 @@ export class EntityLayer {
     return { id: item.id, role: item.appearance?.role || 'basic',
       paletteIndex: this.productionAssetsEnabled&&this.world.plane==='nether'&&item.soulKind==='ghostCultivator'?4:item.appearance?.paletteIndex,
       x: p.x, y: this.elevation.at(item.x, item.y) + item.lift, z: p.z,
+      scale: this.characterVisualScale(item.appearance?.role === 'ghost' ? 'wraith' : 'cultivator'),
       source: item };
+  }
+
+  characterVisualScale(cls) {
+    return getG26Style() === 'candidate' && (cls === 'human' || cls === 'cultivator' || cls === 'wraith')
+      ? G26_STYLE_SCALES.character : 1;
   }
 
   colorOf(hex) {
@@ -617,6 +628,7 @@ export class EntityLayer {
   }
 
   dispose() {
+    this._unsubscribeG26Style?.(); this._unsubscribeG26Style = null;
     this.lastDerived = null;
     this.setArtProfile(null);
     this.pilotGeometry?.dispose();

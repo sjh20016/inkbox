@@ -45,8 +45,8 @@ check('given-event blade/fire/thunder draw distinct short deterministic Canvas c
   assert.match(outputs[1].find(c=>c[0]==='stroke')[1], /156,65,48/);
   assert.match(outputs[2].find(c=>c[0]==='stroke')[1], /60,78,96/);
 });
-check('effects expire in .35/.5/.7 real seconds, accepting paused updates and rejecting invalid dt', () => {
-  for (const [style, ttl] of [['blade',.35],['fire',.5],['thunder',.7]]) {
+check('effects expire in .65/.8/.9 real seconds, accepting paused updates and rejecting invalid dt', () => {
+  for (const [style, ttl] of [['blade',.65],['fire',.8],['thunder',.9]]) {
     const fx=createFxState(); ingestRuntimeEvents(fx,[event(style)]); assert.equal(fx.items[0].ttl,ttl);
     for (const dt of [0,-1,NaN,Infinity]) updateFx(fx,dt); assert.equal(fx.items[0].age,0);
     updateFx(fx,ttl-.01); assert.equal(fx.items.length,1); updateFx(fx,.011); assert.equal(fx.items.length,0);

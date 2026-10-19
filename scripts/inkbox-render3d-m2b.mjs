@@ -737,6 +737,9 @@ function populate(world) {
     { id: 11, x: 24, y: 19, level: 1, faction: 0, name: '窗内村', pop: 0, houses: [{ x: 24, y: 19, type: STRUCT.HOUSE }] },
     { id: 12, x: 6, y: 5, level: 3, faction: 1, name: '窗外城', pop: 0, houses: [{ x: 6, y: 5, type: STRUCT.HALL }, { x: 7, y: 5, type: STRUCT.HOUSE }] },
   );
+  for (const village of world.villages) for (const house of village.houses) {
+    world.struct[world.idx(house.x, house.y)] = house.type;
+  }
   world.factions.push({ id: 1, name: '青云门', color: '#a8493c', accent: '#d98a72', capitalX: 6, capitalY: 5 });
   world.artifacts.push({ id: 501, name: '窗内剑', x: 25, y: 18, ownerId: 0, lostDay: 10 });
   world.artifacts.push({ id: 502, name: '窗外刀', x: 5, y: 6, ownerId: 0, lostDay: 10 });

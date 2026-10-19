@@ -116,6 +116,9 @@ function richWorld(w, h, seed) {
     { id: 11, x: cx - 10, y: cy - 10, level: 1, faction: 0, name: '小村', pop: 0, houses: [{ x: cx - 10, y: cy - 10, type: STRUCT.HOUSE }, { x: cx - 9, y: cy - 10, type: STRUCT.HOUSE }] },
     { id: 12, x: cx + 12, y: cy + 12, level: 3, faction: 1, name: '城池', pop: 0, houses: [{ x: cx + 12, y: cy + 12, type: STRUCT.HALL }, { x: cx + 11, y: cy + 12, type: STRUCT.HOUSE }] },
   );
+  for (const village of world.villages) for (const house of village.houses) {
+    world.struct[world.idx(house.x, house.y)] = house.type;
+  }
   world.factions.push({ id: 1, name: '青云门', color: '#a8493c', accent: '#d98a72', capitalX: cx, capitalY: cy - 20 });
   world.artifacts.push(
     { id: 501, name: '无主剑', x: cx - 5, y: cy + 3, ownerId: 0, lostDay: 10 },

@@ -29,6 +29,7 @@ import { INK } from '../../core/config.js';
 import { visibleRift } from '../readers/riftViewModel.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { SiteGeographyLayer } from './SiteGeographyLayer.js';
+import { decorationFootprintOwned } from '../environment/RealmDecorationLayer.js';
 import { LeylineGeographyLayer } from './LeylineGeographyLayer.js';
 import { RiftWoundLayer } from './RiftWoundLayer.js';
 
@@ -49,6 +50,10 @@ const RIFT_CAP = 128;                    // RIFT_MAX_ACTIVE = 64
 const SITE_COLOR = Object.freeze({
   secret: INK.azurite, cave: INK.ink, formation: INK.gold, ruin: '#8e8778',
 });
+const SITE_MARKER_FOOTPRINT = Object.freeze({
+  secret: { width: 1.1, depth: 1.1 }, cave: { width: 1.3, depth: .35 },
+  formation: { width: 1.65, depth: 1.65 }, ruin: { width: .8, depth: .8 },
+});
 
 function siteGeometry(kind) {
   if (kind === 'secret') {                       // 秘境：更像一道裂口（细长菱形）
@@ -56,7 +61,15 @@ function siteGeometry(kind) {
     g.scale(1, 1.9, 1); g.translate(0, 0.9, 0); return g;
   }
   if (kind === 'cave') {                          // 洞府：更像入口（矮门框）
-    const g = new THREE.BoxGeometry(1.3, 1.3, 0.35); g.translate(0, 0.65, 0); return g;
+    const outline = new THREE.Shape();
+    outline.moveTo(-.65,0); outline.lineTo(.65,0); outline.lineTo(.65,1.3);
+    outline.lineTo(-.65,1.3); outline.closePath();
+    const doorway = new THREE.Path();
+    doorway.moveTo(-.32,.16); doorway.lineTo(-.32,1.04);
+    doorway.lineTo(.32,1.04); doorway.lineTo(.32,.16); doorway.closePath();
+    outline.holes.push(doorway);
+    const g = new THREE.ExtrudeGeometry(outline,{depth:.14,bevelEnabled:false,steps:1});
+    g.translate(0,0,-.07); return g;
   }
   if (kind === 'formation') {                     // 阵法：偏几何（平铺方环）
     const g = new THREE.TorusGeometry(0.72, 0.1, 4, 12);
@@ -280,6 +293,26 @@ export class WorldMarkerLayer {
     return list.filter(item => this.regionGeometry.isInsideCell(item.x, item.y) === this.regionInside);
   }
 
+  siteFallbackOwned(item, world) {
+    const size = SITE_MARKER_FOOTPRINT[item.kind] || SITE_MARKER_FOOTPRINT.ruin;
+    return decorationFootprintOwned(world, this.regionGeometry, this.regionInside,
+      { x:item.x, y:item.y, width:size.width, depth:size.depth, rotationY:0 });
+  }
+
+  // Existing secret/cave marker is the sole fallback when a steep slope rejects
+  // the larger geography asset. Lift that same inspectable instance above nearby
+  // terrain; no new Site identity, mesh, or all-map marker pass is introduced.
+  steepSiteLift(item) {
+    const center=this.elevation.at(item.x,item.y);
+    let highest=center;
+    const size=SITE_MARKER_FOOTPRINT[item.kind];
+    // Sample only beneath the admitted marker footprint. A locked neighboring
+    // ridge cannot influence this marker's visible elevation.
+    for(const dx of [-size.width/2,0,size.width/2])for(const dy of [-size.depth/2,0,size.depth/2])
+      highest=Math.max(highest,this.elevation.at(item.x+dx,item.y+dy));
+    return highest-center>.25 ? highest-center+.18 : 0;
+  }
+
   write(derived, world) {
     this.world = world;
     this.siteGeography.update(derived);
@@ -292,11 +325,13 @@ export class WorldMarkerLayer {
 
     // ── 地点：四种符号 ──
     for (const kind of SITE_KINDS) {
-      const fallback = this.regionFilter(derived.sites[kind]).filter(item => !this.siteGeography.renderedIds.has(item.id));
+      const fallback = this.regionFilter(derived.sites[kind]).filter(item => !this.siteGeography.renderedIds.has(item.id)
+        && this.siteFallbackOwned(item, world));
       this.siteMeshes[kind].userData.renderSites = fallback.slice(0,SITE_CAP);
-      stats.sites += this.fill(this.siteMeshes[kind], fallback, world, 0, () => SITE_COLOR[kind]);
+      stats.sites += this.fill(this.siteMeshes[kind], fallback, world,
+        kind === 'secret' || kind === 'cave' ? item => this.steepSiteLift(item) : 0, () => SITE_COLOR[kind]);
     }
-    const unknown = this.regionFilter(derived.unknownSites || []);
+    const unknown = this.regionFilter(derived.unknownSites || []).filter(item=>this.siteFallbackOwned(item,world));
     this.unknownSites.userData.renderSites = unknown.slice(0,SITE_CAP);
     stats.sites += this.fill(this.unknownSites,unknown,world,0,()=> '#8e8778');
     stats.sites += this.siteGeography.stats.renderedSiteCount || 0;
@@ -338,7 +373,7 @@ export class WorldMarkerLayer {
     for (let i = 0; i < n; i += 1) {
       const item = list[i];
       const p = this.coordinates.worldToRender(item.x, item.y, 0);
-      this.dummy.position.set(p.x, this.elevation.at(item.x, item.y) + lift, p.z);
+      this.dummy.position.set(p.x, this.elevation.at(item.x, item.y) + (typeof lift === 'function' ? lift(item) : lift), p.z);
       this.dummy.rotation.set(0, 0, 0);
       this.dummy.scale.setScalar(1);
       this.dummy.updateMatrix();

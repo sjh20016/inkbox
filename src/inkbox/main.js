@@ -11,7 +11,8 @@ import { generateWorld } from './world/worldgen.js';
 import { createSandboxWorld, creationOptions, parseSeed, syncCreationControls, syncMapProgress, expandSandboxMap } from './ui/worldCreation.js';
 import { accessBounds, canAccess } from './world/mapProgress.js';
 import { createSandboxCombatObservation } from './g2/combatObservationRuntime.js';
-import { createSandboxEnvironmentObservation } from './g2/environmentObservationRuntime.js';
+import { createSandboxEnvironmentObservation, environmentPointVisible } from './g2/environmentObservationRuntime.js';
+import { ensureWatch, resolveWatch } from './sim/watch.js';
 import { createSandboxCharacterRuntime } from './g1/sandboxRuntime.js';
 import { bindOpportunityOptions, syncOpportunityOptions, showOpportunityPlacement } from './ui/opportunityTools.js';
 // 上界：`generateUpperWorld` 的 seed 收的是**凡间种子**，内部自己派生上界 seed
@@ -658,7 +659,7 @@ class Sandbox {
 
     const renderList = (groupKey) => {
       list.innerHTML = '';
-      TOOLS.filter((tool) => tool.group === groupKey).forEach((tool) => {
+      TOOLS.filter((tool) => tool.group === groupKey && !tool.playerHidden).forEach((tool) => {
         const btn = document.createElement('button');
         btn.className = 'ink-tool';
         btn.dataset.tool = tool.id;
@@ -2526,6 +2527,20 @@ class Sandbox {
 
   /** 点一行「记挂」：按状态导航（见 refreshWatch 的三种出口）。**纯导航 + 标已读**。 */
   openWatchRow(key) { return openWatchRowPanel(this, key); }
+
+  /** Resolve the watch key again; a rendered button never authorizes a later location. */
+  focusWatchedGhost(key) {
+    const entry = ensureWatch(this.world).find(row => row.key === key);
+    const resolved = entry && resolveWatch(this.world, entry);
+    const ghost = resolved?.state === 'dead' ? resolved.currentGhost : null;
+    const x = Math.floor(ghost?.x), y = Math.floor(ghost?.y);
+    if (!ghost || !environmentPointVisible(this, 'nether', x, y)
+      || !this.environmentObservation?.select({ plane: 'nether', x, y, radius: 0 })?.ok) {
+      this.notify('当前不可观察', 2600);
+      return { ok: false, reason: 'not-observable' };
+    }
+    return this.g1.open({ plane: 'nether', entityId: ghost.id }, { focus: true });
+  }
 
   // ── 三界（上界 / 幽冥，见 Batch 3）───────────────────────────
   /**
