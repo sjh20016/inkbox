@@ -1,8 +1,12 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-## 2026-10-19 · P1 G5 后剩余长帧专项（分支 `perf/p1-g5-longframe-resolution`，基线 `f0c6bdf`）
+## 2026-10-19 · P1-I Opus 性能优化集成验收（分支 `perf/p1-g5-longframe-integration`，基线 `f0c6bdf`）
 
-本轮完成三项架构减法：地形拾取改为规则格网按射线投影只测经过的 quad，语义与 three `Mesh.raycast` 一致，不规则时回退原实现；大范围高度帧（水文步）不再在当帧叠加植被成员重建，最多延后 0.6 s，雕刻等小范围编辑仍当场重建；水面对角翻转的索引上传按间隙合并。模拟、存档、着色器及 G5 GPU/CPU 回退均未改。同条件无 GPU 隔离样本（老化 30 年广卷推进 30 s）中，主线程 JS 帧 p95 从 118.3 ms 降到 69.7 ms，拾取从 21.9 s 降到 3.3 s，推进天数相同。本环境只有 SwiftShader，无法复现真实 GPU 上约 1 秒的长帧，**PERF BLOCKED 保留**，需在 UHD 730 真机复测。详见 [P1 长帧专项](./docs/development/P1_G5_LONGFRAME.md)。
+接收 Opus 原始提交 `1d000ee067cc2b5082c7b36d53810f3c562abd92`，父提交与当时及当前远端 `main` 的 `f0c6bdf79cf98be30b3dc856143fe7191ad28904` 一致。最终保留规则格网地形拾取（不适用时回退 Three 原求交）和大范围高度帧植被错峰（小范围编辑即时更新，持续大范围变化下最多延后 0.6 s）；回退水面索引上传合并。相同 512×320 世界 seed、187 个固定水文步下，4096 间隙合并将索引上传调用从 28117 降至 10440，却把总字节从 681048 增至 111263448（约 163 倍），更新 CPU P50/P95 从 2.103/2.656 ms 增至 2.533/3.706 ms，因此不保留该项。
+
+真实 GPU Edge 155 / AMD Radeon 610M D3D11 A/B 已完成：1366×768、DPR 1、广卷 512×320、seed 20261018、同会话、模拟 ×2、每个版本正常推进 30 秒。基线 / 候选 RAF P50 均为 5.6 ms，P95 为 27.9/27.8 ms，最大间隔 78.1/72.4 ms，>50 ms 帧 20/14，>100 ms 帧 0/0，Long Task 数 19/14；页面无错误，暂停后时间不漂移。测量末推进日数为 218.066/216.530，工作量非严格相等；帧间隔含浏览器调度与 GPU，不代表纯 GPU 耗时。当前 P1-I **PERF BLOCKED 已解除**，结论仅适用于本次 AMD 610M 场景，不外推到 UHD 730 或其他硬件。测试输出和截图保存在本机忽略目录 `reports/local/p1i-edge/`。详见 [P1 长帧专项](./docs/development/P1_G5_LONGFRAME.md)。
+
+本地复验通过 `npm run test:g5`、`test:render3d`、`test:g26`、`test:render3d:m2c2e`、`build`、`test:package`；非门禁 512×320 拾取微基准中位数为 heightfield 0.07 ms、暴力求交 11.78 ms（157.5×），严格功能一致性仍由 G5 门禁检查。Draft PR 的 GitHub CI 状态以 PR 页面为准。
 
 ## 2026-10-19 · G5 GPU 优化已合入 main（PR #28）
 
@@ -17,7 +21,7 @@ PR #28 于 2026-10-19 以 Merge Commit `3dabf8c48e1939f1de9b874e3c674fc84609e005
 | GL render 提交 | 23.05 ms | 7.27 ms |
 | texSubImage2D 调用 | 943.93 | 4.00 |
 
-水面不再每步上传约 23.59 MB 位置及 7.86 MB 索引。代价是增加 Float32 水面纹理传输与干区顶点绘制；少量拓扑及树实例更新的 bufferSubData 调用数增加，不能把缓冲字节下降当成总传输或固定帧率承诺。正常推进 30 秒样本仍有约 1.07 秒 p95 长尾，**PERF BLOCKED 保留**；本机没有 AMD 610M，不声称完成该设备长窗口验收。
+水面不再每步上传约 23.59 MB 位置及 7.86 MB 索引。代价是增加 Float32 水面纹理传输与干区顶点绘制；少量拓扑及树实例更新的 bufferSubData 调用数增加，不能把缓冲字节下降当成总传输或固定帧率承诺。该段记载 PR #28 合流时的 G5 设备验收状态；后续 P1-I 的 AMD 610M 实测见上节，不反向改写 G5 当时的样本。
 
 针对性回归覆盖高程/拾取、同帧全量与局部上传、CPU 回切、历史美术对照、湿域/外缘、植被水淹与恢复、Region 和释放。浏览器实际验证抬山/撤销/重做、Canvas 注水后返回 3D、上界/幽冥划窗、窗内拾取、关窗及 WASD。修复开窗时旧 hover 签名把 numeric `boundary.edges` 当 WeakMap key 的帧循环异常，并保留失败证据。交付 HEAD `0cc49fd727131d9622b25d9694396bf0a25ba033` 的 [GitHub Actions #39200007595](https://github.com/sjh20016/inkbox/actions/runs/39200007595) Fast Gate 与 Heavy Gate 均通过，Fast 包含 `test:g5` 与构建门禁；Browser Smoke 按工作流设计跳过，真实浏览器验收记录在 PR #28。
 

@@ -1,6 +1,6 @@
 # P1 · G5 后剩余长帧专项
 
-2026-10-19（Asia/Shanghai）。基线 `main` `f0c6bdf`，分支 `perf/p1-g5-longframe-resolution`。模拟规则、水文、生态、存档格式、着色器与 G5 GPU/CPU 回退路径均未改动。**PERF BLOCKED 保留**：真实 GPU 侧的约 1 秒长帧无法在本任务环境复现，需要真机复测后再作裁决。
+2026-10-19（Asia/Shanghai）。基线 `main` `f0c6bdf`，集成分支 `perf/p1-g5-longframe-integration`；接收 Opus 提交 `1d000ee067cc2b5082c7b36d53810f3c562abd92`，父提交与基线一致。模拟规则、水文、生态、存档格式、着色器与 G5 GPU/CPU 回退路径均未改动。P1-I 已在真实 AMD Radeon 610M / Edge 上完成 GPU 浏览器对照；本次样本未出现 100 ms 以上 RAF 或 Long Task，**本轮 `PERF BLOCKED` 已解除**。结论仅适用于此设备和测试场景，不外推到 UHD 730 或其他显卡。
 
 ## 一、归因（事实）
 
@@ -22,14 +22,14 @@
 | `src/inkbox/render3d/terrain/heightfieldRaycast.js`（新增） | 规则格网地形求交：只测试射线 XZ 投影经过的 quad（带保守边距），语义与 `Mesh.raycast` 一致，包括包围球/包围盒预检、`material.side`、near/far、uv/normal/face/faceIndex/barycoord、视界遮罩压缩索引和动态对角线。遇到不规则网格、morph、多材质或 drawRange 偏移时，返回 false 回退原实现。 |
 | `src/inkbox/render3d/terrain/TerrainMesh.js` | 地形 mesh 的 `raycast` 改用上面的实现，失败时回退 `THREE.Mesh.prototype.raycast`。 |
 | `src/inkbox/render3d/stage/PlaneStage.js` | 大范围高度帧（脏框至少 4096 格，即水文步）不再在当帧叠加植被成员重建，只做贴地；重建最多延后 0.6 s。小范围编辑（雕刻、单格事件）仍当场重建。 |
-| `src/inkbox/render3d/water/WaterGpuSurface.js` | 水面对角翻转的索引上传改为：间隙小于 4096 个索引的翻转合并成一段，与地形索引的做法一致。 |
-| `scripts/inkbox-longframe-raycast.mjs`（新增） | 在 72×44 v2 世界上做 6 次水文步，验证新求交与暴力法逐项一致，覆盖 gpu-unmasked、遮罩内外、翻转后的遮罩、legacy 加变换矩阵、Front/BackSide；并要求在 512×320 上至少快 10 倍。已并入 `test:g5`，因此在 Fast 中运行，同时加入发布包清单。 |
-| `scripts/inkbox-g5-water.mjs` | 原断言要求存在 `{start:0,count:6}` 这一段；合并后 quad 0 与 quad 8 在同一段，改为精确断言 `[{start:0,count:54}]`。断言没有删除，比原来更严格。 |
-| `package.json`、`scripts/inkbox-package.mjs` | `test:g5` 末尾追加新测试，新增 `test:longframe` 别名；把新脚本登记进发布包。 |
+| `src/inkbox/render3d/water/WaterGpuSurface.js` | P1-I 回退了 Opus 的索引区间合并，保持每个翻转 quad 只标记自己的 6 个索引，避免少量调用换来大量未变化数据上传。 |
+| `scripts/inkbox-longframe-raycast.mjs`（新增） | 在 72×44 v2 世界上做 6 次水文步，验证新求交与暴力法逐项一致，覆盖 gpu-unmasked、遮罩内外、翻转后的遮罩、legacy 加变换矩阵、Front/BackSide；512×320 也保留逐项结果一致性检查。正式 Fast Gate 只门禁功能一致性；性能计时移到可选 `npm run bench:longframe`，用 3 次预热和 7 组交错样本报告中位数，不以单次倍率阻断 CI。已并入 `test:g5`，同时加入发布包清单。 |
+| `scripts/inkbox-g5-water.mjs` | 断言保持精确，确认仅真实翻转 quad 的索引被标记，并断言原始 ranges 为 `[0,6)`、`[6,12)`、`[48,54)`；没有把回退后的行为弱化成包含性检查。 |
+| `package.json`、`scripts/inkbox-package.mjs` | `test:g5` 末尾追加新测试，新增 `test:longframe` 与非阻塞 `bench:longframe` 命令；把新脚本登记进发布包。 |
 
-## 三、验证（同条件 A/B，`gpu.render` 置空，固定 dt）
+## 三、Opus 原始候选 CPU 隔离 A/B（不是集成最终代码）
 
-基线运行在 `f0c6bdf` 的独立工作区（端口 4182），候选运行在本分支（端口 4181），种子均为 20261018，视口 1366×768。表中是主线程 JS 帧耗时（ms）。由于 RAF 被固定 dt 驱动，这里的帧间隔不代表真实帧率。
+以下是 Opus 提交 `1d000ee` 的 CPU 隔离证据，候选仍包含后来在 P1-I 回退的水面索引合并。基线运行在 `f0c6bdf` 的独立工作区（端口 4182），候选运行在提交分支（端口 4181），种子均为 20261018，视口 1366×768。表中是主线程 JS 帧耗时（ms）。由于 RAF 被固定 dt 驱动，这里的帧间隔不代表真实帧率；最终集成代码的实测见下节。
 
 | 场景 | 版本 | p50 | p95 | p99 | max | >50 ms 帧 | 水文帧 p50 | 拾取合计 | 推进 |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
@@ -45,11 +45,36 @@
 - 广卷推进场景中，主线程 JS 总量从 62.3 s 降到 40.1 s（−36%），拾取从 21.9 s 降到 3.3 s，渲染侧 `update` 从 22.3 s 降到 16.3 s。模拟分项 `advanceDays` 在两次运行中分别为 9.5 s 和 13.0 s，属于运行间波动（同种子，但实体演化与 GC 时机不同），不是本次改动的效果。
 - 暂停场景下拾取本来就命中静态缓存，桥接扫描占主导，基线与候选持平；Canvas 不经过这些代码，结果在噪声范围内。
 - 浏览器内拾取一致性检查（中卷，凡间、上界窗、幽冥窗，以及推进 40 日后）：`PlanePicker.pick` 结果与原始地形求交逐项和暴力法一致，4 种状态共 240 个采样点、81 次原始地形命中，0 处不一致，无页面错误（脚本留在任务证据包，不进仓库）。
-- **推断（未验证）**：真实 GPU 上，水面索引合并后每步 `bufferSubData` 段数应明显少于原来约 435 次（合并后段数未在浏览器复计），可能减少驱动开销；但 1 秒长帧是否主要来自 GPU 侧，需要在 UHD 730 上复测才能判断。
 
-## 四、真机复测方法
+### P1-I 最终代码实测
 
-在同一台 Tabbit Chromium / UHD 730 机器上，打开 `inkbox.html?renderer=3d`，选择广卷（512×320），种子 20261018，正常推进 30 秒，用 Performance 面板分别记录 `main@f0c6bdf` 与本分支 HEAD，比较 RAF 间隔的 p50/p95、Long Task 数量，以及 GPU 轨道上单帧超过 100 ms 的次数。若 GPU 轨道仍有约 1 秒的空洞，而主线程已经不再出现 100 ms 以上的任务，下一步应转向 GPU 侧的着色器 / 填充率 / 驱动同步。
+同一隔离 Edge 155 会话先后打开基线 `main@f0c6bdf`（4182）和最终候选（4181），均为 1366×768、DPR 1、广卷 512×320、seed 20261018、相同相机与模拟 ×2；各预热 6 秒，再正常推进 30 秒。渲染器为 `ANGLE (AMD Radeon 610M, Direct3D11)`，画布 952×625。浏览器保持 visible，无页面错误；暂停后 1.5 秒日数变化为 0。截图和完整 JSON 留在本机忽略目录 `reports/local/p1i-edge/`，不进入发布包。
+
+| 指标 | 基线 | P1-I 候选 |
+| --- | ---: | ---: |
+| RAF 间隔样本数 | 3409 | 3622 |
+| RAF P50 / P95 / max | 5.6 / 27.9 / 78.1 ms | 5.6 / 27.8 / 72.4 ms |
+| RAF >50 ms / >100 ms | 20 / 0 | 14 / 0 |
+| Long Task 数 / 最大值 | 19 / 84 ms | 14 / 74 ms |
+| 全部索引缓冲上传调用 / 字节 | 29650 / 71.97 MB | 29671 / 72.57 MB |
+
+这是实际 GPU 浏览器样本，帧间隔同时包含 JS、GPU 与浏览器调度，不是纯 GPU 时间。两边均从同种子新世界开始，但 30 秒测量末推进日数为基线 218.066、候选 216.530，因此模拟工作量并非严格相等；P95 相差 0.1 ms，不据此宣称帧率提升，只能确认该样本没有 100 ms 长帧或明显整体退化。鼠标未移动，本次 RAF 样本不单独量化射线拾取成本；拾取收益由上面的语义回归与下面的非门禁微基准支持。
+
+水面索引合并用同一 512×320 seed、187 个固定水文步，按 three `WebGLAttributes` 的 range 合并规则统计预期 `bufferSubData` 并单独计时 `WaterLayer.update`；这是 CPU 对照，不冒充真实驱动计时。
+
+| 水面索引指标 | 逐 quad（最终保留） | 4096 索引间隙合并（已回退） |
+| --- | ---: | ---: |
+| 总上传调用 | 28117 | 10440（−63%） |
+| 总上传字节 | 681048 | 111263448（约 163 倍） |
+| 每步调用 P50 / P95 | 116 / 357 | 56 / 67 |
+| 每步字节 P50 / P95 | 2808 / 8664 | 448320 / 1550184 |
+| 更新 CPU P50 / P95 | 2.103 / 2.656 ms | 2.533 / 3.706 ms |
+
+上传调用减少伴随约 163 倍索引字节和更慢的更新 CPU，无法证明总体执行收益，所以最终代码回退水面索引合并，保留射线拾取和植被错峰两项。当前非门禁拾取微基准为 512×320 中位数 0.07 ms（heightfield）对 11.78 ms（暴力求交），157.5 倍；正式门禁只检查结果严格一致。
+
+## 四、其他设备复测方法
+
+如需复测 UHD 730 或其他显卡，可在同一台机器用 Edge 打开 `inkbox.html?renderer=3d`，选择广卷（512×320）、种子 20261018、模拟 ×2，分别测 `main@f0c6bdf` 与集成分支各 30 秒，并比较 RAF P50/P95、Long Task 与 GPU 轨道。不要把单机短样本外推为所有硬件的固定帧率承诺。
 
 ## 五、回滚
 
