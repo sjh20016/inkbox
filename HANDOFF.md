@@ -1,12 +1,12 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
-## 2026-10-19 · G5 性能架构候选
+## 2026-10-19 · G5 GPU 优化已合入 main（PR #28）
 
-独立分支 `feat/g5-performance-architecture` 从委托指定 `062ce3b` 起步，目标为 G2.6 候选分支；不直接合并 main。默认 3D 地形复用 G5 高度纹理位移、纹理整批上传与增量对角索引；CPU 顶点仍准确维护，供拾取和建筑贴地。水面改为固定节点/外缘网格、Float32 高程与水深纹理、三角湿域裁切，保留 Region 同源判据及 CPU/legacy 回退。植被成员资格未变时仅更新实际变化的实例 Y，保留 LOD、颜色与缓存。模拟、水文、生态、角色规则与存档格式未改；未引入写意实验。
+PR #28 于 2026-10-19 以 Merge Commit `3dabf8c48e1939f1de9b874e3c674fc84609e005` 合入正式 `main`；第一父为 G2.6 合流提交 `9ec8ec7`，第二父为 G5 交付提交 `0cc49fd`，保留 main → G2.5 → G2.6 → G5 的提交祖先关系。候选从 G2.6 提交 `062ce3b` 起步。默认 3D 地形使用高度纹理位移、纹理整批上传与增量对角索引；CPU 顶点仍准确维护，供拾取和建筑贴地。水面使用固定节点/外缘网格、Float32 高程与水深纹理、三角湿域裁切，保留 Region 同源判据及 CPU/legacy 回退。植被成员资格未变时仅更新实际变化的实例 Y，保留 LOD、颜色与缓存。模拟、水文、生态、角色规则与存档格式未改；未引入写意实验。
 
 同一真实 Tabbit Chromium 153 / Intel UHD 730（ANGLE D3D11）、1366×768、512×320、seed 20261018，沿用附带 G5 `bench.cjs` 的暂停后 30 个水文步与 3 RAF 账本，均值如下。JS/GL 提交耗时不等于 GPU 执行时间。
 
-| 每水文步 | 062ce3b | G5 候选 |
+| 每水文步 | G2.6（062ce3b） | G5（0cc49fd） |
 | --- | ---: | ---: |
 | bufferSubData 数据 | 39.88 MB | 1.55 MB |
 | renderer.update | 100.82 ms | 52.94 ms |
@@ -15,13 +15,13 @@
 
 水面不再每步上传约 23.59 MB 位置及 7.86 MB 索引。代价是增加 Float32 水面纹理传输与干区顶点绘制；少量拓扑及树实例更新的 bufferSubData 调用数增加，不能把缓冲字节下降当成总传输或固定帧率承诺。正常推进 30 秒样本仍有约 1.07 秒 p95 长尾，**PERF BLOCKED 保留**；本机没有 AMD 610M，不声称完成该设备长窗口验收。
 
-针对性回归覆盖高程/拾取、同帧全量与局部上传、CPU 回切、历史美术对照、湿域/外缘、植被水淹与恢复、Region 和释放。浏览器实际验证抬山/撤销/重做、Canvas 注水后返回 3D、上界/幽冥划窗、窗内拾取、关窗及 WASD。修复开窗时旧 hover 签名把 numeric `boundary.edges` 当 WeakMap key 的帧循环异常，并保留失败证据。完整 Fast/Heavy 与构建以交付 PR 的当前源码结果为准。
+针对性回归覆盖高程/拾取、同帧全量与局部上传、CPU 回切、历史美术对照、湿域/外缘、植被水淹与恢复、Region 和释放。浏览器实际验证抬山/撤销/重做、Canvas 注水后返回 3D、上界/幽冥划窗、窗内拾取、关窗及 WASD。修复开窗时旧 hover 签名把 numeric `boundary.edges` 当 WeakMap key 的帧循环异常，并保留失败证据。交付 HEAD `0cc49fd727131d9622b25d9694396bf0a25ba033` 的 [GitHub Actions #39200007595](https://github.com/sjh20016/inkbox/actions/runs/39200007595) Fast Gate 与 Heavy Gate 均通过，Fast 包含 `test:g5` 与构建门禁；Browser Smoke 按工作流设计跳过，真实浏览器验收记录在 PR #28。
 
-运行 `npm run dev` 后打开 `inkbox.html?renderer=3d`；回退 URL 为 `?renderer=3d&terrain=cpu&water=cpu`。`npm run test:g5` 已加入 Fast 与发布包。源码回滚可放弃该独立候选，或正常 revert，不重置 main。原始浏览器账本、截图与命令退出码留在本任务工作区的 `g5-validation/`，不进运行包。
+运行 `npm run dev` 后打开 `inkbox.html?renderer=3d`；回退 URL 为 `?renderer=3d&terrain=cpu&water=cpu`。`npm run test:g5` 已加入 Fast 与发布包。需要回滚时，对 PR #28 合流提交 `3dabf8c48e1939f1de9b874e3c674fc84609e005` 执行正常 revert。原始浏览器账本、截图与命令退出码留在本任务工作区的 `g5-validation/`，不进运行包。原始浏览器账本、截图与命令退出码留在本任务工作区的 `g5-validation/`，不进运行包。
 
-## 2026-10-18 · G2.6「山河有形 · 众生有动」
+## 2026-10-18 · G2.6「山河有形 · 众生有动」（开发快照；PR #27 已合入 main）
 
-开工核对 main 仍为 `768b870`，G2.5 [Draft #26](https://github.com/sjh20016/inkbox/pull/26) 尚未合并，故从其最新 `fe3311e` 建 `feat/g2-6-living-landscape`；本轮 Draft 暂指向 G2.5，后续依赖合并再调整，未自动合并主线。已有私有长档与截图仅作本机验收，不进入 Git 或发布包。
+本节记录 2026-10-18 的开工状态：当时 main 为 `768b870`，G2.5 [Draft #26](https://github.com/sjh20016/inkbox/pull/26) 尚未合并，G2.6 从 `fe3311e` 建立；随后 PR #27 于 2026-10-19 以 Merge Commit `9ec8ec7` 合入 main。已有私有长档与截图仅作本机验收，不进入 Git 或发布包。
 
 已接通 A1～A4：WASD/Shift 相机、静止 hover 的地形交点复用与移动实体独立查询，点击/雕刻保持实时拾取；新建聚落避水，存量房屋连续受淹 12 个模拟日转为真实废墟，Canvas/Three 共用当前结构，历史锚点不再占用有效住房容量。读档保留旧屋与受灾进度，沿用 save v11。玩家直接召修士入口隐藏，内部出生与自然觉醒保留。
 
@@ -44,7 +44,7 @@ A5 在原有地面规则内寻找附近合法平整台地并报告实际落点�
 
 定向入口为 `npm run test:g26`。本地 core、G2.5/G2.6、相关 UI/渲染与保存等价通过；缩小房屋后旧测试的固定屋顶点被自然植被遮挡，已改为选择同一真实屋的可见表面，保留房屋/村庄身份及纯地形拾取断言。新命中回归还覆盖笔锋原平面侧对镜头的情况。CI 收口补齐旧雕刻渲染替身的空按键、相机移动与 hover 接口，保留全部静止笔画断言并确认 100 帧零位移相机更新；人物样板射线跟随真实实例变换，聚落样板具备真实结构。共享聚落只读规则原样移至 `world/settlementState.js`，满足表现层不得导入模拟目录的既有边界，未修改算法；实机验收后的产品差异仅为该移动及导入路径。相关 M2-C2E、M2-C 与两项 C2B 纯度检查均重跑通过，Fast 后段其余 15 项也通过。保存等价只保证读档瞬间结构完整，历史 RNG 游标与量化导致的未来轨迹差异仍保留。最终构建、包审计与同一交付 HEAD 的 Fast/Heavy 记录于本轮 Draft PR。回滚采用本分支反向提交或放弃 Draft，不重置 main、不改写历史。
 
-## 2026-10-18 · 正式主线已接纳 G2，转入 G2.5
+## 2026-10-18 · 正式主线已接纳 G2，转入 G2.5（开发快照；PR #26 已合入 main）
 
 已实时核对 PR #23、#24、#25 均 merged，正式 main 为 `768b870949ffe6d17e74e8fc8656e5eadf6f6130`。G2-R1、A1、G2.4-C 已是正式产品内容；G2 性能仍 **PERF BLOCKED**，主要功能试玩规格为 200×128 / 288×180。当前独立分支 `feat/g2-5-fate-opportunities` 开发「破境有相 · 改命布缘」，完成后提交目标 main 的 Draft，不自动接纳。
 

@@ -1,16 +1,16 @@
 # 坐天观井 · Inkbox 1.0.0
 
-本候选在 `feat/g2-6-living-landscape@062ce3b` 上落地 G5：3D 默认使用纹理地形位移、固定水面网格与 GPU 湿域裁切，并把植被高度更新与成员重建分开。`?renderer=3d&terrain=cpu&water=cpu` 可回退对照，写意实验未接入。定向检查为 `npm run test:g5`，实测与限制见 [HANDOFF](./HANDOFF.md) 顶部；广卷性能仍为 **PERF BLOCKED**。
+截至 2026-10-19 的 P0 合流中，G2.5 PR #26、G2.6 PR #27、G5 PR #28 已按依赖顺序通过 Merge Commit 接纳。对应合流提交为 `59cd08d`、`9ec8ec7`、`3dabf8c`，保留 main → G2.5 → G2.6 → G5 的 Git 祖先关系。
 
-正式 main 已于 2026-10-18 接纳 G2-R1、A1 和 G2.4-C（PR #23、#24、#25），核查基线为 `768b870949ffe6d17e74e8fc8656e5eadf6f6130`。当前独立开发阶段为 **G2.6「山河有形 · 众生有动」**，依赖尚未合并的 [G2.5 Draft #26](https://github.com/sjh20016/inkbox/pull/26)；性能仍为 **PERF BLOCKED**。
+正式主线现包含 G2.5 洗髓、主题机缘与突破异象，G2.6 WASD/视界操作、聚落水灾与众生表现，以及 G5 GPU 地形、水面与植被更新优化。G5 默认使用 GPU 路径，3D CPU 对照/回退 URL 为 `?renderer=3d&terrain=cpu&water=cpu`；定向检查为 `npm run test:g5`，测量与限制见 [HANDOFF](./HANDOFF.md)。
 
-本分支继承 G2.5 的洗髓与主题机缘，继续接通 WASD 视角、建筑水灾、人物平涂与较小比例，以及正式突破/斗法墨痕；从[玩家指南](./PLAYER_GUIDE.md)的「先在立体山河中走一走」开始。候选仍通过 Draft PR 审阅。
+广卷性能仍为 **PERF BLOCKED**：G5 明显降低缓冲区及纹理上传，但正常推进仍有约 1.07 秒 p95 长帧。后续工作从开工前重新核对的最新 `main` HEAD 建立，不把本次有限性能优化写成问题已解决。
 
 ## 正式产品状态（按 main 最新提交核对）
 
-正式产品基线为 **M2-C2E + G1 + G2-R1 + A1 + G2.4-C**，包含人物命簿、战斗/伤势、生态灾迹、真实火系引燃与角色资产。RG 治理前的历史基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`；实际开发从 GitHub 当前 `main` HEAD 起步，不把历史 SHA 当作最新主线。
+正式产品基线为 **M2-C2E + G1 + G2-R1 + A1 + G2.4-C + G2.5 + G2.6 + G5**，包含人物命簿、战斗/伤势、生态灾迹、真实火系引燃、角色资产、命簿洗髓、主题机缘、3D 观察操作与 GPU 渲染更新。P0 合流提交为 `3dabf8c`；RG 治理前的历史基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`。后续实际开发始终从开工时重新核对的 GitHub 最新 `main` HEAD 起步。
 
-G2 的功能接纳不代表性能预算封板。PR #12、#4～17 等旧候选只作来源与研究索引，不重复合并已迁入主线的功能。G3 cost 仍为 **BLOCKED**，独立 B 线与产品线没有共同祖先，历史 RNG 游标持久化仍未决。
+G2/G5 功能接纳不代表性能预算封板。PR #26～#28 已进入主线；PR #12、#4～17 等旧候选只作来源与研究索引，不重复合并已迁入主线的功能。G3 cost 仍为 **BLOCKED**，独立 B 线与产品线没有共同祖先，历史 RNG 游标持久化仍未决。
 
 导航：[`HANDOFF.md`](./HANDOFF.md) · [`ROADMAP.md`](./ROADMAP.md) · [`BACKLOG.md`](./BACKLOG.md) · [`tests/README.md`](./tests/README.md) · [`docs/development/REPOSITORY_WORKFLOW.md`](./docs/development/REPOSITORY_WORKFLOW.md)。
 

@@ -1,6 +1,6 @@
 # Inkbox Backlog
 
-本文件区分产品阻塞、研究问题、人工裁决和未来优化，不授予额外实现授权。2026-10-18 正式 main 为 `768b870949ffe6d17e74e8fc8656e5eadf6f6130`，已合并 #23 G2-R1、#24 A1、#25 G2.4-C；当前 G2.6「山河有形 · 众生有动」依赖 G2.5 Draft #26。已合并功能不再标作未接纳 Draft，性能阻塞仍保留。
+本文件区分产品阻塞、研究问题、人工裁决和未来优化，不授予额外实现授权。2026-10-19 P0 合流将 G2.5 PR #26（`59cd08d`）、G2.6 PR #27（`9ec8ec7`）和 G5 PR #28（`3dabf8c`）依依赖顺序合入 main。三项功能均为正式产品内容；G2/G5 广卷性能仍 **PERF BLOCKED**，下一阶段从开工前重新核对的最新 main 开始。
 
 ## 产品阻塞
 
@@ -10,7 +10,7 @@
 
 - **H2/H3/G3 历史 CI**：旧研究 SHA 的 Fast Gate 有浏览器进程归属与清理一致性失败记录；不以产品主线通过覆盖旧研究失败，也不把旧失败写成当前主线结论。后续研究另行定向验证。
 
-- **G2 性能**：功能已随 #23～#25 合并，性能预算仍为 **PERF BLOCKED**。固定历史证据见 [P1 验证报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_P1_INTEGRATION_VALIDATION_REPORT.md) 和[性能收束报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_PERFORMANCE_FINALIZATION_REPORT.md)；更大地图/其他设备不能由有限规格功能通过推定合格。
+- **G2/G5 性能**：#23～#28 的产品功能均已接纳。G5 将暂停条件下的 bufferSubData 加纹理上传均值从 43.77 MB 降至 8.08 MB，但 512×320 正常推进 30 秒样本 p95 仍约 1.07 秒，性能预算保持 **PERF BLOCKED**。测量明细与 `?renderer=3d&terrain=cpu&water=cpu` 回退见 [HANDOFF](./HANDOFF.md) 顶部；更大地图/其他设备不能由有限规格功能通过推定合格。历史 G2 证据见 [P1 验证报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_P1_INTEGRATION_VALIDATION_REPORT.md) 和[性能收束报告](https://github.com/sjh20016/inkbox/blob/74934a8b1360af9007c69935d5becdf8f9809872/G2_PERFORMANCE_FINALIZATION_REPORT.md)。
 - **G3 cost**：PR #17 研究状态为 BLOCKED，继续研究或实现需单独明确范围。
 - **独立 B 线**：与正式产品线没有共同祖先，保持独立研究状态；产品化或合并需要单独裁决。
 
@@ -21,9 +21,9 @@
 
 ## 未来优化
 
-- G2.5 可选引灵脉倾向、牵缘与洞府遗宝顺延；本轮先交付洗髓、主题秘境、功法传承和突破异象。
+- G2.5 后续可选引灵脉倾向、牵缘与洞府遗宝顺延；洗髓、主题机缘、功法传承和突破异象已随 PR #26 接纳。
 - G2.6 御剑飞行与全面高峰通行顺延；安全落点仍遵守地面通行。山体色块材质保留关闭原型，需进一步美术裁决；有限短样本不解除性能阻塞。
-- M2-C2E 的性能优化方向待测量结果确定，不预设实现方案。
+- G5 已完成一项上传优化，但广卷正常推进仍有约 1.07 秒 p95 长帧。后续 P1 性能攻坚另行立项，保持独立范围，不预设本轮以外的实现方案。
 - 其他尚未获批的候选功能、G2/G3 后续工作及 B 线产品化不作为已承诺开发事项。
 
 正式阶段与候选关系见 [ROADMAP](./ROADMAP.md)，交接及流程见 [HANDOFF](./HANDOFF.md) 与 [仓库工作流](./docs/development/REPOSITORY_WORKFLOW.md)。
