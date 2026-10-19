@@ -5,7 +5,7 @@ export class TerrainPicker {
   pick(x, y, width, height) {
     const start = performance.now();
     this.camera.updateMatrixWorld(); this.terrain.mesh.updateMatrixWorld();
-    const signature = [x, y, width, height, this.terrain.geometry.attributes.position.version, ...this.camera.matrixWorld.elements, ...this.camera.projectionMatrix.elements];
+    const signature = [x, y, width, height, this.terrain.geometry.attributes.position.version, this.terrain.geometry.userData.cpuHeightVersion ?? -1, ...this.camera.matrixWorld.elements, ...this.camera.projectionMatrix.elements];
     if (this.signature && signature.every((v, i) => v === this.signature[i])) { this.timeMs = 0; return this.cachedHit; }
     this.signature = signature;
     this.raycaster.setFromCamera(new THREE.Vector2(x / width * 2 - 1, 1 - y / height * 2), this.camera);

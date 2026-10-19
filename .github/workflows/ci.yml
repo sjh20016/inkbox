@@ -95,6 +95,9 @@ jobs:
       - name: G2.6 视角、聚落水灾、安全落点与众生表现
         run: npm run test:g26
 
+      - name: G5 GPU 地形、水面湿域与植被局部更新
+        run: npm run test:g5
+
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0
 

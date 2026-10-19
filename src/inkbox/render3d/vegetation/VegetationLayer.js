@@ -59,7 +59,8 @@ export class VegetationLayer {
     this.stats = { trees: 0, instances: 0, triangles: 0, lod: [0, 0, 0],
       lodCounts: { lod0: 0, lod1: 0, lod2: 0 }, lod0: 0, lod1: 0, lod2: 0,
       budgetDemotions: 0, capacity: LOD_BUDGETS.categories.tree.capacity,
-      overflow: 0, capacityOverflow: 0 };
+      overflow: 0, capacityOverflow: 0, derivations: 0, groundPasses: 0,
+      groundSamples: 0, groundInstancesWritten: 0, groundUploadMarks: 0 };
     this.texture = pixelTree();
     this.geometry = new THREE.PlaneGeometry(1, 1.5); this.geometry.translate(0, 0.75, 0);
     this.material = new THREE.MeshLambertMaterial({ map: this.texture, alphaTest: 0.5, side: THREE.DoubleSide });
@@ -138,6 +139,7 @@ export class VegetationLayer {
   }
 
   update() {
+    this.stats.derivations++;
     const all = deriveVegetation(this.world);
     // 只在重建时过滤（本方法由节流通道调用，不是每帧）。
     this.trees = this.regionGeometry && !this.regionGeometry.allInside
@@ -145,6 +147,37 @@ export class VegetationLayer {
       : all;
     this.pendingRegionRebuild = false;
     this._reassignAndUpload(true);
+  }
+
+  // A tree's fractional anchor samples the four surrounding terrain nodes.
+  // Keep membership, LOD, colors and matrix rotation/scale intact on ground edits.
+  updateGround(region = null) {
+    const changedMeshes = [false, false, false];
+    const s = this.stats; s.groundPasses++;
+    let writes = 0;
+    for (const tree of this.trees) {
+      const x = Math.min(this.world.w - 2, Math.floor(tree.x));
+      const y = Math.min(this.world.h - 2, Math.floor(tree.y));
+      if (region && (x > region.x1 || x + 1 < region.x0 || y > region.y1 || y + 1 < region.y0)) continue;
+      s.groundSamples++;
+      const nextY = Math.fround(this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y)).y);
+      const lod = tree.renderLod, mesh = this.lodMeshes[lod], attribute = mesh.instanceMatrix;
+      for (let side = 0; side < tree.renderCount; side++) {
+        const offset = (tree.renderIndex + side) * 16 + 13;
+        if (attribute.array[offset] === nextY) continue;
+        attribute.array[offset] = nextY;
+        attribute.addUpdateRange(offset, 1);
+        changedMeshes[lod] = true; writes++;
+      }
+    }
+    for (let lod = 0; lod < 3; lod++) if (changedMeshes[lod]) {
+      const mesh = this.lodMeshes[lod];
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.boundingBox = null; mesh.boundingSphere = null;
+      s.groundUploadMarks++;
+    }
+    s.groundInstancesWritten += writes;
+    return writes;
   }
 
   /** Enable opt-in CPU attribution for the forest LOD assignment path. */
@@ -260,6 +293,8 @@ export class VegetationLayer {
       }
       const tint = varied ? this._variantTints[variant] : this._whiteTint;
       const target = this.lodMeshes[lod];
+      tree.renderLod = lod; tree.renderIndex = counts[lod];
+      tree.renderCount = lod === 0 && !this.artProfile ? 2 : 1;
       if (lod === 0 && !this.artProfile) {
         for (let side = 0; side < 2; side++) {
           dummy.rotation.y = tree.rotation + side * Math.PI / 2;
@@ -274,6 +309,9 @@ export class VegetationLayer {
     }
     for (let lod = 0; lod < 3; lod++) {
       const mesh = this.lodMeshes[lod];
+      // A full rewrite must supersede any still-pending sparse ground uploads.
+      mesh.instanceMatrix.clearUpdateRanges();
+      if (counts[lod]) mesh.instanceMatrix.addUpdateRange(0, counts[lod] * 16);
       mesh.count = counts[lod]; mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       mesh.boundingBox = null; mesh.boundingSphere = null;

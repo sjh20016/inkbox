@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { terrainGpuConfig } from '../terrain/terrainGpuConfig.js';
 
 /**
  * M2-C2D P1 · Stage-owned 只读连续表面视觉场。
@@ -29,6 +30,7 @@ export class SurfaceVisualFieldTexture {
     this.texture.unpackAlignment = 1;
     this.texture.colorSpace = THREE.NoColorSpace;
     this.texture.name = `Inkbox:${world.plane ?? 'plane'}:surface-visual-field:RGBA8`;
+    this.texture.onUpdate = () => { this.fullUploadPending = false; };
     this.disposed = false;
     this.stats = { format: 'RGBA8', filter: 'linear', depthReference, kernelRadius: this.kernelRadius,
       bytes: this.bytes.byteLength, updates: 0, cells: 0 };
@@ -43,21 +45,23 @@ export class SurfaceVisualFieldTexture {
     const y0 = Math.max(0, Math.floor(region.y0) - k), y1 = Math.min(w.h - 1, Math.ceil(region.y1) + k);
     if (x0 > x1 || y0 > y1) return;
     const inv = 255 / this.depthReference;
-    const depthByte = (x, y) => {
-      const d = w.water[y * w.w + x];
-      return d > 0 ? Math.min(255, Math.round(d * inv)) : 0;
-    };
+    // Quantize each affected depth once, then reuse those exact bytes for neighbours.
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const i = y * w.w + x, d = w.water[y * w.w + x];
+      this.bytes[i * 4] = d > 0 ? Math.min(255, Math.round(d * inv)) : 0;
+    }
     for (let y = y0; y <= y1; y++) {
       for (let x = x0; x <= x1; x++) {
         const i = y * w.w + x;
         const offset = i * 4;
-        this.bytes[offset] = depthByte(x, y);
-        this.bytes[offset + 1] = depthByte(Math.max(0, x - 1), y);
-        this.bytes[offset + 2] = depthByte(Math.min(w.w - 1, x + 1), y);
-        this.bytes[offset + 3] = depthByte(x, Math.max(0, y - 1));
+        this.bytes[offset + 1] = this.bytes[(y * w.w + Math.max(0, x - 1)) * 4];
+        this.bytes[offset + 2] = this.bytes[(y * w.w + Math.min(w.w - 1, x + 1)) * 4];
+        this.bytes[offset + 3] = this.bytes[(Math.max(0, y - 1) * w.w + x) * 4];
       }
       this.texture.addUpdateRange((y * w.w + x0) * 4, (x1 - x0 + 1) * 4);
     }
+    if (terrainGpuConfig.coalesceTextureUpload && y1 - y0 + 1 >= terrainGpuConfig.coalesceRows) this.fullUploadPending = true;
+    if (this.fullUploadPending) this.texture.clearUpdateRanges();
     this.texture.needsUpdate = true;
     this.stats.updates += 1;
     this.stats.cells += (x1 - x0 + 1) * (y1 - y0 + 1);

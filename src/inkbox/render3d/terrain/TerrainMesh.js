@@ -7,6 +7,7 @@ import { TERRAIN_INFO } from '../../core/config.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { TerrainDataTextures } from '../art/TerrainDataTextures.js';
 import { PigmentTerrainMaterial } from '../art/PigmentTerrainMaterial.js';
+import { terrainGpuConfig } from './terrainGpuConfig.js';
 
 export function gridGeometry(world, coordinates) {
   const position = new Float32Array(world.size * 3);
@@ -39,6 +40,13 @@ export class TerrainMesh {
     this.regionMask = null;
     this.regionInside = true;
     this.geometry = gridGeometry(world, coordinates);
+    // Node UVs stay exact even when a caller supplies scaled/translated coordinates.
+    const uv = new Float32Array(world.size * 2);
+    for (let y = 0; y < world.h; y++) for (let x = 0; x < world.w; x++) {
+      const i = (y * world.w + x) * 2;
+      uv[i] = (x + 0.5) / world.w; uv[i + 1] = (y + 0.5) / world.h;
+    }
+    this.geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     this.geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(world.size * 3), 3).setUsage(THREE.DynamicDrawUsage));
     // Steep boundary slopes can face away even while the camera stays above ground.
     this.material = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
@@ -47,11 +55,49 @@ export class TerrainMesh {
     this.fullIndices = this.geometry.index.array.slice();
     this.geometry.index.setUsage(THREE.DynamicDrawUsage);
     this.palette = TERRAIN_INFO.map(t => new THREE.Color(`rgb(${t.color.join(',')})`));
+    // G5：GPU 位移期间被跳过上传的通道。退回 Lambert（或任何非 Pigment 材质）前必须整张补齐。
+    this.legacyStale = { position: false, color: false };
+    this.cpuHeightVersion = 0; this.geometry.userData.cpuHeightVersion = 0;
+    this.stats = { topologyFlips: 0, indexUploads: 0, skippedPositionRows: 0, skippedColorRows: 0, legacyResyncs: 0 };
     this.update({ x0: 0, y0: 0, x1: world.w - 1, y1: world.h - 1 });
   }
-  setArtProfile(profile) {
+  /** GPU 位移只在 Pigment 材质真正挂在 mesh 上时生效；调试材质 / Lambert 一律走旧路径。 */
+  /** G5：GPU 位移激活时梯度改由着色器求；切换模式需要整张重打包 B/A。 */
+  syncGradientPacking() {
+    if (!this.artData || !this.inkMaterial) return;
+    const pack = !this.gpuDisplacementActive();
+    if (this.artData.packedBroadGradient === pack) return;
+    this.artData.packedBroadGradient = pack;
+    this.inkMaterial.uniforms.packedBroadRadius.value = pack ? this.artData.packedBroadRadius : 0;
+    if (pack) { this.artData.heightTexture.clearUpdateRanges(); this.artData.update({ x0: 0, y0: 0, x1: this.world.w - 1, y1: this.world.h - 1 }, { height: true, type: false }); }
+  }
+  gpuDisplacementActive() {
+    return terrainGpuConfig.displacement && this.gpuEnabled !== false && !!this.artProfile && !!this.inkMaterial && this.mesh.material === this.inkMaterial;
+  }
+  /** 把被跳过的顶点 Y / 顶点色整张补回 GPU，保证旧材质不会看到陈旧数据。 */
+  resyncLegacyAttributes() {
+    const stale = this.legacyStale;
+    if (!stale.position && !stale.color) return;
+    const { position, color } = this.geometry.attributes, w = this.world;
+    if (stale.color) {
+      for (let i = 0; i < w.size; i++) {
+        const c = this.palette[w.type[i]] || this.palette[5];
+        const fire = this.fireEnabled ? w.fire[i] : 0;
+        if (fire > 0.02) {
+          const heat = Math.min(1, fire * 1.15), mix = heat * 0.86;
+          color.setXYZ(i, c.r * (1 - mix) + mix, c.g * (1 - mix) + (214 - heat * 70) / 255 * mix, c.b * (1 - mix) + (120 - heat * 90) / 255 * mix);
+        } else color.setXYZ(i, c.r, c.g, c.b);
+      }
+      color.clearUpdateRanges(); color.addUpdateRange(0, color.array.length); color.needsUpdate = true;
+    }
+    // CPU position 数组一直是新的（拾取依赖它），这里只需整张上传。
+    if (stale.position) { position.clearUpdateRanges(); position.addUpdateRange(0, position.array.length); position.needsUpdate = true; }
+    stale.position = stale.color = false; this.stats.legacyResyncs++;
+  }
+  setArtProfile(profile, { gpu = true } = {}) {
     const wasEnabled = !!this.artProfile;
     this.artProfile = profile || null;
+    this.gpuEnabled = gpu;
     if (profile) {
       if (!this.artData) this.artData = new TerrainDataTextures(this.world, this.elevation, this.fireEnabled);
       else if (!wasEnabled) {
@@ -63,6 +109,9 @@ export class TerrainMesh {
     }
     // Keep material as the legacy tint source for the historical Slab probe.
     this.mesh.material = profile ? this.inkMaterial : this.material;
+    if (this.inkMaterial) this.inkMaterial.uniforms.gpuDisplacement.value = this.gpuDisplacementActive() ? 1 : 0;
+    if (!this.gpuDisplacementActive()) this.resyncLegacyAttributes();
+    this.syncGradientPacking();
     this.syncScalarField();
     this.bindSurfaceField();
   }
@@ -110,11 +159,31 @@ export class TerrainMesh {
     const writeColor = writeType || writeFire;
     if (!writeHeight && !writeColor) return;
     const { position, color } = this.geometry.attributes, w = this.world;
+    const gpu = this.gpuDisplacementActive();
+    if (!gpu) this.resyncLegacyAttributes();
+    // GPU 位移时：顶点 Y 仍写 CPU 数组（射线拾取的真相），顶点色整段跳过；两者都不上传。
+    const writeColorCpu = writeColor && !gpu;
+    if (gpu) this.syncGradientPacking();
+    // GPU 模式：先写纹理（G = ElevationField.node()），CPU 顶点 Y 直接拷 G，免去第二次求值。
+    const gpuHeights = gpu && writeHeight ? (this.artData.update(region, options), this.artData.heights) : null;
+    const posArr = position.array;
+    let cpuHeightChanged = false;
     for (let y = region.y0; y <= region.y1; y++) {
+      if (gpuHeights && !writeColorCpu) {
+        for (let x = region.x0, i = y * w.w + x; x <= region.x1; x++, i++) {
+          const value = gpuHeights[i * 4 + 1], offset = i * 3 + 1;
+          if (posArr[offset] !== value) { posArr[offset] = value; cpuHeightChanged = true; }
+        }
+        continue;
+      }
+      let rowHeightChanged = false;
       for (let x = region.x0; x <= region.x1; x++) {
         const i = y * w.w + x;
-        if (writeHeight) position.setY(i, this.elevation.node(x, y));
-        if (writeColor) {
+        if (writeHeight) {
+          const value = gpuHeights ? gpuHeights[i * 4 + 1] : Math.fround(this.elevation.node(x, y));
+          if (posArr[i * 3 + 1] !== value) { posArr[i * 3 + 1] = value; cpuHeightChanged = true; rowHeightChanged = true; }
+        }
+        if (writeColorCpu) {
           const c = this.palette[w.type[i]] || this.palette[5];
           const fire = this.fireEnabled ? w.fire[i] : 0;
           if (fire > 0.02) {
@@ -126,27 +195,44 @@ export class TerrainMesh {
         }
       }
       const start = (y * w.w + region.x0) * 3, count = (region.x1 - region.x0 + 1) * 3;
-      if (writeHeight) position.addUpdateRange(start, count);
-      if (writeColor) color.addUpdateRange(start, count);
+      if (writeHeight && !gpu && rowHeightChanged) position.addUpdateRange(start, count);
+      if (writeColorCpu) color.addUpdateRange(start, count);
     }
+    const rows = region.y1 - region.y0 + 1;
+    if (writeHeight && gpu) { this.legacyStale.position ||= cpuHeightChanged; this.stats.skippedPositionRows += rows; }
+    if (writeColor && gpu) { this.legacyStale.color = true; this.stats.skippedColorRows += rows; }
     if (writeHeight) {
-      position.needsUpdate = true;
+      if (cpuHeightChanged) {
+        this.cpuHeightVersion++; this.geometry.userData.cpuHeightVersion = this.cpuHeightVersion;
+        if (!gpu) position.needsUpdate = true;
+      }
       if (adaptiveTopology(w)) {
-        let changed=false;const full=this.fullIndices,qw=w.w-1;
+        let changed=false;this.flipSpans=null;const full=this.fullIndices,qw=w.w-1;
         for(let y=Math.max(0,region.y0-1);y<=Math.min(w.h-2,region.y1);y++)for(let x=Math.max(0,region.x0-1);x<=Math.min(w.w-2,region.x1);x++){
           const a=y*w.w+x,b=a+1,c=a+w.w,d=c+1,o=(y*qw+x)*6,ad=diagonalAD(w,x,y);
           // The third corner distinguishes both valid index patterns; unchanged topology is never re-uploaded.
           if(full[o+2]===(ad?d:b))continue;
+          const spans=(this.flipSpans||=[]),last=spans[spans.length-1];
+          // 同行合并；跨行间隙 < 4096 个索引（16 KB）也合并，用少量多传换更少的 bufferSubData 调用。
+          if(last&&(last[2]===y||o-last[1]<4096)){last[1]=o+6;last[2]=y;}else spans.push([o,o+6,y]);
           full[o]=a;full[o+1]=c;full[o+2]=ad?d:b;full[o+3]=ad?a:b;full[o+4]=ad?d:c;full[o+5]=ad?b:d;changed=true;
         }
-        if(changed)this.keptQuads=applyQuadMask({geometry:this.geometry,fullIndices:full,
-          regionGeometry:this.regionGeometry,inside:this.regionInside,quadW:qw,quadH:w.h-1});
+        if(changed){this.stats.topologyFlips++;this.stats.indexUploads++;}
+        const unmasked=!this.regionGeometry||this.regionGeometry.allInside;
+        if(changed&&terrainGpuConfig.partialIndexUpload&&unmasked&&this.flipSpans){
+          // G5：无视界遮罩时索引与 fullIndices 一一对应 ⇒ 只上传翻转 quad 所在行的最小跨度。
+          const index=this.geometry.index,arr=index.array;
+          for(const [o0,o1] of this.flipSpans){arr.set(full.subarray(o0,o1),o0);index.addUpdateRange(o0,o1-o0);this.stats.indexBytes=(this.stats.indexBytes||0)+(o1-o0)*4;}
+          index.needsUpdate=true;this.geometry.setDrawRange(0,full.length);this.keptQuads=full.length/6;
+        } else if(changed){this.keptQuads=applyQuadMask({geometry:this.geometry,fullIndices:full,
+          regionGeometry:this.regionGeometry,inside:this.regionInside,quadW:qw,quadH:w.h-1});this.stats.indexBytes=(this.stats.indexBytes||0)+this.geometry.index.array.byteLength;}
+        this.flipSpans=null;
       }
     }
-    if (writeColor) color.needsUpdate = true;
+    if (writeColorCpu) color.needsUpdate = true;
     // The existing dirty channels are also the only GPU snapshot update source.
     // Disabled art does not collect unbounded upload ranges; re-enable performs a full sync.
-    if (this.artProfile) this.artData.update(region, options);
+    if (this.artProfile && !gpuHeights) this.artData.update(region, options);
     // Flat material derives normals in the shader; no full-grid normal rebuild.
   }
   /**

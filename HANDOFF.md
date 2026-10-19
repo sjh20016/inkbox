@@ -1,5 +1,24 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 2026-10-19 · G5 性能架构候选
+
+独立分支 `feat/g5-performance-architecture` 从委托指定 `062ce3b` 起步，目标为 G2.6 候选分支；不直接合并 main。默认 3D 地形复用 G5 高度纹理位移、纹理整批上传与增量对角索引；CPU 顶点仍准确维护，供拾取和建筑贴地。水面改为固定节点/外缘网格、Float32 高程与水深纹理、三角湿域裁切，保留 Region 同源判据及 CPU/legacy 回退。植被成员资格未变时仅更新实际变化的实例 Y，保留 LOD、颜色与缓存。模拟、水文、生态、角色规则与存档格式未改；未引入写意实验。
+
+同一真实 Tabbit Chromium 153 / Intel UHD 730（ANGLE D3D11）、1366×768、512×320、seed 20261018，沿用附带 G5 `bench.cjs` 的暂停后 30 个水文步与 3 RAF 账本，均值如下。JS/GL 提交耗时不等于 GPU 执行时间。
+
+| 每水文步 | 062ce3b | G5 候选 |
+| --- | ---: | ---: |
+| bufferSubData 数据 | 39.88 MB | 1.55 MB |
+| renderer.update | 100.82 ms | 52.94 ms |
+| GL render 提交 | 23.05 ms | 7.27 ms |
+| texSubImage2D 调用 | 943.93 | 4.00 |
+
+水面不再每步上传约 23.59 MB 位置及 7.86 MB 索引。代价是增加 Float32 水面纹理传输与干区顶点绘制；少量拓扑及树实例更新的 bufferSubData 调用数增加，不能把缓冲字节下降当成总传输或固定帧率承诺。正常推进 30 秒样本仍有约 1.07 秒 p95 长尾，**PERF BLOCKED 保留**；本机没有 AMD 610M，不声称完成该设备长窗口验收。
+
+针对性回归覆盖高程/拾取、同帧全量与局部上传、CPU 回切、历史美术对照、湿域/外缘、植被水淹与恢复、Region 和释放。浏览器实际验证抬山/撤销/重做、Canvas 注水后返回 3D、上界/幽冥划窗、窗内拾取、关窗及 WASD。修复开窗时旧 hover 签名把 numeric `boundary.edges` 当 WeakMap key 的帧循环异常，并保留失败证据。完整 Fast/Heavy 与构建以交付 PR 的当前源码结果为准。
+
+运行 `npm run dev` 后打开 `inkbox.html?renderer=3d`；回退 URL 为 `?renderer=3d&terrain=cpu&water=cpu`。`npm run test:g5` 已加入 Fast 与发布包。源码回滚可放弃该独立候选，或正常 revert，不重置 main。原始浏览器账本、截图与命令退出码留在本任务工作区的 `g5-validation/`，不进运行包。
+
 ## 2026-10-18 · G2.6「山河有形 · 众生有动」
 
 开工核对 main 仍为 `768b870`，G2.5 [Draft #26](https://github.com/sjh20016/inkbox/pull/26) 尚未合并，故从其最新 `fe3311e` 建 `feat/g2-6-living-landscape`；本轮 Draft 暂指向 G2.5，后续依赖合并再调整，未自动合并主线。已有私有长档与截图仅作本机验收，不进入 Git 或发布包。

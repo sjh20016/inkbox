@@ -18,6 +18,11 @@
  * @returns {number} 实际保留的 quad 数（= `drawRange.count / 6`）
  */
 export function applyQuadMask({ geometry, fullIndices, regionGeometry, inside, quadW, quadH }) {
+  // A mask compacts/replaces the full index layout, including after partial updates.
+  geometry.index.clearUpdateRanges();
+  // Keep the full range explicit: a later topology flip before rendering may
+  // append a partial range, which must not narrow this queued replacement.
+  geometry.index.addUpdateRange(0, geometry.index.array.length);
   if (!regionGeometry || regionGeometry.allInside) {
     geometry.index.array.set(fullIndices);
     geometry.index.needsUpdate = true;

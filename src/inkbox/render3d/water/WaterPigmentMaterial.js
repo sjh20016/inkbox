@@ -1,9 +1,20 @@
 import * as THREE from 'three';
 
 const vertexShader = `
+uniform sampler2D waterNodeTexture;
+uniform float waterGpuMode;
+attribute vec3 waterSample;
 varying vec3 vWorld;
+varying float vWetDepth;
 void main() {
-  vec4 p = modelMatrix * vec4(position, 1.0);
+  vec3 localPosition = position;
+  vWetDepth = 1.0;
+  if (waterGpuMode > 0.5) {
+    vec4 node = texture2D(waterNodeTexture, waterSample.xy);
+    localPosition.y = mix(node.r, node.g, waterSample.z);
+    vWetDepth = node.b;
+  }
+  vec4 p = modelMatrix * vec4(localPosition, 1.0);
   vWorld = p.xyz;
   gl_Position = projectionMatrix * viewMatrix * p;
 }`;
@@ -11,7 +22,7 @@ void main() {
 /**
  * M2-C2D P1 · 连续绘画水面。
  *
- * 几何 / 网格拓扑 / Region 遮罩完全沿用 WaterLayer 现状；这里只替换材质语言：
+ * 水面网格与 Region 遮罩归 WaterLayer；GPU 模式使用精确节点快照位移 / 湿域裁切：
  *   · 水深来自 Stage 的 SurfaceVisualFieldTexture（连续标量，LinearFilter）；
  *   · 海面主体向纸色靠拢，只混极淡花青；浅水更贴近纸；
  *   · 岸线透明度 / 颜色走 smoothstep + fwidth 抗锯齿，不出硬格边；
@@ -28,13 +39,16 @@ uniform vec3 paperColor, waterColor, inkColor;
 uniform vec3 tint;
 uniform float opacityDeep, paperStrength, rippleStrength, shoreSoftness;
 uniform float pixelsPerUnit;
+uniform float waterGpuMode;
 varying vec3 vWorld;
+varying float vWetDepth;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7)) + seed) * 43758.5453); }
 float noise(vec2 p) {
   vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
   return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
 }
 void main() {
+  if(waterGpuMode>0.5 && vWetDepth<=0.0)discard;
   vec2 p=vWorld.xz+(mapSize-1.0)*0.5;
   vec2 uv=(clamp(p,vec2(0.0),mapSize-1.0)+0.5)/mapSize;
   float depth=texture2D(surfaceTexture,uv).r*surfaceDepthRef;
@@ -69,6 +83,8 @@ export class WaterPigmentMaterial extends THREE.ShaderMaterial {
   constructor(world, surfaceField, profile) {
     super({ vertexShader, fragmentShader, transparent: true, depthWrite: false, side: THREE.FrontSide, uniforms: {
       surfaceTexture: { value: surfaceField?.texture ?? null },
+      waterNodeTexture: { value: null },
+      waterGpuMode: { value: 0 },
       surfaceDepthRef: { value: surfaceField?.depthReference ?? 0.5 },
       mapSize: { value: new THREE.Vector2(world.w, world.h) },
       seed: { value: (world.seed >>> 0) % 8191 },
@@ -91,6 +107,10 @@ export class WaterPigmentMaterial extends THREE.ShaderMaterial {
   setSurfaceField(field) {
     this.uniforms.surfaceTexture.value = field?.texture ?? null;
     this.uniforms.surfaceDepthRef.value = field?.depthReference ?? 0.5;
+  }
+  setGpuSurface(surface) {
+    this.uniforms.waterNodeTexture.value = surface?.texture ?? null;
+    this.uniforms.waterGpuMode.value = surface ? 1 : 0;
   }
   setProfile(profile) {
     const style = profile.realmStyle, u = this.uniforms;

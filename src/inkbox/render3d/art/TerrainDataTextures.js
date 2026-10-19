@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { terrainGpuConfig } from '../terrain/terrainGpuConfig.js';
 import { TERRAIN_INFO } from '../../core/config.js';
 
 function texture(data, w, h, format, type) {
@@ -6,6 +7,7 @@ function texture(data, w, h, format, type) {
   t.minFilter = t.magFilter = THREE.NearestFilter;
   t.generateMipmaps = false; t.flipY = false; t.unpackAlignment = 1;
   t.needsUpdate = true;
+  t.onUpdate = () => { t.userData.fullUploadPending = false; };
   return t;
 }
 
@@ -48,7 +50,11 @@ export class TerrainDataTextures {
       }
       if (type || fire) this.typeTexture.addUpdateRange((y * w.w + x0) * 4, (x1 - x0 + 1) * 4);
     }
-    if (height) {
+    if (height && !this.packedBroadGradient) {
+      // G5：GPU 位移模式下 B/A 不再由 CPU 打包，顶点着色器走既有的轴向连续回退公式自算梯度。
+      for (let y = y0; y <= y1; y++) this.heightTexture.addUpdateRange((y * w.w + x0) * 4, (x1 - x0 + 1) * 4);
+      this.heightTexture.needsUpdate = true; this.uploads.height++;
+    } else if (height) {
       // Each gradient touches only G on the same axis at offsets ±2.5. The
       // farthest source texel is three cells away. Refresh R/G in the exact
       // dirty region first, then B/A in its halo without changing R/G there.
@@ -75,6 +81,15 @@ export class TerrainDataTextures {
       this.heightTexture.needsUpdate = true; this.uploads.height++;
     }
     if (type || fire) { this.typeTexture.needsUpdate = true; this.uploads.type++; }
+    // G5：大面积脏区改为整张上传一次（r186 对逐行 range 不做合并）。
+    if (terrainGpuConfig.coalesceTextureUpload && (y1 - y0 + 1) >= terrainGpuConfig.coalesceRows) {
+      if (height) this.heightTexture.userData.fullUploadPending = true;
+      if (type || fire) this.typeTexture.userData.fullUploadPending = true;
+      this.uploads.coalesced = (this.uploads.coalesced || 0) + 1;
+    }
+    // A later small edit before render must not narrow an already queued full upload.
+    if (this.heightTexture.userData.fullUploadPending) this.heightTexture.clearUpdateRanges();
+    if (this.typeTexture.userData.fullUploadPending) this.typeTexture.clearUpdateRanges();
     this.uploads.cells += (x1 - x0 + 1) * (y1 - y0 + 1);
   }
   dispose() {
