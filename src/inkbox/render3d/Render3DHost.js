@@ -16,6 +16,8 @@ import { BOUNDARY_MODES, RAW_BOUNDARY, boundarySpec, buildRealmBoundaryField } f
 import { RenderDebug } from './debug/RenderDebug.js';
 import { visibleRift } from './readers/riftViewModel.js';
 import { ArtPass } from './art/ArtPass.js';
+import { ShanhaiAtmosphere } from './shanhai/ShanhaiAtmosphere.js';
+import { RealmVeilRim } from './shanhai/RealmVeilRim.js';
 import { loadCharacterLibrary } from './characters/CharacterLibrary.js';
 import { DEFAULT_WORLD_TRIAL_IDS, loadCreatureLibrary } from './creatures/CreatureLibrary.js';
 import { loadEnvironmentAssetLibrary } from './environment/EnvironmentAssetLibrary.js';
@@ -46,8 +48,11 @@ export class Render3DHost {
     this.gpu = options.gpu || new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
     this.gpu.setPixelRatio(Math.min(1.5, globalThis.devicePixelRatio || 1)); this.gpu.setClearColor('#d9cdb4');
     this.scene = new THREE.Scene();
-    this.scene.add(new THREE.HemisphereLight('#faf2dc', '#686d59', 2));
-    const sun = new THREE.DirectionalLight('#fff5dc', 2.2); sun.position.set(-90, 160, -70); this.scene.add(sun);
+    this.hemiLight = new THREE.HemisphereLight('#faf2dc', '#686d59', 2); this.scene.add(this.hemiLight);
+    const sun = new THREE.DirectionalLight('#fff5dc', 2.2); sun.position.set(-90, 160, -70); this.scene.add(sun); this.sunLight = sun;
+    // V1 · 山海入画：背景画幅 / 光色 / 卷底云墨（纯表现，由 ArtPass 的 shanhai-v1 档位驱动）。
+    this.shanhai = new ShanhaiAtmosphere(this);
+    this.sceneryEnabled = options.scenery !== false;
     this.debug = new RenderDebug(); this.coordinates = createCoordinates(world);
     this.cameraRig = options.cameraRig || new CameraRig(canvas, { w: world.w, h: world.h }, this.coordinates);
     this.picker = new PlanePicker(this); this.realmPrototype = new RealmView3DPrototype(this);
@@ -151,12 +156,15 @@ export class Render3DHost {
     // M2-B B2：界缘断面跨「凡间 ↔ 目标界」两个 Stage，所以它属于 Host 而不是某个 Stage。
     this.boundary = new RealmBoundaryLayer({ coordinates: this.coordinates });
     this.scene.add(this.boundary.mesh);
+    this.veil = new RealmVeilRim({ coordinates: this.coordinates }); this.scene.add(this.veil.root);
     this.boundaryKey = null; this.boundaryField = null;
     this.art.setProfile(this.art.profile);
     this.setLODEnabled(this.lodEnabled);
     this.accessKey = null; this.debug.samples = []; this.applyView(); return true;
   }
   setArtProfile(profile) { return this.art.setProfile(profile); }
+  /** V1 · 山海入画：纯装饰景观总开关（不影响任何可交互对象）。 */
+  setSceneryEnabled(enabled) { this.sceneryEnabled = !!enabled; this.art.setProfile(this.art.profile); return this.sceneryEnabled; }
   setGeographyEnabled(enabled) {
     this.geographyFeatures = geographyFeatures(!!enabled);
     for (const stage of this.stages.values()) stage.setGeographyFeatures(this.geographyFeatures);
@@ -248,6 +256,7 @@ export class Render3DHost {
         stage.setElevationProfile(RAW_BOUNDARY);
     }
     if (!target || !mortal) {
+      this.veil?.clear();
       this.boundary.setVisible(false);
       this.boundaryKey = null;
       this.boundaryField = null;
@@ -286,6 +295,8 @@ export class Render3DHost {
         targetElevation: target.elevation,
         sign, key, rifts, targetPlane, accessBounds: this.playerAccessBounds,
       });
+      this.veil?.rebuild({ regionGeometry: target.regionGeometry, mortalElevation: mortal.elevation, targetPlane,
+        accessBounds: this.playerAccessBounds, enabled: !!this.shanhai?.enabled });
     }
     this.boundary.setVisible(true);
   }
@@ -340,6 +351,8 @@ export class Render3DHost {
     }
     this.slabProbe?.update();
     this.cameraRig.update(dt);
+    this.shanhai?.update(dt);
+    this.veil?.setZoom(this.cameraRig.camera.zoom);
     const lodStart = performance.now(); this.art.update(); totals.lodUpdateMs = performance.now() - lodStart;
     this.profile = totals; this.scanMs = totals.bridgeScanMs; this.updateMs = performance.now() - start;
     this.dt = dt;
@@ -415,12 +428,14 @@ export class Render3DHost {
     this.picker?.clearHoverCache();
     this.slabProbe?.dispose(); this.slabProbe = null; this.slabRegion = null;
     this.boundary?.dispose(); this.boundary = null; this.boundaryKey = null; this.boundaryField = null;
+    this.veil?.dispose(); this.veil = null;
     for (const stage of this.stages.values()) { stage.fxProbe?.dispose(); stage.dispose(); stage.root.removeFromParent(); }
     this.stages.clear();
   }
   dispose() {
     if (this.disposed) return;
     this.disposed = true; this.releaseWorld(); this.draftPath?.dispose(); this.draftPath = null;
+    this.shanhai?.dispose(); this.shanhai = null;
     this.art.dispose(); this.brushOverlay.dispose(); this.cameraRig.dispose(); this.gpu.dispose(); this.scene.clear();
     if (this.ownsCharacterLibrary) this.characterLibrary?.dispose();
     this.characterLibrary = null;

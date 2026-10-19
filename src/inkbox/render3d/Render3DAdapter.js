@@ -65,7 +65,7 @@ export class Render3DAdapter {
     const artParams = new URLSearchParams(globalThis.location?.search || '');
     const requestedArt = artParams.get('art');
     configureTerrainGpu(artParams);
-    const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'realm-style-v1';
+    const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'shanhai-v1';
     const diagnostics = artDebugOptions();
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
       artDevelopment: diagnostics.development, artDebugView: diagnostics.debugView,
@@ -74,7 +74,7 @@ export class Render3DAdapter {
       creatureLibrary: sandbox.creatureLibrary || undefined,
       loadCreatureLibrary: sandbox.loadCreatureLibrary,
       creatureIds: sandbox.creatureIds,
-      creatures: artParams.get('creatures') !== 'off',
+      creatures: artParams.get('creatures') !== 'off', scenery: artParams.get('scenery') !== 'off',
       geography: artParams.get('geography') !== 'off' && artParams.get('assets') !== 'off' }); }
     catch (error) { this.canvas.remove(); throw error; }
     // The product and evidence harness await art.comparisonReady before capturing.
@@ -85,7 +85,7 @@ export class Render3DAdapter {
     });
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
     Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
-    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="burn">焚林</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="ridge">山脊</option><option value="basin">盆地</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"><output data-radius>6</output></label><label>强度 <input aria-label="笔刷强度" type="range" min="0.005" max="0.12" step="0.005" value="0.035" style="width:65px"><output data-strength>0.035</output></label><button data-action="undo">撤销雕刻</button><button data-action="redo">重做雕刻</button><span data-edit-state></span><button data-action="fit">全图</button><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><span aria-label="相机快捷键">WASD 平移 · Shift 加速 · Q/E 旋转 · 中键旋转 · 滚轮缩放 · F 全图</span><details><summary>操作 / 性能</summary><div>左键检视 / 雕刻；Ctrl+Z 撤销 / Ctrl+Shift+Z 重做</div><div>撤销/重做仅限当前 3D 会话；创建、加载世界或切回 Canvas 会清除。</div><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
+    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="burn">焚林</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="ridge">山脊</option><option value="basin">盆地</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"><output data-radius>6</output></label><label>强度 <input aria-label="笔刷强度" type="range" min="0.005" max="0.12" step="0.005" value="0.035" style="width:65px"><output data-strength>0.035</output></label><button data-action="undo">撤销雕刻</button><button data-action="redo">重做雕刻</button><span data-edit-state></span><button data-action="fit">全图</button><button data-action="scenic" title="推荐视角：远 / 中 / 近循环（R）">观山</button><label title="纯装饰景观：亭塔桥舟 / 悬殿天门 / 断柱碑林魂灯；不可交互"><input type="checkbox" data-scenery checked> 画中景</label><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><span aria-label="相机快捷键">WASD 平移 · Shift 加速 · Q/E 旋转 · 中键旋转 · 滚轮缩放 · F 全图 · R 观山</span><details><summary>操作 / 性能</summary><div>左键检视 / 雕刻；Ctrl+Z 撤销 / Ctrl+Shift+Z 重做</div><div>撤销/重做仅限当前 3D 会话；创建、加载世界或切回 Canvas 会清除。</div><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
     stage.append(this.panel);
     this.readout = document.createElement('div'); this.readout.id = 'inkRender3DReadout';
     Object.assign(this.readout.style, { position: 'absolute', bottom: '12px', left: '12px', zIndex: '3', padding: '6px 10px', background: '#eee5d3eb', borderRadius: '4px', fontSize: '12px', pointerEvents: 'none' });
@@ -102,12 +102,16 @@ export class Render3DAdapter {
       if (isViewTool(next)) this.sandbox.selectTool(next);
       if (next === 'burn' || next === 'inspect') this.sandbox.selectTool(next);
     });
+    const sceneryToggle = this.panel.querySelector('[data-scenery]');
+    sceneryToggle.checked = this.renderer.sceneryEnabled !== false;
+    this.listen(sceneryToggle, 'change', e => this.renderer.setSceneryEnabled?.(e.target.checked));
     this.listen(this.panel.querySelector('[aria-label="笔刷半径"]'), 'input', e => { this.endStroke();this.radius = Number(e.target.value);this.panel.querySelector('[data-radius]').textContent=this.radius; });
     this.listen(this.panel.querySelector('[aria-label="笔刷强度"]'), 'input', e => { this.endStroke();this.strength = Number(e.target.value);this.panel.querySelector('[data-strength]').textContent=this.strength.toFixed(3); });
     this.listen(this.panel, 'click', e => {
       const action = e.target.dataset.action;
       if (action === 'toggle') this.setActive(!this.active);
       if (action === 'fit') this.renderer.cameraRig.fit();
+      if (action === 'scenic') this.renderer.cameraRig.scenic();
       if (action === 'focus' && this.selectedCell) this.renderer.focusOn(this.selectedCell.x, this.selectedCell.y, {}, this.selectedCell.plane);
       if (action === 'undo') this.undo();
       if (action === 'redo') this.redo();
@@ -185,10 +189,11 @@ export class Render3DAdapter {
       const key = e.key.toLowerCase();
       if (key === 'shift') { this.heldCameraKeys.add('shift'); return; }
       if (['w', 'a', 's', 'd'].includes(key)) { this.heldCameraKeys.add(key); e.preventDefault(); e.stopImmediatePropagation(); return; }
-      if (['q', 'e', 'f'].includes(key) || ((e.ctrlKey || e.metaKey) && key === 'z')) {
+      if (['q', 'e', 'f', 'r'].includes(key) || ((e.ctrlKey || e.metaKey) && key === 'z')) {
         e.preventDefault(); e.stopImmediatePropagation();
         if (key === 'z') {if(e.shiftKey)this.redo();else this.undo();}
         else if (key === 'f') this.renderer.cameraRig.fit();
+        else if (key === 'r') this.renderer.cameraRig.scenic();
         else this.renderer.cameraRig.rotate((key === 'q' ? -1 : 1) * Math.PI / 4);
       }
     }, true);

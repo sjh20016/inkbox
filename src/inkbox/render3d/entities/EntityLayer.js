@@ -171,6 +171,7 @@ export class EntityLayer {
     const changed = this.artProfile !== (profile || null);
     this.artProfile = profile || null;
     this.characterBatch?.setArtProfile(profile);
+    this.creatureBatch?.setInkOutline(!!profile?.realmStyle?.shanhai);
     if (profile && !this.pilotGeometry) {
       this.pilotGeometry = createCultivatorPilot();
       this.pilotMaterial = createPilotMaterial(profile, 2.9);
@@ -288,6 +289,7 @@ export class EntityLayer {
     if (this.creatureBatch?.library === next) return;
     this.creatureBatch?.dispose();
     this.creatureBatch = new CreatureBatch(next, { capacity: CREATURE_CAPACITY });
+    this.creatureBatch.setInkOutline(!!this.artProfile?.realmStyle?.shanhai);
     this.group.add(this.creatureBatch.group);
     this.creatureSpecies = next.worldSpecies;
     const placeholder = this.placeholderMeshes.beast;

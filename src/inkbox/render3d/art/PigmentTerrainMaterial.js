@@ -95,6 +95,10 @@ uniform float mountainWashStrength;
 uniform float colorLayerStrength;
 uniform float feibaiStrength, atmosphereStrength, atmosphereLow, atmosphereHigh;
 uniform vec3 slopeRockColor, slopeSoilColor, terrainWaterColor, realmInkColor, atmosphereColor;
+// V1 · 山海入画：青绿 / 浅绛 / 焦墨分层、阴阳面、皴笔、山脊墨线与空气透视（仅表现）。
+uniform float shanhaiMode, shStrength, shShade, shCun, shRidge, shGoldAmt, shMistAmt, shAir, shSpan, shWash, shLine;
+uniform vec2 shBand, shViewXZ, shTarget;
+uniform vec3 shLow, shMid, shHigh, shPeak, shShadow, shLight, shGold, shMist;
 varying vec3 vWorld;
 varying vec2 vBroadGradient;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7)) + seed) * 43758.5453); }
@@ -312,6 +316,52 @@ void main() {
     color=mix(color,mineral,clearQi*land*(0.06+0.08*rock));
     color=mix(color,fieldMineralGold,clearQi*ridge*land*0.04);
   }
+  if(shanhaiMode>0.5){
+    float land=(1.0-water)*(1.0-smoothstep(0.004,0.03,wd));
+    float hN=clamp((vWorld.y-shBand.x)/(shBand.y-shBand.x),0.0,1.0);
+    float steep=smoothstep(0.22,1.45,slope);
+    vec3 layer=mix(shLow,shMid,smoothstep(0.08,0.40,hN));
+    layer=mix(layer,shHigh,smoothstep(0.40,0.78,hN)*(0.50+0.50*steep));
+    // Flats keep their exact terrain-type hue (grass / sand / forest stay readable).
+    float keepType=(1.0-steep)*(1.0-smoothstep(0.30,0.70,hN))*0.60;
+    vec3 tint=mix(layer,pigment,keepType);
+    float paperLum=max(dot(paperColor,vec3(0.3333)),0.001);
+    float shadeLum=clamp(dot(color,vec3(0.3333))/paperLum,0.0,1.15);
+    float paintAmt=land*shStrength*(0.42+0.58*max(steep,smoothstep(0.22,0.60,hN)));
+    color=mix(color,tint*(0.86+0.14*shadeLum),paintAmt);
+    // 淡彩: dilute the pigment toward paper so washes stay light and transparent.
+    color=mix(color,paperColor,land*shWash*(0.55+0.45*(1.0-steep)));
+    vec3 sunDir=normalize(vec3(-0.45,0.80,-0.40));
+    float ndl=dot(broadN,sunDir);
+    float faceMask=smoothstep(0.015,0.45,broadSlope2);
+    float shadowSide=(1.0-smoothstep(0.28,0.86,ndl))*faceMask;
+    color=mix(color,mix(color*0.78,shShadow,0.26),clamp(shadowSide*shShade,0.0,0.55));
+    color=mix(color,shLight,smoothstep(0.82,0.98,ndl)*faceMask*0.14*land);
+    vec2 gdir=fineGradient/max(fineSlope,0.0001);
+    vec2 perp=vec2(-gdir.y,gdir.x);
+    float strokes=noise(vec2(dot(p,perp)*2.4,dot(p,gdir)*0.35)+vec2(seed*0.013,3.1));
+    float cunMask=smoothstep(0.60,0.82,strokes)*steep*(0.35+0.65*shadowSide)*(0.45+0.55*nearDetail);
+    color=mix(color,realmInkColor,cunMask*shCun*land);
+    float ridgeLine=smoothstep(0.25,1.0,ridge)*smoothstep(0.15,0.9,slope)*(0.55+0.45*brushGate);
+    color=mix(color,realmInkColor,clamp(ridgeLine*shRidge*(0.5+0.5*nearDetail),0.0,0.7)*land);
+    // 线描: hand-drawn iso strokes on slopes (thin, broken), read as 披麻/荷叶皴 outlines.
+    float isoV=vWorld.y*0.36+noise(p*0.22+vec2(seed*0.021,1.7))*2.4+noise(p*1.3)*0.35;
+    float isoF=abs(fract(isoV)-0.5);
+    float isoW=max(fwidth(isoV),0.0001)*0.9;
+    float isoLine=(1.0-smoothstep(isoW*0.4,isoW*1.4,isoF))*smoothstep(0.35,1.2,slope);
+    float isoBreak=smoothstep(0.48,0.70,noise(p*0.7+vec2(5.3,seed*0.007)))*(0.35+0.65*shadowSide);
+    color=mix(color,realmInkColor,clamp(isoLine*isoBreak*shLine*(0.35+0.65*nearDetail),0.0,0.6)*land);
+    float peakW=smoothstep(0.86,0.99,hN)*(1.0-steep*0.65);
+    color=mix(color,shPeak,peakW*0.55*land);
+    // Open water under the slab surface: 青灰 wash, deeper cells denser (渊/海 < 泽 < 浅滩).
+    float deepW=1.0-smoothstep(0.5,3.5,id);
+    color=mix(color,terrainWaterColor*(0.92+0.10*wash),water*(0.30+0.28*deepW)*shStrength);
+    color=mix(color,shGold,shGoldAmt*smoothstep(0.2,0.9,ridge)*smoothstep(0.55,0.92,ndl)*land*0.45);
+    float foot=1.0-smoothstep(shBand.x,mix(shBand.x,shBand.y,0.26),vWorld.y);
+    color=mix(color,shMist,foot*shMistAmt);
+    float far=dot(vWorld.xz-shTarget,shViewXZ)/max(shSpan*0.5,1.0);
+    color=mix(color,shMist,smoothstep(0.05,1.1,far)*shAir);
+  }
   // Weak paper stays on the image; all wash / dry brush above stay in world space.
   float grain=hash(floor(gl_FragCoord.xy))-0.5;
   if(artDebugMode>=4.5){
@@ -357,6 +407,10 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       slopeRockColor: { value: new THREE.Color('#808080') }, slopeSoilColor: { value: new THREE.Color('#808080') },
       terrainWaterColor: { value: new THREE.Color().setRGB(0.30, 0.43, 0.46) },
       realmInkColor: { value: new THREE.Color('#202020') }, atmosphereColor: { value: new THREE.Color('#ffffff') },
+      shanhaiMode: { value: 0 }, shWash: { value: 0 }, shLine: { value: 0 }, shStrength: { value: 0 }, shShade: { value: 0 }, shCun: { value: 0 }, shRidge: { value: 0 },
+      shGoldAmt: { value: 0 }, shMistAmt: { value: 0 }, shAir: { value: 0 }, shSpan: { value: 200 },
+      shBand: { value: new THREE.Vector2(-4, 28) }, shViewXZ: { value: new THREE.Vector2(0, -1) }, shTarget: { value: new THREE.Vector2() },
+      ...Object.fromEntries(['shLow','shMid','shHigh','shPeak','shShadow','shLight','shGold','shMist'].map(k => [k, { value: new THREE.Color('#808080') }])),
     } });
     this.basePalette = basePalette;
     this.name = 'Inkbox:PigmentTerrain'; this.setProfile(profile);
@@ -369,6 +423,14 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       this.defines.INKBOX_ART_DEBUG = next;
       this.needsUpdate = true;
     }
+  }
+  /** Per-frame camera hint for aerial perspective. Ortho: distance along view, not depth buffer. */
+  setShanhaiView(camera, target, span) {
+    if (!this.uniforms.shanhaiMode.value || !camera) return;
+    const fx = target ? target.x - camera.position.x : 0, fz = target ? target.z - camera.position.z : -1, len = Math.hypot(fx, fz) || 1;
+    this.uniforms.shViewXZ.value.set(fx / len, fz / len);
+    if (target) this.uniforms.shTarget.value.set(target.x, target.z);
+    if (Number.isFinite(span)) this.uniforms.shSpan.value = span;
   }
   setMountainWashStrength(strength = 0.65) {
     this.uniforms.mountainWashStrength.value = Number.isFinite(strength) ? Math.min(1, Math.max(0, strength)) : 0;
@@ -398,6 +460,13 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       u.atmosphereHigh.value = style.atmosphere.high;
     } else {
       u.terrainWaterColor.value.setRGB(0.30, 0.43, 0.46);
+    }
+    const sh = style?.shanhai;
+    u.shanhaiMode.value = sh ? 1 : 0;
+    if (sh) {
+      u.shBand.value.set(sh.band[0], sh.band[1]);
+      for (const [key, name] of [['shLow','low'],['shMid','mid'],['shHigh','high'],['shPeak','peak'],['shShadow','shadow'],['shLight','light'],['shGold','gold'],['shMist','mist']]) u[key].value.set(sh[name]);
+      for (const [key, name] of [['shStrength','strength'],['shShade','shade'],['shCun','cun'],['shRidge','ridge'],['shGoldAmt','goldAmt'],['shMistAmt','mistAmt'],['shAir','air'],['shWash','wash'],['shLine','line']]) u[key].value = sh[name] ?? 0;
     }
     this.uniforms.paperColor.value.set(profile.paperColor);
     for (const key of ['massShadeStrength','deepInkStrength','heightWashStrength']) if (this.uniforms[key]) this.uniforms[key].value = profile[key] ?? 0;

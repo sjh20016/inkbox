@@ -15,6 +15,7 @@ import { renderProfileFor } from './PlaneRenderProfile.js';
 import { createEnvironmentMaterial, setEnvironmentMaterialProfile, setEnvironmentMaterialView } from '../environment/EnvironmentMaterial.js';
 import { RealmDecorationLayer } from '../environment/RealmDecorationLayer.js';
 import { RealmArtifactLayer } from '../markers/RealmArtifactLayer.js';
+import { ShanhaiSceneryLayer } from '../shanhai/ShanhaiSceneryLayer.js';
 import { geographyFeatures } from './GeographyFeatures.js';
 import { ScalarFieldTexture } from '../art/ScalarFieldTexture.js';
 import { SurfaceVisualFieldTexture } from '../art/SurfaceVisualFieldTexture.js';
@@ -76,6 +77,9 @@ export class PlaneStage {
     if(this.decorations)this.root.add(this.decorations.group);
     this.realmArtifacts=this.plane==='nether'?new RealmArtifactLayer(world,this.coordinates,this.elevation):null;
     if(this.realmArtifacts)this.root.add(this.realmArtifacts.group);
+    // V1 · 山海入画：纯装饰景观（亭 / 塔 / 牌坊 / 桥 / 舟；悬殿 / 天门 / 阵纹；断柱 / 碑林 / 魂灯 / 枯木）。
+    this.scenery = new ShanhaiSceneryLayer(world, this.coordinates, this.elevation);
+    this.root.add(this.scenery.group);
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
     this.markers?.setGeographyFeatures?.(this.geographyFeatures);
@@ -179,6 +183,7 @@ export class PlaneStage {
     if (this.vegetation) this.vegetationPending = true;
     if (this.selectionMarker) this.selectionMarker.needsPlace = true;
     this.decorations?.invalidateGround();
+    this.scenery?.invalidateGround();
     if(this.realmArtifacts)this.realmArtifacts.clock=Infinity;
     this.refreshGroundLayers();
     return true;
@@ -196,6 +201,7 @@ export class PlaneStage {
     this.markers?.update(0, this.world, options);
     this.decorations?.update({ layoutChanged: true });
     this.realmArtifacts?.update(0, options);
+    this.scenery?.update(0, options);
     this.selectionMarker?.update(this.world, true);
   }
 
@@ -223,7 +229,7 @@ export class PlaneStage {
       this.contentGeometry = content.geometry; this.contentInside = content.inside;
     }
     for (const layer of [this.terrain, this.water, this.terrainSides, this.vegetation, this.settlements,
-      this.markers, this.entities, this.decorations, this.realmArtifacts]) {
+      this.markers, this.entities, this.decorations, this.realmArtifacts, this.scenery]) {
       layer?.setRegionGeometry(this.contentGeometry, this.contentInside);
     }
   }
@@ -286,6 +292,7 @@ export class PlaneStage {
     this.markers?.setZoom(zoom);
     this.decorations?.update({layoutChanged:heightChanged||!!typeRegion});
     this.realmArtifacts?.update(dt,{heightChanged});
+    this.scenery?.update(dt, { heightChanged });
     this.selectionMarker?.update(this.world, heightChanged);
     const t6 = performance.now();
     this.timings = {
@@ -306,6 +313,7 @@ export class PlaneStage {
     this.entities?.dispose(); this.settlements?.dispose(); this.markers?.dispose();
     this.decorations?.dispose();this.decorations=null;
     this.realmArtifacts?.dispose();this.realmArtifacts=null;
+    this.scenery?.dispose();this.scenery=null;
     this.environmentMaterial?.dispose(); this.environmentMaterial = null;
     this.selectionMarker?.dispose();
     this.root.clear();

@@ -1,3 +1,4 @@
+import { attachInkOutline, syncInkOutline, disposeInkOutline } from '../shanhai/InkOutline.js';
 import * as THREE from 'three';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 
@@ -84,6 +85,7 @@ export class CharacterBatch {
       mesh.userData.renderEntities = [];
       this.meshes[id] = mesh;
       this.group.add(mesh);
+      mesh.add(attachInkOutline(mesh, { ratio: 0.03 }));
     }
   }
 
@@ -96,6 +98,8 @@ export class CharacterBatch {
     if (atlas) for (let i = 0; i < ATLAS_SLOTS; i++) this.realmUniforms.atlas.value[i].set(atlas[i]);
     const material = atlas ? this.realmMaterial : this.library.material;
     for (const mesh of Object.values(this.meshes)) mesh.material = material;
+    this.inkOutline = !!profile?.realmStyle?.shanhai;
+    for (const mesh of Object.values(this.meshes)) syncInkOutline(mesh, this.inkOutline);
   }
 
   /** records: { role, x, y, z, rotation?, scale?, paletteIndex?, source? } */
@@ -136,6 +140,7 @@ export class CharacterBatch {
       mesh.geometry.getAttribute('instancePaletteIndex').needsUpdate = mesh.visible;
       moduleInstances += mesh.count;
       if (mesh.visible) drawCalls += 1;
+      syncInkOutline(mesh, this.inkOutline);
     }
     this.stats = { characters, moduleInstances, drawCalls, overflow };
   }
@@ -144,6 +149,7 @@ export class CharacterBatch {
     if (this.disposed) return;
     this.disposed = true;
     for (const mesh of Object.values(this.meshes)) {
+      disposeInkOutline(mesh);
       mesh.geometry.dispose();
       mesh.dispose();
       mesh.userData.renderEntities = [];

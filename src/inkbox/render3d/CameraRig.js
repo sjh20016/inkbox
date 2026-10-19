@@ -27,6 +27,24 @@ export class CameraRig {
     this.accessTransition = null;
     this.camera.updateProjectionMatrix(); this.controls.update();
   }
+  /**
+   * V1 · 山海入画「观山」推荐视角：远 / 中 / 近三档循环。更低的俯角让山形以剪影立起，
+   * 远景留出背景画幅与云底；中、近景保持当前目标点，只改俯角与焦距。
+   */
+  scenic(step = null) {
+    const presets = [{ polar: 1.0, zoom: 1.18, recenter: true }, { polar: 1.08, zoom: 2.6 }, { polar: 1.13, zoom: 5.2 }];
+    this.scenicStep = Number.isInteger(step) ? step % presets.length : ((this.scenicStep ?? -1) + 1) % presets.length;
+    const p = presets[this.scenicStep], target = this.controls.target;
+    this.cancelFocus();
+    if (p.recenter) target.set(0, 4, 0);
+    const offset = this.camera.position.clone().sub(target);
+    const yaw = Math.atan2(offset.x, offset.z), distance = Math.max(300, offset.length());
+    this.camera.position.set(target.x + Math.sin(yaw) * Math.sin(p.polar) * distance, target.y + Math.cos(p.polar) * distance,
+      target.z + Math.cos(yaw) * Math.sin(p.polar) * distance);
+    this.camera.zoom = Math.max(this.accessZoom(), p.zoom); this.accessTransition = null;
+    this.camera.updateProjectionMatrix(); this.controls.update(); this.clampAccessTarget();
+    return this.scenicStep;
+  }
   setDimensions(dimensions, coordinates) {
     this.dimensions = { w: dimensions.w, h: dimensions.h }; this.coordinates = coordinates;
     this.accessBounds = null; this.accessTransition = null;

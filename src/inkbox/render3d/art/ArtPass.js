@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { resolveArtProfile } from './ArtPassProfile.js';
 import { realmStyleFor } from './RealmStyleProfile.js';
+import { shanhaiStyleFor } from '../shanhai/ShanhaiStyle.js';
+import { SHANHAI_FX } from '../shanhai/BreakthroughSeal.js';
 import { ART_DEBUG_MODES, ART_COMPARISON_STYLES } from './ArtDiagnostics.js';
 
 /** Single, thin presentation coordinator. M2-B owns elevation, regions and boundary.
@@ -40,7 +42,10 @@ export class ArtPass {
     this.comparisonReady = pending;
     return pending;
   }
-  realmStyleFor(plane) { return this.comparisonSnapshot?.styles[plane] ?? realmStyleFor(plane); }
+  realmStyleFor(plane) {
+    return this.comparisonSnapshot?.styles[plane]
+      ?? (this.profile?.styleSet === 'shanhai-v1' ? shanhaiStyleFor(plane) : realmStyleFor(plane));
+  }
   rememberComparisonMaterial(material) {
     if (!this.development || !material) return null;
     let saved = this.comparisonMaterials.get(material);
@@ -131,6 +136,7 @@ export class ArtPass {
       nether: this.realmStyleFor('nether').boundary.rift,
     } : null);
     stage.setEnvironmentArtProfile(profile);
+    stage.scenery?.setEnabled(!!realmStyle?.shanhai && this.host.sceneryEnabled !== false);
     const pilot = profile?.pilots ? profile : null;
     for (const [category, layer] of [['entity', stage.entities], ['vegetation', stage.vegetation], ['building', stage.settlements]])
       layer?.setArtProfile(realmStyle ? { ...pilot, layerCategory: category,
@@ -166,6 +172,12 @@ export class ArtPass {
       : this.profile.mode === 'realm-style-v1' ? this.realmStyleFor(backgroundPlane).paper.background
         : this.profile.paperColor;
     this.host.gpu.setClearColor(color);
+    // V1 · 山海入画：背景画幅 / 光照 / 卷底云墨只跟随背景位面；关闭档位即还原。
+    SHANHAI_FX.enabled = this.profile.enabled && this.profile.styleSet === 'shanhai-v1' && !this.comparisonSnapshot;
+    this.host.shanhai?.setContext({ enabled: this.profile.enabled && this.profile.styleSet === 'shanhai-v1' && !this.comparisonSnapshot,
+      plane: backgroundPlane, targetPlane });
+    if (this.host.veil && !this.host.shanhai?.enabled) this.host.veil.clear();
+    else if (this.host.veil) this.host.boundaryKey = null; // rebuild the rim with the boundary on profile switch
   }
   styleBoundary(targetPlane = null) {
     const boundary = this.host.boundary;
@@ -213,7 +225,10 @@ export class ArtPass {
       camera, width: this.host.width || 900, height: this.host.height || 800 };
     for (const stage of this.host.stages.values()) {
       if (!stage.visible) continue;
-      if (stage.terrain?.inkMaterial) stage.terrain.inkMaterial.uniforms.pixelsPerUnit.value = view.pixelsPerUnit;
+      if (stage.terrain?.inkMaterial) {
+        stage.terrain.inkMaterial.uniforms.pixelsPerUnit.value = view.pixelsPerUnit;
+        stage.terrain.inkMaterial.setShanhaiView?.(camera, rig.controls?.target, (camera.top - camera.bottom) / Math.max(1e-3, camera.zoom));
+      }
       if (stage.water?.inkMaterial?.uniforms.pixelsPerUnit) stage.water.inkMaterial.uniforms.pixelsPerUnit.value = view.pixelsPerUnit;
       stage.setEnvironmentArtView(view);
       for (const layer of [stage.entities, stage.vegetation, stage.settlements]) layer?.setArtView(view);
