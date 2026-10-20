@@ -7,6 +7,7 @@ import { SCULPT_OPTIONS } from './terrain/sculpt.js';
 import { TerrainStroke, restoreTerrainStroke } from './terrain/sculpt.js';
 import { accessBounds, canAccess } from '../world/mapProgress.js';
 import { isViewTool, VIEW_CLICK_PX } from '../ui/realmView.js';
+import { blockingInputLayer } from '../ui/inputLayers.js';
 import { visibleRift } from './readers/riftViewModel.js';
 
 /**
@@ -216,7 +217,7 @@ export class Render3DAdapter {
   }
   listen(target, name, fn, capture = false) { target.addEventListener(name, fn, { signal: this.abort.signal, capture }); }
   isEditableTarget(target) {
-    return !!target?.isContentEditable || !!target?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]');
+    return !!blockingInputLayer() || !!target?.isContentEditable || !!target?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]');
   }
   clearCameraKeys() { this.heldCameraKeys.clear(); }
   invalidateHover(reason) {
@@ -523,6 +524,7 @@ export class Render3DAdapter {
     if (this.boundaryMode) this.renderer.setBoundaryMode(this.boundaryMode);
     this.renderer.setPresentation(this.sandbox.stage);
     const dt = this.lastNow == null ? 0 : Math.max(0, now - this.lastNow); this.lastNow = now;
+    if (blockingInputLayer()) this.clearCameraKeys();
     const keys = this.heldCameraKeys;
     this.renderer.cameraRig.moveLocal((keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0),
       (keys.has('w') ? 1 : 0) - (keys.has('s') ? 1 : 0), dt / 1000, keys.has('shift'));
