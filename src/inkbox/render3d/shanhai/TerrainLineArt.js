@@ -140,7 +140,7 @@ void main(){
 }`;
 
 // ─────────────────────────── CPU：高度场结构线提取 ───────────────────────────
-function blur5(src, w, h) {
+function* blur5Steps(src, w, h) {
   // 可分离 [1 4 6 4 1]/16；内部格无分支，边缘夹取。
   const t = new Float32Array(src.length), out = new Float32Array(src.length);
   const at = (r, x) => src[r + (x < 0 ? 0 : x >= w ? w - 1 : x)];
@@ -150,21 +150,23 @@ function blur5(src, w, h) {
       if (x >= 2 && x < w - 2) t[r + x] = (src[r + x - 2] + src[r + x + 2] + 4 * (src[r + x - 1] + src[r + x + 1]) + 6 * src[r + x]) / 16;
       else t[r + x] = (at(r, x - 2) + at(r, x + 2) + 4 * (at(r, x - 1) + at(r, x + 1)) + 6 * src[r + x]) / 16;
     }
+    yield;
   }
   for (let y = 0; y < h; y++) {
     const ym2 = Math.max(0, y - 2) * w, ym1 = Math.max(0, y - 1) * w, yp1 = Math.min(h - 1, y + 1) * w, yp2 = Math.min(h - 1, y + 2) * w, r = y * w;
     for (let x = 0; x < w; x++) out[r + x] = (t[ym2 + x] + t[yp2 + x] + 4 * (t[ym1 + x] + t[yp1 + x]) + 6 * t[r + x]) / 16;
+    yield;
   }
   return out;
 }
-function boxBlur(src, w, h, r) {
+function* boxBlurSteps(src, w, h, r) {
   const I = new Float64Array((w + 1) * (h + 1));
-  for (let y = 0; y < h; y++) { let row = 0; for (let x = 0; x < w; x++) { row += src[y * w + x]; I[(y + 1) * (w + 1) + x + 1] = I[y * (w + 1) + x + 1] + row; } }
+  for (let y = 0; y < h; y++) { let row = 0; for (let x = 0; x < w; x++) { row += src[y * w + x]; I[(y + 1) * (w + 1) + x + 1] = I[y * (w + 1) + x + 1] + row; } yield; }
   const out = new Float32Array(src.length);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+  for (let y = 0; y < h; y++) { for (let x = 0; x < w; x++) {
     const x0 = Math.max(0, x - r), x1 = Math.min(w, x + r + 1), y0 = Math.max(0, y - r), y1 = Math.min(h, y + r + 1);
     out[y * w + x] = (I[y1 * (w + 1) + x1] - I[y0 * (w + 1) + x1] - I[y1 * (w + 1) + x0] + I[y0 * (w + 1) + x0]) / ((x1 - x0) * (y1 - y0));
-  }
+  } yield; }
   return out;
 }
 function bilin(S, w, h, x, y) {
@@ -176,9 +178,11 @@ const NB = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]
 const NBL = NB.map(([x, y]) => Math.hypot(x, y));
 
 /** 点集（强度 + 切向）→ 笔画链。每点沿切向两侧各接一个最佳邻点；邻接用 8 向位掩码（无 Map/Set）。 */
-function linkChains(str, tx, ty, w, h) {
+function* linkChainsSteps(str, tx, ty, w, h) {
   const N = w * h, mask = new Uint8Array(N), pts = [];
-  for (let i = 0; i < N; i++) if (str[i] > 0) pts.push(i);
+  for (let i = 0; i < N; i++) { if (str[i] > 0) pts.push(i); if ((i & 2047) === 2047) yield; }
+  yield;
+  let visited = 0;
   for (const i of pts) {
     const x = i % w, y = (i - x) / w;
     for (let sgn = 1; sgn >= -1; sgn -= 2) {
@@ -191,19 +195,23 @@ function linkChains(str, tx, ty, w, h) {
       }
       if (best >= 0) { const j = i + NB[best][1] * w + NB[best][0]; mask[i] |= 1 << best; mask[j] |= 1 << ((best + 4) & 7); }
     }
+    if ((++visited & 255) === 0) yield;
   }
   const deg = m => { let c = 0; while (m) { c += m & 1; m >>= 1; } return c; };
   const chains = [];
   const take = (i, d) => { mask[i] &= ~(1 << d); const j = i + NB[d][1] * w + NB[d][0]; mask[j] &= ~(1 << ((d + 4) & 7)); return j; };
   const firstDir = m => { for (let d = 0; d < 8; d++) if (m & (1 << d)) return d; return -1; };
-  const walk = (start, d) => {
+  const walk = function* (start, d) {
     const path = [start]; let cur = take(start, d);
-    for (;;) { path.push(cur); if (deg(mask[cur]) !== 1 || origDeg[cur] !== 2) break; cur = take(cur, firstDir(mask[cur])); }
+    for (;;) { path.push(cur); if ((path.length & 255) === 0) yield; if (deg(mask[cur]) !== 1 || origDeg[cur] !== 2) break; cur = take(cur, firstDir(mask[cur])); }
     return path;
   };
-  const origDeg = new Uint8Array(N); for (const i of pts) origDeg[i] = deg(mask[i]);
-  for (const i of pts) if (origDeg[i] !== 2) while (mask[i]) chains.push(walk(i, firstDir(mask[i])));
-  for (const i of pts) while (mask[i]) chains.push(walk(i, firstDir(mask[i])));
+  const origDeg = new Uint8Array(N); visited = 0;
+  for (const i of pts) { origDeg[i] = deg(mask[i]); if ((++visited & 511) === 0) yield; }
+  visited = 0;
+  for (const i of pts) { if (origDeg[i] !== 2) while (mask[i]) chains.push(yield* walk(i, firstDir(mask[i]))); if ((++visited & 255) === 0) yield; }
+  visited = 0;
+  for (const i of pts) { while (mask[i]) chains.push(yield* walk(i, firstDir(mask[i]))); if ((++visited & 255) === 0) yield; }
   return chains;
 }
 
@@ -211,15 +219,15 @@ function linkChains(str, tx, ty, w, h) {
  * 从「格点显示高程」提取结构线。返回链：{pts:[[x,y],...], kind, weight}。
  * kind: 0 山脊 · 1 山谷 · 2 崖顶折线（凸形坡折）· 3 皴笔（陡坡背光面的顺坡短笔）。
  */
-export function extractTerrainStructure(E, w, h, { ridge = true, valley = false, cliff = false, hatch = false, minLen = 6, inside = null, sun = [-0.45, 0.80, -0.40] } = {}) {
-  const S = blur5(E, w, h), B = boxBlur(S, w, h, 7), N = w * h;
+export function* extractTerrainStructureSteps(E, w, h, { ridge = true, valley = false, cliff = false, hatch = false, minLen = 6, inside = null, sun = [-0.45, 0.80, -0.40] } = {}) {
+  const S = yield* blur5Steps(E, w, h), B = yield* boxBlurSteps(S, w, h, 7), N = w * h;
   const kinds = []; if (ridge) kinds.push(0); if (valley) kinds.push(1); if (cliff) kinds.push(2);
   const str = kinds.map(() => new Float32Array(N)), tx = kinds.map(() => new Float32Array(N)), ty = kinds.map(() => new Float32Array(N));
   const kp = cliff ? new Float32Array(N) : null, gxA = new Float32Array(N), gyA = new Float32Array(N);
   const jR = kinds.indexOf(0), jV = kinds.indexOf(1), jC = kinds.indexOf(2);
   const sR = str[jR], xR = tx[jR], yR = ty[jR], sV = str[jV], xV = tx[jV], yV = ty[jV], sC = str[jC], xC = tx[jC], yC = ty[jC];
   const nearest = (x, y, dx, dy) => S[(y + Math.round(dy)) * w + x + Math.round(dx)];
-  for (let y = 2; y < h - 2; y++) for (let x = 2; x < w - 2; x++) {
+  for (let y = 2; y < h - 2; y++) { for (let x = 2; x < w - 2; x++) {
     const i = y * w + x;
     const s = S[i], hxx = S[i + 1] - 2 * s + S[i - 1], hyy = S[i + w] - 2 * s + S[i - w];
     const hxy = (S[i + w + 1] - S[i + w - 1] - S[i - w + 1] + S[i - w - 1]) / 4;
@@ -251,42 +259,49 @@ export function extractTerrainStructure(E, w, h, { ridge = true, valley = false,
         if (c < -0.35) { sC[i] = -c * Math.min(1, gm / 3); xC[i] = -gy / gm; yC[i] = gx / gm; }
       }
     }
-  }
+  } yield; }
   if (cliff) {
     // 非极大值抑制：沿坡度方向只留坡折最尖锐的一格。
-    for (let y = 2; y < h - 2; y++) for (let x = 2; x < w - 2; x++) {
+    for (let y = 2; y < h - 2; y++) { for (let x = 2; x < w - 2; x++) {
       const i = y * w + x; if (!(sC[i] > 0)) continue;
       const dx = Math.round(yC[i]), dy = Math.round(-xC[i]), o = dy * w + dx;
       if (kp[i] > kp[i + o] || kp[i] > kp[i - o]) sC[i] = 0;
-    }
+    } yield; }
   }
   const out = [];
-  kinds.forEach((kind, j) => {
-    for (const chain of linkChains(str[j], tx[j], ty[j], w, h)) {
+  for (let j = 0; j < kinds.length; j++) {
+    const kind = kinds[j];
+    for (const chain of yield* linkChainsSteps(str[j], tx[j], ty[j], w, h)) {
       let len = 0, sum = 0;
-      for (let k = 0; k < chain.length; k++) { sum += str[j][chain[k]]; if (k) { const a = chain[k - 1], b = chain[k]; len += Math.hypot(a % w - b % w, (a - a % w) / w - (b - b % w) / w); } }
+      for (let k = 0; k < chain.length; k++) { sum += str[j][chain[k]]; if (k) { const a = chain[k - 1], b = chain[k]; len += Math.hypot(a % w - b % w, (a - a % w) / w - (b - b % w) / w); } if ((k & 255) === 255) yield; }
       if (len < minLen) continue;
-      let pts = chain.map(i => [i % w, (i - i % w) / w]);
+      let pts = [];
+      for (let k = 0; k < chain.length; k++) {
+        const i = chain[k]; pts.push([i % w, (i - i % w) / w]);
+        if ((k & 255) === 255) yield;
+      }
       for (let it = 0; it < 2; it++) {
         const q = [pts[0]];
-        for (let k = 0; k < pts.length - 1; k++) { const a = pts[k], b = pts[k + 1]; q.push([a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25], [a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75]); }
+        for (let k = 0; k < pts.length - 1; k++) { const a = pts[k], b = pts[k + 1]; q.push([a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25], [a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75]); if ((k & 255) === 255) yield; }
         q.push(pts[pts.length - 1]); pts = q;
       }
       out.push({ pts, kind, importance: (sum / chain.length) * Math.min(1.6, Math.sqrt(len / 10)) });
+      yield;
     }
-  });
+  }
   // 重要度按类内分位归一：主脊 ≈ 1，细小支脉 → 0。
   for (const kind of kinds) {
     const list = out.filter(c => c.kind === kind).map(c => c.importance).sort((a, b) => a - b);
     const ref = list[Math.floor(list.length * 0.85)] || 1;
-    for (const c of out) if (c.kind === kind) c.weight = Math.min(1, c.importance / ref);
+    let n = 0;
+    for (const c of out) { if (c.kind === kind) c.weight = Math.min(1, c.importance / ref); if ((++n & 255) === 0) yield; }
   }
   if (hatch) {
     // 皴笔：陡坡、背光面上按确定性抖动网格落笔，顺坡（梯度方向）向下拖 1.5–3 格。
     // 落在竖墙上即成竖向披麻；坡度与受光变化时自然稀疏 / 消失。完全由地形决定，无 RNG。
     const sl = Math.hypot(sun[0], sun[1], sun[2]), lx = sun[0] / sl, ly = sun[1] / sl, lz = sun[2] / sl;
     const hsh = (x, y, k) => { const v = Math.sin(x * 127.1 + y * 311.7 + k * 74.7) * 43758.5453; return v - Math.floor(v); };
-    for (let y = 3; y < h - 3; y += 2) for (let x = 3; x < w - 3; x += 2) {
+    for (let y = 3; y < h - 3; y += 2) { for (let x = 3; x < w - 3; x += 2) {
       const jx = x + Math.floor(hsh(x, y, 1) * 2), jy = y + Math.floor(hsh(x, y, 2) * 2), i = jy * w + jx;
       if (inside && !inside(jx, jy)) continue;
       const gx = gxA[i], gy = gyA[i], gm = Math.hypot(gx, gy);
@@ -304,12 +319,47 @@ export function extractTerrainStructure(E, w, h, { ridge = true, valley = false,
         pts.push([px, py]);
       }
       if (pts.length > 2) out.push({ pts, kind: 3, weight: 0.35 + 0.65 * shade * steep });
-    }
+    } yield; }
   }
   return out;
 }
 
-function buildStrokeGeometry(chains, geometry) {
+export function extractTerrainStructure(E, w, h, options) {
+  const steps = extractTerrainStructureSteps(E, w, h, options);
+  let next;
+  do { next = steps.next(); } while (!next.done);
+  return next.value;
+}
+
+// Pack away from live attributes. The visible stroke remains complete until the
+// entire new topology is ready; only the final copy/upload is atomic to a frame.
+function* packStrokeGeometrySteps(chains) {
+  let segs = 0; for (const c of chains) segs += c.pts.length - 1;
+  const pos = new Float32Array(segs * 8), oth = new Float32Array(segs * 8);
+  const side = new Float32Array(segs * 4), info = new Float32Array(segs * 16), index = new Uint32Array(segs * 6);
+  let s = 0;
+  for (const c of chains) {
+    let L = 0; const acc = [0];
+    for (let k = 1; k < c.pts.length; k++) {
+      L += Math.hypot(c.pts[k][0] - c.pts[k - 1][0], c.pts[k][1] - c.pts[k - 1][1]); acc.push(L);
+      if ((k & 255) === 0) yield;
+    }
+    for (let k = 0; k < c.pts.length - 1; k++, s++) {
+      const a = c.pts[k], b = c.pts[k + 1], v = s * 4;
+      const ends = [[a, b, -1, acc[k]], [a, b, 1, acc[k]], [b, a, 1, acc[k + 1]], [b, a, -1, acc[k + 1]]];
+      ends.forEach(([p, o, sd, along], e) => {
+        pos.set(p, (v + e) * 2); oth.set(o, (v + e) * 2); side[v + e] = sd;
+        info.set([along, L, c.weight, c.kind], (v + e) * 4);
+      });
+      index.set([v, v + 1, v + 2, v + 2, v + 1, v + 3], s * 6);
+      if ((s & 255) === 255) yield;
+    }
+    yield;
+  }
+  return { segs, pos, oth, side, info, index };
+}
+
+function buildStrokeGeometry(chains, geometry, packed = null) {
   let segs = 0; for (const c of chains) segs += c.pts.length - 1;
   const oldCapacity = geometry.userData.segmentCapacity || 0;
   if (segs > oldCapacity) {
@@ -333,7 +383,9 @@ function buildStrokeGeometry(chains, geometry) {
   const pos = posAttr?.array, oth = othAttr?.array, side = sideAttr?.array, info = infoAttr?.array;
   const indexAttr = geometry.getIndex(), index = indexAttr?.array;
   let s = 0;
-  for (const c of chains) {
+  if (packed && segs) {
+    pos.set(packed.pos); oth.set(packed.oth); side.set(packed.side); info.set(packed.info); index.set(packed.index);
+  } else for (const c of chains) {
     let L = 0; const acc = [0];
     for (let k = 1; k < c.pts.length; k++) { L += Math.hypot(c.pts[k][0] - c.pts[k - 1][0], c.pts[k][1] - c.pts[k - 1][1]); acc.push(L); }
     for (let k = 0; k < c.pts.length - 1; k++, s++) {
@@ -357,12 +409,31 @@ function buildStrokeGeometry(chains, geometry) {
   return segs;
 }
 
+function* buildLineSteps(terrain, style, regionGeometry, regionInside) {
+  const w = terrain.world.w, h = terrain.world.h, pos = terrain.geometry.attributes.position.array;
+  const E = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) { const i = y * w + x; E[i] = pos[i * 3 + 1]; }
+    yield;
+  }
+  yield 'snapshotReady';
+  const inside = regionGeometry && !regionGeometry.allInside
+    ? (x, y) => regionGeometry.isInsideQuad(Math.min(x, w - 2), Math.min(y, h - 2)) === regionInside : null;
+  const chains = yield* extractTerrainStructureSteps(E, w, h, {
+    ridge: (style.ridge ?? 1) > 0, valley: (style.valley ?? 0) > 0,
+    cliff: (style.cliff ?? 0) > 0, hatch: (style.hatch ?? 0) > 0,
+    minLen: style.minLen ?? 6, inside,
+  });
+  return { chains, packed: yield* packStrokeGeometrySteps(chains) };
+}
+
 export class TerrainLineArt {
   constructor(terrain) {
     this.terrain = terrain;
     this.group = new THREE.Group(); this.group.name = 'TerrainLineArt';
     this.group.userData.presentationOnly = true;
-    this.style = null; this.dirty = true; this.lastBuild = -1e9; this.stats = { builds: 0, segments: 0, lastBuildMs: 0 };
+    this.style = null; this.dirty = true; this.lastBuild = -1e9; this.buildTask = null;
+    this.stats = { builds: 0, segments: 0, lastBuildMs: 0, lastWallMs: 0, lastMaxSliceMs: 0 };
   }
   ensure() {
     const t = this.terrain;
@@ -380,6 +451,7 @@ export class TerrainLineArt {
     this.hull.name = 'TerrainLineArt:contour'; this.hull.raycast = () => {}; this.hull.frustumCulled = false;
     this.hull.renderOrder = RENDER_ORDER.terrain;
     this.strokeGeometry = new THREE.BufferGeometry();
+    this.strokeGeometry.setDrawRange(0, 0);
     // 笔画四边形在屏幕空间展开，绕序随笔画方向而变 ⇒ 双面。
     this.strokeMaterial = new THREE.ShaderMaterial({ vertexShader: strokeVertex, fragmentShader: strokeFragment, side: THREE.DoubleSide,
       transparent: true, depthWrite: false, uniforms: { ...shared, resolution: this.resolution,
@@ -389,6 +461,7 @@ export class TerrainLineArt {
         gate: { value: 0 }, dry: { value: 0 }, pixelsPerUnit: { value: 4 } } });
     this.strokeMaterial.name = 'TerrainLineArtStrokes';
     this.strokes = new THREE.Mesh(this.strokeGeometry, this.strokeMaterial);
+    this.strokes.visible = false;
     this.strokes.name = 'TerrainLineArt:structure'; this.strokes.raycast = () => {}; this.strokes.frustumCulled = false;
     this.strokes.renderOrder = RENDER_ORDER.terrain;
     this.group.add(this.hull, this.strokes);
@@ -397,7 +470,7 @@ export class TerrainLineArt {
   /** style = 风格档案里的 `lines`；null ⇒ 整组关闭（零成本回退）。 */
   setStyle(style) {
     this.style = style || null;
-    if (!this.style) { this.group.visible = false; return; }
+    if (!this.style) { this.cancelBuild(); this.dirty = true; this.group.visible = false; return; }
     if (!this.ensure()) { this.group.visible = false; return; }
     const s = this.style, hu = this.hullMaterial.uniforms, su = this.strokeMaterial.uniforms;
     const hull = s.contour || null;
@@ -412,24 +485,75 @@ export class TerrainLineArt {
     su.gate.value = s.gate ?? 0; su.dry.value = s.dry ?? 0;
     this.group.visible = true;
     const key = JSON.stringify([s.ridge > 0, s.valley > 0, s.cliff > 0, s.hatch > 0, s.minLen]);
-    if (key !== this.styleKey) { this.styleKey = key; this.dirty = true; }
+    if (key !== this.styleKey) { this.cancelBuild(); this.styleKey = key; this.dirty = true; }
   }
-  markDirty() { this.dirty = true; this.lastDirtyAt = globalThis.performance?.now?.() ?? Date.now(); }
+  markDirty() {
+    // A copy interrupted by a mesh update would contain rows from two terrain
+    // states. Once copied, let the current result finish while queuing one refresh.
+    if (this.buildTask && !this.buildTask.snapshotReady) this.cancelBuild();
+    this.dirty = true;
+    this.lastDirtyAt = globalThis.performance?.now?.() ?? Date.now();
+  }
   setRegionGeometry(geometry, inside) {
     if (this.regionGeometry === (geometry || null) && this.regionInside === !!inside) return;
+    this.cancelBuild();
+    // Structure strokes have no region mask in the shader. Hide the previous
+    // region's complete geometry until a build for the new region commits.
+    if (this.strokes) this.strokes.visible = false;
     this.regionGeometry = geometry || null; this.regionInside = !!inside; this.dirty = true;
   }
-  rebuild() {
-    const t = this.terrain, w = t.world.w, h = t.world.h, s = this.style, pos = t.geometry.attributes.position.array;
-    const t0 = globalThis.performance?.now?.() ?? Date.now();
-    const E = new Float32Array(w * h); for (let i = 0; i < w * h; i++) E[i] = pos[i * 3 + 1];
-    const rg = this.regionGeometry, inside = rg && !rg.allInside
-      ? (x, y) => rg.isInsideQuad(Math.min(x, w - 2), Math.min(y, h - 2)) === this.regionInside : null;
-    const chains = extractTerrainStructure(E, w, h, { ridge: (s.ridge ?? 1) > 0, valley: (s.valley ?? 0) > 0, cliff: (s.cliff ?? 0) > 0, hatch: (s.hatch ?? 0) > 0, minLen: s.minLen ?? 6, inside });
-    this.stats.segments = buildStrokeGeometry(chains, this.strokeGeometry);
-    this.stats.chains = chains.length; this.stats.builds++;
-    this.stats.lastBuildMs = (globalThis.performance?.now?.() ?? Date.now()) - t0;
+  cancelBuild() {
+    this.buildTask?.steps.return();
+    this.buildTask = null;
+  }
+  startBuild(now = globalThis.performance?.now?.() ?? Date.now()) {
+    if (!this.style || !this.strokeGeometry) return;
+    const world = this.terrain.world;
+    this.buildTask = { steps: buildLineSteps(this.terrain, this.style, this.regionGeometry, this.regionInside),
+      world, generation: world.generation, version: world.generation?.version,
+      region: this.regionGeometry, inside: this.regionInside, styleKey: this.styleKey,
+      startedAt: now, cpuMs: 0, maxSliceMs: 0, snapshotReady: false };
     this.dirty = false;
+  }
+  /** Advances bounded numerical work; returns true only after a current result commits. */
+  advanceBuild(budgetMs = 3) {
+    const task = this.buildTask;
+    if (!task) return false;
+    const clock = () => globalThis.performance?.now?.() ?? Date.now();
+    const started = clock();
+    let next;
+    do {
+      const before = clock();
+      next = task.steps.next();
+      const stepMs = clock() - before;
+      task.cpuMs += stepMs;
+      if (next.value === 'snapshotReady') task.snapshotReady = true;
+    } while (!next.done && clock() - started < budgetMs);
+    task.maxSliceMs = Math.max(task.maxSliceMs, clock() - started);
+    if (!next.done) return false;
+    this.buildTask = null;
+    const world = this.terrain?.world;
+    if (!this.strokeGeometry || !this.style || world !== task.world || world.generation !== task.generation ||
+        world.generation?.version !== task.version || this.regionGeometry !== task.region ||
+        this.regionInside !== task.inside || this.styleKey !== task.styleKey) {
+      this.dirty = true;
+      return false;
+    }
+    const beforeCommit = clock();
+    this.stats.segments = buildStrokeGeometry(next.value.chains, this.strokeGeometry, next.value.packed);
+    this.strokes.visible = true;
+    this.stats.chains = next.value.chains.length;
+    this.stats.builds++;
+    this.stats.lastBuildMs = task.cpuMs + clock() - beforeCommit;
+    this.stats.lastWallMs = clock() - task.startedAt;
+    this.stats.lastMaxSliceMs = Math.max(task.maxSliceMs, clock() - started);
+    this.lastBuild = clock();
+    return true;
+  }
+  rebuild() {
+    this.cancelBuild();
+    this.startBuild();
+    return this.advanceBuild(Infinity);
   }
   /** 每帧：视图参数 + 脏区节流重建。 */
   frame(view) {
@@ -444,9 +568,17 @@ export class TerrainLineArt {
     const now = globalThis.performance?.now?.() ?? Date.now();
     // 雕刻进行中不重建拓扑（顶点高度已在 GPU 上逐帧跟随）；停笔 180 ms 后重建一次，
     // 长时间连续拖动时最多每 1.2 s 追一次，避免每帧 CPU 提取造成长帧。
-    if (this.dirty && (now - (this.lastDirtyAt ?? -1e9) > 180 || now - this.lastBuild > 1200)) { this.lastBuild = now; this.rebuild(); }
+    if (this.buildTask && (this.terrain.world !== this.buildTask.world ||
+        this.terrain.world.generation !== this.buildTask.generation ||
+        this.terrain.world.generation?.version !== this.buildTask.version)) {
+      this.cancelBuild(); this.dirty = true;
+    }
+    if (!this.buildTask && this.dirty &&
+        (now - (this.lastDirtyAt ?? -1e9) > 180 || now - this.lastBuild > 1200)) this.startBuild(now);
+    if (this.buildTask) this.advanceBuild(3);
   }
   dispose() {
+    this.cancelBuild();
     this.strokeGeometry?.dispose(); this.strokeMaterial?.dispose(); this.hullMaterial?.dispose();
     this.group.removeFromParent(); this.group.clear(); this.group.visible = false;
     this.hull = this.strokes = this.strokeGeometry = this.strokeMaterial = this.hullMaterial = null;
