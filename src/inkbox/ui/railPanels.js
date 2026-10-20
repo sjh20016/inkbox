@@ -1,4 +1,5 @@
 // 水墨沙盒 · 右栏观察面板（QOL_PASS1 从 `main.js` 拔出来）
+import { busanziPortraitSvg } from './g2/busanzi/busanziPortrait.js';
 //
 // ───────────────────────────────────────────────────────────────────────
 // 这个模块负责什么
@@ -1076,20 +1077,28 @@ export function bindBusanziTogglePanel(sb) {
 }
 
 /**
- * T2：卜算子肖像入口（面板里那张真实模型渲染的 PNG）。
+ * R1：Opus 的纯 SVG 对话肖像；点击仍打开 A1 的真实三维模型。
  *
  * 只做两件事：点一下 → 走沙盒的 `openBusanziViewer()`（懒加载 + 独立 renderer，
- * 见 render3d/busanzi/BusanziViewerHost.js）；PNG 缺失时把入口藏掉，别留一个
- * 点了没反应的死按钮。**不新增任何世界/模拟状态**。
+ * 见 render3d/busanzi/BusanziViewerHost.js）。SVG 不创建 renderer，真实 PNG 留作
+ * 未挂载矢量图时的展示回退。**不新增任何世界/模拟状态**。
  */
 export function bindBusanziPortraitPanel(sb) {
   const button = $('inkBusanziPortrait');
   if (!button || button.dataset.busanziPortraitBound) return;
   button.dataset.busanziPortraitBound = 'true';
+  const vector = document.createElement('span');
+  vector.className = 'busanzi-vector-portrait';
+  vector.setAttribute('aria-hidden', 'true');
+  vector.innerHTML = busanziPortraitSvg();
+  button.appendChild(vector);
+  button.classList.add('has-vector-portrait');
+  button.classList.remove('is-missing');
   const image = button.querySelector('img');
   if (image) {
-    if (image.complete && image.naturalWidth === 0) button.classList.add('is-missing');
-    image.addEventListener('error', () => button.classList.add('is-missing'));
+    const missing = () => { if (!button.classList.contains('has-vector-portrait')) button.classList.add('is-missing'); };
+    if (image.complete && image.naturalWidth === 0) missing();
+    image.addEventListener('error', missing);
   }
   button.addEventListener('click', () => {
     // 加载失败只提示（Viewer 内部已经 console.error + 通知），不抛到事件循环外。

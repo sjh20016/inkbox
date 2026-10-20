@@ -98,6 +98,9 @@ jobs:
       - name: G5 GPU 地形、水面湿域与植被局部更新
         run: npm run test:g5
 
+      - name: R1 线刻资源、高度一致性与自然雕刻事务
+        run: npm run test:r1
+
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0
 

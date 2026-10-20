@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { WorldRenderBridge, mergeRegion } from '../WorldRenderBridge.js';
 import { TerrainSideLayer } from '../terrain/TerrainSideLayer.js';
 import { TerrainMesh } from '../terrain/TerrainMesh.js';
+import { TerrainLineArt } from '../shanhai/TerrainLineArt.js';
 import { WaterLayer } from '../water/WaterLayer.js';
 import { VegetationLayer } from '../vegetation/VegetationLayer.js';
 import { EntityLayer } from '../entities/EntityLayer.js';
@@ -15,6 +16,7 @@ import { renderProfileFor } from './PlaneRenderProfile.js';
 import { createEnvironmentMaterial, setEnvironmentMaterialProfile, setEnvironmentMaterialView } from '../environment/EnvironmentMaterial.js';
 import { RealmDecorationLayer } from '../environment/RealmDecorationLayer.js';
 import { RealmArtifactLayer } from '../markers/RealmArtifactLayer.js';
+import { ShanhaiSceneryLayer } from '../shanhai/ShanhaiSceneryLayer.js';
 import { geographyFeatures } from './GeographyFeatures.js';
 import { ScalarFieldTexture } from '../art/ScalarFieldTexture.js';
 import { SurfaceVisualFieldTexture } from '../art/SurfaceVisualFieldTexture.js';
@@ -58,6 +60,9 @@ export class PlaneStage {
     if (this.terrain) {
       if (p.terrainTint) this.terrain.material.color.set(p.terrainTint);
       this.root.add(this.terrain.mesh);
+      // V1.3：三维线刻（轮廓 + 结构线）。风格未开启时整组隐藏、不建资源。
+      this.terrainLines = new TerrainLineArt(this.terrain);
+      this.root.add(this.terrainLines.group);
     }
     this.water = p.water ? new WaterLayer(world, this.coordinates, this.elevation) : null;
     if (this.water) this.root.add(this.water.mesh);
@@ -76,6 +81,9 @@ export class PlaneStage {
     if(this.decorations)this.root.add(this.decorations.group);
     this.realmArtifacts=this.plane==='nether'?new RealmArtifactLayer(world,this.coordinates,this.elevation):null;
     if(this.realmArtifacts)this.root.add(this.realmArtifacts.group);
+    // V1 · 山海入画：纯装饰景观（亭 / 塔 / 牌坊 / 桥 / 舟；悬殿 / 天门 / 阵纹；断柱 / 碑林 / 魂灯 / 枯木）。
+    this.scenery = new ShanhaiSceneryLayer(world, this.coordinates, this.elevation);
+    this.root.add(this.scenery.group);
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
     this.markers?.setGeographyFeatures?.(this.geographyFeatures);
@@ -171,6 +179,7 @@ export class PlaneStage {
     if (before === next) return false;
     const region = { x0: 0, y0: 0, x1: this.world.w - 1, y1: this.world.h - 1 };
     this.terrain?.update(region, { height: true, type: false });
+    this.terrainLines?.markDirty();
     this.water?.update(region);
     this.terrainSides?.update();
     if (this.entities) { this.entities.lastDerived = null; this.entities.clock = Infinity; }
@@ -179,6 +188,7 @@ export class PlaneStage {
     if (this.vegetation) this.vegetationPending = true;
     if (this.selectionMarker) this.selectionMarker.needsPlace = true;
     this.decorations?.invalidateGround();
+    this.scenery?.invalidateGround();
     if(this.realmArtifacts)this.realmArtifacts.clock=Infinity;
     this.refreshGroundLayers();
     return true;
@@ -196,6 +206,7 @@ export class PlaneStage {
     this.markers?.update(0, this.world, options);
     this.decorations?.update({ layoutChanged: true });
     this.realmArtifacts?.update(0, options);
+    this.scenery?.update(0, options);
     this.selectionMarker?.update(this.world, true);
   }
 
@@ -223,9 +234,10 @@ export class PlaneStage {
       this.contentGeometry = content.geometry; this.contentInside = content.inside;
     }
     for (const layer of [this.terrain, this.water, this.terrainSides, this.vegetation, this.settlements,
-      this.markers, this.entities, this.decorations, this.realmArtifacts]) {
+      this.markers, this.entities, this.decorations, this.realmArtifacts, this.scenery]) {
       layer?.setRegionGeometry(this.contentGeometry, this.contentInside);
     }
+    this.terrainLines?.setRegionGeometry(this.contentGeometry, this.contentInside);
   }
 
   setAccessBounds(bounds = null) {
@@ -257,6 +269,7 @@ export class PlaneStage {
     const t0 = performance.now();
     this.terrain?.updateScalarField(dt);
     if (heightRegion) this.terrain?.update(heightRegion, { height: true, type: false });
+    if (heightRegion) this.terrainLines?.markDirty();
     if(heightRegion)this.terrainSides?.update(heightRegion);
     if (typeRegion) this.terrain?.update(typeRegion, { height: false, type: true });
     if (fireRegion) this.terrain?.update(fireRegion, { height: false, type: false, fire: true });
@@ -286,6 +299,10 @@ export class PlaneStage {
     this.markers?.setZoom(zoom);
     this.decorations?.update({layoutChanged:heightChanged||!!typeRegion});
     this.realmArtifacts?.update(dt,{heightChanged});
+    this.scenery?.update(dt, { heightChanged });
+    if (this.scenery && this.vegetation && this.scenery.zonesVersion !== this._sceneryZonesVersion) {
+      this._sceneryZonesVersion = this.scenery.zonesVersion; this.vegetation.setYieldZones?.(this.scenery.zones);
+    }
     this.selectionMarker?.update(this.world, heightChanged);
     const t6 = performance.now();
     this.timings = {
@@ -300,12 +317,14 @@ export class PlaneStage {
 
   releaseLayers() {
     this.terrainSides?.dispose();this.terrainSides=null;
+    this.terrainLines?.dispose(); this.terrainLines = null;
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
     this.scalarField?.dispose();this.scalarField=null;
     this.surfaceField?.dispose();this.surfaceField=null;
     this.entities?.dispose(); this.settlements?.dispose(); this.markers?.dispose();
     this.decorations?.dispose();this.decorations=null;
     this.realmArtifacts?.dispose();this.realmArtifacts=null;
+    this.scenery?.dispose();this.scenery=null;
     this.environmentMaterial?.dispose(); this.environmentMaterial = null;
     this.selectionMarker?.dispose();
     this.root.clear();

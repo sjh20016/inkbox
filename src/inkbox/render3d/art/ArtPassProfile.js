@@ -21,6 +21,8 @@ export const ART_PROFILES = Object.freeze({
   pilot: BASE,
   legacy: Object.freeze({ ...BASE, name: 'legacy' }),
   'realm-style-v1': Object.freeze({ ...BASE, name: 'realm-style-v1', mode: 'realm-style-v1' }),
+  // V1 · 山海入画：同一 realm-style 管线，换用 SHANHAI_STYLES 与场景氛围层。
+  'shanhai-v1': Object.freeze({ ...BASE, name: 'shanhai-v1', mode: 'realm-style-v1', styleSet: 'shanhai-v1' }),
   low: Object.freeze({ ...BASE, name: 'low', paperGrainStrength: 0, dryBrushStrength: 0.25 }),
 });
 export function resolveArtProfile(value = 'pilot', base = BASE) {

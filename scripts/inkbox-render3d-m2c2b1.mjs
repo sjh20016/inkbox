@@ -4,7 +4,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readEnvironmentLibrary } from './inkbox-environment-glb-reader.mjs';
 import { EnvironmentBatch } from '../src/inkbox/render3d/environment/EnvironmentBatch.js';
-import { createEnvironmentMaterial } from '../src/inkbox/render3d/environment/EnvironmentMaterial.js';
+import { createEnvironmentMaterial, setEnvironmentMaterialProfile } from '../src/inkbox/render3d/environment/EnvironmentMaterial.js';
+import { realmStyleFor } from '../src/inkbox/render3d/art/RealmStyleProfile.js';
 import { LOD_BUDGETS, chooseLOD, allocateCategoryBudget } from '../src/inkbox/render3d/lod/PresentationBudget.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -28,6 +29,33 @@ try {
     assert.deepEqual(batch.meshes.get(node).userData.renderEntities.map(r => r.id), records.map(r => r.source.id));
     for (const id of ids) assert.equal(library.geometryFor(id, 2), batch.meshes.get(node).geometry);
     batch.dispose(); assert.equal(library.disposed, false); material.dispose();
+  });
+  check('outline profiles toggle live instances without changing batch identity and unregister on dispose', () => {
+    const material = createEnvironmentMaterial(library, 'mortal');
+    const batch = new EnvironmentBatch(library, { material, capacity: 2 });
+    const source = { id: 'outline-owner' };
+    const record = { assetId: 'mortal.house.base', lod: 0, position: { x: 2, y: 0, z: 3 },
+      scale: { x: 1, y: 1, z: 1 }, source };
+    const mesh = batch.meshes.get('env_house_base_lod0'), ink = mesh.userData.inkOutline;
+    const matrix = mesh.instanceMatrix;
+    batch.write([record]);
+    const stats = batch.stats;
+    assert.equal(ink.visible, false);
+    setEnvironmentMaterialProfile(material, { realmStyle: { ...realmStyleFor('mortal'), shanhai: true } });
+    assert.equal(ink.visible, true, 'Shanhai profile immediately shows an existing outline instance');
+    assert.equal(ink.count, 1); assert.equal(ink.instanceMatrix, matrix);
+    assert.equal(mesh.count, 1); assert.equal(mesh.userData.renderBuildings[0], source);
+    setEnvironmentMaterialProfile(material, { realmStyle: realmStyleFor('mortal') });
+    assert.equal(ink.visible, false, 'non-Shanhai profile immediately hides an existing outline instance');
+    assert.deepEqual(batch.stats, stats);
+    assert.equal(batch.meshes.get('env_house_base_lod0'), mesh);
+    let syncs = 0; const sync = batch.syncOutlineVisibility.bind(batch);
+    batch.syncOutlineVisibility = () => { syncs++; sync(); };
+    batch.dispose();
+    assert.equal(material.userData.environmentOutlineBatches.size, 0);
+    setEnvironmentMaterialProfile(material, { realmStyle: { ...realmStyleFor('mortal'), shanhai: true } });
+    assert.equal(syncs, 0, 'disposed batch is not called by later style changes');
+    material.dispose();
   });
   check('decoration and artifact retain legacy tree hysteresis through threshold crossings', () => {
     for (const kind of ['decoration', 'artifact']) {

@@ -3,9 +3,11 @@ import { Renderer3D } from './Renderer3D.js';
 import { ArtDebugPanel } from './art/ArtDebugPanel.js';
 import { artDebugOptions } from './art/ArtDiagnostics.js';
 import { sculpt, strokeSamples, restoreHeights } from './terrain/sculpt.js';
+import { SCULPT_OPTIONS } from './terrain/sculpt.js';
 import { TerrainStroke, restoreTerrainStroke } from './terrain/sculpt.js';
 import { accessBounds, canAccess } from '../world/mapProgress.js';
 import { isViewTool, VIEW_CLICK_PX } from '../ui/realmView.js';
+import { blockingInputLayer } from '../ui/inputLayers.js';
 import { visibleRift } from './readers/riftViewModel.js';
 
 /**
@@ -28,6 +30,7 @@ export function boundaryInspectorText(hit) {
   return parts.join(' · ');
 }
 import { TERRAIN_INFO } from '../core/config.js';
+import { SHANHAI_OPTIONS } from './shanhai/ShanhaiStyle.js';
 
 const hoverObjectIds = new WeakMap(); let nextHoverObjectId = 1;
 function hoverObjectId(object) {
@@ -65,8 +68,12 @@ export class Render3DAdapter {
     const artParams = new URLSearchParams(globalThis.location?.search || '');
     const requestedArt = artParams.get('art');
     configureTerrainGpu(artParams);
-    const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'realm-style-v1';
+    const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'shanhai-v1';
     const diagnostics = artDebugOptions();
+    if (['v1', 'print', 'ink', 'v12', 'line-a', 'line-b', 'line-c'].includes(artParams.get('nether'))) SHANHAI_OPTIONS.nether = artParams.get('nether');
+    if (artParams.get('lines') === 'off') SHANHAI_OPTIONS.lines = 'off';
+    // V1.3：自然雕刻默认开启；`?sculpt=classic` 回到 V1.2 的线性累加 + 硬夹笔刷（对照 / 回退）。
+    if (artParams.get('sculpt') === 'classic') SCULPT_OPTIONS.natural = false;
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
       artDevelopment: diagnostics.development, artDebugView: diagnostics.debugView,
       productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off',
@@ -74,7 +81,7 @@ export class Render3DAdapter {
       creatureLibrary: sandbox.creatureLibrary || undefined,
       loadCreatureLibrary: sandbox.loadCreatureLibrary,
       creatureIds: sandbox.creatureIds,
-      creatures: artParams.get('creatures') !== 'off',
+      creatures: artParams.get('creatures') !== 'off', scenery: artParams.get('scenery') !== 'off',
       geography: artParams.get('geography') !== 'off' && artParams.get('assets') !== 'off' }); }
     catch (error) { this.canvas.remove(); throw error; }
     // The product and evidence harness await art.comparisonReady before capturing.
@@ -85,7 +92,7 @@ export class Render3DAdapter {
     });
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
     Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
-    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="burn">焚林</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="ridge">山脊</option><option value="basin">盆地</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"><output data-radius>6</output></label><label>强度 <input aria-label="笔刷强度" type="range" min="0.005" max="0.12" step="0.005" value="0.035" style="width:65px"><output data-strength>0.035</output></label><button data-action="undo">撤销雕刻</button><button data-action="redo">重做雕刻</button><span data-edit-state></span><button data-action="fit">全图</button><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><span aria-label="相机快捷键">WASD 平移 · Shift 加速 · Q/E 旋转 · 中键旋转 · 滚轮缩放 · F 全图</span><details><summary>操作 / 性能</summary><div>左键检视 / 雕刻；Ctrl+Z 撤销 / Ctrl+Shift+Z 重做</div><div>撤销/重做仅限当前 3D 会话；创建、加载世界或切回 Canvas 会清除。</div><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
+    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="burn">焚林</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="ridge">山脊</option><option value="basin">盆地</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"><output data-radius>6</output></label><label>强度 <input aria-label="笔刷强度" type="range" min="0.005" max="0.12" step="0.005" value="0.035" style="width:65px"><output data-strength>0.035</output></label><button data-action="undo">撤销雕刻</button><button data-action="redo">重做雕刻</button><span data-edit-state></span><button data-action="fit">全图</button><button data-action="scenic" title="推荐视角：远 / 中 / 近循环（R）">观山</button><label title="纯装饰景观：亭塔桥舟 / 悬殿天门 / 断柱碑林魂灯；不可交互"><input type="checkbox" data-scenery checked> 画中景</label><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><span aria-label="相机快捷键">WASD 平移 · Shift 加速 · Q/E 旋转 · 中键旋转 · 滚轮缩放 · F 全图 · R 观山</span><details><summary>操作 / 性能</summary><div>左键检视 / 雕刻；Ctrl+Z 撤销 / Ctrl+Shift+Z 重做</div><div>撤销/重做仅限当前 3D 会话；创建、加载世界或切回 Canvas 会清除。</div><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
     stage.append(this.panel);
     this.readout = document.createElement('div'); this.readout.id = 'inkRender3DReadout';
     Object.assign(this.readout.style, { position: 'absolute', bottom: '12px', left: '12px', zIndex: '3', padding: '6px 10px', background: '#eee5d3eb', borderRadius: '4px', fontSize: '12px', pointerEvents: 'none' });
@@ -102,12 +109,16 @@ export class Render3DAdapter {
       if (isViewTool(next)) this.sandbox.selectTool(next);
       if (next === 'burn' || next === 'inspect') this.sandbox.selectTool(next);
     });
+    const sceneryToggle = this.panel.querySelector('[data-scenery]');
+    sceneryToggle.checked = this.renderer.sceneryEnabled !== false;
+    this.listen(sceneryToggle, 'change', e => this.renderer.setSceneryEnabled?.(e.target.checked));
     this.listen(this.panel.querySelector('[aria-label="笔刷半径"]'), 'input', e => { this.endStroke();this.radius = Number(e.target.value);this.panel.querySelector('[data-radius]').textContent=this.radius; });
     this.listen(this.panel.querySelector('[aria-label="笔刷强度"]'), 'input', e => { this.endStroke();this.strength = Number(e.target.value);this.panel.querySelector('[data-strength]').textContent=this.strength.toFixed(3); });
     this.listen(this.panel, 'click', e => {
       const action = e.target.dataset.action;
       if (action === 'toggle') this.setActive(!this.active);
       if (action === 'fit') this.renderer.cameraRig.fit();
+      if (action === 'scenic') this.renderer.cameraRig.scenic();
       if (action === 'focus' && this.selectedCell) this.renderer.focusOn(this.selectedCell.x, this.selectedCell.y, {}, this.selectedCell.plane);
       if (action === 'undo') this.undo();
       if (action === 'redo') this.redo();
@@ -161,7 +172,7 @@ export class Render3DAdapter {
       if (!this.canSculpt(hit)) {this.sandbox.notify(this.editReason(hit),2400);return;}
       this.canvas.setPointerCapture(e.pointerId);
       this.stroke = new TerrainStroke(sandbox.world,hit.world,{radius:this.radius,strength:this.strength,mode:this.mode,
-        syncWater:true,accessBounds:this.brushAccessBounds()});
+        syncWater:true,accessBounds:this.brushAccessBounds(),natural:SCULPT_OPTIONS.natural});
       this.redoStack=[];this.historyNotice=null;this.syncHistoryState();
     });
     this.listen(this.canvas, 'pointermove', e => {
@@ -185,10 +196,11 @@ export class Render3DAdapter {
       const key = e.key.toLowerCase();
       if (key === 'shift') { this.heldCameraKeys.add('shift'); return; }
       if (['w', 'a', 's', 'd'].includes(key)) { this.heldCameraKeys.add(key); e.preventDefault(); e.stopImmediatePropagation(); return; }
-      if (['q', 'e', 'f'].includes(key) || ((e.ctrlKey || e.metaKey) && key === 'z')) {
+      if (['q', 'e', 'f', 'r'].includes(key) || ((e.ctrlKey || e.metaKey) && key === 'z')) {
         e.preventDefault(); e.stopImmediatePropagation();
         if (key === 'z') {if(e.shiftKey)this.redo();else this.undo();}
         else if (key === 'f') this.renderer.cameraRig.fit();
+        else if (key === 'r') this.renderer.cameraRig.scenic();
         else this.renderer.cameraRig.rotate((key === 'q' ? -1 : 1) * Math.PI / 4);
       }
     }, true);
@@ -205,7 +217,7 @@ export class Render3DAdapter {
   }
   listen(target, name, fn, capture = false) { target.addEventListener(name, fn, { signal: this.abort.signal, capture }); }
   isEditableTarget(target) {
-    return !!target?.isContentEditable || !!target?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]');
+    return !!blockingInputLayer() || !!target?.isContentEditable || !!target?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]');
   }
   clearCameraKeys() { this.heldCameraKeys.clear(); }
   invalidateHover(reason) {
@@ -378,7 +390,7 @@ export class Render3DAdapter {
     if(typeof this.stroke.sample==='function'){this.stroke.sample(point);return;}
     // Historical callers provide a Map-backed stroke and expect one explicit stamp.
     const region=sculpt(this.sandbox.world,{...point,radius:this.radius,strength:this.strength,mode:this.mode,
-      targetHeight:this.stroke.targetHeight,accessBounds:this.brushAccessBounds()});
+      targetHeight:this.stroke.targetHeight,accessBounds:this.brushAccessBounds(),natural:SCULPT_OPTIONS.natural});
     if(region){for(const [i,,old] of region.changes)if(!this.stroke.before.has(i))this.stroke.before.set(i,old);
       this.stroke.changed=true;this.applyTerrainDirty(region);}
   }
@@ -512,6 +524,7 @@ export class Render3DAdapter {
     if (this.boundaryMode) this.renderer.setBoundaryMode(this.boundaryMode);
     this.renderer.setPresentation(this.sandbox.stage);
     const dt = this.lastNow == null ? 0 : Math.max(0, now - this.lastNow); this.lastNow = now;
+    if (blockingInputLayer()) this.clearCameraKeys();
     const keys = this.heldCameraKeys;
     this.renderer.cameraRig.moveLocal((keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0),
       (keys.has('w') ? 1 : 0) - (keys.has('s') ? 1 : 0), dt / 1000, keys.has('shift'));

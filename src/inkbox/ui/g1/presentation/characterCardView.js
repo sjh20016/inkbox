@@ -2,6 +2,7 @@ import {
   G1_CHARACTER_SCHEMA, CHARACTER_TABS, readable, cultivationProgress, safeStatus,
   statusLabel,
 } from "./characterCardFormat.js";
+import { createCharacterPortrait } from "./characterPortrait.js";
 
 function node(doc, tag, className, value) {
   const el = doc.createElement(tag);
@@ -108,13 +109,19 @@ export function createCharacterCardView(root, { onAction } = {}) {
   const close = command(doc, "收起", "close");
   tools.append(watch, focus, exportButton, close);
   top.append(tools);
+  const profile = node(doc, "div", "g1-character__profile");
+  const portraitRoot = node(doc, "div", "g1-character__portrait-root");
+  const portrait = createCharacterPortrait(portraitRoot);
+  const identityDetails = node(doc, "div", "g1-character__identity");
   const row = node(doc, "div", "g1-character__name-row");
   const name = node(doc, "h2", "g1-character__name");
   const status = node(doc, "span", "g1-character__status");
   row.append(name, status);
   const realm = node(doc, "p", "g1-character__realm");
   const summary = node(doc, "p", "g1-character__summary");
-  header.append(top, row, realm, summary);
+  identityDetails.append(row, realm, summary);
+  profile.append(portraitRoot, identityDetails);
+  header.append(top, profile);
 
   const growth = node(doc, "section", "g1-character__growth");
   const growthHead = node(doc, "div", "g1-character__growth-heading");
@@ -267,6 +274,7 @@ export function createCharacterCardView(root, { onAction } = {}) {
     model = next;
     const identity = next?.identity || {};
     const info = next?.header || {};
+    portrait.render(identity, readable(identity.name, ""));
     const cultivationModel = next?.cultivation || {};
     const progress = cultivationProgress(cultivationModel);
     const permissions = next?.permissions || {};
@@ -334,6 +342,7 @@ export function createCharacterCardView(root, { onAction } = {}) {
     disposed = true;
     model = null;
     currentKey = null;
+    portrait.destroy();
     card.removeEventListener("click", onClick);
     card.removeEventListener("keydown", onKeydown);
     card.remove();

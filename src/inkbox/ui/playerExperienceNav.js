@@ -1,4 +1,5 @@
 // P1 玩家观察入口。只操作已存在的 DOM / 折叠区；不接触 World、RNG、存档或渲染器。
+import { blockingInputLayer } from './inputLayers.js';
 export function bindPlayerExperienceNav(doc = document, win = window) {
   const $ = id => doc.getElementById(id);
   const right = doc.querySelector('.rail.right');
@@ -101,6 +102,8 @@ export function bindPlayerExperienceNav(doc = document, win = window) {
   }
   // 先于游戏原有 Escape 分层处理抽屉，避免一次按键同时关闭人物卡/视界。
   listen(win, 'keydown', event => {
+    // An open book/help/viewer owns keyboard focus above the underlying drawer.
+    if (blockingInputLayer(doc)) return;
     if (!openSide) return;
     if (event.key === 'Escape') {
       event.preventDefault();

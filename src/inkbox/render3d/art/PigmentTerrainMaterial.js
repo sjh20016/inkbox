@@ -4,7 +4,7 @@ import { realmStyleFor } from './RealmStyleProfile.js';
 
 // Shared exact and visual sampling. The fragment keeps exact cell reads for
 // Structure; Mass samples this continuous field once per existing grid vertex.
-const heightSampling = `
+export const heightSampling = `
 vec2 uvAt(vec2 p) { return (clamp(floor(p+0.5),vec2(0),mapSize-1.0)+0.5)/mapSize; }
 float hAt(vec2 p) { return texture2D(heightTexture,uvAt(p)).g; }
 float sampleHeightContinuous(vec2 p) {
@@ -95,6 +95,10 @@ uniform float mountainWashStrength;
 uniform float colorLayerStrength;
 uniform float feibaiStrength, atmosphereStrength, atmosphereLow, atmosphereHigh;
 uniform vec3 slopeRockColor, slopeSoilColor, terrainWaterColor, realmInkColor, atmosphereColor;
+// V1 · 山海入画：青绿 / 浅绛 / 焦墨分层、阴阳面、皴笔、山脊墨线与空气透视（仅表现）。
+uniform float shanhaiMode, shStrength, shShade, shCun, shRidge, shGoldAmt, shMistAmt, shAir, shSpan, shWash, shLine, shInkMode, shInkAmt, shMineral, shLineFill, shLineTone, shInkThr, shKeepInk;
+uniform vec2 shBand, shViewXZ, shTarget;
+uniform vec3 shLow, shMid, shHigh, shPeak, shShadow, shLight, shGold, shMist;
 varying vec3 vWorld;
 varying vec2 vBroadGradient;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7)) + seed) * 43758.5453); }
@@ -312,6 +316,121 @@ void main() {
     color=mix(color,mineral,clearQi*land*(0.06+0.08*rock));
     color=mix(color,fieldMineralGold,clearQi*ridge*land*0.04);
   }
+  if(shanhaiMode>0.5){
+    // ── V1.2 · 山海归素：先大形、后笔触 ──
+    // 1) 颜色与明暗只读「宽域」坡度/法线（broad，半径 2–4 格），单格尖峰不再各自起一套色阶；
+    // 2) 笔触有预算：只在近景、只在大体块的明暗交界与大崖上出现，平缓处与远景只留色面；
+    // 3) 山脚、谷底留白起雾，让山体之间用空气分开，而不是用墨线分开。
+    float land=(1.0-water)*(1.0-smoothstep(0.004,0.03,wd));
+    float hN=clamp((vWorld.y-shBand.x)/max(shBand.y-shBand.x,1.0),0.0,1.0);
+    float bSlope=sqrt(broadSlope2);
+    float hill=smoothstep(0.30,1.25,bSlope);
+    float steep=smoothstep(0.90,2.20,bSlope);
+    float cliff=smoothstep(2.10,4.20,bSlope);
+    float lowN=noise(p*0.035+vec2(seed*0.003,2.0));
+    float hJ=clamp(hN+(lowN-0.5)*0.08,0.0,1.0);
+    vec3 layer=mix(shLow,shMid,smoothstep(0.04,0.40,hJ));
+    layer=mix(layer,shHigh,smoothstep(0.34,0.86,hJ)*(0.35+0.65*hill));
+    // 岩面：大崖略透赭（浅绛），同一色相内变化，不另起高饱和色。
+    vec3 cliffCol=mix(shMid,shLow,0.30+0.25*lowN)*0.92;
+    layer=mix(layer,cliffCol,cliff*0.38*(1.0-0.5*smoothstep(0.5,0.9,hN)));
+    // 上界 · 矿彩：只作淡罩染（石青石绿压在中高处），不提饱和。
+    vec3 mineralCol=mix(shMid,shHigh,smoothstep(0.15,0.75,hJ));
+    layer=mix(layer,mineralCol,shMineral*0.35*max(hill,smoothstep(0.2,0.6,hN)));
+    float keepType=(1.0-hill)*(1.0-smoothstep(0.30,0.62,hN))*0.70;
+    vec3 tint=mix(layer,pigment,keepType);
+    float paperLum=max(dot(paperColor,vec3(0.3333)),0.001);
+    float shadeLum=clamp(dot(color,vec3(0.3333))/paperLum,0.0,1.15);
+    float paintAmt=land*shStrength*(0.40+0.60*max(hill,smoothstep(0.18,0.55,hN)));
+    // 崖面：xz 平面采样的底色在竖墙上会被拉成竖条——崖级坡面完全由山海色层接管。
+    paintAmt=max(paintAmt,land*cliff*0.96);
+    color=mix(color,tint*(0.90+0.10*shadeLum*(1.0-cliff)),paintAmt);
+    color=mix(color,paperColor,land*shWash*(0.55+0.45*(1.0-hill)));
+    // 明暗：宽域法线 + 宽过渡的软三档（受光 / 中间 / 背光），没有逐片抖动。
+    vec3 sunDir=normalize(vec3(-0.45,0.80,-0.40));
+    float ndl=dot(broadN,sunDir)+(lowN-0.5)*0.10;
+    float faceMask=smoothstep(0.02,0.55,broadSlope2);
+    float litB=smoothstep(0.52,0.86,ndl), midB=smoothstep(0.10,0.50,ndl);
+    float shadowSide=(1.0-midB)*faceMask;
+    float halfSide=(midB-litB)*faceMask;
+    vec3 shadowTone=mix(color*0.80,shShadow,0.30);
+    color=mix(color,shadowTone,clamp(shadowSide*shShade+halfSide*shShade*0.35,0.0,0.62));
+    color=mix(color,shLight,litB*faceMask*0.16*land);
+    // 冷暖：受光面略暖（浅绛），背光略冷——用色温而不是更多纹理来塑形。
+    color=mix(color,mix(shLight,shLow,0.55),litB*faceMask*0.10*land);
+    vec2 gdir=fineGradient/max(fineSlope,0.0001);
+    vec2 perp=vec2(-gdir.y,gdir.x);
+    // 笔触预算：近景才开；交界线附近最多；平缓丘陵不画。
+    float detail=smoothstep(1.8,6.0,pixelsPerUnit);
+    float terminator=1.0-abs(midB-0.5)*2.0;
+    float cunU=dot(p,perp)*1.25, cunV=dot(p,gdir)*0.26;
+    float cunN=noise(vec2(cunU,cunV)+vec2(seed*0.013,3.1));
+    float cunVis=smoothstep(5.0,11.0,1.0/max(fwidth(cunU),1e-4));
+    float cunMask=smoothstep(0.68,0.86,cunN)*steep*(1.0-cliff*0.6)*(0.25+0.75*max(terminator,shadowSide))*cunVis*detail;
+    color=mix(color,mix(shShadow,realmInkColor,0.35),cunMask*shCun*land);
+    // 斧劈：只给大崖（宽域坡度达到崖级），大块、少量，落在背光侧。
+    float faceU=dot(p,perp);
+    float axeN=noise(vec2(faceU*0.28,vWorld.y*0.05)+vec2(seed*0.017,7.7));
+    float axe=smoothstep(0.58,0.72,axeN)*(1.0-midB*0.7);
+    color=mix(color,mix(shShadow,realmInkColor,0.30),clamp(axe*cliff*shShade*1.4*detail,0.0,0.42)*land);
+    float crack=0.0;
+    // 岩层：陡面按「沿面 × 世界高度」投影取样（不随 xz 拉伸），近景才出现，水平走向。
+    float strataN=noise(vec2(faceU*0.10,vWorld.y*0.40)+vec2(seed*0.011,4.4));
+    float strata=smoothstep(0.56,0.80,strataN)*steep*detail*(0.35+0.65*(1.0-litB));
+    color=mix(color,mix(shShadow,shMid,0.45),strata*0.16*land);
+    float lip=smoothstep(0.35,1.0,ridge)*steep;
+    color=mix(color,shPeak,lip*0.14*land*detail);
+    // 墨线只描大轮廓：宽域法线与视线近乎垂直处（剪影）+ 主脊；不再逐格描脊。
+    float facingV=abs(dot(broadN,normalize(cameraPosition-vWorld)));
+    float contour=(1.0-smoothstep(0.10,0.34,facingV))*smoothstep(0.6,1.8,bSlope);
+    float ridgeLine=max(contour*0.8,smoothstep(0.45,1.0,ridge)*steep*0.5)*(0.55+0.45*brushGate);
+    color=mix(color,realmInkColor,clamp(ridgeLine*shRidge*(0.25+0.45*nearDetail),0.0,0.40)*land);
+    float peakW=smoothstep(0.88,1.10,hN)*(1.0-steep*0.6);
+    color=mix(color,shPeak,peakW*0.45*land);
+    float deepW=1.0-smoothstep(0.5,3.5,id);
+    color=mix(color,terrainWaterColor*(0.94+0.08*wash),water*(0.26+0.22*deepW)*shStrength);
+    color=mix(color,shGold,shGoldAmt*smoothstep(0.3,0.95,ridge)*smoothstep(0.60,0.92,ndl)*land*0.30*detail);
+    // 留白：山脚与谷底起雾（只依高度，不依噪声），各山体靠空气分层。
+    float foot=1.0-smoothstep(shBand.x,mix(shBand.x,shBand.y,0.30),vWorld.y);
+    color=mix(color,shMist,foot*shMistAmt*(1.0-0.75*water));
+    // 幽冥 · 黑白：把「墨量」二值化（A 版画）或以干笔飞白打散边界（B 焦墨）。
+    float inkBlack=0.0;
+    if(shInkMode>0.5){
+      // V1.2 · 焦墨留白：墨只聚在大体块的背光面、大崖与轮廓上；受光面与山脚大片留白，
+      // 中间用一档灰过渡；不再让皴纹与裂线填满山面。
+      float d=shadowSide*0.66+halfSide*0.10;
+      d+=cliff*0.34*(1.0-midB);
+      d+=contour*0.42*(0.4+0.6*detail);
+      d+=cunMask*0.30;
+      d-=peakW*0.8+lip*0.2+litB*faceMask*0.25;
+      d-=foot*0.35;
+      float thr=shInkThr;
+      if(shInkMode>1.5){
+        // 焦墨：低频干笔把墨块边缘撕开，块内少量飞白。
+        float dry=noise(vec2(dot(p,perp)*1.2,dot(p,gdir)*0.12)+vec2(seed*0.03,1.0));
+        d+=(dry-0.5)*0.26*detail;
+        d-=smoothstep(0.84,0.95,dry)*detail*0.30*steep;
+      }
+      float edge=max(fwidth(d),0.03);
+      float black=smoothstep(thr-edge,thr+edge,d);
+      inkBlack=black;
+      float midTone=smoothstep(0.24,0.36,d)*(1.0-black);
+      vec3 bone=mix(paperColor,shPeak,0.35);
+      vec3 inked=mix(bone,realmInkColor,black*0.92);
+      inked=mix(inked,mix(bone,realmInkColor,0.34),midTone*0.70);
+      color=mix(color,inked,shInkAmt*land+water*shInkAmt*0.5);
+    }
+    // V1.3 · 墨骨成山：线刻模式下实体退为骨白纸面，山形交给三维墨线（TerrainLineArt）；
+    // 只留一层宽域灰度帮助辨认体块，C 档另保留最浓的一点焦墨。
+    if(shLineFill>0.0){
+      vec3 bone=mix(paperColor,shPeak,0.30);
+      float tone=clamp(shadowSide*0.70+halfSide*0.22+cliff*0.16*(1.0-litB),0.0,1.0);
+      vec3 fillc=mix(bone,mix(bone,realmInkColor,0.40),tone*shLineTone);
+      color=mix(color,fillc,shLineFill*land*(1.0-inkBlack*shKeepInk));
+    }
+    float far=dot(vWorld.xz-shTarget,shViewXZ)/max(shSpan*0.5,1.0);
+    color=mix(color,shMist,smoothstep(0.05,1.1,far)*shAir);
+  }
   // Weak paper stays on the image; all wash / dry brush above stay in world space.
   float grain=hash(floor(gl_FragCoord.xy))-0.5;
   if(artDebugMode>=4.5){
@@ -357,6 +476,10 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       slopeRockColor: { value: new THREE.Color('#808080') }, slopeSoilColor: { value: new THREE.Color('#808080') },
       terrainWaterColor: { value: new THREE.Color().setRGB(0.30, 0.43, 0.46) },
       realmInkColor: { value: new THREE.Color('#202020') }, atmosphereColor: { value: new THREE.Color('#ffffff') },
+      shanhaiMode: { value: 0 }, shInkMode: { value: 0 }, shInkAmt: { value: 0 }, shMineral: { value: 0 }, shLineFill: { value: 0 }, shLineTone: { value: 0 }, shInkThr: { value: 0.47 }, shKeepInk: { value: 0 }, shWash: { value: 0 }, shLine: { value: 0 }, shStrength: { value: 0 }, shShade: { value: 0 }, shCun: { value: 0 }, shRidge: { value: 0 },
+      shGoldAmt: { value: 0 }, shMistAmt: { value: 0 }, shAir: { value: 0 }, shSpan: { value: 200 },
+      shBand: { value: new THREE.Vector2(-4, 28) }, shViewXZ: { value: new THREE.Vector2(0, -1) }, shTarget: { value: new THREE.Vector2() },
+      ...Object.fromEntries(['shLow','shMid','shHigh','shPeak','shShadow','shLight','shGold','shMist'].map(k => [k, { value: new THREE.Color('#808080') }])),
     } });
     this.basePalette = basePalette;
     this.name = 'Inkbox:PigmentTerrain'; this.setProfile(profile);
@@ -369,6 +492,50 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       this.defines.INKBOX_ART_DEBUG = next;
       this.needsUpdate = true;
     }
+  }
+  /** Per-frame camera hint for aerial perspective. Ortho: distance along view, not depth buffer. */
+  /**
+   * V1.1 · 自适应山色分层：band 跟随当前世界的真实高程统计（陆地 p6 / p99.4），
+   * 不针对种子。只在 world.revision 变化且间隔 ≥1.2s 时重采样；目标差异
+   * 小于 10% 的抖动被滞回吞掉，真正的大改动也只在约 1.5s 内缓缓过渡——
+   * 模拟中的小规模地形变化不会让整座山突然换色。
+   */
+  updateShanhaiBand(world, elevation, dt = 0) {
+    if (!this.uniforms.shanhaiMode.value || !world || !elevation) return;
+    const base = this.shanhaiBaseBand || [this.uniforms.shBand.value.x, this.uniforms.shBand.value.y];
+    this._bandClock = (this._bandClock || 0) + Math.max(0, dt || 0);
+    if ((this._bandRevision !== world.revision || this._bandWorld !== world) && (this._bandClock > 1.2 || this._bandWorld !== world)) {
+      const first = this._bandWorld !== world;
+      this._bandRevision = world.revision; this._bandWorld = world; this._bandClock = 0;
+      const stride = Math.max(1, Math.round(Math.sqrt(world.w * world.h / 9000)));
+      const values = [];
+      for (let y = 0; y < world.h; y += stride) for (let x = 0; x < world.w; x += stride) {
+        const i = y * world.w + x; if ((world.water?.[i] ?? 0) > 0.0015) continue;
+        const e = elevation.at(x, y); if (Number.isFinite(e)) values.push(e);
+      }
+      if (values.length > 32) {
+        values.sort((a, b) => a - b);
+        const q = f => values[Math.min(values.length - 1, Math.floor(f * (values.length - 1)))];
+        // p97 (not the very tip): spiky ranges put most rock mass far below their needle tips.
+        let lo = q(0.06), hi = q(0.97);
+        // Keep the realm's authored register as an anchor; a near-flat world still gets a believable range.
+        lo = Math.min(lo, base[0] + (base[1] - base[0]) * 0.25);
+        hi = Math.max(hi, lo + Math.max(12, (base[1] - base[0]) * 0.55));
+        const cur = this._bandTarget || base, range = Math.max(1, cur[1] - cur[0]);
+        if (first || Math.abs(lo - cur[0]) > range * 0.10 || Math.abs(hi - cur[1]) > range * 0.10) this._bandTarget = [lo, hi];
+        if (first) this.uniforms.shBand.value.set(this._bandTarget[0], this._bandTarget[1]);
+      }
+    }
+    const t = this._bandTarget; if (!t) return;
+    const b = this.uniforms.shBand.value, k = Math.min(1, Math.max(0, dt || 0) * 1.8);
+    b.set(b.x + (t[0] - b.x) * k, b.y + (t[1] - b.y) * k);
+  }
+  setShanhaiView(camera, target, span) {
+    if (!this.uniforms.shanhaiMode.value || !camera) return;
+    const fx = target ? target.x - camera.position.x : 0, fz = target ? target.z - camera.position.z : -1, len = Math.hypot(fx, fz) || 1;
+    this.uniforms.shViewXZ.value.set(fx / len, fz / len);
+    if (target) this.uniforms.shTarget.value.set(target.x, target.z);
+    if (Number.isFinite(span)) this.uniforms.shSpan.value = span;
   }
   setMountainWashStrength(strength = 0.65) {
     this.uniforms.mountainWashStrength.value = Number.isFinite(strength) ? Math.min(1, Math.max(0, strength)) : 0;
@@ -398,6 +565,16 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       u.atmosphereHigh.value = style.atmosphere.high;
     } else {
       u.terrainWaterColor.value.setRGB(0.30, 0.43, 0.46);
+    }
+    const sh = style?.shanhai;
+    u.shanhaiMode.value = sh ? 1 : 0;
+    if (sh) {
+      u.shBand.value.set(sh.band[0], sh.band[1]);
+      for (const [key, name] of [['shLow','low'],['shMid','mid'],['shHigh','high'],['shPeak','peak'],['shShadow','shadow'],['shLight','light'],['shGold','gold'],['shMist','mist']]) u[key].value.set(sh[name]);
+      for (const [key, name] of [['shStrength','strength'],['shShade','shade'],['shCun','cun'],['shRidge','ridge'],['shGoldAmt','goldAmt'],['shMistAmt','mistAmt'],['shAir','air'],['shWash','wash'],['shLine','line'],['shInkAmt','inkAmt'],['shMineral','mineral'],['shLineFill','lineFill'],['shLineTone','lineTone'],['shKeepInk','keepInk']]) u[key].value = sh[name] ?? 0;
+      u.shInkThr.value = sh.inkThr ?? 0.47;
+      u.shInkMode.value = sh.inkMode === 'print' ? 1 : sh.inkMode === 'ink' ? 2 : 0;
+      this.shanhaiBaseBand = [sh.band[0], sh.band[1]];
     }
     this.uniforms.paperColor.value.set(profile.paperColor);
     for (const key of ['massShadeStrength','deepInkStrength','heightWashStrength']) if (this.uniforms[key]) this.uniforms[key].value = profile[key] ?? 0;

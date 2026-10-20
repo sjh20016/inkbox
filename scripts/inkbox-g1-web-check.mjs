@@ -3,6 +3,7 @@ import { createCharacterCardView } from "../src/inkbox/ui/g1/presentation/charac
 import { cultivationProgress, statusLabel } from "../src/inkbox/ui/g1/presentation/characterCardFormat.js";
 import { createWorldProgressView } from "../src/inkbox/ui/g1/presentation/worldProgressView.js";
 import { createWorldCreationInfoView, formatWorldCreationInfo } from "../src/inkbox/ui/g1/presentation/worldCreationInfo.js";
+import { portraitSvg } from "../src/inkbox/ui/g1/presentation/portraitGenerator.js";
 
 let checks = 0;
 function ok(condition, explanation) {
@@ -16,7 +17,7 @@ class Element {
     this.ownerDocument = doc; this.tagName = tag.toUpperCase(); this.children = [];
     this.parentNode = null; this.dataset = {}; this.style = {}; this.attributes = {};
     this.listeners = new Map(); this.hidden = false; this.disabled = false;
-    this.className = ""; this._text = ""; this.scrollTop = 0;
+    this.className = ""; this._text = ""; this.scrollTop = 0; this.src = "";
   }
   set textContent(value) {
     for (const item of this.children) item.parentNode = null;
@@ -25,6 +26,7 @@ class Element {
   get textContent() { return this._text + this.children.map(x => x.textContent).join(""); }
   get lastChild() { return this.children.at(-1) || null; }
   setAttribute(k,v) { this.attributes[k] = String(v); }
+  removeAttribute(k) { delete this.attributes[k]; if (k === "src") this.src = ""; }
   getAttribute(k) { return this.attributes[k] ?? null; }
   append(...items) {
     for (const item of items) { if (item.parentNode) item.remove(); item.parentNode = this; this.children.push(item); }
@@ -86,6 +88,18 @@ const doc=new Document(), root=doc.createElement("div"), log=[];
 const card=createCharacterCardView(root,{onAction:event=>log.push(event)});
 const base=person(); card.render(base);
 eq(root.children.length,1,"mount");
+const portrait=match(root,x=>x.className==="g1-character__portrait-image")[0];
+ok(portrait?.src.startsWith("data:image/svg+xml;charset=utf-8,"),"identity portrait rendered locally");
+const portraitSource=portrait.src;
+for (let hair=0; hair<8; hair++) {
+  const svg=portraitSvg({identityKey:"mortal:17",appearance:{hair,hairColor:0}});
+  ok(!svg.includes("undefined") && svg.includes('fill="#2e3030"'),"every hairstyle uses the independently selected valid hair color");
+}
+const renamed=clone(base); renamed.identity.name="另一名字"; card.render(renamed);
+eq(portrait.src,portraitSource,"identity appearance independent of name");
+const portraitDeath=clone(base); portraitDeath.identity.status="dead"; card.render(portraitDeath);
+eq(portrait.parentNode.dataset.status,"dead","portrait status updates without redraw");
+eq(portrait.src,portraitSource,"status does not redraw identity");
 eq(match(root,x=>x.getAttribute("role")==="tab").length,4,"four tabs");
 ok(root.textContent.includes("林照溪")&&root.textContent.includes("炼气四层"),"name and realm");
 eq(match(root,x=>x.getAttribute("role")==="progressbar")[0].getAttribute("aria-valuenow"),"62.5","real progress");
@@ -127,7 +141,8 @@ changed.history=Array.from({length:500},(_,i)=>({day:i+1,text:"所历 "+i}));
 card.render(changed);
 eq(buttons[0].getAttribute("aria-selected"),"true","reset on character switch");
 ok(root.textContent.includes("<img src")&&root.textContent.includes("<script>unsafe</script>"),"HTML characters literal");
-eq(match(root,x=>x.tagName==="IMG"||x.tagName==="SCRIPT").length,0,"no element injection");
+eq(match(root,x=>x.tagName==="IMG"&&x.className!=="g1-character__portrait-image"||x.tagName==="SCRIPT").length,0,"no element injection");
+eq(match(root,x=>x.tagName==="IMG"&&x.className==="g1-character__portrait-image").length,1,"one expected portrait image");
 eq(match(root,x=>x.className==="g1-character__event").length,500,"long history");
 buttons[2].click(); actions(root,"edict")[0].click();
 eq(log.at(-1).targetKey,"mortal:999","never stale key");
@@ -141,13 +156,16 @@ for(const status of ["dead","ascended","missing","unknown"]){
 }
 const noKey=clone(base);noKey.identity.key="";card.render(noKey);
 ok(actions(root,"export")[0].hidden,"uncertain identity no action");
+eq(portrait.src,"","portrait cleared for unknown identity");
 card.render(base);buttons[3].click();
 actions(root,"show-relations")[0].click();
 eq(log.at(-1).type,"show-relations","relations request");
 buttons[2].focus();
 const keyEvent=buttons[2].dispatch("keydown","ArrowRight");
 ok(keyEvent.prevented&&buttons[3].getAttribute("aria-selected")==="true","keyboard tabs");
+card.render(base); const livePortrait=match(root,x=>x.className==="g1-character__portrait-image")[0];
 card.destroy();card.destroy();eq(root.children.length,0,"destroy idempotent");
+eq(livePortrait.src,"","portrait source released on destroy");
 const oldLog=log.length;buttons[0].click();eq(log.length,oldLog,"events removed");
 const again=createCharacterCardView(root,{onAction:event=>log.push(event)});
 again.render(base);eq(root.children.length,1,"remount");again.destroy();

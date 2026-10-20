@@ -1,0 +1,1 @@
+LOG {"far":{"renderMedianMs":1595.1,"renderMinMs":1574.4,"calls":139,"tris":915130,"programs":18,"geo":30,"tex":9},"mid":{"renderMedianMs":2088.8,"renderMinMs":2020.5,"calls":147,"tris":1202096,"programs":23,"geo":40,"tex":10},"near":{"renderMedianMs":3082.1,"calls":55,"tris":1814042}}

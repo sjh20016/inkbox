@@ -97,6 +97,7 @@ import { emitPresentation } from './sim/presentation.js';
 import {
   TOOLS, TOOL_BY_ID, TOOL_GROUPS, TOOL_CURSOR, normalizeRegion as normalizeRegionGeometry,
 } from './ui/tools.js';
+import { enterRender3D } from './render3d/entry.js';
 // 视界的**纯状态与几何**（D8-B 从本文件拔出去）：判据总表 / 区域命中 / 窗内鬼魂计数。
 // 零 import 的纯模块——「视界不许改世界」因此是**结构性**成立的，不是靠注释保证。
 import {
@@ -141,6 +142,7 @@ import {
 // Toast 定位 / 忙碌按钮 / 世界信息。**判定**在 `ui/qolState.js`（零 import 纯逻辑），
 // 本文件只跟这个控制器说话——不直接 import `qolState.js`，免得判定散回主程序。
 import { createQol } from './ui/qol.js';
+import { createCreationHost } from './ui/r1/creationHost.js';
 // T2：卜算子独立三维形象入口。这里只是**懒加载门面**：不 import three、不拉 GLB，
 // 玩家第一次点面板上的肖像时才动态加载（见 render3d/busanzi/BusanziViewerHost.js）。
 import { createBusanziViewerHost } from './render3d/busanzi/BusanziViewerHost.js';
@@ -360,6 +362,7 @@ class Sandbox {
     // 构造器里 DOM 还没保证齐全，而它启动时要读三个 localStorage 键。
     // ⚠️ 它持有的全是 UI 状态：不进 World、不进正式存档、不抽 RNG。
     this.qol = null;
+    this.creationMenu = null;
     /** Q30：「收起全部」的监听只挂一次（按钮常驻） */
     this.collapseAllBound = false;
   }
@@ -374,6 +377,10 @@ class Sandbox {
     this.setupSectionToggles();
     this.resize();
     this.newWorld(this.presetKey, this.seed);
+    // The initial generated landscape is a starting choice, not player progress.
+    this.qol.resetDirty();
+    this.creationMenu = createCreationHost(this, $('inkCreationMenu'));
+    $('inkBtnMenu').addEventListener('click', () => this.creationMenu.open());
     this.refreshRecent();
     // Q31 / Q33：第一次打开时提示一次「按 ? 看快捷键」（看过一次就不再念，
     // 见 `ui/qol.js` 的 `nudgeHelpOnce` / `helpSeen`）。
@@ -382,6 +389,7 @@ class Sandbox {
     // ⚠️ 帮助入口本身是**常驻**的（顶栏那颗「? 帮助」），所以「新手引导结束后
     //    还能再打开」不依赖这句话。
     this.qol.nudgeHelpOnce(`新世界已开 · 种子 ${this.seed}`);
+    this.creationMenu.open();
     requestAnimationFrame((ts) => this.frame(ts));
   }
 
@@ -2639,9 +2647,7 @@ const sandbox = new Sandbox();
 sandbox.boot();
 window.inkbox = sandbox;
 if (new URLSearchParams(location.search).get('renderer') === '3d') {
-  import('./render3d/Render3DAdapter.js').then(({ Render3DAdapter }) => {
-    sandbox.render3d = new Render3DAdapter(sandbox);
-  }).catch(error => { console.error('Render3D:', error); sandbox.notify('3D 启动失败，继续使用 Canvas。'); });
+  enterRender3D(sandbox).catch(error => { console.error('Render3D:', error); sandbox.notify('3D 启动失败，继续使用 Canvas。'); });
 }
 
 // 编年史与卜算子对话条需要定期刷新。

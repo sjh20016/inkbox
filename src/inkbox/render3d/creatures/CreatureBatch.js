@@ -1,3 +1,5 @@
+import { creatureCelUniform } from './CreatureLibrary.js';
+import { attachInkOutline, syncInkOutline, disposeInkOutline } from '../shanhai/InkOutline.js';
 // 水墨沙盒 · 山海异兽实例批处理（Render3D · A1 众生入画）
 //
 // 每物种一个 InstancedMesh：同一个静态几何（部件已按 rest 合并）+ 同一张
@@ -40,9 +42,13 @@ export class CreatureBatch {
       mesh.userData.renderEntities = [];
       this.meshes.set(id, mesh);
       this.group.add(mesh);
+      mesh.add(attachInkOutline(mesh, { ratio: 0.028 }));
     }
     this.speciesIds = Object.freeze([...library.species.keys()]);
   }
+
+  /** V1 · 山海入画：墨线外轮廓开关（纯表现，不改实例 / 拾取映射）。 */
+  setInkOutline(enabled) { this.inkOutline = !!enabled; creatureCelUniform.value = this.inkOutline ? 1 : 0; for (const mesh of this.meshes.values()) syncInkOutline(mesh, this.inkOutline); }
 
   hasSpecies(id) { return this.meshes.has(id); }
 
@@ -89,6 +95,7 @@ export class CreatureBatch {
       instances += count;
       triangles += count * species.triangles;
       if (mesh.visible) drawCalls += 1;
+      syncInkOutline(mesh, this.inkOutline);
     }
     this.bySpecies = bySpecies;
     this.stats = { creatures, instances, drawCalls, triangles, overflow };
@@ -101,6 +108,7 @@ export class CreatureBatch {
     if (this.disposed) return;
     this.disposed = true;
     for (const mesh of this.meshes.values()) {
+      disposeInkOutline(mesh);
       mesh.dispose();
       mesh.userData.renderEntities = [];
       mesh.removeFromParent();

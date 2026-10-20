@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { decorationFootprintOwned } from '../environment/RealmDecorationLayer.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
+import { BreakthroughSeal } from '../shanhai/BreakthroughSeal.js';
 
 export const BREAKTHROUGH_3D_CAP = 16;
 const STYLES = Object.freeze(['minorSuccess', 'minorFailure', 'majorSuccess', 'majorFailure']);
@@ -102,6 +103,8 @@ export class ThreeBreakthroughFx {
       aura.userData.presentationOnly = true; aura.raycast = () => {};
       this.root.add(aura); this.auras[style] = { mesh: aura, geometry: auraGeometry, material: auraMaterial };
     }
+    // V1 · 山海入画：悬空法印（仅 shanhai-v1 档位可见；不计入既有 stats / drawCalls 口径）。
+    this.seal = new BreakthroughSeal(BREAKTHROUGH_3D_CAP); this.root.add(this.seal.root);
     this.transform = new THREE.Object3D();
     this.footprint = { x: 0, y: 0, width: 0, depth: 0, rotationY: 0 };
     this.stats = { active: 0, majorActive: 0, successActive: 0, failureActive: 0,
@@ -115,6 +118,10 @@ export class ThreeBreakthroughFx {
   }
   update(items, world, region = null, inside = true) {
     this.clear();
+    this.seal?.begin();
+    try { this.#update(items, world, region, inside); } finally { this.seal?.end(); }
+  }
+  #update(items, world, region, inside) {
     if (this.disposed || !world || !Array.isArray(items) || !this.coordinates || !this.elevation) return;
     for (const major of [true, false]) for (const item of items) {
       if (item.plane !== this.plane || item.kind !== 'breakthrough' || item.data?.major !== major
@@ -141,6 +148,7 @@ export class ThreeBreakthroughFx {
         (item.data.outcome === 'success' ? .35 + progress * .75 : 1 - progress * .75) * pulse,
         (.48 + progress * .45) * pulse);
       this.transform.updateMatrix(); aura.setMatrixAt(index, this.transform.matrix);
+      this.seal.add(style, point, progress, Number.isFinite(item.seed) ? item.seed : 0);
       this.stats.active++; if (major) this.stats.majorActive++;
       this.stats[item.data.outcome === 'success' ? 'successActive' : 'failureActive']++;
     }
@@ -155,7 +163,7 @@ export class ThreeBreakthroughFx {
   }
   dispose() {
     if (this.disposed) return;
-    this.disposed = true; this.clear();
+    this.disposed = true; this.clear(); this.seal?.dispose(); this.seal = null;
     for (const { mesh, geometry, material } of [...Object.values(this.batches), ...Object.values(this.auras)]) {
       mesh.removeFromParent(); mesh.dispose(); geometry.dispose(); material.dispose();
     }

@@ -527,6 +527,7 @@
       <label class="pill" title="显示真实交战留下的短暂墨痕"><input id="inkCombatFx" type="checkbox" checked> 战斗墨痕</label>
       <!-- Q31：帮助入口。与键盘 `?` 走**同一条**路径（`qol.openHelp()`）。 -->
       <button class="btn" id="inkBtnHelp" title="快捷键与门道（按 ?）">? 帮助</button>
+      <button class="btn" id="inkBtnMenu" type="button" title="创世、读档与导入">山河菜单</button>
     </div>
   </header>
 
@@ -578,8 +579,8 @@
           <button type="button" id="inkBusanziToggle" aria-expanded="true" aria-controls="inkBusanziLines">收起引导</button>
         </div>
         <div class="busanzi-bodyrow">
-          <!-- T2：肖像入口。PNG 是真实模型的渲染结果（随运行包放 materials/）；
-               点击打开独立 three.js 小窗，Idle / Walk / Wind 三动画可切。 -->
+          <!-- R1：对话肖像由正式 SVG 面板挂载，PNG 是挂载前的回退展示；
+               点击此入口仍打开 A1 独立三维形象 Viewer。 -->
           <button type="button" class="busanzi-portrait" id="inkBusanziPortrait"
             title="观其真形 · 卜算子（三维形象，Idle / Walk / 风起）"
             aria-label="观其真形，打开卜算子三维形象">
@@ -877,8 +878,17 @@
 <link rel="stylesheet" href="./src/inkbox/ui/g2/environment/environmentObserver.css" />
 <link rel="stylesheet" href="./src/inkbox/ui/g1/presentation/characterCard.css" />
 <link rel="stylesheet" href="./src/inkbox/ui/g1/presentation/worldProgress.css" />
+<!-- V1 · 山海入画：金石残卷 UI 皮肤（只换皮，不改结构） -->
+<link rel="stylesheet" href="./src/inkbox/ui/jinshiSkin.css" />
+<link rel="stylesheet" href="./src/inkbox/ui/g2/busanzi/busanziPanel.css" />
+<link rel="stylesheet" href="./src/inkbox/ui/g2/creation/creationMenu.css" />
+<link rel="stylesheet" href="./src/inkbox/ui/r1/creationHost.css" />
+<link rel="stylesheet" href="./assets/ui/fonts/fonts.css" />
+<link rel="stylesheet" href="./src/inkbox/ui/r1/secretScroll.css" />
+<div class="ink-creation-layer" id="inkCreationMenu" hidden></div>
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
 <script type="module" src="./src/inkbox/main.js"></script>
 <script type="module" src="./src/inkbox/ui/playerExperienceNav.js"></script>
+<script type="module" src="./src/inkbox/ui/r1/secretScrollHost.js"></script>
 </body>
 </html>

@@ -59,8 +59,8 @@ void main() {
   float deep=smoothstep(0.0,surfaceDepthRef*0.7,depth);
   // A negative form still has a readable body: paper with 20–35% hua-qing
   // in deep water; the shallow edge approaches paper with a lower opacity.
-  float deepMix=clamp((1.0-paperStrength)*0.60,0.20,0.35);
-  vec3 color=mix(paperColor,waterColor,mix(0.07,deepMix,deep));
+  float deepMix=clamp((1.0-paperStrength)*0.60,0.20,0.56);
+  vec3 color=mix(paperColor,waterColor,mix(max(0.07,deepMix*0.50),deepMix,deep));
   // Long broken horizontal marks in world X, with a slow Z warp. Screen-space
   // derivatives antialias the narrow line; projected scale only fades detail.
   float warp=noise(p*0.075+vec2(3.7,seed*0.01));

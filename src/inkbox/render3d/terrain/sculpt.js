@@ -22,13 +22,35 @@ import { SEA_LEVEL } from '../../core/config.js';
 // ⚠️ 表现层纪律（P4）：这里写 `world.height` 是**玩家主动雕刻**这一个动作本身，
 //    不是把视觉参数反写模拟。Render3D 的任何 datum / relief / shoulder / wallHeight
 //    都**不得**经由此处回流（那属于 S5 的停止条件）。
-export function sculpt(world, { x, y, radius = 6, strength = 0.035, mode = 'raise', targetHeight, syncWater = false, accessBounds = null, deferCanonical = false, beforeChange = null }) {
+/**
+ * V1.3 · 墨骨成山：自然雕刻（玩家笔画默认开启；`?sculpt=classic` 回退）。
+ *
+ * 旧笔刷的两处几何缺陷：
+ *  · 平顶：抬升按 falloff 线性累加后硬夹到 1.0 ⇒ 多次落笔后整片格子齐平于 1.0，成「桌面」；
+ *  · 高墙：小半径强抬升把 0.4→1.0 的落差压进 2–3 格 ⇒ 显示高程上近乎竖直的墙，与原地面硬接。
+ * 自然雕刻只改形状过渡、不改操作语义（抬山仍只升、压地仍只降、平整/平滑不变）：
+ *  1) 穹顶天花：抬升不得越过以落笔点为心的穹面 1 − 0.30·(d/R)²（压地对称为碗底），
+ *     反复落笔长成圆顶 / 圆脊，不再齐平成桌面；
+ *  2) 坡肩（talus apron）：本笔新增的土方按最大坡度 Δ 向外「坍落」成肩部，
+ *     只传播本笔新增量（随距离衰减、有限外扩），不触碰笔画外原有的天然陡崖。
+ * 结果仍是 `world.height` 的真实改变 ⇒ 拾取 / 贴地 / 水岸 / 存档 / 撤销完全一致。
+ */
+export const SCULPT_OPTIONS = { natural: true };
+const NATURAL_MODES = new Set(['raise', 'lower', 'ridge', 'basin']);
+const TALUS = 0.06, DOME = 0.30, APRON_DECAY = 0.88;
+export function sculpt(world, { x, y, radius = 6, strength = 0.035, mode = 'raise', targetHeight, syncWater = false, accessBounds = null, deferCanonical = false, beforeChange = null, natural = false }) {
   if (![x, y, radius, strength].every(Number.isFinite) || radius <= 0 || strength < 0) throw new Error('Invalid brush');
   if (!['raise', 'lower', 'flatten', 'smooth', 'ridge', 'basin'].includes(mode)) throw new Error('Unknown sculpt mode');
   if (mode === 'flatten' && !Number.isFinite(targetHeight)) throw new Error('Flatten requires a stroke target');
-  const x0 = Math.max(0, Math.ceil(x - radius)), x1 = Math.min(world.w - 1, Math.floor(x + radius));
-  const y0 = Math.max(0, Math.ceil(y - radius)), y1 = Math.min(world.h - 1, Math.floor(y + radius));
+  const nat = natural && NATURAL_MODES.has(mode);
+  const margin = nat ? Math.ceil(radius * 1.2) + 3 : 0;
+  const x0 = Math.max(0, Math.ceil(x - radius) - margin), x1 = Math.min(world.w - 1, Math.floor(x + radius) + margin);
+  const y0 = Math.max(0, Math.ceil(y - radius) - margin), y1 = Math.min(world.h - 1, Math.floor(y + radius) + margin);
   const changes = [];
+  if (nat) {
+    naturalStamp(world, { x, y, radius, strength, mode, accessBounds, x0, y0, x1, y1 }, changes);
+    return commitChanges(world, changes, { x0, y0, x1, y1, syncWater, deferCanonical, beforeChange });
+  }
   for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) {
     const distance = Math.hypot(cx - x, cy - y);
     if (distance >= radius || !brushAccess(accessBounds,cx,cy)) continue;
@@ -51,6 +73,10 @@ export function sculpt(world, { x, y, radius = 6, strength = 0.035, mode = 'rais
     next = Math.fround(Math.max(0, Math.min(1, next)));
     if (next !== old) changes.push([i, next, old]);
   }
+  return commitChanges(world, changes, { x0, y0, x1, y1, syncWater, deferCanonical, beforeChange });
+}
+
+function commitChanges(world, changes, { x0, y0, x1, y1, syncWater, deferCanonical, beforeChange }) {
   for (const [i, value, old] of changes) {
     beforeChange?.(i,old,world.water?.[i] ?? 0,world.riverBase?.[i] ?? 0);
     if(syncWater && world.water){
@@ -65,6 +91,47 @@ export function sculpt(world, { x, y, radius = 6, strength = 0.035, mode = 'rais
   // canonical 派生量重算：type / qi 必须跟着新高度走（含 world.touch()）。
   if(!deferCanonical)recomputeRect(world, x0, y0, x1, y1);
   return { x0, y0, x1, y1, count: changes.length, changes };
+}
+
+function naturalStamp(world, { x, y, radius, strength, mode, accessBounds, x0, y0, x1, y1 }, changes) {
+  const sign = mode === 'raise' || mode === 'ridge' ? 1 : -1;
+  const ww = x1 - x0 + 1, wh = y1 - y0 + 1, n = ww * wh;
+  // 以「有符号高度」统一处理抬 / 压：压地 = 对 −h 抬升。
+  const base = new Float32Array(n), cur = new Float32Array(n), inc = new Float32Array(n), ok = new Uint8Array(n);
+  for (let wy = 0; wy < wh; wy++) for (let wx = 0; wx < ww; wx++) {
+    const cx = x0 + wx, cy = y0 + wy, k = wy * ww + wx, h = world.height[cy * world.w + cx] * sign;
+    base[k] = cur[k] = h; ok[k] = brushAccess(accessBounds, cx, cy) ? 1 : 0;
+    const d = Math.hypot(cx - x, cy - y);
+    if (d >= radius || !ok[k]) continue;
+    const f = (1 - (d / radius) ** 2) ** 2;
+    // 穹顶天花（抬升）/ 碗底（压地）：只限制增量，已在穹面之外的格子不被反向改动。
+    const limit = sign > 0 ? 1 - DOME * (d / radius) ** 2 : -(DOME * 0.8) * (d / radius) ** 2;
+    // 软饱和：越接近天花增速越缓，峰顶收成圆穹而不是被 1.0 截成平台。
+    const room = Math.max(h, limit) - h, gain = strength * f * Math.min(1, Math.max(0.2, room / 0.35));
+    const target = Math.min(h + gain, Math.max(h, limit));
+    cur[k] = target; inc[k] = target - h;
+  }
+  // 坡肩：两轮前 / 后扫描（8 邻域）。新增量沿最大坡度 TALUS 坍落，并按距离衰减。
+  const pass = (fwd) => {
+    const ys = fwd ? 0 : wh - 1, ye = fwd ? wh : -1, st = fwd ? 1 : -1;
+    for (let wy = ys; wy !== ye; wy += st) for (let wx = fwd ? 0 : ww - 1; wx !== (fwd ? ww : -1); wx += st) {
+      const k = wy * ww + wx; if (!ok[k]) continue;
+      for (const [dx, dy] of fwd ? [[-1, 0], [-1, -1], [0, -1], [1, -1]] : [[1, 0], [1, 1], [0, 1], [-1, 1]]) {
+        const nx = wx + dx, ny = wy + dy; if (nx < 0 || ny < 0 || nx >= ww || ny >= wh) continue;
+        const m = ny * ww + nx; if (!(inc[m] > 0)) continue;
+        const dist = dx && dy ? Math.SQRT2 : 1;
+        const cand = Math.min(cur[m] - TALUS * dist, base[k] + inc[m] * APRON_DECAY ** dist);
+        if (cand > cur[k]) { cur[k] = cand; inc[k] = cand - base[k]; }
+      }
+    }
+  };
+  pass(true); pass(false); pass(true); pass(false);
+  for (let wy = 0; wy < wh; wy++) for (let wx = 0; wx < ww; wx++) {
+    const k = wy * ww + wx; if (!(inc[k] > 0)) continue;
+    const i = (y0 + wy) * world.w + x0 + wx, old = world.height[i];
+    const next = Math.fround(Math.max(0, Math.min(1, cur[k] * sign)));
+    if (next !== old) changes.push([i, next, old]);
+  }
 }
 
 /**
@@ -112,7 +179,7 @@ export class TerrainStroke {
   constructor(world,firstPoint,options={}){
     if(!firstPoint || ![firstPoint.x,firstPoint.y].every(Number.isFinite))throw new Error('Invalid stroke point');
     this.world=world;this.plane='mortal';this.before=new Map();this.region=null;this.pending=null;this.closed=false;
-    this.options={radius:6,strength:.035,mode:'raise',syncWater:true,...options};
+    this.options={radius:6,strength:.035,mode:'raise',syncWater:true,natural:false,...options};
     const x=Math.max(0,Math.min(world.w-1,Math.round(firstPoint.x))),y=Math.max(0,Math.min(world.h-1,Math.round(firstPoint.y)));
     if(this.options.mode==='flatten')this.options.targetHeight=Number.isFinite(options.targetHeight)?options.targetHeight:world.height[y*world.w+x];
     this.spacing=Math.max(.5,this.options.radius*.25);this.remainder=0;

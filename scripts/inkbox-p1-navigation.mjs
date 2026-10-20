@@ -92,7 +92,7 @@ function fakeDOM() {
     removeEventListener(name, fn) { winHandlers.get(name)?.delete(fn); },
     dispatch(name, event = {}) { for (const fn of winHandlers.get(name) || []) fn(event); },
   };
-  return { doc, win, right, left, scrim, shortcuts, titles, observeOpen, toolsOpen,
+  return { doc, win, right, left, scrim, shortcuts, titles, observeOpen, toolsOpen, element,
     observeClose, toolsClose, setWidth(n) { width = n; win.dispatch('resize'); } };
 }
 
@@ -122,6 +122,16 @@ assert.equal(env.doc.activeElement, env.observeClose);
 env.shortcuts[1].click();
 assert.equal(environment.scrolls, 1);
 let prevented = 0, stopped = 0;
+// A character spread above the narrow drawer keeps its own focus/Escape.
+const book = env.element('inkPersonDetail'), bookButton = env.element('book-button');
+book.classList.add('on'); book.setAttribute('aria-modal', 'true');
+bookButton.parent = book; bookButton.focus();
+for (const key of ['Tab', 'Escape']) env.win.dispatch('keydown', { key,
+  preventDefault() { prevented++; }, stopImmediatePropagation() { stopped++; } });
+assert.equal(env.doc.activeElement, bookButton, 'underlying drawer must not steal book focus');
+assert.equal(env.right.classList.contains('p1-open'), true, 'Escape belongs to the upper book');
+assert.equal(prevented, 0); assert.equal(stopped, 0);
+book.classList.remove('on');
 env.win.dispatch('keydown', { key: 'Escape',
   preventDefault() { prevented++; }, stopImmediatePropagation() { stopped++; } });
 assert.equal(prevented, 1);

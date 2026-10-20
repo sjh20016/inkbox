@@ -91,6 +91,8 @@ const FILES = [
   'scripts/inkbox-g25-breakthrough.mjs',
   'scripts/inkbox-g26-controls.mjs',
   'scripts/inkbox-g5-terrain.mjs',
+  'scripts/inkbox-r1-lines.mjs',
+  'scripts/inkbox-r1-sculpt.mjs',
   'scripts/inkbox-g5-water.mjs',
   'scripts/inkbox-g5-vegetation.mjs',
   'scripts/inkbox-longframe-raycast.mjs',
@@ -220,6 +222,7 @@ const FILES = [
 const DIRECTORIES = [
   'src/inkbox',
   'vendor/three',
+  'assets/ui',
   '剧情文案素材',
   'assets/characters/cultivator/mesh',
   'assets/characters/cultivator/data',

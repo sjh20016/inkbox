@@ -1,0 +1,77 @@
+/* V1 · 山海入画 — 「金石残卷」UI 皮肤。
+   只换皮：颜色 / 边框 / 纸纹 / 印章语义；不改 DOM、不改尺寸栅格、不改交互。
+   语汇：印令（神格分组，朱文→白文）、符签（工具条）、诀记（上下双线 chip）、
+   卷签（栏目标题）、卷边（浮窗）、漏刻（底栏）。关闭：删去 inkbox.html 中本文件的 <link>。 */
+:root {
+  --paper: #EAE2CF; --paper-2: #E2D8C1; --paper-3: #D8C7A6;
+  --ink: #2B2925; --ink-mid: #47433B; --ink-soft: #7A756C;
+  --line: rgba(43, 41, 37, .16); --line-strong: rgba(43, 41, 37, .36);
+  --cinnabar: #B64A3B; --azurite: #315B72; --gold: #C3A25B; --malachite: #5C8D6B; --ochre: #996547;
+  --js-seal-shadow: 0 0 0 1px rgba(182,74,59,.16), inset 0 0 0 1px rgba(182,74,59,.22);
+  --js-double: linear-gradient(var(--line-strong), var(--line-strong)) top / 100% 1px no-repeat,
+               linear-gradient(var(--line), var(--line)) 0 3px / 100% 1px no-repeat,
+               linear-gradient(var(--line-strong), var(--line-strong)) bottom / 100% 1px no-repeat,
+               linear-gradient(var(--line), var(--line)) 0 calc(100% - 3px) / 100% 1px no-repeat;
+}
+body {
+  background:
+    radial-gradient(120% 80% at 10% 0%, rgba(255,252,240,.55), transparent 60%),
+    radial-gradient(90% 70% at 100% 100%, rgba(153,101,71,.10), transparent 65%),
+    var(--paper);
+}
+/* 顶栏：卷首双线 + 朱文主印 */
+.top { background: linear-gradient(180deg, rgba(255,250,236,.62), rgba(234,226,207,.15)); border-bottom: 0; box-shadow: 0 1px 0 var(--line-strong), 0 4px 0 -3px var(--line); }
+.brand h1 { letter-spacing: 6px; }
+.seal { border-radius: 2px; border-width: 2px; background: rgba(182,74,59,.07); box-shadow: var(--js-seal-shadow); }
+/* 诀记：上下双线 chip */
+.pill { border: 0; border-radius: 0; padding: 5px 12px; background: var(--js-double), rgba(255,250,236,.38); }
+/* 侧栏：旧绢底 */
+.rail { background: linear-gradient(90deg, rgba(255,250,236,.36), rgba(216,199,166,.12)); }
+/* 卷签：栏目标题前一枚小朱块 */
+.sec-title { letter-spacing: 4px; color: var(--ink-mid); border-bottom: 0; box-shadow: 0 1px 0 var(--line-strong), 0 3px 0 -2px var(--line); }
+.sec-title::before { content: ""; display: inline-block; width: 4px; height: 10px; margin-right: 7px; vertical-align: -1px; background: var(--cinnabar); opacity: .78; }
+/* 印令：神格分组，常态朱文（框线），选中白文（满底朱、纸色字） */
+.group { border-radius: 2px; border: 1px solid rgba(182,74,59,.42); border-bottom-width: 1px; color: var(--cinnabar); background: rgba(255,250,236,.32); box-shadow: inset 0 0 0 2px rgba(255,250,236,.5); }
+.group:hover { border-color: var(--cinnabar); background: rgba(182,74,59,.06); }
+.group.on { background: var(--cinnabar); border-color: var(--cinnabar); color: #F3EFE3; font-weight: 700; box-shadow: inset 0 0 0 2px rgba(243,239,227,.35), 0 0 0 1px rgba(182,74,59,.25); }
+/* 符签：工具条左侧竖签，选中时符纸黄底 + 朱色签头 */
+.ink-tool { border-radius: 2px; position: relative; padding-left: 12px; }
+.ink-tool::before { content: ""; position: absolute; left: 3px; top: 5px; bottom: 5px; width: 2px; background: var(--line-strong); }
+.ink-tool:hover { background: rgba(213,190,138,.18); border-color: var(--line); }
+.ink-tool.on { background: linear-gradient(90deg, rgba(214,168,46,.20), rgba(213,190,138,.10)); border-color: rgba(153,101,71,.42); }
+.ink-tool.on::before { background: var(--cinnabar); width: 3px; }
+.ink-tool-hint { border-radius: 2px; border-style: solid; border-color: var(--line); background: var(--js-double), rgba(255,250,236,.3); }
+/* 数据格：金石拓片小框 */
+.stat { border-radius: 2px; background: rgba(255,250,236,.42); border-color: var(--line); box-shadow: inset 0 0 0 2px rgba(255,250,236,.45); }
+.stat b { color: var(--ink); }
+/* 漏刻底栏 */
+.bottom { background: linear-gradient(0deg, rgba(255,250,236,.55), rgba(234,226,207,.08)); border-top: 0; box-shadow: 0 -1px 0 var(--line-strong), 0 -4px 0 -3px var(--line); }
+button.btn { border-radius: 2px; background: rgba(255,250,236,.55); }
+button.btn:hover { background: #FBF7EC; border-color: var(--ochre); }
+button.btn.on { background: var(--ink); border-color: var(--ink); color: #F3EFE3; box-shadow: inset 0 0 0 2px rgba(243,239,227,.18); }
+input[type=range] { accent-color: var(--cinnabar); }
+input[type=number], select { border-radius: 2px; background: rgba(255,250,236,.7); }
+/* 卷边浮窗：检视 / 卜算子 / 立体工具栏 */
+.inspect, .busanzi {
+  border-radius: 3px; border-color: rgba(153,101,71,.45);
+  background: linear-gradient(180deg, rgba(246,241,228,.97), rgba(236,228,210,.96));
+  box-shadow: 0 0 0 3px rgba(246,241,228,.65), 0 0 0 4px rgba(153,101,71,.28), 0 6px 18px rgba(60,48,32,.18);
+}
+.busanzi .busanzi-portrait { border-radius: 2px; box-shadow: 0 0 0 1px rgba(182,74,59,.45); }
+.stage { background: #E7DFCC; }
+.stage-hint { border-radius: 2px; background: var(--js-double), rgba(240,234,220,.92); border: 0; }
+#inkRender3DTools {
+  background: linear-gradient(180deg, rgba(246,241,228,.94), rgba(236,228,210,.90)) !important;
+  border: 0 !important; border-radius: 2px !important;
+  box-shadow: 0 0 0 1px rgba(153,101,71,.38), 0 0 0 4px rgba(246,241,228,.55), 0 0 0 5px rgba(153,101,71,.18), 0 6px 18px rgba(60,48,32,.14);
+  font-family: var(--serif);
+}
+#inkRender3DTools > b { color: var(--cinnabar); letter-spacing: 3px; padding-right: 4px; border-right: 1px solid var(--line-strong); }
+#inkRender3DTools button { font-family: var(--serif); border: 1px solid var(--line-strong); background: rgba(255,250,236,.65); border-radius: 2px; color: var(--ink-mid); padding: 2px 8px; cursor: pointer; }
+#inkRender3DTools button:hover:not(:disabled) { border-color: var(--ochre); color: var(--ink); background: #FBF7EC; }
+#inkRender3DTools button:disabled { opacity: .45; cursor: default; }
+#inkRender3DTools button[data-action="scenic"] { border-color: rgba(182,74,59,.55); color: var(--cinnabar); }
+#inkRender3DTools input[type=range] { accent-color: var(--cinnabar); }
+#inkRender3DReadout { background: var(--js-double), rgba(240,234,220,.92) !important; border-radius: 0 !important; }
+/* 视界开启时的「闭」印 */
+#inkBtnCloseView { border-radius: 2px !important; background: var(--cinnabar) !important; color: #F3EFE3 !important; border-color: var(--cinnabar) !important; box-shadow: inset 0 0 0 2px rgba(243,239,227,.32); letter-spacing: 3px; }

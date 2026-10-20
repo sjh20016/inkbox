@@ -87,8 +87,30 @@ function paletteMaterial(texture) {
     transparent: false,
     depthWrite: true,
   });
+  // V1.1 三渲二（仅山海档开启）：受光 / 中间 / 背光三档平涂，背光偏冷，边缘一道纸色逆光。
+  // 颜色仍全部来自调色板 UV；关闭时与 V1 输出逐像素一致。
+  material.onBeforeCompile = shader => {
+    shader.uniforms.shanhaiCreatureCel = creatureCelUniform;
+    shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nuniform float shanhaiCreatureCel;');
+    const lightEnd = 'vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + totalEmissiveRadiance;';
+    if (!shader.fragmentShader.includes(lightEnd)) return;
+    shader.fragmentShader = shader.fragmentShader.replace(lightEnd, `${lightEnd}
+      if (shanhaiCreatureCel > 0.5) {
+        float baseL = max(dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722)), 0.04);
+        float recv = dot(outgoingLight, vec3(0.2126, 0.7152, 0.0722)) / baseL;
+        float band = recv < 0.62 ? 0.0 : (recv < 1.10 ? 0.5 : 1.0);
+        vec3 shadowC = mix(diffuseColor.rgb * 0.66, vec3(0.20, 0.26, 0.30), 0.18);
+        vec3 c = band < 0.25 ? shadowC : (band < 0.75 ? diffuseColor.rgb * 0.90 : diffuseColor.rgb * 1.05);
+        float rim = pow(1.0 - abs(dot(normalize(normal), vec3(0.0, 0.0, 1.0))), 3.0);
+        outgoingLight = mix(c, vec3(0.96, 0.93, 0.86), smoothstep(0.55, 0.85, rim) * 0.25);
+      }`);
+  };
+  material.customProgramCacheKey = () => 'creature_palette_shanhai_cel1';
   return material;
 }
+
+/** Shared by every creature material; CreatureBatch.setInkOutline toggles it with the shanhai tier. */
+export const creatureCelUniform = { value: 0 };
 
 /** 16×1 最近邻调色板贴图（外置 PNG 与 GLB 内嵌图逐字节相同）。 */
 export function configureCreaturePaletteTexture(texture) {

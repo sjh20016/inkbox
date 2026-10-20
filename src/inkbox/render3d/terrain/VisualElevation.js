@@ -6,9 +6,14 @@ import { SEA_LEVEL } from '../../core/config.js';
 // ⚠️ M2-B §P5：本阶段**冻结**这个数学形式（线性项 / 二次项 / 整体倍率一律不动），
 //    否则 datum / relief / shoulder / boundary 会一起变化，出问题无法归因。
 //    全局山体风格调整留给 Art Pass。
+//
+// V1.2 · 山海归素（Art Pass）：二次项 38 → 22。这是唯一一处改动，仍是同一个单源函数，
+//    地形网格 / 贴地 / 拾取 / 水面 / 相机都随它一致变化；World 高度与存档不受影响。
+//    原因：GOLDEN_A 等高起伏世界里约 22% 的山格坡度 > 4.8 单位/格，二次项把高处的
+//    格间差放大成石笋与竖墙；降低后山顶约低 17%、高处坡度约缓 23%，山体回到整块。
 export function visualElevation(height) {
   const d = height - SEA_LEVEL;
-  return d * 38 + Math.max(0, d) ** 2 * 38;
+  return d * 38 + Math.max(0, d) ** 2 * 22;
 }
 
 /**
