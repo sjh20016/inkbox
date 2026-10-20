@@ -75,7 +75,7 @@ function regionFor(world, points = [[12, 10], [40, 10], [40, 32], [12, 32]]) {
 check('ArtPassProfile: known presets are immutable, custom values clamp, and profile resolution is pure', () => {
   const world = makeWorld(901, { w: 17, h: 13 });
   const before = snapshot(world);
-  assert.deepEqual(Object.keys(ART_PROFILES).sort(), ['baseline', 'ink', 'legacy', 'low', 'pigment', 'pilot', 'realm-style-v1']);
+  assert.deepEqual(Object.keys(ART_PROFILES).sort(), ['baseline', 'ink', 'legacy', 'low', 'pigment', 'pilot', 'realm-style-v1', 'shanhai-v1']);
   assert(Object.isFrozen(ART_PROFILES) && Object.values(ART_PROFILES).every(Object.isFrozen));
   const input = { pigmentDensity: -7, paperGrainStrength: 2, distanceFade: 0.31, paperColor: '#abcdef', enabled: true };
   const resolved = resolveArtProfile(input);
@@ -87,6 +87,7 @@ check('ArtPassProfile: known presets are immutable, custom values clamp, and pro
   assert(Object.isFrozen(resolved));
   assert.equal(resolveArtProfile('missing'), ART_PROFILES.pilot);
   assert.equal(resolveArtProfile('baseline').enabled, false);
+  assert.equal(resolveArtProfile('shanhai-v1'), ART_PROFILES['shanhai-v1']);
   assert.equal(resolveArtProfile({ paperColor: 'red' }).paperColor, ART_PROFILES.pilot.paperColor);
   assert.equal(snapshot(world), before, 'resolving visual profiles must not touch World');
 });
