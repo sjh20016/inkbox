@@ -1,6 +1,8 @@
 # Inkbox 测试入口与脚本分层
 
-`npm run test:g5` 检查 GPU/CPU 高程与拾取版本、回退与历史 shader 切换、同帧全量/局部上传顺序、精确水面湿域与外缘、植被资格及局部贴地。已加入 Fast；性能对照沿用 G5 固定种子水文逐步账本，真实 GPU/正常推进仍须单独验收，不解除 PERF BLOCKED。`test:g5` 末尾含 `npm run test:longframe`（地形规则格网求交与暴力法逐项一致、广卷至少快 10 倍）。
+`npm run test:r1` 检查线刻缓冲复用/扩容/释放、实际三角面高程一致性、分帧提取与原始结果一致、取消和区域等待帧，以及自然雕刻的正式事务、权限和撤销/重做；已加入 Fast。它是 CPU 契约检查，不能替代真实 GPU 着色器读回、五档尺寸操作、资源循环和同机性能对照；本轮实测与限制见 [R1 记录](../docs/development/R1_ART_UI_INTEGRATION.md)。
+
+`npm run test:g5` 检查 GPU/CPU 高程与拾取版本、回退与历史 shader 切换、同帧全量/局部上传顺序、精确水面湿域与外缘、植被资格及局部贴地；山海林覆盖真实单格编辑的峭壁隐藏/恢复、邻树探针范围及局部矩阵与全量结果等价。已加入 Fast；性能对照沿用 G5 固定种子水文逐步账本，真实 GPU/正常推进仍须单独验收，不解除 PERF BLOCKED。`test:g5` 末尾含 `npm run test:longframe`（地形规则格网求交与暴力法逐项一致、广卷至少快 10 倍）。
 
 > RG-P3 · 2026-10-17 现行指南。历史阶段细节从 [原测试说明](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/tests/README.md) 查阅。此处只保留当前开发真正要用的入口。
 
