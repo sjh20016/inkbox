@@ -173,15 +173,34 @@ export class VegetationLayer {
   updateGround(region = null) {
     const changedMeshes = [false, false, false];
     const s = this.stats; s.groundPasses++;
-    let writes = 0, cliffChanged = false;
+    let writes = 0;
+    const varied = this.artProfile?.realmStyle?.plane === 'mortal';
+    // Ground height uses the anchor's 2x2 nodes, while cliff detection samples
+    // four points another 0.8 cell away. Include that one-node halo so a
+    // single-node dirty region cannot miss a neighboring cliff transition.
+    const cliffHalo = this.shanhaiActive ? 1 : 0;
     for (const tree of this.trees) {
       const x = Math.min(this.world.w - 2, Math.floor(tree.x));
       const y = Math.min(this.world.h - 2, Math.floor(tree.y));
-      if (region && (x > region.x1 || x + 1 < region.x0 || y > region.y1 || y + 1 < region.y0)) continue;
+      if (region && (x > region.x1 + cliffHalo || x + 1 < region.x0 - cliffHalo ||
+          y > region.y1 + cliffHalo || y + 1 < region.y0 - cliffHalo)) continue;
       s.groundSamples++;
-      if (this.shanhaiActive && this._onCliff(tree) !== !!tree.cliffHidden) cliffChanged = true;
-      const nextY = Math.fround(this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y)).y);
+      const cliffHidden = this.shanhaiActive ? this._onCliff(tree) : false;
+      const cliffChanged = cliffHidden !== !!tree.cliffHidden;
+      const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
+      const nextY = Math.fround(p.y);
       const lod = tree.renderLod, mesh = this.lodMeshes[lod], attribute = mesh.instanceMatrix;
+      if (cliffChanged) {
+        tree.cliffHidden = cliffHidden;
+        const variant = varied ? treeVariantIndex(this.world.seed, tree.cell) : 0;
+        for (let side = 0; side < tree.renderCount; side++) {
+          const index = tree.renderIndex + side;
+          mesh.setMatrixAt(index, this._treeMatrix(tree, p, variant, side));
+          attribute.addUpdateRange(index * 16, 16);
+          changedMeshes[lod] = true; writes++;
+        }
+        continue;
+      }
       for (let side = 0; side < tree.renderCount; side++) {
         const offset = (tree.renderIndex + side) * 16 + 13;
         if (attribute.array[offset] === nextY) continue;
@@ -197,8 +216,27 @@ export class VegetationLayer {
       s.groundUploadMarks++;
     }
     s.groundInstancesWritten += writes;
-    if (cliffChanged) this._writeMatrices();
     return writes;
+  }
+
+  _treeMatrix(tree, p, variant, side = 0) {
+    const dummy = this._dummy;
+    dummy.position.set(p.x, p.y, p.z); dummy.scale.setScalar(tree.size);
+    if (this.artProfile?.realmStyle?.plane === 'mortal') {
+      const scale = TREE_VARIANT_SCALES[variant];
+      dummy.scale.set(tree.size * scale[0], tree.size * scale[1], tree.size * scale[2]);
+    }
+    // Recompute from the source size on both cliff transitions; the hidden
+    // 1e-5 scale cannot be inverted to recover the original variant/near size.
+    if (tree.cliffHidden) dummy.scale.setScalar(1e-5);
+    else if (this.shanhaiActive) {
+      const near = this._structNear(tree);
+      const k = near === 2 ? 1e-5 : near === 1 ? 0.52 : 0.78;
+      dummy.scale.multiplyScalar(k);
+    }
+    dummy.rotation.y = tree.rotation + side * Math.PI / 2;
+    dummy.updateMatrix();
+    return dummy.matrix;
   }
 
   _onCliff(tree) {
@@ -323,7 +361,7 @@ export class VegetationLayer {
   }
 
   _writeMatrices() {
-    const dummy = this._dummy, counts = this._batchCounts;
+    const counts = this._batchCounts;
     const varied = this.artProfile?.realmStyle?.plane === 'mortal';
     this._variantCounts.fill(0);
     let matrixInstancesWritten = 0;
@@ -332,35 +370,20 @@ export class VegetationLayer {
     for (const tree of this.trees) {
       const lod = this._lodByTree.get(tree.cell) ?? 0;
       const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
-      dummy.position.set(p.x, p.y, p.z); dummy.scale.setScalar(tree.size);
       tree.cliffHidden = this.shanhaiActive ? this._onCliff(tree) : false;
       const variant = varied ? treeVariantIndex(this.world.seed, tree.cell) : 0;
       this._variantCounts[variant]++;
-      if (varied) {
-        const scale = TREE_VARIANT_SCALES[variant];
-        dummy.scale.set(tree.size * scale[0], tree.size * scale[1], tree.size * scale[2]);
-      }
-      // 纯表现：人造峭壁的近竖直壁面上不画树（实例与拾取映射保留，只是零尺度）。
-      if (tree.cliffHidden) dummy.scale.setScalar(1e-5);
-      else if (this.shanhaiActive) {
-        // 聚落让景：房屋格上的树不画，紧邻房屋的树收小，让白墙黛瓦从林间露出来。
-        const near = this._structNear(tree);
-        const k = near === 2 ? 1e-5 : near === 1 ? 0.52 : 0.78; // V1.2：树整体略小，屋舍与山体尺度更开阔
-        dummy.scale.multiplyScalar(k);
-      }
       const tint = varied ? this._variantTints[variant] : this._whiteTint;
       const target = this.lodMeshes[lod];
       tree.renderLod = lod; tree.renderIndex = counts[lod];
       tree.renderCount = lod === 0 && !this.artProfile ? 2 : 1;
       if (lod === 0 && !this.artProfile) {
         for (let side = 0; side < 2; side++) {
-          dummy.rotation.y = tree.rotation + side * Math.PI / 2;
-          dummy.updateMatrix(); target.setColorAt(counts[lod], tint); target.setMatrixAt(counts[lod]++, dummy.matrix); matrixInstancesWritten++;
+          target.setColorAt(counts[lod], tint); target.setMatrixAt(counts[lod]++, this._treeMatrix(tree, p, variant, side)); matrixInstancesWritten++;
           target.userData.renderTrees.push(tree);
         }
       } else {
-        dummy.rotation.y = tree.rotation;
-        dummy.updateMatrix(); target.setColorAt(counts[lod], tint); target.setMatrixAt(counts[lod]++, dummy.matrix); matrixInstancesWritten++;
+        target.setColorAt(counts[lod], tint); target.setMatrixAt(counts[lod]++, this._treeMatrix(tree, p, variant)); matrixInstancesWritten++;
         target.userData.renderTrees.push(tree);
       }
     }
