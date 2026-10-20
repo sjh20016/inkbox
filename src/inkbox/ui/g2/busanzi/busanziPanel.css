@@ -1,0 +1,11 @@
+/* R1: Opus SVG in the existing dialogue; A1's model viewer keeps its entry. */
+#inkBusanzi .busanzi-bodyrow { align-items: flex-start; }
+#inkBusanzi .busanzi-copy { min-width: 0; }
+#inkBusanziPortrait.has-vector-portrait > img { display: none; }
+#inkBusanziPortrait .busanzi-vector-portrait { display: block; width: 62px; height: 78px; pointer-events: none; }
+#inkBusanziPortrait .busanzi-vector-portrait > svg { display: block; width: 100%; height: 100%; }
+#inkBusanziPortrait .busanzi-portrait-label { position: relative; display: block; }
+#inkBusanziLines { max-height: 8.5em; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; color: #494238; }
+#inkBusanziLines .busanzi-line { line-height: 1.55; overflow-wrap: anywhere; }
+#inkBusanziLines .busanzi-line + .busanzi-line { margin-top: .65em; padding-top: .55em; border-top: 1px solid #c4b59b; }
+#inkBusanziPortrait:focus-visible { outline: 2px solid #855844; outline-offset: 2px; }
