@@ -3,6 +3,7 @@ import { createCharacterCardView } from "../src/inkbox/ui/g1/presentation/charac
 import { cultivationProgress, statusLabel } from "../src/inkbox/ui/g1/presentation/characterCardFormat.js";
 import { createWorldProgressView } from "../src/inkbox/ui/g1/presentation/worldProgressView.js";
 import { createWorldCreationInfoView, formatWorldCreationInfo } from "../src/inkbox/ui/g1/presentation/worldCreationInfo.js";
+import { portraitSvg } from "../src/inkbox/ui/g1/presentation/portraitGenerator.js";
 
 let checks = 0;
 function ok(condition, explanation) {
@@ -90,6 +91,10 @@ eq(root.children.length,1,"mount");
 const portrait=match(root,x=>x.className==="g1-character__portrait-image")[0];
 ok(portrait?.src.startsWith("data:image/svg+xml;charset=utf-8,"),"identity portrait rendered locally");
 const portraitSource=portrait.src;
+for (let hair=0; hair<8; hair++) {
+  const svg=portraitSvg({identityKey:"mortal:17",appearance:{hair,hairColor:0}});
+  ok(!svg.includes("undefined") && svg.includes('fill="#2e3030"'),"every hairstyle uses the independently selected valid hair color");
+}
 const renamed=clone(base); renamed.identity.name="另一名字"; card.render(renamed);
 eq(portrait.src,portraitSource,"identity appearance independent of name");
 const portraitDeath=clone(base); portraitDeath.identity.status="dead"; card.render(portraitDeath);

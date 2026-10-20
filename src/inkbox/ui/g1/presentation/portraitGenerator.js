@@ -79,7 +79,7 @@ export function generatePortraitParts({ identityKey, appearance, appearanceSeed 
 export function portraitSvg(options = {}) {
   const p = generatePortraitParts(options);
   const eye = EYES[p.eyes];
-  const hair = HAIR[p.hair];
+  const hair = HAIR[p.hairColor];
   const skin = SKIN[p.skinColor];
   const robe = ROBE[p.robe];
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">' +

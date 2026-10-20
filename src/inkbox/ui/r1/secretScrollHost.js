@@ -246,7 +246,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
     const layer = blockingInputLayer(doc);
     if (layer && layer !== card) {
       if (layer.id === 'inkHelp' && event.key === 'Tab') {
-        const nodes = [...layer.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),[tabindex="0"]')].filter(n => n.getClientRects().length);
+        const nodes = [...layer.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),[tabindex="0"]')].filter(n => n.tabIndex >= 0 && n.getClientRects().length);
         const first = nodes[0], last = nodes.at(-1);
         if (event.shiftKey && (doc.activeElement === first || !layer.contains(doc.activeElement))) { event.preventDefault(); last?.focus(); }
         else if (!event.shiftKey && (doc.activeElement === last || !layer.contains(doc.activeElement))) { event.preventDefault(); first?.focus(); }
@@ -256,7 +256,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
     if (!bookOpen && !settings.hidden && event.key === 'Escape') { showSettings(false); event.preventDefault(); event.stopImmediatePropagation(); return; }
     if (!bookOpen || layer !== card) return;
     if (event.key === 'Tab') {
-      const nodes = [...card.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),[tabindex="0"]')].filter(n => n.getClientRects().length && !n.closest('[hidden]'));
+      const nodes = [...card.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),[tabindex="0"]')].filter(n => n.tabIndex >= 0 && n.getClientRects().length && !n.closest('[hidden]'));
       const first = nodes[0], last = nodes.at(-1);
       if (event.shiftKey && (doc.activeElement === first || !card.contains(doc.activeElement))) { event.preventDefault(); last?.focus(); }
       else if (!event.shiftKey && (doc.activeElement === last || !card.contains(doc.activeElement))) { event.preventDefault(); first?.focus(); }
