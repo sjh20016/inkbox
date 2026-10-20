@@ -4,7 +4,7 @@ import { realmStyleFor } from './RealmStyleProfile.js';
 
 // Shared exact and visual sampling. The fragment keeps exact cell reads for
 // Structure; Mass samples this continuous field once per existing grid vertex.
-const heightSampling = `
+export const heightSampling = `
 vec2 uvAt(vec2 p) { return (clamp(floor(p+0.5),vec2(0),mapSize-1.0)+0.5)/mapSize; }
 float hAt(vec2 p) { return texture2D(heightTexture,uvAt(p)).g; }
 float sampleHeightContinuous(vec2 p) {
@@ -96,7 +96,7 @@ uniform float colorLayerStrength;
 uniform float feibaiStrength, atmosphereStrength, atmosphereLow, atmosphereHigh;
 uniform vec3 slopeRockColor, slopeSoilColor, terrainWaterColor, realmInkColor, atmosphereColor;
 // V1 · 山海入画：青绿 / 浅绛 / 焦墨分层、阴阳面、皴笔、山脊墨线与空气透视（仅表现）。
-uniform float shanhaiMode, shStrength, shShade, shCun, shRidge, shGoldAmt, shMistAmt, shAir, shSpan, shWash, shLine, shInkMode, shInkAmt, shMineral;
+uniform float shanhaiMode, shStrength, shShade, shCun, shRidge, shGoldAmt, shMistAmt, shAir, shSpan, shWash, shLine, shInkMode, shInkAmt, shMineral, shLineFill, shLineTone, shInkThr, shKeepInk;
 uniform vec2 shBand, shViewXZ, shTarget;
 uniform vec3 shLow, shMid, shHigh, shPeak, shShadow, shLight, shGold, shMist;
 varying vec3 vWorld;
@@ -394,6 +394,7 @@ void main() {
     float foot=1.0-smoothstep(shBand.x,mix(shBand.x,shBand.y,0.30),vWorld.y);
     color=mix(color,shMist,foot*shMistAmt*(1.0-0.75*water));
     // 幽冥 · 黑白：把「墨量」二值化（A 版画）或以干笔飞白打散边界（B 焦墨）。
+    float inkBlack=0.0;
     if(shInkMode>0.5){
       // V1.2 · 焦墨留白：墨只聚在大体块的背光面、大崖与轮廓上；受光面与山脚大片留白，
       // 中间用一档灰过渡；不再让皴纹与裂线填满山面。
@@ -403,7 +404,7 @@ void main() {
       d+=cunMask*0.30;
       d-=peakW*0.8+lip*0.2+litB*faceMask*0.25;
       d-=foot*0.35;
-      float thr=0.47;
+      float thr=shInkThr;
       if(shInkMode>1.5){
         // 焦墨：低频干笔把墨块边缘撕开，块内少量飞白。
         float dry=noise(vec2(dot(p,perp)*1.2,dot(p,gdir)*0.12)+vec2(seed*0.03,1.0));
@@ -412,11 +413,20 @@ void main() {
       }
       float edge=max(fwidth(d),0.03);
       float black=smoothstep(thr-edge,thr+edge,d);
+      inkBlack=black;
       float midTone=smoothstep(0.24,0.36,d)*(1.0-black);
       vec3 bone=mix(paperColor,shPeak,0.35);
       vec3 inked=mix(bone,realmInkColor,black*0.92);
       inked=mix(inked,mix(bone,realmInkColor,0.34),midTone*0.70);
       color=mix(color,inked,shInkAmt*land+water*shInkAmt*0.5);
+    }
+    // V1.3 · 墨骨成山：线刻模式下实体退为骨白纸面，山形交给三维墨线（TerrainLineArt）；
+    // 只留一层宽域灰度帮助辨认体块，C 档另保留最浓的一点焦墨。
+    if(shLineFill>0.0){
+      vec3 bone=mix(paperColor,shPeak,0.30);
+      float tone=clamp(shadowSide*0.70+halfSide*0.22+cliff*0.16*(1.0-litB),0.0,1.0);
+      vec3 fillc=mix(bone,mix(bone,realmInkColor,0.40),tone*shLineTone);
+      color=mix(color,fillc,shLineFill*land*(1.0-inkBlack*shKeepInk));
     }
     float far=dot(vWorld.xz-shTarget,shViewXZ)/max(shSpan*0.5,1.0);
     color=mix(color,shMist,smoothstep(0.05,1.1,far)*shAir);
@@ -466,7 +476,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       slopeRockColor: { value: new THREE.Color('#808080') }, slopeSoilColor: { value: new THREE.Color('#808080') },
       terrainWaterColor: { value: new THREE.Color().setRGB(0.30, 0.43, 0.46) },
       realmInkColor: { value: new THREE.Color('#202020') }, atmosphereColor: { value: new THREE.Color('#ffffff') },
-      shanhaiMode: { value: 0 }, shInkMode: { value: 0 }, shInkAmt: { value: 0 }, shMineral: { value: 0 }, shWash: { value: 0 }, shLine: { value: 0 }, shStrength: { value: 0 }, shShade: { value: 0 }, shCun: { value: 0 }, shRidge: { value: 0 },
+      shanhaiMode: { value: 0 }, shInkMode: { value: 0 }, shInkAmt: { value: 0 }, shMineral: { value: 0 }, shLineFill: { value: 0 }, shLineTone: { value: 0 }, shInkThr: { value: 0.47 }, shKeepInk: { value: 0 }, shWash: { value: 0 }, shLine: { value: 0 }, shStrength: { value: 0 }, shShade: { value: 0 }, shCun: { value: 0 }, shRidge: { value: 0 },
       shGoldAmt: { value: 0 }, shMistAmt: { value: 0 }, shAir: { value: 0 }, shSpan: { value: 200 },
       shBand: { value: new THREE.Vector2(-4, 28) }, shViewXZ: { value: new THREE.Vector2(0, -1) }, shTarget: { value: new THREE.Vector2() },
       ...Object.fromEntries(['shLow','shMid','shHigh','shPeak','shShadow','shLight','shGold','shMist'].map(k => [k, { value: new THREE.Color('#808080') }])),
@@ -561,7 +571,8 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
     if (sh) {
       u.shBand.value.set(sh.band[0], sh.band[1]);
       for (const [key, name] of [['shLow','low'],['shMid','mid'],['shHigh','high'],['shPeak','peak'],['shShadow','shadow'],['shLight','light'],['shGold','gold'],['shMist','mist']]) u[key].value.set(sh[name]);
-      for (const [key, name] of [['shStrength','strength'],['shShade','shade'],['shCun','cun'],['shRidge','ridge'],['shGoldAmt','goldAmt'],['shMistAmt','mistAmt'],['shAir','air'],['shWash','wash'],['shLine','line'],['shInkAmt','inkAmt'],['shMineral','mineral']]) u[key].value = sh[name] ?? 0;
+      for (const [key, name] of [['shStrength','strength'],['shShade','shade'],['shCun','cun'],['shRidge','ridge'],['shGoldAmt','goldAmt'],['shMistAmt','mistAmt'],['shAir','air'],['shWash','wash'],['shLine','line'],['shInkAmt','inkAmt'],['shMineral','mineral'],['shLineFill','lineFill'],['shLineTone','lineTone'],['shKeepInk','keepInk']]) u[key].value = sh[name] ?? 0;
+      u.shInkThr.value = sh.inkThr ?? 0.47;
       u.shInkMode.value = sh.inkMode === 'print' ? 1 : sh.inkMode === 'ink' ? 2 : 0;
       this.shanhaiBaseBand = [sh.band[0], sh.band[1]];
     }

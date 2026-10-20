@@ -3,6 +3,7 @@ import { Renderer3D } from './Renderer3D.js';
 import { ArtDebugPanel } from './art/ArtDebugPanel.js';
 import { artDebugOptions } from './art/ArtDiagnostics.js';
 import { sculpt, strokeSamples, restoreHeights } from './terrain/sculpt.js';
+import { SCULPT_OPTIONS } from './terrain/sculpt.js';
 import { TerrainStroke, restoreTerrainStroke } from './terrain/sculpt.js';
 import { accessBounds, canAccess } from '../world/mapProgress.js';
 import { isViewTool, VIEW_CLICK_PX } from '../ui/realmView.js';
@@ -68,7 +69,10 @@ export class Render3DAdapter {
     configureTerrainGpu(artParams);
     const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'shanhai-v1';
     const diagnostics = artDebugOptions();
-    if (['v1', 'print', 'ink'].includes(artParams.get('nether'))) SHANHAI_OPTIONS.nether = artParams.get('nether');
+    if (['v1', 'print', 'ink', 'v12', 'line-a', 'line-b', 'line-c'].includes(artParams.get('nether'))) SHANHAI_OPTIONS.nether = artParams.get('nether');
+    if (artParams.get('lines') === 'off') SHANHAI_OPTIONS.lines = 'off';
+    // V1.3：自然雕刻默认开启；`?sculpt=classic` 回到 V1.2 的线性累加 + 硬夹笔刷（对照 / 回退）。
+    if (artParams.get('sculpt') === 'classic') SCULPT_OPTIONS.natural = false;
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
       artDevelopment: diagnostics.development, artDebugView: diagnostics.debugView,
       productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off',
@@ -167,7 +171,7 @@ export class Render3DAdapter {
       if (!this.canSculpt(hit)) {this.sandbox.notify(this.editReason(hit),2400);return;}
       this.canvas.setPointerCapture(e.pointerId);
       this.stroke = new TerrainStroke(sandbox.world,hit.world,{radius:this.radius,strength:this.strength,mode:this.mode,
-        syncWater:true,accessBounds:this.brushAccessBounds()});
+        syncWater:true,accessBounds:this.brushAccessBounds(),natural:SCULPT_OPTIONS.natural});
       this.redoStack=[];this.historyNotice=null;this.syncHistoryState();
     });
     this.listen(this.canvas, 'pointermove', e => {
@@ -385,7 +389,7 @@ export class Render3DAdapter {
     if(typeof this.stroke.sample==='function'){this.stroke.sample(point);return;}
     // Historical callers provide a Map-backed stroke and expect one explicit stamp.
     const region=sculpt(this.sandbox.world,{...point,radius:this.radius,strength:this.strength,mode:this.mode,
-      targetHeight:this.stroke.targetHeight,accessBounds:this.brushAccessBounds()});
+      targetHeight:this.stroke.targetHeight,accessBounds:this.brushAccessBounds(),natural:SCULPT_OPTIONS.natural});
     if(region){for(const [i,,old] of region.changes)if(!this.stroke.before.has(i))this.stroke.before.set(i,old);
       this.stroke.changed=true;this.applyTerrainDirty(region);}
   }

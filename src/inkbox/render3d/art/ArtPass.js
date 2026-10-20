@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { resolveArtProfile } from './ArtPassProfile.js';
 import { realmStyleFor } from './RealmStyleProfile.js';
-import { shanhaiStyleFor } from '../shanhai/ShanhaiStyle.js';
+import { shanhaiStyleFor, SHANHAI_OPTIONS } from '../shanhai/ShanhaiStyle.js';
 import { SHANHAI_FX } from '../shanhai/BreakthroughSeal.js';
 import { ART_DEBUG_MODES, ART_COMPARISON_STYLES } from './ArtDiagnostics.js';
 
@@ -130,6 +130,7 @@ export class ArtPass {
     const gpu = !this.comparisonSnapshot;
     stage.terrain?.setArtProfile(profile, { gpu });
     stage.terrainSides?.setArtProfile(profile);
+    stage.terrainLines?.setStyle(SHANHAI_OPTIONS.lines === 'off' ? null : realmStyle?.shanhai?.lines || null);
     this.syncComparisonMaterial(stage.terrain?.inkMaterial, 'terrain');
     stage.markers?.setArtProfile(profile, realmStyle ? {
       upper: this.realmStyleFor('upper').boundary.rift,
@@ -232,6 +233,7 @@ export class ArtPass {
         stage.terrain.inkMaterial.setShanhaiView?.(camera, rig.controls?.target, (camera.top - camera.bottom) / Math.max(1e-3, camera.zoom));
         stage.terrain.inkMaterial.updateShanhaiBand?.(stage.world, stage.elevation, this._bandDt ?? 0.016);
       }
+      stage.terrainLines?.frame(view);
       if (stage.water?.inkMaterial?.uniforms.pixelsPerUnit) stage.water.inkMaterial.uniforms.pixelsPerUnit.value = view.pixelsPerUnit;
       stage.setEnvironmentArtView(view);
       for (const layer of [stage.entities, stage.vegetation, stage.settlements]) layer?.setArtView(view);

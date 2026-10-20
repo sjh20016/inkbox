@@ -1,0 +1,25 @@
+V1.3 性能记录（SwiftShader 软件光栅，1440×900，Chromium headless；每帧 readPixels 同步计时，单位 ms/帧）
+注意：SwiftShader 是 CPU 光栅，绝对值（1–3 s/帧）不代表真实 GPU；只看相对增幅。跨会话噪声约 ±6%，
+因此线刻增量采用「同一会话、同一画面，线刻层 on/off 交替 3 轮 × 3 帧取中位数」。
+
+A. 线刻层同会话增量（V1.3，on vs off）
+场景            on     off    增幅
+far(凡界远景)   1555   1520   +2.3%
+mid(凡界中景)   1674   1621   +3.3%
+near(凡界近景)  2713   2636   +2.9%
+nether_mid      1126   1067   +5.5%
+nether_near     1737   1658   +4.8%
+nether_low      1398   1349   +3.6%
+dense_mtn(群山) 3203   3132   +2.3%
+sculpt_before   2933   2865   +2.4%
+sculpt_after    2991   2883   +3.7%
+=> 全部 ≤ 5.5%（目标 ≤10%）。
+
+B. 跨版本（独立会话，含噪声）：V1.2 vs V1.3(?lines=off)
+far 1617/1715  mid 1757/1748  near 2802/2819  nether_mid 1097/1121  nether_near 1767/1746
+dense 3230/3215  sculpt_before 3095/2845  sculpt_after 3059/2903   => 材质改动无可测成本（±6% 噪声内）
+
+C. 结构线 CPU 提取（主线程，停笔 180 ms 后重建，长拖动最多 1.2 s 一次）
+medium 288×180：12–17 ms（热）/ 40–55 ms（冷启动 / SwiftShader 同机争用）；node 单测 ≈10 ms
+段数：凡界 ≈2–6k，幽冥 C ≈6.4k（A 0.85k / B 4.0k）；绘制调用 +2/可见界
+D. 自然雕刻：18 笔强改造（8×抬升 r4 + 5×山脊 + 5×压地）总计 46–98 ms（V1.2 经典 ≈15 ms），单笔 3–5 ms
