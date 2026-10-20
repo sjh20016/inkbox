@@ -89,6 +89,7 @@ const FILES = [
   'scripts/inkbox-g25-fate.mjs',
   'scripts/inkbox-g25-sites.mjs',
   'scripts/inkbox-g25-breakthrough.mjs',
+  'scripts/inkbox-g6-causality.mjs',
   'scripts/inkbox-g26-controls.mjs',
   'scripts/inkbox-g5-terrain.mjs',
   'scripts/inkbox-g5-water.mjs',

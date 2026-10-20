@@ -1195,6 +1195,13 @@ export class Life {
       // ⚠️ 本字段在同一 `step()` 内被 `onDeath` 消费掉，跨不过 tick，
       //    因此不进存档（已在 `io/save.js` 的 `VOLATILE` 登记并写明理由）。
       target.killedBy = { id: e.id, name: e.name };
+      const grievance = e.relations?.get(target.id);
+      if (grievance?.type === RELATION_TYPES.ENMITY && grievance.score < -40) {
+        recordLifeEvent(this.world, e, 'relation', `【${e.name}】击杀仇敌【${target.name}】，旧怨暂歇。`, {
+          importance: 60,
+          location: { plane: this.world.plane || 'mortal', x: Math.floor(target.x), y: Math.floor(target.y) },
+        });
+      }
       // ── 凶手自己那本传记也要留下这一架（只进个人日志，理由见
       //    `DUEL_KILL_LINES` 上方）──────────────────────────────────
       // 受害者那一侧由 `recordDeath` 写（编年史 + 逝者日志），但**凶手这一侧
