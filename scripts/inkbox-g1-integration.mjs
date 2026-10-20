@@ -26,6 +26,9 @@ class Element {
   get lastChild() { return this.children.at(-1) || null; }
   setAttribute(k,v) { this.attributes[k] = String(v); }
   getAttribute(k) { return this.attributes[k] ?? null; }
+  removeAttribute(k) { delete this.attributes[k]; }
+  set src(value) { this.setAttribute('src', value); }
+  get src() { return this.getAttribute('src') ?? ''; }
   append(...items) {
     for (const item of items) { if (item.parentNode) item.remove(); item.parentNode = this; this.children.push(item); }
   }
@@ -96,7 +99,10 @@ check('actual host uses four-tab pure VM, patches same selection and destroys ol
   const oldWatch = actions(panel, 'watch')[0]; sb.g1.open(key); assert.notEqual(panel.children[0], card);
   assert.equal(card.listeners.get('click').size, 0); const before = snapshot(world); oldWatch.click(); assert.equal(snapshot(world), before);
   actions(panel, 'watch')[0].click(); assert.equal(sb.g1.current().watched, true);
-  const mounted = panel.children[0]; sb.g1.close(); assert.equal(panel.children.length, 0); assert.equal(mounted.listeners.get('click').size, 0);
+  const mounted = panel.children[0], portrait = match(mounted, x => x.tagName === 'IMG')[0];
+  assert.match(portrait.getAttribute('src'), /^data:image\/svg\+xml/);
+  sb.g1.close(); assert.equal(panel.children.length, 0); assert.equal(mounted.listeners.get('click').size, 0);
+  assert.equal(portrait.getAttribute('src'), null, 'closing the real card clears its portrait source');
   assert.equal(panel.dataset.characterKey, undefined);
 });
 check('watch cap12 permissions disable add while existing/dead remembered targets can withdraw', () => {
