@@ -1,5 +1,6 @@
 import { OPUS_SYMBOLS } from './secretScrollSymbols.js';
 import { blockingInputLayer } from '../inputLayers.js';
+import { enterRender3D } from '../../render3d/entry.js';
 
 // Opus 玄门秘卷 presentation. Existing controls, handlers and G1 cards remain
 // the owners of game actions; this module arranges and decorates their DOM.
@@ -24,7 +25,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
   const body = doc.body, app = doc.querySelector('.app'), left = $('inkToolsRail'), right = $('inkExperienceRail');
   if (!app || !left || !right) return () => {};
   const listeners = [], observers = [], generated = [], moves = [], decorations = [];
-  let disposed = false, activeGroup = 'terrain', activeVolume = 'yi', bookOpen = false, bookOpener = null;
+  let disposed = false, activeGroup = 'terrain', activeVolume = 'yi', bookOpen = false, bookOpener = null, enteringThree = false;
   const listen = (el, event, fn, options) => {
     if (!el) return;
     el.addEventListener(event, fn, options); listeners.push(() => el.removeEventListener(event, fn, options));
@@ -127,7 +128,14 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
   const canvasView = add(app, el('nav', 'r1-canvas-view')); canvasView.id = 'r1CanvasView'; canvasView.setAttribute('aria-label', '舆图视图');
   move(footerClusters[2], canvasView);
   move($('inkBtnUndo'), clock);
-  const canvasToggle = button('立体沙盘', 'r1-jue', () => $('inkRender3DTools')?.querySelector('[data-action="toggle"]')?.click());
+  const canvasToggle = button('立体沙盘', 'r1-jue', async () => {
+    if (enteringThree) return;
+    enteringThree = true; canvasToggle.setAttribute('aria-busy', 'true'); sync();
+    try { await enterRender3D(sandbox); }
+    catch (error) { sandbox.notify('三维沙盘暂未载入，请稍后重试。'); console.warn('Render3D entry:', error); }
+    finally { enteringThree = false; canvasToggle.removeAttribute('aria-busy'); sync(); }
+  });
+  canvasToggle.title = '进入立体沙盘，保留当前世界';
   canvasView.prepend(canvasToggle);
 
   const realmBar = add(app, el('nav', 'r1-realm-bar')); realmBar.setAttribute('aria-label', '三界视界');
@@ -266,7 +274,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
     for (const b of threeRack.children) b.classList.toggle('on', b.dataset.r1Group === activeGroup && body.dataset.r1Arts === 'open');
     for (const b of nativePanel?.querySelectorAll('[data-native-mode]') || []) { b.hidden = b.dataset.nativeGroup !== activeGroup; b.classList.toggle('on', b.dataset.nativeMode === mode); }
     const pause = $('inkBtnPause'); pause.setAttribute('aria-label', pause.classList.contains('on') ? '继续岁月' : '暂停岁月');
-    canvasToggle.disabled = !sandbox.render3d;
+    canvasToggle.disabled = enteringThree;
   }
   observe(left, sync, { attributes: true, attributeFilter: ['inert'] });
   observe($('inkBtnPause'), sync, { attributes: true, attributeFilter: ['class'] });

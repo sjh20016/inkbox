@@ -97,6 +97,7 @@ import { emitPresentation } from './sim/presentation.js';
 import {
   TOOLS, TOOL_BY_ID, TOOL_GROUPS, TOOL_CURSOR, normalizeRegion as normalizeRegionGeometry,
 } from './ui/tools.js';
+import { enterRender3D } from './render3d/entry.js';
 // 视界的**纯状态与几何**（D8-B 从本文件拔出去）：判据总表 / 区域命中 / 窗内鬼魂计数。
 // 零 import 的纯模块——「视界不许改世界」因此是**结构性**成立的，不是靠注释保证。
 import {
@@ -2646,9 +2647,7 @@ const sandbox = new Sandbox();
 sandbox.boot();
 window.inkbox = sandbox;
 if (new URLSearchParams(location.search).get('renderer') === '3d') {
-  import('./render3d/Render3DAdapter.js').then(({ Render3DAdapter }) => {
-    sandbox.render3d = new Render3DAdapter(sandbox);
-  }).catch(error => { console.error('Render3D:', error); sandbox.notify('3D 启动失败，继续使用 Canvas。'); });
+  enterRender3D(sandbox).catch(error => { console.error('Render3D:', error); sandbox.notify('3D 启动失败，继续使用 Canvas。'); });
 }
 
 // 编年史与卜算子对话条需要定期刷新。
