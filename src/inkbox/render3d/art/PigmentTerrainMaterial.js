@@ -317,111 +317,105 @@ void main() {
     color=mix(color,fieldMineralGold,clearQi*ridge*land*0.04);
   }
   if(shanhaiMode>0.5){
-    // ── V1.1 · 山海成卷：自适应分层 + 坡度分级笔法 + 屏幕密度收敛（仅表现，不改几何）──
+    // ── V1.2 · 山海归素：先大形、后笔触 ──
+    // 1) 颜色与明暗只读「宽域」坡度/法线（broad，半径 2–4 格），单格尖峰不再各自起一套色阶；
+    // 2) 笔触有预算：只在近景、只在大体块的明暗交界与大崖上出现，平缓处与远景只留色面；
+    // 3) 山脚、谷底留白起雾，让山体之间用空气分开，而不是用墨线分开。
     float land=(1.0-water)*(1.0-smoothstep(0.004,0.03,wd));
     float hN=clamp((vWorld.y-shBand.x)/max(shBand.y-shBand.x,1.0),0.0,1.0);
-    // Slope classes in render units / cell: 平 · 丘 · 陡 · 崖.
-    float hill=smoothstep(0.22,0.95,slope);
-    float steep=smoothstep(0.95,2.3,slope);
-    float cliff=smoothstep(2.3,4.8,slope);
-    // Low-frequency colour only: no per-fragment hash in hue decisions.
-    float lowN=noise(p*0.045+vec2(seed*0.003,2.0));
-    float hJ=clamp(hN+(lowN-0.5)*0.10,0.0,1.0);
-    vec3 layer=mix(shLow,shMid,smoothstep(0.05,0.36,hJ));
-    layer=mix(layer,shHigh,smoothstep(0.24,0.70,hJ)*(0.40+0.60*hill));
-    // 陡坡：石青绿里透一点赭；崖：赭石岩面（后面再叠斧劈墨块）。
-    vec3 rockCol=mix(shHigh*0.94,shLow*0.86,0.22+0.22*lowN);
-    vec3 cliffCol=mix(shLow*0.80,shShadow,0.22+0.16*lowN);
-    // 青绿法：赭石打底、石青石绿罩染——崖脚偏赭，高处崖面仍罩矿彩。
-    float upperRock=smoothstep(0.22,0.70,hN);
-    layer=mix(layer,rockCol,steep*0.32*(1.0-0.5*upperRock));
-    layer=mix(layer,cliffCol,cliff*0.62*(1.0-0.62*upperRock));
-    // 上界 · 矿彩：石青石绿厚罩，赭石只留在崖脚与沿口。
-    vec3 mineralCol=mix(shMid,shHigh,smoothstep(0.15,0.75,hJ)*(0.55+0.45*lowN));
-    layer=mix(layer,mineralCol,shMineral*(0.30+0.40*max(steep,upperRock))*(1.0-0.45*cliff*(1.0-upperRock)));
-    float keepType=(1.0-hill)*(1.0-smoothstep(0.28,0.66,hN))*0.62;
+    float bSlope=sqrt(broadSlope2);
+    float hill=smoothstep(0.30,1.25,bSlope);
+    float steep=smoothstep(0.90,2.20,bSlope);
+    float cliff=smoothstep(2.10,4.20,bSlope);
+    float lowN=noise(p*0.035+vec2(seed*0.003,2.0));
+    float hJ=clamp(hN+(lowN-0.5)*0.08,0.0,1.0);
+    vec3 layer=mix(shLow,shMid,smoothstep(0.04,0.40,hJ));
+    layer=mix(layer,shHigh,smoothstep(0.34,0.86,hJ)*(0.35+0.65*hill));
+    // 岩面：大崖略透赭（浅绛），同一色相内变化，不另起高饱和色。
+    vec3 cliffCol=mix(shMid,shLow,0.30+0.25*lowN)*0.92;
+    layer=mix(layer,cliffCol,cliff*0.38*(1.0-0.5*smoothstep(0.5,0.9,hN)));
+    // 上界 · 矿彩：只作淡罩染（石青石绿压在中高处），不提饱和。
+    vec3 mineralCol=mix(shMid,shHigh,smoothstep(0.15,0.75,hJ));
+    layer=mix(layer,mineralCol,shMineral*0.35*max(hill,smoothstep(0.2,0.6,hN)));
+    float keepType=(1.0-hill)*(1.0-smoothstep(0.30,0.62,hN))*0.70;
     vec3 tint=mix(layer,pigment,keepType);
     float paperLum=max(dot(paperColor,vec3(0.3333)),0.001);
     float shadeLum=clamp(dot(color,vec3(0.3333))/paperLum,0.0,1.15);
-    float paintAmt=land*shStrength*(0.42+0.58*max(hill,smoothstep(0.20,0.58,hN)));
-    color=mix(color,tint*(0.88+0.12*shadeLum),paintAmt);
-    color=mix(color,paperColor,land*shWash*(0.50+0.50*(1.0-hill)));
-    // 三渲二受光：两条笔边分出 受光 / 中间 / 背光；边界只随低频笔势轻微游走。
+    float paintAmt=land*shStrength*(0.40+0.60*max(hill,smoothstep(0.18,0.55,hN)));
+    // 崖面：xz 平面采样的底色在竖墙上会被拉成竖条——崖级坡面完全由山海色层接管。
+    paintAmt=max(paintAmt,land*cliff*0.96);
+    color=mix(color,tint*(0.90+0.10*shadeLum*(1.0-cliff)),paintAmt);
+    color=mix(color,paperColor,land*shWash*(0.55+0.45*(1.0-hill)));
+    // 明暗：宽域法线 + 宽过渡的软三档（受光 / 中间 / 背光），没有逐片抖动。
     vec3 sunDir=normalize(vec3(-0.45,0.80,-0.40));
-    float ndl=dot(broadN,sunDir)+(noise(p*0.21+vec2(3.1,seed*0.01))-0.5)*0.16;
-    float faceMask=smoothstep(0.012,0.40,broadSlope2);
-    float litB=smoothstep(0.56,0.74,ndl), midB=smoothstep(0.18,0.42,ndl);
+    float ndl=dot(broadN,sunDir)+(lowN-0.5)*0.10;
+    float faceMask=smoothstep(0.02,0.55,broadSlope2);
+    float litB=smoothstep(0.52,0.86,ndl), midB=smoothstep(0.10,0.50,ndl);
     float shadowSide=(1.0-midB)*faceMask;
     float halfSide=(midB-litB)*faceMask;
-    vec3 shadowTone=mix(color*0.80,shShadow,0.28);
-    color=mix(color,shadowTone,clamp(shadowSide*shShade+halfSide*shShade*0.35,0.0,0.60));
-    color=mix(color,shLight,litB*faceMask*0.12*land);
-    // Directions on the slope.
+    vec3 shadowTone=mix(color*0.80,shShadow,0.30);
+    color=mix(color,shadowTone,clamp(shadowSide*shShade+halfSide*shShade*0.35,0.0,0.62));
+    color=mix(color,shLight,litB*faceMask*0.16*land);
+    // 冷暖：受光面略暖（浅绛），背光略冷——用色温而不是更多纹理来塑形。
+    color=mix(color,mix(shLight,shLow,0.55),litB*faceMask*0.10*land);
     vec2 gdir=fineGradient/max(fineSlope,0.0001);
     vec2 perp=vec2(-gdir.y,gdir.x);
-    // Screen-density control: a stroke family fades once its spacing drops under ~7 px.
-    // 丘 · 披麻：沿坡向的长丝，稀疏、断续。
-    float cunU=dot(p,perp)*1.6, cunV=dot(p,gdir)*0.30;
+    // 笔触预算：近景才开；交界线附近最多；平缓丘陵不画。
+    float detail=smoothstep(1.8,6.0,pixelsPerUnit);
+    float terminator=1.0-abs(midB-0.5)*2.0;
+    float cunU=dot(p,perp)*1.25, cunV=dot(p,gdir)*0.26;
     float cunN=noise(vec2(cunU,cunV)+vec2(seed*0.013,3.1));
-    float cunPx=1.0/max(fwidth(cunU),1e-4);
-    float cunVis=smoothstep(3.5,9.0,cunPx);
-    float cunMask=smoothstep(0.66,0.84,cunN)*hill*(1.0-cliff)*(0.30+0.70*shadowSide)*cunVis;
-    color=mix(color,realmInkColor,cunMask*shCun*land);
-    // 丘陡之间 · 断续勾线（荷叶皴走向），崖面淡出以免人造陡坡上过密。
-    float isoV=vWorld.y*0.36+noise(p*0.22+vec2(seed*0.021,1.7))*2.4+noise(p*1.3)*0.35;
-    float isoW=max(fwidth(isoV),0.0001);
-    float isoF=abs(fract(isoV)-0.5);
-    float isoLine=(1.0-smoothstep(isoW*0.45,isoW*1.45,isoF))*smoothstep(0.35,1.1,slope)*(1.0-smoothstep(1.6,3.2,slope));
-    float isoBreak=smoothstep(0.48,0.70,noise(p*0.7+vec2(5.3,seed*0.007)))*(0.35+0.65*shadowSide);
-    float isoVis=smoothstep(5.0,10.0,1.0/isoW);
-    color=mix(color,realmInkColor,clamp(isoLine*isoBreak*shLine*isoVis,0.0,0.6)*land);
-    // 崖 · 斧劈：竖向大块墨面 + 少量裂线，按面朝向而非高频噪声。
+    float cunVis=smoothstep(5.0,11.0,1.0/max(fwidth(cunU),1e-4));
+    float cunMask=smoothstep(0.68,0.86,cunN)*steep*(1.0-cliff*0.6)*(0.25+0.75*max(terminator,shadowSide))*cunVis*detail;
+    color=mix(color,mix(shShadow,realmInkColor,0.35),cunMask*shCun*land);
+    // 斧劈：只给大崖（宽域坡度达到崖级），大块、少量，落在背光侧。
     float faceU=dot(p,perp);
-    float axeN=noise(vec2(faceU*0.55,vWorld.y*0.09)+vec2(seed*0.017,7.7));
-    float axe=smoothstep(0.46,0.60,axeN)*(0.45+0.55*(1.0-midB));
-    float axeVis=smoothstep(2.5,7.0,1.0/max(fwidth(faceU*0.55),1e-4));
-    color=mix(color,mix(shShadow,realmInkColor,0.45),clamp(axe*cliff*(0.30+shShade)*1.15*(0.45+0.55*axeVis),0.0,0.66)*land);
-    float crackU=faceU*0.42+noise(vec2(vWorld.y*0.16,faceU*0.05))*0.9;
-    float crackW=max(fwidth(crackU),1e-4);
-    float crack=(1.0-smoothstep(crackW*0.5,crackW*1.6,abs(fract(crackU)-0.5)))*smoothstep(0.40,0.62,noise(vec2(faceU*0.3,vWorld.y*0.05)+9.0));
-    color=mix(color,realmInkColor,clamp(crack*steep*shLine*0.85*smoothstep(3.0,8.0,1.0/crackW),0.0,0.55)*land);
-    // 崖顶受光的唇边：凸折处一道留白，下接一道墨线（读出体块转折）。
+    float axeN=noise(vec2(faceU*0.28,vWorld.y*0.05)+vec2(seed*0.017,7.7));
+    float axe=smoothstep(0.58,0.72,axeN)*(1.0-midB*0.7);
+    color=mix(color,mix(shShadow,realmInkColor,0.30),clamp(axe*cliff*shShade*1.4*detail,0.0,0.42)*land);
+    float crack=0.0;
+    // 岩层：陡面按「沿面 × 世界高度」投影取样（不随 xz 拉伸），近景才出现，水平走向。
+    float strataN=noise(vec2(faceU*0.10,vWorld.y*0.40)+vec2(seed*0.011,4.4));
+    float strata=smoothstep(0.56,0.80,strataN)*steep*detail*(0.35+0.65*(1.0-litB));
+    color=mix(color,mix(shShadow,shMid,0.45),strata*0.16*land);
     float lip=smoothstep(0.35,1.0,ridge)*steep;
-    color=mix(color,shPeak,lip*0.22*land);
-    float ridgeLine=smoothstep(0.25,1.0,ridge)*smoothstep(0.15,0.9,slope)*(0.55+0.45*brushGate);
-    color=mix(color,realmInkColor,clamp(ridgeLine*shRidge*(0.45+0.55*nearDetail),0.0,0.65)*land);
-    float peakW=smoothstep(0.90,1.12,hN)*(1.0-steep*0.70);
-    color=mix(color,shPeak,peakW*0.55*land);
+    color=mix(color,shPeak,lip*0.14*land*detail);
+    // 墨线只描大轮廓：宽域法线与视线近乎垂直处（剪影）+ 主脊；不再逐格描脊。
+    float facingV=abs(dot(broadN,normalize(cameraPosition-vWorld)));
+    float contour=(1.0-smoothstep(0.10,0.34,facingV))*smoothstep(0.6,1.8,bSlope);
+    float ridgeLine=max(contour*0.8,smoothstep(0.45,1.0,ridge)*steep*0.5)*(0.55+0.45*brushGate);
+    color=mix(color,realmInkColor,clamp(ridgeLine*shRidge*(0.25+0.45*nearDetail),0.0,0.40)*land);
+    float peakW=smoothstep(0.88,1.10,hN)*(1.0-steep*0.6);
+    color=mix(color,shPeak,peakW*0.45*land);
     float deepW=1.0-smoothstep(0.5,3.5,id);
-    color=mix(color,terrainWaterColor*(0.92+0.10*wash),water*(0.30+0.28*deepW)*shStrength);
-    color=mix(color,shGold,shGoldAmt*smoothstep(0.2,0.9,ridge)*smoothstep(0.55,0.92,ndl)*land*0.45);
-    float mLum=dot(color,vec3(0.3333));
-    color=mix(vec3(mLum),color,1.0+shMineral*0.38*land);
-    float foot=1.0-smoothstep(shBand.x,mix(shBand.x,shBand.y,0.24),vWorld.y);
-    color=mix(color,shMist,foot*shMistAmt);
+    color=mix(color,terrainWaterColor*(0.94+0.08*wash),water*(0.26+0.22*deepW)*shStrength);
+    color=mix(color,shGold,shGoldAmt*smoothstep(0.3,0.95,ridge)*smoothstep(0.60,0.92,ndl)*land*0.30*detail);
+    // 留白：山脚与谷底起雾（只依高度，不依噪声），各山体靠空气分层。
+    float foot=1.0-smoothstep(shBand.x,mix(shBand.x,shBand.y,0.30),vWorld.y);
+    color=mix(color,shMist,foot*shMistAmt*(1.0-0.75*water));
     // 幽冥 · 黑白：把「墨量」二值化（A 版画）或以干笔飞白打散边界（B 焦墨）。
     if(shInkMode>0.5){
-      // 墨量只由结构决定（背光面、崖、谷底墨团、皴与脊线），受光面回到骨白纸色。
-      float d=0.04+shadowSide*0.58+halfSide*0.16;
-      d+=cliff*(0.18+0.40*(1.0-midB));
-      d+=(1.0-smoothstep(0.02,0.16,hN))*0.30*land;
-      d+=cunMask*0.55+ridgeLine*0.55*nearDetail+crack*steep*0.5;
-      d-=peakW*0.7+lip*0.3;
-      d=mix(0.12+shadowSide*0.55,d,0.35+0.65*nearDetail);
-      float thr=0.50;
+      // V1.2 · 焦墨留白：墨只聚在大体块的背光面、大崖与轮廓上；受光面与山脚大片留白，
+      // 中间用一档灰过渡；不再让皴纹与裂线填满山面。
+      float d=shadowSide*0.66+halfSide*0.10;
+      d+=cliff*0.34*(1.0-midB);
+      d+=contour*0.42*(0.4+0.6*detail);
+      d+=cunMask*0.30;
+      d-=peakW*0.8+lip*0.2+litB*faceMask*0.25;
+      d-=foot*0.35;
+      float thr=0.47;
       if(shInkMode>1.5){
-        // 焦墨：沿坡向的干笔丝把边界撕开，墨块内留飞白。
-        float dry=noise(vec2(dot(p,perp)*2.6,dot(p,gdir)*0.22)+vec2(seed*0.03,1.0));
-        d+=(dry-0.5)*0.42*nearDetail;
-        float fb=smoothstep(0.80,0.92,dry)*nearDetail*(0.4+0.6*steep);
-        d-=fb*0.45;
+        // 焦墨：低频干笔把墨块边缘撕开，块内少量飞白。
+        float dry=noise(vec2(dot(p,perp)*1.2,dot(p,gdir)*0.12)+vec2(seed*0.03,1.0));
+        d+=(dry-0.5)*0.26*detail;
+        d-=smoothstep(0.84,0.95,dry)*detail*0.30*steep;
       }
-      float edge=max(fwidth(d),0.02);
+      float edge=max(fwidth(d),0.03);
       float black=smoothstep(thr-edge,thr+edge,d);
-      float midTone=smoothstep(0.26,0.34,d)*(1.0-black)*0.22;
+      float midTone=smoothstep(0.24,0.36,d)*(1.0-black);
       vec3 bone=mix(paperColor,shPeak,0.35);
-      vec3 inked=mix(bone,realmInkColor,black);
-      inked=mix(inked,mix(bone,realmInkColor,0.5),midTone);
+      vec3 inked=mix(bone,realmInkColor,black*0.92);
+      inked=mix(inked,mix(bone,realmInkColor,0.34),midTone*0.70);
       color=mix(color,inked,shInkAmt*land+water*shInkAmt*0.5);
     }
     float far=dot(vWorld.xz-shTarget,shViewXZ)/max(shSpan*0.5,1.0);

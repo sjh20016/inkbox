@@ -6,14 +6,21 @@ import * as THREE from 'three';
  * 因而 PlanePicker 的 `renderEntities` 映射与拾取结果完全不变。
  */
 const materials = new Map();
-function inkMaterial(color, width, cy = 0) {
+function inkMaterial(color, width, cy = 0, ratioHint = 0.03) {
   const key = `${color}|${width}|${cy.toFixed(3)}`;
   if (materials.has(key)) return materials.get(key);
   const material = new THREE.MeshBasicMaterial({ color, side: THREE.BackSide });
   material.name = 'ShanhaiInkOutline';
   material.onBeforeCompile = shader => {
     shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
-      `#include <begin_vertex>\n  transformed += normalize(normalize(normal) * 0.4 + normalize(position - vec3(0.0, ${cy.toFixed(4)}, 0.0) + vec3(1e-4))) * ${width.toFixed(4)};`);
+      `#include <begin_vertex>
+  // V1.2：按屏幕尺寸收线——远景小人不再变成一个个墨点。
+  float inkPx = 1.0;
+  #ifdef USE_INSTANCING
+    vec4 inkC = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(0.0, ${cy.toFixed(4)}, 0.0, 1.0);
+    inkPx = abs(projectionMatrix[1][1]) * 450.0 * length(instanceMatrix[1].xyz) * ${(width / ratioHint).toFixed(4)} / max(abs(inkC.w), 1e-4);
+  #endif
+  transformed += normalize(normalize(normal) * 0.4 + normalize(position - vec3(0.0, ${cy.toFixed(4)}, 0.0) + vec3(1e-4))) * ${width.toFixed(4)} * smoothstep(7.0, 20.0, inkPx);`);
   };
   material.customProgramCacheKey = () => `ink-outline-${width.toFixed(4)}-${cy.toFixed(3)}`;
   materials.set(key, material);

@@ -9,8 +9,10 @@ const VERTEX_SHADER = /* glsl */`
   varying vec2 vEnvironmentUv;
   varying vec3 vEnvironmentNormal;
   varying vec3 vEnvironmentWorld;
+  varying float vInkFade;
   uniform float uOutline, uOutlineWidth;
   void main() {
+    vInkFade = 1.0;
     vec3 localPosition = position;
     vec3 worldNormal = normal;
     #ifdef USE_INSTANCING
@@ -34,6 +36,16 @@ const VERTEX_SHADER = /* glsl */`
       #endif
     }
     vec4 viewPosition = modelViewMatrix * vec4(localPosition, 1.0);
+    if (uOutline > 0.5) {
+      // V1.2：墨线按屏幕尺寸淡出——远景的小屋不再各自描一圈黑边。
+      float instScale = 1.0;
+      #ifdef USE_INSTANCING
+        instScale = length(instanceMatrix[1].xyz);
+      #endif
+      vec4 clipC = projectionMatrix * viewPosition;
+      float px = abs(projectionMatrix[1][1]) * 450.0 * instScale / max(abs(clipC.w), 1e-4);
+      vInkFade = smoothstep(9.0, 26.0, px);
+    }
     vEnvironmentWorld = (modelMatrix * vec4(localPosition, 1.0)).xyz;
     vEnvironmentUv = uv;
     vEnvironmentNormal = normalize(mat3(modelMatrix) * worldNormal);
@@ -49,10 +61,11 @@ const FRAGMENT_SHADER = /* glsl */`
   varying vec3 vEnvironmentWorld;
   uniform float uToon, uOutline;
   uniform vec3 uInkColor, uShadowCool, uPaperTone;
+  varying float vInkFade;
   void main() {
     if (uOutline > 0.5) {
-      if (uToon < 0.5) discard;
-      gl_FragColor = vec4(uInkColor, 1.0);
+      if (uToon < 0.5 || vInkFade < 0.02) discard;
+      gl_FragColor = vec4(mix(uPaperTone * 0.82, uInkColor, vInkFade * 0.88), 1.0);
       #include <tonemapping_fragment>
       #include <colorspace_fragment>
       return;
@@ -68,10 +81,10 @@ ${paletteLookup}
       // V1.1 三渲二：受光 / 中间 / 背光三档平涂，背光偏冷，受光略透纸色。
       vec3 n = normalize(vEnvironmentNormal);
       float ndl = dot(n, normalize(vec3(-0.45, 0.80, -0.38)));
-      float lit = smoothstep(0.38, 0.46, ndl), mid = smoothstep(-0.10, -0.02, ndl);
-      vec3 shadow = mix(resolved * 0.78, uShadowCool, 0.14);
-      shaded = mix(shadow, resolved * 0.92, mid);
-      shaded = mix(shaded, mix(resolved, uPaperTone, 0.08), lit);
+      float lit = smoothstep(0.30, 0.50, ndl), mid = smoothstep(-0.16, 0.04, ndl);
+      vec3 shadow = mix(resolved * 0.82, uShadowCool, 0.10);
+      shaded = mix(shadow, resolved * 0.94, mid);
+      shaded = mix(shaded, mix(resolved, uPaperTone, 0.06), lit);
     }
     gl_FragColor = vec4(shaded, 1.0);
     #include <tonemapping_fragment>
@@ -136,10 +149,10 @@ export function setEnvironmentMaterialProfile(material, profile) {
   const outline = material.userData.outlineMaterial;
   if (outline) {
     outline.uniforms.uToon.value = sh ? 1 : 0;
-    outline.uniforms.uInkColor.value.set(plane === 'nether' ? '#0E0D0C' : plane === 'upper' ? '#24333A' : '#2E2B27');
-    outline.uniforms.uOutlineWidth.value = plane === 'nether' ? 0.075 : 0.06;
+    outline.uniforms.uInkColor.value.set(plane === 'nether' ? '#0E0D0C' : plane === 'upper' ? '#3E4A5A' : '#3A3732');
+    outline.uniforms.uOutlineWidth.value = plane === 'nether' ? 0.07 : 0.05;
   }
-  material.uniforms.uShadowCool.value.set(plane === 'nether' ? '#141312' : plane === 'upper' ? '#2C5466' : '#3A4E58');
+  material.uniforms.uShadowCool.value.set(plane === 'nether' ? '#141312' : plane === 'upper' ? '#5E6886' : '#55625F');
   return material;
 }
 

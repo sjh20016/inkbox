@@ -84,7 +84,7 @@ export function createShanhaiTreeLODs() {
 const VERT = /* glsl */`
   attribute float aSpecies; attribute float aPart;
   uniform float uOutline, uOutlineWidth, uPixels, uPineLevel;
-  varying vec3 vColor; varying vec3 vN; varying vec3 vW; varying float vPart; varying float vOutlineFade; varying vec3 vTint;
+  varying vec3 vColor; varying vec3 vN; varying vec3 vW; varying float vPart; varying float vOutlineFade; varying vec3 vTint; varying float vDetail;
   float h21(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 15731.743); }
   void main() {
     vec4 local = vec4(position, 1.0); vec3 n = normal;
@@ -98,12 +98,17 @@ const VERT = /* glsl */`
     float isPine = step(h21(floor(origin.xz * 3.0) + 0.5), pineChance);
     float keep = 1.0 - abs(aSpecies - isPine);
     float px = uPixels * scale;
-    vOutlineFade = smoothstep(5.0, 18.0, px);
+    // V1.2：墨线只给近景树（屏幕上够大才描），远处林子回到成片色块。
+    vOutlineFade = smoothstep(11.0, 30.0, px);
+    vDetail = smoothstep(5.0, 22.0, px);
     if (uOutline > 0.5) {
       // Constant-ish screen width; thicker on the crown than on the trunk.
       float w = uOutlineWidth * mix(0.55, 1.0, aPart) * clamp(26.0 / max(px, 1.0), 0.35, 1.6);
       local.xyz += normalize(n) * w;
     }
+    // 远景：树冠略放大、彼此相接成林，树干收进树冠——林子读作色块而不是一株株点阵。
+    local.xz *= mix(1.0, mix(1.35, 1.0, vDetail), aPart);
+    local.y = mix(local.y, local.y * mix(1.12, 1.0, vDetail), aPart);
     local.xyz *= keep;
     vec4 wp = vec4(0.0);
     #ifdef USE_INSTANCING
@@ -125,14 +130,14 @@ const FRAG = /* glsl */`
   uniform float uOutline, uTintWeight, uOpacity;
   uniform vec3 uLeafLight, uLeafMid, uLeafDark, uLeafAccent, uTrunk, uInk, uPaper, uShadowCool, uFogColor;
   uniform float uFogNear, uFogFar, uFogStrength, uAccentAmt;
-  varying vec3 vColor; varying vec3 vN; varying vec3 vW; varying float vPart; varying float vOutlineFade; varying vec3 vTint;
+  varying vec3 vColor; varying vec3 vN; varying vec3 vW; varying float vPart; varying float vOutlineFade; varying vec3 vTint; varying float vDetail;
   float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float vnoise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
     return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y); }
   void main() {
     if (uOutline > 0.5) {
       if (vOutlineFade < 0.02) discard;
-      gl_FragColor = vec4(mix(uFogColor, uInk, vOutlineFade * 0.92), 1.0);
+      gl_FragColor = vec4(mix(uFogColor, uInk, vOutlineFade * 0.80), 1.0);
       #include <tonemapping_fragment>
       #include <colorspace_fragment>
       return;
@@ -142,17 +147,20 @@ const FRAG = /* glsl */`
     float ndl = dot(N, L);
     float patchN = vnoise(vW.xz * 0.075 + 3.0);
     float patch2 = vnoise(vW.xz * 0.19 + 11.0);
-    vec3 leaf = mix(uLeafMid, uLeafLight, smoothstep(0.35, 0.70, patchN));
-    leaf = mix(leaf, uLeafDark, smoothstep(0.62, 0.85, patch2) * 0.55);
+    // 林相：只用低频成片变化（一片林一个色），不逐株跳色。
+    vec3 leaf = mix(uLeafMid, uLeafLight, smoothstep(0.30, 0.75, patchN));
+    leaf = mix(leaf, uLeafDark, smoothstep(0.66, 0.90, patch2) * 0.35);
     leaf = mix(leaf, uLeafAccent, smoothstep(0.84, 0.95, patchN * 0.6 + patch2 * 0.4) * uAccentAmt);
     leaf = mix(leaf, vTint, uTintWeight);
     leaf = mix(leaf, vColor * dot(leaf, vec3(0.333)) / max(dot(vColor, vec3(0.333)), 0.01), 0.18);
-    vec3 base = mix(uTrunk, leaf, vPart);
+    vec3 base = mix(mix(leaf * 0.80, uTrunk, vDetail), leaf, vPart);
     // Two brush edges: 受光 / 中间 / 背光.
-    float lit = smoothstep(0.42, 0.50, ndl), mid = smoothstep(-0.05, 0.05, ndl);
-    vec3 shadow = mix(base * 0.62, uShadowCool, 0.22);
-    vec3 col = mix(shadow, base * 0.86, mid);
-    col = mix(col, mix(base, uPaper, 0.10), lit);
+    // 软三档；远处收敛为单一色面（树冠明暗不再在远景里闪成噪点）。
+    float lit = smoothstep(0.30, 0.62, ndl), mid = smoothstep(-0.20, 0.15, ndl);
+    float c = mix(0.30, 1.0, vDetail);
+    vec3 shadow = mix(base, mix(base * 0.72, uShadowCool, 0.20), c);
+    vec3 col = mix(shadow, base * mix(0.95, 0.88, c), mid);
+    col = mix(col, mix(base, uPaper, 0.08 * c), lit);
     float fog = smoothstep(uFogNear, uFogFar, distance(cameraPosition, vW)) * uFogStrength;
     col = mix(col, uFogColor, fog);
     gl_FragColor = vec4(col, uOpacity);
@@ -161,9 +169,9 @@ const FRAG = /* glsl */`
   }`;
 
 export const FLORA_PALETTES = Object.freeze({
-  mortal: { light: '#A7BE78', mid: '#6E9864', dark: '#3F6656', accent: '#C9925A', trunk: '#5B4A3A', ink: '#2B2925', paper: '#EDE5D1', cool: '#36505A', fog: '#E9E2D0', accentAmt: 0.55, tint: 0.25, pine: 14, outline: 0.030 },
-  upper: { light: '#8CB394', mid: '#4C8A6E', dark: '#2C6A6C', accent: '#C3A25B', trunk: '#6B523C', ink: '#24333A', paper: '#F0E8D4', cool: '#2C5466', fog: '#F2ECDD', accentAmt: 0.75, tint: 0.0, pine: 10, outline: 0.030 },
-  nether: { light: '#BDB7AA', mid: '#5A5650', dark: '#151413', accent: '#9C3A2E', trunk: '#151413', ink: '#0B0A09', paper: '#ECE6DA', cool: '#141312', fog: '#E4DED2', accentAmt: 0.18, tint: 0.0, pine: -40, outline: 0.040 },
+  mortal: { light: '#A8B38E', mid: '#8A9B7E', dark: '#6A7C6C', accent: '#B49B74', trunk: '#6A5A4A', ink: '#44443D', paper: '#EDE5D1', cool: '#5D6C6B', fog: '#E9E3D5', accentAmt: 0.16, tint: 0.18, pine: 14, outline: 0.030 },
+  upper: { light: '#A9C0B4', mid: '#7FA196', dark: '#5F8086', accent: '#CBBB8E', trunk: '#6E5C4C', ink: '#3E4A5A', paper: '#F0E8D4', cool: '#62688A', fog: '#EEF0EB', accentAmt: 0.30, tint: 0.0, pine: 10, outline: 0.030 },
+  nether: { light: '#CFC9BC', mid: '#8E897F', dark: '#4E4B45', accent: '#9C3A2E', trunk: '#2A2826', ink: '#0B0A09', paper: '#ECE6DA', cool: '#141312', fog: '#E4DED2', accentAmt: 0.18, tint: 0.0, pine: -40, outline: 0.040 },
 });
 
 export function createShanhaiTreeMaterial(plane = 'mortal', { outline = false } = {}) {

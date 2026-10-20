@@ -90,8 +90,10 @@ check('T1 C2D 新文件不引入全屏后处理 / 新依赖 / 美术随机', () 
 
 check('T1 VisualElevation 公式冻结，terrain type 仍为离散 NearestFilter', () => {
   const source = readCode('src/inkbox/render3d/terrain/VisualElevation.js');
-  assert.match(source, /d \* 38 \+ Math\.max\(0, d\) \*\* 2 \* 38/, 'VisualElevation 公式必须逐字保持');
-  assert.equal(visualElevation(0.5), (0.5 - 0.3) * 38 + Math.pow(0.2, 2) * 38, 'VisualElevation 结果不得改变');
+  // V1.2《山海归素》Art Pass 有意变更：二次项 38→22，削弱高处格间差放大（石笋/竖墙）。
+  // 公式仍为单一来源（网格/贴地/拾取/水/相机共用），此处冻结新公式。
+  assert.match(source, /d \* 38 \+ Math\.max\(0, d\) \*\* 2 \* 22/, 'VisualElevation 公式必须逐字保持');
+  assert.equal(visualElevation(0.5), (0.5 - 0.3) * 38 + Math.pow(0.2, 2) * 22, 'VisualElevation 结果不得改变');
   const textures = readCode('src/inkbox/render3d/art/TerrainDataTextures.js');
   assert.match(textures, /NearestFilter/, 'terrain typeTexture 必须保持 NearestFilter');
   const terrain = readCode('src/inkbox/render3d/art/PigmentTerrainMaterial.js');

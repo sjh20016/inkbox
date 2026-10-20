@@ -70,7 +70,6 @@ function paintBackdrop(plane, seed = 7) {
       g.quadraticCurveTo(x - w * 0.4, y - w * 0.16, x, y - w * 0.12); g.quadraticCurveTo(x + w * 0.5, y - w * 0.18, x + w, y);
       g.lineTo(x + w * 0.62, y + d * 0.30); g.lineTo(x + w * 0.30, y + d * 0.55); g.lineTo(x + w * 0.08, y + d);
       g.lineTo(x - w * 0.14, y + d * 0.62); g.lineTo(x - w * 0.52, y + d * 0.36); g.closePath(); g.fill();
-      if (i < 3) { g.fillStyle = '#D2AE4E'; g.globalAlpha = 0.35; g.fillRect(x - w * 0.10, y - w * 0.30, w * 0.20, w * 0.10); }
     }
     g.globalAlpha = 1;
     for (let i = 0; i < 9; i++) { // cloud ribbons
@@ -228,20 +227,20 @@ export class ShanhaiAtmosphere {
   /** Upper: 浮岛（倒悬山 + 云台仙殿 / 松）; Nether: 断岩残碑. Placed strictly outside [0,w)×[0,h). */
   buildFloaters(plane, world, r) {
     const upper = plane === 'upper';
-    const pal = upper ? { top: '#6E9A6A', lip: '#B89A68', rock: '#4F8790', foot: '#E8E4D6' } : { top: '#4A4743', lip: '#2E2C29', rock: '#1E1D1B', foot: '#9A958A' };
+    const pal = upper ? { top: '#A6B4A2', lip: '#CFC1A3', rock: '#8C9FB0', foot: '#EEF0EB' } : { top: '#4A4743', lip: '#2E2C29', rock: '#1E1D1B', foot: '#9A958A' };
     const rock = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
-    const ink = new THREE.MeshBasicMaterial({ color: upper ? '#24333A' : '#0E0D0C', side: THREE.BackSide });
-    ink.onBeforeCompile = shader => { shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n transformed += normalize(normal) * 0.16;'); };
+    const ink = new THREE.MeshBasicMaterial({ color: upper ? '#5A6684' : '#0E0D0C', side: THREE.BackSide });
+    ink.onBeforeCompile = shader => { shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>\n transformed += normalize(normal) * ${upper ? '0.10' : '0.16'};`); };
     const decor = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
     const hall = new THREE.MeshLambertMaterial({ color: upper ? '#F0EDE1' : '#2A2826', flatShading: true });
-    const gold = new THREE.MeshBasicMaterial({ color: upper ? '#D5B65A' : '#B23A2E' });
+    const gold = new THREE.MeshBasicMaterial({ color: upper ? '#CDB98A' : '#B23A2E' });
     this.materials.push(rock, ink, decor, hall, gold);
     // Shared motif geometries (one per kind), instanced by reference on many isles.
     const motifs = upper ? { terrace: sceneryGeometry('terrace', 'upper'), stele: sceneryGeometry('stele', 'upper') }
       : { stele: sceneryGeometry('stele', 'nether'), remnant: sceneryGeometry('remnant', 'nether') };
     const pine = new THREE.ConeGeometry(0.55, 1.9, 6); pine.translate(0, 0.95, 0);
     this.sharedGeometries = [...Object.values(motifs), pine];
-    const pineMat = new THREE.MeshLambertMaterial({ color: upper ? '#3F6F57' : '#2A2826', flatShading: true }); this.materials.push(pineMat);
+    const pineMat = new THREE.MeshLambertMaterial({ color: upper ? '#6F9285' : '#2A2826', flatShading: true }); this.materials.push(pineMat);
     const hw = world.w / 2, hh = world.h / 2;
     // Composition: one or two large anchor isles + a cluster of small ones around each (主宾呼应).
     const anchors = upper ? 3 : 2, plan = [];
@@ -264,21 +263,24 @@ export class ShanhaiAtmosphere {
       const geo = isletGeometry(q.R, height, (world.seed >>> 0) + i * 97 + 3, pal);
       const body = noRaycast(new THREE.Mesh(geo, rock)); g.add(body);
       const line = noRaycast(new THREE.Mesh(geo, ink)); line.userData.sharedGeometry = true; g.add(line);
-      if (q.big) {
+      // V1.2：装饰克制——只有主岛（第一座）建云台仙殿，其余主岛只留松，卫星岛多数空着。
+      if (q.big && (i === 0 || !upper)) {
         const kind = upper ? 'terrace' : 'remnant';
         const m = noRaycast(new THREE.Mesh(motifs[kind], decor)); m.userData.sharedGeometry = true;
         m.scale.setScalar(q.R * (upper ? 0.34 : 0.42)); m.position.y = q.R * 0.22; m.rotation.y = r() * Math.PI * 2; g.add(m);
-      } else if (r() < 0.6) {
+      } else if (!q.big && r() < (upper ? 0.22 : 0.6)) {
         const m = noRaycast(new THREE.Mesh(motifs.stele, decor)); m.userData.sharedGeometry = true; m.scale.setScalar(Math.max(0.6, q.R * 0.35)); m.position.set(q.R * 0.2, q.R * 0.24, 0); g.add(m);
       }
-      const pines = q.big ? 3 + Math.floor(r() * 3) : Math.floor(r() * 3);
+      const pines = q.big ? 2 + Math.floor(r() * 3) : Math.floor(r() * 2);
       for (let p = 0; p < pines; p++) {
         const ang = r() * Math.PI * 2, d = q.R * (0.55 + r() * 0.35), s = (q.big ? 1.1 : 0.7) * (0.7 + r() * 0.6);
         const t = noRaycast(new THREE.Mesh(pine, pineMat)); t.userData.sharedGeometry = true; t.scale.set(s, s * (1.1 + r() * 0.5), s);
         t.position.set(Math.cos(ang) * d, q.R * 0.14, Math.sin(ang) * d); g.add(t);
       }
       g.position.set(q.x, q.y, q.z); g.rotation.y = r() * Math.PI * 2;
-      const skirt = noRaycast(new THREE.Sprite(this.materials[0])); skirt.scale.set(q.R * 4.2, q.R * 1.4, 1); skirt.position.y = -height * 0.62; g.add(skirt);
+      const skirt = noRaycast(new THREE.Sprite(this.materials[0])); skirt.scale.set(q.R * 5.2, q.R * 1.9, 1); skirt.position.y = -height * 0.48; g.add(skirt);
+      // 云托岛：岛身下半没入一层薄云，浮岛与云海相接而不是悬在空白里。
+      if (upper) { const wrap = noRaycast(new THREE.Sprite(this.materials[0])); wrap.scale.set(q.R * 3.4, q.R * 0.9, 1); wrap.position.y = -height * 0.18; g.add(wrap); }
       g.userData.base = g.position.clone(); g.userData.phase = r() * Math.PI * 2;
       this.root.add(g); this.floaters.push(g);
     });

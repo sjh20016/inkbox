@@ -345,7 +345,7 @@ export class VegetationLayer {
       else if (this.shanhaiActive) {
         // 聚落让景：房屋格上的树不画，紧邻房屋的树收小，让白墙黛瓦从林间露出来。
         const near = this._structNear(tree);
-        const k = near === 2 ? 1e-5 : near === 1 ? 0.58 : 0.86;
+        const k = near === 2 ? 1e-5 : near === 1 ? 0.52 : 0.78; // V1.2：树整体略小，屋舍与山体尺度更开阔
         dummy.scale.multiplyScalar(k);
       }
       const tint = varied ? this._variantTints[variant] : this._whiteTint;

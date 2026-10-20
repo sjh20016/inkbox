@@ -23,8 +23,8 @@ const merge = (base, over) => {
  */
 export const SHANHAI_SCENE = deepFreeze({
   mortal: {
-    terrain: { band: [-4, 36], low: '#C9A574', mid: '#79A25A', high: '#3F7E78', peak: '#F0E9D8', shadow: '#2F4A52',
-      light: '#F7E8C6', gold: '#C3A25B', mist: '#E7E0CF', strength: 0.84, shade: 0.26, cun: 0.22, ridge: 0.50, wash: 0.16, line: 0.40,
+    terrain: { band: [-4, 36], low: '#C3B595', mid: '#A1A48C', high: '#889691', peak: '#EFEADD', shadow: '#525C5A',
+      light: '#F5EDDB', gold: '#C3A25B', mist: '#E9E3D5', strength: 0.82, shade: 0.46, cun: 0.36, ridge: 0.42, wash: 0.12, line: 0.0,
       goldAmt: 0.0, mistAmt: 0.26, air: 0.30 },
     sky: { top: '#E9E1CD', bottom: '#F3EEE1', horizon: '#E4DCC8' },
     hills: ['#B9C2B4', '#9DAEA4', '#7F948E'], hillInk: '#5A6A68', mistBand: '#F4EFE3', sun: { color: '#E2A27A', x: 0.80, y: 0.20, r: 0.040, alpha: 0.16 },
@@ -32,11 +32,11 @@ export const SHANHAI_SCENE = deepFreeze({
     light: { sky: '#FBF1DA', ground: '#6E7A64', hemi: 1.75, sun: '#FFE8C2', sunIntensity: 2.5, sunDir: [-90, 150, -60] },
   },
   upper: {
-    terrain: { band: [-2, 40], low: '#C29552', mid: '#3B9270', high: '#1F7A92', peak: '#F4EFE2', shadow: '#1E4A5E',
-      light: '#FFF1CF', gold: '#D2AE4E', mist: '#F2ECDD', strength: 0.92, shade: 0.24, cun: 0.16, ridge: 0.44, wash: 0.12, line: 0.30,
-      goldAmt: 0.75, mistAmt: 0.30, air: 0.30, mineral: 0.75 },
+    terrain: { band: [-2, 40], low: '#CDBFA2', mid: '#93B3A8', high: '#8399B4', peak: '#F5F2EA', shadow: '#62668A',
+      light: '#FBF4E4', gold: '#D6BE86', mist: '#EEF0EB', strength: 0.82, shade: 0.24, cun: 0.20, ridge: 0.34, wash: 0.16, line: 0.0,
+      goldAmt: 0.35, mistAmt: 0.40, air: 0.38, mineral: 0.55 },
     sky: { top: '#E7EBE2', bottom: '#F4EEDF', horizon: '#EFE6D0' },
-    hills: ['#B7CEC6', '#8FB3AE', '#5F8F98'], hillInk: '#355E70', mistBand: '#FBF7EC', sun: { color: '#D9B65A', x: 0.22, y: 0.18, r: 0.05, alpha: 0.38 },
+    hills: ['#CCD8D6', '#AEBFC6', '#919FB6'], hillInk: '#5A6684', mistBand: '#FBF7EC', sun: { color: '#D9B65A', x: 0.22, y: 0.18, r: 0.05, alpha: 0.38 },
     base: { color: '#FBF8EF', ink: '#B7C6C2', opacity: 0.96, kind: 'cloud' },
     light: { sky: '#FFF6E2', ground: '#7C8C88', hemi: 1.9, sun: '#FFF0CC', sunIntensity: 2.6, sunDir: [-70, 170, -90] },
   },
@@ -54,20 +54,20 @@ export const SHANHAI_SCENE = deepFreeze({
 export const SHANHAI_STYLES = deepFreeze({
   mortal: merge(REALM_STYLES.mortal, {
     name: 'MortalShanhaiV1', shanhai: SHANHAI_SCENE.mortal.terrain, paper: { color: '#EDE5D1', background: '#EDE5D1', exposure: 1.02 },
-    vegetation: { palette: ['#A9BC7A', '#7FA08A', '#5E7466'], tints5: ['#A9BC7A', '#8DA46A', '#7FA08A', '#6A9A88', '#C2A27A'], instanceTintWeight: 0.55 },
-    water: { color: '#6F9EA2', opacity: 0.90, paperStrength: 0.36, rippleStrength: 0.62 },
-    building: { palette: { wall: '#F2EDE0', roof: '#56626B', wood: '#8A7A66', earth: '#7C7A70', accent: '#B64A3B' } },
+    vegetation: { palette: ['#A3AE88', '#879A84', '#6F8274'], tints5: ['#A3AE88', '#949F7E', '#879A84', '#7F9385', '#B3A687'], instanceTintWeight: 0.28 },
+    water: { color: '#86A8A9', opacity: 0.88, paperStrength: 0.18, rippleStrength: 0.36 },
+    building: { palette: { wall: '#EEE7D8', roof: '#5E666B', wood: '#9F8A70', earth: '#AC9C80', accent: '#A9573F' } },
     pigment: { density: 0.80, saturation: 0.82, colorLayer: 0.35 },
-    ink: { structure: 0.62, silhouette: 0.26, density: 0.44, dryBrush: 0.36, feibai: 0.16, color: '#2B2925' },
-    contrast: 1.07,
+    ink: { structure: 0.40, silhouette: 0.16, density: 0.34, dryBrush: 0.26, feibai: 0.12, color: '#35322D' },
+    contrast: 1.03,
     atmosphere: { color: '#E7E0CF', strength: 0.10, low: -6, high: 6 },
   }),
   upper: merge(REALM_STYLES.upper, {
     name: 'UpperShanhaiV1', shanhai: SHANHAI_SCENE.upper.terrain, paper: { color: '#F0E8D4', background: '#F0E8D4', exposure: 1.03 },
-    vegetation: { palette: ['#5C8D6B', '#306D51', '#C3A25B'], tints5: ['#5C8D6B', '#43846C', '#70A5AF', '#C3A25B', '#8CB394'] },
+    vegetation: { palette: ['#86A294', '#6C9188', '#BDB08A'], tints5: ['#86A294', '#78998E', '#8FA7B0', '#BDB08A', '#9CB3A4'], instanceTintWeight: 0.30 },
     building: { palette: { wall: '#F0EDE1', roof: '#2F4955', wood: '#996547', earth: '#C3A26B', accent: '#D5B65A' } },
-    pigment: { density: 0.82, saturation: 0.92, colorLayer: 0.95 },
-    contrast: 1.10,
+    pigment: { density: 0.80, saturation: 0.70, colorLayer: 0.60 },
+    contrast: 1.04,
     atmosphere: { color: '#F4EEDF', strength: 0.26, low: 6, high: 20 },
   }),
   nether: merge(REALM_STYLES.nether, {
@@ -87,7 +87,7 @@ export const SHANHAI_STYLES = deepFreeze({
 export const SHANHAI_OPTIONS = { nether: 'ink' };
 const NETHER_BW_SCENE = {
   sky: { top: '#D9D3C6', bottom: '#EEE9DE', horizon: '#E4DED2' },
-  hills: ['#8C877D', '#3B3834', '#121110'], hillInk: '#0B0A09', mistBand: '#EFEAE0',
+  hills: ['#C4BEB2', '#8E897F', '#3E3B36'], hillInk: '#1A1816', mistBand: '#F1ECE3',
   sun: { color: '#B23A2E', x: 0.76, y: 0.16, r: 0.034, alpha: 0.85 },
   base: { color: '#E8E2D6', ink: '#141311', opacity: 0.94, kind: 'inkfog' },
   light: { sky: '#F2EEE6', ground: '#6A665E', hemi: 1.9, sun: '#F4F0E6', sunIntensity: 2.1, sunDir: [-110, 140, -40] },
@@ -99,7 +99,7 @@ const NETHER_VARIANTS = deepFreeze({
   },
   ink: {
     scene: merge(SHANHAI_SCENE.nether, { ...NETHER_BW_SCENE, terrain: { ...SHANHAI_SCENE.nether.terrain, low: '#2A2724', mid: '#8A857B', high: '#D8D2C4', peak: '#F1ECE2',
-      shadow: '#0E0D0C', mist: '#E9E3D7', shade: 0.50, cun: 0.42, ridge: 0.85, line: 0.42, wash: 0.10, inkMode: 'ink', inkAmt: 0.90, mistAmt: 0.18, air: 0.22 } }),
+      shadow: '#0E0D0C', mist: '#E9E3D7', shade: 0.50, cun: 0.24, ridge: 0.70, line: 0.0, wash: 0.10, inkMode: 'ink', inkAmt: 0.90, mistAmt: 0.18, air: 0.22 } }),
   },
 });
 const netherVariantStyle = {};
