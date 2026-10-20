@@ -222,6 +222,7 @@ const FILES = [
 const DIRECTORIES = [
   'src/inkbox',
   'vendor/three',
+  'assets/ui',
   '剧情文案素材',
   'assets/characters/cultivator/mesh',
   'assets/characters/cultivator/data',
