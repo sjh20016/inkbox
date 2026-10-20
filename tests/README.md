@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:g6` 检查 G6-P0：正式致死一击到幸存亲友仇怨、原有接战与养伤、仇敌实际死亡后的结局、错误归罪守卫，以及命簿观察和 v11 存档。已加入 Fast；自然多种子短局证据与受控回归分开记录，不代表全量长期或 GPU 验收。玩法和样本限制见 [G6-P0](../docs/development/G6_P0_CAUSALITY.md)。
+
 `npm run test:g5` 检查 GPU/CPU 高程与拾取版本、回退与历史 shader 切换、同帧全量/局部上传顺序、精确水面湿域与外缘、植被资格及局部贴地。已加入 Fast；性能对照沿用 G5 固定种子水文逐步账本，真实 GPU/正常推进仍须单独验收，不解除 PERF BLOCKED。`test:g5` 末尾含 `npm run test:longframe`（地形规则格网求交与暴力法逐项一致、广卷至少快 10 倍）。
 
 > RG-P3 · 2026-10-17 现行指南。历史阶段细节从 [原测试说明](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/tests/README.md) 查阅。此处只保留当前开发真正要用的入口。

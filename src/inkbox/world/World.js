@@ -529,7 +529,9 @@ export class World {
     if (this.ascended.length > 120) this.ascended.splice(0, this.ascended.length - 120);
   }
 
-  record(text, kind = 'world', actors = null, location = null) {
+  // Optional importance affects personal log retention only; chronicle/location
+  // and all existing four-argument calls keep their established behavior.
+  record(text, kind = 'world', actors = null, location = null, logOptions = {}) {
     const place = historyLocation(this, location);
     this.chronicle.push({ day: this.day, year: Math.floor(this.day / 360), text, kind, ...(place || {}) });
     if (this.chronicle.length > 400) this.chronicle.splice(0, this.chronicle.length - 400);
@@ -547,7 +549,10 @@ export class World {
     if (actors) {
       const list = Array.isArray(actors) ? actors : [actors];
       for (let i = 0; i < list.length; i += 1) {
-        if (list[i]) recordLifeEvent(this, list[i], kind, text, place ? { location: place } : {});
+        if (list[i]) recordLifeEvent(this, list[i], kind, text, {
+          ...(place ? { location: place } : {}),
+          ...(logOptions.importance !== undefined ? { importance: logOptions.importance } : {}),
+        });
       }
     }
   }

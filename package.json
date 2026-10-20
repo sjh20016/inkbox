@@ -7,6 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:g6": "node scripts/inkbox-g6-causality.mjs",
     "test:g5": "node scripts/inkbox-g5-terrain.mjs && node scripts/inkbox-g5-water.mjs && node scripts/inkbox-g5-vegetation.mjs && node scripts/inkbox-longframe-raycast.mjs",
     "test:longframe": "node scripts/inkbox-longframe-raycast.mjs",
     "bench:longframe": "node scripts/inkbox-longframe-raycast.mjs --benchmark",

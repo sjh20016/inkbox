@@ -95,6 +95,9 @@ jobs:
       - name: G2.6 视角、聚落水灾、安全落点与众生表现
         run: npm run test:g26
 
+      - name: G6-P0 亲友血仇、真实接战与历史追踪
+        run: npm run test:g6
+
       - name: G5 GPU 地形、水面湿域与植被局部更新
         run: npm run test:g5
 

@@ -12,6 +12,7 @@
 //   daoCompanionSystem.js:3-8   道侣感应（突破共鸣 25% / 心悸 40% / 陨落 80%）
 
 import { clamp } from '../core/noise.js';
+import { SPECIES } from '../core/config.js';
 
 export const RELATION_TYPES = Object.freeze({
   MENTOR: 'mentor',
@@ -274,7 +275,9 @@ export function stepRelations(world, life, dtDays, rng) {
       const b = pool[Math.floor(rng() * pool.length)];
       if (a !== b && Math.hypot(a.x - b.x, a.y - b.y) < 12) {
         const rel = relationTo(a, b);
-        if (!rel || (rel.type !== RELATION_TYPES.MENTOR && rel.type !== RELATION_TYPES.DISCIPLE && rel.type !== RELATION_TYPES.LOVER)) {
+        const reverse = relationTo(b, a);
+        if (rel?.type !== RELATION_TYPES.ENMITY && reverse?.type !== RELATION_TYPES.ENMITY
+          && (!rel || (rel.type !== RELATION_TYPES.MENTOR && rel.type !== RELATION_TYPES.DISCIPLE && rel.type !== RELATION_TYPES.LOVER))) {
           addRelation(a, b, RELATION_TYPES.RIVAL, -30);
         }
       }
@@ -282,8 +285,50 @@ export function stepRelations(world, life, dtDays, rng) {
   }
 }
 
-/** 某人死后，所有指向他的关系都要处理（师徒改旧师、道侣哀恸） */
+const CLOSE_DEATH_RELATIONS = new Set([
+  RELATION_TYPES.KIN, RELATION_TYPES.LOVER, RELATION_TYPES.MENTOR, RELATION_TYPES.DISCIPLE,
+]);
+const HOSTILE_RELATIONS = new Set([RELATION_TYPES.RIVAL, RELATION_TYPES.ENMITY]);
+
+function livingPerson(entity) {
+  return entity && (entity.sp === SPECIES.HUMAN || entity.sp === SPECIES.CULTIVATOR)
+    && entity.hp > 0 && !entity._ascended && !(entity.age >= entity.lifespan);
+}
+
+/** Only a same-world fatal attack can establish blame. No pursuit AI or RNG:
+ * the existing findEnemy threshold consumes the resulting ordinary relation.
+ * parentA/B are the actual family links; KIN is only legacy compatibility.
+ */
+function deathEnmity(world, victim) {
+  const killerId = victim.killedBy?.id;
+  if (!(victim.hp <= 0) || !Number.isSafeInteger(killerId) || killerId <= 0 || killerId === victim.id) return;
+  const killer = world.entities.find(e => e.id === killerId);
+  if (!livingPerson(killer)) return;
+  for (const other of world.entities) {
+    if (other === victim || other.id === killerId || !livingPerson(other)) continue;
+    const parentChild = other.parentA === victim.id || other.parentB === victim.id
+      || victim.parentA === other.id || victim.parentB === other.id;
+    const close = [other.relations?.get(victim.id), victim.relations?.get(other.id)]
+      .some(rel => rel && CLOSE_DEATH_RELATIONS.has(rel.type) && rel.score >= 50);
+    if (!parentChild && !close) continue;
+    const a = other.relations?.get(killerId), b = killer.relations?.get(other.id);
+    // A single relation slot cannot also express a breakup. Preserve every
+    // existing non-hostile bond, even an asymmetric peer/gratitude edge.
+    if ((a && !HOSTILE_RELATIONS.has(a.type)) || (b && !HOSTILE_RELATIONS.has(b.type))) continue;
+    const scoreA = Math.min(-60, a?.score ?? 0), scoreB = Math.min(-60, b?.score ?? 0);
+    if (a?.type === RELATION_TYPES.ENMITY && a.score === scoreA
+      && b?.type === RELATION_TYPES.ENMITY && b.score === scoreB) continue;
+    ensureRelations(other).set(killerId, { ...a, type: RELATION_TYPES.ENMITY, score: scoreA, since: a?.since ?? (other.age || 0) });
+    ensureRelations(killer).set(other.id, { ...b, type: RELATION_TYPES.ENMITY, score: scoreB, since: b?.since ?? (killer.age || 0) });
+    world.record(`【${other.name}】因【${victim.name}】遇害，向【${killer.name}】结下仇怨。`, 'relation', [other, killer], {
+      plane: world.plane || 'mortal', x: Math.floor(victim.x), y: Math.floor(victim.y),
+    }, { importance: 60 });
+  }
+}
+
+/** 某人死后，先据真实凶手成立亲友仇怨，再处理指向死者的旧关系。 */
 export function onDeathRelations(world, entity, rng) {
+  deathEnmity(world, entity);
   for (let i = 0; i < world.entities.length; i += 1) {
     const other = world.entities[i];
     if (!other.relations) continue;
