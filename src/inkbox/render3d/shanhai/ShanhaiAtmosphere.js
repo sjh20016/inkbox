@@ -169,6 +169,12 @@ export class ShanhaiAtmosphere {
       return;
     }
     const s = shanhaiSceneFor(plane);
+    const backdropWorldKey = this.worldKey();
+    if (this.backdropWorldKey !== backdropWorldKey) {
+      for (const backdrop of this.backdrops.values()) backdrop.dispose();
+      this.backdrops.clear();
+      this.backdropWorldKey = backdropWorldKey;
+    }
     if (!this.backdrops.has(plane)) this.backdrops.set(plane, paintBackdrop(plane, (this.host.world?.seed >>> 0) % 997));
     scene.background = this.backdrops.get(plane); this.stats.backdrop = plane;
     if (hemi && sun) {

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { registerEnvironmentOutlineBatch, unregisterEnvironmentOutlineBatch } from './EnvironmentMaterial.js';
 
 const LOD_COUNT = 3;
 
@@ -65,6 +66,7 @@ export class EnvironmentBatch {
     }
     this._sourceByNode = new Map();
     this._dummy = new THREE.Object3D();
+    registerEnvironmentOutlineBatch(material, this);
   }
 
   capacityForNode(nodeName) { return this.nodeCapacities.get(nodeName) ?? this.capacity; }
@@ -124,7 +126,7 @@ export class EnvironmentBatch {
       mesh.instanceMatrix.needsUpdate = true;
       const ink = mesh.userData.inkOutline;
       // HLOD clusters (lod 3) stay as flat colour blocks; far LOD2 drops the line too.
-      if (ink) { ink.count = count; ink.visible = count > 0 && mesh.userData.lod !== 3 && mesh.userData.lod !== 2; }
+      if (ink) ink.count = count;
       if (!count) continue;
       const module = this.library.modules.get(nodeName);
       instances += count;
@@ -132,8 +134,18 @@ export class EnvironmentBatch {
       drawCalls++;
       if (mesh.userData.lod === 3) hlod += count;
     }
+    this.syncOutlineVisibility();
     this._stats = { instances, triangles, drawCalls, overflow, lod:submittedLOD, ...(this.includeHLOD ? { hlod } : {}) };
     return this.stats;
+  }
+
+  syncOutlineVisibility() {
+    if (this.disposed) return;
+    const enabled = !!this.material?.userData?.toonOutline;
+    for (const mesh of this.meshes.values()) {
+      const ink = mesh.userData.inkOutline;
+      if (ink) ink.visible = enabled && ink.count > 0 && mesh.userData.lod !== 3 && mesh.userData.lod !== 2;
+    }
   }
 
   get stats() { return { ...this._stats, lod: [...this._stats.lod] }; }
@@ -141,6 +153,7 @@ export class EnvironmentBatch {
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
+    unregisterEnvironmentOutlineBatch(this.material, this);
     for (const mesh of this.meshes.values()) {
       this.group.remove(mesh);
       if (mesh.userData.inkOutline) { mesh.userData.inkOutline.removeFromParent(); mesh.userData.inkOutline.dispose(); mesh.userData.inkOutline = null; }
@@ -148,6 +161,7 @@ export class EnvironmentBatch {
     }
     this.meshes.clear();
     this._sourceByNode.clear();
+    this.material = null;
     this._stats = { instances: 0, triangles: 0, drawCalls: 0, overflow: 0, lod: [0, 0, 0] };
     // Geometry, material and atlas belong to the library/Stage.
   }

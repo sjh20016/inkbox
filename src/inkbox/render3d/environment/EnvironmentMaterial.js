@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { realmEnvironmentPalette, realmStyleFor } from '../art/RealmStyleProfile.js';
 
 const PALETTE_SIZE = 28;
+const OUTLINE_BATCHES = 'environmentOutlineBatches';
 const colorUniforms = () => Array.from({ length: PALETTE_SIZE }, () => new THREE.Color(0xffffff));
 const paletteLookup = Array.from({ length: PALETTE_SIZE }, (_, index) => `  if (slot == ${index}) resolved = uEnvironmentPalette[${index}];`).join('\n');
 
@@ -131,7 +132,10 @@ export function createEnvironmentMaterial(library, plane) {
   outline.customProgramCacheKey = () => 'inkbox_environment_index_palette_v1_ink';
   material.userData.outlineMaterial = outline;
   const baseDispose = material.dispose.bind(material);
-  material.dispose = () => { outline.dispose(); baseDispose(); };
+  material.dispose = () => {
+    material.userData[OUTLINE_BATCHES]?.clear();
+    outline.dispose(); baseDispose();
+  };
   setEnvironmentMaterialProfile(material, null);
   return material;
 }
@@ -146,6 +150,7 @@ export function setEnvironmentMaterialProfile(material, profile) {
   const sh = !!profile?.realmStyle?.shanhai, plane = material.userData.environmentPlane;
   material.uniforms.uToon.value = sh ? 1 : 0;
   material.userData.toonOutline = sh;
+  for (const batch of material.userData[OUTLINE_BATCHES] || []) batch.syncOutlineVisibility();
   const outline = material.userData.outlineMaterial;
   if (outline) {
     outline.uniforms.uToon.value = sh ? 1 : 0;
@@ -154,6 +159,17 @@ export function setEnvironmentMaterialProfile(material, profile) {
   }
   material.uniforms.uShadowCool.value.set(plane === 'nether' ? '#141312' : plane === 'upper' ? '#5E6886' : '#55625F');
   return material;
+}
+
+/** Register live batches so profile switches update existing outline instances immediately. */
+export function registerEnvironmentOutlineBatch(material, batch) {
+  if (!material?.isMaterial || !batch) return;
+  (material.userData[OUTLINE_BATCHES] ||= new Set()).add(batch);
+}
+
+/** Remove a batch from the material-owned profile update set. */
+export function unregisterEnvironmentOutlineBatch(material, batch) {
+  material?.userData?.[OUTLINE_BATCHES]?.delete(batch);
 }
 
 /** Keep the presentation view available for stage diagnostics; palette is shared. */

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { heightSampling } from '../art/PigmentTerrainMaterial.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
+import { adaptiveTopology } from '../terrain/topology.js';
 
 /**
  * V1.3 · 墨骨成山 —— 三维线刻（Freestyle / Line Art 思路的实时高度场版本）。
@@ -73,11 +74,28 @@ const strokeVertex = `
 attribute vec2 aPos; attribute vec2 aOther; attribute float aSide; attribute vec4 aInfo;
 uniform sampler2D heightTexture;
 uniform vec2 mapSize, resolution;
-uniform float widthPx, depthBias;
+uniform float widthPx, depthBias, adaptiveDiagonal;
 uniform vec4 kindWidth;
 varying vec3 vWorld; varying float vS, vL, vWeight, vKind, vSide;
 ${heightSampling}
-vec3 toWorld(vec2 c){ return vec3(c.x-(mapSize.x-1.0)*0.5, sampleHeightContinuous(c), c.y-(mapSize.y-1.0)*0.5); }
+float strokeHeight(vec2 p){
+  vec2 c=clamp(p,vec2(0.0),mapSize-1.0);
+  if(all(equal(c,floor(c)))) return hAt(c);
+  vec2 cell=min(floor(c),mapSize-2.0), f=c-cell, texel=1.0/mapSize;
+  vec2 uv=(cell+0.5)*texel;
+  vec4 a=texture2D(heightTexture,uv), b=texture2D(heightTexture,uv+vec2(texel.x,0.0));
+  vec4 c0=texture2D(heightTexture,uv+vec2(0.0,texel.y)), d=texture2D(heightTexture,uv+texel);
+  // R selects the same diagonal as topology.js; G is the Float32 stage height
+  // used by TerrainMesh vertices. Historical worlds always retain the BC split.
+  bool ad=adaptiveDiagonal>0.5 && abs(a.r-d.r)<abs(b.r-c0.r);
+  if(ad) return f.y>=f.x
+    ? a.g+f.y*(c0.g-a.g)+f.x*(d.g-c0.g)
+    : a.g+f.x*(b.g-a.g)+f.y*(d.g-b.g);
+  return f.x+f.y<=1.0
+    ? a.g+f.x*(b.g-a.g)+f.y*(c0.g-a.g)
+    : d.g+(1.0-f.x)*(c0.g-d.g)+(1.0-f.y)*(b.g-d.g);
+}
+vec3 toWorld(vec2 c){ return vec3(c.x-(mapSize.x-1.0)*0.5, strokeHeight(c), c.y-(mapSize.y-1.0)*0.5); }
 void main(){
   vec3 A=toWorld(aPos), B=toWorld(aOther);
   vec4 wA=modelMatrix*vec4(A,1.0); vWorld=wA.xyz;
@@ -293,8 +311,27 @@ export function extractTerrainStructure(E, w, h, { ridge = true, valley = false,
 
 function buildStrokeGeometry(chains, geometry) {
   let segs = 0; for (const c of chains) segs += c.pts.length - 1;
-  const pos = new Float32Array(segs * 8), oth = new Float32Array(segs * 8), side = new Float32Array(segs * 4), info = new Float32Array(segs * 16);
-  const index = new Uint32Array(segs * 6);
+  const oldCapacity = geometry.userData.segmentCapacity || 0;
+  if (segs > oldCapacity) {
+    // Replacing an uploaded BufferAttribute alone leaves its old WebGL buffer owned by
+    // the renderer. Dispose this owned geometry while it still references every old
+    // attribute; three will register/upload the same geometry again on the next draw.
+    if (oldCapacity) geometry.dispose();
+    const capacity = Math.max(segs, oldCapacity ? Math.ceil(oldCapacity * 1.5) : 4);
+    const dynamic = (array, size) => new THREE.BufferAttribute(array, size).setUsage(THREE.DynamicDrawUsage);
+    geometry.setAttribute('aPos', dynamic(new Float32Array(capacity * 8), 2));
+    geometry.setAttribute('aOther', dynamic(new Float32Array(capacity * 8), 2));
+    geometry.setAttribute('aSide', dynamic(new Float32Array(capacity * 4), 1));
+    geometry.setAttribute('aInfo', dynamic(new Float32Array(capacity * 16), 4));
+    // three uses position for vertex count; the shader reconstructs real positions.
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(capacity * 12), 3));
+    geometry.setIndex(dynamic(new Uint32Array(capacity * 6), 1));
+    geometry.userData.segmentCapacity = capacity;
+  }
+  const posAttr = geometry.getAttribute('aPos'), othAttr = geometry.getAttribute('aOther');
+  const sideAttr = geometry.getAttribute('aSide'), infoAttr = geometry.getAttribute('aInfo');
+  const pos = posAttr?.array, oth = othAttr?.array, side = sideAttr?.array, info = infoAttr?.array;
+  const indexAttr = geometry.getIndex(), index = indexAttr?.array;
   let s = 0;
   for (const c of chains) {
     let L = 0; const acc = [0];
@@ -309,14 +346,13 @@ function buildStrokeGeometry(chains, geometry) {
       index.set([v, v + 1, v + 2, v + 2, v + 1, v + 3], s * 6);
     }
   }
-  for (const name of ['aPos', 'aOther', 'aSide', 'aInfo', 'position']) if (geometry.attributes[name]) geometry.deleteAttribute(name);
-  geometry.setAttribute('aPos', new THREE.BufferAttribute(pos, 2));
-  geometry.setAttribute('aOther', new THREE.BufferAttribute(oth, 2));
-  geometry.setAttribute('aSide', new THREE.BufferAttribute(side, 1));
-  geometry.setAttribute('aInfo', new THREE.BufferAttribute(info, 4));
-  // three 需要 position 来决定绘制顶点数；真实位置在着色器里重建。
-  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(segs * 12), 3));
-  geometry.setIndex(new THREE.BufferAttribute(index, 1));
+  if (segs) {
+    for (const [attribute, count] of [[posAttr, segs * 8], [othAttr, segs * 8], [sideAttr, segs * 4], [infoAttr, segs * 16], [indexAttr, segs * 6]]) {
+      attribute.clearUpdateRanges();
+      attribute.addUpdateRange(0, count);
+      attribute.needsUpdate = true;
+    }
+  }
   geometry.setDrawRange(0, segs * 6);
   return segs;
 }
@@ -347,7 +383,8 @@ export class TerrainLineArt {
     // 笔画四边形在屏幕空间展开，绕序随笔画方向而变 ⇒ 双面。
     this.strokeMaterial = new THREE.ShaderMaterial({ vertexShader: strokeVertex, fragmentShader: strokeFragment, side: THREE.DoubleSide,
       transparent: true, depthWrite: false, uniforms: { ...shared, resolution: this.resolution,
-        widthPx: { value: 2 }, depthBias: { value: 1.6 }, kindWidth: { value: new THREE.Vector4(1, 0.7, 0.85, 0.6) },
+        widthPx: { value: 2 }, depthBias: { value: 1.6 }, adaptiveDiagonal: { value: adaptiveTopology(t.world) ? 1 : 0 },
+        kindWidth: { value: new THREE.Vector4(1, 0.7, 0.85, 0.6) },
         kindAlpha: { value: new THREE.Vector4(1, 0.6, 0.8, 0) }, lineColor: { value: new THREE.Color('#141311') }, lineAlpha: { value: 1 },
         gate: { value: 0 }, dry: { value: 0 }, pixelsPerUnit: { value: 4 } } });
     this.strokeMaterial.name = 'TerrainLineArtStrokes';
@@ -411,6 +448,8 @@ export class TerrainLineArt {
   }
   dispose() {
     this.strokeGeometry?.dispose(); this.strokeMaterial?.dispose(); this.hullMaterial?.dispose();
-    this.group.removeFromParent(); this.group.clear(); this.hull = this.strokes = null;
+    this.group.removeFromParent(); this.group.clear(); this.group.visible = false;
+    this.hull = this.strokes = this.strokeGeometry = this.strokeMaterial = this.hullMaterial = null;
+    this.resolution = this.style = this.styleKey = null; this.dirty = true;
   }
 }
