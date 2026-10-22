@@ -3,6 +3,7 @@
 import { SEA_LEVEL, TERRAIN } from '../core/config.js';
 import { clamp } from '../core/noise.js';
 import { OVER, decayOverlay, markDirty, flushDirty } from '../world/terrain.js';
+import { igniteCell, extinguishCell } from './nature.js';
 
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 
@@ -139,7 +140,7 @@ export function stepFire(world, dtDays, rng) {
 }
 
 /** 点燃一片区域 */
-export function ignite(world, x, y, radius = 2, power = 1) {
+export function ignite(world, x, y, radius = 2, power = 1, history = null) {
   const r2 = radius * radius;
   let lit = 0;
   for (let dy = -radius; dy <= radius; dy += 1) {
@@ -149,9 +150,8 @@ export function ignite(world, x, y, radius = 2, power = 1) {
       const ty = y + dy;
       if (!world.inside(tx, ty)) continue;
       const i = world.idx(tx, ty);
-      if (world.water[i] > 0.02) continue;
-      world.fire[i] = Math.min(1, 0.45 + power * 0.4);
-      lit += 1;
+      if (world.water[i] <= 0.02) history?.record(world, i);
+      if (igniteCell(world, i, power)) lit += 1;
     }
   }
   if (lit) world.touch();
@@ -168,7 +168,7 @@ export function extinguish(world, x, y, radius = 3) {
       const ty = y + dy;
       if (!world.inside(tx, ty)) continue;
       const i = world.idx(tx, ty);
-      world.fire[i] = 0;
+      extinguishCell(world, i);
     }
   }
   world.touch();

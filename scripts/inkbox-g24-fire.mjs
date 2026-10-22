@@ -5,7 +5,8 @@ import { SEA_LEVEL, TERRAIN } from '../src/inkbox/core/config.js';
 import { combatIgnitionRoll, tryCombatIgnition } from '../src/inkbox/sim/combatEnvironment.js';
 import { configureCombatPresentation } from '../src/inkbox/sim/presentation.js';
 import { drainRuntimeEvents, peekRuntimeEvents } from '../src/inkbox/core/runtimeEvents.js';
-import { stepFire, stepVegetation } from '../src/inkbox/sim/ecology.js';
+import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
+import { NATURE_DAYS, natureState } from '../src/inkbox/sim/nature.js';
 import { OVER } from '../src/inkbox/world/terrain.js';
 import { deserializeWorld, serializeWorld } from '../src/inkbox/io/save.js';
 import { Life } from '../src/inkbox/sim/life.js';
@@ -203,27 +204,29 @@ check('hash失败消耗尝试冷却但不抽RNG；表现关闭不关闭真实环
   assert.deepEqual(run(), run(), 'same seed, IDs and day reproduce fire state');
 });
 
-check('真实火势蔓延、燃尽留焦土、植被恢复褪去焦土', () => {
+check('真实战斗点火按 dueDay 留下后果并按期限恢复焦土', () => {
   const f = combat(82405), { world: w, a, b, life } = f; fertile(w);
   w.day = successfulDay(w, a, b); life.attack(a, b, 0.1);
   const source = w.idx(Math.round(b.x), Math.round(b.y));
-  const neighbour = w.idx(Math.round(b.x) + 1, Math.round(b.y));
   assert.ok(w.fire[source] > 0.01, 'real attack made the initial fire');
-  let spreadSeen = false;
-  let calls = 0;
-  const ecologyRng = () => { calls += 1; return calls === 1 ? 0 : 0.999999; };
-  for (let n = 0; n < 80 && Array.from(w.fire).some(v => v > 0.01); n++) {
-    stepFire(w, 0.8, ecologyRng);
-    if (w.fire[neighbour] > 0.01) spreadSeen = true;
-  }
-  assert.ok(spreadSeen, 'real stepFire spread from the actual combat ignition');
-  assert.equal(Array.from(w.fire).filter(v => v > 0.01).length, 0, 'bounded ecology steps naturally extinguish finite fuel');
-  assert.ok(Array.from(w.over).some(v => v === OVER.SCORCHED), 'burning left real scorched terrain');
-  const scorched = Array.from({ length: w.size }, (_, i) => i).filter(i => w.over[i] === OVER.SCORCHED);
-  for (const i of scorched) { w.moist[i] = 0.9; w.temp[i] = 0.8; }
-  for (let n = 0; n < 40 && scorched.some(i => w.over[i] === OVER.SCORCHED); n++) stepVegetation(w, 360, () => 0.5);
-  assert.ok(scorched.some(i => w.veg[i] > 0.35));
-  assert.ok(scorched.some(i => w.over[i] === OVER.NONE), 'real vegetation regrowth clears scorched overlay');
+  const initialVeg = w.veg[source], fire = natureState(w).fires.get(source);
+  assert.equal(fire.dueDay, w.day + NATURE_DAYS.fire);
+  const state = createAdvanceState(), lifeStub = { step() {} };
+  const advance = days => advanceWorld(w, days, { life: lifeStub, state });
+  advance(NATURE_DAYS.fire - 1);
+  assert.ok(w.fire[source] > 0.01, 'real combat fire remains active before its absolute deadline');
+  assert.equal(w.veg[source], initialVeg);
+  advance(1);
+  assert.equal(w.fire[source], 0);
+  assert.equal(w.veg[source], Math.fround(initialVeg * 0.25), 'settlement applies the real fuel loss');
+  assert.equal(w.over[source], OVER.SCORCHED);
+  const scorch = natureState(w).overlays.get(source);
+  assert.equal(scorch.dueDay, w.day + NATURE_DAYS.scorched);
+  advance(NATURE_DAYS.scorched - 1);
+  assert.equal(w.over[source], OVER.SCORCHED, 'scorched ground remains until its deadline');
+  advance(1);
+  assert.equal(w.over[source], OVER.NONE, 'formal day advancement restores the timed overlay');
+  assert.equal(w.veg[source], Math.fround(initialVeg * 0.25), 'vegetation does not regrow through random ticks');
 });
 
 check('当前与旧格式存读档保留 lastFireCastDay、actor 与火史坐标', () => {

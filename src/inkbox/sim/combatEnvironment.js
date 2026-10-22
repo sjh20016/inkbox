@@ -23,7 +23,7 @@ export function combatIgnitionRoll(seed, actorId, targetId, day, salt = 0) {
   return ((h ^ (h >>> 16)) >>> 0) / 0x100000000;
 }
 
-/** These are the same live arrays that stepFire consumes on subsequent ticks. */
+/** Authoritative terrain arrays used by combat ignition and finite nature events. */
 export function combustibleCombatCell(world, x, y) {
   if (!Number.isInteger(x) || !Number.isInteger(y) || !world?.inside?.(x, y)) return false;
   const i = world.idx(x, y);

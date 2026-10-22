@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:s0` 检查静态水域、Canvas/Three 撤销、重叠洪水、环境绝对到期日、大步结算、存档事件还原、云雾批次和远景植被；已加入 Fast。旧生态门禁保留原有战斗、分类、缓存和存档检查，将自然随机生长/蔓延断言迁移为有限事件语义。`test:s0:interactions` 是隔离 Edge 实际交互检查；`test:s0:browser` 是指定种子、GPU、两档幅面的短样本，需先启动服务器（默认 4198，也可设 `INKBOX_URL`）。这两项均为手动入口，不替代完整 Browser Smoke 或耐久测试。结果与限制见 [S0 交付说明](../docs/development/S0_P0_DELIVERY.md)。
+
 `npm run test:r1` 检查线刻缓冲复用/扩容/释放、实际三角面高程一致性、分帧提取与原始结果一致、取消和区域等待帧，以及自然雕刻的正式事务、权限和撤销/重做；已加入 Fast。它是 CPU 契约检查，不能替代真实 GPU 着色器读回、五档尺寸操作、资源循环和同机性能对照；本轮实测与限制见 [R1 记录](../docs/development/R1_ART_UI_INTEGRATION.md)。
 
 `npm run test:g5` 检查 GPU/CPU 高程与拾取版本、回退与历史 shader 切换、同帧全量/局部上传顺序、精确水面湿域与外缘、植被资格及局部贴地；山海林覆盖真实单格编辑的峭壁隐藏/恢复、邻树探针范围及局部矩阵与全量结果等价。已加入 Fast；性能对照沿用 G5 固定种子水文逐步账本，真实 GPU/正常推进仍须单独验收，不解除 PERF BLOCKED。`test:g5` 末尾含 `npm run test:longframe`（地形规则格网求交与暴力法逐项一致、广卷至少快 10 倍）。

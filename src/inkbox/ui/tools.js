@@ -150,7 +150,7 @@ export const TOOLS = Object.freeze([
   }),
 
   // ── 水土 ──────────────────────────────────────────────
-  T('water', '注水', '💧', 'water', '抬高水面，水会自己流进低洼处汇成湖泽', {
+  T('water', '注水', '💧', 'water', '在落笔范围增加积水，水域会保留，直到再次改动', {
     mode: 'drag', amount: 0.02,
     apply: (c) => P.addWater(c.world, c.x, c.y, c.radius, c.amount, c.history),
   }),
@@ -168,7 +168,7 @@ export const TOOLS = Object.freeze([
     mode: 'drag', amount: 0.92,
     apply: (c) => P.paintVegetation(c.world, c.x, c.y, c.radius, c.amount, c.history),
   }),
-  T('burn', '焚林', '🔥', 'nature', '点着草木，火会自己顺着风势蔓延', {
+  T('burn', '焚林', '🔥', 'nature', '点燃落笔处草木，七日后熄灭，留下逐年恢复的焦土', {
     mode: 'drag',
     apply: (c) => P.burnForest(c.world, c.x, c.y, c.radius, c.history),
   }),
@@ -184,7 +184,7 @@ export const TOOLS = Object.freeze([
     mode: 'drag', overlay: OVER.SNOW,
     apply: (c) => P.paintOverlay(c.world, c.x, c.y, c.radius, OVER.SNOW, c.history),
   }),
-  T('lava', '熔岩', '🌋', 'nature', '灌下岩浆，会慢慢冷却成黑石', {
+  T('lava', '熔岩', '🌋', 'nature', '灌下岩浆，半年后冷却成灰烬，再过两年恢复', {
     mode: 'drag',
     apply: (c) => P.pourLava(c.world, c.x, c.y, c.radius, c.history),
   }),
@@ -206,7 +206,7 @@ export const TOOLS = Object.freeze([
     mode: 'click',
     apply: (c) => P.earthquake(c.world, c.x, c.y, c.radius, c.history),
   }),
-  T('flood', '洪水', '🌊', 'disaster', '瞬间淹掉一片低地，城郭尽没', {
+  T('flood', '洪水', '🌊', 'disaster', '暂时淹没一片土地，三十日后退水，期间改动的水域会保留', {
     mode: 'click',
     apply: (c) => P.flood(c.world, c.x, c.y, c.radius, c.history),
   }),

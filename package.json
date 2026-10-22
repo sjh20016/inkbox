@@ -7,6 +7,9 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:s0": "node scripts/inkbox-s0-nature.mjs && node scripts/inkbox-s0-atmosphere.mjs && node scripts/inkbox-s0-flora.mjs",
+    "test:s0:browser": "node scripts/inkbox-s0-browser.mjs",
+    "test:s0:interactions": "node scripts/inkbox-s0-interactions.mjs",
     "test:r1": "node scripts/inkbox-r1-lines.mjs && node scripts/inkbox-r1-sculpt.mjs",
     "test:g5": "node scripts/inkbox-g5-terrain.mjs && node scripts/inkbox-g5-water.mjs && node scripts/inkbox-g5-vegetation.mjs && node scripts/inkbox-longframe-raycast.mjs",
     "test:longframe": "node scripts/inkbox-longframe-raycast.mjs",

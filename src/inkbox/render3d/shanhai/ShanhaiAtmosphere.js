@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { makeCanvas } from './canvas.js';
 import { shanhaiSceneFor } from './ShanhaiStyle.js';
 import { sceneryGeometry } from './ShanhaiSceneryLayer.js';
+import { CloudBillboardBatch } from './CloudBillboardBatch.js';
 
 /**
  * V1 · 山海入画 — Host-level painted atmosphere. Presentation only:
@@ -146,7 +147,7 @@ export class ShanhaiAtmosphere {
     this.host = host; this.enabled = false; this.plane = null; this.backdrops = new Map();
     this.root = new THREE.Group(); this.root.name = 'ShanhaiAtmosphere'; this.root.visible = false;
     host.scene.add(this.root);
-    this.defaults = null; this.time = 0; this.puffs = []; this.floaters = [];
+    this.defaults = null; this.time = 0; this.puffs = []; this.floaters = []; this.cloudBatch = null; this.sheetMaterial = null;
     this.stats = { puffs: 0, floaters: 0, backdrop: null };
   }
   captureLights() {
@@ -191,8 +192,10 @@ export class ShanhaiAtmosphere {
     for (const child of [...this.root.children]) { child.traverse(o => { if (o.geometry && !o.userData.sharedGeometry) owned.add(o.geometry); }); child.removeFromParent(); }
     for (const g of owned) g.dispose();
     for (const g of this.sharedGeometries || []) g.dispose(); this.sharedGeometries = [];
-    for (const m of this.materials || []) { m.map?.dispose(); m.dispose(); }
-    this.materials = []; this.puffs = []; this.floaters = [];
+    const maps = new Set();
+    for (const m of this.materials || []) { if (m.map) maps.add(m.map); m.dispose(); }
+    for (const map of maps) map.dispose();
+    this.materials = []; this.puffs = []; this.floaters = []; this.cloudBatch = null; this.sheetMaterial = null;
   }
   /** Cloud / mist / ink fog ring just outside the slab, below the playable surface. */
   buildBase(plane) {
@@ -202,9 +205,8 @@ export class ShanhaiAtmosphere {
     const hw = world.w / 2, hh = world.h / 2;
     const map = puffTexture(s.base.kind);
     const shades = [s.base.color, new THREE.Color(s.base.color).lerp(new THREE.Color(s.base.ink), plane === 'nether' ? 0.45 : 0.12).getStyle()];
-    const mats = shades.map((c, i) => new THREE.SpriteMaterial({ map, color: c, transparent: true, depthWrite: false,
-      opacity: s.base.opacity * (i ? 0.75 : 1), fog: false }));
-    this.materials = mats;
+    this.cloudBatch = new CloudBillboardBatch({ texture: map });
+    this.materials = [this.cloudBatch.material];
     const perimeter = 2 * (world.w + world.h), step = plane === 'upper' ? 9 : 12;
     for (let ring = 0; ring < 2; ring++) {
       for (let d = 0; d < perimeter; d += step * (1 + ring * 0.4)) {
@@ -214,17 +216,18 @@ export class ShanhaiAtmosphere {
         const out = 6 + ring * 18 + r() * 14, len = Math.hypot(x, z) || 1;
         // push outward along the nearest edge normal, not radially, so corners stay wrapped
         const nx = Math.abs(x) >= hw - 0.5 ? Math.sign(x) : 0, nz = Math.abs(z) >= hh - 0.5 ? Math.sign(z) : 0;
-        const sprite = noRaycast(new THREE.Sprite(mats[(ring + (r() < 0.3 ? 1 : 0)) % 2]));
+        const shade = (ring + (r() < 0.3 ? 1 : 0)) % 2;
         const size = (plane === 'upper' ? 46 : 38) + r() * 30 + ring * 16;
-        sprite.scale.set(size * 1.7, size * 0.8, 1);
-        sprite.position.set(x + (nx || x / len * 0.3) * out, -18 - ring * 9 + r() * 10, z + (nz || z / len * 0.3) * out);
-        sprite.renderOrder = -2; sprite.userData.base = sprite.position.clone(); sprite.userData.phase = r() * Math.PI * 2;
-        this.root.add(sprite); this.puffs.push(sprite);
+        const px = x + (nx || x / len * 0.3) * out, py = -18 - ring * 9 + r() * 10, pz = z + (nz || z / len * 0.3) * out;
+        const puff = { x: px, y: py, z: pz, width: size * 1.7, height: size * 0.8,
+          color: shades[shade], opacity: s.base.opacity * (shade ? 0.75 : 1), phase: r() * Math.PI * 2 };
+        this.cloudBatch.add(puff); this.puffs.push(puff);
       }
     }
+    this.root.add(this.cloudBatch.mesh);
     // A broad under-sheet so the slab never reads as hovering over blank paper.
     const sheetMat = new THREE.MeshBasicMaterial({ map, color: s.base.color, transparent: true, opacity: 0.85, depthWrite: false });
-    this.materials.push(sheetMat);
+    this.materials.push(sheetMat); this.sheetMaterial = sheetMat;
     const sheet = noRaycast(new THREE.Mesh(new THREE.PlaneGeometry(world.w * 1.9, world.h * 2.1), sheetMat));
     sheet.rotation.x = -Math.PI / 2; sheet.position.y = -34; sheet.renderOrder = -3; this.root.add(sheet);
     if (plane === 'upper' || plane === 'nether') this.buildFloaters(plane, world, r);
@@ -297,12 +300,11 @@ export class ShanhaiAtmosphere {
     const t = this.time;
     // Close-up views fly inside the cloud ring: fade the cradle out instead of fogging the subject.
     const zoom = this.host.cameraRig?.camera?.zoom ?? 1, fade = Math.max(0, Math.min(1, (3.0 - zoom) / 1.6));
-    for (const [i, m] of (this.materials || []).entries()) {
+    for (const m of (this.materials || [])) {
       if (m.userData.baseOpacity === undefined) m.userData.baseOpacity = m.opacity;
-      if (m.isSpriteMaterial || i === 2) m.opacity = m.userData.baseOpacity * fade;
+      if (m === this.sheetMaterial) m.opacity = m.userData.baseOpacity * fade;
     }
-    for (const p of this.puffs) p.visible = fade > 0.01;
-    for (const p of this.puffs) { const b = p.userData.base, ph = p.userData.phase; p.position.set(b.x + Math.sin(t * 0.07 + ph) * 3, b.y + Math.sin(t * 0.11 + ph) * 0.8, b.z + Math.cos(t * 0.05 + ph) * 3); }
+    if (this.cloudBatch && this.host.cameraRig?.camera) this.cloudBatch.update(t, this.host.cameraRig.camera, fade);
     for (const f of this.floaters) { const b = f.userData.base; f.position.y = b.y + Math.sin(t * 0.35 + f.userData.phase) * 1.2; }
   }
   dispose() {

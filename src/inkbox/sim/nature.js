@@ -1,0 +1,252 @@
+// Finite, game-day driven mortal environmental changes. No world-wide runtime scan.
+import { OVER, markDirty, flushDirty } from '../world/terrain.js';
+
+export const NATURE_VERSION = 2;
+export const NATURE_DAYS = Object.freeze({ fire: 7, scorched: 1080, ash: 720, lava: 180, flood: 30 });
+
+export function natureState(world) {
+  if (!world.nature || world.nature.version !== NATURE_VERSION) {
+    world.nature = { version: NATURE_VERSION, nextId: 1, events: [], floods: new Map(), fires: new Map(), overlays: new Map() };
+  }
+  return world.nature;
+}
+
+function event(world, kind, dueDay, cell, extra = {}) {
+  const state = natureState(world);
+  const item = { id: state.nextId++, kind, dueDay, cell, ...extra };
+  state.events.push(item);
+  return item;
+}
+
+export function igniteCell(world, i, power = 1) {
+  if (world.water[i] > 0.02) return false;
+  const state = natureState(world);
+  const old = state.fires.get(i);
+  const dueDay = Math.max(old?.dueDay || 0, world.day + NATURE_DAYS.fire);
+  const strength = Math.min(1, 0.45 + power * 0.4);
+  world.fire[i] = Math.max(world.fire[i], strength);
+  if (old) old.dueDay = dueDay;
+  else state.fires.set(i, event(world, 'fire', dueDay, i, { startDay: world.day, overlayAtIgnition: world.over[i] }));
+  world.touch();
+  return true;
+}
+
+export function extinguishCell(world, i) {
+  if (!world.fire[i] && !world.nature?.fires?.has(i)) return;
+  world.fire[i] = 0;
+  const state = natureState(world), item = state.fires.get(i);
+  if (item) { state.fires.delete(i); state.events = state.events.filter((e) => e !== item); }
+  world.touch();
+}
+
+export function fireExposure(world, i, startDay, endDay) {
+  const item = world.nature?.fires?.get(i);
+  if (item) return Math.max(0, Math.min(endDay, item.dueDay) - Math.max(startDay, item.startDay));
+  return world.fire[i] > 0.4 ? endDay - startDay : 0;
+}
+
+/** Consecutive wet time within one advance, including overlapping flood layers. */
+export function floodExposure(world, i, startDay, endDay, threshold) {
+  const entry = world.nature?.floods?.get(i);
+  if (!entry) {
+    const wet = world.water[i] >= threshold;
+    return { days: wet ? endDay - startDay : 0, atEnd: wet };
+  }
+  const events = new Map(world.nature.events.filter((e) => e.kind === 'flood').map((e) => [e.id, e]));
+  const levels = [...entry.levels].map(([id, depth]) => ({ depth, dueDay: events.get(id)?.dueDay ?? -Infinity }));
+  const boundaries = [startDay, ...new Set(levels.map((e) => e.dueDay).filter((due) => due > startDay && due < endDay)), endDay].sort((a, b) => a - b);
+  const depthAt = (day) => entry.base + levels.reduce((sum, level) => sum + (level.dueDay > day ? level.depth : 0), 0);
+  let days = 0;
+  for (let k = 1; k < boundaries.length; k++) {
+    const a = boundaries[k - 1], b = boundaries[k];
+    if (depthAt((a + b) / 2) >= threshold) days += b - a;
+  }
+  return { days, atEnd: depthAt(endDay) >= threshold };
+}
+
+export function setRecoveringOverlay(world, i, overlay, duration = null, startDay = world.day) {
+  const state = natureState(world);
+  const old = state.overlays.get(i);
+  if (old) state.events = state.events.filter((e) => e !== old);
+  state.overlays.delete(i);
+  world.over[i] = overlay;
+  const days = duration ?? (overlay === OVER.LAVA ? NATURE_DAYS.lava : overlay === OVER.ASH ? NATURE_DAYS.ash : overlay === OVER.SCORCHED ? NATURE_DAYS.scorched : 0);
+  const next = days > 0 ? event(world, 'overlay', startDay + days, i, { overlay }) : null;
+  if (next) state.overlays.set(i, next);
+  markDirty(world, i);
+  return next;
+}
+
+export function floodCells(world, cells, duration = NATURE_DAYS.flood) {
+  const state = natureState(world);
+  const id = state.nextId++;
+  const item = { id, kind: 'flood', dueDay: world.day + duration, cells: [] };
+  for (const [i, depth] of cells) {
+    if (!(depth > 0)) continue;
+    let entry = state.floods.get(i);
+    if (!entry) { entry = { base: world.water[i], levels: new Map() }; state.floods.set(i, entry); }
+    entry.levels.set(id, depth);
+    item.cells.push(i);
+    world.water[i] = Math.fround(entry.base + [...entry.levels.values()].reduce((a, b) => a + b, 0));
+    extinguishCell(world, i);
+    markDirty(world, i);
+  }
+  if (item.cells.length) state.events.push(item);
+  flushDirty(world);
+  return item.cells.length ? id : null;
+}
+
+function removeFlood(world, item) {
+  const state = natureState(world);
+  for (const i of item.cells) {
+    const entry = state.floods.get(i);
+    if (!entry?.levels.has(item.id)) continue; // cell was edited after flooding
+    entry.levels.delete(item.id);
+    if (!entry.levels.size) state.floods.delete(i);
+    world.water[i] = Math.fround(entry.base + [...entry.levels.values()].reduce((a, b) => a + b, 0));
+    markDirty(world, i);
+  }
+}
+
+/** A player edit detaches only its cell from active floods, preserving the new state. */
+export function playerEditedCell(world, i) {
+  world.nature?.floods?.delete(i);
+}
+
+export function snapshotFloodCell(world, i) {
+  const entry = world.nature?.floods?.get(i);
+  return entry ? [entry.base, [...entry.levels]] : null;
+}
+
+/** Resolve a stroke snapshot against floods which still exist at this day. */
+export function restoredFloodWater(world, snapshot, recordedWater) {
+  if (!snapshot) return recordedWater;
+  const active = new Set(world.nature?.events?.filter((e) => e.kind === 'flood' && e.dueDay > world.day).map((e) => e.id) || []);
+  const retained = snapshot[1].filter(([id]) => active.has(id));
+  return retained.length === snapshot[1].length
+    ? recordedWater
+    : Math.fround(snapshot[0] + retained.reduce((sum, [, depth]) => sum + depth, 0));
+}
+
+export function snapshotNatureCell(world, i) {
+  const state = world.nature;
+  if (!state) return null;
+  return {
+    fire: state.fires.get(i) ? { ...state.fires.get(i) } : null,
+    overlay: state.overlays.get(i) ? { ...state.overlays.get(i) } : null,
+    flood: snapshotFloodCell(world, i),
+  };
+}
+
+export function restoreNatureCell(world, i, snapshot) {
+  const state = natureState(world);
+  state.events = state.events.filter((e) => !((e.kind === 'fire' || e.kind === 'overlay') && e.cell === i));
+  state.fires.delete(i); state.overlays.delete(i);
+  if (snapshot?.fire) {
+    const item = { ...snapshot.fire }; state.fires.set(i, item); state.events.push(item);
+  }
+  if (snapshot?.overlay) {
+    const item = { ...snapshot.overlay }; state.overlays.set(i, item); state.events.push(item);
+  }
+  restoreFloodCell(world, i, snapshot?.flood || null);
+}
+
+export function restoreFloodCell(world, i, snapshot) {
+  const state = natureState(world);
+  if (!snapshot) { state.floods.delete(i); return; }
+  // Undo may happen long after the flood was settled or cancelled. Never put
+  // its former depth back without the live event which owns that depth.
+  const active = new Set(state.events.filter((e) => e.kind === 'flood' && e.dueDay > world.day).map((e) => e.id));
+  const levels = new Map(snapshot[1].filter(([id]) => active.has(id)));
+  if (levels.size) state.floods.set(i, { base: snapshot[0], levels });
+  else state.floods.delete(i);
+  if (levels.size !== snapshot[1].length) {
+    world.water[i] = restoredFloodWater(world, snapshot, world.water[i]);
+    markDirty(world, i);
+  }
+}
+
+export function cancelNatureEvent(world, id) {
+  const state = world.nature;
+  if (!state) return false;
+  const item = state.events.find((e) => e.id === id);
+  if (!item) return false;
+  if (item.kind === 'flood') removeFlood(world, item);
+  else if (item.kind === 'fire' && state.fires.get(item.cell) === item) { state.fires.delete(item.cell); world.fire[item.cell] = 0; }
+  else if (item.kind === 'overlay' && state.overlays.get(item.cell) === item) state.overlays.delete(item.cell);
+  state.events = state.events.filter((e) => e !== item);
+  flushDirty(world);
+  world.touch();
+  return true;
+}
+
+export function settleNature(world, day = world.day) {
+  const state = world.nature;
+  if (!state?.events.length) return 0;
+  let changed = 0;
+  // Only the active event list is inspected. Expired entries settle exactly once.
+  const pending = state.events;
+  state.events = [];
+  for (let index = 0; index < pending.length; index++) {
+    const item = pending[index];
+    if (item.dueDay > day) {
+      if (item.kind === 'flood' || (item.kind === 'fire' && state.fires.get(item.cell) === item)
+        || (item.kind === 'overlay' && state.overlays.get(item.cell) === item)) state.events.push(item);
+      continue;
+    }
+    if (item.kind === 'flood') removeFlood(world, item);
+    else if (item.kind === 'fire' && state.fires.get(item.cell) === item) {
+      state.fires.delete(item.cell);
+      world.fire[item.cell] = 0;
+      world.veg[item.cell] = Math.max(0, world.veg[item.cell] * 0.25);
+      markDirty(world, item.cell);
+      // A later settlement or player action can put a permanent cover here.
+      // Fire still harms vegetation, but its expiry cannot erase that cover.
+      const original = item.overlayAtIgnition ?? OVER.NONE;
+      if (world.over[item.cell] === original && (original === OVER.NONE || original === OVER.FARMLAND || original === OVER.SCORCHED)) {
+        const next = setRecoveringOverlay(world, item.cell, OVER.SCORCHED, null, item.dueDay);
+        if (next?.dueDay <= day) { state.events.pop(); pending.push(next); }
+      }
+    } else if (item.kind === 'overlay' && state.overlays.get(item.cell) === item) {
+      state.overlays.delete(item.cell);
+      if (world.over[item.cell] === item.overlay) {
+        const next = setRecoveringOverlay(world, item.cell, item.overlay === OVER.LAVA ? OVER.ASH : OVER.NONE, null, item.dueDay);
+        if (next?.dueDay <= day) { state.events.pop(); pending.push(next); }
+      }
+    }
+    changed++;
+  }
+  if (changed) { flushDirty(world); world.touch(); }
+  return changed;
+}
+
+export function snapshotNature(world) {
+  const state = world.nature?.version === NATURE_VERSION ? world.nature : null;
+  if (!state) return { version: NATURE_VERSION, nextId: 1, events: [], floods: [] };
+  return { version: NATURE_VERSION, nextId: state.nextId, events: state.events.map((e) => ({ ...e, cells: e.cells?.slice() })), floods: [...state.floods].map(([i, e]) => [i, e.base, [...e.levels]] ) };
+}
+
+export function restoreNature(world, data) {
+  const state = natureState(world);
+  if (data?.version === NATURE_VERSION) {
+    state.nextId = data.nextId || 1;
+    state.events = Array.isArray(data.events) ? data.events.filter((e) => Number.isFinite(e.dueDay)) : [];
+    state.floods = new Map((data.floods || []).filter(([i]) => i >= 0 && i < world.size).map(([i, base, levels]) => [i, { base, levels: new Map(levels) }]));
+    state.fires = new Map(state.events.filter((e) => e.kind === 'fire').map((e) => [e.cell, e]));
+    state.overlays = new Map(state.events.filter((e) => e.kind === 'overlay').map((e) => [e.cell, e]));
+    // Damaged or delayed saves can contain already due events. Settle them
+    // against the saved day instead of leaving visible fire or flood behind.
+    settleNature(world);
+    return;
+  }
+  // Old saves contain visible fire and overlay layers but no timers. Assign fresh
+  // absolute deadlines once at migration; subsequent saves preserve these dates.
+  for (let i = 0; i < world.size; i++) {
+    if (world.fire[i] > 0.01) state.fires.set(i, event(world, 'fire', world.day + NATURE_DAYS.fire, i, { startDay: world.day, overlayAtIgnition: world.over[i] }));
+    const over = world.over[i];
+    if (over === OVER.SCORCHED || over === OVER.ASH || over === OVER.LAVA) {
+      const days = over === OVER.LAVA ? NATURE_DAYS.lava : over === OVER.ASH ? NATURE_DAYS.ash : NATURE_DAYS.scorched;
+      state.overlays.set(i, event(world, 'overlay', world.day + days, i, { overlay: over }));
+    }
+  }
+}

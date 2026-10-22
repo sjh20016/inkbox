@@ -100,13 +100,11 @@ export class VegetationLayer {
     if (shanhai && !this.shanhaiFlora) {
       const plane = this.world.plane || 'mortal';
       this.shanhaiFlora = { geometries: createShanhaiTreeLODs(), material: createShanhaiTreeMaterial(plane), ink: createShanhaiTreeMaterial(plane, { outline: true }), outlines: [] };
-      for (let lod = 0; lod < 2; lod++) {
-        const src = this.lodMeshes[lod];
-        const ink = new THREE.InstancedMesh(this.shanhaiFlora.geometries[lod], this.shanhaiFlora.ink, src.instanceMatrix.count);
-        ink.instanceMatrix = src.instanceMatrix; ink.frustumCulled = false; ink.count = 0; ink.visible = false;
-        ink.raycast = () => {}; ink.userData.presentationOnly = true; ink.userData.inkOutline = true; ink.name = `${src.name || 'VegetationLOD0'}:ink`;
-        ink.renderOrder = src.renderOrder; src.add(ink); this.shanhaiFlora.outlines[lod] = ink;
-      }
+      const lod = 0, src = this.lodMeshes[lod];
+      const ink = new THREE.InstancedMesh(this.shanhaiFlora.geometries[lod], this.shanhaiFlora.ink, src.instanceMatrix.count);
+      ink.instanceMatrix = src.instanceMatrix; ink.frustumCulled = false; ink.count = 0; ink.visible = false;
+      ink.raycast = () => {}; ink.userData.presentationOnly = true; ink.userData.inkOutline = true; ink.name = `${src.name || 'VegetationLOD0'}:ink`;
+      ink.renderOrder = src.renderOrder; src.add(ink); this.shanhaiFlora.outlines[lod] = ink;
     }
     this.shanhaiActive = shanhai;
     this.mesh.geometry = shanhai ? this.shanhaiFlora.geometries[0] : profile ? this.pilotGeometry : this.geometry;
@@ -260,11 +258,9 @@ export class VegetationLayer {
   }
   _syncFloraOutlines() {
     const f = this.shanhaiFlora; if (!f) return;
-    for (let lod = 0; lod < 2; lod++) {
-      const ink = f.outlines[lod], src = this.lodMeshes[lod]; if (!ink) continue;
-      ink.count = src.count; ink.visible = !!this.shanhaiActive && src.visible && src.count > 0;
-      if (src.instanceColor && ink.instanceColor !== src.instanceColor) ink.instanceColor = src.instanceColor;
-    }
+    const ink = f.outlines[0], src = this.lodMeshes[0]; if (!ink) return;
+    ink.count = src.count; ink.visible = !!this.shanhaiActive && src.visible && src.count > 0;
+    if (src.instanceColor && ink.instanceColor !== src.instanceColor) ink.instanceColor = src.instanceColor;
   }
   /** Enable opt-in CPU attribution for the forest LOD assignment path. */
   setLODProbeEnabled(enabled = true) {
