@@ -32,8 +32,7 @@ import { deriveUpperSeed, createPlanes, upperWalkable, netherWalkable, arriveUpp
 import { REALM_STYLE } from '../src/inkbox/render/unitsLayer.js';
 import { recomputeAll, OVER } from '../src/inkbox/world/terrain.js';
 import { Life } from '../src/inkbox/sim/life.js';
-import { stepHydrology } from '../src/inkbox/sim/hydrology.js';
-import { stepVegetation, stepFire, decayOverlay } from '../src/inkbox/sim/ecology.js';
+import { NATURE_DAYS, natureState } from '../src/inkbox/sim/nature.js';
 // 空间裂缝（阶段三 · 块四）。局部数据层断言在下面 5q 组。
 import {
   RIFT_PERIOD_DAYS, TAU_GROW, TAU_CLOSE, RIFT_BASE_RADIUS, RIFT_MAX_RADIUS,
@@ -214,42 +213,32 @@ for (let i = 0; i < world.size; i += 1) {
 check('河流/湖泊被刻出来', hasRiver);
 
 // ── 2. 自然模拟 ──────────────────────────────────────────
-section('2. 自然模拟（水文 / 侵蚀 / 植被 / 火）');
-const rng = mulberry32(999);
+section('2. 自然模拟（静态水体 / 自然事件）');
 const hBefore = Float32Array.from(world.height);
+const waterBefore = Float32Array.from(world.water);
+const vegBefore = Float32Array.from(world.veg);
 const t1 = Date.now();
-for (let i = 0; i < 60; i += 1) {
-  stepHydrology(world, 6, null);
-  stepVegetation(world, 30, rng);
-}
+const naturalAdvance = createAdvanceState();
+for (let i = 0; i < 60; i += 1) advanceWorld(world, 6, { state: naturalAdvance, life: { step() {} }, riftActive: false });
 const simMs = Date.now() - t1;
 let delta = 0;
 for (let i = 0; i < world.size; i += 1) delta += Math.abs(world.height[i] - hBefore[i]);
-check('水文+侵蚀推进无异常', Number.isFinite(delta), `60 步耗时 ${simMs} ms`);
-check('地形确实被侵蚀改动', delta > 0, `累计高程变化 ${delta.toFixed(2)}`);
+check('正式推进不运行连续水文或侵蚀', Number.isFinite(delta) && delta === 0, `60 步耗时 ${simMs} ms · 高程变化 ${delta.toFixed(2)}`);
+check('显式水量与植被在普通游戏日内保持静态', world.water.every((v, i) => v === waterBefore[i]) && world.veg.every((v, i) => v === vegBefore[i]));
 
 let waterMass = 0;
 for (let i = 0; i < world.size; i += 1) waterMass += world.water[i];
 check('水体总量守恒（未爆掉）', waterMass > 0 && waterMass < world.size * 3, `水量 ${waterMass.toFixed(0)}`);
 
-// 火
+// 火由明确点火事件驱动，到期结算燃料与焦土。
 const lit = burnForest(world, Math.floor(preset.w / 2), Math.floor(preset.h / 2), 5, new History());
-let burning = 0;
-for (let k = 0; k < 30; k += 1) {
-  stepFire(world, 8, rng);
-  for (let i = 0; i < world.size; i += 1) if (world.fire[i] > 0.05) burning += 1;
-}
-let stillBurning = 0;
-for (let i = 0; i < world.size; i += 1) if (world.fire[i] > 0.05) stillBurning += 1;
+const activeBurns = [...natureState(world).fires.values()].filter(e => e.dueDay > world.day);
 check('可以放火', lit > 0, `点燃 ${lit} 格`);
-// 原来这条写的是 `burning >= 0`——`burning` 是累加计数，恒 ≥ 0，**永远不会红**。
-// 换成两个能红的判据：
-//   · 火真的烧起来过：`stepFire` 若没生效（或点了就灭），这里恒为 0；
-//   · 火最终烧完：「永燃的火场」是一种真实的坏法——不报错，只是火图层
-//     慢慢把整张图吃掉。
-check('火确实烧起来过（不是点了就灭）', burning > 0, `30 步累计在烧 ${burning} 格`);
-check('火在 30 步内烧完（不留下永燃的火场）', stillBurning === 0,
-  `终局仍在烧 ${stillBurning} 格 / 共 ${world.size} 格`);
+check('点火创建了有限期事件', activeBurns.length > 0 && activeBurns.every(e => e.dueDay === world.day + NATURE_DAYS.fire));
+const burnState = createAdvanceState();
+advanceWorld(world, NATURE_DAYS.fire, { state: burnState, life: { step() {} }, riftActive: false });
+check('火事件到期后一次性结算并留下定期焦土', activeBurns.every(e => world.fire[e.cell] === 0 && world.over[e.cell] === OVER.SCORCHED)
+  && activeBurns.every(e => natureState(world).overlays.get(e.cell)?.dueDay === world.day + NATURE_DAYS.scorched));
 
 // ── 3. 生灵 ──────────────────────────────────────────────
 section('3. 生灵与聚落');
@@ -259,10 +248,10 @@ const spawned = world.entities.length;
 check('初始生灵已降生', spawned > 0, `${spawned} 人`);
 
 const t2 = Date.now();
+const lifeAdvance = createAdvanceState();
 for (let year = 0; year < 40; year += 1) {
   for (let k = 0; k < 12; k += 1) {
-    world.day += 30;
-    life.step(30);
+    advanceWorld(world, 30, { life, state: lifeAdvance, riftActive: false });
   }
 }
 const lifeMs = Date.now() - t2;
@@ -372,10 +361,15 @@ check('陨石：这些人在下一次 step() 后全部经 onDeath 入册（necro
   + ` · deadLog.total +${world.deadLog.total - deadTotalBeforeMeteor}`);
 
 history.begin();
-const boltX = px + 10;
-const boltY = py + 10;
+// 静态自然环境改变多年后的生灵分布；选一位仍存活且避开陨石范围的
+// 具体目标，继续验证雷击的地形、伤亡文案与 onDeath 入册契约。
+const boltTarget = world.entities.find(e => e.hp > 0
+  && (e.x - meteorX) ** 2 + (e.y - meteorY) ** 2 > (meteorR + 2) ** 2);
+const boltX = boltTarget?.x ?? (px + 10);
+const boltY = boltTarget?.y ?? (py + 10);
 const boltR = 4;                       // 与 powers.js 里 `const r2 = 4 * 4` 同源
-const boltIdx = world.idx(px + 10, py + 10);
+const boltIdx = world.idx(Math.max(0, Math.min(world.w - 1, Math.round(boltX))),
+  Math.max(0, Math.min(world.h - 1, Math.round(boltY))));
 const hBeforeBolt = world.height[boltIdx];
 const bolt = lightning(world, boltX, boltY, history);
 history.end('雷霆');
@@ -571,7 +565,8 @@ check('宗门关系是数值映射而非对象', clone.factions.every((f) => f.r
 // 放在最后：这一段会推进 clone，前面所有比对都必须在它之前完成。
 check('读档后继续模拟不崩', (() => {
   const life2 = new Life(clone, mulberry32(7));
-  for (let k = 0; k < 30; k += 1) { clone.day += 30; life2.step(30); stepHydrology(clone, 4, null); }
+  const cloneAdvance = createAdvanceState();
+  for (let k = 0; k < 30; k += 1) advanceWorld(clone, 30, { life: life2, state: cloneAdvance });
   return clone.entities.every((e) => Number.isFinite(e.x) && Number.isFinite(e.y));
 })());
 
@@ -1817,17 +1812,10 @@ section('5h. 血脉与家世：遗传 / 世家 / 四轴加成');
   const fw = generateWorld({ preset: WORLD_PRESETS.small, seed: 20260914, scatter: true });
   const fl = new Life(fw, mulberry32(20260914 ^ 0xa5a5a5a5));
   fl.processPendingSpawns();
-  const erng = mulberry32(12345);
-  let ecoAccum = 0;
-  let fireAccum = 0;
+  const familyAdvance = createAdvanceState();
   for (let y = 0; y < 100; y += 1) {
     for (let d = 0; d < 360; d += 3) {
-      fw.day += 3;
-      fl.step(3);
-      ecoAccum += 3;
-      if (ecoAccum >= 5) { stepVegetation(fw, ecoAccum, erng); ecoAccum = 0; }
-      fireAccum += 3;
-      if (fireAccum >= 0.8) { stepFire(fw, fireAccum, erng); fireAccum = 0; }
+      advanceWorld(fw, 3, { life: fl, state: familyAdvance, riftActive: false });
     }
   }
   const byId = new Map(fw.entities.map((e) => [e.id, e]));
@@ -4521,12 +4509,9 @@ section('5r. 世界大事账本（milestone / 门槛 / 封顶 / 存档）');
   // ④ 真实世界跑 60 年：账本要有内容、要**不止一类**、且门槛要真的挡住筑基
   const mw2 = generateWorld({ preset: WORLD_PRESETS.medium, seed: 20260914, scatter: true });
   const mlife = new Life(mw2, mulberry32(20260914));
-  const mrng = mulberry32(7);
+  const milestoneAdvance = createAdvanceState();
   for (let d = 0; d < 60 * 360; d += 3) {
-    mw2.day += 3;
-    mlife.step(3);
-    stepHydrology(mw2, 3, null);
-    if (d % 360 === 0) stepVegetation(mw2, 360, mrng);
+    advanceWorld(mw2, 3, { life: mlife, state: milestoneAdvance, riftActive: false });
   }
   const kinds = new Map();
   let lowRealmLeak = 0;

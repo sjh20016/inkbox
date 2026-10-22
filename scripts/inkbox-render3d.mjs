@@ -64,10 +64,18 @@ for (const mode of ['raise', 'lower', 'flatten', 'smooth']) {
   check(`${mode}: bounded, deterministic, height-only editing`, () => {
     const world = generateWorld({ preset: { w: 32, h: 24 }, seed: 42, scatter: false });
     const copy = generateWorld({ preset: { w: 32, h: 24 }, seed: 42, scatter: false });
+    const wetProbe = world.idx(1, 1);
+    for (const w of [world, copy]) {
+      w.height[wetProbe] = 0.3;
+      w.water[wetProbe] = 0.05;
+      recomputeRect(w, 1, 1, 1, 1);
+    }
     // ⚠️ M2-B B0.3（§16）：`type` / `qi` 是**由 height 派生**的量，雕刻之后必须跟着重算
     // ⇒ 它们不能进「不许变」的那一组。旧版把 `type` 也放进 rest，等于把 B0.3 的缺陷
     //    （sculpt 漏调 canonical 重算）钉成了不变量。
-    const old = world.height.slice(), rest = digest({ water: world.water, veg: world.veg, entities: world.entities, day: world.day });
+    const old = world.height.slice(), oldWater = world.water.slice();
+    const oldSurface = Float32Array.from({ length: world.size }, (_, i) => old[i] + oldWater[i]);
+    const rest = digest({ veg: world.veg, riverBase: world.riverBase, entities: world.entities, day: world.day });
     const brush = { mode, x: 1, y: 1, radius: 5, strength: 0.1, targetHeight: 0.4 };
     sculpt(world, brush); sculpt(copy, brush);
     assert.deepEqual(world.height, copy.height);
@@ -78,8 +86,16 @@ for (const mode of ['raise', 'lower', 'flatten', 'smooth']) {
       if (old[i] !== world.height[i]) changed++;
     }
     assert(changed > 0);
-    assert.equal(digest({ water: world.water, veg: world.veg, entities: world.entities, day: world.day }), rest,
-      '雕刻不得改非派生状态（water / veg / entities / day）');
+    assert.equal(digest({ veg: world.veg, riverBase: world.riverBase, entities: world.entities, day: world.day }), rest,
+      '雕刻不得改植被、河床、实体或日期');
+    for (let i = 0; i < world.size; i++) {
+      if (oldWater[i] === 0) assert.equal(world.water[i], 0, `干地不得自行积水 at ${i}`);
+      else if (world.water[i] > 0) assert(Math.abs(world.height[i] + world.water[i] - oldSurface[i]) <= 1e-6,
+        `有水地形须保持原水面 at ${i}`);
+      else assert(world.height[i] >= oldSurface[i] - 1e-6,
+        `干地是因为地表升至原水面之上 at ${i}`);
+    }
+    if (mode === 'raise') assert.equal(world.water[wetProbe], 0, '抬高超过原水面时该格显露为干地');
     // 派生量必须**已经是** canonical：再重算一遍不得有任何变化（canonical 重算是幂等的）。
     const typeSnapshot = world.type.slice(), qiSnapshot = world.qi.slice();
     recomputeRect(world, 0, 0, world.w - 1, world.h - 1);
@@ -94,7 +110,7 @@ check('stroke spacing avoids disconnected brush stamps', () => {
 check('dirty update retains geometry and refreshes exact heights', () => {
   const w = generateWorld({ preset: { w: 32, h: 24 }, seed: 7, scatter: false });
   const bridge = new WorldRenderBridge(w), t = new TerrainMesh(w, bridge.coordinates), geometry = t.geometry;
-  const typeBefore = w.type.slice();
+  const typeBefore = w.type.slice(), waterBefore = w.water.slice();
   // 笔刷要大到**确实**会改变地表分类，否则下面「type 报脏」那条没有判别力。
   sculpt(w, { mode: 'raise', x: 16, y: 12, radius: 8, strength: 0.4 });
   const typeChanged = typeBefore.some((value, i) => value !== w.type[i]);
@@ -107,7 +123,14 @@ check('dirty update retains geometry and refreshes exact heights', () => {
   //    已随 bugfix 纠正为「water / veg 不脏、type 必须脏」。
   const dirty = bridge.changes();
   assert(dirty && dirty.any && dirty.height, '雕刻后 height 必须报脏');
-  assert.equal(dirty.water, null, '雕刻不写 water');
+  const waterBox = [w.w, w.h, -1, -1];
+  for (let i = 0; i < w.size; i++) if (waterBefore[i] !== w.water[i]) {
+    const x = i % w.w, y = (i / w.w) | 0;
+    waterBox[0] = Math.min(waterBox[0], x); waterBox[1] = Math.min(waterBox[1], y);
+    waterBox[2] = Math.max(waterBox[2], x); waterBox[3] = Math.max(waterBox[3], y);
+  }
+  const expectedWater = waterBox[2] < 0 ? null : { x0: waterBox[0], y0: waterBox[1], x1: waterBox[2], y1: waterBox[3] };
+  assert.deepEqual(dirty.water, expectedWater, '雕刻改变的水量必须报告精确 water 脏区');
   assert(dirty.type, '雕刻重算 type ⇒ 必须报 type 脏');
   assert.equal(dirty.veg, null, '雕刻不写 veg');
   t.update(dirty.height, { height: true, type: false });

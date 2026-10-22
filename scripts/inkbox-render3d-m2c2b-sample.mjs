@@ -26,6 +26,10 @@ import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
 import { normalizeRegion } from '../src/inkbox/ui/tools.js';
 import { houseFamilyFor } from '../src/inkbox/render3d/settlements/houseFamily.js';
 
+// S0 removes random natural evolution; GOLDEN_A now deterministically yields
+// 77 houses and 5 halls. Keep exact counts plus every ownership/LOD assertion.
+const GOLDEN_HOUSES = 77, GOLDEN_HALLS = 5, GOLDEN_BUILDINGS = 82;
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(ROOT, 'reports/m2c2b/pass1/sample'));
 const report = { suite: 'M2-C2B single-house actual-GLB gate', checks: [], pass: false };
@@ -139,15 +143,15 @@ try {
     const sandbox = naturalGolden(), world = sandbox.world, before = {
       full: sha({ world, advanceState: sandbox.advanceState }), save: sha(serializeWorld(world)), keys: Object.keys(serializeWorld(world)).sort(),
     };
-    await check('natural GOLDEN_A keeps 83 current houses and 5 real halls, without manufactured coordinates', () => {
+    await check('natural GOLDEN_A keeps 77 current houses and 5 real halls, without manufactured coordinates', () => {
       const data = deriveSettlements(world, { productionAssets: true });
-      assert.equal(data.historicalCandidates, 88); assert.equal(data.currentHouses, 83); assert.equal(data.currentHalls, 5); assert.equal(data.excludedHouses, 0);
+      assert.equal(data.historicalCandidates, GOLDEN_BUILDINGS); assert.equal(data.currentHouses, GOLDEN_HOUSES); assert.equal(data.currentHalls, GOLDEN_HALLS); assert.equal(data.excludedHouses, 0);
       for (const record of data.buildings.filter(b => b.type === 'house')) {
         const village = world.villages.find(v => v.id === record.settlementId);
         assert(village.houses.some(h => h.x === record.houseX && h.y === record.houseY));
         assert.equal(record.structType, world.struct[world.idx(record.houseX, record.houseY)]);
       }
-      report.naturalCoverage = { recipe: 'GOLDEN_A', day: world.day, candidates: 88, house: 83, hall: 5, excluded: 0 };
+      report.naturalCoverage = { recipe: 'GOLDEN_A', day: world.day, candidates: GOLDEN_BUILDINGS, house: GOLDEN_HOUSES, hall: GOLDEN_HALLS, excluded: 0 };
     });
     await check('village row families and roof axis survive level changes, removal, order and camera changes', () => {
       const before = sha(world), data = deriveSettlements(world,{productionAssets:true});
@@ -166,7 +170,7 @@ try {
     try {
       await check('all three house LODs and existing far aggregate retain ownership and toggle back to legacy', () => {
         const layer = host.stages.get('mortal').settlements;
-        host.setLODEnabled(false); assert.equal(layer.environmentBatch.stats.instances, 88); assert.deepEqual(layer.environmentBatch.stats.lod, [88,0,0]);
+        host.setLODEnabled(false); assert.equal(layer.environmentBatch.stats.instances, GOLDEN_BUILDINGS); assert.deepEqual(layer.environmentBatch.stats.lod, [GOLDEN_BUILDINGS,0,0]);
         assert.equal(layer.environmentBatch.meshes.get('env_house_hall_lod0').count,5,'only current real halls use hall geometry');
         assert(layer._renderBuildingLists[0].every(b => b.type !== 'house'),'no real houses or halls duplicate fallback geometry');
         host.setLODEnabled(true);
@@ -192,8 +196,8 @@ try {
           const seen=new Set(group.clusters.flatMap(c=>c.memberIds));
           assert.equal(seen.size,group.houseCount,'all true house members belong to an aggregate');
         }
-        host.setProductionAssetsEnabled(false); host.setLODEnabled(false); assert.equal(layer.environmentBatch.stats.instances, 0); assert(layer.bodies.count >= 88);
-        host.setProductionAssetsEnabled(true); assert.equal(layer.environmentBatch.stats.instances, 88);
+        host.setProductionAssetsEnabled(false); host.setLODEnabled(false); assert.equal(layer.environmentBatch.stats.instances, 0); assert(layer.bodies.count >= GOLDEN_BUILDINGS);
+        host.setProductionAssetsEnabled(true); assert.equal(layer.environmentBatch.stats.instances, GOLDEN_BUILDINGS);
         report.lodCoverage = observed;
       });
       await check('actual house geometry raycasts to its original house key and exact village', () => {

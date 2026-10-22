@@ -5,7 +5,8 @@ import { SEA_LEVEL } from '../src/inkbox/core/config.js';
 import { TerrainStroke, sculpt, restoreTerrainStroke } from '../src/inkbox/render3d/terrain/sculpt.js';
 import { Render3DAdapter } from '../src/inkbox/render3d/Render3DAdapter.js';
 import { serializeWorld,deserializeWorld } from '../src/inkbox/io/save.js';
-import { maintainRivers,refillSea,stepWater } from '../src/inkbox/sim/hydrology.js';
+import { setWater } from '../src/inkbox/world/terrainEdit.js';
+import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
 import { accessBounds, createMapProgress } from '../src/inkbox/world/mapProgress.js';
 let passed=0;function check(label,fn){fn();passed++;console.log(`PASS ${label}`);}
 const make=()=>generateWorld({preset:{w:32,h:24},seed:42424,scatter:false});
@@ -24,12 +25,14 @@ check('fixed-distance commands ignore pointer segmentation, duplicates and flush
   for(let i=1;i<=count;i++){const p={x:8+12*i/count,y:9+6*i/count};s.sample(p);s.sample(p);if(flush)s.flush();}return {w,entry:s.finish()};};
  const a=run(1,false),b=run(120,true);same(b.w,channels(a.w));assert.deepEqual(a.entry.records,b.entry.records);assert.equal(a.entry.stats.stamps,b.entry.stats.stamps);
 });
-check('raise dries old wet/river bed and undo restores source; below-sea basin immediately refills',()=>{
- const w=make(),i=10*w.w+12;w.riverBase.fill(0);recomputeRect(w,0,0,w.w-1,w.h-1);w.height[i]=SEA_LEVEL+.01;w.water[i]=.025;w.riverBase[i]=.012;recomputeRect(w,12,10,12,10);
- const before=channels(w),s=new TerrainStroke(w,{x:12,y:10},{radius:1,strength:.12,mode:'raise'}),entry=s.finish();assert.equal(w.water[i],0);assert.equal(w.riverBase[i],0);
- maintainRivers(w);assert.equal(w.water[i],0);restoreTerrainStroke(w,entry);same(w,before);
- const b=new TerrainStroke(w,{x:12,y:10},{radius:1,strength:.12,mode:'basin'});b.finish();assert.ok(w.height[i]<SEA_LEVEL);assert.ok(w.water[i]>=Math.fround(SEA_LEVEL-w.height[i]));
- const depth=w.water[i];refillSea(w);assert.equal(w.water[i],depth);
+check('raise preserves the existing water surface and undo restores static water; basin uses no refill clock',()=>{
+ const w=make(),i=10*w.w+12;w.height[i]=.42;w.water[i]=.24;w.riverBase[i]=.012;recomputeRect(w,0,0,w.w-1,w.h-1);
+ const before=channels(w),surface=w.height[i]+w.water[i],s=new TerrainStroke(w,{x:12,y:10},{radius:1,strength:.12,mode:'raise'}),entry=s.finish();
+ assert.ok(w.height[i]>before[0][1][i]);assert.ok(w.water[i]<before[1][1][i]);assert.ok(Math.abs(w.height[i]+w.water[i]-surface)<1e-6);
+ assert.equal(w.riverBase[i],before[2][1][i]);restoreTerrainStroke(w,entry);same(w,before);
+ const b=new TerrainStroke(w,{x:12,y:10},{radius:1,strength:.12,mode:'basin'});const basin=b.finish();assert.ok(basin);assert.ok(w.height[i]<before[0][1][i]);
+ const depth=w.water[i];assert.ok(depth>before[1][1][i]);const state=createAdvanceState();
+ advanceWorld(w,30,{state,life:{step(){}}});assert.equal(w.water[i],depth,'ordinary game-day passage does not hydraulically refill or drain the cell');
 });
 check('legacy sculpt preserves water by default and no renderer silently smooths a sharp spike',()=>{
  const w=make(),i=10*w.w+12;w.height[i]=.99;const peak=w.height[i],water=w.water.slice();sculpt(w,{x:12,y:10,radius:1,strength:.01,mode:'lower'});assert.deepEqual(w.water,water);assert.equal(w.height[i],Math.fround(peak-.01));
@@ -77,10 +80,12 @@ check('history obeys both count and bytes budgets and a fresh command discards r
  a.stroke=new TerrainStroke(w,{x:16,y:10},{radius:1});a.endStroke();assert.equal(a.redoStack.length,0);assert.ok(a.historyBytes<=256);
  a.clearHistory();assert.equal(a.undoStack.length,0);assert.equal(a.historyBytes,0);
 });
-check('real water evaporation rejects old undo atomically and Adapter clears/notifies the session',()=>{
+check('explicit water edits persist and reject stale undo atomically',()=>{
  const w=make();w.height.fill(.5);w.water.fill(.1);w.riverBase.fill(0);recomputeRect(w,0,0,w.w-1,w.h-1);
- const entry=new TerrainStroke(w,{x:12,y:10},{mode:'lower',radius:3,strength:.02}).finish();const edited=w.water[entry.records[0][0]];
- stepWater(w,1,{flowRate:0,evapRate:.01});assert.notEqual(w.water[entry.records[0][0]],edited);
+ const entry=new TerrainStroke(w,{x:12,y:10},{mode:'lower',radius:3,strength:.02}).finish(),i=entry.records[0][0];
+ const edited=w.water[i],persistent=Math.fround(edited+.025);assert.equal(setWater(w,i,persistent),true);
+ const state=createAdvanceState();advanceWorld(w,360,{state,life:{step(){}}});assert.equal(w.water[i],persistent);
+ const roundtrip=deserializeWorld(serializeWorld(w));assert.ok(Math.abs(roundtrip.water[i]-persistent)<=1/65535,'save/load keeps the explicit water edit within codec resolution');
  const evolved=channels(w),touch=w.touch.bind(w);let touches=0;w.touch=()=>{touches++;touch();};
  assert.equal(restoreTerrainStroke(w,entry),null);same(w,evolved);assert.equal(touches,0);
  const a=Object.create(Render3DAdapter.prototype);let notice='';a.sandbox={world:w,notify:text=>notice=text};
