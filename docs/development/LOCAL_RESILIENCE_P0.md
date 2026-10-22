@@ -1,6 +1,6 @@
 # 地方兴衰与文明韧性 P0
 
-基线：2026-10-22 `git fetch origin` 后，main 为 `2ce43481437bf5d267d3d1cb7aa28e48c23db359`，S0 为 `7af2c35892071268a35c3fcdf41ba0dc16949a3f`，S0 领先 5、落后 0，尚未合入 main。隔离分支 `feat/p0-settlement-resilience-sol61` 从该 S0 起步，不合入 G6。
+开工基线：2026-10-22 `git fetch origin` 后，main 为 `2ce43481437bf5d267d3d1cb7aa28e48c23db359`，S0 为 `7af2c35892071268a35c3fcdf41ba0dc16949a3f`；当时 S0 领先 5、落后 0，尚未合入 main。隔离分支 `feat/p0-settlement-resilience-sol61` 从该 S0 起步，不合入 G6。集成按 [S0 #33](https://github.com/sjh20016/inkbox/pull/33) → [P0 #32](https://github.com/sjh20016/inkbox/pull/32) 顺序，最终状态以对应 PR 和准确 HEAD 的 Actions 为准。
 
 ## 玩家闭环与模块
 
@@ -46,6 +46,8 @@ S0 焚林立即损失一次植被，灭火不再重复扣减；7 日火期后接
 
 真实执行的入口：`test:core`、`test:view`、`test:g23`、`test:g24`、`test:g26`、`test:g2p0`、`test:regression`、`test:three-realms`、`test:save-equivalence`、`test:g1:longrun`、`test:s0`、`test:resilience` 及其 `--long` / `--century` / `--benchmark`、其余原 Fast、`build`、`test:package`。集中检查已加入 Fast 和显式打包清单。原始命令/退出码、初次失败与复测日志保留 `reports/local/resilience/`，不入 Git。
 
+P0 实现提交 `322300f86488fc18193afe2ff10e62e55dd66f77` 的 [PR Actions](https://github.com/sjh20016/inkbox/actions/runs/39799189304) 已实读确认 Fast Gate / Heavy Gate 均成功；Browser Smoke 按工作流设置跳过。后续文档提交、改为 main 基线及合流门禁分别核对，不用这次成功替代新运行。
+
 双 renderer 环境为 Edge 155 / AMD Radeon 610M / DPR1 / 1366×768，另检查 390×844 检视卡。Browser plugin 不可用，按仓库已有隔离 Edge/CDP 流程，未安装浏览器依赖。检查实际页面、活村/受灾/恢复/遗址鼠标交互、暂停、历史读数及截图；Three 采用俯视镜头避免真实前山遮挡。无 JS runtime 错误；有一条 `f_strokeHeight` HLSL 编译警告，来自与 S0 SHA256 完全相同的 `TerrainLineArt.js`，原始 warning 留在报告，不声称控制台全净。本轮不扩展修改既有 shader。窄屏只验证检视文字/关闭入口，没有重做 R1 原有全套窄屏布局。
 
 同机串行复用 S0 原探针，seed 20261018、广境 512×320、全图镜头、DPR1、×2 各推进 15 秒：
@@ -59,10 +61,20 @@ S0 焚林立即损失一次植被，灭火不再重复扣减；7 日火期后接
 | RAF >50ms | 4 | 13 |
 | 推进游戏日 | 89.9376 | 90.0708 |
 
+针对这一次长帧增幅，追加三组同机串行配对，顺序为 S0→P0、P0→S0、S0→P0。复用完全相同的 `inkbox-s0-browser.mjs`、上述 seed/广境/镜头/DPR/×2/15 秒，源码仍分别为 `7af2c35` / `322300f`，未修改探针、阈值或预算：
+
+| 配对 | S0 / P0 RAF P95 ms | S0 / P0 >50ms | S0 / P0 更新 CPU P95 ms | S0 / P0 推进日 |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 22.2 / 22.2 | 1 / 1 | 1.3 / 1.3 | 89.9718 / 90.1044 |
+| 2（P0 先跑） | 22.2 / 22.2 | 1 / 1 | 1.3 / 1.3 | 90.1050 / 90.0372 |
+| 3 | 22.3 / 22.3 | 1 / 1 | 1.3 / 1.3 | 90.0708 / 89.9712 |
+
+六次都实际渲染 966～1011 帧，render CPU 提交 P95 为 0.9～1.0 ms，暂停仍为 24 draws / 1111070 triangles；各次退出码为 0，隔离浏览器清理成功。本轮未复现原先 33.4→38.8 ms、4→13 次的相对回退，因此不据单次样本启动优化或 GPU 归因。两轮绝对帧时不同，机器负载/调度没有锁定，不能把本轮较快结果解释为代码性能提升或证明不存在回归。原始 JSON、日志与截图保留 `reports/local/resilience/perf-repeat/`。
+
 另一个近村上限 CPU 样本，256×256、seed62001、176/220 村、每村一位正式居民，360 日、三对：中位总时长 S0 117.773 ms、P0 265.905 ms，约每次一日推进额外 0.412 ms。比例增幅明显，绝对成本仍有界；这不是高人口样本。P0 没有每帧全图新增扫描，主要新增村庄地形/房田事实和援助检查。
 
-GPU 样本的 RAF 长尾增大，单次对照没有定位其成因；不能据 CPU 提交接近宣称整体性能无回归。未运行 DPR2、多显卡、满 3000 实体、300 年样本、全部历史 GPU/Soak/Nightly。完整证据是有限条件下的功能与成本记录，不是全面性能封板。
+首轮 GPU 样本的 RAF 长尾增大未在追加的三组配对中复现，仍没有定位首轮差异的成因；不能据 CPU 提交接近或本轮相近宣称整体性能无回归。未运行 DPR2、多显卡、满 3000 实体、300 年样本、全部历史 GPU/Soak/Nightly。长期人口上限、宗门动态、魂池容量与长档增长仍未完成产品验收，P0 的 100 年记录不能替代这些问题的验证。完整证据是有限条件下的功能与成本记录，不是全面性能封板。
 
 ## 交付与回退
 
-本 PR 应以未合流的 `feat/s0-p0-static-nature` 为 base，仅提交 P0 差异；最终 HEAD 以 `git rev-parse feat/p0-settlement-resilience-sol61` 和 PR 显示为准。不合 main，不引入 G6。回退本分支的 P0 提交即可恢复 S0 代码，保留新存档备份；旧程序不会展示新增地方档案，不承诺回退后的沿革/自然期限等价。
+P0 最初以 `feat/s0-p0-static-nature` 为 base，仅提交 P0 差异；S0 经完整门禁合入后，P0 改为最新 main，再核对差异和完整门禁后合流。最终 HEAD / 合流 SHA 以 PR 显示为准，不引入 G6，不处理 #30 冲突。合流后从准确 main 版本另做玩家浏览器试玩，检查地方状态、废墟发现和援助感知，不能以前述分支验收冒充合流后试玩。需要回退时正常 revert P0 的 merge commit，保留 S0 与新存档备份；旧程序不会展示新增地方档案，不承诺回退后的沿革/自然期限等价。
