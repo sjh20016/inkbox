@@ -1,5 +1,6 @@
 import { recomputeRect } from '../../world/terrain.js';
-import { SEA_LEVEL } from '../../core/config.js';
+import { setHeight } from '../../world/terrainEdit.js';
+import { snapshotFloodCell, restoreFloodCell, restoredFloodWater } from '../../sim/nature.js';
 
 // The only render3d world write boundary. A stamp reads a stable neighbourhood.
 //
@@ -79,13 +80,7 @@ export function sculpt(world, { x, y, radius = 6, strength = 0.035, mode = 'rais
 function commitChanges(world, changes, { x0, y0, x1, y1, syncWater, deferCanonical, beforeChange }) {
   for (const [i, value, old] of changes) {
     beforeChange?.(i,old,world.water?.[i] ?? 0,world.riverBase?.[i] ?? 0);
-    if(syncWater && world.water){
-      const depth=world.water[i],surface=old+depth;
-      world.water[i]=Math.max(value<SEA_LEVEL?SEA_LEVEL-value:0,depth>0?surface-value:0,0);
-      // River sources otherwise immediately refill a raised channel in maintainRivers().
-      if(world.riverBase && value>old && value>=surface && value>=SEA_LEVEL)world.riverBase[i]=0;
-    }
-    world.height[i] = value;
+    setHeight(world, i, value);
   }
   if (!changes.length) return null;
   // canonical 派生量重算：type / qi 必须跟着新高度走（含 world.touch()）。
@@ -150,7 +145,7 @@ export function restoreHeights(world, changes) {
   if (!Array.isArray(changes) || changes.length === 0) return null;
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const [i, value] of changes) {
-    world.height[i] = value;
+    setHeight(world, i, value);
     const x = i % world.w, y = (i - x) / world.w;
     if (x < x0) x0 = x;
     if (x > x1) x1 = x;
@@ -188,7 +183,7 @@ export class TerrainStroke {
   }
   stamp(point){
     const region=sculpt(this.world,{...this.options,...point,deferCanonical:true,
-      beforeChange:(i,h,w,r)=>{if(!this.before.has(i))this.before.set(i,[h,w,r]);}});
+      beforeChange:(i,h,w,r)=>{if(!this.before.has(i))this.before.set(i,[h,w,r,snapshotFloodCell(this.world,i)]);}});
     this.stats.stamps++;this.lastStamp={x:point.x,y:point.y};
     this.region=mergeBrushRegion(this.region,region);this.pending=mergeBrushRegion(this.pending,region);
   }
@@ -222,7 +217,7 @@ export class TerrainStroke {
     this.flush();this.closed=true;
     const records=[];
     for(const [i,before] of this.before){const after=[this.world.height[i],this.world.water?.[i]??0,this.world.riverBase?.[i]??0];
-      if(before.some((v,k)=>v!==after[k]))records.push([i,...before,...after]);}
+      if(before.slice(0,3).some((v,k)=>v!==after[k]))records.push([i,...before.slice(0,3),...after,before[3],snapshotFloodCell(this.world,i)]);}
     this.result=records.length?{plane:'mortal',world:this.world,region:this.region,records,
       changes:records.map(([i,h])=>[i,h]),bytes:records.length*128,stats:{...this.stats,cells:records.length}}:null;
     return this.result;
@@ -234,10 +229,13 @@ export function restoreTerrainStroke(world,entry,side='before'){
   const offset=side==='after'?4:1,expected=side==='after'?1:4;
   // Validate every touched cell before any write: later simulation owns its new values.
   for(const record of entry.records){const i=record[0];
-    if(world.height[i]!==record[expected] || (world.water?.[i]??0)!==record[expected+1]
+    const expectedFlood = record.length>7 ? record[side==='after'?7:8] : null;
+    const expectedWater = restoredFloodWater(world, expectedFlood, record[expected+1]);
+    if(world.height[i]!==record[expected] || (world.water?.[i]??0)!==expectedWater
       || (world.riverBase?.[i]??0)!==record[expected+2])return null;
   }
   for(const record of entry.records){const i=record[0];world.height[i]=record[offset];
-    if(world.water)world.water[i]=record[offset+1];if(world.riverBase)world.riverBase[i]=record[offset+2];}
+    if(world.water)world.water[i]=record[offset+1];if(world.riverBase)world.riverBase[i]=record[offset+2];
+    if(record.length>7)restoreFloodCell(world,i,record[side==='after'?8:7]);}
   const r=entry.region;recomputeRect(world,r.x0,r.y0,r.x1,r.y1);return {...r,count:entry.records.length};
 }

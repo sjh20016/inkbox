@@ -22,10 +22,8 @@
 // 所有调用方（真实游戏 + 全部测试）自动跟上——这才是「结构上的保证」，
 // 而不是靠注释提醒。
 //
-// ⚠️ **本模块只收「游戏日驱动」的时钟**。`main.js` 的 `update()` 里还有两个
-//    **按真实时间**（`dt`）驱动的：`stepHydrology`（水文）与 `decayOverlay`（衰减）。
-//    它们的注释明写「无论时间倍速多快，地貌演化都保持稳定步长」——
-//    语义上不属于「游戏日」，**故意不收进来**。别顺手把它们也搬进来。
+// 自然环境只在发生明确事件时建立到期项；创世以后的连续水文和全图
+// 随机生态扫描均不在正式推进路径中。
 //
 // ───────────────────────────────────────────────────────────────────────
 // 铁律一（随机流）在这里的形态
@@ -37,18 +35,14 @@
 //   · `stepNether(world, d)`   —— **零 rng**（见 `netherLife.js` 头注释）
 //   · `stepRifts(world)`       —— 抽 `rifts.js` 的独立流
 //   · `stepMortalWraiths`      —— 抽 `wraiths.js` 的独立流（`0x4841554e`）
-//   · `stepVegetation` / `stepFire` —— 抽**调用方传进来的** `deps.rng`
-// 所以「世界线会不会漂」取决于调用方传什么，本模块**不改变**这件事。
-//
-// ⚠️ 正因为如此，`deps.rng` 是**可选**的：不传就**跳过** eco/fire 两套时钟
-//    （而不是偷偷拿 `Math.random` 顶上）。测试若本来就不跑这两套，硬跑会让
-//    世界线漂走，而那是**不可逆**的（既有长测标定当场作废）。
+//   · `settleNature`          —— 零 rng，只结算活动事件到期日
+// 本模块不为自然环境抽签，凡间人物随机流保持独立。
 
 import { TIME } from '../core/config.js';
 import { stepNether } from './netherLife.js';
 import { stepRifts, RIFT_PERIOD_DAYS } from './rifts.js';
 import { stepMortalWraiths, WRAITH_PERIOD_DAYS } from './wraiths.js';
-import { stepVegetation, stepFire } from './ecology.js';
+import { settleNature } from './nature.js';
 import { updateMapProgress } from '../world/mapProgress.js';
 
 /**
@@ -65,8 +59,6 @@ export const ADVANCE_PERIODS = Object.freeze({
   //    （`stepNetherRift` 里抽签），但**出来之后在凡间怎么飘**是凡间自己的事，
   //    与「视界开没开」无关（见下面 wraith 那一段）。
   wraith: WRAITH_PERIOD_DAYS,   // 10
-  eco: 5,
-  fire: 0.8,
 });
 
 /**
@@ -74,11 +66,10 @@ export const ADVANCE_PERIODS = Object.freeze({
  *
  * ⚠️ 不要每次 `advanceWorld` 现建一个：那会让节流**静默失效**——每拍都从 0
  *    起算，「每 10 日一次」退化成「每次调用一次」。低频时钟之所以低频，是因为
- *    有的很贵：`stepNether` 要做「400 实体 × 120 魂池」两两比对，`stepVegetation`
- *    要抽签。每帧跑会把帧率吃掉，而且**不报错**，只是机器发烫。
+ *    有的很贵：`stepNether` 要做「400 实体 × 120 魂池」两两比对。
  */
 export function createAdvanceState() {
-  return { upper: 0, nether: 0, rift: 0, wraith: 0, eco: 0, fire: 0 };
+  return { upper: 0, nether: 0, rift: 0, wraith: 0 };
 }
 
 /**
@@ -92,14 +83,13 @@ export function createAdvanceState() {
  * @param {object} deps
  *   · `life`        凡间 `Life` 实例。**必需**——它是世界的主循环，缺了世界不会动。
  *   · `upperLife`   上界 `UpperLife` 实例（可选；缺则跳过上界 tick）
- *   · `rng`         `stepVegetation` / `stepFire` 用的流（可选；缺则**跳过**这两套）
  *   · `state`       `createAdvanceState()` 的产物。**必需**——缺了节流会失效，
  *                   所以这里宁可**不推进**也不静默退化。
  *   · `riftActive`  裂缝是否推进（默认 `true`）。真实游戏传 `this.riftViewOpen()`
  *                   ——契约 C1.1「视界关着就冻结」在**推进侧**的唯一兑现处。
  *   · `nether`      显式 `false` 关闭幽冥 tick（默认：`world.nether` 存在就 tick）。
  *   · `wraith`      显式 `false` 关闭凡间鬼影 tick（默认：`world.wraiths` 存在就 tick）。
- * @returns {object|null} 这一拍各时钟跑了没有：`{ upper, nether, rift, wraith, eco, fire, mapProgress }`。
+ * @returns {object|null} 这一拍各时钟跑了没有：`{ upper, nether, rift, wraith, nature, mapProgress }`。
  *   调用方据此置 `dirty` 位（`main.js` 就是这么用的）。
  */
 export function advanceWorld(world, days, deps = {}) {
@@ -107,7 +97,7 @@ export function advanceWorld(world, days, deps = {}) {
   const state = deps.state;
   if (!state) return null;              // 没有累加器 = 节流失效，宁可不推
 
-  const fired = { upper: false, nether: false, rift: false, wraith: false, eco: false, fire: false };
+  const fired = { upper: false, nether: false, rift: false, wraith: false, nature: false };
 
   world.day += days;
   world.year = Math.floor(world.day / TIME.daysPerYear);
@@ -209,23 +199,9 @@ export function advanceWorld(world, days, deps = {}) {
     }
   }
 
-  // ── 植被 / 野火：**只有调用方给了 `rng` 才跑** ─────────────────
-  // ⚠️ 这两套**抽签**。测试若本来不跑它们（比如 playtest 原先只调 `life.step`），
-  //    这里跳过才是对的——硬跑会让世界线漂走，而那是**不可逆**的。
-  if (deps.rng) {
-    state.eco += days;
-    if (state.eco >= ADVANCE_PERIODS.eco) {
-      stepVegetation(world, state.eco, deps.rng);
-      state.eco = 0;
-      fired.eco = true;
-    }
-    state.fire += days;
-    if (state.fire >= ADVANCE_PERIODS.fire) {
-      stepFire(world, state.fire, deps.rng);
-      state.fire = 0;
-      fired.fire = true;
-    }
-  }
+  // Life reads fire overlap against the just-completed interval. Expire after
+  // life.step so a step crossing dueDay cannot apply full-interval fire damage.
+  fired.nature = settleNature(world) > 0;
 
   // Access grows only after the simulation succeeds, independently of all streams.
   fired.mapProgress = updateMapProgress(world);

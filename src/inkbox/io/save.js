@@ -25,6 +25,7 @@
 
 import { APP, NEVER_DECAY_DAY, WORLD_PRESETS } from '../core/config.js';
 import { World } from '../world/World.js';
+import { snapshotNature, restoreNature } from '../sim/nature.js';
 import { recomputeAll, recomputeQi } from '../world/terrain.js';
 import { DAO_PATHS, TRIBULATION_OMENS } from '../core/cultivation.js';
 import { MANUALS, NETHER_TECHNIQUES } from '../core/lore.js';
@@ -694,6 +695,7 @@ export function serializeWorld(world, meta = {}) {
     // WorldEvents 的倒计时、活动灾祸和结局历史属于可变的世界状态；旧档没有时
     // 由 Life 创建一套新计时器。这里存快照而不存运行时控制器，避免保存 world 引用。
     worldEvents: world.worldEventState || null,
+    ...(world.plane === 'mortal' ? { nature: snapshotNature(world) } : {}),
     // ── 上界（v8）──────────────────────────────────────────
     // 凡间 world 上挂着 `world.upper` 这个引用时才写这一块（main.js 的 newWorld 里设）。
     //
@@ -894,6 +896,7 @@ function serializeUpperWorld(upper) {
   // 留着就是「上界也有记挂列表」这个**不存在**的语义（同上面 `soulLog` 的理由），
   // 所以显式删掉；读侧靠 `restoreWorldState` 兜底成 `[]`，两侧形状各自自洽。
   delete payload.watch;
+  delete payload.nature;
   return payload;
 }
 
@@ -1046,6 +1049,7 @@ function serializeNetherWorld(nether) {
   delete payload.soulLog;
   delete payload.possessionLog;
   delete payload.watch;
+  delete payload.nature;
   return payload;
 }
 
@@ -1369,6 +1373,7 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
   world.milestones = Array.isArray(data.milestones) ? data.milestones : [];
   world.worldEventState = data.worldEvents && data.worldEvents.version === 1
     ? data.worldEvents : null;
+  if (world.plane === 'mortal') restoreNature(world, data.nature);
   world.busanzi = data.busanzi
     ? {
       met: !!data.busanzi.met,

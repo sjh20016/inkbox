@@ -26,7 +26,7 @@ import { generateUpperWorld, recomputeUpperQi } from './world/worldgenUpper.js';
 // 与上界不同，幽冥**没有** `recomputeNetherQi` 可调：它的 `qi` 走凡间那套 `qiAt`
 // （阴气在 `veg` 层，不在 `qi` 层），生成器内部已 `recomputeQi` 一次，调用方无事可做。
 import { generateNetherWorld } from './world/worldgenNether.js';
-import { recomputeRect, flushDirty } from './world/terrain.js';
+import { recomputeRect } from './world/terrain.js';
 import { Life } from './sim/life.js';
 import { UpperLife } from './sim/upperLife.js';
 // ⚠️ 三界面板要的那几份只读读数（五路中文名 `ROUTE_LABEL` / 幽冥实体口径
@@ -40,14 +40,12 @@ import { wraithStats } from './sim/wraiths.js';
 // D6-3 工程包 D：`isControlled` 是「此刻被附身接管」的唯一判据（`life.js` 的行为锁
 // 与这里的面板都读它）。**只读**，不引入任何写路径。
 import { isControlled } from './sim/possession.js';
-import { stepHydrology } from './sim/hydrology.js';
-import { decayOverlay } from './sim/ecology.js';
 // 空间裂缝（阶段三）：**开缝**这个动作只在 pointerup 的提交点（commitSelection）
 // 发生；**判定 / 漏物 / 闭合**走低频时钟，那个时钟已搬进 `sim/advance.js`
 // （见下面的 `advanceWorld`），本文件不再自己驱动它。
 import { openRifts } from './sim/rifts.js';
 // ⚠️ `advanceWorld` / `createAdvanceState` 是**世界推进的唯一入口**：
-//    `update()` 里原先那段「life + upper + nether + rift + eco + fire」的时钟
+//    `update()` 里原先分散的世界时钟
 //    列表已**整段搬进** `sim/advance.js`。**别在本文件里再抄一遍**——测试侧
 //    （`inkbox-longrun.mjs` / `inkbox-playtest.mjs`）调的是同一个函数，
 //    抄第二份就会重演 BACKLOG #13（漏掉 `stepNether`，幽冥实体只增不减）。
@@ -243,14 +241,11 @@ class Sandbox {
     // （下一阶段的 ascend() 靠它找到上界）。
     this.upper = null;
     this.upperTerrain = null;
-    // ⚠️ 各低频时钟的累积器（上界 / 幽冥 / 裂缝 / 植被 / 野火）**不再散着放**——
+    // 各低频时钟的累积器（上界 / 幽冥 / 裂缝）统一保存在推进状态中。
     //    全部收进 `this.advanceState`（`sim/advance.js` 的 `createAdvanceState()`）。
     //    理由见那个文件头：散着放就得在**每一处**推进代码里各抄一遍时钟列表，
-    //    而那个模式已经漏过两次时钟（植被 / 野火；以及 2026-09-23 新增的
-    //    `stepNether`，即 BACKLOG #13）。放一份，`update()` 与全部测试脚本
+    //    而那个模式曾漏掉 `stepNether`（BACKLOG #13）。放一份，`update()` 与全部测试脚本
     //    共用同一份节流状态。
-    //    ⚠️ `hydroAccum` / `decayAccum` **不在里面**：那两个按**真实时间**（`dt`）
-    //       驱动，不是「游戏日驱动的时钟」（见各自的注释）。
     this.advanceState = createAdvanceState();
     /** 上界地形需要重绘（本轮只由低频 step 置位，为下一阶段留口） */
     this.upperDirty = false;
@@ -291,9 +286,6 @@ class Sandbox {
     this.fps = 0;
     this.fpsAccum = 0;
     this.fpsFrames = 0;
-    this.hydroAccum = 0;
-    // （植被 / 野火的时钟累积器在 `this.advanceState.eco` / `.fire`，同上。）
-    this.decayAccum = 0;
     this.autoSaveAccum = 0;
     // 自动存档的并发护栏。存档现在是**异步**的（gzip 要走 CompressionStream），
     // 而这段代码跑在帧循环里：不挡的话 90 秒到点就发一次，上一次还没压完又发一次。
@@ -632,7 +624,7 @@ class Sandbox {
   undo() {
     const label = this.history.undo(this.world);
     if (!label) {
-      this.notify('没有可撤销的操作', 2200);
+      this.notify(this.history.lastUndoFailure || '没有可撤销的操作', 2200);
       this.qol.syncUndoState();
       return false;
     }
@@ -2027,7 +2019,7 @@ class Sandbox {
   /**
    * 推进世界 `days` 个游戏日 —— **真实游戏与全部测试脚本共用的唯一入口**。
    *
-   * 时钟列表（life / upper / nether / rift / eco / fire）与各自的节拍，全部
+   * 时钟列表（life / upper / nether / rift / wraith / nature）与各自的节拍，全部
    * 定义在 `sim/advance.js` 的 `ADVANCE_PERIODS`——**本文件不自己抄一遍**。
    * 这是 BACKLOG #13 的修法：此前 main.js 与各测试脚本各抄一份时钟列表，
    * 2026-09-23 新增 `stepNether` 时测试侧漏了，于是长测与 playtest 里幽冥四步
@@ -2040,22 +2032,15 @@ class Sandbox {
    *    就是**真实游戏的那条路**。
    *
    * @param {number} days 游戏日数。`≤ 0`（或 NaN）直接返回 `null`。
-   * @param {object} [opts] 逃生口，**目前没有任何调用方用它**。存在的理由：
-   *   有些测试需要保住既有的世界线（eco/fire 是唯一抽签的两套，跑起来会改植被与
-   *   肥力、反馈回凡间）——那时传 `{ rng: null }` 显式关掉它们，比「再抄一份
-   *   时钟列表」好。**真实游戏永远不传**。若将来确实没人用，可以删掉。
-   * @returns {object|null} `{ upper, nether, rift, wraith, eco, fire }`，各时钟这一拍跑没跑。
+   * @returns {object|null} `{ upper, nether, rift, wraith, nature }`，各时钟这一拍跑没跑。
    */
   advanceDays(days, opts) {
     const world = this.world;
     if (!world || !(days > 0)) return null;
     // ⚠️ `riftActive` 传 `this.riftViewOpen()`（契约 C1.1：视界关着就冻结）。
-    // ⚠️ `rng` 默认 `this.rng`——**不是** `this.life.rng`（那是凡间主随机流，铁律一）。
-    const rng = opts && 'rng' in opts ? opts.rng : this.rng;
     const fired = advanceWorld(world, days, {
       life: this.life,
       upperLife: this.upperLife,
-      rng,
       state: this.advanceState,
       riftActive: this.riftViewOpen(),
     });
@@ -2067,7 +2052,7 @@ class Sandbox {
       //    置了只会让整张地形位图每 30 天白重算一次，纯浪费。
       // ⚠️ 凡间鬼影（`fired.wraith`）同理**不置** `dirty`：它们画在每帧重绘的
       //    叠加层上（`drawWraiths`，与 `drawEntities` 同层），地形位图不受影响。
-      if (fired.eco || fired.fire) this.dirty = true;
+      if (fired.nature) this.dirty = true;
       if (fired.mapProgress) {
         this.terrain?.invalidate(); this.dirty = true; this.qol?.markDirty('terrain');
         syncMapProgress(this); this.notify('山河渐展 · 新区域已开放', 2600);
@@ -2109,34 +2094,11 @@ class Sandbox {
     const days = paused ? 0 : TIME.baseDaysPerSecond * speed * dt;
     if (days > 0) {
       // ── 世界推进：**全部游戏日驱动的时钟**都在 `advanceDays()` 里 ────
-      // ⚠️ 原先散在这里的四段注释（上界 / 幽冥 / 裂缝 / 植被野火）**已随逻辑
+      // ⚠️ 原先散在这里的低频时钟注释**已随逻辑
       //    搬进 `sim/advance.js`**。要读「为什么周期是 30」「为什么关窗时既不
       //    累加也不清零」「为什么裂缝不置 dirty」，去那边看——
       //    **别在这里重新长出一份副本**，那正是 BACKLOG #13 的成因。
       this.advanceDays(days);
-    }
-
-    // 水文按真实时间推进：无论时间倍速多快，地貌演化都保持稳定步长。
-    // 但「暂停」必须真的暂停——否则玩家按下暂停后地形仍在悄悄侵蚀，
-    // 而且此时任何落笔都会被水流抹掉，撤销也对不上。
-    // 注意是「不累积」而不是「累积了不执行」，免得解除暂停时补跑一大串步。
-    if (!paused) {
-      this.hydroAccum += dt;
-      let hydroSteps = 0;
-      while (this.hydroAccum >= 0.16 && hydroSteps < 3) {
-        this.hydroAccum -= 0.16;
-        hydroSteps += 1;
-        stepHydrology(world, 4, null);
-        this.dirty = true;
-      }
-
-      this.decayAccum += dt;
-      if (this.decayAccum >= 2.5) {
-        decayOverlay(world, this.decayAccum + 2.5 * 360, this.rng);
-        flushDirty(world);
-        this.decayAccum = 0;
-        this.dirty = true;
-      }
     }
 
     if (this.pointer.painting && this.tool.mode === 'drag' && this.pointer.inside) {

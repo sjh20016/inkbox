@@ -24,6 +24,7 @@ import {
 import { canAccess } from '../core/mapAccess.js';
 import { clamp, mulberry32 } from '../core/noise.js';
 import { OVER, recomputeRect, markDirty, flushDirty } from '../world/terrain.js';
+import { fireExposure, floodExposure } from './nature.js';
 import { generateNameParts, generateName, generateVillageName, narrate, fillTemplate } from '../core/lore.js';
 import {
   initEntity, stepEntity as stepCultivation, combatPower, recordDeath, addKarma, MAX_SITES, placeName,
@@ -729,11 +730,12 @@ export class Life {
       e.hp -= e.maxHp * dtDays * 0.00035;
     }
 
-    if (world.fire[here] > 0.4) {
+    const burningDays = fireExposure(world, here, world.day - dtDays, world.day);
+    if (burningDays > 0) {
       // 死因标记：被烧死 ⇒ `deathOther`。写在这里、排在饥荒之后，
       // 于是「既挨饿又着火」时以火为准（火焰是更直接的致死因由）。
       e.diedOf = 'fire';
-      e.hp -= e.maxHp * dtDays * 0.25;
+      e.hp -= e.maxHp * burningDays * 0.25;
     }
 
     // 走火入魔：不按常理行事，见谁打谁
@@ -1496,12 +1498,18 @@ export class Life {
       for (const house of village.houses) {
         if (!liveSettlementHouseType(world, house)) continue;
         const idx = world.idx(Math.floor(house.x), Math.floor(house.y));
-        if (world.water[idx] < SETTLEMENT_FLOOD_DEPTH) {
+        const exposure = floodExposure(world, idx, world.day - dtDays, world.day, SETTLEMENT_FLOOD_DEPTH);
+        if (exposure.days <= 0) {
           if (house.floodDays) delete house.floodDays;
           continue;
         }
-        house.floodDays = (house.floodDays || 0) + dtDays;
-        if (house.floodDays < HOUSE_FLOOD_DAYS) continue;
+        const floodedDays = (house.floodDays || 0) + exposure.days;
+        if (floodedDays < HOUSE_FLOOD_DAYS) {
+          if (exposure.atEnd) house.floodDays = floodedDays;
+          else delete house.floodDays;
+          continue;
+        }
+        house.floodDays = floodedDays;
         house.floodRuined = true;
         world.struct[idx] = 5;
         world.over[idx] = OVER.RUINS;

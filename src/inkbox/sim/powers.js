@@ -8,33 +8,40 @@ import { SEA_LEVEL, SPECIES, TERRAIN, LIMITS } from '../core/config.js';
 import { clamp } from '../core/noise.js';
 import { OVER, recomputeRect, recomputeAll } from '../world/terrain.js';
 import { ignite, extinguish } from './ecology.js';
+import { setHeight, setWater } from '../world/terrainEdit.js';
+import { igniteCell, extinguishCell, setRecoveringOverlay, floodCells, cancelNatureEvent, snapshotNatureCell, restoreNatureCell, settleNature } from './nature.js';
 import { placeOf } from './sects.js';
 
 // ── 撤销栈 ────────────────────────────────────────────────
+function historyCell(world, i) {
+  return {
+    h: world.height[i], w: world.water[i], o: world.over[i], t: world.type[i],
+    s: world.struct[i], v: world.veg[i], f: world.fire[i], n: snapshotNatureCell(world, i),
+  };
+}
+
 export class History {
   constructor(limit = LIMITS.maxUndo) {
     this.limit = limit;
     this.stack = [];
     this.current = null;
     this.bounds = null;
+    this.eventIds = [];
+    this.recordWorld = null;
+    this.lastUndoFailure = null;
   }
 
   begin() {
     this.current = new Map();
     this.bounds = null;
+    this.eventIds = [];
+    this.recordWorld = null;
   }
 
   record(world, i) {
     if (!this.current || this.current.has(i)) return;
-    this.current.set(i, {
-      h: world.height[i],
-      w: world.water[i],
-      o: world.over[i],
-      t: world.type[i],
-      s: world.struct[i],
-      v: world.veg[i],
-      f: world.fire[i],
-    });
+    this.recordWorld = world;
+    this.current.set(i, historyCell(world, i));
     const x = i % world.w;
     const y = (i - x) / world.w;
     const b = this.bounds;
@@ -53,21 +60,33 @@ export class History {
       this.bounds = null;
       return false;
     }
-    this.stack.push({ changes: this.current, label, bounds: this.bounds });
+    const after = new Map([...this.current.keys()].map((i) => [i, historyCell(this.recordWorld, i)]));
+    this.stack.push({ changes: this.current, after, label, bounds: this.bounds, eventIds: this.eventIds });
     if (this.stack.length > this.limit) this.stack.shift();
     this.current = null;
     this.bounds = null;
+    this.recordWorld = null;
     return true;
   }
 
   cancel() {
     this.current = null;
     this.bounds = null;
+    this.recordWorld = null;
   }
 
   undo(world) {
-    const entry = this.stack.pop();
+    this.lastUndoFailure = null;
+    const entry = this.stack.at(-1);
     if (!entry) return null;
+    // Later simulation may have created a fire, flood or permanent cover on a
+    // recorded cell. Refuse the whole undo instead of silently deleting it.
+    if (entry.after && [...entry.after].some(([i, after]) => JSON.stringify(historyCell(world, i)) !== JSON.stringify(after))) {
+      this.lastUndoFailure = '相关地块已有后续变化，无法安全撤销';
+      return null;
+    }
+    this.stack.pop();
+    for (const id of entry.eventIds || []) cancelNatureEvent(world, id);
     for (const [i, o] of entry.changes) {
       world.height[i] = o.h;
       world.water[i] = o.w;
@@ -76,7 +95,9 @@ export class History {
       world.struct[i] = o.s;
       world.veg[i] = o.v;
       world.fire[i] = o.f;
+      restoreNatureCell(world, i, o.n);
     }
+    settleNature(world);
     const b = entry.bounds;
     recomputeRect(world, b.x0, b.y0, b.x1, b.y1);
     world.touch();
@@ -86,6 +107,7 @@ export class History {
   clear() {
     this.stack.length = 0;
     this.current = null;
+    this.recordWorld = null;
   }
 }
 
@@ -127,7 +149,7 @@ export function sculpt(world, x, y, radius, amount, history) {
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
     history.record(world, i);
     const soft = falloff * falloff * (3 - 2 * falloff);
-    world.height[i] = clamp(world.height[i] + amount * soft, 0, 1);
+    setHeight(world, i, world.height[i] + amount * soft);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
@@ -139,7 +161,7 @@ export function flatten(world, x, y, radius, strength, history) {
   const target = world.height[centerIdx];
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
     history.record(world, i);
-    world.height[i] = world.height[i] + (target - world.height[i]) * strength * falloff;
+    setHeight(world, i, world.height[i] + (target - world.height[i]) * strength * falloff);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
@@ -150,18 +172,18 @@ export function roughen(world, x, y, radius, strength, history) {
   const t = brushIndices(world, x, y, radius, (i, px, py, falloff) => {
     history.record(world, i);
     const n = seedFrom(px, py, 7) * 2 - 1;
-    world.height[i] = clamp(world.height[i] + n * strength * falloff, 0, 1);
+    setHeight(world, i, world.height[i] + n * strength * falloff);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
 }
 
-/** 注水：抬高水面（会在低洼处自然成湖） */
+/** 注水：在笔刷范围内永久增加水深。 */
 export function addWater(world, x, y, radius, amount, history) {
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
     history.record(world, i);
-    world.water[i] = Math.max(0, world.water[i] + amount * falloff);
-    if (world.fire[i] > 0) world.fire[i] = 0;
+    setWater(world, i, world.water[i] + amount * falloff);
+    if (world.fire[i] > 0) extinguishCell(world, i);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
@@ -171,7 +193,7 @@ export function addWater(world, x, y, radius, amount, history) {
 export function removeWater(world, x, y, radius, amount, history) {
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
     history.record(world, i);
-    world.water[i] = Math.max(0, world.water[i] - amount * falloff);
+    setWater(world, i, world.water[i] - amount * falloff);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
@@ -185,25 +207,25 @@ export function paintVegetation(world, x, y, radius, target, history) {
     const value = clamp(target * (0.45 + falloff * 0.75), 0, 1);
     world.veg[i] = value;
     if (target <= 0.05) {
-      world.over[i] = OVER.SCORCHED;
-      world.fire[i] = 0;
+      setRecoveringOverlay(world, i, OVER.SCORCHED);
+      extinguishCell(world, i);
     } else if (world.over[i] === OVER.SCORCHED || world.over[i] === OVER.ASH) {
-      world.over[i] = OVER.NONE;
+      setRecoveringOverlay(world, i, OVER.NONE);
     }
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
 }
 
-/** 焚林：烧掉草木并留下火头，火会自己顺着风向蔓延 */
+/** 焚林：烧掉草木并留下有限期限的火头，不再自行蔓延。 */
 export function burnForest(world, x, y, radius, history) {
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
     history.record(world, i);
     if (world.water[i] > 0.02) return;
     if (falloff < 0.18) return;
     world.veg[i] = Math.max(0, world.veg[i] * 0.25);
-    world.over[i] = OVER.SCORCHED;
-    world.fire[i] = Math.max(world.fire[i], 0.32 + falloff * 0.5);
+    setRecoveringOverlay(world, i, OVER.SCORCHED);
+    igniteCell(world, i, falloff);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
@@ -215,7 +237,7 @@ export function paintOverlay(world, x, y, radius, overlay, history) {
     history.record(world, i);
     if (world.water[i] > 0.02) return;
     if (falloff < 0.25 && overlay !== OVER.NONE) return;
-    world.over[i] = overlay;
+    setRecoveringOverlay(world, i, overlay);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
@@ -225,11 +247,11 @@ export function paintOverlay(world, x, y, radius, overlay, history) {
 export function pourLava(world, x, y, radius, history) {
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
     history.record(world, i);
-    world.over[i] = OVER.LAVA;
+    setRecoveringOverlay(world, i, OVER.LAVA);
     world.veg[i] = 0;
-    world.fire[i] = 0;
-    if (world.water[i] > 0) world.water[i] = Math.max(0, world.water[i] - 0.05 * falloff);
-    world.height[i] = clamp(world.height[i] + 0.004 * falloff, 0, 1);
+    extinguishCell(world, i);
+    if (world.water[i] > 0) setWater(world, i, world.water[i] - 0.05 * falloff);
+    setHeight(world, i, world.height[i] + 0.004 * falloff);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
@@ -349,8 +371,8 @@ export function lightning(world, x, y, history) {
   const ty = clamp(Math.round(y), 0, world.h - 1);
   const i = world.idx(tx, ty);
   history.record(world, i);
-  world.height[i] = clamp(world.height[i] + 0.01, 0, 1);
-  const lit = ignite(world, tx, ty, 3, 1.2);
+  setHeight(world, i, world.height[i] + 0.01);
+  const lit = ignite(world, tx, ty, 3, 1.2, history);
   // 雷击会直接抹掉一圈生灵
   let killed = 0;
   const r2 = 4 * 4;
@@ -384,19 +406,19 @@ export function meteor(world, x, y, radius, history) {
     history.record(world, i);
     const d = Math.hypot(px - cx, py - cy) / Math.max(1, radius);
     const bowl = -Math.cos(Math.min(1, d) * Math.PI) * 0.5 + 0.5; // 中心 0 → 边缘 1
-    world.height[i] = clamp(world.height[i] - (1 - bowl) * 0.11, 0, 1);
+    setHeight(world, i, world.height[i] - (1 - bowl) * 0.11);
     if (d < 0.62) {
-      world.over[i] = OVER.LAVA;
+      setRecoveringOverlay(world, i, OVER.LAVA);
       world.veg[i] = 0;
     } else if (d < 1) {
-      world.over[i] = OVER.SCORCHED;
+      setRecoveringOverlay(world, i, OVER.SCORCHED);
       world.veg[i] = 0;
     }
     world.struct[i] = 0;
     world.fire[i] = Math.max(0, world.fire[i]);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
-  ignite(world, cx, cy, radius + 2, 1);
+  ignite(world, cx, cy, radius + 2, 1, history);
 
   let killed = 0;
   const r2 = (radius + 2) * (radius + 2);
@@ -423,14 +445,14 @@ export function earthquake(world, x, y, radius, history) {
     history.record(world, i);
     const n = seedFrom(px, py, 991) * 2 - 1;
     const m = seedFrom(px, py, 313) * 2 - 1;
-    world.height[i] = clamp(world.height[i] + n * 0.05 * falloff + m * 0.02, 0, 1);
+    setHeight(world, i, world.height[i] + n * 0.05 * falloff + m * 0.02);
     if (world.struct[i] && falloff > 0.15) {
       if (seedFrom(px, py, 77) < 0.55) {
         world.struct[i] = 5;
         world.over[i] = OVER.RUINS;
       }
     }
-    if (world.over[i] === OVER.LAVA) world.over[i] = OVER.ASH;
+    if (world.over[i] === OVER.LAVA) setRecoveringOverlay(world, i, OVER.ASH);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return disasterMilestone(world, '地动山摇', x, y, radius, 0, 18);
@@ -440,11 +462,13 @@ export function earthquake(world, x, y, radius, history) {
 export function flood(world, x, y, radius, history) {
   const cx = clamp(Math.round(x), 0, world.w - 1);
   const cy = clamp(Math.round(y), 0, world.h - 1);
+  const cells = [];
   const t = brushIndices(world, cx, cy, radius, (i, _px, _py, falloff) => {
     history.record(world, i);
-    world.water[i] = Math.max(0, world.water[i] + (0.02 + falloff * 0.09));
-    world.fire[i] = 0;
+    cells.push([i, 0.02 + falloff * 0.09]);
   });
+  const eventId = floodCells(world, cells);
+  if (eventId && history.current) history.eventIds.push(eventId);
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return disasterMilestone(world, '洪水滔天', x, y, radius, 0, 16);
 }
@@ -453,11 +477,11 @@ export function flood(world, x, y, radius, history) {
 export function rain(world, x, y, radius, history) {
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
     history.record(world, i);
-    world.fire[i] = 0;
+    extinguishCell(world, i);
     if (world.water[i] < 0.004) {
       world.veg[i] = clamp(world.veg[i] + 0.12 * falloff, 0, 1);
     }
-    if (world.over[i] === OVER.SCORCHED && falloff > 0.4) world.over[i] = OVER.NONE;
+    if (world.over[i] === OVER.SCORCHED && falloff > 0.4) setRecoveringOverlay(world, i, OVER.NONE);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
@@ -516,7 +540,7 @@ export function fertilize(world, x, y, radius, history) {
     if (world.water[i] > 0.02) return;
     world.veg[i] = clamp(world.veg[i] + 0.5 * falloff, 0, 1);
     if (world.over[i] === OVER.SCORCHED || world.over[i] === OVER.ASH || world.over[i] === OVER.LAVA) {
-      world.over[i] = OVER.NONE;
+      setRecoveringOverlay(world, i, OVER.NONE);
     }
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
@@ -529,13 +553,14 @@ export function paveRoad(world, x, y, radius, history) {
     history.record(world, i);
     if (world.water[i] > 0.02) return;
     if (falloff < 0.3) return;
-    world.over[i] = OVER.ROAD;
+    setRecoveringOverlay(world, i, OVER.ROAD);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
 }
 
 export function resetWorld(world) {
+  world.nature = null;
   for (let i = 0; i < world.size; i += 1) {
     world.water[i] = 0;
     world.over[i] = 0;
