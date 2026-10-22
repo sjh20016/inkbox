@@ -101,6 +101,9 @@ jobs:
       - name: R1 线刻资源、高度一致性与自然雕刻事务
         run: npm run test:r1
 
+      - name: S0 静态水域、环境事件、存档及云雾植被批次
+        run: npm run test:s0
+
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0
 
