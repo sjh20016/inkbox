@@ -29,11 +29,10 @@ const at = (g, x, y, z, sx = 1, sy = 1, sz = 1, ry = 0, rz = 0) => {
   g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, ry, rz)), new THREE.Vector3(sx, sy, sz)));
   return g;
 };
-// Lumpy clump: icosphere whose radius wobbles; flattened bottom like a painted 点叶 mass.
+// Lumpy clump: a radius-wobbled icosphere nearby, a compact tetrahedral paint mass at LOD2.
 function clump(r, detail, seed, far = false) {
-  // LOD2 crowns occupy only a few pixels. Keep their smooth spherical normals
-  // and painted silhouette without submitting an 80-face crown for every tree.
-  const g = far ? new THREE.OctahedronGeometry(r, 0) : new THREE.IcosahedronGeometry(r, detail), p = g.attributes.position;
+  // LOD2 crowns occupy only a few pixels; broadleaf and pine silhouettes remain distinct.
+  const g = far ? new THREE.TetrahedronGeometry(r, 0) : new THREE.IcosahedronGeometry(r, detail), p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
     const k = 1 + 0.10 * Math.sin(x * 9.1 + seed) * Math.cos(z * 7.3 + seed * 1.7);
@@ -67,7 +66,7 @@ function broadleaf(lod) {
 }
 function pine(lod) {
   const L = [];
-  if (lod === 2) { L.push(tag(at(new THREE.ConeGeometry(0.42, 1.25, 4), 0, 1.02, 0), 1, 1, LEAF_B)); return L; }
+  if (lod === 2) { L.push(tag(at(new THREE.ConeGeometry(0.42, 1.25, 3), 0, 1.02, 0), 1, 1, LEAF_B)); return L; }
   L.push(tag(at(new THREE.CylinderGeometry(0.03, 0.065, 1.35, 5), 0, 0.67, 0, 1, 1, 1, 0, 0.05), 1, 0, TRUNK));
   const tiers = lod === 0 ? [[0.74, 0.50, 0.24], [1.02, 0.42, 0.20], [1.26, 0.33, 0.17], [1.46, 0.22, 0.14]] : [[0.86, 0.48, 0.30], [1.24, 0.30, 0.26]];
   tiers.forEach(([y, r, h], i) => L.push(tag(at(tier(r, h, lod === 0 ? 8 : 6), (i % 2 ? 0.05 : -0.04), y, (i % 2 ? -0.03 : 0.03), 1.25, 1, 1.0, i * 0.7), 1, 1, i % 2 ? LEAF_B : LEAF_A)));
