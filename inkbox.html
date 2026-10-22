@@ -208,6 +208,14 @@
   .inspect-row { display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid rgba(34,32,28,.07); }
   .inspect-row span { color: var(--ink-soft); }
   .inspect-row b { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .inspect.settlement-card { width: min(282px, calc(100% - 24px)); font-size: 12px; }
+  .settlement-card .inspect-row { gap: 10px; align-items: baseline; line-height: 1.6; }
+  .settlement-card .inspect-row span { flex: 0 0 5.5em; }
+  .settlement-card .inspect-row b { text-align: right; overflow-wrap: anywhere; }
+  .inspect-section { padding: 8px 10px 5px; color: var(--cinnabar); letter-spacing: 2px; border-top: 1px solid var(--line); }
+  .inspect-history { margin: 0; padding: 5px 10px; color: var(--ink-mid); line-height: 1.7; border-bottom: 1px solid var(--line); }
+  .inspect-link { margin: 6px 10px; padding: 4px 7px; font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line-strong); cursor: pointer; }
+  .stage:has(> .inspect.settlement-card.on) #inkBusanzi { visibility: hidden; }
   /* ── 检视面板的说明行（见 main.js 里 `rows` 的 `@note` 伪标签）────────
      给上一行读数做注解的整行小字。两列布局（span + b）装不下一句解释：
      长句会被 `.inspect` 的 `overflow: hidden` 裁掉，而且会跟标签挤成一团。

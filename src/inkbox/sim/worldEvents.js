@@ -21,6 +21,7 @@ import { clamp } from '../core/noise.js';
 import { spawnSecretRealm, spawnCave, spawnFormation } from './sites.js';
 import { addKarma } from './cultivation.js';
 import { placeOf } from './sects.js';
+import { damageSettlement, settlementHistory } from './settlementResilience.js';
 
 /** 仙使的类别。来源 upperRealmSystem.js:99-135 */
 const IMMORTAL_ENVOYS = Object.freeze([
@@ -119,11 +120,11 @@ export class WorldEvents {
     if (this.history.length > 120) this.history.splice(0, this.history.length - 120);
   }
 
-  finishCrisis(entry, status, outcome) {
+  finishCrisis(entry, status, outcome, endedDay = this.world.day) {
     const world = this.world;
     entry.status = status;
     entry.resolved = true;
-    entry.endedDay = world.day;
+    entry.endedDay = endedDay;
     entry.outcome = outcome;
     // 先写清结局和历史，再从活动列表移除；数组移除不是事件的终点。
     this.remember(entry);
@@ -314,6 +315,8 @@ export class WorldEvents {
       byPlayer: false,
     };
     this.activeCrises.push(entry);
+    damageSettlement(world, village, { hp: 8, food: 5, reason: crisis.name,
+      ruinHouse: crisis.key === 'beast' || crisis.key === 'leyline' });
     // 村落级天灾，无单一当事人
     world.record(
       narrate(rng, 'crisis', { place: village.name, disaster: crisis.name, note: crisis.note }),
@@ -335,17 +338,21 @@ export class WorldEvents {
         this.finishCrisis(c, 'expired', `事件 #${c.id}「${c.name}」期限已失效，灾祸提前结束。`);
         continue;
       }
-      // 灾中：村子受损
-      village.hp -= dtDays * 0.05;
-      village.food = Math.max(0, village.food - dtDays * 0.02);
+      // 只结算本次时间段与危机有效期限的交集，起始日不追扣此前时间。
+      const end = Math.min(world.day, c.startedDay + c.durationDays);
+      const start = Math.max(world.day - dtDays, c.startedDay);
+      const exposedDays = Math.max(0, end - start);
+      if (exposedDays) damageSettlement(world, village,
+        { hp: exposedDays * 0.05, food: exposedDays * 0.02, reason: c.name });
 
       if (world.day - c.startedDay >= c.durationDays) {
         const survived = village.hp > 30;
         const ending = survived
-          ? `事件 #${c.id}：${village.name} 熬过了${c.name}。城中人少了一半，但还活着。`
-          : `事件 #${c.id}：${village.name} 没能撑过${c.name}，人散了。`;
-        if (!survived) village.hp = 0;
-        this.finishCrisis(c, survived ? 'resolved' : 'failed', ending);
+          ? `事件 #${c.id}：${village.name} 熬过了${c.name}，仍需修复灾损。`
+          : `事件 #${c.id}：${village.name} 未能阻止${c.name}，聚落受损严重。`;
+        settlementHistory(world, village, survived ? 'survived' : 'failed', ending);
+        this.finishCrisis(c, survived ? 'resolved' : 'failed', ending,
+          Math.min(world.day, c.startedDay + c.durationDays));
       }
     }
     this.syncState();
@@ -407,6 +414,8 @@ export class WorldEvents {
       return entry;
     }
     this.activeCrises.push(entry);
+    damageSettlement(world, village, { hp: 8, food: 5, reason: crisis.name,
+      ruinHouse: crisis.key === 'beast' || crisis.key === 'leyline' });
     // 玩家亲手降下的灾：与 `powers.js` 的即时天灾同一本账。
     //
     // ⚠️ 但「进大事记」有个前提——**落点得真有后果**。大事账本是 600 条**滚动窗口**，

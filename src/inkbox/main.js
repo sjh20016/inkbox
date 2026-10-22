@@ -105,6 +105,7 @@ import { getRealmViewState } from './ui/realmViewState.js';
 // 视界的**穿透检视**（D8-F）：点开窗里的东西看它是什么。**只读**——本模块只产出
 // 字符串行，不暴露任何改状态的接口（「D8 仍然是观察」是结构性的，见其头注释）。
 import { pickRealmSubject, realmInspectRows, resolvePlaneSubject, planeSubjectInspectRows } from './ui/realmInspector.js';
+import { settlementRuinMarkerId, visibleSettlementRuins } from './world/settlementIdentity.js';
 // ⚠️ 跨界**追迹**（D8-G）的 `traceTargetOf` 随「记挂」点行导航搬进
 //    `ui/railPanels.js`；`crossRealmChain` 在搬迁之前就已无人调用，一并清掉。
 // 视界的**绘制层**（D8-B 从本文件拔出去）：裁剪 / 贴另一界地形 / 画人与宗门 / 边框。
@@ -1666,6 +1667,13 @@ class Sandbox {
     });
     const panel = $('inkInspect');
     if (!panel) return;
+    const settlement = ['settlement', 'settlement-ruin', 'house'].includes(picked?.kind);
+    this.settlementInspection = settlement ? { world, ref: { ...ref } } : null;
+    panel.classList.toggle('settlement-card', settlement);
+    const signature = settlement ? JSON.stringify([planeId, ref, card]) : null;
+    if (signature && panel.classList.contains('on') && this.settlementInspectionSignature === signature) return picked;
+    this.settlementInspectionSignature = signature;
+    const scrollTop = panel.scrollTop;
     const text = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;')
       .replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
     const head = card?.head || `${planeLabel(planeId)} · 检视`;
@@ -1677,8 +1685,23 @@ class Sandbox {
     panel.innerHTML = `<div class="inspect-head">${text(head)}`
       + `<span class="plane-tag">${planeLabel(planeId)}</span>`
       + '<button class="ink-x" id="inkInspectClose">×</button></div>'
-      + rows.map(([k, v]) => `<div class="inspect-row"><span>${text(k)}</span><b>${text(v)}</b></div>`).join('');
+      + rows.map(([k, v]) => k === '@section' ? `<div class="inspect-section">${text(v)}</div>`
+        : k === '@history' ? `<p class="inspect-history">${text(v)}</p>`
+        : `<div class="inspect-row"><span>${text(k)}</span><b>${text(v)}</b></div>`).join('')
+      + (card?.factionId != null ? `<button class="inspect-link" data-inspect-faction="${text(card.factionId)}">查看关联宗门</button>` : '')
+      + (card?.predecessors || []).map(ruin => `<button class="inspect-link" data-inspect-ruin="${text(ruin.id)}">旧址 · ${text(ruin.name)}</button>`).join('');
     panel.classList.add('on');
+    panel.scrollTop = scrollTop;
+    for (const button of panel.querySelectorAll('[data-inspect-faction]')) button.addEventListener('click', () => {
+      const faction = this.world.factions.find(item => String(item.id) === button.dataset.inspectFaction);
+      if (!faction || !Number.isFinite(faction.capitalX) || !Number.isFinite(faction.capitalY)) return;
+      this.camera.focusOn(faction.capitalX, faction.capitalY, { zoom: Math.max(this.camera.zoom, 7), duration: SECT_FOCUS_DURATION });
+      this.focusedSectId = faction.id;
+    });
+    for (const button of panel.querySelectorAll('[data-inspect-ruin]')) button.addEventListener('click', () => {
+      const ruin = this.world.settlementRuins?.find(item => String(item.id) === button.dataset.inspectRuin);
+      if (ruin) this.inspectPlaneSubject('mortal', { kind: 'site', siteId: settlementRuinMarkerId(ruin.id) });
+    });
     $('inkInspectClose').addEventListener('click', () => panel.classList.remove('on'));
     return picked;
   }
@@ -1708,6 +1731,8 @@ class Sandbox {
     const rows = card ? card.rows : [['此处', '窗内无可检视之物']];
     const panel = $('inkInspect');
     if (!panel) return;
+    this.settlementInspection = null;
+    panel.classList.remove('settlement-card');
     // Q37：标出**这一格真正属于哪一界**（读的是检视器自己的 `planeId`，
     // 不是「当前开着哪扇窗」）。窗内检视恒非凡间，所以这个标签必然与凡间那张卡不同。
     panel.dataset.plane = planeId;
@@ -1747,8 +1772,15 @@ class Sandbox {
     const world = this.world;
     const i = world.idx(x, y);
     const info = TERRAIN_INFO[world.type[i]];
-    const village = world.villages.find((v) => Math.hypot(v.x - x, v.y - y) < 6);
-    const faction = village ? world.factionById(village.faction) : null;
+    const village = world.villages.find(v => v.houses?.some(h => h.x === x && h.y === y))
+      || world.villages.slice().sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))
+        .find(v => Math.hypot(v.x - x, v.y - y) < 4);
+    if (village) return this.inspectPlaneSubject('mortal', { kind: 'settlement', settlementId: village.id });
+    const ruin = visibleSettlementRuins(world).sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))
+      .find(item => Math.hypot(item.x - x, item.y - y) < 3);
+    if (ruin) return this.inspectPlaneSubject('mortal', { kind: 'site', siteId: settlementRuinMarkerId(ruin.id) });
+    this.settlementInspection = null;
+    $('inkInspect')?.classList.remove('settlement-card');
     let people = 0;
     let strongest = null;
     for (let k = 0; k < world.entities.length; k += 1) {
@@ -1797,12 +1829,6 @@ class Sandbox {
       ['近处生灵', `${people} 人`],
       ['近处鬼影', `${haunts} 只`],
     ];
-    if (village) {
-      rows.push(['聚落', `${village.name} · ${['', '村落', '集镇', '城池', '王都'][village.level]}`]);
-      rows.push(['人口', `${village.pop}`]);
-      rows.push(['存粮', `${Math.round(village.food)}`]);
-      rows.push(['势力', faction ? faction.name : '无']);
-    }
     // 附近最强的修士：把境界、灵根、道途这些「迁移过来的设定」摊给玩家看。
     // 只报最强的那个，不然一屏人名列不下。
     if (strongest && (strongest.level || 0) >= 1) {
@@ -2302,6 +2328,21 @@ class Sandbox {
   updateHud() {
     const world = this.world;
     if (!world) return;
+    const inspection = this.settlementInspection, inspectPanel = $('inkInspect');
+    if (inspection) {
+      if (inspection.world !== world) {
+        this.settlementInspection = null;
+        inspectPanel?.classList.remove('on', 'settlement-card');
+      } else if (inspectPanel?.classList.contains('on')) {
+        let ref = inspection.ref;
+        if (ref.settlementId != null && !resolvePlaneSubject(world, 'mortal', ref)) {
+          ref = world.villages.some(v => v.id === ref.settlementId)
+            ? { kind: 'settlement', settlementId: ref.settlementId }
+            : { kind: 'site', siteId: settlementRuinMarkerId(ref.settlementId) };
+        }
+        this.inspectPlaneSubject('mortal', ref);
+      }
+    }
     syncMapProgress(this);
     this.g1.refresh();
     this.combatObservation?.refresh();

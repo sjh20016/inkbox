@@ -29,6 +29,9 @@ import { ghostTierOf, GHOST_TIER_NAMES } from '../sim/netherLife.js';
 import { STRUCT } from '../core/config.js';
 import { EQUIP_TIERS,EQUIP_QUALITIES,SECRET_REALMS } from '../core/lore.js';
 import { visibleRift } from '../render3d/readers/riftViewModel.js';
+import { settlementRuinForMarker } from '../world/settlementIdentity.js';
+import { settlementInspectCard } from './settlementInspector.js';
+import { liveSettlementHouseType } from '../world/settlementState.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
 export const REALM_INSPECT_RADIUS = 4;
@@ -112,6 +115,8 @@ export function resolvePlaneSubject(world, plane, ref) {
   if (ref.kind === 'site' || ref.kind === 'leyline') {
     const id = ref.kind === 'site' ? ref.siteId : ref.leylineId;
     if(id == null) return null;
+    const ruin = ref.kind === 'site' && plane === 'mortal' ? settlementRuinForMarker(world, id) : null;
+    if (ruin) return { kind: 'settlement-ruin', plane, x: ruin.x, y: ruin.y, subject: ruin, world };
     const subject = world[ref.kind === 'site' ? 'sites' : 'leylines']?.find(item => item && item.id === id);
     if(!subject || !Number.isFinite(subject.x) || !Number.isFinite(subject.y)) return null;
     return { kind:ref.kind,plane,x:subject.x,y:subject.y,subject,world };
@@ -139,7 +144,7 @@ export function resolvePlaneSubject(world, plane, ref) {
   const x = ref.houseX, y = ref.houseY;
   if (!Number.isInteger(x) || !Number.isInteger(y) || !world.inside(x, y)
     || ref.houseKey !== `house:${String(village.id)}:${x}:${y}`) return null;
-  const subject = village.houses?.find(h => h && h.x === x && h.y === y);
+  const subject = village.houses?.find(h => h && h.x === x && h.y === y && liveSettlementHouseType(world, h));
   const structType = world.struct[world.idx(x, y)];
   if (!subject || (structType !== STRUCT.HOUSE && structType !== STRUCT.HALL)) return null;
   return { kind: 'house', plane, x, y, subject, village, structType, world };
@@ -148,6 +153,13 @@ export function resolvePlaneSubject(world, plane, ref) {
 /** Exact 3D inspection stays read-only, including mortal house and aggregate cards. */
 export function planeSubjectInspectRows(picked, ctx = {}) {
   if (!picked) return null;
+  if (picked.kind === 'settlement' || picked.kind === 'settlement-ruin')
+    return settlementInspectCard(picked.world, picked.subject, picked.kind === 'settlement-ruin');
+  if (picked.kind === 'house') {
+    const card = settlementInspectCard(picked.world, picked.village);
+    card.rows.unshift(['建筑', picked.structType === STRUCT.HALL ? '宗祠' : '屋舍'], ['屋舍格', `${picked.x}, ${picked.y}`]);
+    return card;
+  }
   if (!['site','leyline','rift'].includes(picked.kind) && picked.plane !== 'mortal' && (picked.kind !== 'artifact' || picked.plane === 'nether'))
     return realmInspectRows(picked, ctx);
   const s = picked.subject, label = ctx.planeLabel || (picked.plane === 'mortal' ? '凡间' : '');
@@ -183,15 +195,6 @@ export function planeSubjectInspectRows(picked, ctx = {}) {
     if(s.element) rows.push(['五行',String(s.element)]);
     if(s.owner != null) rows.push(['归属', factionName(picked.world,s.owner) || String(s.owner)]);
     if(s.discovered != null) rows.push(['已发现', s.discovered ? '是' : '否']);
-  } else if (picked.kind === 'house') rows = [
-    ['建筑', picked.structType === STRUCT.HALL ? '宗祠' : '屋舍'],
-    ['聚落', picked.village.name || '无名聚落'], ['屋舍格', `${picked.x}, ${picked.y}`],
-  ];
-  else if (picked.kind === 'settlement') {
-    rows = [['聚落', s.name || '无名聚落'], ['等级', ['', '村落', '集镇', '城池', '王都'][s.level] || '—']];
-    if (Number.isFinite(s.pop)) rows.push(['人口', String(s.pop)]);
-    if (Number.isFinite(s.food)) rows.push(['存粮', String(Math.round(s.food))]);
-    rows.push(['势力', factionName(picked.world, s.faction) || '无']);
   } else if (picked.kind === 'artifact') {
     rows = [['名字', s.name || '无名之物']];
     if (s.slot) rows.push(['形制', String(s.slot)]);

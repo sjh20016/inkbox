@@ -21,6 +21,7 @@ import {
 } from '../core/lore.js';
 import { speak } from './busanzi.js';
 import { clamp } from '../core/noise.js';
+import { settlementHistory } from './settlementResilience.js';
 import {
   computeTerritory, crossedBoundary, cellOf, leylineAllowance,
 } from './territory.js';
@@ -246,6 +247,9 @@ function maybeFoundSect(world, life, rng) {
       if (v.faction) continue;
       if (Math.hypot(v.x - tx, v.y - ty) > 26) continue;
       v.faction = sect.id;
+      v.lastFactionId = sect.id;
+      v.lastFactionName = sect.name;
+      settlementHistory(world, v, 'faction', `归入${sect.name}门下`, sect);
       if (!sect.villages.includes(v.id)) sect.villages.push(v.id);
       for (let n = 0; n < world.entities.length; n += 1) {
         const o = world.entities[n];
@@ -520,6 +524,9 @@ function absorbVillages(world, owner) {
     const s = world.factionById(id);
     if (!s) continue;
     v.faction = s.id;
+    v.lastFactionId = s.id;
+    v.lastFactionName = s.name;
+    settlementHistory(world, v, 'faction', `归入${s.name}门下`, s);
     if (!s.villages.includes(v.id)) s.villages.push(v.id);
     for (let m = 0; m < world.entities.length; m += 1) {
       const e = world.entities[m];
@@ -660,7 +667,12 @@ export function dissolveSect(world, sect, reason, rng) {
   // 村落失去归属
   for (let k = 0; k < sect.villages.length; k += 1) {
     const v = world.villageById(sect.villages[k]);
-    if (v) v.faction = 0;
+    if (v) {
+      v.lastFactionId = sect.id;
+      v.lastFactionName = sect.name;
+      settlementHistory(world, v, 'faction', `${sect.name}解散，庇护中断`, sect);
+      v.faction = 0;
+    }
   }
   // 灵脉放开
   for (let k = 0; k < sect.leylines.length; k += 1) {

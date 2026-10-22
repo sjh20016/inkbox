@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { canAccess } from '../../world/mapProgress.js';
 import { visibleRift } from '../readers/riftViewModel.js';
+import { settlementRuinForMarker, settlementRuinIsVisible } from '../../world/settlementIdentity.js';
 
 function visiblySubmitted(object) {
   for (let current = object; current; current = current.parent) if (!current.visible) return false;
@@ -41,6 +42,13 @@ function currentRecord(hit, stage) {
   if (hit.instanceId == null) return true;
   for (const [field,collection] of [['renderSites','sites'],['renderLeylines','leylines'],['renderRifts','rifts'],['renderArtifacts','artifacts']]) {
     const record = hit.object.userData[field]?.[hit.instanceId];
+    if (field === 'renderSites' && record) {
+      const ruin = settlementRuinForMarker(stage.world, record.id);
+      if (ruin) {
+        if (ruin.x !== record.x || ruin.y !== record.y || !settlementRuinIsVisible(stage.world, ruin)) return false;
+        continue;
+      }
+    }
     if (record && !stage.world[collection]?.some(item => item && item.id === record.id
       && item.x === record.x && item.y === record.y && (field !== 'renderRifts' || visibleRift(item)))) return false;
   }

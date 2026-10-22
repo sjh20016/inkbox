@@ -26,7 +26,7 @@
 import { APP, NEVER_DECAY_DAY, WORLD_PRESETS } from '../core/config.js';
 import { World } from '../world/World.js';
 import { snapshotNature, restoreNature } from '../sim/nature.js';
-import { recomputeAll, recomputeQi } from '../world/terrain.js';
+import { OVER, recomputeAll, recomputeQi } from '../world/terrain.js';
 import { DAO_PATHS, TRIBULATION_OMENS } from '../core/cultivation.js';
 import { MANUALS, NETHER_TECHNIQUES } from '../core/lore.js';
 // 上界（第二个世界，v8）。两个 import 各自只为一件事：
@@ -444,7 +444,24 @@ export function serializeWorld(world, meta = {}) {
       // 建房节奏：不存的话读档后所有村子会同时开工，房屋数量出现台阶。
       buildCooldown: v.buildCooldown ?? 20,
       level: v.level, hp: v.hp, age: v.age,
+      foundedDay: v.foundedDay ?? null,
+      history: (v.history || []).slice(-16), fieldTiles: v.fieldTiles ?? null,
+      distressDays: v.distressDays || 0,
+      lastAidMonth: v.lastAidMonth ?? Math.floor(world.day / 30),
+      lastAidDay: v.lastAidDay ?? -1,
+      aidSpentProvisions: v.aidSpentProvisions || 0,
+      aidSpentSpiritStone: v.aidSpentSpiritStone || 0,
+      lastFactionId: v.lastFactionId || 0,
+      lastFactionName: v.lastFactionName || null,
+      lastAidFactionId: v.lastAidFactionId || 0,
+      lastAidFactionName: v.lastAidFactionName || null,
+      lastDamageDay: v.lastDamageDay ?? null,
+      lastDamageReason: v.lastDamageReason || null,
+      damageEpisode: v.damageEpisode ?? null,
+      aidEpisode: v.aidEpisode ?? null,
+      recoveryRecorded: v.recoveryRecorded ?? null,
     })),
+    settlementRuins: (world.settlementRuins || []).slice(-80),
     factions: world.factions.map((f) => ({
       id: f.id, name: f.name, color: f.color, accent: f.accent,
       element: f.element || null, doctrine: f.doctrine || null,
@@ -1350,7 +1367,54 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
     ...v,
     fields: v.fields || 0,
     buildCooldown: v.buildCooldown ?? 20,
+    foundedDay: v.foundedDay ?? null,
+    history: Array.isArray(v.history) ? v.history.slice(-16) : [],
+    fieldTiles: Array.isArray(v.fieldTiles) ? v.fieldTiles : null,
+    distressDays: v.distressDays || 0,
+    lastAidMonth: v.lastAidMonth ?? Math.floor(world.day / 30),
+    lastAidDay: v.lastAidDay ?? -1,
+    aidSpentProvisions: v.aidSpentProvisions || 0,
+    aidSpentSpiritStone: v.aidSpentSpiritStone || 0,
+    lastFactionId: v.lastFactionId || 0,
+    lastFactionName: v.lastFactionName || null,
+    lastAidFactionId: v.lastAidFactionId || 0,
+    lastAidFactionName: v.lastAidFactionName || null,
+    lastDamageDay: v.lastDamageDay ?? null,
+    lastDamageReason: v.lastDamageReason || null,
+    damageEpisode: v.damageEpisode ?? null,
+    aidEpisode: v.aidEpisode ?? null,
+    recoveryRecorded: v.recoveryRecorded ?? null,
   }));
+  // 旧档只有田亩数量：在村边已有农田中按距离认领，无法证实的田亩不再产粮。
+  const claimedFields = new Set(world.villages.flatMap((v) => v.fieldTiles || []));
+  for (const village of world.villages) {
+    if (village.fieldTiles) continue;
+    const candidates = [];
+    const cx = Math.floor(village.x);
+    const cy = Math.floor(village.y);
+    for (let y = Math.max(0, cy - 5); y <= Math.min(world.h - 1, cy + 5); y += 1) {
+      for (let x = Math.max(0, cx - 5); x <= Math.min(world.w - 1, cx + 5); x += 1) {
+        const index = world.idx(x, y);
+        if (world.over[index] === OVER.FARMLAND && !claimedFields.has(index)) {
+          candidates.push({ index, distance: (x - village.x) ** 2 + (y - village.y) ** 2 });
+        }
+      }
+    }
+    candidates.sort((a, b) => a.distance - b.distance);
+    village.fieldTiles = candidates.slice(0, village.fields).map((entry) => entry.index);
+    for (const index of village.fieldTiles) claimedFields.add(index);
+  }
+  for (const village of world.villages) {
+    village.fieldTiles = village.fieldTiles.filter((index) => Number.isInteger(index)
+      && index >= 0 && index < world.size && world.over[index] === OVER.FARMLAND);
+    village.fields = village.fieldTiles.length;
+  }
+  world.settlementRuins = Array.isArray(data.settlementRuins)
+    ? data.settlementRuins.slice(-80).map((ruin) => ({ ...ruin,
+      history: Array.isArray(ruin.history) ? ruin.history.slice(-16) : [] })) : [];
+  for (const place of [...world.villages, ...world.settlementRuins]) {
+    if (Number.isFinite(place.id)) world.nextVillageId = Math.max(world.nextVillageId, place.id + 1);
+  }
   world.factions = (data.factions || []).map((f) => ({
     ...f,
     war: new Set(f.war || []),

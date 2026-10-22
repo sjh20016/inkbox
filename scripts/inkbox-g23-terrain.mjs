@@ -91,7 +91,7 @@ check('same seed and event deadlines produce deterministic fire consequences and
     w.day = scorch.dueDay;
     assert.equal(settleNature(w), 1);
     assert.equal(w.over[i], OVER.NONE);
-    assert.equal(w.veg[i], lowVeg, 'cover recovery is not an unbounded random growth loop');
+    assert.equal(w.veg[i], initialVeg, 'one finite recovery event restores the original vegetation');
     assertDerived(w, i);
     return [w.fire[i], w.veg[i], w.over[i], w.type[i], w.qi[i], natureState(w).events.length];
   };

@@ -226,7 +226,7 @@ check('真实战斗点火按 dueDay 留下后果并按期限恢复焦土', () =>
   assert.equal(w.over[source], OVER.SCORCHED, 'scorched ground remains until its deadline');
   advance(1);
   assert.equal(w.over[source], OVER.NONE, 'formal day advancement restores the timed overlay');
-  assert.equal(w.veg[source], Math.fround(initialVeg * 0.25), 'vegetation does not regrow through random ticks');
+  assert.equal(w.veg[source], initialVeg, 'the finite scorch event restores its real original vegetation at the deadline');
 });
 
 check('当前与旧格式存读档保留 lastFireCastDay、actor 与火史坐标', () => {

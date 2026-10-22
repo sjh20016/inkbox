@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { World } from '../src/inkbox/world/World.js';
 import { Life } from '../src/inkbox/sim/life.js';
 import { TERRAIN, STRUCT } from '../src/inkbox/core/config.js';
-import { OVER } from '../src/inkbox/world/terrain.js';
+import { OVER, recomputeRect } from '../src/inkbox/world/terrain.js';
 import { serializeWorld, deserializeWorld } from '../src/inkbox/io/save.js';
 import { deriveSettlements } from '../src/inkbox/render3d/settlements/SettlementLayer.js';
 import {
@@ -22,7 +22,11 @@ function fixture() {
     houses: [], fields: 0, level: 1, hp: 100, buildCooldown: 1000, age: 0,
   };
   world.villages.push(village);
-  return { world, village, life: new Life(world, () => 0.99) };
+  const life = new Life(world, () => 0.99);
+  // Building and field work require a real resident after resilience P0.
+  assert.equal(life.spawn(12, 12, 'human', 1, 0, { village: village.id }), 1);
+  life.syncVillagePops();
+  return { world, village, life };
 }
 
 // Founding and house placement share the same narrow build rule.
@@ -100,6 +104,8 @@ function fixture() {
 
   world.water[oldIndex] = 0;
   world.struct[oldIndex] = STRUCT.NONE;
+  world.over[oldIndex] = OVER.NONE; // A cleared plot, rather than an occupied ruin.
+  recomputeRect(world, old.x, old.y, old.x, old.y);
   world.struct[world.idx(14, 12)] = STRUCT.RUIN;
   village.food = 30;
   village.buildCooldown = 0;
