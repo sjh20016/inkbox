@@ -65,6 +65,8 @@ export class World {
 
     this.entities = [];
     this.villages = [];
+    /** 已消亡聚落的有限身份档案；不参与活村模拟。 */
+    this.settlementRuins = [];
     /** 宗门（沿用原来的 factions 数组，语义升级为「宗门」） */
     this.factions = [];
     /** 灵脉节点：宗门争夺的对象，也是灵气的高地 */

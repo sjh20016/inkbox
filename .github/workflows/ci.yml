@@ -104,6 +104,9 @@ jobs:
       - name: S0 静态水域、环境事件、存档及云雾植被批次
         run: npm run test:s0
 
+      - name: P0 地方灾害、救援、恢复、遗址与存档
+        run: npm run test:resilience
+
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0
 

@@ -57,6 +57,7 @@ const FILES = [
   'scripts/inkbox-s0-flora.mjs',
   'scripts/inkbox-s0-browser.mjs',
   'scripts/inkbox-s0-interactions.mjs',
+  'scripts/inkbox-local-resilience.mjs',
   'scripts/inkbox-intervention-regression.mjs',
   'scripts/inkbox-save-equiv.mjs',
   'scripts/inkbox-playtest.mjs',

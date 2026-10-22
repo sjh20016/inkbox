@@ -45,8 +45,9 @@ import { tickBusanzi } from './busanzi.js';
 import { WorldEvents } from './worldEvents.js';
 import {
   SETTLEMENT_FLOOD_DEPTH, HOUSE_FLOOD_DAYS,
-  isDryBuildableSettlementTile, liveSettlementHouseType,
+  isDryBuildableSettlementTile, isHabitableSettlementCenter, liveSettlementHouseType,
 } from '../world/settlementState.js';
+import { aidSettlement, archiveSettlement, repairSettlementHouse, settlementHistory } from './settlementResilience.js';
 
 const TERRAIN_SPEED = Object.freeze({
   [TERRAIN.SAND]: 0.82,
@@ -606,6 +607,9 @@ export class Life {
     this.stepFounding(dtDays);
     this.stepWildlife(dtDays);
     stepSects(world, this, dtDays, this.rng);
+    // 宗门本月收入与归属已更新，再真实支出援助；最后才判长期荒废。
+    for (const village of world.villages) aidSettlement(world, village, dtDays);
+    this.resolveVillageAbandonments();
     // 大战（L1）：跨数年、可拉盟友、有特殊结局的大规模战事。
     // ⚠️ 必须排在 `stepSects` **之后**——它读的接壤表
     // （`world._terrBorder` / `_terrBorderAt` / `_terrContested`）是
@@ -1352,11 +1356,24 @@ export class Life {
       hp: 100,
       buildCooldown: 20,
       age: 0,
+      foundedDay: world.day,
+      history: [],
+      fieldTiles: [],
+      distressDays: 0,
+      lastAidMonth: Math.floor(world.day / 30),
+      lastAidDay: -1,
+      aidSpentProvisions: 0,
+      aidSpentSpiritStone: 0,
     };
     world.nextVillageId += 1;
     world.villages.push(village);
     const faction = world.factionById(factionId);
     if (faction) faction.villages.push(village.id);
+    if (faction) {
+      village.lastFactionId = faction.id;
+      village.lastFactionName = faction.name;
+    }
+    settlementHistory(world, village, 'founded', `${village.name}立村`, faction);
     // 村落级事件，无单一当事人：村子立起来不等于某个村民身上多了一件事。
     world.record(`${village.name} 立村`, 'settle');
     return village;
@@ -1421,6 +1438,9 @@ export class Life {
           const sect = foundSect(world, tx, ty, founder, this.rng);
           if (sect) {
             village.faction = sect.id;
+            village.lastFactionId = sect.id;
+            village.lastFactionName = sect.name;
+            settlementHistory(world, village, 'faction', `归入${sect.name}门下`, sect);
             sect.villages.push(village.id);
             for (let k = 0; k < world.entities.length; k += 1) {
               const o = world.entities[k];
@@ -1491,6 +1511,9 @@ export class Life {
       const cx = Math.floor(village.x);
       const cy = Math.floor(village.y);
       const center = this.tileAt(cx, cy);
+      const unsafe = !isHabitableSettlementCenter(world, center);
+      const activeCrisis = (world.worldEventState?.activeCrises || [])
+        .some((c) => c.villageId === village.id && c.status === 'active');
 
       // Damage only advances with the simulation clock. Old saves may already
       // contain wet houses; loading one leaves every historic anchor intact.
@@ -1514,10 +1537,12 @@ export class Life {
         world.struct[idx] = 5;
         world.over[idx] = OVER.RUINS;
         markDirty(world, idx);
+        recomputeRect(world, Math.floor(house.x), Math.floor(house.y), Math.floor(house.x), Math.floor(house.y));
         floodedHousesLost += 1;
       }
       if (floodedHousesLost) {
         world.record(`${village.name} 有${floodedHousesLost}处屋舍因积水坍毁`, 'settle');
+        settlementHistory(world, village, 'disaster', `${floodedHousesLost}处屋舍因积水坍毁`);
         world.touch();
       }
 
@@ -1526,16 +1551,25 @@ export class Life {
       // ⚠️ 这里只判「能不能走 + 有没有火」，不能判 isBuildable：
       // 第一座房子（祠堂）就盖在村子正中心，而 isBuildable 要求 struct === 0，
       // 于是村子一盖房就把自己判成废墟，hp 一路掉到底、整座村凭空消失。
-      if (!world.isWalkable(center) || world.fire[center] > 0.4) {
-        village.hp -= dtDays * 0.35;
-        if (village.hp <= 0) {
-          this.abandonVillage(village);
-          world.villages.splice(vi, 1);
-          continue;
-        }
-      } else if (village.hp < 100) {
-        // 自愈：村子不是一次受灾就永久残废的
-        village.hp = Math.min(100, village.hp + dtDays * 0.06);
+      if (unsafe) village.hp = Math.max(0, village.hp - dtDays * 0.35);
+      else if (!activeCrisis && village.hp < 100 && village.pop > 0 && village.food >= 10) {
+        const live = village.houses.some((house) => liveSettlementHouseType(world, house));
+        const pace = live ? 0.06 : 0.025;
+        village.hp = Math.min(100, village.hp + dtDays * pace);
+      }
+      const declining = unsafe || village.hp <= 0 || (village.pop <= 0 && village.age > 720);
+      village.distressDays = declining ? (village.distressDays || 0) + dtDays : 0;
+      if (village.distressDays >= (village.pop > 0 && !unsafe ? 720 : 360)) {
+        village.pendingAbandonReason = unsafe ? '村址久不可居'
+          : village.pop <= 0 ? '居民断绝'
+            : `${village.lastDamageReason || '灾损'}长期未能恢复`;
+        continue;
+      }
+      delete village.pendingAbandonReason;
+      if (village.recoveryRecorded === false && !activeCrisis && village.hp >= 80
+        && village.pop > 0 && village.food >= 10) {
+        settlementHistory(world, village, 'recovered', '聚落灾后恢复');
+        village.recoveryRecorded = true;
       }
 
       // 吸纳流民。
@@ -1550,6 +1584,9 @@ export class Life {
         return false;
       });
 
+      // 空村保留一段招徕流民的缓冲期，但无人耕作也无人兴建。
+      if (village.pop <= 0) continue;
+
       // 领地：把村周边可耕之地标记为田，形成水墨里的「田垄」
       if (this.rng() < dtDays * 0.06) {
         const spot = this.findVillageTile(village, 5, (i) => isDryBuildableSettlementTile(world, i) && world.fertility(i) > 0.42);
@@ -1559,6 +1596,7 @@ export class Life {
             world.over[i] = OVER.FARMLAND;
             recomputeRect(world, spot[0], spot[1], spot[0], spot[1]);
             village.fields += 1;
+            (village.fieldTiles || (village.fieldTiles = [])).push(i);
           }
         }
       }
@@ -1569,8 +1607,21 @@ export class Life {
       // 肥力从 0.72 掉到 0.25，于是村子越住越穷，粮产跌破 20 的繁衍线，
       // 人口再也长不起来（实测卡在每村二十人上下）。田亩是村子的家底，
       // 只要开出来就一直有产出，这才撑得住繁衍与开枝散叶。
+      if (Array.isArray(village.fieldTiles)) {
+        village.fieldTiles = village.fieldTiles.filter((index) => {
+          if (world.over[index] !== OVER.FARMLAND) return false;
+          if (!world.struct[index]) return true;
+          world.over[index] = OVER.NONE;
+          recomputeRect(world, index % world.w, Math.floor(index / world.w),
+            index % world.w, Math.floor(index / world.w));
+          return false;
+        });
+        village.fields = village.fieldTiles.length;
+      }
+      const workingFields = (village.fieldTiles || []).reduce((count, index) =>
+        count + (world.water[index] < SETTLEMENT_FLOOD_DEPTH ? 1 : 0), 0);
       const yieldPerDay = village.pop * 0.010 * (0.6 + world.fertility(center))
-        + village.fields * FIELD_YIELD_PER_DAY;
+        + workingFields * FIELD_YIELD_PER_DAY;
       village.food += yieldPerDay * dtDays;
       village.food -= village.pop * dtDays * 0.0085;
       village.food = clamp(village.food, 0, 400);
@@ -1583,6 +1634,10 @@ export class Life {
         const liveHouseCount = village.houses.reduce((count, house) =>
           count + (liveSettlementHouseType(world, house) ? 1 : 0), 0);
         if (village.food > 14 && liveHouseCount < capacity) {
+          // 旧屋只在原位仍是本村废墟且地形安全时修复，不覆盖后来编辑的新物件。
+          if (repairSettlementHouse(world, village)) {
+            village.food -= 8;
+          } else {
           // 第一座房子就落在村子正中心——那是祠堂，也是村子存在的凭据。
           // 其余房屋随机散布在村周。
           const first = liveHouseCount === 0;
@@ -1596,6 +1651,7 @@ export class Life {
             village.food -= 8;
             world.touch();
           }
+          }
         } else if (village.level < 4 && liveHouseCount >= capacity && village.food > 40) {
           // ⚠️ 必须判断 level < 4：否则升到顶之后每次冷却都会重复「扩为王都」，
           // 编年史会被同一句话刷满（实测 800 年刷出 377 条）。
@@ -1603,6 +1659,7 @@ export class Life {
           village.food -= 30;
           // 村落级事件，无单一当事人：升格的是聚落，不是某个村民。
           world.record(`${village.name} 扩为${['', '村落', '集镇', '城池', '王都'][village.level]}`, 'settle');
+          settlementHistory(world, village, 'level', `扩为${['', '村落', '集镇', '城池', '王都'][village.level]}`);
         }
       }
 
@@ -1631,6 +1688,25 @@ export class Life {
 
       // 满员且富足 → 分家另立新村。这是世界从十一座村子长成一片的途径
       this.maybeSplitVillage(village, dtDays);
+    }
+  }
+
+  resolveVillageAbandonments() {
+    const world = this.world;
+    for (let i = world.villages.length - 1; i >= 0; i -= 1) {
+      const village = world.villages[i];
+      if (!village.pendingAbandonReason) continue;
+      const center = this.tileAt(village.x, village.y);
+      if (village.pop > 0 && village.hp > 0 && village.food >= 10
+        && isHabitableSettlementCenter(world, center)) {
+        village.distressDays = 0;
+        delete village.pendingAbandonReason;
+        continue;
+      }
+      const reason = village.pendingAbandonReason;
+      delete village.pendingAbandonReason;
+      this.abandonVillage(village, reason);
+      world.villages.splice(i, 1);
     }
   }
 
@@ -1756,15 +1832,27 @@ export class Life {
     return null;
   }
 
-  abandonVillage(village) {
+  abandonVillage(village, reason = '长期衰败') {
     const world = this.world;
+    archiveSettlement(world, village, reason);
     for (let i = 0; i < village.houses.length; i += 1) {
       const h = village.houses[i];
       const idx = world.idx(h.x, h.y);
-      world.struct[idx] = 5;
-      world.over[idx] = OVER.RUINS;
-      markDirty(world, idx);
+      if (liveSettlementHouseType(world, h)) {
+        world.struct[idx] = 5;
+        world.over[idx] = OVER.RUINS;
+        markDirty(world, idx);
+        recomputeRect(world, Math.floor(h.x), Math.floor(h.y), Math.floor(h.x), Math.floor(h.y));
+      }
     }
+    for (const idx of village.fieldTiles || []) {
+      if (world.over[idx] === OVER.FARMLAND) {
+        world.over[idx] = OVER.NONE;
+        markDirty(world, idx);
+        recomputeRect(world, idx % world.w, Math.floor(idx / world.w), idx % world.w, Math.floor(idx / world.w));
+      }
+    }
+    village.fields = 0;
     for (let i = 0; i < world.entities.length; i += 1) {
       const e = world.entities[i];
       if (e.village === village.id) {
@@ -1778,7 +1866,7 @@ export class Life {
       faction.villages = faction.villages.filter((id) => id !== village.id);
     }
     // 村落级事件，无单一当事人：村子没了，没有活人可承接这条记录。
-    world.record(`${village.name} 荒废`, 'settle');
+    world.record(`${village.name} 荒废：${reason}`, 'settle');
     world.touch();
   }
 }

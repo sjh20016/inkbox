@@ -9,6 +9,7 @@ import { accessBounds, canAccess } from '../world/mapProgress.js';
 import { isViewTool, VIEW_CLICK_PX } from '../ui/realmView.js';
 import { blockingInputLayer } from '../ui/inputLayers.js';
 import { visibleRift } from './readers/riftViewModel.js';
+import { settlementRuinForMarker, settlementRuinIsVisible } from '../world/settlementIdentity.js';
 
 /**
  * M2-B B4（§63）：界缘检视的文案。
@@ -40,6 +41,10 @@ function hoverObjectId(object) {
 }
 function cachedHoverIdentityCurrent(hit) {
   if (!hit || hit.kind === 'entity') return hit?.kind !== 'entity';
+  if (hit.kind === 'site') {
+    const world = hit.stage?.world, ruin = settlementRuinForMarker(world, hit.siteId);
+    if (ruin) return settlementRuinIsVisible(world, ruin) && ruin.x === hit.world.x && ruin.y === hit.world.y;
+  }
   const collection = hit.kind === 'site' ? 'sites' : hit.kind === 'leyline' ? 'leylines'
     : hit.kind === 'rift' ? 'rifts' : hit.kind === 'artifact' ? 'artifacts' : null;
   if (!collection) return true;

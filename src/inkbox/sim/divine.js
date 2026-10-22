@@ -15,6 +15,7 @@ import { ELEMENTS } from '../core/cultivation.js';
 import { awaken, attemptBreakthrough, ascend, placeName, addKarma } from './cultivation.js';
 import { plantSite } from './sites.js';
 import { foundSect, SECT_FOUNDER_MIN_LEVEL, findBuildableNear } from './sects.js';
+import { settlementHistory } from './settlementResilience.js';
 
 /** 地图上灵脉的条数上限，防止玩家狂点把灵气层堆爆 */
 export const MAX_LEYLINES = 24;
@@ -168,6 +169,9 @@ export function foundSectAt(world, x, y, radius, rng) {
     if (v.faction) continue;
     if (Math.hypot(v.x - tx, v.y - ty) > 26) continue;
     v.faction = sect.id;
+    v.lastFactionId = sect.id;
+    v.lastFactionName = sect.name;
+    settlementHistory(world, v, 'faction', `归入${sect.name}门下`, sect);
     if (!sect.villages.includes(v.id)) sect.villages.push(v.id);
     for (let m = 0; m < world.entities.length; m += 1) {
       const o = world.entities[m];

@@ -3,6 +3,12 @@ import { OVER, markDirty, flushDirty } from '../world/terrain.js';
 
 export const NATURE_VERSION = 2;
 export const NATURE_DAYS = Object.freeze({ fire: 7, scorched: 1080, ash: 720, lava: 180, flood: 30 });
+const VEG_SAVE_STEPS = 65535;
+
+function sameSavedVeg(a, b) {
+  return Number.isFinite(a) && Number.isFinite(b)
+    && Math.round(a * VEG_SAVE_STEPS) === Math.round(b * VEG_SAVE_STEPS);
+}
 
 export function natureState(world) {
   if (!world.nature || world.nature.version !== NATURE_VERSION) {
@@ -18,15 +24,18 @@ function event(world, kind, dueDay, cell, extra = {}) {
   return item;
 }
 
-export function igniteCell(world, i, power = 1) {
+export function igniteCell(world, i, power = 1, { vegetationBurned = false } = {}) {
   if (world.water[i] > 0.02) return false;
   const state = natureState(world);
   const old = state.fires.get(i);
   const dueDay = Math.max(old?.dueDay || 0, world.day + NATURE_DAYS.fire);
   const strength = Math.min(1, 0.45 + power * 0.4);
   world.fire[i] = Math.max(world.fire[i], strength);
-  if (old) old.dueDay = dueDay;
-  else state.fires.set(i, event(world, 'fire', dueDay, i, { startDay: world.day, overlayAtIgnition: world.over[i] }));
+  if (old) { old.dueDay = dueDay; old.vegetationBurned ||= vegetationBurned; }
+  else state.fires.set(i, event(world, 'fire', dueDay, i, {
+    startDay: world.day, overlayAtIgnition: world.over[i], vegetationBurned,
+    recoverVeg: world.veg[i], expectedVeg: world.veg[i],
+  }));
   world.touch();
   return true;
 }
@@ -64,14 +73,14 @@ export function floodExposure(world, i, startDay, endDay, threshold) {
   return { days, atEnd: depthAt(endDay) >= threshold };
 }
 
-export function setRecoveringOverlay(world, i, overlay, duration = null, startDay = world.day) {
+export function setRecoveringOverlay(world, i, overlay, duration = null, startDay = world.day, recovery = null) {
   const state = natureState(world);
   const old = state.overlays.get(i);
   if (old) state.events = state.events.filter((e) => e !== old);
   state.overlays.delete(i);
   world.over[i] = overlay;
   const days = duration ?? (overlay === OVER.LAVA ? NATURE_DAYS.lava : overlay === OVER.ASH ? NATURE_DAYS.ash : overlay === OVER.SCORCHED ? NATURE_DAYS.scorched : 0);
-  const next = days > 0 ? event(world, 'overlay', startDay + days, i, { overlay }) : null;
+  const next = days > 0 ? event(world, 'overlay', startDay + days, i, { overlay, ...(recovery || {}) }) : null;
   if (next) state.overlays.set(i, next);
   markDirty(world, i);
   return next;
@@ -111,6 +120,16 @@ function removeFlood(world, item) {
 /** A player edit detaches only its cell from active floods, preserving the new state. */
 export function playerEditedCell(world, i) {
   world.nature?.floods?.delete(i);
+  const state = world.nature;
+  if (!state) return;
+  const fire = state.fires.get(i);
+  if (fire) fire.recoveryCancelled = true;
+  const overlay = state.overlays.get(i);
+  if (overlay?.recoverVeg !== undefined) {
+    // Keep the old cover's deadline; cancel only its claim over vegetation.
+    delete overlay.recoverVeg;
+    delete overlay.expectedVeg;
+  }
 }
 
 export function snapshotFloodCell(world, i) {
@@ -198,18 +217,32 @@ export function settleNature(world, day = world.day) {
     else if (item.kind === 'fire' && state.fires.get(item.cell) === item) {
       state.fires.delete(item.cell);
       world.fire[item.cell] = 0;
-      world.veg[item.cell] = Math.max(0, world.veg[item.cell] * 0.25);
+      let recovery = null;
+      const priorRecovery = state.overlays.get(item.cell);
+      if (item.vegetationBurned) {
+        if (!item.recoveryCancelled && priorRecovery?.recoverVeg !== undefined) {
+          recovery = { recoverVeg: priorRecovery.recoverVeg, expectedVeg: priorRecovery.expectedVeg };
+        }
+      } else if (item.expectedVeg === undefined || sameSavedVeg(world.veg[item.cell], item.expectedVeg)) {
+        const recoverVeg = item.recoverVeg ?? world.veg[item.cell];
+        world.veg[item.cell] = Math.max(0, world.veg[item.cell] * 0.25);
+        if (!item.recoveryCancelled) recovery = { recoverVeg, expectedVeg: world.veg[item.cell] };
+      }
       markDirty(world, item.cell);
       // A later settlement or player action can put a permanent cover here.
-      // Fire still harms vegetation, but its expiry cannot erase that cover.
+      // Fire expiry cannot erase a later cover; direct ignition still applies its vegetation loss.
       const original = item.overlayAtIgnition ?? OVER.NONE;
       if (world.over[item.cell] === original && (original === OVER.NONE || original === OVER.FARMLAND || original === OVER.SCORCHED)) {
-        const next = setRecoveringOverlay(world, item.cell, OVER.SCORCHED, null, item.dueDay);
+        const next = setRecoveringOverlay(world, item.cell, OVER.SCORCHED, null, item.dueDay, recovery);
         if (next?.dueDay <= day) { state.events.pop(); pending.push(next); }
       }
     } else if (item.kind === 'overlay' && state.overlays.get(item.cell) === item) {
       state.overlays.delete(item.cell);
       if (world.over[item.cell] === item.overlay) {
+        if (item.recoverVeg !== undefined && sameSavedVeg(world.veg[item.cell], item.expectedVeg) && world.water[item.cell] <= 0.02) {
+          world.veg[item.cell] = item.recoverVeg;
+          markDirty(world, item.cell);
+        }
         const next = setRecoveringOverlay(world, item.cell, item.overlay === OVER.LAVA ? OVER.ASH : OVER.NONE, null, item.dueDay);
         if (next?.dueDay <= day) { state.events.pop(); pending.push(next); }
       }

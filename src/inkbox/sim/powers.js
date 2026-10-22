@@ -9,8 +9,9 @@ import { clamp } from '../core/noise.js';
 import { OVER, recomputeRect, recomputeAll } from '../world/terrain.js';
 import { ignite, extinguish } from './ecology.js';
 import { setHeight, setWater } from '../world/terrainEdit.js';
-import { igniteCell, extinguishCell, setRecoveringOverlay, floodCells, cancelNatureEvent, snapshotNatureCell, restoreNatureCell, settleNature } from './nature.js';
+import { NATURE_DAYS, igniteCell, extinguishCell, setRecoveringOverlay, floodCells, cancelNatureEvent, snapshotNatureCell, restoreNatureCell, settleNature } from './nature.js';
 import { placeOf } from './sects.js';
+import { damageSettlement } from './settlementResilience.js';
 
 // ── 撤销栈 ────────────────────────────────────────────────
 function historyCell(world, i) {
@@ -18,6 +19,33 @@ function historyCell(world, i) {
     h: world.height[i], w: world.water[i], o: world.over[i], t: world.type[i],
     s: world.struct[i], v: world.veg[i], f: world.fire[i], n: snapshotNatureCell(world, i),
   };
+}
+
+function historySettlement(village) {
+  return {
+    hp: village.hp, food: village.food, lastDamageDay: village.lastDamageDay,
+    lastDamageReason: village.lastDamageReason, damageEpisode: village.damageEpisode,
+    recoveryRecorded: village.recoveryRecorded,
+    history: (village.history || []).map((node) => ({ ...node })),
+    houses: (village.houses || []).map((house) => ({
+      ruinedBySettlement: house.ruinedBySettlement, floodRuined: house.floodRuined,
+    })),
+  };
+}
+
+function restoreHistorySettlement(village, saved) {
+  for (const key of ['hp', 'food', 'lastDamageDay', 'lastDamageReason',
+    'damageEpisode', 'recoveryRecorded']) {
+    if (saved[key] === undefined) delete village[key];
+    else village[key] = saved[key];
+  }
+  village.history = saved.history.map((node) => ({ ...node }));
+  (village.houses || []).forEach((house, index) => {
+    for (const key of ['ruinedBySettlement', 'floodRuined']) {
+      if (saved.houses[index]?.[key] === undefined) delete house[key];
+      else house[key] = saved.houses[index][key];
+    }
+  });
 }
 
 export class History {
@@ -28,6 +56,7 @@ export class History {
     this.bounds = null;
     this.eventIds = [];
     this.recordWorld = null;
+    this.currentSettlements = null;
     this.lastUndoFailure = null;
   }
 
@@ -36,6 +65,7 @@ export class History {
     this.bounds = null;
     this.eventIds = [];
     this.recordWorld = null;
+    this.currentSettlements = new Map();
   }
 
   record(world, i) {
@@ -54,6 +84,12 @@ export class History {
     }
   }
 
+  recordSettlement(world, village) {
+    if (!this.currentSettlements || this.currentSettlements.has(village.id)) return;
+    this.recordWorld = world;
+    this.currentSettlements.set(village.id, historySettlement(village));
+  }
+
   end(label) {
     if (!this.current || this.current.size === 0) {
       this.current = null;
@@ -61,11 +97,15 @@ export class History {
       return false;
     }
     const after = new Map([...this.current.keys()].map((i) => [i, historyCell(this.recordWorld, i)]));
-    this.stack.push({ changes: this.current, after, label, bounds: this.bounds, eventIds: this.eventIds });
+    const settlementsAfter = new Map([...this.currentSettlements.keys()].map((id) =>
+      [id, historySettlement(this.recordWorld.villageById(id))]));
+    this.stack.push({ changes: this.current, after, label, bounds: this.bounds,
+      eventIds: this.eventIds, settlementsBefore: this.currentSettlements, settlementsAfter });
     if (this.stack.length > this.limit) this.stack.shift();
     this.current = null;
     this.bounds = null;
     this.recordWorld = null;
+    this.currentSettlements = null;
     return true;
   }
 
@@ -73,6 +113,7 @@ export class History {
     this.current = null;
     this.bounds = null;
     this.recordWorld = null;
+    this.currentSettlements = null;
   }
 
   undo(world) {
@@ -83,6 +124,13 @@ export class History {
     // recorded cell. Refuse the whole undo instead of silently deleting it.
     if (entry.after && [...entry.after].some(([i, after]) => JSON.stringify(historyCell(world, i)) !== JSON.stringify(after))) {
       this.lastUndoFailure = '相关地块已有后续变化，无法安全撤销';
+      return null;
+    }
+    if (entry.settlementsAfter && [...entry.settlementsAfter].some(([id, after]) => {
+      const village = world.villageById(id);
+      return !village || JSON.stringify(historySettlement(village)) !== JSON.stringify(after);
+    })) {
+      this.lastUndoFailure = '聚落已有后续变化，无法安全撤销';
       return null;
     }
     this.stack.pop();
@@ -97,6 +145,9 @@ export class History {
       world.fire[i] = o.f;
       restoreNatureCell(world, i, o.n);
     }
+    for (const [id, saved] of entry.settlementsBefore || []) {
+      restoreHistorySettlement(world.villageById(id), saved);
+    }
     settleNature(world);
     const b = entry.bounds;
     recomputeRect(world, b.x0, b.y0, b.x1, b.y1);
@@ -108,6 +159,7 @@ export class History {
     this.stack.length = 0;
     this.current = null;
     this.recordWorld = null;
+    this.currentSettlements = null;
   }
 }
 
@@ -223,9 +275,13 @@ export function burnForest(world, x, y, radius, history) {
     history.record(world, i);
     if (world.water[i] > 0.02) return;
     if (falloff < 0.18) return;
-    world.veg[i] = Math.max(0, world.veg[i] * 0.25);
-    setRecoveringOverlay(world, i, OVER.SCORCHED);
-    igniteCell(world, i, falloff);
+    const recoverVeg = world.veg[i];
+    world.veg[i] = Math.max(0, recoverVeg * 0.25);
+    // The cover must not expire ahead of the fire when one large advance
+    // crosses both deadlines; fire expiry keeps this same absolute deadline.
+    setRecoveringOverlay(world, i, OVER.SCORCHED, NATURE_DAYS.fire + NATURE_DAYS.scorched,
+      world.day, { recoverVeg, expectedVeg: world.veg[i] });
+    igniteCell(world, i, falloff, { vegetationBurned: true });
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return t.count;
@@ -331,13 +387,19 @@ const DISASTER_VILLAGE_RADIUS = 8;
 const DISASTER_VILLAGE_DAMAGE = 14;
 
 /** 灾祸波及的聚落：真的扣 hp / 粮，返回受灾名单（不是「判定的名单」） */
-function damageVillages(world, x, y, radius, amount) {
+function damageVillages(world, x, y, radius, amount, reason,
+  structuralRadius = 0, history = null, structuralCenter = null) {
   const hurt = [];
   for (let i = 0; i < world.villages.length; i += 1) {
     const v = world.villages[i];
     if (Math.hypot(v.x - x, v.y - y) > radius) continue;
-    v.hp = Math.max(0, v.hp - amount);
-    v.food = Math.max(0, v.food - amount * 0.25);
+    history?.recordSettlement?.(world, v);
+    const housePredicate = structuralRadius > 0
+      ? (house) => Math.hypot(house.x + 0.5 - (structuralCenter?.[0] ?? x),
+        house.y + 0.5 - (structuralCenter?.[1] ?? y)) <= Math.max(0, structuralRadius - 0.5)
+      : undefined;
+    damageSettlement(world, v, { hp: amount, food: amount * 0.25,
+      reason, ruinHouse: structuralRadius > 0, housePredicate });
     hurt.push(v);
   }
   return hurt;
@@ -349,9 +411,12 @@ function damageVillages(world, x, y, radius, amount) {
  * 返回值会被 `main.js:applyTool` 直接 `notify` 出去（`tool.mode === 'click'`
  * 时字符串结果就是玩家看到的提示），所以这里写的每一句都必须**当场为真**。
  */
-function disasterMilestone(world, kind, x, y, radius, killed, damage = DISASTER_VILLAGE_DAMAGE) {
+function disasterMilestone(world, kind, x, y, radius, killed,
+  damage = DISASTER_VILLAGE_DAMAGE, structuralRadius = 0, history = null,
+  structuralCenter = null) {
   const place = placeOf(world, x, y);
-  const hurt = damageVillages(world, x, y, radius + DISASTER_VILLAGE_RADIUS, damage);
+  const hurt = damageVillages(world, x, y, radius + DISASTER_VILLAGE_RADIUS,
+    damage, kind, structuralRadius, history, structuralCenter);
   const parts = [];
   if (killed > 0) parts.push(`${killed} 人罹难`);
   if (hurt.length) parts.push(`${hurt.length} 所聚落受损`);
@@ -434,7 +499,8 @@ export function meteor(world, x, y, radius, history) {
     e.hp = 0;
     killed += 1;
   }
-  return disasterMilestone(world, '天降陨石', x, y, radius + 2, killed, 22);
+  return disasterMilestone(world, '天降陨石', x, y, radius + 2, killed,
+    22, radius, history, [cx, cy]);
 }
 
 /** 地震：地层错动 + 建筑倒塌 */
@@ -455,7 +521,8 @@ export function earthquake(world, x, y, radius, history) {
     if (world.over[i] === OVER.LAVA) setRecoveringOverlay(world, i, OVER.ASH);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
-  return disasterMilestone(world, '地动山摇', x, y, radius, 0, 18);
+  return disasterMilestone(world, '地动山摇', x, y, radius, 0,
+    18, radius, history, [cx, cy]);
 }
 
 /** 洪水：在范围内抬高水面并淹没低地 */

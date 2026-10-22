@@ -225,7 +225,11 @@ check('formal Life village durability responds to center fire and recovers', () 
   assert(Math.abs(village.hp - 99.93) < 1e-6);
   world.fire[4] = 0;
   life.stepVillages(0.2);
-  assert(Math.abs(village.hp - 99.942) < 1e-6);
+  assert(Math.abs(village.hp - 99.93) < 1e-6, 'an empty, unfed village does not heal just because the fire ended');
+  assert.equal(life.spawn(1, 1, 'human', 1, 0, { village: village.id }), 1);
+  life.syncVillagePops(); village.food = 20;
+  life.stepVillages(0.2);
+  assert(Math.abs(village.hp - 99.935) < 1e-6, 'a fed survivor can slowly recover without a house');
 });
 
 check('observation and Three bridge reads preserve World and RNG', () => {

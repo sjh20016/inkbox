@@ -32,6 +32,7 @@ import { SiteGeographyLayer } from './SiteGeographyLayer.js';
 import { decorationFootprintOwned } from '../environment/RealmDecorationLayer.js';
 import { LeylineGeographyLayer } from './LeylineGeographyLayer.js';
 import { RiftWoundLayer } from './RiftWoundLayer.js';
+import { settlementRuinMarkerId, visibleSettlementRuins } from '../../world/settlementIdentity.js';
 
 /** 四类地点（与 `sim/sites.js` 写入的 `kind` 字面量一一对应，顺序即渲染顺序契约）。 */
 export const SITE_KINDS = Object.freeze(['secret', 'cave', 'formation', 'ruin']);
@@ -104,6 +105,12 @@ export function deriveMarkers(world) {
     const bucket = out.sites[s.kind];
     if (!bucket) { out.unknownSites.push({ id:s.id, x:s.x, y:s.y, kind:s.kind }); continue; }
     bucket.push({ id: s.id, x: s.x, y: s.y, kind: s.kind, age:s.age, visits:s.visits });
+    out.total += 1;
+  }
+
+  // Archived villages reuse ruin assets, but retain a separate, stable identity.
+  for (const ruin of visibleSettlementRuins(world)) {
+    out.sites.ruin.push({ id: settlementRuinMarkerId(ruin.id), x: ruin.x, y: ruin.y, kind: 'ruin' });
     out.total += 1;
   }
 

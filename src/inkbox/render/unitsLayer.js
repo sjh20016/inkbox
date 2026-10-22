@@ -21,6 +21,7 @@ import { INK_RGB, toCss } from './palette.js';
 // （`riftRadiusAt` / `riftIsActive`），这里**绝不**复制一份曲线，免得两处漂移。
 import { riftRadiusAt, riftIsActive } from '../sim/rifts.js';
 import { liveSettlementHouseType } from '../world/settlementState.js';
+import { visibleSettlementRuins } from '../world/settlementIdentity.js';
 
 // ── 人形 ─────────────────────────────────────────────────
 // 两帧：A 并腿，B 迈步。其余部分完全相同。
@@ -521,13 +522,16 @@ export class UnitsLayer {
    * 这些是修士会专程赶去的「机缘」，所以给它们各自的记号。
    */
   drawSites(ctx, camera, world, time) {
-    if (!this.showSites || camera.zoom < 1.6 || !world.sites || !world.sites.length) return;
+    if (!this.showSites || camera.zoom < 1.6) return;
+    const ruins = visibleSettlementRuins(world);
+    const sites = [...(world.sites || []), ...ruins.map(ruin => ({ ...ruin, kind: 'ruin' }))];
+    if (!sites.length) return;
     const rect = camera.visibleRect(world);
     const s = Math.max(3.5, camera.zoom * 1.5);
     ctx.save();
     ctx.lineWidth = Math.max(1, camera.zoom * 0.18);
-    for (let i = 0; i < world.sites.length; i += 1) {
-      const site = world.sites[i];
+    for (let i = 0; i < sites.length; i += 1) {
+      const site = sites[i];
       if (camera.canAccess && !camera.canAccess(site.x, site.y)) continue;
       if (site.x < rect.x0 - 6 || site.x > rect.x1 + 6 || site.y < rect.y0 - 6 || site.y > rect.y1 + 6) continue;
       const idx = world.idx(Math.floor(site.x), Math.floor(site.y));
@@ -772,7 +776,8 @@ export class UnitsLayer {
     }
     vis.sort((a, b) => (b.pop - a.pop) || (a.id - b.id));
     // 远景 8 枚，逐级放宽，放到足够大就不再限量
-    const budget = zoom < 4.2 ? 8 : zoom < 5.5 ? 16 : zoom < 7 ? 30 : zoom < 9 ? 60 : vis.length;
+    const ruins = visibleSettlementRuins(world);
+    const budget = zoom < 4.2 ? 8 : zoom < 5.5 ? 16 : zoom < 7 ? 30 : zoom < 9 ? 60 : vis.length + ruins.length;
 
     for (let i = 0; i < vis.length && placed.length < budget; i += 1) {
       const v = vis[i];
@@ -786,6 +791,20 @@ export class UnitsLayer {
       if (overlapsPlaced(placed, box)) continue;
       const faction = v.faction ? world.factionById(v.faction) : null;
       drawInkLabel(ctx, box, text, faction ? faction.color : null);
+      placed.push(box);
+    }
+
+    // Old place names survive the active-village array and share the label budget.
+    for (const ruin of ruins) {
+      if (placed.length >= budget) break;
+      if (camera.canAccess && !camera.canAccess(ruin.x, ruin.y)) continue;
+      if (ruin.x < rect.x0 - 10 || ruin.x > rect.x1 + 10 || ruin.y < rect.y0 - 10 || ruin.y > rect.y1 + 10) continue;
+      const index = world.idx(Math.floor(ruin.x), Math.floor(ruin.y));
+      const [sx, sy] = UnitsLayer.project(camera, ruin.x, ruin.y, world.height[index]);
+      const text = `${ruin.name}遗址`, width = ctx.measureText(text).width;
+      const box = [sx - width / 2 - 7, sy - zoom * 1.6 - 17, width + 14, 16];
+      if (overlapsPlaced(placed, box)) continue;
+      drawInkLabel(ctx, box, text, '#8e8778');
       placed.push(box);
     }
 

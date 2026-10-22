@@ -93,9 +93,28 @@ export function createAdvanceState() {
  *   调用方据此置 `dirty` 位（`main.js` 就是这么用的）。
  */
 export function advanceWorld(world, days, deps = {}) {
-  if (!world || !(days > 0)) return null;
+  if (!world || !Number.isFinite(days) || !(days > 0)) return null;
   const state = deps.state;
   if (!state) return null;              // 没有累加器 = 节流失效，宁可不推
+
+  // 大步推进沿正式绝对月边界分段：宗门月收入、灾损和援助须在荒废
+  // 判定前各有一次结算机会。正常帧的小步路径保持原有调用次序。
+  if (days > 30) {
+    const total = { upper: false, nether: false, rift: false, wraith: false,
+      nature: false, mapProgress: false };
+    let remaining = days;
+    while (remaining > 1e-8) {
+      const phase = ((world.day % 30) + 30) % 30;
+      const toBoundary = phase < 1e-8 ? 30 : 30 - phase;
+      const natureDue = world.nature?.events?.reduce((next, event) =>
+        event.dueDay > world.day ? Math.min(next, event.dueDay) : next, Infinity) ?? Infinity;
+      const slice = Math.min(remaining, 30, toBoundary, natureDue - world.day);
+      const fired = advanceWorld(world, slice, deps);
+      for (const key of Object.keys(total)) total[key] ||= !!fired?.[key];
+      remaining -= slice;
+    }
+    return total;
+  }
 
   const fired = { upper: false, nether: false, rift: false, wraith: false, nature: false };
 

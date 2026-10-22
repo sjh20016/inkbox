@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createSandboxWorld } from '../src/inkbox/ui/worldCreation.js';
 import { World } from '../src/inkbox/world/World.js';
-import { OVER, decayOverlay } from '../src/inkbox/world/terrain.js';
+import { OVER } from '../src/inkbox/world/terrain.js';
 import { burnForest } from '../src/inkbox/sim/powers.js';
 import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
 import { serializeWorld, deserializeWorld } from '../src/inkbox/io/save.js';
@@ -125,10 +125,11 @@ check('正式焚林与世界推进形成真实火情、植被及焦土变化，�
   const after = observeEnvironment(root, { x, y, radius: 2 });
   assert(root.day > before.day); assert(after.environment.activeFireCells < before.environment.activeFireCells);
   assert.equal(after.environment.activeFireCells, 0, 'official fire steps extinguish this bounded setup');
-  assert.notEqual(root.veg[i], burntVegetation, 'official ecology ticks change the burned cell vegetation');
-  decayOverlay(root, 3600, () => 0);
+  assert.equal(root.veg[i], burntVegetation, 'fire expiration must not apply a second vegetation loss');
+  advanceWorld(root, 987, { state, riftActive: false, nether: false, wraith: false });
   const decayed = observeEnvironment(root, { x, y, radius: 2 });
-  assert(decayed.environment.ashCells > 0, 'official overlay decay turns low-vegetation scorch into ash');
+  assert.equal(decayed.environment.scorchedCells, 0, 'the finite scorch deadline clears its cover');
+  assert(Math.abs(root.veg[i] - 0.8) < 1e-6, 'the same deadline restores original vegetation');
   const loaded = deserializeWorld(serializeWorld(root));
   const roundTrip = observeEnvironment(loaded, { x, y, radius: 2 });
   assert.equal(roundTrip.environment.scorchedCells, decayed.environment.scorchedCells);
