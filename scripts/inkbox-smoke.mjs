@@ -3,6 +3,7 @@
 // 不依赖浏览器，验证：世界生成 → 自然模拟推进 → 生灵繁衍 → 神格工具 → 存读档一致。
 
 import fs from 'node:fs';
+import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORLD_PRESETS, TERRAIN_INFO, SPECIES, TIME } from '../src/inkbox/core/config.js';
@@ -2002,7 +2003,17 @@ section('5h. 血脉与家世：遗传 / 世家 / 四轴加成');
     const awakenInChronicle = fw.chronicle.filter((c) => /觉醒/.test(c.text || '')).length;
     const silentWorld = generateWorld({ preset: WORLD_PRESETS.small, seed: 5403, scatter: false });
     const silentLife = new Life(silentWorld, mulberry32(5403));
-    const spot = silentWorld.type.findIndex((_, i) => silentWorld.isWalkable(i));
+    // A first walkable coast cell can have almost no legal spawn offsets. This
+    // tests silent initialization, so use an actual habitable interior patch.
+    const spot = silentWorld.type.findIndex((_, i) => {
+      const x = i % silentWorld.w, y = Math.floor(i / silentWorld.w);
+      if (x < 7 || y < 7 || x >= silentWorld.w - 7 || y >= silentWorld.h - 7) return false;
+      for (let oy = -7; oy <= 6; oy += 1) for (let ox = -7; ox <= 6; ox += 1) {
+        if (!silentWorld.isWalkable(silentWorld.idx(x + ox, y + oy))) return false;
+      }
+      return true;
+    });
+    assert.ok(spot >= 0, 'silent initialization fixture requires a real walkable interior patch');
     const silentBefore = JSON.stringify(silentWorld.chronicle);
     const silentCreated = silentLife.spawn(spot % silentWorld.w, Math.floor(spot / silentWorld.w),
       'cultivator', 24); // Explicit development fixture, never a natural infant.
@@ -4594,8 +4605,8 @@ section('5r. 世界大事账本（milestone / 门槛 / 封顶 / 存档）');
   const probe = mw2.entities[beforeProbe];
   if (probeCreated === 1) {
     probe.age = 25 * 360; probe.lifespan = 65 * 360;
-    stepEntity(mw2, probe, 3, () => 0); // Real awakening before the level-19 fixture.
-    probe.level = 19; probe.exp = expToNext(19);
+    stepEntity(mw2, probe, 3, () => 0); // Real awakening before the level-29 fixture.
+    probe.level = 29; probe.exp = expToNext(29);
     stepEntity(mw2, probe, 3, () => 0); // Real breakthrough and milestone producer.
   }
   const kinds = new Map();
@@ -4607,7 +4618,7 @@ section('5r. 世界大事账本（milestone / 门槛 / 封顶 / 存档）');
   check('跑满 60 年，大事账本非空（面板不会永远空着）',
     mw2.milestones.length > 0, `${mw2.milestones.length} 条`);
   check('大事账本不止一类事件（单一类型灌满 = 门槛失守）',
-    probeCreated === 1 && probe.level >= 20 && kinds.size >= 3,
+    probeCreated === 1 && probe.level >= 30 && kinds.get('breakthrough') > 0 && kinds.size >= 3,
     `自然60年 ${naturalKinds.join('/')}；正式突破夹具后 ` + [...kinds].map(([k, n]) => `${k}:${n}`).join(' '));
   // 门槛守卫：突破条目里出现「炼气/筑基」= NOTABLE_BREAKTHROUGH_LEVEL 被人调低了
   check('门槛守得住：突破类大事里没有炼气/筑基（调低门槛会当场变红）',
@@ -5185,9 +5196,10 @@ section('5u. 世界推进的唯一入口：六个时钟一次跑齐（BACKLOG #1
   // soul-pool entry and due-soul exit, never a manually spawned nether result.
   const originWorld = generateWorld({ preset: WORLD_PRESETS.small, seed: 20260924, scatter: false });
   originWorld.nether = generateNetherWorld({ preset: WORLD_PRESETS.small, seed: originWorld.seed });
-  const originLife = new Life(originWorld, () => 0);
+  const originLife = new Life(originWorld, mulberry32(20260924));
   const originSpot = originWorld.type.findIndex((_, i) => originWorld.isWalkable(i));
   const originCreated = originLife.spawn(originSpot % originWorld.w, Math.floor(originSpot / originWorld.w), 'human', 1);
+  assert.equal(originCreated, 1, 'the real soul-origin fixture must spawn before awakening/death');
   const origin = originWorld.entities[0]; // Explicit adult developer fixture, not a natural infant.
   origin.age = 18 * 360; origin.lifespan = 65 * 360;
   stepEntity(originWorld, origin, 3, () => 0);

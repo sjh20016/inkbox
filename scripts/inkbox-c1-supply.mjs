@@ -247,4 +247,52 @@ check('awakening admission reserves the already-included disciple exactly once a
   assert.equal(affiliateSectResident(f.world, lone, f.sect), true);
 });
 
+check('an adult resident who awakens during cutoff retries admission after real recovery, once', () => {
+  const recovered = setup({ food: 20 });
+  recovered.world.type.fill(TERRAIN.MOUNTAIN);
+  recovered.world.type[recovered.world.idx(12, 12)] = TERRAIN.GRASS;
+  const awakened = recovered.world.entities.find((e) => e !== recovered.leader && !e.level);
+  recovered.sect.resources.provisions = 0;
+  awakened.level = 1;
+  assert.equal(recordSectDisciple(recovered.world, awakened), false);
+  const id = awakened.id, villageId = awakened.village;
+  assert.equal(awakened.faction, 0);
+  assert.equal(awakened.village, recovered.village.id);
+  const recruitedBefore = recovered.sect.economy?.recruited ?? 0;
+
+  const infant = person(900, recovered.village.id, 1);
+  infant.age = 18 * 360 - 1;
+  infant.faction = 0;
+  recovered.world.entities.push(infant);
+  const otherSect = foundSect(recovered.world, 30, 30, null, rng, { fixture: true });
+  const otherSectResident = person(901, recovered.village.id, 1);
+  otherSectResident.faction = otherSect.id;
+  recovered.world.entities.push(otherSectResident);
+
+  recovered.village.food = 20;
+  recovered.world.day = 10020;
+  stepSects(recovered.world, {}, 3, rng);
+  assert.equal(awakened.faction, 0, 'an unrecovered village and empty store cannot admit');
+  assert.equal(recovered.sect.economy.recruited, recruitedBefore);
+
+  // Restore real village food; the regular economy step transfers provisions
+  // before the next thirty-day territory boundary retries admission.
+  recovered.village.food = 500;
+  recovered.world.day = 10050;
+  stepSects(recovered.world, {}, 30, rng);
+  assert.ok(recovered.sect.resources.provisions > 0);
+  assert.equal(awakened.id, id);
+  assert.equal(awakened.village, villageId);
+  assert.equal(awakened.faction, recovered.sect.id);
+  assert.equal(recovered.sect.economy.recruited, recruitedBefore + 1);
+  assert.equal(infant.faction, 0, 'a baby cultivator is not admitted');
+  assert.equal(otherSectResident.faction, otherSect.id, 'another sect resident is not absorbed');
+
+  recovered.world.day = 10080;
+  stepSects(recovered.world, {}, 30, rng);
+  assert.equal(awakened.faction, recovered.sect.id);
+  assert.equal(recovered.sect.economy.recruited, recruitedBefore + 1,
+    'an admitted resident is counted only once');
+});
+
 console.log(`C1 supply: ${checks} groups passed`);

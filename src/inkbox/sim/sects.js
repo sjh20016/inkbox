@@ -22,7 +22,7 @@ import {
 import { speak } from './busanzi.js';
 import { clamp } from '../core/noise.js';
 import { settlementHistory } from './settlementResilience.js';
-import { isAdult, isPracticingHuman } from '../core/demographics.js';
+import { isAdult, isLivingHuman, isPracticingHuman } from '../core/demographics.js';
 import { affiliateSectResident, sectSupplyStatus, stepSectEconomy, villageSocieties } from './sectEconomy.js';
 import {
   computeTerritory, crossedBoundary, cellOf, leylineAllowance,
@@ -501,6 +501,7 @@ function stepTerritory(world, dtDays) {
   world._terrContested = terr.contested;
 
   applyLeylineClaims(world, terr.claims);
+  retrySectResidents(world);
   absorbVillages(world, terr.owner);
 }
 
@@ -572,6 +573,27 @@ function absorbVillages(world, owner) {
     // 无单一当事人：这条讲的是一个**村落**归附，`v` 是村落对象而非实体，
     // 归附的村民是多人且并非同一个当事人，故不传 actors（详见 record 的第三参约定）。
     world.record(`${v.name} 归入${s.name}门下。`, 'sect');
+  }
+}
+
+/**
+ * Awakening during a supply cutoff keeps the resident in their village but
+ * clears their sect affiliation. Retry those existing residents only on the
+ * territory's established thirty-day boundary, after this tick's economy step
+ * has had a chance to replenish provisions.
+ */
+function retrySectResidents(world) {
+  for (let i = 0; i < world.villages.length; i += 1) {
+    const village = world.villages[i];
+    if (!village.faction) continue;
+    const sect = world.factionById(village.faction);
+    if (!sect || !sect.villages.includes(village.id)) continue;
+    for (let k = 0; k < world.entities.length; k += 1) {
+      const entity = world.entities[k];
+      if (entity.village !== village.id || entity.faction
+        || !isPracticingHuman(entity) || !isAdult(entity) || !isLivingHuman(entity)) continue;
+      affiliateSectResident(world, entity, sect);
+    }
   }
 }
 

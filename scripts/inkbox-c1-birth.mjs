@@ -81,12 +81,15 @@ check('no local mortals, invalid pairs or extinct society cannot create people o
 
 check('a soul attaches only to a real newborn, retaining identity without cultivation or longevity', () => {
   const f = fixture();
-  f.world.souls.push({ id: 9, dueDay: 0, name: '前生某人', level: 30, incarnation: 2,
-    root: { quality: 4, elements: ['木'], rootName: '木灵根', bonus: 0.08 } });
+  f.world.souls.push({ id: 9, dueDay: 0, ofName: '前生某人', ofLevel: 30, incarnation: 2,
+    ofRoot: { quality: 4, elements: ['木'], rootName: '木灵根', bonus: 0.08 },
+    fragments: 2, bonds: [], route: 'natural' });
   assert.equal(birth(f), 1);
   const child = f.world.entities.at(-1);
   assert.equal(child.sp, 'cultivator'); assert.equal(child.level, 0); assert.equal(child.age, 0);
   assert.ok(child.pastLife); assert.equal(child.soulId, 9);
+  assert.equal(child.pastLife.name, '前生某人'); assert.equal(child.pastLife.level, 30);
+  assert.equal(child.pastLife.realm, '元婴'); assert.equal(child.root.rootName, '木灵根');
   assert.ok(child.lifespan >= 60 * Y && child.lifespan <= 65 * Y);
   assert.equal(f.world.souls.length, 0);
   assert.deepEqual([child.parentA, child.parentB], f.parents.map(e => e.id));

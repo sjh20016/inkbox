@@ -1,5 +1,9 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 2026-10-23 · C1 凡世生息候选
+
+从 [Draft #35](https://github.com/sjh20016/inkbox/pull/35) 的阶段备份 `f8704538` 续作，仍以未合流的 E0 #34 为 base。统一18岁成年、真实双亲出生、转世0级身份、逐级寿元和真实村庄供养；补齐断供后恢复收徒，修复领地洪泛精度导致的重复入堆，并迁移受人口语义影响的旧夹具。已完成三个300年自然样本、和平/断供对照和真实Edge双 renderer 检视；参数、命令退出码、性能限度和旧档边界集中见 [C1交付记录](./docs/development/C1_MORTAL_FOUNDATION_DELIVERY.md)。最终 Fast/Heavy 按该 PR 对应提交的 Actions 核对，保持 Draft，不合并 main 或 G6。
+
 ## 2026-10-22 · 地方兴衰与文明韧性 P0
 
 P0 从 `S0@7af2c35` 接通真实聚落损毁、可支付的宗门月度援助、自然恢复、有限地方沿革与可检视遗址；Canvas/Three 共用身份，存档新增字段可选。集成顺序为 [S0 #33](https://github.com/sjh20016/inkbox/pull/33) → [P0 #32](https://github.com/sjh20016/inkbox/pull/32)，G6 #30 独立。准确合流状态看 PR；实现、完整门禁、重复配对性能与回退集中见 [P0 记录](./docs/development/LOCAL_RESILIENCE_P0.md)。

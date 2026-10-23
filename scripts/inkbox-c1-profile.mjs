@@ -16,7 +16,7 @@ import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
 import { serializeWorld } from '../src/inkbox/io/save.js';
 import { isAdult, isHumanPerson, isMortalHuman, isPracticingHuman } from '../src/inkbox/core/demographics.js';
 import { diedOfOldAge } from '../src/inkbox/sim/reincarnation.js';
-import { villageSocieties, sectSupplyStatus } from '../src/inkbox/sim/sectEconomy.js';
+import { villageSociety, villageSocieties, sectSupplyStatus } from '../src/inkbox/sim/sectEconomy.js';
 import { natureState } from '../src/inkbox/sim/nature.js';
 import { foundSect } from '../src/inkbox/sim/sects.js';
 import { placeLeyline } from '../src/inkbox/sim/divine.js';
@@ -346,7 +346,7 @@ function runPeacefulCohort() {
     seed, yearsRun: world.day / YEAR_DAYS, initialCohort: { count: initial.count, ids: initial.ids,
       allDeparted: !world.entities.some((e) => cohortIds.has(e.id)) },
     controlledConditions: {
-      worldSize: `${world.w}x${world.h}`, terrain: 'generated v2 standard small, no initial population; one dry village, ample initial food and surrounding fields',
+      worldSize: `${world.w}x${world.h}`, terrain: 'uniform dry fertile experimental plane, no initial population; one village, ample initial food and surrounding fields',
       disabled: ['WorldEvents timed crises/encounters', 'wildlife births and predation', 'upper/nether populations and clocks', 'rift and wraith clocks'],
       verified: { naturalNatureEventsEver: (world.nature?.events?.length || 0) === 0, factions: world.factions.length,
         warsDeclared: world.warLog?.declared || 0, wildlifeEntities: world.entities.filter((e) => e.sp === SPECIES.BEAST || e.sp === SPECIES.SPIRIT).length,
@@ -368,9 +368,9 @@ function runPeacefulCohort() {
 function makeSupplyWorld({ seed, workers }) {
   const world = generateWorld({ preset: WORLD_PRESETS.small, seed, scatter: false,
     generationVersion: 2, terrainPreset: 'standard' });
-  world.height.fill(0.55); world.type.fill(TERRAIN.GRASS); world.water.fill(0);
-  world.riverBase.fill(0); world.fire.fill(0); world.veg.fill(1); world.struct.fill(0); world.over.fill(0);
-  const life = new Life(world, () => 0.999999999);
+  // Seeded placement explores real habitable tiles. Independent fixed-seed
+  // streams keep the founding fixtures matched before normal Life advances.
+  const life = new Life(world, mulberry32(seed ^ 0xc10001));
   life.events.step = () => {};
   life.stepWildlife = () => {};
   const [x, y] = findSafeTile(world);
@@ -382,7 +382,9 @@ function makeSupplyWorld({ seed, workers }) {
     const fx = x + dx; const fy = y + dy;
     if (fx < 1 || fy < 1 || fx >= world.w - 1 || fy >= world.h - 1) continue;
     const i = world.idx(fx, fy);
-    if (world.isBuildable(i)) { world.over[i] = OVER.FARMLAND; village.fieldTiles.push(i); }
+    if (world.isBuildable(i) && !village.fieldTiles.includes(i)) {
+      world.over[i] = OVER.FARMLAND; village.fieldTiles.push(i);
+    }
   }
   village.fields = village.fieldTiles.length;
   const rng = () => 0.999999999;
@@ -393,6 +395,7 @@ function makeSupplyWorld({ seed, workers }) {
     entity.age = 25 * YEAR_DAYS;
     entity.lifespan = SPECIES_INFO.human.lifespan;
   }
+  life.rng = mulberry32(seed ^ 0xc10002);
   const founderSpawned = life.spawn(x + 0.5, y + 0.5, SPECIES.CULTIVATOR, 3);
   assert.equal(founderSpawned, 3);
   const members = world.entities.slice(-3);
@@ -416,7 +419,13 @@ function makeSupplyWorld({ seed, workers }) {
   sect.leylines.push(line.id);
   village.faction = sect.id;
   sect.villages.push(village.id);
+  // These are three existing practitioner fixtures, not a synthetic sect.pop.
+  // foundSect assigns only the founder; explicitly affiliate the other two and
+  // retain all three residents in both matched experimental villages.
+  for (const member of members) { member.faction = sect.id; member.village = village.id; }
   for (const entity of world.entities) if (entity.village === village.id) entity.faction = sect.id;
+  assert.equal(world.entities.filter(e => e.faction === sect.id && isPracticingHuman(e)).length, 3);
+  life.rng = mulberry32(seed ^ 0xc10003);
   world.touch();
   return { world, life, village, sect, members, line };
 }
@@ -432,23 +441,23 @@ function runSupplyContrast() {
     departedIds: new Set(), samples: [],
   }]));
   const report = { seed, years: 15, setup: {
-    matched: ['same seed and uniform dry/fertile geography', 'same one formal leyline location and strength',
+    matched: ['same seed and unmodified generated v2 standard geography', 'same one formal leyline location and strength',
       'same actual founder and two existing disciple entities', 'same initial provisions (2) and spirit stones (20)',
       'same mature village food (240), field tiles, village/sect ownership and stability'],
     difference: 'worked has 30 real level-0 age-25 villagers and working adults; noLabor has 0; no hidden population pool or added people during advance.',
-    control: ['WorldEvents and wildlife spawning disabled', 'no upper/nether/rift/wraith clocks', 'same deterministic Life RNG suppresses random awakenings and fractional births', 'official advanceWorld in 3-day increments still runs Life, village economy, sect upkeep and actual nature settling'],
+    control: ['WorldEvents and wildlife spawning disabled', 'no upper/nether/rift/wraith clocks', 'same seeded Life RNG with normal movement, births and awakening rules', 'official advanceWorld in 3-day increments still runs Life, village economy, sect upkeep and actual nature settling'],
     sourceLine: Object.fromEntries(Object.entries(cases).map(([key, f]) => [key, { id: f.line.id, x: f.line.x, y: f.line.y, strength: f.line.strength }]))
   }, phases: [] };
 
   const capture = (label) => {
     for (const [key, f] of Object.entries(cases)) {
       const ctx = states[key]; ctx.observers.observeLedger();
-      const society = villageSocieties(f.world).get(f.village.id);
+      const society = villageSociety(f.world, f.village);
       const status = sectSupplyStatus(f.world, f.sect);
       const active = f.world.entities.filter((e) => e.faction === f.sect.id && isPracticingHuman(e)
         && e.hp > 0 && e.age < e.lifespan && !e._ascended);
       const record = { case: key, label, day: f.world.day, year: f.world.year,
-        village: { humans: society.humans, mortals: society.mortals, mortalAdults: society.mortalAdults,
+        village: { present: f.world.villages.includes(f.village), humans: society.humans, mortals: society.mortals, mortalAdults: society.mortalAdults,
           food: f.village.food, hp: f.village.hp, fields: f.village.fields,
           aidProvisionsCumulative: f.village.aidSpentProvisions || 0,
           aidSpiritStoneCumulative: f.village.aidSpentSpiritStone || 0 },
@@ -490,6 +499,7 @@ function runSupplyContrast() {
       ctx.previousMemberIds = new Set(f.world.entities.filter((e) => e.faction === f.sect.id).map((e) => e.id));
     }
     const day = cases.worked.world.day;
+    if (day === 90 || day === YEAR_DAYS) capture(`day-${day}`);
     if (day === 5 * YEAR_DAYS) {
       capture('year-5-before-flood');
       for (const [key, f] of Object.entries(cases)) {
@@ -517,7 +527,27 @@ function runSupplyContrast() {
     strictAB: false,
     note: 'A paired controlled contrast verifies direction and real clocks, not an identical future-world counterfactual: once populations diverge, official settlement, births, disease-free mortality and sect clocks follow their own states.'
   };
+  const start = report.phases[0].cases;
+  const buffered = report.phases.find(p => p.label === 'day-90').cases;
+  const flooded = report.phases.find(p => p.label === 'formal-flood').cases;
+  const pumped = report.phases.find(p => p.label === 'formal-pump-after-15-days').cases;
+  const final = report.phases.at(-1).cases;
+  report.checks = {
+    threeActualMembersInitially: start.worked.sect.livingDisciples === 3 && start.noLabor.sect.livingDisciples === 3,
+    inventoryBuffersCutoff: buffered.noLabor.sect.provisions > 0 && buffered.noLabor.sect.livingDisciples === 3,
+    extinctMortalsNeverSupplyOrRecruit: final.noLabor.sect.supplied === 0 && final.noLabor.sect.recruited === 0,
+    cutoffConsumesInventoryAndStopsAdmission: final.noLabor.sect.provisions === 0 && !final.noLabor.sect.canRecruit,
+    existingElderCanRemain: final.noLabor.sect.livingDisciples > 0,
+    livingVillageSupportsSect: final.worked.sect.supplied > 0 && final.worked.sect.canRecruit,
+    formalFloodStopsTribute: flooded.worked.sect.potentialSupplyPerDay === 0,
+    formalPumpAllowsSupplyToResume: pumped.worked.sect.potentialSupplyPerDay > 0 && final.worked.sect.netPerDay > 0,
+    reciprocalFoodUnitsConserved: Math.abs(final.worked.sect.foodTransferred - final.worked.sect.supplied * 3) < 1e-6,
+  };
   writeFileSync(`${OUT}/supply-contrast.json`, JSON.stringify(report, null, 2));
+  for (const [key, f] of Object.entries(cases)) {
+    writeFileSync(`${OUT}/supply-${key}-final-world.json`, JSON.stringify(serializeWorld(f.world)));
+  }
+  for (const [name, passed] of Object.entries(report.checks)) assert.ok(passed, name);
   console.log(JSON.stringify({ supplyContrast: true, years: report.years,
     initialSupply: { worked: report.phases[0].cases.worked.sect.potentialSupplyPerDay,
       noLabor: report.phases[0].cases.noLabor.sect.potentialSupplyPerDay },

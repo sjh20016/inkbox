@@ -7,8 +7,10 @@
     "node": ">=18"
   },
   "scripts": {
-    "test:c1": "node scripts/inkbox-c1-birth.mjs && node scripts/inkbox-c1-longevity.mjs && node scripts/inkbox-c1-supply.mjs && node scripts/inkbox-c1-ui.mjs",
+    "test:c1": "node scripts/inkbox-c1-birth.mjs && node scripts/inkbox-c1-longevity.mjs && node scripts/inkbox-c1-supply.mjs && node scripts/inkbox-c1-ui.mjs && node scripts/inkbox-c1-territory.mjs",
     "profile:c1": "node scripts/inkbox-c1-profile.mjs",
+    "test:c1:browser": "node scripts/inkbox-c1-browser.mjs",
+    "profile:c1:cpu": "node scripts/inkbox-c1-cpu.mjs",
     "test:e0": "node scripts/inkbox-e0-observe-echo.mjs && node scripts/inkbox-e0-three.mjs",
     "test:resilience": "node scripts/inkbox-local-resilience.mjs",
     "test:s0": "node scripts/inkbox-s0-nature.mjs && node scripts/inkbox-s0-atmosphere.mjs && node scripts/inkbox-s0-flora.mjs",
