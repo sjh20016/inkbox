@@ -200,7 +200,8 @@ export class Render3DAdapter {
     // ⚠️ 只有 pointerup 才**提交**；pointercancel / lostpointercapture 一律**取消**
     //    （拖动被打断不该开出一扇玩家没画完的窗）。
     this.listen(this.canvas, 'pointerup', e => { if(this.stroke){const hit=this.hit(e);if(this.canSculpt(hit))this.stroke.sample(hit.world);}});
-    this.listen(this.canvas, 'pointerup', e => { this.commitDrainStroke(e); this.commitRealmDraw(e); this.endStroke(); });
+    this.listen(this.canvas, 'pointerup', e => { this.commitDrainStroke(e); });
+    this.listen(this.canvas, 'pointerup', e => { this.commitRealmDraw(e); this.endStroke(); });
     for (const event of ['pointercancel', 'lostpointercapture']) this.listen(this.canvas, event, () => this.endStroke());
     this.listen(this.canvas, 'pointerleave', () => { this.pointer = null; this.renderer.brush(null); });
     this.listen(window, 'blur', () => { this.endStroke(); this.pointer = null; this.clearCameraKeys(); this.invalidateHover('blur'); });
