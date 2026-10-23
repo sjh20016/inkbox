@@ -71,6 +71,27 @@ try{
      const v=new THREE.Vector3(x,0,z).applyQuaternion(q);assert(Math.abs(pose.ground+v.y-field.at(p.x+v.x,p.y+v.z))<1e-10);
    }
  });
+ check('one buried steep patch falls back the entire real leyline to its pickable ID ring',()=>{
+   const original=world.height.slice(),before=sha(world);
+   try{
+     // Actual ElevationField and shipped GLB: a sharp ridge cuts the line in
+     // two. The old per-patch rejection left several dark tips on either side.
+     for(let y=0;y<world.h;y++)for(let x=25;x<world.w;x++)world.height[world.idx(x,y)]=.95;
+     const poses=leylinePatches(world,deriveMarkers(world).leylines).map(p=>({p,pose:leylinePatchPose(stage.elevation,p)}));
+     assert(poses.some(({p,pose})=>pose.center>=pose.ground+p.h*pose.normalY));
+     assert(poses.some(({p,pose})=>pose.center<pose.ground+p.h*pose.normalY),
+       'old per-patch path would have rendered isolated tips');
+     markers.update(.3,world,{heightChanged:true});view(100);
+     assert.equal(layer.stats.instances,0);
+     assert.equal(layer.stats.fallback,1);
+     assert.equal(markers.leylines.count,1);
+     assert.equal(markers.leylines.userData.renderLeylines[0].id,leyline.id);
+   }finally{
+     world.height.set(original);markers.update(.3,world,{heightChanged:true});view(100);
+   }
+   assert(layer.stats.instances>0,'same real line returns to mineral geography on safe terrain');
+   assert.equal(markers.leylines.count,0);assert.equal(sha(world),before);
+ });
  check('optional quaternion preserves old rotationY transforms and rejects malformed input',()=>{
    const batch=new EnvironmentBatch(library,{material:layer.batch.material,capacity:2,assetIds:['mortal.leyline.vein'],pickField:'renderLeylines'});
    try{

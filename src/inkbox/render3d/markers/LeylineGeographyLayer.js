@@ -64,9 +64,23 @@ export class LeylineGeographyLayer {
     this.renderedIds.clear();const records=[],active=new Set();let maskRejected=0,terrainRejected=0,overflow=0;
     const owned=item=>!this.regionGeometry||this.regionGeometry.allInside||this.regionGeometry.isInsideCell(item.x,item.y)===this.regionInside;
     const current=this.items.filter(owned),currentIds=new Set(current.map(item=>item.id));
+    // A line whose terrain tangent buries or flattens even one short mineral
+    // block must use its existing pickable identity ring as a whole. Keeping
+    // its other blocks produces a row of isolated dark tips on steep ridges.
+    // The visibility rule is geometric: the upright projection must clear
+    // the local ground and at least half the block's narrow depth.
+    const posed=[],steepFallback=new Set();
     if(this.enabled&&this.productionEnabled&&this.batch)for(const p of this.patches){
+      if(!currentIds.has(p.source.id))continue;
+      const pose=leylinePatchPose(this.elevation,p);
+      posed.push({p,pose});
+      const upright=p.h*pose.normalY;
+      if(pose.center>=pose.ground+upright||upright<=p.depth*.5)steepFallback.add(p.source.id);
+    }
+    for(const {p,pose} of posed){
       if(!currentIds.has(p.source.id))continue;active.add(p.key);
-      const pose=leylinePatchPose(this.elevation,p),footprint=pose.footprint;
+      if(steepFallback.has(p.source.id)){terrainRejected++;continue;}
+      const footprint=pose.footprint;
       if(!decorationFootprintOwned(this.world,this.regionGeometry,this.regionInside,footprint)){maskRejected++;continue;}
       const c=Math.abs(Math.cos(p.rotationY)),s=Math.abs(Math.sin(p.rotationY)),rx=(c*footprint.width+s*footprint.depth)/2,ry=(s*footprint.width+c*footprint.depth)/2;
       let suitable=true;
