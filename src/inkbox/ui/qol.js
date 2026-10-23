@@ -60,7 +60,7 @@ function writeKey(key, value) {
 /**
  * 帮助层里的键位表。
  *
- * ⚠️ 事实来源是 `PLAYER_GUIDE.md`（「空格 / 1-6 / [ ] / G / V / W / H / Ctrl+Z /
+ * ⚠️ 事实来源是 `PLAYER_GUIDE.md`（「空格 / 1-6 / [ ] / G / V / W / H /
  *    右键拖拽 / 滚轮」）与 `main.js` 的 keydown 实现。**两处必须一致**——
  *    帮助里写着一个按不出来的键，比没有帮助更坏。
  * ⚠️ 不用「九步新手引导」：本仓**没有**那套 UI（`FIRST_LESSON` 此前零读者），
@@ -74,7 +74,6 @@ export const HELP_KEYS = Object.freeze([
   ['V', '立体视图'],
   ['W', '战争显示'],
   ['H', '回到全图'],
-  ['Ctrl+Z', '撤销上一笔'],
   ['?', '打开 / 关闭这一页'],
   ['Esc', '逐层退回（关弹窗 → 关浮层 → 关视界 → 关检视）'],
 ]);
@@ -376,19 +375,8 @@ export function createQol(sb) {
         setText(pause, paused ? '▶ 继续' : '⏸ 暂停');
       }
     },
-    /**
-     * Q7 / Q4：撤销按钮的可用性。
-     * ⚠️ 判据是 `history.stack.length`——**已有状态**，不复制业务判断
-     *    （不许自己记一份「能不能撤销」，那份迟早与 History 不一致）。
-     */
-    syncUndoState() {
-      const btn = $('inkBtnUndo');
-      if (!btn) return;
-      const depth = sb.history && Array.isArray(sb.history.stack) ? sb.history.stack.length : 0;
-      const can = depth > 0;
-      btn.disabled = !can;
-      btn.title = can ? `撤销上一笔（Ctrl+Z）· 可撤 ${depth} 步` : '没有可撤销的操作';
-    },
+    // Retained for internal edit bookkeeping callers; no player undo control.
+    syncUndoState() {},
     /** Q39：异步命令的忙碌状态。 */
     setBusy(id, on) {
       if (on) busy.add(id); else busy.delete(id);

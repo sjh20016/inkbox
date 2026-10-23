@@ -18,6 +18,7 @@ import { awaken, attemptBreakthrough, ascend, placeName, addKarma } from './cult
 import { plantSite } from './sites.js';
 import { foundSect, SECT_FOUNDER_MIN_LEVEL, findBuildableNear } from './sects.js';
 import { settlementHistory } from './settlementResilience.js';
+import { recomputeRect } from '../world/terrain.js';
 
 /** 地图上灵脉的条数上限，防止玩家狂点把灵气层堆爆 */
 export const MAX_LEYLINES = 24;
@@ -44,10 +45,21 @@ const byLevelDesc = (a, b) => (b.level || 0) - (a.level || 0);
  * 这是「造一个修士」的总开关——世界的修士本来靠极低的自然觉醒率慢慢冒出来，
  * 玩家想看点热闹，总得有个能立刻见效的手段。
  */
-export function grantRoot(world, x, y, radius, rng) {
-  const targets = near(world, x, y, radius)
-    .filter((e) => isMortalHuman(e) && e.hp > 0 && !e._ascended && e.age < e.lifespan)
-    .slice(0, MAX_TARGETS);
+export function grantRoot(world, x, y, radius, rng, targetEntityId) {
+  const eligible = (e) => isMortalHuman(e) && e.hp > 0 && !e._ascended && e.age < e.lifespan;
+  let targets;
+  if (targetEntityId !== undefined && targetEntityId !== null) {
+    // A 3D person pick is authoritative: a stale or ineligible ID must never
+    // silently grant a different nearby person a root.
+    const target = world.entities.find((e) => e.id === targetEntityId);
+    if (world.plane === 'upper' || world.plane === 'nether') return '请返回凡界后赐灵根';
+    if (!target || !eligible(target)) return '所选人物已离开或不可授予灵根 · 请重新点选凡人';
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(radius)
+      || Math.hypot(target.x - x, target.y - y) > radius + 0.75) return '所选人物已移出神力范围 · 请重新点选';
+    targets = [target];
+  } else {
+    targets = near(world, x, y, radius).filter(eligible).slice(0, MAX_TARGETS);
+  }
   if (!targets.length) return '范围内没有未觉醒的凡人可点化';
   let n = 0;
   const awakened = [];
@@ -76,6 +88,10 @@ export function placeLeyline(world, x, y, rng) {
     strength,
     element: ELEMENTS[Math.floor(rng() * ELEMENTS.length)],
   });
+  // Qi is a derived field. The new source must affect this world immediately,
+  // rather than first taking effect after a later terrain edit or reload.
+  recomputeRect(world, line.x - line.radius, line.y - line.radius,
+    line.x + line.radius, line.y + line.radius);
   // 玩家对地形动手，无当事人
   world.record(`天降灵脉于${placeLabel(world, line.x, line.y)}，地气自此涌出。`, 'world');
   return `灵脉落于 (${line.x}, ${line.y}) · 强度 ${strength.toFixed(2)}`;

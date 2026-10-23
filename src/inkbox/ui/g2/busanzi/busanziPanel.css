@@ -9,3 +9,7 @@
 #inkBusanziLines .busanzi-line { line-height: 1.55; overflow-wrap: anywhere; }
 #inkBusanziLines .busanzi-line + .busanzi-line { margin-top: .65em; padding-top: .55em; border-top: 1px solid #c4b59b; }
 #inkBusanziPortrait:focus-visible { outline: 2px solid #855844; outline-offset: 2px; }
+.busanzi-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.busanzi-advice { margin: 7px 0 0; font-size: 11px; line-height: 1.5; }
+.busanzi-advice[hidden] { display: none; }
+.busanzi button:focus-visible { outline: 2px solid #855844; outline-offset: 2px; }

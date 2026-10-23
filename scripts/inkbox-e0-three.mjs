@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { observeToolBefore, observeToolAfter } from '../src/inkbox/sim/toolPresentation.js';
 import { World } from '../src/inkbox/world/World.js';
 import { History } from '../src/inkbox/sim/powers.js';
 import { TOOL_BY_ID } from '../src/inkbox/ui/tools.js';
@@ -85,7 +86,8 @@ function fixture() {
   const end = source.indexOf('\n  rebuildVillageCache()', start);
   const method = source.slice(start, end).trim();
   const cache = source.slice(end).match(/^\n  rebuildVillageCache\(\) \{[\s\S]*?\n  }/)[0].trim();
-  const methods = new Function('LIMITS', 'accessBounds', 'canAccess', 'CAUSAL_TOOL_IDS', `return ({${method},${cache}});`)(LIMITS, accessBounds, canAccess, CAUSAL_TOOL_IDS);
+  const methods = new Function('LIMITS', 'accessBounds', 'canAccess', 'CAUSAL_TOOL_IDS', 'observeToolBefore', 'observeToolAfter',
+    `return ({${method},${cache}});`)(LIMITS, accessBounds, canAccess, CAUSAL_TOOL_IDS, observeToolBefore, observeToolAfter);
   const f = fixture();
   f.world.villages.push({ id: 7, x: 18, y: 18, name: '湿村', hp: 80, food: 20, pop: 1, houses: [] });
   Object.assign(f.sandbox, methods, { tool: TOOL_BY_ID.drain, life: { events: { nextEventId: 1 } } });

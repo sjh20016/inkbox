@@ -9,7 +9,9 @@ import { clamp } from '../core/noise.js';
 import { OVER, recomputeRect, recomputeAll } from '../world/terrain.js';
 import { ignite, extinguish } from './ecology.js';
 import { setHeight, setWater } from '../world/terrainEdit.js';
-import { NATURE_DAYS, igniteCell, extinguishCell, setRecoveringOverlay, floodCells, cancelNatureEvent, snapshotNatureCell, restoreNatureCell, settleNature } from './nature.js';
+import { respondLocalWater } from '../world/localWater.js';
+import { emitPresentation } from './presentation.js';
+import { NATURE_DAYS, igniteCell, extinguishCell, setRecoveringOverlay, floodCells, editFloodWater, cancelNatureEvent, snapshotNatureCell, restoreNatureCell, settleNature } from './nature.js';
 import { placeOf } from './sects.js';
 import { damageSettlement } from './settlementResilience.js';
 import { beginDrainEcho, commitDrainEcho, updateDrainUndo } from './observeEcho.js';
@@ -134,6 +136,22 @@ export class History {
     this.pendingEcho = null;
   }
 
+  /** Failed, still-open terrain/water transaction; never a player undo entry. */
+  rollback(world = this.recordWorld) {
+    if (!world || world !== this.recordWorld || !this.current) { this.cancel(); return false; }
+    for (const id of this.eventIds) cancelNatureEvent(world, id);
+    for (const [i, saved] of this.current) {
+      world.height[i] = saved.h; world.water[i] = saved.w; world.over[i] = saved.o;
+      world.type[i] = saved.t; world.struct[i] = saved.s; world.veg[i] = saved.v; world.fire[i] = saved.f;
+      restoreNatureCell(world, i, saved.n);
+    }
+    for (const [id, saved] of this.currentSettlements || []) {
+      const village = world.villageById(id); if (village) restoreHistorySettlement(village, saved);
+    }
+    if (this.bounds) recomputeRect(world, this.bounds.x0, this.bounds.y0, this.bounds.x1, this.bounds.y1);
+    this.cancel(); return true;
+  }
+
   undo(world) {
     this.lastUndoFailure = null;
     const entry = this.stack.at(-1);
@@ -216,6 +234,92 @@ function brushIndices(world, cx, cy, radius, fn) {
   return touched;
 }
 
+function recordHeightEdit(world, i, target, history) {
+  if (Math.fround(clamp(target, 0, 1)) === world.height[i]) return false;
+  history.record(world, i);
+  return setHeight(world, i, target);
+}
+
+function recordWaterEdit(world, i, target, history) {
+  const next = Math.fround(Math.max(0, target));
+  if (next === world.water[i] && !world.nature?.floods?.has(i)) return false;
+  history.record(world, i);
+  return setWater(world, i, target);
+}
+
+function recordBrushWaterEdit(world, i, delta, history) {
+  if (world.nature?.floods?.has(i)) {
+    if (Math.fround(Math.max(0, world.water[i] + delta)) === world.water[i]) return false;
+    history.record(world, i);
+    return editFloodWater(world, i, delta);
+  }
+  return recordWaterEdit(world, i, world.water[i] + delta, history);
+}
+
+// One successful gesture emits one water response, including a completely
+// drained or enclosed pool for which redistribution has nothing left to move.
+const waterBatches = new WeakMap(), waterStats = new WeakMap();
+export function waterEditStats(world) { return Object.freeze({ ...(waterStats.get(world) || {}) }); }
+export function withWaterEditBatch(world, history, execute) {
+  if (waterBatches.has(world)) return execute();
+  const batch = { history, before: new Map(), bounds: null, options: null };
+  waterBatches.set(world, batch);
+  let result;
+  try { result = execute(); } catch (error) { history.rollback(world); throw error; }
+  finally { waterBatches.delete(world); }
+  if (batch.bounds) finishWaterEdit(world, batch.bounds, history, batch.before, batch.options);
+  return result;
+}
+function finishWaterEdit(world, bounds, history, before, options) {
+  const batch = waterBatches.get(world);
+  if (batch) {
+    for (const [i, old] of before) if (!batch.before.has(i)) batch.before.set(i, old);
+    batch.bounds = batch.bounds ? { x0: Math.min(batch.bounds.x0, bounds.x0), y0: Math.min(batch.bounds.y0, bounds.y0),
+      x1: Math.max(batch.bounds.x1, bounds.x1), y1: Math.max(batch.bounds.y1, bounds.y1) } : bounds;
+    batch.options = options;
+    return;
+  }
+  const started = performance.now(), windows = [];
+  if (bounds.x1 - bounds.x0 <= 80 && bounds.y1 - bounds.y0 <= 80) windows.push(bounds);
+  else {
+    const tiles = new Map();
+    for (const i of before.keys()) {
+      const tx = Math.floor((i % world.w) / 80), ty = Math.floor(Math.floor(i / world.w) / 80), key = ty * Math.ceil(world.w / 80) + tx;
+      // Shared edge nodes couple neighboring windows without an impermeable tile seam.
+      if (!tiles.has(key)) tiles.set(key, { x0: tx * 80, x1: tx * 80 + 80, y0: ty * 80, y1: ty * 80 + 80 });
+    }
+    windows.push(...[...tiles].sort(([a], [b]) => a - b).map(([, r]) => r));
+  }
+  // A long drag shares the same fixed relaxation work budget across its tiles.
+  // It never performs 32 full passes again for every pointer sample.
+  const passes = Math.max(1, Math.floor(32 / Math.max(1, windows.length)));
+  let candidates = 0, relaxations = 0;
+  const remember = (i) => {
+    if (!before.has(i)) before.set(i, world.water[i]);
+    history.record(world, i);
+  };
+  recomputeRect(world, bounds.x0, bounds.y0, bounds.x1, bounds.y1);
+  for (const window of windows) {
+    const response = respondLocalWater(world, window, { ...options, passes, present: false, beforeChange: remember });
+    candidates += response?.candidates || 0; relaxations += (response?.candidates || 0) * (response?.passes || 0);
+  }
+  let fromDepth = 0, toDepth = 0, changed = 0;
+  let x0 = world.w, y0 = world.h, x1 = -1, y1 = -1;
+  for (const [i, old] of before) {
+    if (world.water[i] === old) continue;
+    fromDepth += old; toDepth += world.water[i]; changed++;
+    const x = i % world.w, y = Math.floor(i / world.w);
+    x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y);
+  }
+  if (changed) emitPresentation(world, 'tool-impact', {
+    x: (x0 + x1) / 2, y: (y0 + y1) / 2,
+    data: { tool: 'water-response', phase: options.phase, source: options.source,
+      radius: Math.max(1, Math.max(x1 - x0, y1 - y0) / 2), affectedCells: changed, fromDepth, toDepth },
+  });
+  waterStats.set(world, { windows: windows.length, candidates, relaxations, affectedCells: changed,
+    capped: windows.length > 1, milliseconds: performance.now() - started });
+}
+
 function seedFrom(x, y, salt) {
   let h = (x * 374761393 + y * 668265263 + salt * 2147483647) >>> 0;
   h = (h ^ (h >>> 13)) >>> 0;
@@ -225,12 +329,15 @@ function seedFrom(x, y, salt) {
 
 /** 抬高/压低地形。amount 为正则抬升，为负则下沉 */
 export function sculpt(world, x, y, radius, amount, history) {
+  let changed = false;
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
-    history.record(world, i);
     const soft = falloff * falloff * (3 - 2 * falloff);
-    setHeight(world, i, world.height[i] + amount * soft);
+    changed = recordHeightEdit(world, i, world.height[i] + amount * soft, history) || changed;
   });
-  recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
+  if (changed) {
+    recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
+    respondLocalWater(world, t, { source: 'sculpt', beforeChange: (i) => history.record(world, i) });
+  }
   return t.count;
 }
 
@@ -238,43 +345,62 @@ export function sculpt(world, x, y, radius, amount, history) {
 export function flatten(world, x, y, radius, strength, history) {
   const centerIdx = world.idx(clamp(Math.round(x), 0, world.w - 1), clamp(Math.round(y), 0, world.h - 1));
   const target = world.height[centerIdx];
+  let changed = false;
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
-    history.record(world, i);
-    setHeight(world, i, world.height[i] + (target - world.height[i]) * strength * falloff);
+    changed = recordHeightEdit(world, i, world.height[i] + (target - world.height[i]) * strength * falloff, history) || changed;
   });
-  recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
+  if (changed) {
+    recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
+    respondLocalWater(world, t, { source: 'flatten', beforeChange: (i) => history.record(world, i) });
+  }
   return t.count;
 }
 
 /** 皴擦：在笔刷内叠加噪声，制造岩石质感 */
 export function roughen(world, x, y, radius, strength, history) {
+  let changed = false;
   const t = brushIndices(world, x, y, radius, (i, px, py, falloff) => {
-    history.record(world, i);
     const n = seedFrom(px, py, 7) * 2 - 1;
-    setHeight(world, i, world.height[i] + n * strength * falloff);
+    changed = recordHeightEdit(world, i, world.height[i] + n * strength * falloff, history) || changed;
   });
-  recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
+  if (changed) {
+    recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
+    respondLocalWater(world, t, { source: 'roughen', beforeChange: (i) => history.record(world, i) });
+  }
   return t.count;
 }
 
 /** 注水：在笔刷范围内永久增加水深。 */
 export function addWater(world, x, y, radius, amount, history) {
+  let changed = false;
+  const before = new Map();
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
-    history.record(world, i);
-    setWater(world, i, world.water[i] + amount * falloff);
-    if (world.fire[i] > 0) extinguishCell(world, i);
+    if (amount * falloff <= 0) return;
+    const old = world.water[i];
+    const edited = recordBrushWaterEdit(world, i, amount * falloff, history);
+    if (edited) before.set(i, old);
+    changed = edited || changed;
+    if (edited && world.fire[i] > 0) extinguishCell(world, i);
   });
-  recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
+  if (changed) {
+    finishWaterEdit(world, t, history, before, { source: 'add-water', phase: 'rise' });
+  }
   return t.count;
 }
 
 /** 抽水 */
 export function removeWater(world, x, y, radius, amount, history) {
+  let changed = false;
+  const before = new Map();
   const t = brushIndices(world, x, y, radius, (i, _px, _py, falloff) => {
-    history.record(world, i);
-    setWater(world, i, world.water[i] - amount * falloff);
+    if (amount * falloff <= 0) return;
+    const old = world.water[i], edited = recordBrushWaterEdit(world, i, -amount * falloff, history);
+    if (edited) before.set(i, old);
+    changed = edited || changed;
   });
-  recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
+  if (changed) {
+    finishWaterEdit(world, t, history, before, { source: 'remove-water', phase: 'recede' });
+  }
   return t.count;
 }
 
@@ -494,11 +620,14 @@ export function lightning(world, x, y, history) {
 export function meteor(world, x, y, radius, history) {
   const cx = clamp(Math.round(x), 0, world.w - 1);
   const cy = clamp(Math.round(y), 0, world.h - 1);
+  let heightChanged = false;
   const t = brushIndices(world, cx, cy, radius, (i, px, py, falloff) => {
     history.record(world, i);
     const d = Math.hypot(px - cx, py - cy) / Math.max(1, radius);
     const bowl = -Math.cos(Math.min(1, d) * Math.PI) * 0.5 + 0.5; // 中心 0 → 边缘 1
-    setHeight(world, i, world.height[i] - (1 - bowl) * 0.11);
+    const nextHeight = world.height[i] - (1 - bowl) * 0.11;
+    heightChanged = Math.fround(clamp(nextHeight, 0, 1)) !== world.height[i] || heightChanged;
+    setHeight(world, i, nextHeight);
     if (d < 0.62) {
       setRecoveringOverlay(world, i, OVER.LAVA);
       world.veg[i] = 0;
@@ -510,6 +639,7 @@ export function meteor(world, x, y, radius, history) {
     world.fire[i] = Math.max(0, world.fire[i]);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
+  if (heightChanged) respondLocalWater(world, t, { source: 'meteor', beforeChange: (i) => history.record(world, i) });
   ignite(world, cx, cy, radius + 2, 1, history);
 
   let killed = 0;
@@ -534,11 +664,14 @@ export function meteor(world, x, y, radius, history) {
 export function earthquake(world, x, y, radius, history) {
   const cx = clamp(Math.round(x), 0, world.w - 1);
   const cy = clamp(Math.round(y), 0, world.h - 1);
+  let heightChanged = false;
   const t = brushIndices(world, cx, cy, radius, (i, px, py, falloff) => {
     history.record(world, i);
     const n = seedFrom(px, py, 991) * 2 - 1;
     const m = seedFrom(px, py, 313) * 2 - 1;
-    setHeight(world, i, world.height[i] + n * 0.05 * falloff + m * 0.02);
+    const nextHeight = world.height[i] + n * 0.05 * falloff + m * 0.02;
+    heightChanged = Math.fround(clamp(nextHeight, 0, 1)) !== world.height[i] || heightChanged;
+    setHeight(world, i, nextHeight);
     if (world.struct[i] && falloff > 0.15) {
       if (seedFrom(px, py, 77) < 0.55) {
         world.struct[i] = 5;
@@ -548,6 +681,7 @@ export function earthquake(world, x, y, radius, history) {
     if (world.over[i] === OVER.LAVA) setRecoveringOverlay(world, i, OVER.ASH);
   });
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
+  if (heightChanged) respondLocalWater(world, t, { source: 'earthquake', beforeChange: (i) => history.record(world, i) });
   return disasterMilestone(world, '地动山摇', x, y, radius, 0,
     18, radius, history, [cx, cy]);
 }
@@ -557,11 +691,14 @@ export function flood(world, x, y, radius, history) {
   const cx = clamp(Math.round(x), 0, world.w - 1);
   const cy = clamp(Math.round(y), 0, world.h - 1);
   const cells = [];
+  const before = new Map();
   const t = brushIndices(world, cx, cy, radius, (i, _px, _py, falloff) => {
     history.record(world, i);
+    before.set(i, world.water[i]);
     cells.push([i, 0.02 + falloff * 0.09]);
   });
-  const eventId = floodCells(world, cells);
+  const eventId = floodCells(world, cells, NATURE_DAYS.flood, { present: false });
+  if (eventId) finishWaterEdit(world, t, history, before, { source: 'flood', phase: 'rise', floodId: eventId });
   if (eventId && history.current) history.eventIds.push(eventId);
   recomputeRect(world, t.x0, t.y0, t.x1, t.y1);
   return disasterMilestone(world, '洪水滔天', x, y, radius, 0, 16);

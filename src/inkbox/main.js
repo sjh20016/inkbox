@@ -85,7 +85,7 @@ import { PresentationStage } from './render/presentationStage.js';
 // 表现事件的模拟侧发射口——玩家落笔（tool-impact）由本文件直接发。
 // ⚠️ 队列的**抽取端**已收进 `render/presentationStage.js`（D8-C）：本文件不再
 //    自己 `drainRuntimeEvents`，否则三界要写三遍（见该文件头注释）。
-import { emitPresentation } from './sim/presentation.js';
+import { observeToolBefore, observeToolAfter } from './sim/toolPresentation.js';
 // ⚠️ `normalizeRegion as normalizeRegionGeometry` 是划选区域的**纯几何核心**
 //    （鞋带面积 / 钳界 / 面积上限）。它放在 `ui/tools.js` 而不是本文件的方法里，
 //    是因为本文件依赖 DOM、node 里 import 不了，而 `scripts/_riftprobe.mjs`
@@ -136,7 +136,7 @@ import {
   refreshThreeRealmsPanel, refreshUpperRealmPanel, refreshNetherRealmPanel,
   refreshNecrologyPanel, setNecroSortPanel, showDeadBiographyPanel,
   hideDeadBiographyPanel, downloadTextPanel, refreshBusanziPanel, bindBusanziTogglePanel,
-  bindBusanziPortraitPanel,
+  bindBusanziPortraitPanel, bindBusanziActionsPanel,
   refreshSlotsPanel, setupSectionTogglesPanel, refreshRecentPanel,
   showCharacterChoicesPanel, showCharacterRelationsPanel,
 } from './ui/railPanels.js';
@@ -336,6 +336,8 @@ class Sandbox {
     this.focusedSectId = null;
     this.relationOpen = false;
     this.busanziCollapsed = false; // Session UI choice survives World changes.
+    this.busanziAcknowledged = null;
+    this.busanziShowNext = false;
     // T2：卜算子三维形象。这里只建懒加载门面——独立 renderer / GLB / mixer 都在
     // 玩家第一次点面板肖像时出现，关窗/换世界/页面卸载时释放（见 BusanziViewer）。
     this.busanziViewer = createBusanziViewerHost({ onError: (text) => this.notify(text, 6000) });
@@ -345,10 +347,7 @@ class Sandbox {
     // ── 玩家干预的反馈（Batch 2）──────────────────────────
     // 点选类神力（天灾 / 抹除 / 仙道）在 `applyTool` 里会把「发生了什么」
     // 写成人话返回，然后 `notify` 出去。但**通知栏只有一行**，而 `pointerup`
-    // 里那句「已记录，可 Ctrl+Z 撤销」紧接着又 `notify` 一次，把它**盖掉**——
-    // 实测：陨石砸死 24 人，玩家看到的只有「陨石 · 已记录，可 Ctrl+Z 撤销」。
-    // 那句话说的事比「可撤销」重要得多，所以这里把它留到 pointerup 时**接在
-    // 撤销提示前面**，而不是让它被盖掉。
+    // 保存点选神力的实际结果，供 pointerup 汇总反馈。
     this.clickSaid = '';
     this.strokeIntervention = null;
 
@@ -724,6 +723,7 @@ class Sandbox {
     const hint = $('inkToolHint');
     if (hint) hint.textContent = `${tool.name} — ${tool.hint}`;
     syncOpportunityOptions(this);
+    this.render3d?.setTool?.(id);
     this.updateCursor();
     // Q5：工具切换 / 快捷键切换 / 程序切换都必须同步那一行「我手里拿的是什么」。
     this.qol.syncToolState();
@@ -764,6 +764,7 @@ class Sandbox {
   bindEvents() {
     bindBusanziTogglePanel(this);
     bindBusanziPortraitPanel(this);
+    bindBusanziActionsPanel(this);
     const combatFxControl = $('inkCombatFx');
     if (combatFxControl) {
       combatFxControl.checked = this.stage.combatEnabled;
@@ -872,14 +873,6 @@ class Sandbox {
       if (this.pointer.painting) {
         const label = this.tool.name;
         if (this.history.end(label)) {
-          // ── Q7：撤销栈**刚刚**才有内容 ⇒ 按钮的可用态必须立刻跟上 ──────────
-          // ⚠️ 不能指望 `applyTool` 里那次 `markDirty` 代劳：它是在**拖拽过程中**
-          //    跑的，那时 `history.end()` 还没提交，栈仍是空的，
-          //    `syncUndoState()` 据此把按钮锁成「没有可撤销的操作」。
-          //    真正入栈发生在这一行，所以刷新也必须在这一行之后。
-          // ⚠️ 漏掉它**不报错**——只是玩家画完一笔、撤销按钮依然是灰的，
-          //    得等下一次存档（`markPersisted` 会顺手同步）才亮起来。
-          this.qol.syncUndoState();
           if (this.strokeIntervention) {
             const entry = this.history.stack[this.history.stack.length - 1];
             const outcome = createInterventionOutcome({
@@ -896,21 +889,13 @@ class Sandbox {
             // 表现层：玩家落笔的落点反馈（FX 在落点画冲击环；陨石类工具演「天降」）。
             // ⚠️ 无论成败都发——玩家确实落了这一笔，画面上就该有回响。
             //    只发事件，不改模拟、不抽 rng。
-            emitPresentation(this.world, 'tool-impact', {
-              x: this.strokeIntervention.x,
-              y: this.strokeIntervention.y,
-              data: { tool: this.strokeIntervention.toolId },
-            });
           }
           // ⚠️ 点选工具刚在 pointerdown 的 `applyTool` 里报过「发生了什么」
           //    （「乱石岗天降陨石：17 人罹难，3 所聚落受损。」）。通知栏只有
-          //    一行、后写的赢，所以这里**接在后面**而不是盖掉它——否则玩家
+          //    一行、后写的赢，所以这里保留实际结果——否则玩家
           //    永远看不到自己刚才把世界改成了什么样。
           const said = this.clickSaid;
-          const undoNote = this.lastInterventionOutcome?.status === 'failed'
-            ? '' : ['meteor', 'lightning'].includes(this.tool.id)
-              ? '可 Ctrl+Z 尝试回退地表；生灵伤亡不能撤销。' : '可 Ctrl+Z 尝试撤销，后续变化可能阻止回退。';
-          this.notify(said ? `${said}${undoNote}` : `${label} · 已记录，可 Ctrl+Z 撤销`);
+          this.notify(said || `${label} · 已记入世界`);
           this.observeEcho?.refresh();
         }
       }
@@ -965,14 +950,6 @@ class Sandbox {
         this.togglePause();
         return;
       }
-      if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        // Q7：Ctrl+Z 与「撤销」按钮**共用一条执行路径**（`this.undo()`）——
-        // 两条路各写一遍的话，「按钮说没有可撤销的操作、Ctrl+Z 却静默无事」
-        // 这种不一致迟早出现，而且不报错。
-        this.undo();
-        return;
-      }
       if (e.key >= '1' && e.key <= '6') {
         // Q6：快捷键切档与 UI 按钮完全同步（`setSpeed` 是唯一入口），
         // 并给一次轻量反馈（`announce=true`）。**不每个 tick 重复提示**——
@@ -1006,8 +983,6 @@ class Sandbox {
       if (btn) this.setSpeed(Number(btn.dataset.speed));
     });
     $('inkBtnPause').addEventListener('click', () => this.togglePause());
-    // Q7：按钮与 Ctrl+Z 共用 `this.undo()`（同一条路径、同一句反馈）。
-    $('inkBtnUndo').addEventListener('click', () => this.undo());
     $('inkBtnGrid').addEventListener('click', () => this.toggleGrid());
     $('inkBtnRelief').addEventListener('click', () => this.toggleRelief());
     $('inkBtnFit').addEventListener('click', () => {
@@ -1351,16 +1326,20 @@ class Sandbox {
   refreshSlots() { return refreshSlotsPanel(this); }
 
   // ── 落笔 ────────────────────────────────────────────────
-  applyTool(isFirst, { point = this.hoverTile, radius = this.brushRadius } = {}) {
+  applyTool(isFirst, { point = this.hoverTile, radius = this.brushRadius, targetEntityId, plane = 'mortal' } = {}) {
     const tool = this.tool;
+    if (plane !== 'mortal') {
+      this.notify('此神力仅可施于凡界 · 请先返回凡界', 2400);
+      return;
+    }
     if (tool.mode === 'click' && !isFirst) return;
     // 划选工具没有「一个落点 + 半径」可言：它要的是一片自由形状，走 commitSelection。
     // 这里直接挡住——否则 apply(ctx) 会拿到一个没有 rect / commitSelection 的 ctx
     // 而抛错。试玩测试第 9 节会无差别地对每个工具调 applyTool，这条守卫也是为它存在的。
     if (tool.mode === 'select') return;
     const world = this.world;
-    const x = point.x;
-    const y = point.y;
+    const x = point?.x;
+    const y = point?.y;
     if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(radius)
       || radius < 1 || radius > Math.max(...LIMITS.brushSizes)) return;
     if (!world.inside(x, y)) return;
@@ -1381,12 +1360,16 @@ class Sandbox {
       x: x + 0.5,
       y: y + 0.5,
       radius,
+      targetEntityId,
       amount: tool.amount,
       history: this.history,
       rng: this.rng,
       siteTheme: this.opportunityTheme || 'random',
     };
+    const observation = observeToolBefore(ctx, tool);
     ctx.result = tool.apply(ctx);
+    const impact = observeToolAfter(ctx, observation);
+    this.lastToolImpact = impact;
     if (priorSites) showOpportunityPlacement(this, world.sites.find(site => !priorSites.has(site.id)), ctx.result);
     this.dirty = true;
     // ── Q21：**玩家真的改了世界** ⇒ 世界与磁盘上的存档不再一致 ──────────
@@ -1404,10 +1387,10 @@ class Sandbox {
     //    ——保护反而失效。受保护的是玩家**主动做过的编辑**。
     //    分桶只为可读：`terrain` / `intervention` 都落在 `DIRTY_EVENTS` 里，
     //    置的同样是「脏」这一个事实。
-    this.qol.markDirty(CAUSAL_TOOL_IDS.includes(tool.id) ? 'intervention' : 'terrain');
-    // Removing water cannot itself damage this or a distant wet settlement.
-    // Flood/unsafe-site consequences still resolve through the formal Life clock.
-    if (tool.id !== 'drain') this.rebuildVillageCache();
+    if (impact.changed || impact.persistentChanged)
+      this.qol.markDirty(CAUSAL_TOOL_IDS.includes(tool.id) ? 'intervention' : 'terrain');
+    // Settlement losses are resolved by the formal, local disaster/Life paths.
+    // An unrelated forest brush must not lower a distant wet village's HP.
 
     // 卜算子的反应只在「按下的那一下」触发，拖拽重复的那几十次不算。
     // 否则按住刷子拖两秒，他就会跟你熟得像认识了十年。

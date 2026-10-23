@@ -114,10 +114,9 @@ export function createObserveEchoPanel(sandbox, doc = document) {
       + `<details data-e0-detail="places" ${openDetails.has('places') ? 'open' : ''}><summary>已开放山河的聚落与遗址（${places.length}）</summary><div class="e0-place-list">`
       + (places.length ? places.map(({ place, status }) => `<div>${button('locate', `${state(status)} · ${place.name || '无名聚落'}`, place.id)}</div>`).join('') : '<p>尚未发现聚落，继续观察真实世界的演化。</p>') + '</div></details>'
       + '<h4>我落过的笔 · 抽水</h4><p class="e0-note">仅登记实际变水的一笔。先暂停便于查看直接改变；继续岁月后，村庄仍按自身条件演化。</p>'
-      + (marks.length ? `<div class="e0-mark-list">${marks.slice(-6).reverse().map(mark => `<button type="button" data-e0-action="mark" data-mark="${esc(mark.id)}" aria-pressed="${mark.id === selected?.id}">${esc(when(mark.day))} · 抽水 ${n(mark.changedCells)} 格${mark.status === 'undone' ? ' · 已撤销' : ''}</button>`).join('')}</div>` : '<p>尚无抽水笔录；无效果的落笔不会登记。</p>')
+      + (marks.length ? `<div class="e0-mark-list">${marks.slice(-6).reverse().map(mark => `<button type="button" data-e0-action="mark" data-mark="${esc(mark.id)}" aria-pressed="${mark.id === selected?.id}">${esc(when(mark.day))} · 抽水 ${n(mark.changedCells)} 格</button>`).join('')}</div>` : '<p>尚无抽水笔录；无效果的落笔不会登记。</p>')
       + (selected ? `<section class="e0-echo"><h4>当时直接改变</h4><p>${esc(when(selected.day))}，在（${n(selected.x)}, ${n(selected.y)}）抽水 ${n(selected.changedCells)} 格。</p>`
         + (selected.before && selected.after ? `<p>关联原村：${esc(selected.before.name)}；村心积水 ${n(selected.before.water)} → ${n(selected.after.water)}（未落在村心时可不变）。</p>` : '<p>这一笔没有关联可确认的聚落身份。</p>')
-        + `<p>${selected.status === 'undone' ? '已撤销：当时改动已回退，不表示持续效果。' : selected.status === 'undo-refused' ? `撤销未完成：${esc(selected.undoReason || '世界已发生后续变化')}。` : selected.undoAvailable ? '当前可尝试 Ctrl+Z 撤销；后续变化可能使撤销被拒绝。' : '该笔已无可用撤销记录。'}</p>`
         + '<h4>此后实际发生</h4>' + revisitHtml(echo, selected.after)
         + (selected.settlementId != null ? button('locate', '检视原聚落 / 遗址', selected.settlementId) : '')
         + '<h4>无法确定的关联</h4><p>抽水只直接改变上述水层。之后的恢复、援助、人口变化或荒废，不能据此归因于这一笔。</p></section>' : '')

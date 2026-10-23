@@ -154,7 +154,7 @@ export const TOOLS = Object.freeze([
     mode: 'drag', amount: 0.02,
     apply: (c) => P.addWater(c.world, c.x, c.y, c.radius, c.amount, c.history),
   }),
-  T('drain', '抽水', '🫗', 'water', '抽走范围内积水，松手留一笔回声；可尝试撤销，后续演化可能阻止撤销。退水不等于村庄立即恢复', {
+  T('drain', '抽水', '🫗', 'water', '抽走范围内积水，松手留一笔回声；退水后村庄仍按自身条件恢复', {
     mode: 'drag', amount: 0.03,
     apply: (c) => P.removeWater(c.world, c.x, c.y, c.radius, c.amount, c.history),
   }),
@@ -194,11 +194,11 @@ export const TOOLS = Object.freeze([
   }),
 
   // ── 天灾 ──────────────────────────────────────────────
-  T('lightning', '雷霆', '⚡', 'disaster', '击伤近处生灵并点燃草木；生灵伤亡不能撤销，地表回退仍可能被后续演化阻止', {
+  T('lightning', '雷霆', '⚡', 'disaster', '击伤近处生灵并点燃草木，伤亡与雷火将留在真实世界', {
     mode: 'click',
     apply: (c) => P.lightning(c.world, c.x, c.y, c.history),
   }),
-  T('meteor', '陨石', '☄', 'disaster', '砸出熔岩坑并杀伤近处生灵；生灵伤亡不能撤销，地表可尝试回退', {
+  T('meteor', '陨石', '☄', 'disaster', '砸出熔岩坑并杀伤近处生灵，留下焦土与聚落损伤', {
     mode: 'click',
     apply: (c) => P.meteor(c.world, c.x, c.y, c.radius, c.history),
   }),
@@ -236,7 +236,7 @@ export const TOOLS = Object.freeze([
   }),
   T('cultivator', '点化', '🧙', 'life', '点化附近尚未入门的真实人物，使其开始修行', {
     mode: 'click', playerHidden: true,
-    apply: (c) => D.grantRoot(c.world, c.x, c.y, c.radius, c.rng),
+    apply: (c) => D.grantRoot(c.world, c.x, c.y, c.radius, c.rng, c.targetEntityId),
   }),
   T('beast', '灵兽', '🐾', 'life', '放出灵兽，它们会猎食凡人', {
     mode: 'click', species: SPECIES.BEAST, count: 6,
@@ -256,7 +256,7 @@ export const TOOLS = Object.freeze([
   // 但那是几百年尺度的事；玩家想当场看点热闹，得有能立刻拨动它的手段。
   T('root', '赐灵根', '❖', 'dao', '点化凡人，当场开灵根、入炼气', {
     mode: 'click',
-    apply: (c) => D.grantRoot(c.world, c.x, c.y, c.radius, c.rng),
+    apply: (c) => D.grantRoot(c.world, c.x, c.y, c.radius, c.rng, c.targetEntityId),
   }),
   T('leyline', '引灵脉', '≋', 'dao', '凭空引出一道灵脉：灵气厚，宗门会来争', {
     mode: 'click',

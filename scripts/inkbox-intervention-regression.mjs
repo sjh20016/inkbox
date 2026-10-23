@@ -7,6 +7,7 @@ import { generateWorld } from '../src/inkbox/world/worldgen.js';
 import { recomputeRect, OVER } from '../src/inkbox/world/terrain.js';
 import { deserializeWorld, serializeWorld } from '../src/inkbox/io/save.js';
 import { TOOL_BY_ID } from '../src/inkbox/ui/tools.js';
+import { visibleMilestones } from '../src/inkbox/ui/railPanels.js';
 import { spawnNetherGhost, stepNether } from '../src/inkbox/sim/netherLife.js';
 import {
   createInterventionOutcome, measureChangedCells,
@@ -172,6 +173,33 @@ check('活动事件和倒计时存档后以同一 ID 恢复且只运行一份',
     && loadedLife.events.activeCrises.filter((entry) => entry.id === crisisId).length === 1,
   `事件 #${loadedEvent?.id} · active=${loadedLife.events.activeCrises.length}`);
 
+const legacy = deserializeWorld(structuredClone(serializeWorld(loaded)));
+const legacyOpening = legacy.milestones.find((row) => row.crisisEventId === crisisId);
+delete legacyOpening.crisisEventId;
+const otherId = crisisId + 900;
+const otherOpening = {
+  ...legacyOpening,
+  day: legacyOpening.day + 30 * 360,
+  year: legacyOpening.year + 30,
+  text: legacyOpening.text.replace(/^事件 #\d+：/, `事件 #${otherId}：`),
+};
+legacy.milestones.push(otherOpening);
+const legacyLife = new Life(legacy, mulberry32(77123));
+check('旧档进行中事件只显示一条；多年后同文而 ID 不同的事件仍独立',
+  visibleMilestones(legacy.milestones, legacyLife.events.activeCrises)
+    .filter((row) => row.kind === 'crisis').length === 1
+    && visibleMilestones(legacy.milestones, legacyLife.events.activeCrises)[0] === otherOpening);
+legacy.day = loadedEvent.startedDay + loadedEvent.durationDays;
+legacyLife.events.step(1);
+check('旧档降灾结局回填原起因行，不吞掉多年后另一事件',
+  legacy.milestones.length === 2
+    && legacyOpening.crisisEventId === crisisId
+    && legacyOpening.outcome === legacyLife.events.history.find((entry) => entry.id === crisisId)?.outcome
+    && legacy.milestones.includes(otherOpening)
+    && otherOpening.text.startsWith(`事件 #${otherId}：`)
+    && visibleMilestones(legacy.milestones).filter((row) => row.kind === 'crisis').length === 2
+    && legacy.chronicle.filter((row) => row.kind === 'crisis' && row.text.startsWith(`事件 #${crisisId}：`)).length === 2);
+
 loaded.day = loadedEvent.startedDay + loadedEvent.durationDays;
 loadedLife.events.step(1);
 const resolved = loadedLife.events.history.find((entry) => entry.id === crisisId);
@@ -180,8 +208,15 @@ check('灾祸结束时记录 resolved 结局并写入编年与大事记',
     && loaded.chronicle.some((entry) => entry.text.includes(`事件 #${crisisId}`) && entry.text.includes('熬过了'))
     && loaded.milestones.some((entry) => entry.text.includes(`事件 #${crisisId}`) && entry.text.includes('熬过了')),
   resolved?.outcome);
+check('同一降灾事件在大事记只留一条，编年仍记开端与结局',
+  loaded.milestones.filter((entry) => entry.crisisEventId === crisisId).length === 1
+    && loaded.chronicle.filter((entry) => entry.kind === 'crisis' && entry.text.includes(`事件 #${crisisId}`)).length === 2,
+  `事件 #${crisisId} · milestones=${loaded.milestones.filter((entry) => entry.crisisEventId === crisisId).length} chronicle=${loaded.chronicle.filter((entry) => entry.kind === 'crisis' && entry.text.includes(`事件 #${crisisId}`)).length}`);
 
 const resolvedReload = deserializeWorld(serializeWorld(loaded));
+check('降灾单条大事结局可存读',
+  resolvedReload.milestones.filter((entry) => entry.crisisEventId === crisisId).length === 1
+    && resolvedReload.milestones.find((entry) => entry.crisisEventId === crisisId)?.outcome === resolved.outcome);
 const resolvedLife = new Life(resolvedReload, mulberry32(77123));
 resolvedLife.events.step(1);
 check('已结束事件读档后仍留在历史且不会重复结算',

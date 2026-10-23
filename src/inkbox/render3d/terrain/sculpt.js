@@ -1,5 +1,6 @@
 import { recomputeRect } from '../../world/terrain.js';
 import { setHeight } from '../../world/terrainEdit.js';
+import { respondLocalWater } from '../../world/localWater.js';
 import { snapshotFloodCell, restoreFloodCell, restoredFloodWater } from '../../sim/nature.js';
 
 // The only render3d world write boundary. A stamp reads a stable neighbourhood.
@@ -50,7 +51,7 @@ export function sculpt(world, { x, y, radius = 6, strength = 0.035, mode = 'rais
   const changes = [];
   if (nat) {
     naturalStamp(world, { x, y, radius, strength, mode, accessBounds, x0, y0, x1, y1 }, changes);
-    return commitChanges(world, changes, { x0, y0, x1, y1, syncWater, deferCanonical, beforeChange });
+    return commitChanges(world, changes, { x0, y0, x1, y1, syncWater, deferCanonical, beforeChange, accessBounds });
   }
   for (let cy = y0; cy <= y1; cy++) for (let cx = x0; cx <= x1; cx++) {
     const distance = Math.hypot(cx - x, cy - y);
@@ -74,17 +75,19 @@ export function sculpt(world, { x, y, radius = 6, strength = 0.035, mode = 'rais
     next = Math.fround(Math.max(0, Math.min(1, next)));
     if (next !== old) changes.push([i, next, old]);
   }
-  return commitChanges(world, changes, { x0, y0, x1, y1, syncWater, deferCanonical, beforeChange });
+  return commitChanges(world, changes, { x0, y0, x1, y1, syncWater, deferCanonical, beforeChange, accessBounds });
 }
 
-function commitChanges(world, changes, { x0, y0, x1, y1, syncWater, deferCanonical, beforeChange }) {
+function commitChanges(world, changes, { x0, y0, x1, y1, syncWater, deferCanonical, beforeChange, accessBounds }) {
   for (const [i, value, old] of changes) {
     beforeChange?.(i,old,world.water?.[i] ?? 0,world.riverBase?.[i] ?? 0);
     setHeight(world, i, value);
   }
   if (!changes.length) return null;
   // canonical 派生量重算：type / qi 必须跟着新高度走（含 world.touch()）。
-  if(!deferCanonical)recomputeRect(world, x0, y0, x1, y1);
+  if(!deferCanonical){
+    recomputeRect(world, x0, y0, x1, y1);
+  }
   return { x0, y0, x1, y1, count: changes.length, changes };
 }
 
@@ -209,15 +212,24 @@ export class TerrainStroke {
   flush(){
     if(!this.pending)return null;
     const region=this.pending;this.pending=null;
-    recomputeRect(this.world,region.x0,region.y0,region.x1,region.y1);this.stats.canonicalFlushes++;return region;
+    recomputeRect(this.world,region.x0,region.y0,region.x1,region.y1);
+    this.stats.canonicalFlushes++;return this.region;
   }
-  finish(){
+  finish({ present = true } = {}){
     if(this.closed)return this.result;
     if(this.last&&Math.hypot(this.last.x-this.lastStamp.x,this.last.y-this.lastStamp.y)>1e-9)this.stamp(this.last);
-    this.flush();this.closed=true;
+    this.flush();
+    if (this.region) {
+      const response=respondLocalWater(this.world,this.region,{source:'three-sculpt',present,accessBounds:this.options.accessBounds,beforeChange:(i,h,w,r)=>{
+        if(!this.before.has(i))this.before.set(i,[h,w,r,snapshotFloodCell(this.world,i)]);
+      }});
+      this.region=mergeBrushRegion(this.region,response?.bounds);
+    }
+    this.closed=true;
     const records=[];
     for(const [i,before] of this.before){const after=[this.world.height[i],this.world.water?.[i]??0,this.world.riverBase?.[i]??0];
       if(before.slice(0,3).some((v,k)=>v!==after[k]))records.push([i,...before.slice(0,3),...after,before[3],snapshotFloodCell(this.world,i)]);}
+    records.sort((a,b)=>a[0]-b[0]);
     this.result=records.length?{plane:'mortal',world:this.world,region:this.region,records,
       changes:records.map(([i,h])=>[i,h]),bytes:records.length*128,stats:{...this.stats,cells:records.length}}:null;
     return this.result;

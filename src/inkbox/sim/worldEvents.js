@@ -128,8 +128,27 @@ export class WorldEvents {
     entry.outcome = outcome;
     // 先写清结局和历史，再从活动列表移除；数组移除不是事件的终点。
     this.remember(entry);
-    if (entry.byPlayer) world.milestone(outcome, 'crisis');
-    else world.record(outcome, 'crisis');
+    if (entry.byPlayer) {
+      // The opening and outcome are phases of the same player-created crisis.
+      // Keep both in the short chronicle, but one evolving entry in milestones.
+      const legacyOpening = `事件 #${entry.id}：`;
+      const existing = world.milestones.findLast((row) => row.kind === 'crisis'
+        && (row.crisisEventId === entry.id
+          || (row.crisisEventId == null && row.day === entry.startedDay
+            && row.text.startsWith(legacyOpening))));
+      if (existing) {
+        world.record(outcome, 'crisis');
+        existing.crisisEventId = entry.id;
+        if (!existing.outcome) {
+          existing.text = `${existing.text} ${outcome}`;
+          existing.outcome = outcome;
+        }
+      }
+      else {
+        world.milestone(outcome, 'crisis');
+        world.milestones.at(-1).crisisEventId = entry.id;
+      }
+    } else world.record(outcome, 'crisis');
     this.activeCrises = this.activeCrises.filter((active) => active.id !== entry.id);
   }
 
@@ -428,6 +447,7 @@ export class WorldEvents {
     //    注意**不写大事记 ≠ 静默**——空落那一笔照旧进 chronicle（玩家翻编年史看得到），
     //    而且落笔时仍有即时提示。这条区分让「有后果 / 无后果」两种落笔能被两侧断言分开测。
     world.milestone(`事件 #${entry.id}：${text}`, 'crisis');
+    world.milestones.at(-1).crisisEventId = entry.id;
     this.syncState();
     return entry;
   }

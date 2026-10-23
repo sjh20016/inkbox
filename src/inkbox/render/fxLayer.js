@@ -38,6 +38,7 @@ const FX_TTL = Object.freeze({
   death: 0.9,
   sectfall: 1.0,
   breakthrough: 1.4,
+  power: 3.0,
 });
 
 /** runtime event type → fx kind（只有列出的类型会被演出）。 */
@@ -160,9 +161,11 @@ export function ingestRuntimeEvents(fx, events, world) {
     if (!Number.isFinite(event.x) || !Number.isFinite(event.y)) continue;  // 没坐标不画
 
     let kind = EVENT_TO_FX[event.type];
-    // 玩家落笔：只有陨石类工具才演「天降」，其余演一个轻的地面冲击环。
+    // Formal, successful powers and actual local water responses share one
+    // presentation path. Historical tool-impact events retain their old kind.
     if (event.type === 'tool-impact') {
-      kind = event.data && event.data.tool === 'meteor' ? 'meteor' : 'impact';
+      kind = event.data?.power === true || event.data?.tool === 'water-response'
+        ? 'power' : event.data?.tool === 'meteor' ? 'meteor' : 'impact';
     }
     if (!kind) continue;
 
@@ -170,7 +173,10 @@ export function ingestRuntimeEvents(fx, events, world) {
     if (kind === 'breakthrough' && (!event.data || !['success','failure'].includes(event.data.outcome)
       || typeof event.data.major !== 'boolean' || !Number.isSafeInteger(event.data.fromLevel)
       || !Number.isSafeInteger(event.data.toLevel))) continue;
-    const ttl = kind === 'combat' ? COMBAT_TTL[event.data.style]
+    const ttl = kind === 'power' ? ({ lightning: 2.5, meteor: 3.4, quake: 3.2,
+      flood: 3.8, 'water-response': 2.8, root: 3.3, forest: 3.4,
+      rain: 3.2, leyline: 3.7 }[event.data?.tool] ?? FX_TTL.power)
+      : kind === 'combat' ? COMBAT_TTL[event.data.style]
       : kind === 'breakthrough' ? event.data.major ? 2.4 : 1.1 : FX_TTL[kind] ?? 0.8;
     const seed = visualHash(event.type, event.day ?? 0, event.x, event.y, event.subjectId ?? 0);
     const item = {
@@ -243,6 +249,7 @@ export function drawFx(ctx, camera, world, fx, plane = 'mortal') {
       case 'death': drawImpactRing(ctx, camera, world, item, k, zoom, 0.32, 0.6); break;
       case 'riftcross': drawRiftCross(ctx, camera, world, item, k, zoom); break;
       case 'impact':
+      case 'power':
       default: drawImpactRing(ctx, camera, world, item, k, zoom, 0.42, 0.7); break;
     }
   }
