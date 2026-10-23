@@ -33,14 +33,16 @@ async function shot(name) {
 async function visiblePoint(selector) {
   return js(`const selector=${JSON.stringify(selector)};const e=[...document.querySelectorAll(selector)]
     .find(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&!e.hidden&&getComputedStyle(e).visibility!=='hidden'});
-    if(!e)throw Error('Missing visible control '+selector);const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};`);
+    if(!e)throw Error('Missing visible control '+selector);e.scrollIntoView({block:'center',inline:'center',behavior:'instant'});
+    await new Promise(requestAnimationFrame);const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,hit=document.elementFromPoint(x,y);
+    if(hit!==e&&!e.contains(hit))throw Error('Control is occluded '+selector+' by '+hit?.tagName);return {x,y};`);
 }
 async function click(selector) { const p=await visiblePoint(selector); await browser.click(p.x,p.y); }
 async function tool(group, id) {
   await click(`[data-r1-group="${group}"]`);
   await click(`[data-native-mode="${id}"]`);
   await click('#r1NativeArts .r1-arts-close');
-  check(`${id} stays in Three`, await js('return inkbox.render3d.active && inkbox.render3d.renderer.activePlane===\'mortal\';'));
+  check(`${id} is selected and stays in Three`, await js(`return inkbox.render3d.active&&inkbox.render3d.renderer.activePlane==='mortal'&&inkbox.render3d.mode===${JSON.stringify(id)}&&inkbox.toolId===${JSON.stringify(id)};`));
 }
 async function freshWorld(seed = 20261024) {
   await js(`inkbox.newWorld('medium',${seed});inkbox.setSpeed(0);return true;`);
@@ -66,6 +68,7 @@ async function visibleTerrain({minVeg=0,maxVeg=1,maxWater=.0015,nearVillage=fals
         if(document.elementFromPoint(px+rect.left,py+rect.top)!==a.canvas)continue;
         const h=r.pick(px,py);if(h?.plane!=='mortal'||h.kind!=='terrain')continue;
         const i=w.idx(h.x,h.y);if(w.height[i]>.93||w.water[i]>${maxWater}||w.veg[i]<${minVeg}||w.veg[i]>${maxVeg})continue;
+        ${nearVillage ? 'if(!w.villages.some(v=>v.hp>0&&Math.hypot(v.x-h.x,v.y-h.y)<12))continue;' : ''}
         selected={x:px+rect.left,y:py+rect.top,cell:[h.x,h.y],veg:w.veg[i],water:w.water[i],
           villageDistance:w.villages.length?Math.min(...w.villages.map(v=>Math.hypot(v.x-h.x,v.y-h.y))):null};break;
       }
@@ -104,7 +107,7 @@ async function diffAt(point) {
 }
 async function powerStats() { return js(`const r=inkbox.render3d.renderer,p=r.stages.get('mortal')?.fxProbe.power;
   return {active:p?.stats.active||0,drawCalls:p?.stats.drawCalls||0,instances:{...p?.stats.instances},
-    items:inkbox.stage?.snapshotPlane?.('mortal')?.items?.filter(i=>i.kind==='power').map(i=>({tool:i.data?.tool,age:i.age,ttl:i.ttl}))||[]};`); }
+    items:inkbox.stage?.snapshotPlane?.('mortal')?.items?.filter(i=>i.kind==='power').map(i=>({tool:i.data?.tool,phase:i.data?.phase,age:i.age,ttl:i.ttl}))||[]};`); }
 async function cast(group,id,point,{drag=false}={}) {
   await tool(group,id);
   const before=await snapshotAt(point);
@@ -156,6 +159,10 @@ async function sectionC() {
 }
 async function sectionD() {
   if(!report.steps.some(s=>s.section==='c'))await freshWorld();
+  if(await js('return inkbox.world.entities.length===0;')){
+    const point=await visibleTerrain();await tool('life','human');for(let i=0;i<3;i++)await browser.click(point.x,point.y);
+    await js('for(let day=0;day<180;day++)inkbox.advanceDays(1);inkbox.dirty=true;return true;');
+  }
   const start=await move();check('WASD moves before panels',start.distance>3,start);
   await click('#inkBusanziNext');
   check('Busanzi next shows actual advice',await js('return inkbox.busanziShowNext&& !document.getElementById("inkBusanziAdvice").hidden;'));
@@ -189,6 +196,19 @@ async function sectionD() {
   check('Ctrl+Z does not reverse submitted terrain/water',beforeUndo.height===afterUndo.height&&beforeUndo.water===afterUndo.water,
     {beforeUndo,afterUndo});
   await shot('d-no-undo');report.steps.push({section:'d',person,undoUI,beforeUndo,afterUndo});
+  const crisisPoint=await visibleTerrain({nearVillage:true});await tool('disaster','crisis');
+  const nextCrisisId=await js('return inkbox.life.events.nextEventId;');
+  await browser.click(crisisPoint.x,crisisPoint.y);await browser.click(crisisPoint.x,crisisPoint.y);
+  const crises=await js(`return inkbox.life.events.activeCrises.filter(e=>e.id>=${nextCrisisId}).map(e=>({id:e.id,villageId:e.villageId,startedDay:e.startedDay,durationDays:e.durationDays}));`);
+  const crisisDiagnostic=await js(`const a=inkbox.render3d,r=a.renderer,rect=a.canvas.getBoundingClientRect(),h=r.pick(${crisisPoint.x}-rect.left,${crisisPoint.y}-rect.top);return {next:inkbox.life.events.nextEventId,active:inkbox.life.events.activeCrises,history:inkbox.life.events.history.slice(-2),tool:inkbox.toolId,mode:a.mode,toast:inkbox.toast,pick:h&&{world:h.world,x:h.x,y:h.y,plane:h.plane,kind:h.kind},reason:a.editReason(h),progress:inkbox.world.mapProgress};`);
+  check('two player crisis clicks create independent real event identities',crises.length===2&&crises[0].id!==crises[1].id&&crises.every(e=>e.villageId>0),{crises,crisisPoint,diagnostic:crisisDiagnostic});
+  const activeRows=await js(`inkbox.refreshMilestones();const ids=${JSON.stringify(crises.map(e=>e.id))};return ids.map(id=>({id,rows:[...document.querySelectorAll('#inkMilestones .ink-log')].filter(e=>e.innerText.includes('事件 #'+id+'「')).length}));`);
+  check('each active crisis is shown once in the actual book',activeRows.every(e=>e.rows===1),activeRows);
+  await shot('d-crisis-active');
+  await js(`const due=Math.max(...${JSON.stringify(crises)}.map(e=>e.startedDay+e.durationDays));inkbox.advanceDays(Math.ceil(due-inkbox.world.day)+1);inkbox.refreshMilestones();inkbox.refreshChronicle();return true;`);
+  const resolvedRows=await js(`const ids=${JSON.stringify(crises.map(e=>e.id))},w=inkbox.world;return ids.map(id=>({id,active:inkbox.life.events.activeCrises.filter(e=>e.id===id).length,history:inkbox.life.events.history.filter(e=>e.id===id).map(e=>({status:e.status,outcome:e.outcome})),rows:w.milestones.filter(e=>e.crisisEventId===id).map(e=>({text:e.text,outcome:e.outcome})),chronicle:w.chronicle.filter(e=>e.kind==='crisis'&&e.text.startsWith('事件 #'+id+'：')).length}));`);
+  check('resolved crises keep one milestone with opening and outcome per real ID',resolvedRows.every(e=>e.active===0&&e.history.length===1&&e.rows.length===1&&e.rows[0].outcome&&e.rows[0].text.includes(e.rows[0].outcome)),resolvedRows);
+  await shot('d-crisis-resolved');report.steps.push({section:'d-crisis',crisisPoint,crises,activeRows,resolvedRows});
 }
 async function sectionA() {
   await freshWorld();
@@ -198,6 +218,24 @@ async function sectionA() {
     check(`direct ${plane} plane`,(await state()).plane===plane);
     await shot(`a-${plane}`);
   }
+  await click('[data-realm-plane="upper"]');
+  await click('[data-r1-group="nature"]');await click('[data-native-mode="forest"]');await click('#r1NativeArts .r1-arts-close');
+  const upperPoint=await js(`const a=inkbox.render3d,r=a.renderer,rect=a.canvas.getBoundingClientRect();
+    for(let n=0;n<8;n++)await new Promise(requestAnimationFrame);
+    window.__p0DeniedWorld=JSON.stringify((await import('./src/inkbox/io/save.js')).serializeWorld(inkbox.world));
+    for(let y=120;y<r.height-80;y+=24)for(let x=120;x<r.width-120;x+=24){if(document.elementFromPoint(x+rect.left,y+rect.top)!==a.canvas)continue;
+      const hit=r.pick(x,y);if(hit?.plane==='upper'&&hit.kind==='terrain')return {x:x+rect.left,y:y+rect.top};}throw Error('No visible upper terrain');`);
+  await browser.click(upperPoint.x,upperPoint.y);
+  const denied=await js(`const e=document.getElementById('inkHint'),r=e.getBoundingClientRect();return {text:e.textContent,visible:getComputedStyle(e).visibility!=='hidden'&&r.width>0&&r.height>0,
+    unchanged:window.__p0DeniedWorld===JSON.stringify((await import('./src/inkbox/io/save.js')).serializeWorld(inkbox.world)),active:inkbox.render3d.active,plane:inkbox.render3d.renderer.activePlane};`);
+  check('unsupported realm power is visibly rejected without World mutation',denied.visible&&/凡间|凡界/.test(denied.text)&&denied.unchanged&&denied.active&&denied.plane==='upper',denied);
+  await shot('a-visible-rejection');
+  await click('#inkBtnSave');if(await js('return !document.getElementById("inkConfirm").hidden;'))await click('#inkConfirmOk');
+  check('Three save result is visible to the player',await browser.waitFor('const e=document.getElementById("inkHint");return /已存档/.test(e.textContent)&&getComputedStyle(e).visibility!=="hidden"&&!document.getElementById("inkBtnSave").disabled;',{timeoutMs:15000}));
+  await shot('a-visible-save');
+  const feedbackEnded=await browser.waitFor('return !inkbox.render3d.readout.hidden&&getComputedStyle(document.getElementById("inkHint")).visibility==="hidden";',{timeoutMs:12000});
+  check('Three readout returns after the temporary feedback',feedbackEnded,await js('return {timer:inkbox.toastTimer,text:inkbox.toast,readoutHidden:inkbox.render3d.readout.hidden};'));
+  await click('[data-realm-plane="mortal"]');report.steps.push({section:'a-feedback',denied});
 }
 async function sectionB() {
   // Controlled fixture changes only initial terrain and source identity. All
@@ -254,30 +292,48 @@ async function sectionB() {
   check('flood creates real water',flood.water>dryWater,flood);
   await js('window.__p0WetWorld=inkbox.world;window.__p0WetLayer=inkbox.world.water.slice();window.__p0FloodDates=inkbox.world.nature.events.filter(e=>e.kind==="flood").map(e=>[e.id,e.dueDay]);return true;');
   await click('#inkBtnSave');if(await js('return !document.getElementById("inkConfirm").hidden;'))await click('#inkConfirmOk');
-  check('active flood is saved',await browser.waitFor('return /已存档/.test(document.body.innerText)',{timeoutMs:15000}));
+  check('active flood is saved',await browser.waitFor('return /已存档/.test(inkbox.toast)&&!document.getElementById("inkBtnSave").disabled',{timeoutMs:15000}));
+  const diskFlood=await js('const {loadFromStorage}=await import("./src/inkbox/io/save.js");const saved=await loadFromStorage(document.getElementById("inkSlotSelect").value||"auto");return {day:saved?.day,dates:saved?.nature.events.filter(e=>e.kind==="flood").map(e=>[e.id,e.dueDay])};');
+  check('active flood is present in persisted slot',diskFlood.day===flood.day&&JSON.stringify(diskFlood.dates)===JSON.stringify(await js('return window.__p0FloodDates;')),diskFlood);
   await click('#inkBtnLoad');if(await js('return !document.getElementById("inkConfirm").hidden;'))await click('#inkConfirmOk');
   check('active flood save is actually reloaded',await browser.waitFor('return inkbox.world!==window.__p0WetWorld',{timeoutMs:15000}));
   const wetLoad=await js('let error=0;for(let i=0;i<inkbox.world.size;i++)error=Math.max(error,Math.abs(inkbox.world.water[i]-window.__p0WetLayer[i]));return {error,dates:inkbox.world.nature.events.filter(e=>e.kind==="flood").map(e=>[e.id,e.dueDay]),expected:window.__p0FloodDates};');
   check('all saved water cells and true flood dates survive load',wetLoad.error<=1/65535+1e-7&&JSON.stringify(wetLoad.dates)===JSON.stringify(wetLoad.expected),wetLoad);
+  await js('window.__p0RendererWorld=inkbox.world;window.__p0RendererWater=inkbox.world.water.slice();return true;');
+  await click('[data-action="toggle"]');
+  check('Canvas uses the same loaded World',await js('return !inkbox.render3d.active&&inkbox.world===window.__p0RendererWorld&&inkbox.terrain.world===inkbox.world;'));
+  await js(`inkbox.camera.focusOn(${fixture.dry[0]},${fixture.dry[1]},{zoom:8,duration:.01});inkbox.dirty=true;return true;`);
+  await sleep(300);await shot('b-active-flood-canvas');
+  await click('#r1CanvasView .r1-jue');
+  check('Three reuses the same World without changing any water cell',await js('return inkbox.render3d.active&&inkbox.render3d.renderer.world===window.__p0RendererWorld&&inkbox.world.water.every((v,i)=>v===window.__p0RendererWater[i]);'));
   floodPoint=await pickCell(fixture.dry);
+  await shot('b-active-flood-three');
   await tool('water','drain');await browser.mouseMove(floodPoint.x,floodPoint.y);
   await browser.mouseDown(floodPoint.x,floodPoint.y);await sleep(130);await browser.mouseUp(floodPoint.x,floodPoint.y);
   const drained=await js(`const w=inkbox.world;return w.water[w.idx(${floodPoint.cell[0]},${floodPoint.cell[1]})];`);
   check('player drain removes part of active flood',drained<flood.water,{flood,drained});
   await shot('b-flood-player-drain');
-  await js('inkbox.advanceDays(31);return true;');await shot('b-flood-recede');
+  await js('inkbox.advanceDays(29);return true;');await shot('b-flood-hold-day29');
+  check('flood remains active before its true day 30 expiry',await js('return inkbox.world.day===29&&inkbox.world.nature.events.some(e=>e.kind==="flood"&&e.dueDay===30);'));
+  await js('inkbox.advanceDays(1);for(let n=0;n<3;n++)await new Promise(requestAnimationFrame);return true;');
+  const recedeFx=await powerStats();
+  check('day 30 expiry has a real timed Three recede presentation',recedeFx.active>0&&recedeFx.items.some(i=>i.tool==='water-response'&&i.phase==='recede'),recedeFx);
+  check('the true expired flood event is removed',await js('return inkbox.world.day===30&&!inkbox.world.nature.events.some(e=>e.kind==="flood");'));
+  await browser.mouseMove(width-25,12);await shot('b-flood-recede');await sleep(300);await shot('b-flood-recede-mid');
+  await sleep(1500);await shot('b-flood-receded');
   const receded=await js(`const w=inkbox.world;return {day:w.day,water:w.water[w.idx(${floodPoint.cell[0]},${floodPoint.cell[1]})]};`);
   check('expired flood does not revive player-drained water',receded.water<=drained+.0001,{flood,drained,receded});
-  report.steps.push({section:'b',fixture,connected,wet,dry,dryWater,slope,water,flood,drained,receded});
+  report.steps.push({section:'b',fixture,connected,wet,dry,dryWater,slope,water,flood,wetLoad,drained,receded,recedeFx});
   // Save/load through the visible product controls, then compare actual layer.
   await click('#inkBtnSave');if(await js('return !document.getElementById("inkConfirm").hidden;'))await click('#inkConfirmOk');
-  check('save completed',await browser.waitFor('return /已存档/.test(document.body.innerText)',{timeoutMs:15000}));
-  const prior=await js(`window.__p0PriorWorld=inkbox.world;const w=inkbox.world;
+  check('save completed',await browser.waitFor('return /已存档/.test(inkbox.toast)&&!document.getElementById("inkBtnSave").disabled',{timeoutMs:15000}));
+  const prior=await js(`window.__p0PriorWorld=inkbox.world;window.__p0RecededWater=inkbox.world.water.slice();const w=inkbox.world;
     return {day:w.day,water:w.water[w.idx(${floodPoint.cell[0]},${floodPoint.cell[1]})]};`);
   await click('#inkBtnLoad');if(await js('return !document.getElementById("inkConfirm").hidden;'))await click('#inkConfirmOk');
   check('load replaces world',await browser.waitFor('return inkbox.world!==window.__p0PriorWorld',{timeoutMs:15000}));
-  const loaded=await js(`const w=inkbox.world;return {day:w.day,water:w.water[w.idx(${floodPoint.cell[0]},${floodPoint.cell[1]})]};`);
-  check('water and day survive save/load',loaded.day===prior.day&&loaded.water===receded.water,{loaded,receded});
+  const loaded=await js(`const w=inkbox.world;let error=0;for(let i=0;i<w.size;i++)error=Math.max(error,Math.abs(w.water[i]-window.__p0RecededWater[i]));return {day:w.day,water:w.water[w.idx(${floodPoint.cell[0]},${floodPoint.cell[1]})],error,activeFloods:w.nature.events.filter(e=>e.kind==='flood').length};`);
+  // The official save format quantizes water to Uint16 at scale 1/65535.
+  check('all receded water cells and day survive save/load within official codec precision',loaded.day===prior.day&&loaded.error<=1/65535+1e-7&&loaded.activeFloods===0,{loaded,receded});
 }
 
 try {

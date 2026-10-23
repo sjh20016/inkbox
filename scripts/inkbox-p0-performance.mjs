@@ -45,6 +45,7 @@ function setupBody(c, fixtureDoc = null) {
   const expectedFixture = candidate ? fixtureDoc.fixture : null;
   return `
   const k=window.inkbox,r=k.render3d.renderer;
+  k.setSpeed(0);
   const {mulberry32}=await import('./src/inkbox/core/noise.js');
   const save=await import('./src/inkbox/io/save.js');
   const recipe=${JSON.stringify(c)};
@@ -84,9 +85,14 @@ function setupBody(c, fixtureDoc = null) {
     if(!restored||restored.w!==expected.mapSize[0]||restored.h!==expected.mapSize[1]||restored.seed!==expected.seed||restored.day!==expected.day)throw new Error('Baseline fixture dimensions/seed/day do not match its metadata');
     const stored=await save.saveToStorage(restored,'p0-performance-fixture');if(!stored.ok)throw new Error('Could not stage saved fixture: '+stored.error);
     const select=document.getElementById('inkSlotSelect');if(select&&!Array.from(select.options).some(o=>o.value==='p0-performance-fixture'))select.add(new Option('P0 performance fixture','p0-performance-fixture'));
-    if(select)select.value='p0-performance-fixture';document.getElementById('inkBtnLoad')?.click();
-    for(let i=0;i<180;i++){await new Promise(requestAnimationFrame);if(k.world.seed===restored.seed&&k.world.day===restored.day&&k.world.w===restored.w&&k.world.h===restored.h)break;}
-    if(k.world.seed!==restored.seed||k.world.day!==restored.day||k.world.w!==restored.w||k.world.h!==restored.h)throw new Error('Product saved-world load did not restore baseline fixture');
+    if(select){select.value='p0-performance-fixture';select.dispatchEvent(new Event('change',{bubbles:true}));}
+    const previousWorld=k.world;document.getElementById('inkBtnLoad')?.click();
+    // Loading a new-world fixture correctly goes through the product's discard
+    // guard. Confirm that existing dialog; never replace Sandbox.world here.
+    const confirmation=document.getElementById('inkConfirm');
+    if(confirmation&&!confirmation.hidden)document.getElementById('inkConfirmOk')?.click();
+    for(let i=0;i<180;i++){await new Promise(requestAnimationFrame);if(k.world!==previousWorld&&k.world.seed===restored.seed&&k.world.day===restored.day&&k.world.w===restored.w&&k.world.h===restored.h)break;}
+    if(k.world===previousWorld||k.world.seed!==restored.seed||k.world.day!==restored.day||k.world.w!==restored.w||k.world.h!==restored.h)throw new Error('Product saved-world load did not restore baseline fixture: '+JSON.stringify({sameWorld:k.world===previousWorld,actual:[k.world.seed,k.world.day,k.world.w,k.world.h],expected:[restored.seed,restored.day,restored.w,restored.h],slot:select?.value,disabled:document.getElementById('inkBtnLoad')?.disabled,toast:k.toast,confirmOpen:!document.getElementById('inkConfirm')?.hidden}));
   }else{
     await makeRecipeWorld();
     if(recipe.edit)editResponse=await applyEdit();

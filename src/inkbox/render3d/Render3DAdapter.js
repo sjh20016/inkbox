@@ -239,6 +239,17 @@ export class Render3DAdapter {
     return !!blockingInputLayer() || !!target?.isContentEditable || !!target?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]');
   }
   clearCameraKeys() { this.heldCameraKeys.clear(); }
+  syncFeedback() {
+    const hint = typeof document === 'undefined' ? null : document.getElementById?.('inkHint');
+    if (!hint) return;
+    const timer = this.sandbox.toastTimer;
+    const visible = this.active && Number.isFinite(timer) && timer > 0 && timer < 60;
+    // Keep the existing actionable toast, including its focus link, in Three.
+    // The permanent Canvas help string is replaced by the Three readout.
+    const visibility = visible ? '' : 'hidden';
+    if (hint.style.visibility !== visibility) hint.style.visibility = visibility;
+    if (this.readout.hidden !== visible) this.readout.hidden = visible;
+  }
   setTool(id) {
     if (!TOOL_BY_ID[id] && !['smooth', 'ridge', 'basin'].includes(id)) return false;
     if (this.mode === id) return true;
@@ -708,6 +719,7 @@ export class Render3DAdapter {
     this.renderer.update(dt);
     const hit = this.pointer ? this.hoverHit(this.pointer.x, this.pointer.y) : null;
     this.updatePowerTarget(hit);
+    this.syncFeedback();
     this.renderer.brush(this.mode === 'inspect' || this.editReason(hit) ? null : hit, this.radius);
     const editState=this.panel.querySelector('[data-edit-state]');
     if(editState&&this.mode!=='inspect')editState.textContent=this.editReason(hit)||
