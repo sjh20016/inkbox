@@ -48,8 +48,8 @@ export function settlementCondition(world, village) {
   if (activeCrises) reasons.push('灾祸未平');
   if (unsafe) reasons.push('村址不可居');
   if (!ruin && village.pop <= 0) reasons.push('没有居民');
-  if (!ruin && village.food < 12) reasons.push('存粮不足');
-  if (!ruin && !liveHouses && village.age > 90) reasons.push('无可用房屋');
+  if (!ruin && village.food < 10) reasons.push('存粮不足（自然恢复需至少 10）');
+  if (!ruin && !liveHouses && village.age > 90) reasons.push('无可用房屋，恢复较慢');
   const status = ruin ? 'ruins' : activeCrises || unsafe ? 'disaster'
     : village.hp < 25 || village.pop <= 0 ? 'declining'
       : village.hp < 80 || ruinedHouses > 0 ? 'recovering' : 'normal';

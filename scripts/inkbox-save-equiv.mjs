@@ -30,6 +30,8 @@
 import { readFileSync } from 'node:fs';
 
 import { WORLD_PRESETS } from '../src/inkbox/core/config.js';
+import { History, removeWater } from '../src/inkbox/sim/powers.js';
+import { readObserveEcho } from '../src/inkbox/sim/observeEcho.js';
 import { generateWorld } from '../src/inkbox/world/worldgen.js';
 import { Life } from '../src/inkbox/sim/life.js';
 import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
@@ -2801,6 +2803,27 @@ for (const key of OPTIONAL_WORLD_FIELDS) {
       && Object.hasOwn(optionalClone, key)
       && JSON.stringify(optionalWorld[key]) === JSON.stringify(optionalClone[key]));
   check(`旧世界没有新增 ${key} payload 键`, !Object.hasOwn(payloadJson, key));
+}
+
+section('E0 观世回声可选字段与撤销运行态边界');
+{
+  const echoWorld = generateWorld({ preset: WORLD_PRESETS.small, seed: SEED });
+  const history = new History();
+  echoWorld.water[echoWorld.idx(4, 4)] = 0.2;
+  history.begin({ toolId: 'drain', x: 4.5, y: 4.5, radius: 1 });
+  removeWater(echoWorld, 4.5, 4.5, 1, 0.08, history);
+  history.end('抽水');
+  const echoPayload = JSON.parse(JSON.stringify(serializeWorld(echoWorld)));
+  const echoClone = deserializeWorld(echoPayload);
+  const expectedEcho = readObserveEcho(echoWorld);
+  expectedEcho.marks.forEach((mark) => { mark.undoAvailable = false; });
+  check('observeEcho 显式写入，实施事实逐键还原，读档撤销栈不可用',
+    Object.hasOwn(echoPayload, 'observeEcho') && expectedEcho.marks.length === 1
+      && JSON.stringify(expectedEcho) === JSON.stringify(echoClone.observeEcho));
+  check('旧世界 payload 与读档 World 均不添加 observeEcho 键',
+    !Object.hasOwn(payloadJson, 'observeEcho') && !Object.hasOwn(clone, 'observeEcho'));
+  check('observeEcho payload 无可变引用泄漏', echoPayload.observeEcho !== echoWorld.observeEcho
+    && echoPayload.observeEcho.marks[0] !== echoWorld.observeEcho.marks[0]);
 }
 
 // ── 7. 继续演化：信息性输出，不作为失败判据 ────────────────

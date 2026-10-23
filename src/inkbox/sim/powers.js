@@ -12,6 +12,7 @@ import { setHeight, setWater } from '../world/terrainEdit.js';
 import { NATURE_DAYS, igniteCell, extinguishCell, setRecoveringOverlay, floodCells, cancelNatureEvent, snapshotNatureCell, restoreNatureCell, settleNature } from './nature.js';
 import { placeOf } from './sects.js';
 import { damageSettlement } from './settlementResilience.js';
+import { beginDrainEcho, commitDrainEcho, updateDrainUndo } from './observeEcho.js';
 
 // ── 撤销栈 ────────────────────────────────────────────────
 function historyCell(world, i) {
@@ -58,9 +59,13 @@ export class History {
     this.recordWorld = null;
     this.currentSettlements = null;
     this.lastUndoFailure = null;
+    this.echoMeta = null;
+    this.pendingEcho = null;
   }
 
-  begin() {
+  begin(meta = null) {
+    this.echoMeta = meta ? { toolId: meta.toolId, x: meta.x, y: meta.y, radius: meta.radius } : null;
+    this.pendingEcho = null;
     this.current = new Map();
     this.bounds = null;
     this.eventIds = [];
@@ -70,6 +75,7 @@ export class History {
 
   record(world, i) {
     if (!this.current || this.current.has(i)) return;
+    if (!this.recordWorld) this.pendingEcho = beginDrainEcho(world, this.echoMeta);
     this.recordWorld = world;
     this.current.set(i, historyCell(world, i));
     const x = i % world.w;
@@ -94,18 +100,28 @@ export class History {
     if (!this.current || this.current.size === 0) {
       this.current = null;
       this.bounds = null;
+      this.recordWorld = null;
+      this.currentSettlements = null;
+      this.echoMeta = null;
+      this.pendingEcho = null;
       return false;
     }
     const after = new Map([...this.current.keys()].map((i) => [i, historyCell(this.recordWorld, i)]));
     const settlementsAfter = new Map([...this.currentSettlements.keys()].map((id) =>
       [id, historySettlement(this.recordWorld.villageById(id))]));
-    this.stack.push({ changes: this.current, after, label, bounds: this.bounds,
+    const observeMarkId = commitDrainEcho(this.recordWorld, this.pendingEcho, this.current, after);
+    this.stack.push({ observeMarkId, echoWorld: observeMarkId ? this.recordWorld : null, changes: this.current, after, label, bounds: this.bounds,
       eventIds: this.eventIds, settlementsBefore: this.currentSettlements, settlementsAfter });
-    if (this.stack.length > this.limit) this.stack.shift();
+    if (this.stack.length > this.limit) {
+      const dropped = this.stack.shift();
+      if (dropped.echoWorld) updateDrainUndo(dropped.echoWorld, dropped.observeMarkId, null);
+    }
     this.current = null;
     this.bounds = null;
     this.recordWorld = null;
     this.currentSettlements = null;
+    this.echoMeta = null;
+    this.pendingEcho = null;
     return true;
   }
 
@@ -114,6 +130,8 @@ export class History {
     this.bounds = null;
     this.recordWorld = null;
     this.currentSettlements = null;
+    this.echoMeta = null;
+    this.pendingEcho = null;
   }
 
   undo(world) {
@@ -124,6 +142,7 @@ export class History {
     // recorded cell. Refuse the whole undo instead of silently deleting it.
     if (entry.after && [...entry.after].some(([i, after]) => JSON.stringify(historyCell(world, i)) !== JSON.stringify(after))) {
       this.lastUndoFailure = '相关地块已有后续变化，无法安全撤销';
+      updateDrainUndo(world, entry.observeMarkId, 'undo-refused', this.lastUndoFailure);
       return null;
     }
     if (entry.settlementsAfter && [...entry.settlementsAfter].some(([id, after]) => {
@@ -131,6 +150,7 @@ export class History {
       return !village || JSON.stringify(historySettlement(village)) !== JSON.stringify(after);
     })) {
       this.lastUndoFailure = '聚落已有后续变化，无法安全撤销';
+      updateDrainUndo(world, entry.observeMarkId, 'undo-refused', this.lastUndoFailure);
       return null;
     }
     this.stack.pop();
@@ -152,14 +172,21 @@ export class History {
     const b = entry.bounds;
     recomputeRect(world, b.x0, b.y0, b.x1, b.y1);
     world.touch();
+    updateDrainUndo(world, entry.observeMarkId, 'undone');
     return entry.label;
   }
 
   clear() {
+    for (const entry of this.stack) {
+      if (entry.echoWorld) updateDrainUndo(entry.echoWorld, entry.observeMarkId, null);
+    }
     this.stack.length = 0;
     this.current = null;
     this.recordWorld = null;
     this.currentSettlements = null;
+    this.bounds = null;
+    this.echoMeta = null;
+    this.pendingEcho = null;
   }
 }
 

@@ -7,6 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:e0": "node scripts/inkbox-e0-observe-echo.mjs && node scripts/inkbox-e0-three.mjs",
     "test:resilience": "node scripts/inkbox-local-resilience.mjs",
     "test:s0": "node scripts/inkbox-s0-nature.mjs && node scripts/inkbox-s0-atmosphere.mjs && node scripts/inkbox-s0-flora.mjs",
     "test:s0:browser": "node scripts/inkbox-s0-browser.mjs",

@@ -106,6 +106,7 @@ import { getRealmViewState } from './ui/realmViewState.js';
 // 字符串行，不暴露任何改状态的接口（「D8 仍然是观察」是结构性的，见其头注释）。
 import { pickRealmSubject, realmInspectRows, resolvePlaneSubject, planeSubjectInspectRows } from './ui/realmInspector.js';
 import { settlementRuinMarkerId, visibleSettlementRuins } from './world/settlementIdentity.js';
+import { createObserveEchoPanel } from './ui/observeEchoPanel.js';
 // ⚠️ 跨界**追迹**（D8-G）的 `traceTargetOf` 随「记挂」点行导航搬进
 //    `ui/railPanels.js`；`crossRealmChain` 在搬迁之前就已无人调用，一并清掉。
 // 视界的**绘制层**（D8-B 从本文件拔出去）：裁剪 / 贴另一界地形 / 画人与宗门 / 边框。
@@ -227,7 +228,7 @@ class Sandbox {
     this.presetKey = 'medium';
     this.seed = 20260914;
     this.speedIndex = 2;
-    this.toolId = 'raise';
+    this.toolId = 'inspect';
     this.brushIndex = 3;
     this.showGrid = false;
 
@@ -365,6 +366,7 @@ class Sandbox {
     this.qol = createQol(this);
     this.combatObservation = createSandboxCombatObservation(this, $('inkCombatObserver'));
     this.environmentObservation = createSandboxEnvironmentObservation(this, $('inkEnvironmentObserver'));
+    this.observeEcho = createObserveEchoPanel(this);
     this.buildToolPanel();
     this.bindEvents();
     this.setupSectionToggles();
@@ -624,12 +626,13 @@ class Sandbox {
    */
   undo() {
     const label = this.history.undo(this.world);
+    this.observeEcho?.refresh();
     if (!label) {
       this.notify(this.history.lastUndoFailure || '没有可撤销的操作', 2200);
       this.qol.syncUndoState();
       return false;
     }
-    this.notify(`已撤销「${label}」`);
+    this.notify(`已撤销「${label}」${['陨石', '雷霆'].includes(label) ? '记录中的地表；生灵伤亡不能撤销。' : ''}`);
     this.dirty = true;
     this.qol.markDirty('undo');
     this.qol.syncUndoState();
@@ -656,7 +659,7 @@ class Sandbox {
     const list = $('inkTools');
     groups.innerHTML = '';
     list.innerHTML = '';
-    let activeGroup = TOOL_GROUPS[0].key;
+    let activeGroup = TOOL_BY_ID[this.toolId]?.group || TOOL_GROUPS[0].key;
 
     const renderList = (groupKey) => {
       list.innerHTML = '';
@@ -808,7 +811,7 @@ class Sandbox {
         if (!this.g1.inspectCanvas(this.pointer.x, this.pointer.y)) this.inspectAt(this.hoverTile.x, this.hoverTile.y);
         return;
       }
-      this.history.begin();
+      this.history.begin(tool.id === 'drain' ? { toolId: tool.id, x: this.hoverTile.x, y: this.hoverTile.y, radius: this.brushRadius } : undefined);
       this.clickSaid = '';
       this.lastInterventionOutcome = null;
       this.strokeIntervention = CAUSAL_TOOL_IDS.includes(tool.id)
@@ -903,8 +906,10 @@ class Sandbox {
           //    永远看不到自己刚才把世界改成了什么样。
           const said = this.clickSaid;
           const undoNote = this.lastInterventionOutcome?.status === 'failed'
-            ? '' : '可 Ctrl+Z 撤销。';
+            ? '' : ['meteor', 'lightning'].includes(this.tool.id)
+              ? '可 Ctrl+Z 尝试回退地表；生灵伤亡不能撤销。' : '可 Ctrl+Z 尝试撤销，后续变化可能阻止回退。';
           this.notify(said ? `${said}${undoNote}` : `${label} · 已记录，可 Ctrl+Z 撤销`);
+          this.observeEcho?.refresh();
         }
       }
       this.strokeIntervention = null;
@@ -1037,37 +1042,50 @@ class Sandbox {
     //    而按钮本身早该拦住（Q39 那句注释说的就是这个）。
     const slotSelect = $('inkSlotSelect');
     if (slotSelect) slotSelect.addEventListener('change', () => this.refreshSlots());
-    $('inkBtnSave').addEventListener('click', () => this.qol.runOnce('inkBtnSave', async () => {
+    $('inkBtnSave').addEventListener('click', () => {
       const slot = $('inkSlotSelect').value || 'auto';
-      const result = await saveToStorage(this.world, slot, { name: slot });
-      if (result.ok) {
-        // Q24：往**侧索引**里记一笔「这一格现在是仙历几年 / 什么种子」。
-        // 它不进正式存档、不改 `save.js` 的 schema——只是槽位旁边那一行小字。
-        this.qol.noteSlotSaved(slot, this.world);
-        // 报的是**落盘**体积（压缩后）。压缩比必须一起给出来，否则
-        // 「同一个世界，存档怎么突然只剩三分之一」会被当成丢了数据。
-        const ratio = result.bytes > 0 ? (result.rawBytes / result.bytes).toFixed(1) : '1.0';
-        let msg = `已存档到「${this.qol.slotLabel(slot)}」· ${(result.bytes / 1024).toFixed(0)} KB`
-          + (result.codec === 'gzip'
-            ? `（压缩 ${ratio}×）`
-            : `（明文·${plainSaveTag(result.fallbackReason)}）`);
-        // Q25：容量预警。用的是**已落盘的真实码元数**（`listSlots` 的 `bytes`
-        // 就是 `encoded.length`），不是估算——估出来的数在「快满了」这一刻
-        // 恰恰最不准，而这一刻正是它唯一有用的时候。
-        const used = listSlots().reduce((n, s) => n + (s.bytes || 0), 0);
-        const warn = this.qol.quotaWarning(used, 0);
-        if (warn) msg += ` · ${warn}`;
-        this.notify(msg, warn ? 8000 : 2600);
-        // 存档给了玩家一份可恢复的副本 ⇒ 未保存标志清掉（Q21）。
-        this.qol.markPersisted('save');
-      } else {
-        // Q22：失败必须说人话。「浏览器空间不足」是这里最常见的一条，
-        // 而 `QuotaExceededError` 的原文在各浏览器里长得都不一样（还可能是英文）。
-        this.notify(`存档失败 · ${this.qol.describeSaveError(result.error)}`, 8000);
-      }
-      this.refreshSlots();
-      this.qol.syncUndoState();
-    }));
+      const requestedWorld = this.world;
+      const persist = () => {
+        if (this.world !== requestedWorld) { this.notify('世界已切换，请重新选择存档槽。', 3000); return; }
+        return this.qol.runOnce('inkBtnSave', async () => {
+          const savedIdentity = { seed: requestedWorld.seed, day: requestedWorld.day };
+          const result = await saveToStorage(requestedWorld, slot, { name: slot });
+          if (result.ok) {
+            // Q24：往**侧索引**里记一笔「这一格现在是仙历几年 / 什么种子」。
+            // 它不进正式存档、不改 `save.js` 的 schema——只是槽位旁边那一行小字。
+            this.qol.noteSlotSaved(slot, savedIdentity);
+            // 报的是**落盘**体积（压缩后）。压缩比必须一起给出来，否则
+            // 「同一个世界，存档怎么突然只剩三分之一」会被当成丢了数据。
+            const ratio = result.bytes > 0 ? (result.rawBytes / result.bytes).toFixed(1) : '1.0';
+            let msg = `已存档到「${this.qol.slotLabel(slot)}」· ${(result.bytes / 1024).toFixed(0)} KB`
+              + (result.codec === 'gzip'
+                ? `（压缩 ${ratio}×）`
+                : `（明文·${plainSaveTag(result.fallbackReason)}）`);
+            // Q25：容量预警。用的是**已落盘的真实码元数**（`listSlots` 的 `bytes`
+            // 就是 `encoded.length`），不是估算——估出来的数在「快满了」这一刻
+            // 恰恰最不准，而这一刻正是它唯一有用的时候。
+            const used = listSlots().reduce((n, s) => n + (s.bytes || 0), 0);
+            const warn = this.qol.quotaWarning(used, 0);
+            if (warn) msg += ` · ${warn}`;
+            this.notify(msg, warn ? 8000 : 2600);
+            // 存档给了玩家一份可恢复的副本 ⇒ 未保存标志清掉（Q21）。
+            if (this.world === requestedWorld) this.qol.markPersisted('save');
+          } else {
+            // Q22：失败必须说人话。「浏览器空间不足」是这里最常见的一条，
+            // 而 `QuotaExceededError` 的原文在各浏览器里长得都不一样（还可能是英文）。
+            this.notify(`存档失败 · ${this.qol.describeSaveError(result.error)}`, 8000);
+          }
+          this.refreshSlots();
+          this.qol.syncUndoState();
+        });
+      };
+      if (listSlots().some(saved => saved.slot === slot && saved.bytes > 0)) {
+        const prior = this.qol.slotMeta()[slot];
+        const identity = prior ? `种子 ${Number.isFinite(prior.seed) ? prior.seed : '未知'} · ${Number.isFinite(prior.day) ? `仙历 ${Math.floor(prior.day / 360) + 1} 年` : '年代未知'}` : '身份详录未知的旧存档';
+        this.qol.confirm({ text: `「${this.qol.slotLabel(slot)}」已有${identity}，要用当前世界覆盖吗？`,
+          okLabel: '覆盖此槽', cancelLabel: '保留旧档', onOk: persist });
+      } else void persist();
+    });
     $('inkBtnLoad').addEventListener('click', () => {
       // Q21：读档会丢掉当前世界 ⇒ 没保存过就先问一句。
       this.qol.guardDiscard('当前世界有尚未保存的变化，仍要读档覆盖吗？', () => {
@@ -1385,7 +1403,9 @@ class Sandbox {
     //    分桶只为可读：`terrain` / `intervention` 都落在 `DIRTY_EVENTS` 里，
     //    置的同样是「脏」这一个事实。
     this.qol.markDirty(CAUSAL_TOOL_IDS.includes(tool.id) ? 'intervention' : 'terrain');
-    this.rebuildVillageCache();
+    // Removing water cannot itself damage this or a distant wet settlement.
+    // Flood/unsafe-site consequences still resolve through the formal Life clock.
+    if (tool.id !== 'drain') this.rebuildVillageCache();
 
     // 卜算子的反应只在「按下的那一下」触发，拖拽重复的那几十次不算。
     // 否则按住刷子拖两秒，他就会跟你熟得像认识了十年。
@@ -1670,7 +1690,7 @@ class Sandbox {
     const settlement = ['settlement', 'settlement-ruin', 'house'].includes(picked?.kind);
     this.settlementInspection = settlement ? { world, ref: { ...ref } } : null;
     panel.classList.toggle('settlement-card', settlement);
-    const signature = settlement ? JSON.stringify([planeId, ref, card]) : null;
+    const signature = settlement ? JSON.stringify([planeId, ref, card, this.observeEcho?.focusId()]) : null;
     if (signature && panel.classList.contains('on') && this.settlementInspectionSignature === signature) return picked;
     this.settlementInspectionSignature = signature;
     const scrollTop = panel.scrollTop;
@@ -1691,6 +1711,7 @@ class Sandbox {
       + (card?.factionId != null ? `<button class="inspect-link" data-inspect-faction="${text(card.factionId)}">查看关联宗门</button>` : '')
       + (card?.predecessors || []).map(ruin => `<button class="inspect-link" data-inspect-ruin="${text(ruin.id)}">旧址 · ${text(ruin.name)}</button>`).join('');
     panel.classList.add('on');
+    if (card?.settlementId != null) this.observeEcho?.appendCardActions(panel, card.settlementId);
     panel.scrollTop = scrollTop;
     for (const button of panel.querySelectorAll('[data-inspect-faction]')) button.addEventListener('click', () => {
       const faction = this.world.factions.find(item => String(item.id) === button.dataset.inspectFaction);
@@ -1981,6 +2002,7 @@ class Sandbox {
 
     this.update(dt);
     this.render(now);
+    this.observeEcho?.project();
     requestAnimationFrame((ts) => this.frame(ts));
   }
 
@@ -2328,6 +2350,7 @@ class Sandbox {
   updateHud() {
     const world = this.world;
     if (!world) return;
+    this.observeEcho?.refresh(false);
     const inspection = this.settlementInspection, inspectPanel = $('inkInspect');
     if (inspection) {
       if (inspection.world !== world) {

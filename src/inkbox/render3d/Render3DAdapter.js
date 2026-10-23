@@ -59,6 +59,7 @@ export class Render3DAdapter {
   constructor(sandbox) {
     this.sandbox = sandbox; this.active = true; this.mode = 'inspect'; this.radius = 6; this.strength = 0.035;
     this.heldCameraKeys = new Set(); this.hoverCache = null;
+    this.editOrder = Math.max(0, ...(sandbox.history?.stack || []).map(entry => entry.adapterOrder || 0)); this.drainStroke = null;
     this.hoverStats = { raycasts: 0, cacheHits: 0, invalidations: 0, lastReason: 'initial',
       staticRaycasts: 0, staticCacheHits: 0, dynamicQueries: 0 };
     // M2-B B2（§54）：垂直表现模式的**调试开关**。`?boundary=strata` 让视觉证据脚本
@@ -97,7 +98,7 @@ export class Render3DAdapter {
     });
     this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
     Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
-    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="burn">焚林</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="ridge">山脊</option><option value="basin">盆地</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"><output data-radius>6</output></label><label>强度 <input aria-label="笔刷强度" type="range" min="0.005" max="0.12" step="0.005" value="0.035" style="width:65px"><output data-strength>0.035</output></label><button data-action="undo">撤销雕刻</button><button data-action="redo">重做雕刻</button><span data-edit-state></span><button data-action="fit">全图</button><button data-action="scenic" title="推荐视角：远 / 中 / 近循环（R）">观山</button><label title="纯装饰景观：亭塔桥舟 / 悬殿天门 / 断柱碑林魂灯；不可交互"><input type="checkbox" data-scenery checked> 画中景</label><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><span aria-label="相机快捷键">WASD 平移 · Shift 加速 · Q/E 旋转 · 中键旋转 · 滚轮缩放 · F 全图 · R 观山</span><details><summary>操作 / 性能</summary><div>左键检视 / 雕刻；Ctrl+Z 撤销 / Ctrl+Shift+Z 重做</div><div>撤销/重做仅限当前 3D 会话；创建、加载世界或切回 Canvas 会清除。</div><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
+    this.panel.innerHTML = `<b>山河沙盘 · M1</b><select aria-label="沙盘工具"><option value="inspect">检视</option><option value="burn">焚林</option><option value="drain">抽水</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="smooth">平滑</option><option value="ridge">山脊</option><option value="basin">盆地</option><option value="viewUpper">上界视界</option><option value="viewNether">幽冥视界</option></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="24" value="6" style="width:65px"><output data-radius>6</output></label><label>强度 <input aria-label="笔刷强度" type="range" min="0.005" max="0.12" step="0.005" value="0.035" style="width:65px"><output data-strength>0.035</output></label><button data-action="undo">撤销雕刻</button><button data-action="redo">重做雕刻</button><span data-edit-state></span><button data-action="fit">全图</button><button data-action="scenic" title="推荐视角：远 / 中 / 近循环（R）">观山</button><label title="纯装饰景观：亭塔桥舟 / 悬殿天门 / 断柱碑林魂灯；不可交互"><input type="checkbox" data-scenery checked> 画中景</label><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><span aria-label="相机快捷键">WASD 平移 · Shift 加速 · Q/E 旋转 · 中键旋转 · 滚轮缩放 · F 全图 · R 观山</span><details><summary>操作 / 性能</summary><div>左键检视 / 雕刻；Ctrl+Z 撤销 / Ctrl+Shift+Z 重做</div><div>雕刻撤销/重做仅限当前 3D 会话；抽水与 Canvas 共用撤销，读档后不可撤销。</div><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
     stage.append(this.panel);
     this.readout = document.createElement('div'); this.readout.id = 'inkRender3DReadout';
     Object.assign(this.readout.style, { position: 'absolute', bottom: '12px', left: '12px', zIndex: '3', padding: '6px 10px', background: '#eee5d3eb', borderRadius: '4px', fontSize: '12px', pointerEvents: 'none' });
@@ -112,7 +113,7 @@ export class Render3DAdapter {
       // M2-B B3（§48）：视界是**正式工具**，与 Canvas 工具表共用同一个 toolId ——
       // 目标位面、门控、V7 语义全部由 `viewPlaneForTool` 一处决定。
       if (isViewTool(next)) this.sandbox.selectTool(next);
-      if (next === 'burn' || next === 'inspect') this.sandbox.selectTool(next);
+      if (next === 'burn' || next === 'inspect' || next === 'drain') this.sandbox.selectTool(next);
     });
     const sceneryToggle = this.panel.querySelector('[data-scenery]');
     sceneryToggle.checked = this.renderer.sceneryEnabled !== false;
@@ -170,6 +171,13 @@ export class Render3DAdapter {
       // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
       this.renderer.setSelection(hit.x, hit.y, hit.plane);
       if (this.mode === 'burn') { this.burnAt(hit); return; }
+      if (this.mode === 'drain') {
+        if (!this.canSculpt(hit)) { this.sandbox.notify(this.editReason(hit), 2400); return; }
+        this.canvas.setPointerCapture(e.pointerId);
+        this.drainStroke = { world: this.sandbox.world, radius: this.radius, points: [] };
+        this.sampleDrainStroke(e);
+        return;
+      }
       if (this.mode === 'inspect') {
         this.inspectPicked(hit);
         return;
@@ -183,6 +191,7 @@ export class Render3DAdapter {
     this.listen(this.canvas, 'pointermove', e => {
       this.pointer = { x: e.clientX, y: e.clientY };
       if (this.realmDraw) { this.sampleRealmDraw(e); return; }
+      if (this.drainStroke) { this.sampleDrainStroke(e); return; }
       if (!this.stroke) return;
       const hit = this.hit(e);
       if (!this.canSculpt(hit)) { this.stroke.breakPath(); return; }
@@ -191,7 +200,7 @@ export class Render3DAdapter {
     // ⚠️ 只有 pointerup 才**提交**；pointercancel / lostpointercapture 一律**取消**
     //    （拖动被打断不该开出一扇玩家没画完的窗）。
     this.listen(this.canvas, 'pointerup', e => { if(this.stroke){const hit=this.hit(e);if(this.canSculpt(hit))this.stroke.sample(hit.world);}});
-    this.listen(this.canvas, 'pointerup', e => { this.commitRealmDraw(e); this.endStroke(); });
+    this.listen(this.canvas, 'pointerup', e => { this.commitDrainStroke(e); this.commitRealmDraw(e); this.endStroke(); });
     for (const event of ['pointercancel', 'lostpointercapture']) this.listen(this.canvas, event, () => this.endStroke());
     this.listen(this.canvas, 'pointerleave', () => { this.pointer = null; this.renderer.brush(null); });
     this.listen(window, 'blur', () => { this.endStroke(); this.pointer = null; this.clearCameraKeys(); this.invalidateHover('blur'); });
@@ -327,6 +336,23 @@ export class Render3DAdapter {
     this.renderer.focusOn(x, y, options, 'mortal');
   }
   resize() { const r = this.sandbox.canvas.parentElement.getBoundingClientRect(); this.renderer.resize(Math.max(1, r.width), Math.max(1, r.height)); }
+  /** At most eight UI badges use this projection; no mesh, GPU pass or World write. */
+  projectSettlementAnchor(place) {
+    const host = this.renderer, world = this.sandbox.world, stage = host.stages.get('mortal');
+    if (!this.active || host.world !== world || host.activePlane !== 'mortal' || !stage?.visible
+      || !place || !Number.isFinite(place.x) || !Number.isFinite(place.y)
+      || !canAccess(world, place.x, place.y)) return { x: 0, y: 0, visible: false };
+    const view = this.sandbox.getRealmViewState();
+    if (view.open && view.region?.contains(place.x + .5, place.y + .5)) return { x: 0, y: 0, visible: false };
+    const position = host.coordinates.worldToRender(place.x, place.y, stage.elevation.at(place.x, place.y) + 1.8);
+    const camera = host.cameraRig.camera;
+    const point = this.observationPoint || (this.observationPoint = camera.position.clone());
+    point.set(position.x, position.y, position.z).project(camera);
+    const rect = this.canvas.getBoundingClientRect(), parent = this.canvas.parentElement.getBoundingClientRect();
+    return { x: (point.x + 1) * rect.width / 2 + rect.left - parent.left,
+      y: (1 - point.y) * rect.height / 2 + rect.top - parent.top,
+      visible: point.z >= -1 && point.z <= 1 && Math.abs(point.x) < 1 && Math.abs(point.y) < 1 };
+  }
   setActive(active) {
     this.endStroke(); if(!active)this.clearCameraKeys(); this.invalidateHover(active ? '3d-enter' : '3d-exit'); if(this.active&&!active)this.clearHistory('切回 Canvas 已清除沙盘撤销会话');this.active = active; this.lastNow = null;
     this.canvas.hidden = !active; this.readout.hidden = !active;
@@ -386,9 +412,46 @@ export class Render3DAdapter {
     sandbox.history.begin();
     sandbox.applyTool(true, { point: { x: Math.round(hit.x), y: Math.round(hit.y) }, radius: this.radius });
     const changed = sandbox.history.end('焚林');
+    if (changed) {
+      sandbox.history.stack.at(-1).adapterOrder = ++this.editOrder;
+      this.redoStack = [];
+    }
     sandbox.qol.syncUndoState();
     if (changed) sandbox.notify('焚林已落笔 · 火势与灾迹可用检视观察。', 2600);
     return !!changed;
+  }
+  sampleDrainStroke(event) {
+    const stroke = this.drainStroke, hit = this.hit(event);
+    if (!stroke || !hit || !this.canSculpt(hit)) return;
+    const point = { x: Math.round(hit.x), y: Math.round(hit.y) }, last = stroke.points.at(-1);
+    if ((!last || last.x !== point.x || last.y !== point.y) && stroke.points.length < 128) stroke.points.push(point);
+  }
+  /** Apply the existing water power once per sampled cell, commit one gesture. */
+  commitDrainStroke(event) {
+    if (!this.drainStroke) return false;
+    this.sampleDrainStroke(event);
+    const stroke = this.drainStroke; this.drainStroke = null;
+    const sandbox = this.sandbox, world = sandbox.world;
+    if (!this.active || this.mode !== 'drain' || stroke.world !== world || this.renderer.world !== world
+      || !stroke.points.length || stroke.points.some(point => !this.canSculpt({ plane: 'mortal', world: point }))) return false;
+    const first = stroke.points[0];
+    sandbox.selectTool('drain');
+    sandbox.history.begin({ toolId: 'drain', ...first, radius: stroke.radius });
+    for (let i = 0; i < stroke.points.length; i++) sandbox.applyTool(i === 0, { point: stroke.points[i], radius: stroke.radius });
+    const changed = sandbox.history.end('抽水'), entry = changed && sandbox.history.stack.at(-1);
+    if (entry) {
+      entry.threeDrain = true; entry.adapterOrder = ++this.editOrder;
+      this.redoStack = [];
+      sandbox.notify(entry.observeMarkId != null ? '抽水已落笔 · 直接变化已入回声，可撤销。' : '此处积水没有实际减少，未登记笔录。', 2800);
+    } else sandbox.notify('此处积水没有实际减少，未登记笔录。', 2400);
+    sandbox.observeEcho?.refresh?.();
+    sandbox.qol.syncUndoState(); this.syncHistoryState();
+    return !!entry;
+  }
+  latestDrainUndo() {
+    const entry = this.sandbox?.history?.stack?.at(-1);
+    const terrain = this.undoStack?.at(-1);
+    return entry && (entry.adapterOrder || 0) > (terrain ? terrain.adapterOrder || 0 : -Infinity) ? entry : null;
   }
   stamp(point, plane) {
     if(plane!=='mortal'||!this.stroke||this.stroke.plane!=='mortal'||this.stroke.world!==this.sandbox.world||!this.canSculpt({plane,world:point}))return;
@@ -411,18 +474,21 @@ export class Render3DAdapter {
     this.historyBytes=[...(this.undoStack||[]),...(this.redoStack||[])].reduce((sum,entry)=>sum+(entry.bytes||entry.changes.length*32),0);
     const panel=this.panel;if(!panel)return;
     const undo=panel.querySelector('[data-action="undo"]'),redo=panel.querySelector('[data-action="redo"]');
-    if(undo)undo.disabled=!this.active||!this.undoStack?.length;if(redo)redo.disabled=!this.active||!this.redoStack?.length;
+    const water = this.latestDrainUndo();
+    if(undo){undo.disabled=!this.active||(!this.undoStack?.length&&!water);undo.textContent=water?`撤销${water.label || '改动'}`:'撤销雕刻';}
+    if(redo)redo.disabled=!this.active||!this.redoStack?.length;
   }
   clearHistory(message){
     this.stroke=null;this.undoStack=[];this.redoStack=[];this.historyBytes=0;this.historyNotice=message||null;this.syncHistoryState();
     if(message&&this.panel?.querySelector('[data-edit-state]'))this.panel.querySelector('[data-edit-state]').textContent=message;
   }
   endStroke() {
+    this.drainStroke = null;
     this.cancelRealmDraw();
     if(this.stroke?.world===this.sandbox.world){
       const entry=typeof this.stroke.finish==='function'?this.stroke.finish():this.stroke.changed
         ?{plane:this.stroke.plane,world:this.stroke.world,changes:[...this.stroke.before],bytes:this.stroke.before.size*32}:null;
-      if(entry){this.applyTerrainDirty(entry.region);this.undoStack.push(entry);this.redoStack=[];
+      if(entry){entry.adapterOrder=++this.editOrder;this.applyTerrainDirty(entry.region);this.undoStack.push(entry);this.redoStack=[];
         this.historyBytes=(this.historyBytes||0)+entry.bytes;
         while(this.undoStack.length>(this.historyLimit||12)||this.historyBytes>(this.historyByteLimit||8*1024*1024)){
           const old=this.undoStack.shift();this.historyBytes-=old.bytes||old.changes.length*32;
@@ -500,6 +566,13 @@ export class Render3DAdapter {
   undo() {
     this.endStroke();
     if (!this.canSculpt({ plane: this.renderer.activePlane })) return false;
+    const waterEntry = this.latestDrainUndo();
+    if (waterEntry) {
+      const changed = this.sandbox.undo();
+      if (changed) { this.renderer.markTerrainDirty(waterEntry.bounds); this.redoStack = []; }
+      this.sandbox.observeEcho?.refresh?.(); this.syncHistoryState();
+      return changed;
+    }
     const entry=this.undoStack.pop();
     if(!entry)return false;
     if(entry.plane!=='mortal'||entry.world!==this.sandbox.world){this.clearHistory('创建或加载世界后不能撤销旧会话');return false;}
@@ -538,7 +611,7 @@ export class Render3DAdapter {
     const hit = this.pointer ? this.hoverHit(this.pointer.x, this.pointer.y) : null;
     this.renderer.brush(this.mode === 'inspect' || !this.canSculpt(hit) ? null : hit, this.radius);
     const editState=this.panel.querySelector('[data-edit-state]');
-    if(editState&&this.mode!=='inspect')editState.textContent=this.editReason(hit)||this.historyNotice||'拖动塑造 · 本会话支持撤销/重做';
+    if(editState&&this.mode!=='inspect')editState.textContent=this.editReason(hit)||this.historyNotice||(this.mode==='drain'?'拖动选取 · 松手抽水，Ctrl+Z 撤销；水退后仍按真实条件恢复':'拖动塑造 · 本会话支持撤销/重做');
     this.syncHistoryState();
     const metrics = this.renderer.render();
     const cell = hit || this.selectedCell;

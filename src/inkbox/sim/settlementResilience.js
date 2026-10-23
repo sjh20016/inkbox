@@ -130,6 +130,8 @@ export function archiveSettlement(world, village, reason) {
     plane: world.plane || 'mortal', foundedDay: village.foundedDay ?? null,
     level: village.level || 1, destroyedDay: world.day, reason,
     ruinedHouses: village.houses.length,
+    aidSpentProvisions: village.aidSpentProvisions ?? 0,
+    aidSpentSpiritStone: village.aidSpentSpiritStone ?? 0,
     lastFactionId: sect?.id || village.lastFactionId || 0,
     lastFactionName: sect?.name || village.lastFactionName || null,
     lastAidDay: village.lastAidDay ?? -1,

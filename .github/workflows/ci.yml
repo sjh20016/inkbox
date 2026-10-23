@@ -107,6 +107,9 @@ jobs:
       - name: P0 地方灾害、救援、恢复、遗址与存档
         run: npm run test:resilience
 
+      - name: E0 聚落记挂、真实抽水笔录与回访存档
+        run: npm run test:e0
+
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0
 
