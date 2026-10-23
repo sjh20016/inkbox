@@ -234,9 +234,9 @@ export const TOOLS = Object.freeze([
       return `凡人已落地${partial} · 实际格坐标 ${places}；Δ为相对点选格的偏移`;
     },
   }),
-  T('cultivator', '修士', '🧙', 'life', '引来修士，寿命长、战力高，能立宗建国', {
-    mode: 'click', species: SPECIES.CULTIVATOR, count: 5, playerHidden: true,
-    apply: (c) => P.paintLife(c.life, c.x, c.y, c.radius, SPECIES.CULTIVATOR, 5),
+  T('cultivator', '点化', '🧙', 'life', '点化附近尚未入门的真实人物，使其开始修行', {
+    mode: 'click', playerHidden: true,
+    apply: (c) => D.grantRoot(c.world, c.x, c.y, c.radius, c.rng),
   }),
   T('beast', '灵兽', '🐾', 'life', '放出灵兽，它们会猎食凡人', {
     mode: 'click', species: SPECIES.BEAST, count: 6,

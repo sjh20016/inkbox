@@ -34,6 +34,7 @@ import { History, removeWater } from '../src/inkbox/sim/powers.js';
 import { readObserveEcho } from '../src/inkbox/sim/observeEcho.js';
 import { generateWorld } from '../src/inkbox/world/worldgen.js';
 import { Life } from '../src/inkbox/sim/life.js';
+import { initEntity, ascend, lifespanForEntity } from '../src/inkbox/sim/cultivation.js';
 import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
 import { mulberry32 } from '../src/inkbox/core/noise.js';
 import { serializeWorld, deserializeWorld } from '../src/inkbox/io/save.js';
@@ -122,12 +123,13 @@ const VOLATILE = new Set([
  * **D6-3 工程包 D（2026-09-26）追加 possessionScar → 69**（跨位面夺舍 / 附身的
  * 不良状态印记快照，见 `sim/possession.js`；非被夺舍者一律 `null`）。
  * G2.4（2026-10-17）追加 lastFireCastDay → 70（真实火系尝试冷却日）。
+ * C1（2026-10-23）追加 birthOrigin → 71（真实出生来源快照；旧档为 null）。
  *
  * ⚠️ 这个常量与 save.js 里那个实体行数组必须同源。那边加一列而这里没跟上，
  * 「实体行最长长度 == 本常量」那条断言会当场红——这正是它存在的意义。
  * 反过来说，若哪天要动这个数，**先去 save.js 数一遍列**，别只改这里。
  */
-const ENTITY_COLUMNS = 70;
+const ENTITY_COLUMNS = 71;
 /**
  * 从 `src/inkbox/io/save.js` 的源码里，把 `world.entities.map((e) => [ … ])`
  * 这个**实体行数组**的顶层元素表达式逐个切出来（注释剥掉，字符串保留）。
@@ -512,6 +514,32 @@ const life = new Life(world, mulberry32(SEED ^ 0xa5a5a5a5));
 life.processPendingSpawns();
 section(`1. 演化 ${PRE_YEARS} 年`);
 run(world, life, PRE_YEARS);
+
+// C1 的成年与觉醒规则改变自然轨迹，120 年内不保证出现飞升者。
+// 保留上面的完整自然演化；这里额外放入一个明确的成年开发夹具，走正式
+// ascend → arriveUpper，让来历与裸 id 守卫具有非空实测对象，不冒称自然飞升。
+const naturalAscensionsAt120 = world.ascended.length;
+const ascentFixture = structuredClone(world.entities.find(e => e.hp > 0));
+if (!ascentFixture) throw new Error('存档飞升夹具需要至少一名存活实体作为完整字段模板');
+const fixtureSect = world.factions.find(s => s.destroyedDay < 0 && s.name);
+if (!fixtureSect) throw new Error('存档飞升夹具需要真实存活宗门提供来历名称');
+ascentFixture.id = world.nextEntityId++;
+ascentFixture.name = '存档跨界成年开发夹具';
+ascentFixture.sp = 'cultivator';
+initEntity(ascentFixture, mulberry32(6100199), { cultivator: true });
+ascentFixture.age = 30 * 360;
+ascentFixture.level = 60;
+ascentFixture.lifespan = lifespanForEntity(ascentFixture, 60);
+ascentFixture.faction = fixtureSect.id;
+ascentFixture.birthOrigin = { kind: 'fixture', day: world.day - ascentFixture.age,
+  villageId: null, villageName: null, parentNames: [] };
+world.entities.push(ascentFixture);
+const ascentResult = ascend(world, ascentFixture, mulberry32(6100200));
+if (ascentResult !== 'ascended') throw new Error('正式 ascend 未完成开发夹具转移');
+const ascentFixtureUpperId = world.upper.entities.at(-1).id;
+world.entities = world.entities.filter(e => e !== ascentFixture);
+console.log(`  自然 ${PRE_YEARS} 年飞升 ${naturalAscensionsAt120}；另以正式 ascend/arriveUpper`
+  + ` 添加成年开发夹具 mortal:${ascentFixture.id} → upper:${ascentFixtureUpperId}，不计自然飞升证据`);
 
 // ── 空间裂缝测试夹具：**存档前**往活世界灌三条裂缝（阶段三）──────
 //
@@ -1281,6 +1309,51 @@ check('逝者账本三字段一致',
     check('possessionScar 写一份快照 → 读回来逐字段一致（证明读侧真的读了这一列）',
       scarOk, scarDetail || '全部一致');
   }
+}
+
+// C1 birthOrigin 是追加快照，不迁移老人的年龄或寿元，也不共享可变引用。
+{
+  const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const birthColumn = entityColumnIndex('birthOrigin');
+  check('C1 birthOrigin 唯一追加在 row[70]，实体行共 71 列',
+    birthColumn === 70 && ENTITY_SOURCE_EXPRS.length === ENTITY_COLUMNS,
+    `row[${birthColumn}] / ${ENTITY_SOURCE_EXPRS.length} 列`);
+  const source = clone.entities[0];
+  if (!source) throw new Error('birthOrigin 快照测试需要非空实体');
+  const snapshot = { kind: 'village', day: 1234, villageId: 7,
+    villageName: '存档测试村', parentNames: ['实亲甲', '实亲乙'] };
+  const previousOrigin = source.birthOrigin;
+  source.birthOrigin = structuredClone(snapshot);
+  const oneWorld = Object.assign(Object.create(Object.getPrototypeOf(clone)), clone, { entities: [source] });
+  const birthPayload = serializeWorld(oneWorld);
+  const savedOrigin = birthPayload.entities[0][birthColumn];
+  check('birthOrigin 写入 row[70] 的字段和值完整', equal(savedOrigin, snapshot), JSON.stringify(savedOrigin));
+  source.birthOrigin.parentNames[0] = '源对象改名';
+  source.birthOrigin.villageName = '源对象改村名';
+  check('birthOrigin 写侧不向 payload 泄漏源对象/父母数组引用', equal(savedOrigin, snapshot));
+  const birthRestored = deserializeWorld(birthPayload).entities[0];
+  check('birthOrigin 读侧字段和值完整', equal(birthRestored.birthOrigin, snapshot));
+  savedOrigin.parentNames[1] = 'payload改名'; savedOrigin.villageName = 'payload改村名';
+  check('birthOrigin 读侧不向恢复实体泄漏 payload 引用', equal(birthRestored.birthOrigin, snapshot));
+  const oldPayload = JSON.parse(JSON.stringify(birthPayload));
+  oldPayload.entities[0] = oldPayload.entities[0].slice(0, 70);
+  const oldPerson = deserializeWorld(oldPayload).entities[0];
+  check('70列旧档 birthOrigin 归一为 null，age/lifespan 原样',
+    oldPerson.birthOrigin === null && oldPerson.age === source.age && oldPerson.lifespan === source.lifespan,
+    `origin=${JSON.stringify(oldPerson.birthOrigin)} age=${oldPerson.age} lifespan=${oldPerson.lifespan}`);
+  source.birthOrigin = previousOrigin;
+  const sect = structuredClone(clone.factions[0]);
+  if (!sect?.economy) throw new Error('economy 无引用测试需要非空真实宗门账本');
+  const originalEconomy = { ...sect.economy };
+  const sectWorld = Object.assign(Object.create(Object.getPrototypeOf(clone)), clone, { factions: [sect] });
+  const economyPayload = serializeWorld(sectWorld);
+  sect.economy.recruited += 17;
+  check('宗门 economy 写侧不向 payload 泄漏可变引用',
+    equal(economyPayload.factions[0].economy, originalEconomy));
+  const economyRestored = deserializeWorld(economyPayload).factions[0];
+  economyPayload.factions[0].economy.recruited += 29;
+  check('宗门 economy 读侧不向恢复对象泄漏 payload 引用',
+    equal(economyRestored.economy, originalEconomy));
 }
 
 // ── 「有没有漏掉的人」：两条断言，方向相反，抓的**不是同一类错** ──
@@ -2198,9 +2271,9 @@ if (up2) {
   //    繁衍）。开局 12 人若被记进去，那两条会在「飞升通道其实断了」「化生其实从没
   //    触发」的世界里**照样变绿**——判据被开局状态污染，从此失去信号价值。
   //
-  //    ⚠️ **这里刻意不写 `arrived === 0`**（交接规格草案里是这么写的；照写跑出来
-  //    是红的，而且**红得对**）：本测试自己把凡间跑了 120 年，期间**真的有飞升者
-  //    上来**（实测 `arrived = 1`）。那个 1 是诚实的读数，不是「开局人口冒充来源」。
+  //    ⚠️ **这里刻意不写 `arrived === 0`**：120 年自然轨迹可能有或没有飞升，
+  //    本脚本另外通过正式 ascend/arriveUpper 转移了明确开发夹具；它必须如实
+  //    记入 arrived，不能冒称自然飞升，也不是「开局人口冒充来源」。
   //    正确的判据分两条，各守一头：
   //      · **开局那一刻**三本账必须全 0 —— 用一张**新生成**的上界量（第一条），
   //        它没跑过任何演化，`arrived` / `born` / `died` 非 0 就只能是生成期写错的；
@@ -2298,6 +2371,9 @@ if (up2) {
     //    把 `fromMortal` 恒写成 0，或读档侧忘了还原（`restoreEntity` 少了
     //    row[60]/row[61]）——四种都会让某位飞升者的值对不上。
     const ascLive = up.entities.filter((e) => e.fromMortal);
+    check('正式飞升开发夹具在序列化前记录的上界 ID 仍可定位且保留宗门名',
+      ascLive.some(e => e.id === ascentFixtureUpperId && e.fromSect === fixtureSect.name),
+      `upper:${ascentFixtureUpperId}，来源宗门 ${fixtureSect.name}`);
     const ascById = new Map(up2.entities.map((e) => [e.id, e]));
     const fromBad = [];
     for (const a of ascLive) {
@@ -2309,7 +2385,7 @@ if (up2) {
       }
     }
     // `ascLive.length > 0` 一起判：飞升者一位都没有时上面的循环空转、这条会假绿，
-    // 而「飞升通道断了」正是本测试该报的事（理由同 ④ 那条账本守恒）。
+    // 正式飞升夹具也没能进入上界时必须报错，不能用空集掩盖通道或读写故障。
     check('飞升者的来历快照往返一致（fromMortal / fromSect 逐值相等）',
       ascLive.length > 0 && fromBad.length === 0,
       ascLive.length === 0

@@ -50,6 +50,7 @@
 
 import { SEA_LEVEL, SPECIES, SPECIES_INFO, LIMITS } from '../core/config.js';
 import { mulberry32 } from '../core/noise.js';
+import { isFertileAge, isMortalHuman } from '../core/demographics.js';
 import { generateNameParts, generateSectName, DAO_TITLES, pickFrom, narrate } from '../core/lore.js';
 import { initEntity, stepEntity as stepCultivation } from './cultivation.js';
 import { dropArtifacts, stepArtifacts, forgeArtifact, ownerLine } from './artifacts.js';
@@ -182,15 +183,7 @@ const UPPER_MORTAL_CAP = 120;
  */
 const UPPER_MORTAL_BIRTH_CHANCE = 0.04;
 
-/**
- * 凡人「成年」判据：寿元的比例下限。
- *
- * 为什么用寿元比例而不是写死年数：凡人的 `lifespan` 出生时带 ±30% 抖动
- * （`0.7 + rng*0.6`），写死年数会让短寿者在「成年」前就老死。
- * 取 0.2（≈2.3 岁）——比凡间 `family.js:61` 的 `ADULT_FRAC_MIN = 0.22` 略松，
- * 因为上界凡人本来就少，门槛太紧会让「找不到成年候选人」变成常态。
- */
-const UPPER_MORTAL_ADULT_FRAC = 0.2;
+// C1 human adulthood/fertility shares the absolute 18–50 year window.
 
 /**
  * 上界独立炼器的境界门槛：与 `forgeArtifact` 内部的判据**同值**
@@ -588,8 +581,8 @@ export class UpperLife {
     }
     if (mortals.length >= UPPER_MORTAL_CAP) return;
 
-    const adults = mortals.filter((e) => e.age >= (e.lifespan || 0) * UPPER_MORTAL_ADULT_FRAC);
-    if (!adults.length) return;
+    const adults = mortals.filter((e) => isFertileAge(e) && e.hp > 0 && e.age < e.lifespan);
+    if (adults.length < 2) return;
     const parent = adults[Math.floor(this.rng() * adults.length)];
     if (this.rng() >= UPPER_MORTAL_BIRTH_CHANCE) return;
 
@@ -607,7 +600,7 @@ export class UpperLife {
       hp: info.hp,
       maxHp: info.hp,
       age: 0,
-      lifespan: info.lifespan * (0.7 + this.rng() * 0.6),
+      lifespan: info.lifespan * (0.96 + this.rng() * 0.08),
       faction: 0,
       village: 0,
       state: 'wander',
@@ -627,6 +620,11 @@ export class UpperLife {
     // ……），少这一步就是「活对象缺键、读档后有键」那类存读档分叉。
     initEntity(entity, this.rng);
     entity.surname = parts.surname;
+    const otherParent = adults.find(e => e !== parent);
+    entity.parentA = parent.id;
+    entity.parentB = otherParent.id;
+    entity.birthOrigin = { kind: 'upper-village', day: upper.day, villageId: 0,
+      villageName: null, parentNames: [parent.name, otherParent.name] };
 
     // ⚠️ 记 `bornMortal`，**不是** `born`：`born` 的历史含义是「**修士化生**」，
     // 长测有一条判据专守它。两者共用一个计数器会让那条判据被凡人出生顶绿
@@ -828,7 +826,7 @@ export class UpperLife {
     const dy = e.ty - e.y;
     if (Math.hypot(dx, dy) < 0.35) return;
 
-    const info = SPECIES_INFO[e.sp] || SPECIES_INFO.human;
+    const info = isMortalHuman(e) ? SPECIES_INFO.human : SPECIES_INFO[e.sp] || SPECIES_INFO.human;
     const speed = UPPER_TILES_PER_DAY * (info.speed || 1);
     const stepLen = Math.min(speed * dtDays, UPPER_MAX_MOVE_TILES);
     if (!(stepLen > 0)) return;

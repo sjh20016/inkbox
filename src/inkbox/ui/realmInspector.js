@@ -32,6 +32,7 @@ import { visibleRift } from '../render3d/readers/riftViewModel.js';
 import { settlementRuinForMarker } from '../world/settlementIdentity.js';
 import { settlementInspectCard } from './settlementInspector.js';
 import { liveSettlementHouseType } from '../world/settlementState.js';
+import { personLifeRows } from './personLifeFacts.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
 export const REALM_INSPECT_RADIUS = 4;
@@ -201,7 +202,9 @@ export function planeSubjectInspectRows(picked, ctx = {}) {
     if (Number.isFinite(s.tier)) rows.push(['品阶', String(s.tier)]);
   } else {
     rows = [['名字', s.name || '无名'], ['境界', realmName(s.level)], ['势力', factionName(picked.world, s.faction) || '无']];
-    if (Number.isFinite(s.age)) rows.push(['年龄', `${Math.floor(s.age / 360)} 岁`]);
+    const lifeRows = personLifeRows(s);
+    rows.push(...lifeRows);
+    if (!lifeRows.length && Number.isFinite(s.age)) rows.push(['年龄', `${Math.floor(s.age / 360)} 岁`]);
     if (s.dao?.path?.name) rows.push(['道途', s.dao.path.name]);
   }
   return { head, rows };
@@ -212,7 +215,9 @@ function personRows(picked, ctx) {
   const e = picked.subject;
   const rows = [['姓名', e.name || '无名']];
   rows.push(['境界', realmName(e.level)]);
-  if (Number.isFinite(e.age)) rows.push(['年龄', `${Math.floor(e.age / 360)} 岁`]);
+  const lifeRows = personLifeRows(e);
+  rows.push(...lifeRows);
+  if (!lifeRows.length && Number.isFinite(e.age)) rows.push(['年龄', `${Math.floor(e.age / 360)} 岁`]);
   rows.push(['仙门', factionName(picked.world, e.faction) || '散修']);
 
   const log = Array.isArray(ctx.arrivedLog) ? ctx.arrivedLog : [];

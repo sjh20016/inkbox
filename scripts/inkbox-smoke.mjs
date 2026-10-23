@@ -770,7 +770,8 @@ for (let y = 20; y < tw.h - 20 && seats.length < 3; y += 17) {
     seats.push([x, y]);
   }
 }
-const madeSects = seats.map(([x, y]) => foundSect(tw, x, y, null, trng)).filter(Boolean);
+// Explicit territory-only development fixtures; formal sects need real founders.
+const madeSects = seats.map(([x, y]) => foundSect(tw, x, y, null, trng, { fixture: true })).filter(Boolean);
 const terr = computeTerritory(tw);
 
 let ownedCells = 0;
@@ -1664,7 +1665,7 @@ section('5h. 血脉与家世：遗传 / 世家 / 四轴加成');
   const mkMan = (id, age, extra) => {
     const e = {
       id, sp: 'human', x: 60, y: 60, vx: 0, vy: 0, hp: 100, maxHp: 100,
-      age, lifespan: 4200, faction: 0, village: 1, state: 'wander', timer: 0,
+      age, lifespan: 65 * 360, faction: 0, village: 1, state: 'wander', timer: 0,
       tx: 60, ty: 60, anim: 0, face: 1, name: `某${id}`, kills: 0, carried: 0,
       relations: new Map(), surname: '陆', clan: 0, gen: 0,
       ...extra,
@@ -1672,13 +1673,14 @@ section('5h. 血脉与家世：遗传 / 世家 / 四轴加成');
     pw.entities.push(e);
     return e;
   };
-  const alive1 = mkMan(1, 2000);
-  const alive2 = mkMan(2, 1800);
-  mkMan(3, 2000, { hp: 0 });                 // 这一 tick 刚被打死
-  mkMan(4, 2000, { _ascended: true });       // 这一 tick 刚飞升（hp 还是满的！）
-  mkMan(5, 4200);                            // 老死（age 到顶，hp 也还是满的）
-  mkMan(6, 100);                             // 未成年
-  mkMan(7, 2000, { sp: 'beast' });           // 灵兽
+  const alive1 = mkMan(1, 25 * 360);
+  const alive2 = mkMan(2, 18 * 360);
+  mkMan(3, 25 * 360, { hp: 0 });                 // 这一 tick 刚被打死
+  mkMan(4, 25 * 360, { _ascended: true });       // 这一 tick 刚飞升（hp 还是满的！）
+  mkMan(5, 65 * 360);                            // 老死（age 到顶，hp 也还是满的）
+  mkMan(6, 18 * 360 - 1);                        // 十八岁前一天仍未成年
+  mkMan(7, 25 * 360, { sp: 'beast' });           // 灵兽
+  mkMan(8, 50 * 360, { lifespan: 7600 * 360 });  // 长寿不能延长真实生育窗口
   const pl = new Life(pw, mulberry32(9));
   pl.rebuildGrid();
   const picked = pickParents(pl, village);
@@ -1686,7 +1688,7 @@ section('5h. 血脉与家世：遗传 / 世家 / 四轴加成');
     picked[0] !== picked[1] && picked.includes(alive1) && picked.includes(alive2),
     `${picked[0] && picked[0].name} · ${picked[1] && picked[1].name}`);
   check('没有成年人的村子返回空（而不是乱挑一个）', (() => {
-    pw.entities = pw.entities.filter((e) => e.age === 100);
+    pw.entities = pw.entities.filter((e) => e.id === 6);
     pl.rebuildGrid();
     const p = pickParents(pl, village);
     return p[0] === null && p[1] === null;
@@ -1705,7 +1707,7 @@ section('5h. 血脉与家世：遗传 / 世家 / 四轴加成');
     for (let i = 0; i < 6; i += 1) {
       rw.entities.push({
         id: 100 + i, sp: 'human', x: 60, y: 60, vx: 0, vy: 0, hp: 100, maxHp: 100,
-        age: 1400 + i * 120, lifespan: 4200, faction: 0, village: 1, state: 'wander',
+        age: (20 + i * 2) * 360, lifespan: 65 * 360, faction: 0, village: 1, state: 'wander',
         timer: 0, tx: 60, ty: 60, anim: 0, face: 1, name: `某${100 + i}`, kills: 0,
         carried: 0, relations: new Map(), surname: '陆', clan: 0, gen: 0,
       });
@@ -1993,13 +1995,21 @@ section('5h. 血脉与家世：遗传 / 世家 / 四轴加成');
       noOrigin.length === noOriginFull.length,
       `修士 ${cultivators.length} 位 · 查不到来历 ${noOrigin.length} 位 · 其中满员 ${noOriginFull.length} 位`);
 
-    // 静默觉醒**不进编年史**，这是设计上的预算（批量出生逐条写会冲掉 400 条滚动窗口）。
-    // 守它是因为：将来若有人把 `silent: true` 去掉，早期历史会静默消失，不会报任何错。
-    // 阈值故意写得宽松——只要求「远小于修士数」，不写死具体数字。
+    // C1 no longer creates natural infants as silently awakened cultivators.
+    // Keep the natural observation, but test the remaining development-only
+    // initialization route directly instead of comparing cumulative awakenings
+    // to the number of cultivators who happen to be alive after a century.
     const awakenInChronicle = fw.chronicle.filter((c) => /觉醒/.test(c.text || '')).length;
-    check('静默觉醒没有把编年史窗口冲掉（含「觉醒」的条数远小于修士数）',
-      awakenInChronicle < cultivators.length / 2,
-      `编年史含「觉醒」${awakenInChronicle} 条 · 修士 ${cultivators.length} 位`);
+    const silentWorld = generateWorld({ preset: WORLD_PRESETS.small, seed: 5403, scatter: false });
+    const silentLife = new Life(silentWorld, mulberry32(5403));
+    const spot = silentWorld.type.findIndex((_, i) => silentWorld.isWalkable(i));
+    const silentBefore = JSON.stringify(silentWorld.chronicle);
+    const silentCreated = silentLife.spawn(spot % silentWorld.w, Math.floor(spot / silentWorld.w),
+      'cultivator', 24); // Explicit development fixture, never a natural infant.
+    check('静默修士夹具初始化不污染编年史，且不遗留觉醒待记标记',
+      silentCreated === 24 && JSON.stringify(silentWorld.chronicle) === silentBefore
+      && silentWorld.entities.every(e => e.level > 0 && e.birthOrigin?.kind === 'fixture' && !e._justAwakened),
+      `夹具 ${silentCreated} 位 · 自然100年觉醒记录 ${awakenInChronicle} 条 / 现活修士 ${cultivators.length} 位`);
 
     check('突破 / 飞升 / 天劫这条线也接到了个人日志上',
       fw.entities.some((e) => (e.log || []).some((r) => /突破至|飞升|天现/.test(r.text || ''))));
@@ -2185,6 +2195,8 @@ section('5i. 传记：写入路径与编译');
   al.processPendingSpawns();
   const man = aw.entities[0];
   man.level = 0;
+  man.age = 18 * 360;
+  man.lifespan = 65 * 360;
   man.fortune = 100;
   man.madUntil = -1;
   const logBefore = (man.log || []).length;
@@ -4572,6 +4584,20 @@ section('5r. 世界大事账本（milestone / 门槛 / 封顶 / 存档）');
   for (let d = 0; d < 60 * 360; d += 3) {
     advanceWorld(mw2, 3, { life: mlife, state: milestoneAdvance, riftActive: false });
   }
+  const naturalKinds = [...new Set(mw2.milestones.map(m => m.kind))];
+  // C1 makes natural high realms rarer within sixty years. Preserve that
+  // observation, then drive a real threshold breakthrough with an explicitly
+  // non-natural practitioner fixture; no milestone is fabricated by the test.
+  const probeSpot = mw2.type.findIndex((_, i) => mw2.isWalkable(i));
+  const beforeProbe = mw2.entities.length;
+  const probeCreated = mlife.spawn(probeSpot % mw2.w, Math.floor(probeSpot / mw2.w), 'human', 1);
+  const probe = mw2.entities[beforeProbe];
+  if (probeCreated === 1) {
+    probe.age = 25 * 360; probe.lifespan = 65 * 360;
+    stepEntity(mw2, probe, 3, () => 0); // Real awakening before the level-19 fixture.
+    probe.level = 19; probe.exp = expToNext(19);
+    stepEntity(mw2, probe, 3, () => 0); // Real breakthrough and milestone producer.
+  }
   const kinds = new Map();
   let lowRealmLeak = 0;
   for (const m of mw2.milestones) {
@@ -4581,8 +4607,8 @@ section('5r. 世界大事账本（milestone / 门槛 / 封顶 / 存档）');
   check('跑满 60 年，大事账本非空（面板不会永远空着）',
     mw2.milestones.length > 0, `${mw2.milestones.length} 条`);
   check('大事账本不止一类事件（单一类型灌满 = 门槛失守）',
-    kinds.size >= 3,
-    [...kinds].map(([k, n]) => `${k}:${n}`).join(' '));
+    probeCreated === 1 && probe.level >= 20 && kinds.size >= 3,
+    `自然60年 ${naturalKinds.join('/')}；正式突破夹具后 ` + [...kinds].map(([k, n]) => `${k}:${n}`).join(' '));
   // 门槛守卫：突破条目里出现「炼气/筑基」= NOTABLE_BREAKTHROUGH_LEVEL 被人调低了
   check('门槛守得住：突破类大事里没有炼气/筑基（调低门槛会当场变红）',
     lowRealmLeak === 0, `越界 ${lowRealmLeak} 条`);
@@ -4996,6 +5022,13 @@ section('5t. 三界：魂路落到具体的人身上（Batch 3）');
   const w = generateWorld({ preset: WORLD_PRESETS.small, seed: 909, scatter: true });
   const life = new Life(w, mulberry32(909));
   life.processPendingSpawns();
+  // C1 ordinary founders are mortals and a cultivator need not die naturally
+  // within twenty years. Add one explicit developer fixture near its actual
+  // lifespan limit, then let the normal Life.step death path account for it.
+  const elderSpot = w.type.findIndex((_, i) => w.isWalkable(i));
+  const elderCreated = life.spawn(elderSpot % w.w, Math.floor(elderSpot / w.w), 'cultivator', 1);
+  const elder = w.entities.at(-1);
+  if (elderCreated === 1) elder.age = elder.lifespan - 1;
   for (let d = 0; d < 360 * 20; d += 3) {
     w.day += 3;
     life.step(3);
@@ -5013,10 +5046,10 @@ section('5t. 三界：魂路落到具体的人身上（Batch 3）');
       if (r.soulRoute !== null) bad.push(`${r.name}(凡人) 却有魂路 ${r.soulRoute}`);
     }
   }
-  // ⚠️ `routed > 0` 是**非空性守卫**：20 年一个修士都没死的话这条要红，
-  //    那是**对的**（说明这段跑起来的不是这个世界），别把它放宽成 `>= 0`。
+  // routed > 0 remains a nonempty guard, supplied by the real near-expiry
+  // fixture rather than an obsolete assumption about natural initial realms.
   check('凡间名录：修士必有魂路、凡人必无（20 年实跑）',
-    bad.length === 0 && routed > 0 && mortals > 0,
+    elderCreated === 1 && bad.length === 0 && routed > 0 && mortals > 0,
     bad.length ? bad.slice(0, 4).join(' | ')
       : `${routed} 位修士 + ${mortals} 位凡人 / 名录 ${w.dead.length} 位`);
 }
@@ -5146,12 +5179,37 @@ section('5u. 世界推进的唯一入口：六个时钟一次跑齐（BACKLOG #1
   check('真实世界自己产出了鬼魂（非空性守卫：空的话下面几条是 0 == 0 的空过）',
     (logB.ghostBorn || 0) > 0 && stB.total > 0 && stB.total === B.w.nether.entities.length,
     `ghostBorn=${logB.ghostBorn} · 现存 ${stB.total}（普通 ${stB.ghost} / 鬼修 ${stB.cultivator}）`);
-  // 「到期 / 对账」在跑 —— 60 年内自然鬼魂还没到 200 年寿命（`GHOST_DECAY_YEARS`），
-  // 所以这里的 `ghostDied` **全部**来自第 1 步「对账」（绑魂鬼魂的魂一离开魂池即散，
-  // 见 BACKLOG #12）。不跑 `stepNether` 的话它是 0，且实体只增不减。
-  check('「到期 / 对账」真的在跑（ghostDied > 0 且现存 < 累计生成）',
-    (logB.ghostDied || 0) > 0 && stB.total < (logB.ghostBorn || 0),
-    `ghostDied=${logB.ghostDied} · 现存 ${stB.total} < 累计生成 ${logB.ghostBorn}`);
+  // New mortal lifetimes mean that no bound soul must necessarily leave within
+  // this natural sixty-year sample. Keep its counts unchanged. Exercise the
+  // same reconciliation path with an actual human awakening, Life.onDeath,
+  // soul-pool entry and due-soul exit, never a manually spawned nether result.
+  const originWorld = generateWorld({ preset: WORLD_PRESETS.small, seed: 20260924, scatter: false });
+  originWorld.nether = generateNetherWorld({ preset: WORLD_PRESETS.small, seed: originWorld.seed });
+  const originLife = new Life(originWorld, () => 0);
+  const originSpot = originWorld.type.findIndex((_, i) => originWorld.isWalkable(i));
+  const originCreated = originLife.spawn(originSpot % originWorld.w, Math.floor(originSpot / originWorld.w), 'human', 1);
+  const origin = originWorld.entities[0]; // Explicit adult developer fixture, not a natural infant.
+  origin.age = 18 * 360; origin.lifespan = 65 * 360;
+  stepEntity(originWorld, origin, 3, () => 0);
+  origin.relations = new Map([[99001, { type: 'kin', score: 40 }], [99002, { type: 'kin', score: 40 }]]);
+  origin.age = origin.lifespan - 1;
+  const originState = createAdvanceState();
+  advanceWorld(originWorld, 3, { life: originLife, state: originState, riftActive: false });
+  const boundSoul = originWorld.souls[0];
+  const boundGhost = originWorld.nether.entities[0];
+  const realBoundOrigin = originCreated === 1 && origin.level > 0 && originWorld.dead.some(r => r.id === origin.id)
+    && !!boundSoul && boundGhost?.soulBind === boundSoul.id;
+  if (boundSoul) {
+    advanceWorld(originWorld, boundSoul.dueDay - originWorld.day, { state: originState, riftActive: false });
+    takeDueSoul(originWorld);
+    advanceWorld(originWorld, tickSpan, { state: originState, riftActive: false });
+  }
+  const originLog = originWorld.nether.popLog || {};
+  check('真实死亡绑魂与魂池退出后，advanceWorld 对账确实消散鬼影',
+    realBoundOrigin && originLog.ghostBorn > 0 && originLog.ghostDied > 0
+    && originWorld.nether.entities.length < originLog.ghostBorn
+    && originWorld.nether.entities.length === originLog.ghostBorn - originLog.ghostDied - originLog.evicted,
+    `自然60年 生${logB.ghostBorn}/散${logB.ghostDied}/存${stB.total}；真实死亡夹具 生${originLog.ghostBorn}/散${originLog.ghostDied}/存${originWorld.nether.entities.length}`);
   check('守恒式：现存 === ghostBorn − ghostDied − evicted',
     B.w.nether.entities.length
       === (logB.ghostBorn || 0) - (logB.ghostDied || 0) - (logB.evicted || 0),

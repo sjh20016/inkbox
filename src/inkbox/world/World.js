@@ -384,6 +384,7 @@ export class World {
     //    `UPPER_ID_BASE` 段的 id），**绕过这里**——那一处由它自己显式设值，不归本漏斗管。
     if (entity.fromMortal === undefined) entity.fromMortal = false;
     if (entity.fromSect === undefined) entity.fromSect = null;
+    if (entity.birthOrigin === undefined) entity.birthOrigin = null;
     this.entities.push(entity);
     return entity;
   }

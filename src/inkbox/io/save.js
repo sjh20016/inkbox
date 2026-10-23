@@ -437,6 +437,8 @@ export function serializeWorld(world, meta = {}) {
       e.possessionScar || null,
       // G2.4 combat-fire attempt day (row[69]); append only.
       e.lastFireCastDay ?? -1e9,
+      // C1 immutable birth-source snapshot (row[70]); old ages/lifespans stay as saved.
+      e.birthOrigin ? structuredClone(e.birthOrigin) : null,
     ]),
     villages: world.villages.map((v) => ({
       id: v.id, x: v.x, y: v.y, faction: v.faction, name: v.name,
@@ -471,6 +473,7 @@ export function serializeWorld(world, meta = {}) {
       stability: f.stability ?? 70,
       // 资源账本：stepOneSect 每 tick 都会读改写，不存的话读档后第一帧就崩。
       resources: f.resources || { spiritStone: 20, heritage: 5, provisions: 30 },
+      ...(f.economy ? { economy: { ...f.economy } } : {}),
       leylines: f.leylines || [],
       relations: f.relations ? Array.from(f.relations.entries()) : [],
       // 门史已在 stepOneSect 里封顶（SECT_HISTORY_CAP），直接整段存。
@@ -1421,6 +1424,7 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
   }
   world.factions = (data.factions || []).map((f) => ({
     ...f,
+    ...(f.economy ? { economy: { ...f.economy } } : {}),
     war: new Set(f.war || []),
     // 宗门关系是 Map<对方宗门 id, 分值>，与生灵关系网是两回事，别混。
     relations: new Map(f.relations || []),
@@ -1557,6 +1561,7 @@ function restoreEntity(row, id) {
     // 「活对象有键、读档后缺键」，save-equiv 的键集并集判据当场红（同 `restUntil`）。
     possessionScar: row[68] || null,
     lastFireCastDay: row[69] ?? -1e9,
+    birthOrigin: row[70] ? structuredClone(row[70]) : null,
     relations: new Map(),
   };
   // 道途只存了 key，靠 DAO_PATHS 还原成完整对象（含 name/evil/stages/thresholds）。
@@ -1605,7 +1610,7 @@ function restoreLegacyEntity(row, id) {
     fromMortal: false, fromSect: null,
     // 养伤（row[62]，2026-09-22 追加）。v1 档当然没有，但**键必须存在**——
     // 缺键就是「只在一侧存在的字段」，save-equiv 那条判据会红。
-    restUntil: -1e9, lastFireCastDay: -1e9,
+    restUntil: -1e9, lastFireCastDay: -1e9, birthOrigin: null,
     // 幽冥鬼魂（v11 内追加，row[63..67]）。v1 档当然没有，但**键必须存在**——
     // 缺键就是「只在一侧存在的字段」（同上面 v6 / v8 那两组）。
     // `soulBind`（列 67 的魂池链接）与上面转世那三列的 `soulId`（来源）**不是一回事**。

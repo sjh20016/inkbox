@@ -1,5 +1,6 @@
 // A read-only card shared by Canvas terrain picks and exact Three identities.
 import { settlementCondition } from '../world/settlementState.js';
+import { villageSociety } from '../sim/sectEconomy.js';
 
 const LEVELS = ['', '村落', '集镇', '城池', '王都'];
 const STATUS = { normal: '正常', damaged: '受灾', disaster: '受灾', recovering: '恢复中', declining: '衰弱', ruin: '遗址', ruins: '遗址' };
@@ -21,9 +22,14 @@ export function settlementInspectCard(world, village, isRuin = false) {
     if (village.lastAidDay >= 0) rows.push(['曾获援助', `${village.lastAidFactionName || '未知宗门'} · ${date(village.lastAidDay)}`]);
   } else {
     const condition = settlementCondition(world, village);
+    const society = Array.isArray(world.entities) ? villageSociety(world, village) : null;
     rows.push(['现状', STATUS[condition.status] || condition.status || '未知'],
-      ['人口', Number.isFinite(village.pop) ? String(village.pop) : '未知'],
+      ['人口', society ? `${society.humans} 人 · 凡人 ${society.mortals} / 修士 ${society.practitioners}` : '人口实体记录不可考'],
+      ['成年劳力', society ? `${society.mortalAdults} 名成年凡人（满十八岁）` : '不可考'],
       ['存粮', Number.isFinite(village.food) ? String(Math.round(village.food)) : '未知'],
+      ['粮食余缺', !society ? '不可考' : society.surplusFood > 0 ? `保村后富余 ${society.surplusFood.toFixed(1)}`
+        : society.reserveFood > (village.food || 0) ? `距保村储备尚缺 ${(society.reserveFood - (village.food || 0)).toFixed(1)}`
+          : '达到保村储备，暂无富余'],
       ['屋舍', `可用 ${condition.liveHouses} · 损毁 ${condition.ruinedHouses}`],
       ['主要瓶颈', condition.reasons?.[0] || (village.hp < 100 ? '已具备自然恢复条件，仍需时间' : '未见恢复阻碍')],
       ['最近转折', history.length ? `${date(history.at(-1).day)} · ${history.at(-1).text}` : '暂无留存的转折记录'],
