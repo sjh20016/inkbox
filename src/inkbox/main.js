@@ -52,6 +52,7 @@ import { openRifts } from './sim/rifts.js';
 import { advanceWorld, createAdvanceState } from './sim/advance.js';
 import { computeTerritory } from './sim/territory.js';
 import { artifactStats, artifactPower, describeArtifact, ownerLine } from './sim/artifacts.js';
+import { artifactClueLine } from './sim/relicRumors.js';
 import { lineageOf, clanStats } from './sim/family.js';
 import { biographyRows, exportChronicle, chronicleFileName } from './sim/biography.js';
 // ⚠️ `compileBiography` / `attentionOf` / `ATTENTION_NAMES` / `displayName` /
@@ -2012,6 +2013,10 @@ class Sandbox {
         }
         const line = ownerLine(best).text;
         if (line) rows.push(['来历', line]);
+        // 遗物旧闻（万象拾趣 P1）：在手的法宝若曾失落过人间，
+        // 补一行带年份的旧线索——所有权变了，旧线索仍标着「据第几年所记」。
+        const clue = artifactClueLine(world, best);
+        if (clue) rows.push(['遗物旧闻', clue]);
         if (best.spirit) rows.push(['器灵', `${best.spirit.name}·${best.spirit.personality}——${best.spirit.memory}`]);
       }
     } else if (people > 0) {
@@ -2046,13 +2051,16 @@ class Sandbox {
       }
     }
     // 脚下无主的东西：这是「地上真的有旧物」这件事唯一的可见之处
+    // 遗物线索（万象拾趣 P1）：「何时遗落、躺在何处、躺了多久」直接拼在行尾——
+    // 一件躺在地上的东西，光有历任主人没有失落之年，传闻就断了半截。
     const lying = (world.artifacts || []).filter((a) => Math.hypot(a.x - x, a.y - y) < 4);
     if (lying.length) {
       rows.push(['—', '—']);
       for (let k = 0; k < Math.min(3, lying.length); k += 1) {
         const a = lying[k];
         const line = ownerLine(a).text;
-        rows.push(['无主之物', `${describeArtifact(a)}${line ? `　${line}` : ''}`]);
+        const clue = artifactClueLine(world, a);
+        rows.push(['无主之物', `${describeArtifact(a)}${line ? `　${line}` : ''}${clue ? `　${clue}` : ''}`]);
       }
       if (lying.length > 3) rows.push(['无主之物', `另有 ${lying.length - 3} 件`]);
     }

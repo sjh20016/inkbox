@@ -33,6 +33,9 @@ import { settlementRuinForMarker } from '../world/settlementIdentity.js';
 import { settlementInspectCard } from './settlementInspector.js';
 import { liveSettlementHouseType } from '../world/settlementState.js';
 import { personLifeRows } from './personLifeFacts.js';
+// 遗物传闻（万象拾趣 P1）：线索全是纯派生（零写入、零 rng），符合本模块的只读契约。
+import { describeArtifact, ownerLine } from '../sim/artifacts.js';
+import { artifactClueLine, artifactClueRows } from '../sim/relicRumors.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
 export const REALM_INSPECT_RADIUS = 4;
@@ -189,6 +192,18 @@ export function planeSubjectInspectRows(picked, ctx = {}) {
         if(claimant?.name) rows.push(['取承者', claimant.name]);
       }
     }
+    // 遗蜕里的那件法宝（万象拾趣 P1）：只报「此刻真实躺在地上」的那一件——
+    // 已被人先取或已朽坏的，如实说不在了，不假装它还在原处等人。
+    if (s.artifactId) {
+      const relic = (picked.world?.artifacts || []).find(item => item && item.id === s.artifactId);
+      rows.push(['遗物', relic
+        ? `${describeArtifact(relic)}${ownerLine(relic).text ? `　${ownerLine(relic).text}` : ''}`
+        : '已不在其中——或已先为人取走，或已朽坏']);
+      if (relic) {
+        const clue = artifactClueLine(picked.world, relic);
+        if (clue) rows.push(['遗物线索', clue]);
+      }
+    }
   } else if (picked.kind === 'leyline') {
     rows = [['灵脉', s.name || `灵脉 ${s.id}`]];
     if(Number.isFinite(s.strength)) rows.push(['强度',s.strength.toFixed(3)]);
@@ -200,6 +215,8 @@ export function planeSubjectInspectRows(picked, ctx = {}) {
     rows = [['名字', s.name || '无名之物']];
     if (s.slot) rows.push(['形制', String(s.slot)]);
     if (Number.isFinite(s.tier)) rows.push(['品阶', String(s.tier)]);
+    // 遗物传闻（万象拾趣 P1）：来历 / 遗落 / 现状，每行都带年份。
+    rows.push(...artifactClueRows(picked.world, s));
   } else {
     rows = [['名字', s.name || '无名'], ['境界', realmName(s.level)], ['势力', factionName(picked.world, s.faction) || '无']];
     const lifeRows = personLifeRows(s);
