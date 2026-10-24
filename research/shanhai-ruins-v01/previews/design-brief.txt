@@ -1,0 +1,5 @@
+Built-in ImageGen, ui-mockup, 2026-10-24.
+
+Complete desktop browser 3D asset museum tool screen, 山海遗迹 / 金石遗构 · 四境入画 / V0.1. Restrained Chinese archaeological folio aesthetic: ivory #f3efe4, ink #303b38, cinnabar #a54c36; thin borders, no rounded cards, no noise. Header, four numbered tabs (仙门山门 / 城镇废墟 / 灵脉祭坛 / 幽冥遗址), left 75% genuine 3D canvas, right 25% controls. Orthographic stone gate with narrow sword stele, stone pillars, teal cantilever eave and steps. Controls for realm, LOD, flat/toon/ink, camera and reset. Four observation modes 单体观察 / 游戏比例 / 远景观察 / 批量压力, real geometry and draw metrics. Chinese serif headings, sans-serif compact controls; airy practical HTML/CSS. No unrelated marketing content. All app labels and controls must be code-native; geometry must be real reusable Three.js models, not bitmap substitutions.
+
+Implementation priority follows the commission: reduce the concept's masonry detail to actual 120–240 / 40–96 / 6–20 triangle targets, retain distinctive silhouette, negative space and mineral color blocks. This image is a layout reference, not claimed to be a running screenshot.

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f3efe4">
+  <title>山海遗迹 · 金石遗构</title>
+  <link rel="stylesheet" href="./src/style.css">
+  <script type="importmap">{"imports":{"three":"../../vendor/three/build/three.module.js"}}</script>
+</head>
+<body>
+  <header class="masthead"><h1>山海遗迹</h1><p>金石遗构 <span>·</span> 四境入画</p><small>独立资产研究 / V0.1</small></header>
+  <nav id="assets" class="asset-tabs" aria-label="遗迹资产"></nav>
+  <main class="gallery">
+    <section class="exhibit" aria-label="三维资产展厅">
+      <div class="exhibit-heading"><div><span class="eyebrow" id="asset-number">卷一 · 仙门</span><h2 id="asset-title">入山见道</h2></div><span id="model-badge">Y-UP · 地面中心枢轴</span></div>
+      <div id="viewport" tabindex="0" aria-label="三维模型；拖动旋转，滚轮缩放"><div id="notice" role="status">正在展开遗构…</div><div id="comparison-labels" hidden></div><span class="compass" aria-hidden="true">北<br>↑</span></div>
+      <div class="canvas-caption"><span id="asset-description"></span><span>拖动旋转 · 滚轮缩放 · 右键平移</span></div>
+      <nav id="modes" class="modes" aria-label="观察场景"></nav>
+      <div class="secondary-modes"><button data-mode="overview">四境总览</button><button data-mode="comparison">四风格对照</button><span id="scene-hint">一构一境，察其形骨。</span></div>
+    </section>
+    <aside class="settings"><h2>观察设置</h2><div id="controls"></div>
+      <button id="reset" class="wide">↻ &nbsp; 重置镜头</button>
+      <section class="model-info"><h3>模型与渲染</h3><dl id="stats"></dl><p class="metric-note">CPU 测量与 RAF 间隔均非 GPU 耗时；绘制统计为整幅画面，含比例参照与线条。</p></section>
+      <details class="resource-panel"><summary>资源与生命周期</summary><div class="resource-buttons"><button id="unload">卸载资源</button><button id="load">重新加载</button><button id="cycle">销毁 / 重建</button></div><p id="lifecycle" role="status">资源已加载</p></details>
+    </aside>
+  </main>
+  <footer><span>山海异志，墨骨成形。</span><span>程序几何 · 共享资源 · 实时三维</span><span>研究展厅 / 未接入正式游戏</span></footer>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

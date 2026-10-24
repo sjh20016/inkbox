@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>山海遗迹 · WebGL 资产验收</title>
+  <script type="importmap">{"imports":{"three":"../../../vendor/three/build/three.module.js"}}</script>
+  <style>
+    :root { color-scheme: dark; font: 14px/1.5 "Segoe UI", "Microsoft YaHei", sans-serif; background: #141a17; color: #e7e1d2; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 22px; }
+    main { max-width: 1120px; margin: 0 auto; }
+    h1 { margin: 0 0 4px; font-size: 22px; font-weight: 600; }
+    p { margin: 0 0 16px; color: #a9b2a8; }
+    .layout { display: grid; grid-template-columns: minmax(280px, 420px) 1fr; gap: 18px; align-items: start; }
+    canvas { display: block; width: 100%; height: 300px; border: 1px solid #48564b; background: #d7d1bd; }
+    section { min-width: 0; }
+    pre { margin: 0; padding: 14px; min-height: 300px; max-height: 70vh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid #38453c; background: #1b231e; color: #d6dfd1; }
+    #status { display: inline-block; margin: 0 0 10px; padding: 3px 9px; border-radius: 3px; background: #4b554d; font-weight: 700; }
+    #status.pass { background: #315d41; } #status.fail { background: #8b3432; }
+    small { display: block; color: #8e9b91; margin-top: 10px; }
+    @media(max-width:760px) { body { padding: 12px; } .layout { grid-template-columns: 1fr; } canvas { height: 240px; } pre { min-height: 180px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>山海遗迹 · 浏览器资产验收</h1>
+    <p>独立 WebGL 定向检查；小样本串行渲染，不运行游戏模拟，也不提供 FPS 结论。</p>
+    <div class="layout">
+      <section>
+        <div id="status" role="status">CHECKING</div>
+        <canvas id="preview" aria-label="当前遗迹批次 WebGL 预览"></canvas>
+        <small id="frame-note">预览画布会显示最后一个有效资产批次。</small>
+      </section>
+      <section><pre id="results">启动检查…</pre></section>
+    </div>
+    <script type="module" src="./browser-check.js"></script>
+  </main>
+</body>
+</html>
