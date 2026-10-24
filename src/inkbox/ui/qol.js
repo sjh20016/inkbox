@@ -29,7 +29,7 @@ import {
   nextEscapeAction, isTextEntryTarget,
   quotaWarning, describeSaveError,
   slotLabel, exportFileName,
-  dirtyAfterEvent, dirtyAfterPersist, needsDiscardConfirm,
+  DIRTY_EVENTS, dirtyAfterEvent, dirtyAfterPersist, needsDiscardConfirm,
   speedStatusText, toolStateText, inspectPoint, isClickWithinDrag,
   toastLocation, toastHint,
 } from './qolState.js';
@@ -103,6 +103,8 @@ export function createQol(sb) {
   let recent = [];
   /** Q21 的 dirty 标志。**不是**模拟字段。 */
   let dirty = false;
+  // Session-only edit cursor: async persistence must not clear newer edits.
+  let editRevision = 0;
   /** 正在跑的异步命令（Q38 / Q39）：`Set<buttonId>` */
   const busy = new Set();
   /** 确认条当前的回调 */
@@ -174,21 +176,24 @@ export function createQol(sb) {
 
     // ── dirty（Q21）─────────────────────────────────────────────
     isDirty() { return dirty; },
+    editRevision() { return editRevision; },
     markDirty(event) {
+      if (DIRTY_EVENTS.includes(event)) editRevision++;
       const next = dirtyAfterEvent(dirty, event);
       const changed = next !== dirty;
       dirty = next;
       if (changed) api.syncUndoState();
       return dirty;
     },
-    markPersisted(event) {
+    markPersisted(event, expectedRevision = editRevision) {
+      if (expectedRevision !== editRevision) return dirty;
       const next = dirtyAfterPersist(event);
       if (next === null) return dirty;
       dirty = next;
       api.syncUndoState();
       return dirty;
     },
-    resetDirty() { dirty = false; },
+    resetDirty() { dirty = false; editRevision++; },
     needsDiscardConfirm() { return needsDiscardConfirm(dirty); },
 
     /**

@@ -60,7 +60,7 @@ import { biographyRows, exportChronicle, chronicleFileName } from './sim/biograp
 //    本文件只留导出按钮真正用得到的那几个文件名。
 import { exportNecrology, necrologyFileName } from './sim/necrology.js';
 import { warStats } from './sim/war.js';
-import { History } from './sim/powers.js';
+import { History, withWaterEditBatch } from './sim/powers.js';
 // ⚠️ `busanziTierName` / `busanziNextStep` / `busanziRecent` 已随「不算子」面板
 //    搬进 `ui/railPanels.js`；本文件只留开机问候与落笔回话这两个**交互**入口。
 import { greetOnBoot, reactToTool } from './sim/busanzi.js';
@@ -775,7 +775,50 @@ class Sandbox {
     const canvas = this.canvas;
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
+    const rememberStrokePoint = (x, y) => {
+      const points = this.pointer.strokePoints;
+      if (!points) return;
+      const last = points[points.length - 1];
+      if (last && last.x === x && last.y === y) { last.count += 1; return; }
+      points.push({ x, y, count: 1 });
+      if (points.length > 512) {
+        // Bound route storage while preserving every sampled application as a
+        // weight. Compaction reduces spatial detail, never held-brush strength.
+        const compacted = [];
+        for (let i = 0; i < points.length; i += 2) {
+          const point = points[i];
+          if (points[i + 1]) point.count += points[i + 1].count;
+          compacted.push(point);
+        }
+        points.splice(0, points.length, ...compacted);
+      }
+    };
+    this.pointer.collectStrokePoint = rememberStrokePoint;
+
+    const clearPointer = () => {
+      this.history.cancel();
+      this.selectPath = null;
+      this.strokeIntervention = null;
+      this.lastInterventionOutcome = null;
+      this.clickSaid = '';
+      this.pointer.strokePoints = null;
+      this.pointer.paintWorld = null;
+      this.pointer.actionKind = null;
+      this.pointer.down = false;
+      this.pointer.painting = false;
+      this.pointer.panning = false;
+      this.updateCursor();
+    };
+
+    const cancelPointer = () => {
+      // Click tools finish synchronously on pointerdown; a later cancel only
+      // releases pointer state and cannot reverse a completed intervention.
+      if (!this.pointer.down && !this.pointer.panning && !this.selectPath) return;
+      clearPointer();
+    };
+
     canvas.addEventListener('pointerdown', (e) => {
+      if (this.pointer.down || this.pointer.panning || this.selectPath) cancelPointer();
       canvas.setPointerCapture(e.pointerId);
       const rect = canvas.getBoundingClientRect();
       this.pointer.x = e.clientX - rect.left;
@@ -793,6 +836,7 @@ class Sandbox {
         return;
       }
       this.pointer.down = true;
+      this.pointer.paintWorld = this.world;
       const tool = this.tool;
       if (tool.mode === 'select') {
         // 划选是**一次成型**的动作：按下只是起个头，抬起才提交。
@@ -820,8 +864,22 @@ class Sandbox {
       this.strokeIntervention = CAUSAL_TOOL_IDS.includes(tool.id)
         ? { toolId: tool.id, x: this.hoverTile.x, y: this.hoverTile.y }
         : null;
-      this.pointer.painting = true;
-      this.applyTool(true);
+      if (tool.mode === 'click') {
+        // Click powers are already completed world facts at pointerdown. Commit
+        // their local History now so pointercancel cannot pretend to undo HP,
+        // deaths, or other effects that History does not own.
+        this.pointer.actionKind = 'click';
+        this.pointer.painting = true;
+        this.applyTool(true);
+        endPointer();
+      } else {
+        // Dragging is a preview only until release. This keeps cancellation
+        // side-effect free and commits one bounded path through the normal tools.
+        this.pointer.actionKind = 'drag';
+        this.pointer.strokePoints = [];
+        this.brushTimer = 0;
+        rememberStrokePoint(this.hoverTile.x, this.hoverTile.y);
+      }
     });
 
     canvas.addEventListener('pointermove', (e) => {
@@ -850,10 +908,21 @@ class Sandbox {
         const last = this.selectPath[this.selectPath.length - 1];
         if (!last || last[0] !== x || last[1] !== y) this.selectPath.push([x, y]);
       }
-      // 落笔统一交给主循环限速处理，这里只更新光标所在格
+      // Drag edits remain queued until release; pointer movement only updates the preview.
     });
 
-    const endPointer = () => {
+    const endPointer = (e = null) => {
+      if (!this.pointer.down && !this.pointer.panning && !this.selectPath) return;
+      if (e && Number.isFinite(e.clientX) && Number.isFinite(e.clientY)) {
+        const rect = canvas.getBoundingClientRect();
+        this.pointer.x = e.clientX - rect.left;
+        this.pointer.y = e.clientY - rect.top;
+        this.hoverTile = this.camera.pick(this.pointer.x, this.pointer.y, this.world);
+      }
+      if (this.pointer.paintWorld && this.pointer.paintWorld !== this.world) {
+        clearPointer();
+        return;
+      }
       // 划选在这里**提交一次**（也只有这里提交）。放在 painting 之前，
       // 因为 'select' 不置 painting 位。
       if (this.selectPath) {
@@ -869,6 +938,20 @@ class Sandbox {
         } else {
           this.commitSelection(path);
         }
+      }
+      if (this.pointer.down && this.pointer.actionKind === 'drag') {
+        rememberStrokePoint(this.world.clampX(this.hoverTile.x), this.world.clampY(this.hoverTile.y));
+        this.pointer.painting = true;
+        const applyStroke = () => {
+          for (let i = 0; i < this.pointer.strokePoints.length; i += 1) {
+            const point = this.pointer.strokePoints[i];
+            for (let repeat = 0; repeat < point.count; repeat += 1)
+              this.applyTool(i === 0 && repeat === 0, { point, radius: this.brushRadius });
+          }
+        };
+        if (this.tool.id === 'water' || this.tool.id === 'drain')
+          withWaterEditBatch(this.world, this.history, applyStroke);
+        else applyStroke();
       }
       if (this.pointer.painting) {
         const label = this.tool.name;
@@ -905,13 +988,21 @@ class Sandbox {
       this.pointer.down = false;
       this.pointer.painting = false;
       this.pointer.panning = false;
+      this.pointer.strokePoints = null;
+      this.pointer.paintWorld = null;
+      this.pointer.actionKind = null;
       this.updateCursor();
     };
     canvas.addEventListener('pointerup', endPointer);
-    canvas.addEventListener('pointercancel', endPointer);
-    canvas.addEventListener('pointerleave', () => {
+    canvas.addEventListener('pointercancel', cancelPointer);
+    canvas.addEventListener('lostpointercapture', cancelPointer);
+    canvas.addEventListener('pointerleave', (e) => {
       this.pointer.inside = false;
-      endPointer();
+      endPointer(e);
+    });
+    window.addEventListener('blur', cancelPointer);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) cancelPointer();
     });
 
     canvas.addEventListener('wheel', (e) => {
@@ -1026,6 +1117,7 @@ class Sandbox {
         if (this.world !== requestedWorld) { this.notify('世界已切换，请重新选择存档槽。', 3000); return; }
         return this.qol.runOnce('inkBtnSave', async () => {
           const savedIdentity = { seed: requestedWorld.seed, day: requestedWorld.day };
+          const savedEditRevision = this.qol.editRevision();
           const result = await saveToStorage(requestedWorld, slot, { name: slot });
           if (result.ok) {
             // Q24：往**侧索引**里记一笔「这一格现在是仙历几年 / 什么种子」。
@@ -1044,9 +1136,11 @@ class Sandbox {
             const used = listSlots().reduce((n, s) => n + (s.bytes || 0), 0);
             const warn = this.qol.quotaWarning(used, 0);
             if (warn) msg += ` · ${warn}`;
+            if (this.world === requestedWorld && this.qol.editRevision() !== savedEditRevision)
+              msg += ' · 保存期间有新落笔，仍有未保存改动';
             this.notify(msg, warn ? 8000 : 2600);
             // 存档给了玩家一份可恢复的副本 ⇒ 未保存标志清掉（Q21）。
-            if (this.world === requestedWorld) this.qol.markPersisted('save');
+            if (this.world === requestedWorld) this.qol.markPersisted('save', savedEditRevision);
           } else {
             // Q22：失败必须说人话。「浏览器空间不足」是这里最常见的一条，
             // 而 `QuotaExceededError` 的原文在各浏览器里长得都不一样（还可能是英文）。
@@ -1064,14 +1158,21 @@ class Sandbox {
       } else void persist();
     });
     $('inkBtnLoad').addEventListener('click', () => {
+      const slot = $('inkSlotSelect').value || 'auto';
+      const requestedWorld = this.world;
       // Q21：读档会丢掉当前世界 ⇒ 没保存过就先问一句。
-      this.qol.guardDiscard('当前世界有尚未保存的变化，仍要读档覆盖吗？', () => {
+      this.qol.guardDiscard(`当前世界有尚未保存的变化，仍要读取「${this.qol.slotLabel(slot)}」覆盖吗？`, () => {
+        if (this.world !== requestedWorld) { this.notify('世界已切换，请重新选择要读取的存档。', 3000); return; }
         // Q39：读档是异步的（解压 + 反序列化），期间按钮 disabled。
         void this.qol.runOnce('inkBtnLoad', async () => {
-          const slot = $('inkSlotSelect').value || 'auto';
+          const requestedRevision = this.qol.editRevision();
           const world = await loadFromStorage(slot);
           if (!world) {
             this.notify(`「${this.qol.slotLabel(slot)}」没有存档`);
+            return;
+          }
+          if (this.world !== requestedWorld || this.qol.editRevision() !== requestedRevision) {
+            this.notify('读取期间山河有新改动，已保留当前世界；请重新读档。', 5000);
             return;
           }
           this.world = world;
@@ -1151,7 +1252,10 @@ class Sandbox {
     });
     $('inkBtnImport').addEventListener('click', () => {
       // Q21：导入会替换当前世界 ⇒ 没保存过就先问一句。
-      this.qol.guardDiscard('当前世界有尚未保存的变化，仍要导入覆盖吗？', () => $('inkImportFile').click());
+      this.qol.guardDiscard('当前世界有尚未保存的变化，仍要导入覆盖吗？', () => {
+        this.importRequest = { world: this.world, revision: this.qol.editRevision() };
+        $('inkImportFile').click();
+      });
     });
     // ── Q23：导入失败**不许**动到当前世界 ────────────────────────────
     // 顺序是「读 → 解 → 构造候选 → 成功之后才替换」：
@@ -1161,9 +1265,15 @@ class Sandbox {
     $('inkImportFile').addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
+      const request = this.importRequest || { world: this.world, revision: this.qol.editRevision() };
+      this.importRequest = null;
       void this.qol.runOnce('inkBtnImport', async () => {
       try {
         const world = await importFile(file);
+        if (this.world !== request.world || this.qol.editRevision() !== request.revision) {
+          this.notify('导入期间山河有新改动，已保留当前世界；请重新导入。', 5000);
+          return;
+        }
         this.world = world;
         this.combatObservation?.reset();
         this.environmentObservation?.reset();
@@ -1394,9 +1504,12 @@ class Sandbox {
 
     // 卜算子的反应只在「按下的那一下」触发，拖拽重复的那几十次不算。
     // 否则按住刷子拖两秒，他就会跟你熟得像认识了十年。
-    if (isFirst) {
+    if (isFirst && (impact.changed || impact.persistentChanged)) {
       const spoke = reactToTool(world, this.rng, tool.id);
       if (spoke) this.refreshBusanzi();
+    }
+    if (isFirst && tool.mode === 'drag' && !impact.changed && !impact.persistentChanged) {
+      this.notify(tool.id === 'drain' ? '积水没有实际减少 · 请在有积水处抽水' : '此处未产生实际改变 · 请换一处落笔', 3000);
     }
 
     if (tool.mode === 'click') {
@@ -2135,13 +2248,13 @@ class Sandbox {
       this.advanceDays(days);
     }
 
-    if (this.pointer.painting && this.tool.mode === 'drag' && this.pointer.inside) {
-      // 按住不放时笔刷持续生效（像真的在浇灌），但要限速——
-      // 否则 60 FPS 下每秒落笔 60 次，山会瞬间窜到天上。
+    if (this.pointer.down && this.pointer.actionKind === 'drag' && this.pointer.inside) {
+      // Preserve Canvas's 75 ms brush cadence while collecting only. The World
+      // is first touched after release; cancel can therefore discard long holds.
       this.brushTimer -= dt;
       if (this.brushTimer <= 0) {
         this.brushTimer = 0.075;
-        this.applyTool(false);
+        this.pointer.collectStrokePoint?.(this.world.clampX(this.hoverTile.x), this.world.clampY(this.hoverTile.y));
       }
     }
 
