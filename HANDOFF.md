@@ -1,5 +1,9 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 2026-10-24 · P0 立体观世 · 神力回响施工候选
+
+从 C1 #35 独立续作，已发布 [Draft #36](https://github.com/sjh20016/inkbox/pull/36)。恢复 3D 输入/整界/正式神力，加入有界有限水响应、真实施法表现和可见反馈，收束界缘、卜算子、撤销入口与大事记。58/58 CPU 与已发布 Fast/Heavy 通过；双尺寸真实操作、洪水24项/真实突破/事件回访和五类两轮暂停/×2性能对照已有证据。第13项黑短线已由实际射线定位为灵脉陡坡碎片，按同真实 ID 整条回退既有可拾取圆环，同景 GPU、平地恢复及只读性验证通过；十五项有限验收闭环。保留 Draft 供审阅，最终 Fast/Heavy 以最新 PR 提交为准；具体数字、限制与失败记录见 [P0 交付验收记录](./docs/development/P0_THREE_PLAYER_EXPERIENCE_DELIVERY.md)。main/E0/C1/G6未改，base为C1。
+
 ## 2026-10-23 · C1 凡世生息候选
 
 从 [Draft #35](https://github.com/sjh20016/inkbox/pull/35) 的阶段备份 `f8704538` 续作，仍以未合流的 E0 #34 为 base。统一18岁成年、真实双亲出生、转世0级身份、逐级寿元和真实村庄供养；补齐断供后恢复收徒，修复领地洪泛精度导致的重复入堆，并迁移受人口语义影响的旧夹具。已完成三个300年自然样本、和平/断供对照和真实Edge双 renderer 检视；参数、命令退出码、性能限度和旧档边界集中见 [C1交付记录](./docs/development/C1_MORTAL_FOUNDATION_DELIVERY.md)。最终 Fast/Heavy 按该 PR 对应提交的 Actions 核对，保持 Draft，不合并 main 或 G6。

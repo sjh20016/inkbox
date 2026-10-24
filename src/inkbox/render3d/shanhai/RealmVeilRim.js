@@ -13,8 +13,13 @@ function stripTexture() {
   const W = 256, H = 64, c = make(W, H), g = c.getContext('2d');
   // v = 0 → inner (attached to the open window), v = 1 → torn outer lip.
   const grad = g.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, 'rgba(58,40,26,0.95)'); grad.addColorStop(0.12, 'rgba(120,82,48,0.85)');
-  grad.addColorStop(0.24, 'rgba(236,228,210,1)'); grad.addColorStop(1, 'rgba(242,236,222,1)');
+  // A narrow ink/gold hem sits at the edge; the old opaque cream sheet floated
+  // above the mountain profile and formed a second, white boundary wall.
+  grad.addColorStop(0, 'rgba(74,61,43,0.58)');
+  grad.addColorStop(0.06, 'rgba(177,151,100,0.48)');
+  grad.addColorStop(0.16, 'rgba(224,211,181,0.18)');
+  grad.addColorStop(0.42, 'rgba(224,211,181,0.025)');
+  grad.addColorStop(1, 'rgba(224,211,181,0)');
   g.fillStyle = grad; g.fillRect(0, 0, W, H);
   let seed = 17; const r = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296);
   g.globalCompositeOperation = 'destination-out';
@@ -41,15 +46,15 @@ export class RealmVeilRim {
   constructor({ coordinates }) {
     this.coordinates = coordinates;
     this.texture = stripTexture();
-    this.material = new THREE.MeshBasicMaterial({ map: this.texture, transparent: true, side: THREE.DoubleSide, depthWrite: false, alphaTest: 0.02 });
+    this.material = new THREE.MeshBasicMaterial({ map: this.texture, transparent: true, side: THREE.DoubleSide, depthWrite: false, depthTest: true, alphaTest: 0.02 });
     this.material.name = 'ShanhaiVeilRim';
     this.geometry = new THREE.BufferGeometry();
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.mesh.name = 'ShanhaiVeilRim'; this.mesh.raycast = () => {}; this.mesh.frustumCulled = false; this.mesh.renderOrder = 6;
     this.mesh.userData.presentationOnly = true; this.mesh.userData.decorative = 'shanhai';
     this.seals = {
-      upper: new THREE.SpriteMaterial({ map: sealTexture('上界', '#B64A3B'), transparent: true, depthTest: false }),
-      nether: new THREE.SpriteMaterial({ map: sealTexture('幽冥', '#8D394C'), transparent: true, depthTest: false }),
+      upper: new THREE.SpriteMaterial({ map: sealTexture('上界', '#B64A3B'), transparent: true, depthTest: true }),
+      nether: new THREE.SpriteMaterial({ map: sealTexture('幽冥', '#8D394C'), transparent: true, depthTest: true }),
     };
     this.seal = new THREE.Sprite(this.seals.upper); this.seal.raycast = () => {}; this.seal.renderOrder = 7; this.seal.visible = false;
     this.root = new THREE.Group(); this.root.name = 'ShanhaiVeil'; this.root.add(this.mesh, this.seal); this.root.visible = false;
@@ -60,18 +65,18 @@ export class RealmVeilRim {
     if (!enabled || !regionGeometry?.edgeCount || !mortalElevation) { this.clear(); return; }
     const pos = [], uv = [], idx = []; let u = 0, best = null;
     const inside = (x, y) => regionGeometry.isInsideQuad(Math.floor(x), Math.floor(y));
-    const lift = 1.6, reach = targetPlane === 'upper' ? 1.5 : 1.25;
+    const lift = 0.16, reach = targetPlane === 'upper' ? 0.42 : 0.34;
     for (const { ax, ay, bx, by } of regionGeometry.boundaryEdges()) {
       if (accessBounds && (Math.min(ax, bx) < accessBounds.x0 || Math.max(ax, bx) > accessBounds.x1 || Math.min(ay, by) < accessBounds.y0 || Math.max(ay, by) > accessBounds.y1)) continue;
       let nx = -(by - ay), ny = bx - ax; const len = Math.hypot(nx, ny) || 1; nx /= len; ny /= len;
       const mx = (ax + bx) / 2, my = (ay + by) / 2;
       if (inside(mx + nx * 0.5, my + ny * 0.5)) { nx = -nx; ny = -ny; } // outward = away from the window
       const ya = mortalElevation.node(ax, ay), yb = mortalElevation.node(bx, by), base = pos.length / 3;
-      const wobA = Math.sin(ax * 1.7 + ay * 2.3) * 0.25, wobB = Math.sin(bx * 1.7 + by * 2.3) * 0.25;
+      const wobA = Math.sin(ax * 1.7 + ay * 2.3) * 0.045, wobB = Math.sin(bx * 1.7 + by * 2.3) * 0.045;
       const pa = this.coordinates.cellToRender(ax, ay), pb = this.coordinates.cellToRender(bx, by);
       const qa = this.coordinates.cellToRender(ax + nx * (reach + wobA), ay + ny * (reach + wobA));
       const qb = this.coordinates.cellToRender(bx + nx * (reach + wobB), by + ny * (reach + wobB));
-      pos.push(pa.x, ya + 0.12, pa.z, pb.x, yb + 0.12, pb.z, qa.x, ya + lift + wobA, qa.z, qb.x, yb + lift + wobB, qb.z);
+      pos.push(pa.x, ya + 0.025, pa.z, pb.x, yb + 0.025, pb.z, qa.x, ya + lift + wobA, qa.z, qb.x, yb + lift + wobB, qb.z);
       uv.push(u, 0, u + 0.25, 0, u, 1, u + 0.25, 1); u += 0.25;
       idx.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
       const p = this.coordinates.cellToRender(mx, my);
@@ -82,10 +87,10 @@ export class RealmVeilRim {
     this.geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     this.geometry.setIndex(idx); this.mesh.geometry = this.geometry;
     this.seal.material = this.seals[targetPlane] || this.seals.upper;
-    if (best) { this.seal.position.set(best.x, best.y, best.z); this.seal.scale.set(5.5, 5.5, 1); }
+    if (best) { this.seal.position.set(best.x, best.y, best.z); this.seal.scale.set(2.5, 2.5, 1); }
     this.seal.visible = !!best; this.root.visible = pos.length > 0; this.stats.edges = pos.length / 12;
   }
-  setZoom(zoom = 1) { const s = 5.5 / Math.max(0.6, Math.min(4, zoom)); this.seal.scale.set(s, s, 1); }
+  setZoom(zoom = 1) { const s = 2.5 / Math.max(0.6, Math.min(4, zoom)); this.seal.scale.set(s, s, 1); }
   dispose() {
     this.geometry.dispose(); this.material.dispose(); this.texture.dispose();
     for (const m of Object.values(this.seals)) { m.map.dispose(); m.dispose(); }

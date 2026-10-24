@@ -9,5 +9,7 @@ export function blockingInputLayer(doc = globalThis.document) {
   if (help?.classList?.contains('on')) return help;
   const character = doc.getElementById?.('inkPersonDetail');
   if (character?.classList?.contains('on') && character.getAttribute?.('aria-modal') === 'true') return character;
+  const settings = doc.getElementById?.('r1Settings');
+  if (settings && !settings.hidden) return settings;
   return null;
 }

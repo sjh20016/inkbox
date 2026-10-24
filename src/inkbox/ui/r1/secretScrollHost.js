@@ -1,6 +1,7 @@
 import { OPUS_SYMBOLS } from './secretScrollSymbols.js';
 import { blockingInputLayer } from '../inputLayers.js';
 import { enterRender3D } from '../../render3d/entry.js';
+import { TOOL_BY_ID } from '../tools.js';
 
 // Opus 玄门秘卷 presentation. Existing controls, handlers and G1 cards remain
 // the owners of game actions; this module arranges and decorates their DOM.
@@ -59,7 +60,10 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
     canvasTitle.textContent = label; nativeTitle.textContent = label;
     sandbox.render3d?.clearCameraKeys?.(); sync();
   }
-  function closeArts() { body.dataset.r1Arts = 'closed'; }
+  function closeArts() {
+    body.dataset.r1Arts = 'closed';
+    if (sandbox.render3d?.active) sandbox.render3d.canvas?.focus({ preventScroll: true });
+  }
   function head(title) {
     const header = el('header', 'r1-arts-head'), heading = el('h2', '', title);
     header.append(heading, button('收', 'r1-jue r1-arts-close', closeArts)); return { header, heading };
@@ -79,15 +83,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
       b.dataset.r1Decorated = 'true'; b.setAttribute('aria-label', label);
       const stone = el('span', 'r1-stone'); stone.innerHTML = seal(glyphs[b.dataset.group] || 'jing', frames[b.dataset.group]);
       b.replaceChildren(stone, el('span', 'r1-seal-label', label));
-      const proxy = button('', 'group', () => {
-        const group = b.dataset.group;
-        if (group === 'terrain' || group === 'view' || group === 'water') openArts(group);
-        else {
-          // Unsupported 3D powers use the existing Canvas switch and button.
-          $('inkRender3DTools')?.querySelector('[data-action="toggle"]')?.click();
-          b.click(); openArts(group);
-        }
-      });
+      const proxy = button('', 'group', () => openArts(b.dataset.group));
       proxy.dataset.r1Group = b.dataset.group; proxy.setAttribute('aria-label', label);
       proxy.innerHTML = stone.outerHTML; proxy.append(el('span', 'r1-seal-label', label)); threeRack.append(proxy);
     }
@@ -117,6 +113,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
   function showSettings(open) {
     settings.hidden = !open; settingsToggle.setAttribute('aria-expanded', String(open));
     if (open) { sandbox.render3d?.clearCameraKeys?.(); settingsHead.querySelector('button').focus({ preventScroll: true }); }
+    else if (sandbox.render3d?.active) sandbox.render3d.canvas?.focus({ preventScroll: true });
     else settingsToggle.focus({ preventScroll: true });
   }
   move(footerClusters[3], settings); move($('inkFpsPill'), settings); move($('inkCombatFx')?.closest('label'), settings); move($('inkSpeedPill'), settings);
@@ -127,7 +124,6 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
   date.append(dial); move($('inkTimePill'), date); clock.insertBefore(date, $('inkSpeedBar'));
   const canvasView = add(app, el('nav', 'r1-canvas-view')); canvasView.id = 'r1CanvasView'; canvasView.setAttribute('aria-label', '舆图视图');
   move(footerClusters[2], canvasView);
-  move($('inkBtnUndo'), clock);
   const canvasToggle = button('立体沙盘', 'r1-jue', async () => {
     if (enteringThree) return;
     enteringThree = true; canvasToggle.setAttribute('aria-busy', 'true'); sync();
@@ -140,16 +136,19 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
 
   const realmBar = add(app, el('nav', 'r1-realm-bar')); realmBar.setAttribute('aria-label', '三界视界');
   const realmButtons = [];
-  for (const [tool, label, glyph] of [['inspect', '凡界', 'shan'], ['viewUpper', '上界', 'xian'], ['viewNether', '幽冥', 'you']]) {
-    const b = button('', 'r1-realm', () => {
-      const select = $('inkRender3DTools')?.querySelector('select[aria-label="沙盘工具"]');
-      if (sandbox.render3d?.active && select) { select.value = tool; select.dispatchEvent(new win.Event('change', { bubbles: true })); }
-      else sandbox.selectTool(tool);
-      if (tool !== 'inspect') { activeGroup = 'view'; openArts('view'); }
+  for (const [plane, label, glyph] of [['mortal', '凡界', 'shan'], ['upper', '上界', 'xian'], ['nether', '幽冥', 'you']]) {
+    const b = button('', 'r1-realm', async () => {
+      try {
+        if (!sandbox.render3d?.active) await enterRender3D(sandbox);
+        if (!sandbox.render3d?.setDisplayPlane?.(plane)) sandbox.notify(`暂不能进入${label}`, 2400);
+      } catch (error) {
+        sandbox.notify(`暂不能进入${label}，请稍后重试。`, 2400);
+        console.warn('Realm entry:', error);
+      }
       sync();
     });
-    b.title = tool === 'inspect' ? '凡界检视 · 关闭视界' : `选择${label}视界，再于山河上圈出一扇窗`;
-    const icon = el('span'); icon.innerHTML = seal(glyph, 'round'); b.append(icon, el('span', '', label)); b.dataset.realmTool = tool; realmBar.append(b); realmButtons.push(b);
+    b.title = `直接进入${label}整界；局部划窗请用视界符匣`;
+    const icon = el('span'); icon.innerHTML = seal(glyph, 'round'); b.append(icon, el('span', '', label)); b.dataset.realmPlane = plane; realmBar.append(b); realmButtons.push(b);
   }
 
   let nativePanel = null;
@@ -170,9 +169,11 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
     decorations.push(() => { panel.replaceChildren(...original); panel.classList.remove('r1-native-panel'); });
     const select = panel.querySelector('select[aria-label="沙盘工具"]');
     for (const [i, option] of [...select.options].entries()) {
-      if (option.value === 'inspect' || option.value === 'burn') continue;
+      if (option.value === 'inspect') continue;
       const b = button('', 'ink-tool', () => { select.value = option.value; select.dispatchEvent(new win.Event('change', { bubbles: true })); sync(); });
-      b.dataset.nativeMode = option.value; b.dataset.nativeGroup = option.value.startsWith('view') ? 'view' : option.value === 'drain' ? 'water' : 'terrain'; b.title = option.value === 'drain' ? '抽水 · 松手提交一笔，可尝试撤销；后续演化可能阻止撤销' : option.textContent;
+      b.dataset.nativeMode = option.value;
+      b.dataset.nativeGroup = TOOL_BY_ID[option.value]?.group || (option.value.startsWith('view') ? 'view' : 'terrain');
+      b.title = TOOL_BY_ID[option.value]?.hint || option.textContent;
       const symbols = el('span', 'r1-tool-symbols'); symbols.innerHTML = crown + ring;
       const sigil = el('span', 'r1-tool-foot'); sigil.innerHTML = foot(i);
       b.append(symbols, el('span', 'r1-tool-glyph', option.textContent[0]), el('span', 'ink-tool-name', option.textContent), sigil); strips.append(b);
@@ -270,9 +271,9 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
   function sync() {
     if (disposed) return;
     const three = !!sandbox.render3d?.active; body.dataset.r1Mode = three ? '3d' : 'canvas';
-    const view = sandbox.getRealmViewState?.(); body.dataset.r1Realm = view?.open ? view.targetPlane : 'mortal';
+    body.dataset.r1Realm = three ? sandbox.render3d.renderer.activePlane : 'mortal';
     const mode = three ? sandbox.render3d.mode : sandbox.toolId;
-    for (const b of realmButtons) b.setAttribute('aria-pressed', String(b.dataset.realmTool === (mode === 'viewUpper' || mode === 'viewNether' ? mode : 'inspect')));
+    for (const b of realmButtons) b.setAttribute('aria-pressed', String(b.dataset.realmPlane === body.dataset.r1Realm));
     for (const b of threeRack.children) b.classList.toggle('on', b.dataset.r1Group === activeGroup && body.dataset.r1Arts === 'open');
     for (const b of nativePanel?.querySelectorAll('[data-native-mode]') || []) { b.hidden = b.dataset.nativeGroup !== activeGroup; b.classList.toggle('on', b.dataset.nativeMode === mode); }
     const pause = $('inkBtnPause'); pause.setAttribute('aria-label', pause.classList.contains('on') ? '继续岁月' : '暂停岁月');

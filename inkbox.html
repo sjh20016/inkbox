@@ -598,6 +598,12 @@
           <div class="busanzi-copy">
             <div class="busanzi-meter"><i id="inkBusanziMeter" style="width:0%"></i></div>
             <div id="inkBusanziLines"></div>
+            <p class="busanzi-advice" id="inkBusanziAdvice" hidden></p>
+            <div class="busanzi-actions">
+              <button type="button" id="inkBusanziAcknowledge">知道了</button>
+              <button type="button" id="inkBusanziNext">显示下一步</button>
+              <button type="button" id="inkBusanziLater">暂不引导</button>
+            </div>
           </div>
         </div>
       </div>
@@ -782,7 +788,6 @@
         [ ] 笔刷大小<br />
         G 网格 · V 立体<br />
         H 回到全图<br />
-        Ctrl+Z 撤销<br />
         右键拖拽 平移
       </div>
     </aside>
@@ -814,7 +819,6 @@
     </div>
 
     <div class="cluster">
-      <button class="btn" id="inkBtnUndo">↶ 撤销</button>
       <button class="btn on" id="inkBtnRelief">立体</button>
       <button class="btn" id="inkBtnGrid">网格</button>
       <button class="btn" id="inkBtnFit">全图</button>

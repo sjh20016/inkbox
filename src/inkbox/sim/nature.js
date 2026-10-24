@@ -1,5 +1,6 @@
 // Finite, game-day driven mortal environmental changes. No world-wide runtime scan.
 import { OVER, markDirty, flushDirty } from '../world/terrain.js';
+import { emitPresentation } from './presentation.js';
 
 export const NATURE_VERSION = 2;
 export const NATURE_DAYS = Object.freeze({ fire: 7, scorched: 1080, ash: 720, lava: 180, flood: 30 });
@@ -86,35 +87,45 @@ export function setRecoveringOverlay(world, i, overlay, duration = null, startDa
   return next;
 }
 
-export function floodCells(world, cells, duration = NATURE_DAYS.flood) {
+export function floodCells(world, cells, duration = NATURE_DAYS.flood, { present = true } = {}) {
   const state = natureState(world);
   const id = state.nextId++;
   const item = { id, kind: 'flood', dueDay: world.day + duration, cells: [] };
+  let changed = 0, fromDepth = 0, toDepth = 0, xSum = 0, ySum = 0;
   for (const [i, depth] of cells) {
     if (!(depth > 0)) continue;
+    const oldWater = world.water[i];
     let entry = state.floods.get(i);
     if (!entry) { entry = { base: world.water[i], levels: new Map() }; state.floods.set(i, entry); }
     entry.levels.set(id, depth);
     item.cells.push(i);
     world.water[i] = Math.fround(entry.base + [...entry.levels.values()].reduce((a, b) => a + b, 0));
+    if (world.water[i] !== oldWater) { changed++; fromDepth += oldWater; toDepth += world.water[i]; xSum += i % world.w; ySum += Math.floor(i / world.w); }
     extinguishCell(world, i);
     markDirty(world, i);
   }
   if (item.cells.length) state.events.push(item);
   flushDirty(world);
+  if (present && changed) emitPresentation(world, 'tool-impact', { x: xSum / changed, y: ySum / changed,
+    data: { tool: 'water-response', phase: 'rise', radius: Math.sqrt(changed / Math.PI), affectedCells: changed, source: 'flood', fromDepth, toDepth } });
   return item.cells.length ? id : null;
 }
 
-function removeFlood(world, item) {
+function removeFlood(world, item, present = true) {
   const state = natureState(world);
+  let changed = 0, fromDepth = 0, toDepth = 0, xSum = 0, ySum = 0;
   for (const i of item.cells) {
     const entry = state.floods.get(i);
     if (!entry?.levels.has(item.id)) continue; // cell was edited after flooding
+    const oldWater = world.water[i];
     entry.levels.delete(item.id);
     if (!entry.levels.size) state.floods.delete(i);
     world.water[i] = Math.fround(entry.base + [...entry.levels.values()].reduce((a, b) => a + b, 0));
+    if (world.water[i] !== oldWater) { changed++; fromDepth += oldWater; toDepth += world.water[i]; xSum += i % world.w; ySum += Math.floor(i / world.w); }
     markDirty(world, i);
   }
+  if (present && changed) emitPresentation(world, 'tool-impact', { x: xSum / changed, y: ySum / changed,
+    data: { tool: 'water-response', phase: 'recede', radius: Math.sqrt(changed / Math.PI), affectedCells: changed, source: 'flood', fromDepth, toDepth } });
 }
 
 /** A player edit detaches only its cell from active floods, preserving the new state. */
@@ -130,6 +141,32 @@ export function playerEditedCell(world, i) {
     delete overlay.recoverVeg;
     delete overlay.expectedVeg;
   }
+}
+
+/** Brush water edits keep temporary flood ownership until its real due day. */
+export function editFloodWater(world, i, delta) {
+  const entry = world.nature?.floods?.get(i);
+  if (!entry || !Number.isFinite(delta) || delta === 0) return false;
+  const old = world.water[i];
+  if (Math.fround(Math.max(0, old + delta)) === old) return false;
+  if (delta > 0) entry.base = Math.fround(entry.base + delta);
+  else {
+    let remaining = -delta;
+    const layers = [...entry.levels].sort(([a], [b]) => a - b);
+    for (const [id, depth] of layers) {
+      const taken = Math.min(depth, remaining);
+      if (taken <= 0) break;
+      const next = Math.fround(depth - taken);
+      if (next > 0) entry.levels.set(id, next);
+      else entry.levels.delete(id);
+      remaining -= taken;
+    }
+    if (remaining > 0) entry.base = Math.fround(Math.max(0, entry.base - remaining));
+  }
+  if (!entry.levels.size) world.nature.floods.delete(i);
+  world.water[i] = Math.fround(entry.base + [...entry.levels.values()].reduce((sum, depth) => sum + depth, 0));
+  markDirty(world, i);
+  return world.water[i] !== old;
 }
 
 export function snapshotFloodCell(world, i) {
@@ -190,7 +227,7 @@ export function cancelNatureEvent(world, id) {
   if (!state) return false;
   const item = state.events.find((e) => e.id === id);
   if (!item) return false;
-  if (item.kind === 'flood') removeFlood(world, item);
+  if (item.kind === 'flood') removeFlood(world, item, false);
   else if (item.kind === 'fire' && state.fires.get(item.cell) === item) { state.fires.delete(item.cell); world.fire[item.cell] = 0; }
   else if (item.kind === 'overlay' && state.overlays.get(item.cell) === item) state.overlays.delete(item.cell);
   state.events = state.events.filter((e) => e !== item);

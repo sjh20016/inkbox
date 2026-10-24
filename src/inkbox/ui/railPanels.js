@@ -488,15 +488,30 @@ export function scrollRailToLatest(el, rail) {
  * 快进几十年之后满屏都是「某村归入某宗门」；大事记只记玩家真会回头看的
  * 那几件，窗口长得多（MILESTONE_CAP = 600）。
  */
+export function visibleMilestones(all, active = []) {
+  const activeIds = new Set(active.map((event) => event.id));
+  const seenCrises = new Set();
+  return all.slice().reverse().filter((row) => {
+    // Old saves can contain both opening and outcome of one crisis. Identify
+    // that real event by its ID; equal prose on different days remains intact.
+    const id = row.kind === 'crisis'
+      ? (row.crisisEventId ?? Number(/^事件 #(\d+)/.exec(row.text)?.[1])) : null;
+    if (!Number.isFinite(id)) return true;
+    if (activeIds.has(id) || seenCrises.has(id)) return false;
+    seenCrises.add(id);
+    return true;
+  });
+}
+
 export function refreshMilestonesPanel(sb) {
   const box = $('inkMilestones');
   const world = sb.world;
   if (!box || !world) return;
   const all = Array.isArray(world.milestones) ? world.milestones : [];
-  const newestFirst = all.slice().reverse();
+  const active = sb.life?.events?.activeCrises || [];
+  const newestFirst = visibleMilestones(all, active);
   const { expanded, hidden } = foldState(sb, 'milestones', newestFirst.length, '条', MILESTONE_PANEL_LIMIT);
   const shown = expanded ? newestFirst : newestFirst.slice(0, MILESTONE_PANEL_LIMIT);
-  const active = sb.life?.events?.activeCrises || [];
   // 「进行中」的灾祸**永远置顶**，而且不参与折叠——它是**当下**，
   // 被折进「另有 N 条」里就等于告诉玩家「这场灾已经过去了」。
   const activeRows = active.map((event) => {
@@ -1076,6 +1091,42 @@ export function bindBusanziTogglePanel(sb) {
   syncBusanziCollapsedPanel(sb);
 }
 
+function busanziLineKey(line) {
+  return line ? `${line.day}:${line.text}` : null;
+}
+
+function busanziAdvice(world) {
+  if (!world.entities?.length) return '打开「生灵」符匣，选「凡人」，在可通行的地面落笔。';
+  if (!world.villages?.length) return '让岁月继续流动，检视凡人的生活；聚落出现后可在右侧大事记回看。';
+  return '选「检视」点一位人物或一处聚落，查看当下处境；也可打开右侧大事记回看变化。';
+}
+
+export function bindBusanziActionsPanel(sb) {
+  const actions = [
+    ['inkBusanziAcknowledge', () => {
+      sb.busanziAcknowledged = busanziLineKey(busanziRecent(sb.world, 1)[0]);
+      sb.busanziShowNext = false;
+      sb.refreshBusanzi();
+    }],
+    ['inkBusanziNext', () => {
+      sb.busanziCollapsed = false;
+      sb.busanziShowNext = true;
+      sb.refreshBusanzi();
+    }],
+    ['inkBusanziLater', () => {
+      sb.busanziShowNext = false;
+      sb.busanziCollapsed = true;
+      sb.refreshBusanzi();
+    }],
+  ];
+  for (const [id, action] of actions) {
+    const button = $(id);
+    if (!button || button.dataset.busanziActionBound) continue;
+    button.dataset.busanziActionBound = 'true';
+    button.addEventListener('click', action);
+  }
+}
+
 /**
  * R1：Opus 的纯 SVG 对话肖像；点击仍打开 A1 的真实三维模型。
  *
@@ -1118,9 +1169,15 @@ export function refreshBusanziPanel(sb) {
   }
   const lines = $('inkBusanziLines');
   if (lines) {
-    setPeriodicMarkup(lines, recent
+    const shown = busanziLineKey(recent.at(-1)) === sb.busanziAcknowledged ? [] : recent;
+    setPeriodicMarkup(lines, shown.length ? shown
       .map((c) => `<div class="busanzi-line">${c.text}</div>`)
-      .join(''));
+      .join('') : '<div class="busanzi-line">这句已记下。新的世事到来时，我再开口。</div>');
+  }
+  const advice = $('inkBusanziAdvice');
+  if (advice) {
+    advice.hidden = !sb.busanziShowNext;
+    if (sb.busanziShowNext) advice.textContent = busanziAdvice(sb.world);
   }
   const tier = $('inkBusanziTier');
   if (tier) tier.textContent = busanziTierName(sb.world);

@@ -129,9 +129,12 @@ void main(){
   // 笔锋：两侧柔边；干笔：沿笔画方向断续 + 横向飞白。
   a*=1.0-smoothstep(0.55,1.0,abs(vSide));
   if(dry>0.0){
-    float n=lnoise(vec2(vS*0.9+vKind*13.0,vL*0.37));
-    float f=lnoise(vec2(vS*3.1,vSide*1.7+vWeight*9.0));
-    a*=mix(1.0,smoothstep(0.22,0.50,n)*(0.55+0.45*smoothstep(0.25,0.55,f)),dry);
+    // Keep long strokes legible: the old high-frequency threshold turned every
+    // ridge into a chain of isolated black dashes at village-scale zoom.
+    float n=lnoise(vec2(vS*0.18+vKind*13.0,vL*0.12));
+    float f=lnoise(vec2(vS*0.45,vSide*1.7+vWeight*9.0));
+    float paper=0.82+0.18*smoothstep(0.22,0.50,n)*smoothstep(0.25,0.55,f);
+    a*=mix(1.0,paper,dry);
   }
   float m=farMist(vWorld);
   a*=1.0-m*0.65;
@@ -480,7 +483,10 @@ export class TerrainLineArt {
       hu.lineAlpha.value = hull.alpha ?? 1; hu.facingMax.value = hull.facing ?? 0.22; hu.breakup.value = hull.breakup ?? 0;
     }
     su.widthPx.value = s.width ?? 2; su.lineColor.value.set(s.color || '#141311'); su.lineAlpha.value = s.alpha ?? 1;
-    su.kindAlpha.value.set(s.ridge ?? 1, s.valley ?? 0, s.cliff ?? 0, s.hatch ?? 0);
+    // Hatching remains as sparse slope texture, while ridge/cliff strokes keep
+    // their profile values. Dense line-c hatching previously read as a second,
+    // unrelated layer of black dotted paths over the terrain.
+    su.kindAlpha.value.set(s.ridge ?? 1, s.valley ?? 0, s.cliff ?? 0, (s.hatch ?? 0) * 0.28);
     su.kindWidth.value.set(...[1, 0.7, 0.85, 0.6].map((d, i) => s.kindWidth?.[i] ?? d));
     su.gate.value = s.gate ?? 0; su.dry.value = s.dry ?? 0;
     this.group.visible = true;

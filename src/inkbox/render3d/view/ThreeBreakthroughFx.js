@@ -73,6 +73,21 @@ function auraGeometryFor(style) {
   return geometry;
 }
 
+function phaseFor(progress) {
+  // One bounded lifetime, split into readable wind-up, release and afterglow.
+  if (progress < 0.22) {
+    const t = progress / 0.22;
+    return { ring: 0.34 + t * 0.34, aura: 0.42 + t * 0.18, light: 0.34 + t * 0.22 };
+  }
+  if (progress < 0.48) {
+    const t = (progress - 0.22) / 0.26;
+    const burst = Math.sin(t * Math.PI);
+    return { ring: 0.68 + burst * 0.52, aura: 0.60 + burst * 0.48, light: 0.56 + burst * 0.44 };
+  }
+  const t = Math.max(0, (1 - progress) / 0.52);
+  return { ring: 0.52 + t * 0.16, aura: 0.12 + t * 0.48, light: 0.18 + t * 0.38 };
+}
+
 /** Bounded, presentation-only ground seals for settled breakthroughs. */
 export class ThreeBreakthroughFx {
   constructor({ plane, coordinates, elevation }) {
@@ -82,8 +97,8 @@ export class ThreeBreakthroughFx {
     for (const style of STYLES) {
       const geometry = geometryFor(style);
       const material = new THREE.MeshBasicMaterial({ color: COLORS[style], transparent: true,
-        opacity: style.startsWith('major') ? .94 : .8, side: THREE.DoubleSide,
-        depthWrite: false, depthTest: false });
+        opacity: style.startsWith('major') ? .72 : .60, side: THREE.DoubleSide,
+        depthWrite: false, depthTest: true });
       const mesh = new THREE.InstancedMesh(geometry, material, BREAKTHROUGH_3D_CAP);
       mesh.name = `BreakthroughFx:${plane}:${style}`; mesh.count = 0; mesh.visible = false;
       mesh.frustumCulled = false; mesh.renderOrder = RENDER_ORDER.fx + 1;
@@ -92,10 +107,8 @@ export class ThreeBreakthroughFx {
       this.root.add(mesh); this.batches[style] = { mesh, geometry, material };
       const auraGeometry = auraGeometryFor(style);
       const auraMaterial = new THREE.MeshBasicMaterial({ color: COLORS[style], transparent: true,
-        opacity: style.endsWith('Success') ? .76 : .82, side: THREE.DoubleSide,
-        // Read as an event ink mark, like the seal. Steep terrain can otherwise
-        // bury every vertical sheet; footprint ownership still gates the whole FX.
-        depthWrite: false, depthTest: false });
+        opacity: style.endsWith('Success') ? .62 : .66, side: THREE.DoubleSide,
+        depthWrite: false, depthTest: true });
       const aura = new THREE.InstancedMesh(auraGeometry, auraMaterial, BREAKTHROUGH_3D_CAP);
       aura.name = `BreakthroughAura:${plane}:${style}`; aura.count = 0; aura.visible = false;
       aura.frustumCulled = false; aura.renderOrder = RENDER_ORDER.fx + 2;
@@ -106,6 +119,7 @@ export class ThreeBreakthroughFx {
     // V1 · 山海入画：悬空法印（仅 shanhai-v1 档位可见；不计入既有 stats / drawCalls 口径）。
     this.seal = new BreakthroughSeal(BREAKTHROUGH_3D_CAP); this.root.add(this.seal.root);
     this.transform = new THREE.Object3D();
+    this.phaseColor = new THREE.Color();
     this.footprint = { x: 0, y: 0, width: 0, depth: 0, rotationY: 0 };
     this.stats = { active: 0, majorActive: 0, successActive: 0, failureActive: 0,
       capacity: BREAKTHROUGH_3D_CAP, overflow: 0, regionRejected: 0, drawCalls: 0, triangles: 0 };
@@ -136,28 +150,29 @@ export class ThreeBreakthroughFx {
       if (!Number.isFinite(z)) continue;
       const point = this.coordinates.worldToRender(item.x, item.y, z + .24);
       if (![point.x, point.y, point.z].every(Number.isFinite)) continue;
-      const progress = item.age / item.ttl, style = `${major ? 'major' : 'minor'}${item.data.outcome === 'success' ? 'Success' : 'Failure'}`;
+      const progress = item.age / item.ttl, phase = phaseFor(progress);
+      const style = `${major ? 'major' : 'minor'}${item.data.outcome === 'success' ? 'Success' : 'Failure'}`;
       const batch = this.batches[style], index = batch.mesh.count++;
       this.transform.position.set(point.x, point.y, point.z);
       this.transform.rotation.set(0, (Number.isFinite(item.seed) ? item.seed : 0) * .35, 0);
-      const pulse = Math.min(1, progress * 5) * Math.min(1, (1-progress) * 3);
-      this.transform.scale.setScalar((item.data.outcome === 'success' ? .58 + progress * .42 : 1 - progress * .55) * pulse);
+      this.transform.scale.setScalar(phase.ring * (item.data.outcome === 'success' ? 1 : 0.88));
       this.transform.updateMatrix(); batch.mesh.setMatrixAt(index, this.transform.matrix);
+      this.phaseColor.setScalar(phase.light); batch.mesh.setColorAt(index, this.phaseColor);
       const aura = this.auras[style].mesh; aura.count++;
-      this.transform.scale.set((.48 + progress * .45) * pulse,
-        (item.data.outcome === 'success' ? .35 + progress * .75 : 1 - progress * .75) * pulse,
-        (.48 + progress * .45) * pulse);
+      const auraScale = phase.aura * (item.data.outcome === 'success' ? 1 : 0.75);
+      this.transform.scale.set(auraScale, auraScale * (major ? 1.5 : 1.1), auraScale);
       this.transform.updateMatrix(); aura.setMatrixAt(index, this.transform.matrix);
+      this.phaseColor.setScalar(phase.light * 0.82); aura.setColorAt(index, this.phaseColor);
       this.seal.add(style, point, progress, Number.isFinite(item.seed) ? item.seed : 0);
       this.stats.active++; if (major) this.stats.majorActive++;
       this.stats[item.data.outcome === 'success' ? 'successActive' : 'failureActive']++;
     }
     for (const { mesh, geometry } of Object.values(this.batches)) if (mesh.count) {
-      mesh.visible = true; mesh.instanceMatrix.needsUpdate = true;
+      mesh.visible = true; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       this.stats.drawCalls++; this.stats.triangles += mesh.count * geometry.index.count / 3;
     }
     for (const { mesh, geometry } of Object.values(this.auras)) if (mesh.count) {
-      mesh.visible = true; mesh.instanceMatrix.needsUpdate = true;
+      mesh.visible = true; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       this.stats.drawCalls++; this.stats.triangles += mesh.count * geometry.index.count / 3;
     }
   }

@@ -27,8 +27,8 @@ import { deriveMarkers, SITE_KINDS } from '../src/inkbox/render3d/markers/WorldM
 import { sculpt as sculpt3D, strokeSamples, restoreHeights } from '../src/inkbox/render3d/terrain/sculpt.js';
 import { recomputeRect } from '../src/inkbox/world/terrain.js';
 import { RegionMask } from '../src/inkbox/ui/RegionMask.js';
-import { normalizeRegion } from '../src/inkbox/ui/tools.js';
-import { VIEW_MAX_AREA_FRAC } from '../src/inkbox/ui/realmView.js';
+import { TOOLS, normalizeRegion } from '../src/inkbox/ui/tools.js';
+import { isViewTool, VIEW_MAX_AREA_FRAC } from '../src/inkbox/ui/realmView.js';
 import { Render3DHost } from '../src/inkbox/render3d/Render3DHost.js';
 import { Render3DAdapter } from '../src/inkbox/render3d/Render3DAdapter.js';
 import { emitRuntimeEvent, drainRuntimeEvents } from '../src/inkbox/core/runtimeEvents.js';
@@ -1354,6 +1354,13 @@ check('T6 结构：唯一提交点、无第二套选择状态、不碰 openRifts
   assert.doesNotMatch(source, /openRifts/, '禁止绕过 commitSelection 自己开缝（S9）');
   assert.doesNotMatch(source, /commitSelection3D/, '不许新建 commitSelection3D（§49）');
   assert.match(source, /pickPlane\([^)]*'mortal'\)/, '划窗必须只拾凡间（§52）');
+  assert.match(source, /isViewMode\(\)\s*\{\s*return isViewTool\(this\.mode\);\s*\}/,
+    '3D 视界模式必须复用 isViewTool 的正式分类');
+  const drawBody = source.match(/commitRealmDraw\(event\)\s*\{([\s\S]*?)\n  \}/)?.[1] || '';
+  assert.match(drawBody, /this\.sandbox\.commitSelection\(path\)/,
+    'RealmDraw 必须走 Sandbox 唯一 commitSelection 提交口');
+  assert.equal((drawBody.match(/commitSelection\(/g) || []).length, 1,
+    'RealmDraw 只能向 commitSelection 提交一次');
   // 打断路径必须取消而不是提交
   assert.match(source, /endStroke\(\)\s*\{[\s\S]{0,200}?cancelRealmDraw\(\)/, 'endStroke 必须先取消未完成的划窗');
   assert.match(source, /'pointerup', e => \{ this\.commitRealmDraw\(e\); this\.endStroke\(\); \}/);
@@ -1361,9 +1368,17 @@ check('T6 结构：唯一提交点、无第二套选择状态、不碰 openRifts
 
 check('T6 结构：视界工具并进正式工具表、共用同一个 toolId（§48/§54）', () => {
   const source = readCode('src/inkbox/render3d/Render3DAdapter.js');
-  assert.match(source, /<option value="viewUpper">上界视界<\/option>/, '正式工具条必须有上界视界');
-  assert.match(source, /<option value="viewNether">幽冥视界<\/option>/, '正式工具条必须有幽冥视界');
-  assert.match(source, /isViewTool\(next\)\) this\.sandbox\.selectTool\(next\)/, '必须复用 Canvas 的工具表');
+  for (const id of ['viewUpper', 'viewNether']) {
+    const tool = TOOLS.find(item => item.id === id);
+    assert.ok(tool, `正式工具表必须包含 ${id}`);
+    assert.ok(!tool.playerHidden, `${id} 必须对玩家可见`);
+    assert.ok(isViewTool(id), `${id} 必须由 isViewTool 识别`);
+  }
+  assert.match(source, /for\s*\(const tool of TOOLS\.filter\(item => !item\.playerHidden\)\)\s*modeSelect\.add\(new Option\(tool\.name, tool\.id\)\)/,
+    '正式工具条必须由非隐藏 TOOLS 动态生成选项');
+  assert.match(source, /isViewTool\(this\.mode\)/, 'Adapter 模式分类必须复用正式视界谓词');
+  assert.match(source, /if\s*\(TOOL_BY_ID\[next\]\)\s*this\.sandbox\.selectTool\(next\)/,
+    '工具变更必须把正式 toolId 交给 Sandbox');
   // §54：调试探针折进 details，不与玩家功能并列（但仍在 DOM 里）
   assert.match(source, /createElement\('details'\)/, '调试探针必须折进 details');
   assert.match(source, /data-probe="upper"/, '调试探针仍须留在 DOM（M2-A 证据脚本按它选取）');

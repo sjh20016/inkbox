@@ -3,6 +3,7 @@ import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { RiftNarrativeFx, isRiftNarrativeItem } from './RiftNarrativeFx.js';
 import { ThreeCombatFx, isCombatFxItem, isLightningFxItem } from './ThreeCombatFx.js';
 import { ThreeBreakthroughFx } from './ThreeBreakthroughFx.js';
+import { ThreePowerFx } from './ThreePowerFx.js';
 import { decorationFootprintOwned } from '../environment/RealmDecorationLayer.js';
 
 const MAX_MARKERS = 32;
@@ -43,8 +44,10 @@ export class ThreeFxProbe {
     this.root.add(this.combat.root);
     this.breakthrough = new ThreeBreakthroughFx({ plane, coordinates, elevation });
     this.root.add(this.breakthrough.root);
+    this.power = new ThreePowerFx({ plane, coordinates, elevation });
+    this.root.add(this.power.root);
     this.debugFootprint = { x: 0, y: 0, width: 1.1, depth: 1.1, rotationY: 0 };
-    this.stats = { ...this.narrative.stats, debugActive: 0, combat: this.combat.stats, breakthrough: this.breakthrough.stats };
+    this.stats = { ...this.narrative.stats, debugActive: 0, combat: this.combat.stats, breakthrough: this.breakthrough.stats, power: this.power.stats };
   }
 
   update(presentation, world, { enabled = false, region = null, inside = true, camera = null } = {}) {
@@ -53,17 +56,18 @@ export class ThreeFxProbe {
     const items = presentation?.snapshotPlane?.(this.plane)?.items ?? [];
     this.combat.update(items, world, region, inside, { combatEnabled: presentation?.combatEnabled !== false, camera });
     this.breakthrough.update(items, world, region, inside);
+    this.power.update(items, world, region, inside, { camera });
     if (enabled) this.narrative.update(items, world, region, inside);
     else this.narrative.clear();
     if (!world || !this.coordinates || !this.elevation || !Array.isArray(items)) {
       this.mesh.count = 0;
-      this.stats = { ...this.narrative.stats, debugActive: 0, combat: this.combat.stats, breakthrough: this.breakthrough.stats };
+      this.stats = { ...this.narrative.stats, debugActive: 0, combat: this.combat.stats, breakthrough: this.breakthrough.stats, power: this.power.stats };
       return;
     }
     let count = 0;
     for (const item of items) {
       if (count >= MAX_MARKERS) break;
-      if (isCombatFxItem(item) || isLightningFxItem(item) || item.kind === 'breakthrough') continue;
+      if (isCombatFxItem(item) || isLightningFxItem(item) || item.kind === 'breakthrough' || item.kind === 'power') continue;
       if (enabled && isRiftNarrativeItem(item)) continue;
       if (!Number.isFinite(item.x) || !Number.isFinite(item.y)) continue;
       this.debugFootprint.x = item.x; this.debugFootprint.y = item.y;
@@ -79,18 +83,18 @@ export class ThreeFxProbe {
     this.mesh.count = count;
     this.mesh.visible = count > 0;
     if (count) this.mesh.instanceMatrix.needsUpdate = true;
-    this.stats = { ...this.narrative.stats, debugActive: count, combat: this.combat.stats, breakthrough: this.breakthrough.stats };
+    this.stats = { ...this.narrative.stats, debugActive: count, combat: this.combat.stats, breakthrough: this.breakthrough.stats, power: this.power.stats };
   }
 
   clear() {
-    this.narrative.clear(); this.combat.clear(); this.breakthrough.clear(); this.mesh.count = 0; this.mesh.visible = false;
-    this.stats = { ...this.narrative.stats, debugActive: 0, combat: this.combat.stats, breakthrough: this.breakthrough.stats };
+    this.narrative.clear(); this.combat.clear(); this.breakthrough.clear(); this.power.clear(); this.mesh.count = 0; this.mesh.visible = false;
+    this.stats = { ...this.narrative.stats, debugActive: 0, combat: this.combat.stats, breakthrough: this.breakthrough.stats, power: this.power.stats };
   }
 
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
-    this.clear(); this.narrative.dispose(); this.combat.dispose(); this.breakthrough.dispose();
+    this.clear(); this.narrative.dispose(); this.combat.dispose(); this.breakthrough.dispose(); this.power.dispose();
     this.mesh.dispose();
     this.geometry.dispose();
     this.material.dispose();

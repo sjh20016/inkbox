@@ -28,7 +28,7 @@ const STREAMS=[['mercy',MERCY_SEED_KEY,mercyRngFor],['rift',RIFT_SEED_KEY,riftRn
 const MODES=['no-render','C2B-production','sites','leylines','upperQi','netherYin','riftFx',
   'all-C2C','upper-window','nether-window','toggle-cycle'];
 const report={suite:'C2C 11-mode 600-day actual GLB purity',gpu:false,modes:[],passed:false,
-  fixture:'identical seeded three-world CPU test fixture; four explicit Site API fixtures on identical flat dry test patches, plus real openRifts producer in every mode; not visual acceptance evidence'};
+  fixture:'identical seeded three-world CPU test fixture; four Site API fixtures and an existing real Leyline on identical flat dry test patches, plus real openRifts producer in every mode; not visual acceptance evidence'};
 function hiddenPositions(world){
   const result={};
   for(const [name,salt,get] of STREAMS){
@@ -59,7 +59,15 @@ for(const mode of MODES){
   for(let y=18;y<=26;y++)for(let x=11;x<=37;x++){
     const index=y*world.w+x;world.height[index]=.6;world.water[index]=0;world.riverBase[index]=0;
   }
-  recomputeRect(world,11,18,37,26);
+  // Keep one naturally generated, stable-ID leyline on a dry level patch in
+  // every mode. Other natural lines may now correctly choose the steep-slope
+  // marker fallback; this patch preserves explicit real-GLB coverage.
+  const gentleLeyline=world.leylines.find(line=>line.x>=20&&line.x<=34&&line.y>=11&&line.y<=16);
+  assert(gentleLeyline,'seeded purity fixture must include its real interior leyline');
+  for(let y=gentleLeyline.y-7;y<=gentleLeyline.y+7;y++)for(let x=gentleLeyline.x-7;x<=gentleLeyline.x+7;x++){
+    const index=y*world.w+x;world.height[index]=.6;world.water[index]=0;world.riverBase[index]=0;
+  }
+  recomputeRect(world,11,7,37,26);
   for(const [i,kind] of ['secret','cave','formation','ruin'].entries())
     world.addSite({kind,x:15+i*6,y:22,name:`CPU purity fixture ${kind}`,age:0,visits:0});
   const selection={x0:10,y0:9,x1:44,y1:35};

@@ -85,17 +85,17 @@ export function createBoundaryInkMaterial() {
       paperColor: { value: new THREE.Color('#ECE4D2') },
       atmosphereColor: { value: new THREE.Color('#D8CEB8') },
       inkColor: { value: new THREE.Color('#303533') },
-      rimColor: { value: new THREE.Color('#F2EADA') },
-      opacity: { value: 0.96 },
+      rimColor: { value: new THREE.Color('#D7C79C') },
+      opacity: { value: 0.72 },
       seed: { value: 17 },
       strataStrength: { value: 0.30 },
       dryBrushStrength: { value: 0.34 },
       bottomFadeStrength: { value: 0.34 },
-      topBandStrength: { value: 0.22 },
+      topBandStrength: { value: 0.14 },
       inkVariation: { value: 0.20 },
       boneStrength: { value: 0.10 },
       baseStrength: { value: 0.24 },
-      faceOpacity: { value: 0.44 },
+      faceOpacity: { value: 0.20 },
     },
   });
   material.name = 'Inkbox:BoundaryInk';
@@ -113,18 +113,20 @@ export function applyBoundaryInkStyle(material, realmStyle = null) {
   const u = material.uniforms;
   if (!realmStyle) {
     u.paperColor.value.set('#ECE4D2'); u.atmosphereColor.value.set('#D8CEB8');
-    u.inkColor.value.set('#303533'); u.rimColor.value.set('#F2EADA');
+    u.inkColor.value.set('#494A43'); u.rimColor.value.set('#D7C79C');
     u.strataStrength.value = 0.10; u.dryBrushStrength.value = 0.10;
     u.bottomFadeStrength.value = 0.12; u.topBandStrength.value = 0.08;
     u.inkVariation.value = 0.06; u.boneStrength.value = 0.02;
-    u.baseStrength.value = 1.0; u.faceOpacity.value = 0.90;
+    u.baseStrength.value = 1.0; u.faceOpacity.value = 0.32;
     return;
   }
   const ink = realmStyle.boundaryInk || {};
   u.paperColor.value.set(realmStyle.paper.color);
   u.atmosphereColor.value.set(realmStyle.atmosphere.color);
   u.inkColor.value.set(realmStyle.ink.color);
-  u.rimColor.value.set(ink.rim || realmStyle.paper.color);
+  // The edge is a thin mineral/paper accent; a broad near-white band reads as
+  // a hard wall against the real terrain instead of a boundary seam.
+  u.rimColor.value.set(ink.rim || '#D7C79C');
   u.strataStrength.value = ink.strata ?? 0.30;
   u.dryBrushStrength.value = ink.dryBrush ?? 0.34;
   u.bottomFadeStrength.value = ink.bottomFade ?? 0.34;
@@ -132,5 +134,5 @@ export function applyBoundaryInkStyle(material, realmStyle = null) {
   u.inkVariation.value = ink.inkVariation ?? 0.20;
   u.boneStrength.value = ink.bone ?? 0.10;
   u.baseStrength.value = ink.baseStrength ?? 0.24;
-  u.faceOpacity.value = ink.faceOpacity ?? 0.44;
+  u.faceOpacity.value = Math.min(0.24, ink.faceOpacity ?? 0.20);
 }

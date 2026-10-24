@@ -25,14 +25,18 @@ check('fixed-distance commands ignore pointer segmentation, duplicates and flush
   for(let i=1;i<=count;i++){const p={x:8+12*i/count,y:9+6*i/count};s.sample(p);s.sample(p);if(flush)s.flush();}return {w,entry:s.finish()};};
  const a=run(1,false),b=run(120,true);same(b.w,channels(a.w));assert.deepEqual(a.entry.records,b.entry.records);assert.equal(a.entry.stats.stamps,b.entry.stats.stamps);
 });
-check('raise preserves the existing water surface and undo restores static water; basin uses no refill clock',()=>{
+check('raise redistributes finite water and compound rollback restores it; basin uses no refill clock',()=>{
  const w=make(),i=10*w.w+12;w.height[i]=.42;w.water[i]=.24;w.riverBase[i]=.012;recomputeRect(w,0,0,w.w-1,w.h-1);
- const before=channels(w),surface=w.height[i]+w.water[i],s=new TerrainStroke(w,{x:12,y:10},{radius:1,strength:.12,mode:'raise'}),entry=s.finish();
- assert.ok(w.height[i]>before[0][1][i]);assert.ok(w.water[i]<before[1][1][i]);assert.ok(Math.abs(w.height[i]+w.water[i]-surface)<1e-6);
+ const before=channels(w),control=make();control.height[i]=.42;control.water[i]=.24;control.riverBase[i]=.012;recomputeRect(control,0,0,control.w-1,control.h-1);
+ sculpt(control,{x:12,y:10,radius:1,strength:.12,mode:'raise'});
+ const s=new TerrainStroke(w,{x:12,y:10},{radius:1,strength:.12,mode:'raise'}),entry=s.finish();
+ assert.ok(w.height[i]>before[0][1][i]);assert.ok(w.water[i]<before[1][1][i]);
+ assert.ok(Math.abs(w.water.reduce((a,b)=>a+b,0)-control.water.reduce((a,b)=>a+b,0))<2e-5,'local relaxation conserves post-stamp water instead of freezing every old surface');
  assert.equal(w.riverBase[i],before[2][1][i]);restoreTerrainStroke(w,entry);same(w,before);
  const b=new TerrainStroke(w,{x:12,y:10},{radius:1,strength:.12,mode:'basin'});const basin=b.finish();assert.ok(basin);assert.ok(w.height[i]<before[0][1][i]);
- const depth=w.water[i];assert.ok(depth>before[1][1][i]);const state=createAdvanceState();
+ const depth=w.water[i];assert.ok(depth>=0);const settledWater=w.water.slice(),state=createAdvanceState();
  advanceWorld(w,30,{state,life:{step(){}}});assert.equal(w.water[i],depth,'ordinary game-day passage does not hydraulically refill or drain the cell');
+ assert.deepEqual(w.water,settledWater,'no continuous redistribution clock is introduced');
 });
 check('legacy sculpt preserves water by default and no renderer silently smooths a sharp spike',()=>{
  const w=make(),i=10*w.w+12;w.height[i]=.99;const peak=w.height[i],water=w.water.slice();sculpt(w,{x:12,y:10,radius:1,strength:.01,mode:'lower'});assert.deepEqual(w.water,water);assert.equal(w.height[i],Math.fround(peak-.01));
@@ -59,7 +63,7 @@ check('deferred stamps leave canonical type/qi and touch unchanged until the act
 check('real Adapter.render never generates stationary RAF stamps across frame cadence',()=>{
  const w=make(),a=Object.create(Render3DAdapter.prototype);a.active=true;a.mode='raise';a.radius=2;a.lastNow=100;a.lastDebug=100;a.lastStamp=0;a.pointer={x:0,y:0};
  a.heldCameraKeys=new Set();let cameraUpdates=0;
- a.sandbox={world:w,getRealmViewState:()=>({open:false}),stage:null};a.renderer={setWorld:()=>false,setRealmViewState:()=>{},setPresentation:()=>{},update:()=>{},
+ a.sandbox={world:w,getRealmViewState:()=>({open:false}),stage:null};a.renderer={world:w,setWorld:()=>false,setRealmViewState:()=>{},setPresentation:()=>{},update:()=>{},
   cameraRig:{moveLocal:(right,forward,dt,fast)=>{assert.equal(right,0);assert.equal(forward,0);assert.equal(fast,false);assert.ok(dt>=0);cameraUpdates++;}},
   brush:()=>{},render:()=>({}),stages:new Map(),activePlane:'mortal',realmPrototype:{open:false},markTerrainDirty:()=>{}};
  a.panel={querySelector:()=>null};a.readout={};a.undoStack=[];a.redoStack=[];
@@ -104,7 +108,7 @@ check('late touched height or river changes reject the entire undo/redo with no 
 });
 check('evolution outside touched records does not reject undo and overlapping strokes undo/redo normally',()=>{
  const w=make(),entry=new TerrainStroke(w,{x:12,y:10},{radius:3}).finish();assert.ok(!entry.records.some(r=>r[0]===0));
- w.height[0]+=.01;w.water[0]+=.001;w.riverBase[0]+=.001;const outside=[w.height[0],w.water[0],w.riverBase[0]];
+ w.height[0]+=.01;w.water[0]+=.001;w.riverBase[0]+=.001;recomputeRect(w,0,0,0,0);const outside=[w.height[0],w.water[0],w.riverBase[0]];
  assert.ok(restoreTerrainStroke(w,entry));assert.deepEqual([w.height[0],w.water[0],w.riverBase[0]],outside);
  assert.ok(restoreTerrainStroke(w,entry,'after'));
  const before=channels(w),first=new TerrainStroke(w,{x:12,y:10},{radius:3}).finish(),second=new TerrainStroke(w,{x:13,y:10},{mode:'lower',radius:3}).finish(),after=channels(w);

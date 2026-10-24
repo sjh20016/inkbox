@@ -4752,13 +4752,24 @@ check('瘟疫报出的罹难人数 = 真的被标死的人数（数字不实就�
     ev.triggerCrisis(cx + 3, cy + 3, { crisis: 0.1, duration: 0.1 }) === null,
     `${ev.activeCrises.length} 场在跑`);
 
-  // 结局：玩家亲手降下的灾，结算也进大事记（看不到结局 = 没有反馈）
+  // 同一降灾事件的开端与结局共用一条大事，编年保留两阶段。
   w.day = 360 * 40;
   const mBefore3 = w.milestones.length;
+  const activeIds = ev.activeCrises.map((entry) => entry.id);
+  const openingTexts = new Map(activeIds.map((id) => [id,
+    w.milestones.find((row) => row.crisisEventId === id)?.text]));
   ev.stepCrises(1);
-  check('玩家降下的灾，结局也进大事记（熬过了 / 没能撑过）',
-    w.milestones.length > mBefore3
-    && w.milestones.some((m) => m.kind === 'crisis' && /熬过了|没能撑过/.test(m.text)),
+  check('玩家降下的灾，同一 ID 的开端与结局合成一条大事，编年保留两阶段',
+    w.milestones.length === mBefore3
+    && activeIds.every((id) => {
+      const rows = w.milestones.filter((row) => row.crisisEventId === id);
+      const outcome = ev.history.find((entry) => entry.id === id)?.outcome;
+      const chronicle = w.chronicle.filter((row) => row.kind === 'crisis'
+        && (row.text.startsWith(`事件 #${id}：`) || row.text.startsWith(`事件 #${id}「`)));
+      return rows.length === 1 && rows[0].text.startsWith(openingTexts.get(id))
+        && outcome && rows[0].text.includes(outcome)
+        && chronicle.length === 2 && chronicle.some((row) => row.text === outcome);
+    }),
     `${mBefore3} → ${w.milestones.length} 条`);
 
   // 对照：世界自发的灾年（byPlayer=false）结局只进编年史

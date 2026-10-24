@@ -525,16 +525,12 @@ check('★ 字面量发出的事件名没有一个是白名单外的（拼错 = 
     ? `白名单外：${JSON.stringify(unknownEvents)}`
     : `发出 ${JSON.stringify([...new Set(emitted)])}`);
 
-// ── Q7 的**接线**：撤销栈变了，按钮就必须跟着变 ─────────────────────
-// 同一个病：`syncUndoState()` 写好了、也在 `undo()` 里调了，但**入栈那一刻**
-// 没人调。拖拽笔刷的 `markDirty` 跑在 `history.end()` **之前**，那时栈还空着，
-// 于是按钮被锁成「没有可撤销的操作」，而且一直锁到下一次存档。
-// 判据：`this.history.end(` 之后一小段里必须出现 `this.qol.syncUndoState()`。
-const historyEndAt = mainSrc.indexOf('this.history.end(');
-const historyEndTail = historyEndAt < 0 ? '' : mainSrc.slice(historyEndAt, historyEndAt + 700);
-check('★ main.js 在 history.end() 之后要同步撤销按钮（否则画完一笔按钮还是灰的）',
-  historyEndAt >= 0 && historyEndTail.includes('this.qol.syncUndoState()'),
-  historyEndAt < 0 ? '找不到 this.history.end(' : '入栈点之后 700 字符内有同步 ✓');
+// D4: committed edits still complete their internal transaction, while the
+// player no longer receives an undo button or keyboard handler.
+check('★ 内部 history.end 保留，玩家撤销入口已移除',
+  mainSrc.includes('this.history.end(')
+    && !mainSrc.includes("$('inkBtnUndo').addEventListener")
+    && !mainSrc.includes("if (e.key === 'z' && (e.ctrlKey || e.metaKey))"));
 
 // ══ Q30 · 收起全部 ══════════════════════════════════════════════════
 section('Q30 · 收起全部（核心区不折）');
