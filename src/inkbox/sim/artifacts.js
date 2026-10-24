@@ -408,6 +408,12 @@ export function claimGroundArtifact(world, entity, artifactId, rng, kind = 'foun
   a.lostDay = world.day;
   a.x = x;
   a.y = y;
+  // 「遗落」也是履历的一部分（万象拾趣 P1）：此前只有易主写履历，
+  // 于是一件东西「何时何地丢了」在自己的历史上是一片空白，
+  // 后来人捡到它时只能看到「found」，看不到中间那段无主的岁月。
+  // kind 不在 TRANSFER_KINDS 里 ⇒ `ownerLine` 的历代主人链不受影响；
+  // 履历上限 HISTORY_CAP 照常兜底，存档形状不变（history 整组随对象存）。
+  pushHistory(a, world.day, 'lost', null);
   world.artifacts.push(a);
   // 地上满了就朽掉「躺得最久」的那件
   while (world.artifacts.length > GROUND_CAP) {

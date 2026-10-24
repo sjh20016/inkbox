@@ -47,6 +47,7 @@
     "build": "node scripts/inkbox-package.mjs",
     "test": "npm run test:core",
     "test:core": "node scripts/inkbox-import-check.mjs && node scripts/inkbox-core-check.mjs && node scripts/inkbox-startup-check.mjs && node scripts/inkbox-runtime-events.mjs",
+    "test:wanxiang": "node scripts/inkbox-wanxiang-check.mjs",
     "test:runtime-events": "node scripts/inkbox-runtime-events.mjs",
     "test:regression": "node scripts/inkbox-intervention-regression.mjs",
     "test:save-equivalence": "node scripts/inkbox-save-equiv.mjs",
@@ -139,7 +140,8 @@
     "test:p1": "node scripts/inkbox-p1-navigation.mjs",
     "test:p1:browser": "node scripts/inkbox-p1-browser.mjs && node scripts/inkbox-p1-loop-browser.mjs",
     "test:p1:loop:browser": "node scripts/inkbox-p1-loop-browser.mjs",
-    "test:browser-tools": "node scripts/inkbox-cdp-ownership-test.mjs && node scripts/inkbox-owned-server-check.mjs"
+    "test:browser-tools": "node scripts/inkbox-cdp-ownership-test.mjs && node scripts/inkbox-owned-server-check.mjs",
+    "test:wanxiang:browser": "node scripts/inkbox-wanxiang-browser.mjs"
   },
   "dependencies": {
     "three": "0.186.1"
