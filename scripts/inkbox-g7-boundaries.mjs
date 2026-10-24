@@ -43,6 +43,13 @@ function bindPersistence(sb,{save,load}){
   new Function('$','saveToStorage','loadFromStorage','listSlots','plainSaveTag','Life','mulberry32',source.slice(start,end))
     .call(sb,id=>element(id),save,load,()=>[],()=>'',Life,mulberry32);
 }
+function bindImport(sb,importer){
+  const start=source.indexOf("    $('inkBtnImport').addEventListener('click'");
+  const end=source.indexOf('    // Q40：',start);
+  assert(start>0&&end>start);
+  new Function('$','importFile','Life','mulberry32',source.slice(start,end))
+    .call(sb,id=>element(id),importer,Life,mulberry32);
+}
 try{
   {
     const sb=sandbox(),q=sb.qol;q.markDirty('terrain');const revision=q.editRevision();
@@ -77,6 +84,17 @@ try{
     assert(sb.qol.confirmOpen());assert(element('inkConfirmText').textContent.includes(sb.qol.slotLabel('slot1')));
     element('inkSlotSelect').value='slot2';sb.qol.closeConfirm(true);assert.equal(loadedSlot,'slot1');
     gate.resolve(new World(32,24,999));await tick();assert.equal(sb.world.seed,999);assert(!sb.qol.isDirty());checks++;
+  }
+  {
+    const sb=sandbox(),gate=deferred(),original=sb.world;
+    bindImport(sb,()=>gate.promise);
+    const input=element('inkImportFile');input.value='same-world.json';input.files=[{name:'same-world.json'}];
+    input.listeners.change({target:input});assert(sb.qol.isBusy('inkBtnImport'));
+    sb.qol.markDirty('terrain');gate.resolve(new World(32,24,999));await tick();
+    assert.equal(sb.world,original,'async import cannot overwrite a newer edit');assert(sb.qol.isDirty());
+    assert(sb.notices.some(s=>s.includes('请重新导入')));
+    assert.equal(input.value,'','stale import must let the player select the same file again');
+    assert(!sb.qol.isBusy('inkBtnImport'));checks++;
   }
   {
     const sb=sandbox(),start=source.indexOf('  applyTool(isFirst,'),end=source.indexOf('\n  rebuildVillageCache()',start);

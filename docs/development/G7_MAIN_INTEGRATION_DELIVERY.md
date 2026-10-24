@@ -12,7 +12,7 @@
 | [C1 #35](https://github.com/sjh20016/inkbox/pull/35) | `3b029da236d38102b6e56972963b9e538c88de43` | `603ccd12967b6b2d47e439a582c9a73ead347c8f` | [成功](https://github.com/sjh20016/inkbox/actions/runs/39948002463) |
 | [P0 #36](https://github.com/sjh20016/inkbox/pull/36) | `72b5c2e09ec94fb01739d3824830af986be94903` | `12b4f3b0a365d4de54d3d573d58cf98351c7029f` | [成功](https://github.com/sjh20016/inkbox/actions/runs/40040713223) |
 
-C1/P0 的 base 在各自上游合流后依次改为 main。G7 产品修复提交为 `01198bf`，定向门禁提交为 `2fa6b59`；该源码 [Fast / Heavy 成功](https://github.com/sjh20016/inkbox/actions/runs/40098342947)。随后 `962ee4e` 接回上述 main 合并历史，tree 与 `2fa6b59` 完全一致。G7 [PR #38](https://github.com/sjh20016/inkbox/pull/38) 已改以 main 为 base；最终 main HEAD 为该 PR 的实际 merge commit，最新提交门禁见 [PR checks](https://github.com/sjh20016/inkbox/pull/38/checks) 与 [main Actions](https://github.com/sjh20016/inkbox/actions?query=branch%3Amain)。最终 SHA/运行号另随交付回执记录，不能以早期源码成功替代最终门禁。
+C1/P0 的 base 在各自上游合流后依次改为 main。G7 产品修复提交为 `01198bf`，定向门禁提交为 `2fa6b59`；该源码 [Fast / Heavy 成功](https://github.com/sjh20016/inkbox/actions/runs/40098342947)。随后 `962ee4e` 接回上述 main 合并历史，tree 与 `2fa6b59` 完全一致；交付文档提交 `f5326a4` 的 [Fast / Heavy 也成功](https://github.com/sjh20016/inkbox/actions/runs/40100910323)。导入同文件重试清理另随最终补丁交付。G7 [PR #38](https://github.com/sjh20016/inkbox/pull/38) 已改以 main 为 base；最终 main HEAD 为该 PR 的实际 merge commit，最新提交门禁见 [PR checks](https://github.com/sjh20016/inkbox/pull/38/checks) 与 [main Actions](https://github.com/sjh20016/inkbox/actions?query=branch%3Amain)。最终 SHA/运行号另随交付回执记录，不能以早期源码成功替代最终门禁。
 
 G6 [#30](https://github.com/sjh20016/inkbox/pull/30) 仍独立 Draft，HEAD `79a9c50cd2f5da3c048e7d53a64c0abe7923523a`。Opus `feat/art-shanhai-ruins-v01` 为 `81772452f15cc0b242049f535d6f71976ee51335`，未修改、合并或清理。原 E0/C1/P0 交付文档的 Draft 描述保留为历史快照，当前状态由本文与 GitHub 为准。
 
@@ -22,7 +22,7 @@ G6 [#30](https://github.com/sjh20016/inkbox/pull/30) 仍独立 Draft，HEAD `79a
 |---|---|
 | Canvas 拖动取消仍留下改地/水史 | 旧 pointercancel 共用提交出口。拖动先收集待执行笔画，松手才调用正式工具；取消、失焦、世界更换丢弃队列。75ms 长按采样与同格次数保留，水笔整笔聚合；click 工具仍在按下时完成一次正式事务。 |
 | 保存期间新操作被标为已保存 | 单一 dirty 布尔值无法区分保存前后。UI 会话编辑版本号随有效编辑递增，保存只清除自己捕获的版本；新一笔保留 dirty 并提示。没有改 World、save schema 或 RNG。 |
-| 等待读档/导入时覆盖新操作；确认中改槽读错档 | 点击时固定槽/世界；确认后固定编辑版本，await 后再次校验。新改动保留并提示重新读取；导入沿用相同身份保护。 |
+| 等待读档/导入时覆盖新操作；确认中改槽读错档 | 点击时固定槽/世界；确认后固定编辑版本，await 后再次校验。新改动保留并提示重新读取；导入沿用相同身份保护，finally清空文件输入，冲突后可以立即重选同一文件。 |
 | 拒绝的赐根仍触发卜算子反应 | applyTool 原来无条件调用反应。现在只有真实 changed 或 persistentChanged 才反应，拒绝不消费该工具随机流；无效抽水明确告知没有减少积水。 |
 | Three 施法后无法从符匣选回检视 | R1 原生工具镜像跳过 inspect。恢复正式检视按钮，点击真实人物打开同一命簿。 |
 
@@ -37,14 +37,14 @@ World / Life / powers 仍拥有结算，UI/Stage/Three 读取事实，不新增 
 3. **宗门供给**：自然生成宗门1庚金门及关联村3松驿；30日后粮草0→0.3981，灵石20→20.46529。再推进36个月为37.21585灵石/5.8032粮草；CPU供给守恒、断供/恢复招收反例另由 C1 原门禁保护。
 4. **干预/回访**：记挂真实村3，原生Three两次洪水使HP100→84→68，穿插6笔真实抽水、留下6条回声。未把退水当成即时补人/修屋。活动洪水存入槽2再原生读取，人物身份、宗门库存、记挂、笔录、1723个临时水格及两个原事件到期日一致。
 5. **到期/付费援助**：读档后推进30日，两洪水事件与临时格均归零；松驿HP68→76.8，可用屋18/损毁1，人口18。庚金门已支付灵石2，库存37.21585→35.68115（期间另有自然收入），援助日15540；回访准确显示“恢复中”，没有把自然结果强行归因于抽水。槽3另核对已付援助的保存恢复。
-6. **并发安全**：仅延迟原生压缩流的输出以稳定复现等待窗口；正式保存中用鼠标焚林，存入旧林木1、当前0.25，新操作保留dirty且有提示。读取确认中把槽3改选槽1，确认仍读取原请求槽3。延迟原生解压输出，等待读取时真实焚林，读取被拒绝覆盖、当前World对象与新改动保留。测试后原生codec恢复，未改生产codec或存档。
+6. **并发安全**：仅延迟原生压缩流的输出以稳定复现等待窗口；正式保存中用鼠标焚林，存入旧林木1、当前0.25，新操作保留dirty且有提示。读取确认中把槽3改选槽1，确认仍读取原请求槽3。延迟原生解压输出，等待读取时真实焚林，读取被拒绝覆盖、当前World对象与新改动保留。测试后原生codec恢复，未改生产codec或存档。另以真实文件输入延迟File.text，导入等待中原生抬山使编辑版本3→5，冲突保留原World且清空文件框；再次选择同一JSON成功导入并清脏。该补验与冷启动均为Edge155/AMD610M/D3D11，JS/控制台错误0，GL error0；报告/截图在 `reports/local/g7/import-retry-browser/` 与 `final-browser/`。
 7. **操作/显示**：1366×768、1280×720、720×800；整界上/幽冥与UI纸色同步；1280原生闭合2310格幽冥窗，仍在Three。W移动51.29渲染单位，帮助打开时W不移镜头。书架、人物命簿、宗门卷、卜算子收起与存读档入口可操作。真实陡坡灵脉均回退圆环，原生拾取仍为leyline ID1，山体线刻保留。
 
 Canvas 另用真实 touchStart/touchCancel：350ms预览后完整 serializeWorld 与编辑版本完全不变；2秒长按收集27次施力，松手后的高度变化0.56477（短点0.078），取消没有有效历史。长按释放观察到一次89ms Long Task，不是持续RAF回退或GPU计时。
 
 本机原始证据在 ignored `reports/local/g7/browser/trail.json` 与同目录PNG：`03`赐根、`04`读档人物、`07/08`洪水抽水、`09`活动洪水读档、`10`到期/付费援助回访、`11/12`异步警告、`13/14`取消/长按、`15/16`整界、`18b`原生划窗、`19/20`两尺寸命簿、`21`窄屏存档菜单、`22`真实灵脉ID、`23`宗门卷。截图不进入运行包；路径序号对应完整PNG名。
 
-保留探针失败：初次读档未暂停而年龄正常增加，暂停后恢复精确核对；首轮CDP mouseMove错误使用buttons0导致划窗中断，显式buttons1后真实路径通过；探针错用save模块路径产生一次404，错读World.sects而非factions导致末尾统计失败。这些是验证脚本错误，未用于证明产品通过。最终console.error为空；原错误记录不删除，不能声称整段采集零错误。自有Edge进程/profile清理 complete=true。
+保留探针失败：初次读档未暂停而年龄正常增加，暂停后恢复精确核对；首轮CDP mouseMove错误使用buttons0导致划窗中断，显式buttons1后真实路径通过；探针错用save模块路径产生一次404，错读World.sects而非factions导致末尾统计失败。冷启动首次遇DevTools文件临时EBUSY后重试成功；导入重试首轮植林落点无实际编辑，改为明确可抬干地并核验版本递增后通过。这些失败未用于证明产品通过，原件保留；不能声称整段采集零错误。自有Edge进程/profile清理 complete=true。
 
 ## 定向回归与性能边界
 
