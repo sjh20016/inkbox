@@ -25,6 +25,7 @@
 
 import { APP, NEVER_DECAY_DAY, WORLD_PRESETS } from '../core/config.js';
 import { World } from '../world/World.js';
+import { readObserveEcho, restoreObserveEcho } from '../sim/observeEcho.js';
 import { snapshotNature, restoreNature } from '../sim/nature.js';
 import { OVER, recomputeAll, recomputeQi } from '../world/terrain.js';
 import { DAO_PATHS, TRIBULATION_OMENS } from '../core/cultivation.js';
@@ -729,6 +730,7 @@ export function serializeWorld(world, meta = {}) {
     ...(world.nether ? { nether: serializeNetherWorld(world.nether) } : {}),
     ...(world.generation ? { generation: { ...world.generation } } : {}),
     ...(world.mapProgress ? { mapProgress: { ...world.mapProgress } } : {}),
+    ...(world.observeEcho ? { observeEcho: readObserveEcho(world) } : {}),
     meta,
   };
 }
@@ -1143,6 +1145,8 @@ function deserializeNetherWorld(data, mortalSeed) {
  *   传错不会报错，只会把整层地气按另一套公式覆盖掉。
  */
 function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
+  const echo = restoreObserveEcho(data.observeEcho);
+  if (echo) world.observeEcho = echo;
   world.day = data.day || 0;
   world.year = data.year || 0;
   world.nextEntityId = data.nextEntityId || 1;

@@ -154,7 +154,7 @@ export const TOOLS = Object.freeze([
     mode: 'drag', amount: 0.02,
     apply: (c) => P.addWater(c.world, c.x, c.y, c.radius, c.amount, c.history),
   }),
-  T('drain', '抽水', '🫗', 'water', '抽走积水，可以把海抽干，露出海床', {
+  T('drain', '抽水', '🫗', 'water', '抽走范围内积水，松手留一笔回声；可尝试撤销，后续演化可能阻止撤销。退水不等于村庄立即恢复', {
     mode: 'drag', amount: 0.03,
     apply: (c) => P.removeWater(c.world, c.x, c.y, c.radius, c.amount, c.history),
   }),
@@ -194,11 +194,11 @@ export const TOOLS = Object.freeze([
   }),
 
   // ── 天灾 ──────────────────────────────────────────────
-  T('lightning', '雷霆', '⚡', 'disaster', '一击落地：点燃草木，抹掉一圈生灵', {
+  T('lightning', '雷霆', '⚡', 'disaster', '击伤近处生灵并点燃草木；生灵伤亡不能撤销，地表回退仍可能被后续演化阻止', {
     mode: 'click',
     apply: (c) => P.lightning(c.world, c.x, c.y, c.history),
   }),
-  T('meteor', '陨石', '☄', 'disaster', '砸出环形坑，坑心化为熔岩', {
+  T('meteor', '陨石', '☄', 'disaster', '砸出熔岩坑并杀伤近处生灵；生灵伤亡不能撤销，地表可尝试回退', {
     mode: 'click',
     apply: (c) => P.meteor(c.world, c.x, c.y, c.radius, c.history),
   }),

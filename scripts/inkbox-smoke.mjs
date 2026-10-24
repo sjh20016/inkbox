@@ -306,6 +306,43 @@ const meteorR = 7;
 const meteorCx = Math.round(meteorX);
 const meteorCy = Math.round(meteorY);
 const meteorCenterIdx = world.idx(meteorCx, meteorCy);
+// 用正式 Life.spawn 造一个可识别的修士，并把他放在合法地形上的灾害范围内。
+// 旧固定坐标在自然分布变化后常常无人，令后续死亡断言变成空样本。
+const spawnDisasterVictim = (x, y, radius, id, name) => {
+  let spot = null;
+  let bestD2 = Infinity;
+  for (let ty = 0; ty < world.h; ty += 1) {
+    for (let tx = 0; tx < world.w; tx += 1) {
+      const dx = tx + 0.5 - x;
+      const dy = ty + 0.5 - y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 > radius * radius || d2 >= bestD2 || !world.isWalkable(world.idx(tx, ty))) continue;
+      if (world.entities.some((e) => (e.x - (tx + 0.5)) ** 2 + (e.y - (ty + 0.5)) ** 2 < 1)) continue;
+      spot = [tx, ty];
+      bestD2 = d2;
+    }
+  }
+  if (!spot) return null;
+  const before = world.entities.length;
+  life.spawn(spot[0] + 0.5, spot[1] + 0.5, SPECIES.CULTIVATOR, 1);
+  if (world.entities.length !== before + 1) return null;
+  const victim = world.entities[world.entities.length - 1];
+  victim.x = spot[0] + 0.5;
+  victim.y = spot[1] + 0.5;
+  victim.id = id;
+  victim.name = name;
+  victim.level = 1;
+  victim.hp = 1;
+  victim.age = 1;
+  victim.lifespan = Math.max(victim.lifespan, 10000);
+  return victim;
+};
+const meteorVictim = spawnDisasterVictim(meteorX, meteorY, meteorR + 2, 990001, '陨石验收者');
+check('陨石死亡夹具：正式 Life.spawn 修士位于合法地形且使用明确 ID',
+  !!meteorVictim && world.isWalkable(world.idx(Math.floor(meteorVictim.x), Math.floor(meteorVictim.y)))
+    && meteorVictim.id === 990001 && meteorVictim.hp > 0,
+  meteorVictim ? `${meteorVictim.name} #${meteorVictim.id} @(${meteorVictim.x},${meteorVictim.y})`
+    : '范围内找不到可走且未占用的格子');
 const heightBeforeMeteor = world.height.slice();
 const overBeforeMeteor = world.over.slice();
 const mres = meteor(world, meteorX, meteorY, meteorR, history);
@@ -333,6 +370,7 @@ check('陨石坑心覆盖层真的变了（坑心被设成熔岩，over 不是�
 //   什么会变红：又有人绕开 `onDeath` 直接把人剪掉（(b) 的入册数掉下来，
 //   而 (a) 照样绿——这正是旧断言查不出来的那种坏）；或杀伤数与实际标记数对不上。
 const deadTotalBeforeMeteor = world.deadLog.total;
+const soulLogBeforeMeteor = { ...world.soulLog };
 const mr2 = (meteorR + 2) * (meteorR + 2);
 const markedMeteor = world.entities
   .filter((e) => (e.x - meteorX) ** 2 + (e.y - meteorY) ** 2 <= mr2 && e.hp <= 0)
@@ -347,6 +385,7 @@ const claimedMeteor = (String(mres).match(/(\d+) 人罹难/) || [null, '0'])[1];
 check('陨石：施法后立刻有恰好「文案里报的」个生灵被标记（hp <= 0，尚未移除）',
   typeof mres === 'string' && mres.length > 0
   && markedMeteor.length > 0
+  && markedMeteor.includes(990001)
   && Number(claimedMeteor) === markedMeteor.length,
   `文案报 ${claimedMeteor} 人 · 当场被标记 ${markedMeteor.length} 人`);
 life.step(1);
@@ -356,7 +395,13 @@ const goneMeteor = markedMeteor.filter((id) => !world.entities.some((e) => e.id 
 check('陨石：这些人在下一次 step() 后全部经 onDeath 入册（necrology / deadLog）',
   markedMeteor.length > 0
   && recordedMeteor === Number(claimedMeteor) && goneMeteor === Number(claimedMeteor)
-  && world.deadLog.total - deadTotalBeforeMeteor >= Number(claimedMeteor),
+  && world.deadLog.total - deadTotalBeforeMeteor >= Number(claimedMeteor)
+  && world.dead.find((r) => r.id === 990001)?.cause === '殁'
+  && typeof world.dead.find((r) => r.id === 990001)?.soulRoute === 'string'
+  && world.dead.find((r) => r.id === 990001)?.soulRoute.length > 0
+  && Object.keys(soulLogBeforeMeteor).some((route) =>
+    world.soulLog[route] === soulLogBeforeMeteor[route] + 1
+    && world.dead.find((r) => r.id === 990001)?.soulRoute === route),
   `被标记 ${markedMeteor.length} · 已移除 ${goneMeteor} · 已入名录 ${recordedMeteor}`
   + ` · deadLog.total +${world.deadLog.total - deadTotalBeforeMeteor}`);
 
@@ -370,6 +415,12 @@ const boltY = boltTarget?.y ?? (py + 10);
 const boltR = 4;                       // 与 powers.js 里 `const r2 = 4 * 4` 同源
 const boltIdx = world.idx(Math.max(0, Math.min(world.w - 1, Math.round(boltX))),
   Math.max(0, Math.min(world.h - 1, Math.round(boltY))));
+const boltVictim = spawnDisasterVictim(boltX, boltY, Math.sqrt(boltR * boltR), 990002, '雷霆验收者');
+check('雷霆死亡夹具：正式 Life.spawn 修士位于合法地形且使用明确 ID',
+  !!boltVictim && world.isWalkable(world.idx(Math.floor(boltVictim.x), Math.floor(boltVictim.y)))
+    && boltVictim.id === 990002 && boltVictim.hp > 0,
+  boltVictim ? `${boltVictim.name} #${boltVictim.id} @(${boltVictim.x},${boltVictim.y})`
+    : '范围内找不到可走且未占用的格子');
 const hBeforeBolt = world.height[boltIdx];
 const bolt = lightning(world, boltX, boltY, history);
 history.end('雷霆');
@@ -377,6 +428,7 @@ history.end('雷霆');
 //   守的是「施法即同步移除」——而那正是绕开 `onDeath`、让死讯隐身的那个 bug。
 //   新契约下移除延迟到下一次 `step()`，故拆成 (a) 当场标记数、(b) 入册数两段。
 const deadTotalBeforeBolt = world.deadLog.total;
+const soulLogBeforeBolt = { ...world.soulLog };
 const br2 = boltR * boltR;
 const markedBolt = world.entities
   .filter((e) => (e.x - boltX) ** 2 + (e.y - boltY) ** 2 <= br2 && e.hp <= 0)
@@ -393,6 +445,7 @@ check('雷霆落点生效（抬高落点地形，且施法后立刻有恰好「�
   (world.height[boltIdx] > hBeforeBolt || hBeforeBolt >= 1)
   && typeof bolt === 'string' && bolt.length > 0
   && markedBolt.length > 0
+  && markedBolt.includes(990002)
   && Number(claimedBolt) === markedBolt.length,
   `killed=${claimedBolt} · 当场被标记 ${markedBolt.length} 人`
   + ` · 高度 ${hBeforeBolt.toFixed(4)} → ${world.height[boltIdx].toFixed(4)}`);
@@ -406,7 +459,13 @@ const goneBolt = markedBolt.filter((id) => !world.entities.some((e) => e.id === 
 check('雷霆：这些人在下一次 step() 后全部经 onDeath 入册（necrology / deadLog）',
   markedBolt.length > 0
   && recordedBolt === Number(claimedBolt) && goneBolt === Number(claimedBolt)
-  && world.deadLog.total - deadTotalBeforeBolt >= Number(claimedBolt),
+  && world.deadLog.total - deadTotalBeforeBolt >= Number(claimedBolt)
+  && world.dead.find((r) => r.id === 990002)?.cause === '殁'
+  && typeof world.dead.find((r) => r.id === 990002)?.soulRoute === 'string'
+  && world.dead.find((r) => r.id === 990002)?.soulRoute.length > 0
+  && Object.keys(soulLogBeforeBolt).some((route) =>
+    world.soulLog[route] === soulLogBeforeBolt[route] + 1
+    && world.dead.find((r) => r.id === 990002)?.soulRoute === route),
   `被标记 ${markedBolt.length} · 已移除 ${goneBolt} · 已入名录 ${recordedBolt}`
   + ` · deadLog.total +${world.deadLog.total - deadTotalBeforeBolt}`);
 

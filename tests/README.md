@@ -1,5 +1,9 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:e0` 定向验证一座聚落的记挂、真实抽水笔录、同名旧址身份、地方史保留边界、撤销和世界存档，以及 Three 一次手势的正式抽水事务。已加入 Fast；Canvas/Three 实际拾取、书架回访、窄屏与浏览器保存仍需单独操作验收。
+
+长局只读画像手动执行 `node scripts/inkbox-e0-profile.mjs --run`，默认三个正常种子各 300 年与一个明确标注的 100 年视界压力样本，输出在 `reports/local/e0/profile/`；不加入 Fast/Heavy。原始 JSON UTF8 字节、JavaScript 码元与浏览器实际压缩槽位分别取证。
+
 `npm run test:s0` 检查静态水域、Canvas/Three 撤销、重叠洪水、环境绝对到期日、大步结算、存档事件还原、云雾批次和远景植被；已加入 Fast。旧生态门禁保留原有战斗、分类、缓存和存档检查，将自然随机生长/蔓延断言迁移为有限事件语义。`test:s0:interactions` 是隔离 Edge 实际交互检查；`test:s0:browser` 是指定种子、GPU、两档幅面的短样本，需先启动服务器（默认 4198，也可设 `INKBOX_URL`）。这两项均为手动入口，不替代完整 Browser Smoke 或耐久测试。结果与限制见 [S0 交付说明](../docs/development/S0_P0_DELIVERY.md)。
 
 `npm run test:r1` 检查线刻缓冲复用/扩容/释放、实际三角面高程一致性、分帧提取与原始结果一致、取消和区域等待帧，以及自然雕刻的正式事务、权限和撤销/重做；已加入 Fast。它是 CPU 契约检查，不能替代真实 GPU 着色器读回、五档尺寸操作、资源循环和同机性能对照；本轮实测与限制见 [R1 记录](../docs/development/R1_ART_UI_INTEGRATION.md)。

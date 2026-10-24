@@ -81,7 +81,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
       b.replaceChildren(stone, el('span', 'r1-seal-label', label));
       const proxy = button('', 'group', () => {
         const group = b.dataset.group;
-        if (group === 'terrain' || group === 'view') openArts(group);
+        if (group === 'terrain' || group === 'view' || group === 'water') openArts(group);
         else {
           // Unsupported 3D powers use the existing Canvas switch and button.
           $('inkRender3DTools')?.querySelector('[data-action="toggle"]')?.click();
@@ -172,7 +172,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
     for (const [i, option] of [...select.options].entries()) {
       if (option.value === 'inspect' || option.value === 'burn') continue;
       const b = button('', 'ink-tool', () => { select.value = option.value; select.dispatchEvent(new win.Event('change', { bubbles: true })); sync(); });
-      b.dataset.nativeMode = option.value; b.dataset.nativeGroup = option.value.startsWith('view') ? 'view' : 'terrain'; b.title = option.textContent;
+      b.dataset.nativeMode = option.value; b.dataset.nativeGroup = option.value.startsWith('view') ? 'view' : option.value === 'drain' ? 'water' : 'terrain'; b.title = option.value === 'drain' ? '抽水 · 松手提交一笔，可尝试撤销；后续演化可能阻止撤销' : option.textContent;
       const symbols = el('span', 'r1-tool-symbols'); symbols.innerHTML = crown + ring;
       const sigil = el('span', 'r1-tool-foot'); sigil.innerHTML = foot(i);
       b.append(symbols, el('span', 'r1-tool-glyph', option.textContent[0]), el('span', 'ink-tool-name', option.textContent), sigil); strips.append(b);
@@ -202,6 +202,8 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
     const target = name === '世界' ? summary : volumes.get(key); move(title, target);
     if (content?.classList.contains('sec-body')) move(content, target);
   }
+  move($('inkObserveEcho'), volumes.get('yi'));
+  if ($('inkObserveEcho')) volumes.get('yi').prepend($('inkObserveEcho'));
   right.prepend(summary); move(doc.querySelector('.p1-observe-nav'), right); right.insertBefore(doc.querySelector('.p1-observe-nav'), shelfHead);
   const collapse = $('inkBtnCollapseAll'); if (collapse) { move(collapse, settings); }
   function selectVolume(key, reveal = true) {
