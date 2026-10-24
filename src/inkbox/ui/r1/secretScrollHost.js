@@ -169,7 +169,6 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
     decorations.push(() => { panel.replaceChildren(...original); panel.classList.remove('r1-native-panel'); });
     const select = panel.querySelector('select[aria-label="沙盘工具"]');
     for (const [i, option] of [...select.options].entries()) {
-      if (option.value === 'inspect') continue;
       const b = button('', 'ink-tool', () => { select.value = option.value; select.dispatchEvent(new win.Event('change', { bubbles: true })); sync(); });
       b.dataset.nativeMode = option.value;
       b.dataset.nativeGroup = TOOL_BY_ID[option.value]?.group || (option.value.startsWith('view') ? 'view' : 'terrain');

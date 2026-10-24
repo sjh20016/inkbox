@@ -113,6 +113,12 @@ jobs:
       - name: C1 绝对成年、修为寿元、真实出生与宗门供养
         run: npm run test:c1
 
+      - name: P0 三维输入、有界水体与真实神力表现
+        run: npm run test:p0
+
+      - name: G7 取消事务、异步存读档与拒绝神力边界
+        run: npm run test:g7
+
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0
 

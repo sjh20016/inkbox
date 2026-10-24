@@ -1,5 +1,9 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:g7` 检查正式 Canvas 拖动的确认/取消、长按力度与水体手势聚合，以及异步保存不清除新编辑、读档固定槽位/保留等待期间的新操作、拒绝神力不消耗玩家工具随机流。它执行正式监听器和 QoL 控制器，加入 Fast；真实菜单、身份、宗门援助与双 renderer 连贯试玩另留浏览器证据。
+
+`npm run test:p0` 复用 P0 的输入/三界、有限水体/洪水归属、真实神力结果与有界三维表现 CPU 检查，加入 Fast。它不替代实际 GPU 试玩或性能对照；已有 P0 场景和硬件边界见 [P0 交付](../docs/development/P0_THREE_PLAYER_EXPERIENCE_DELIVERY.md)。
+
 `npm run test:c1` 集中检查绝对18岁成年、凡人出生与真实双亲、转世身份与0级寿元、真实修炼延寿/折寿、守恒供养与断供恢复收徒，以及均质地形领地洪泛终止性。已加入 Fast。
 
 C1 有限画像为 `npm run profile:c1 -- --run --out=reports/local/c1/profile-final`（三个正常种子各300年及和平队列），另用 `--supply-only --out=reports/local/c1/profile-final` 生成15年断供/洪水/抽水对照及两个真实存档。启动服务器后用 `INKBOX_URL` 指定地址运行 `npm run test:c1:browser`，默认4207；浏览器需要这两个对照存档。`npm run profile:c1:cpu -- --baseline=<E0源码目录>` 是512×320有限CPU对照，需要基线的 `src/` 和 `package.json`，不测GPU。以上手动项不进入 Fast/Heavy；结论及边界见 [C1交付记录](../docs/development/C1_MORTAL_FOUNDATION_DELIVERY.md)。
