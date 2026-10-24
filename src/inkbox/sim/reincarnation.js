@@ -26,10 +26,10 @@
 // 接回原类型之后，既有逻辑立刻就能用上，而且语义也更对——
 // 「前世故人循因果找上今生」，找上来的本来就是旧日那种关系。
 
-import { TIME } from '../core/config.js';
+import { TIME, SPECIES_INFO } from '../core/config.js';
 import { clamp } from '../core/noise.js';
 import { RELATION_TYPES } from './relations.js';
-import { lifespanFor, realmFor, realmLabel } from './cultivation.js';
+import { realmLabel } from './cultivation.js';
 // 名册侧的回填（见 `necrology.js` 的 `markSoulRoute`）。方向是**单向**的：
 // 本模块 → necrology，而 necrology **不**import 本模块（它要的中文路名在界面层拼），
 // 所以这条新边**不引入新的 import 环**。⚠️ 别顺手把 `ROUTE_LABEL` 挪过来给
@@ -626,26 +626,31 @@ export function takeDueSoul(world) {
 /**
  * 把神魂附到新生儿身上。
  *
- * ⚠️ 调用方必须**先把实体 awaken 成修士**再调这里，否则 `level` 还是 0，
- * `lifespan` 也还是凡人的，转世者会当场变成一个「带着前世记忆的凡人」，
- * 而且此后永远不会想起前世（觉醒的触发条件之一是境界）。
+ * 只接真实新生儿，不先 awaken：前世身份与修为是两回事。
+ * 保留潜力与记忆，0 级只拥有凡人出生寿元；15 年的记忆觉醒也不自动入门。
  */
 export function attachSoul(world, entity, soul, rng) {
+  void world; void rng;
+  entity.level = 0;
+  entity.exp = 0;
   entity.incarnation = (soul.incarnation || 1) + 1;
   entity.soulId = soul.id;
   // 前世灵根：境界够高的会把它带过来，并且资质再抬一档
   if (soul.ofLevel >= 20 && soul.ofRoot) {
-    entity.root = soul.ofRoot;
+    entity.root = { ...soul.ofRoot, elements: [...(soul.ofRoot.elements || [])] };
     if (soul.ofLevel >= 30 && entity.root && typeof entity.root === 'object') {
       entity.root = { ...entity.root, quality: Math.min(4, (entity.root.quality || 0) + 1) };
     }
   }
-  entity.lifespan = lifespanFor(entity.level || 1) * 360 * (0.85 + rng() * 0.3);
+  // 出生路径已抽取 60–65 年个体差异；兼容直接附魂夹具时不抽第二份寿元。
+  if (!(entity.lifespan >= 60 * TIME.daysPerYear && entity.lifespan <= 65 * TIME.daysPerYear)) {
+    entity.lifespan = SPECIES_INFO.human.lifespan;
+  }
   entity.hp = entity.maxHp;
   entity.pastLife = {
     name: soul.ofName,
     level: soul.ofLevel,
-    realm: realmLabel(realmFor(soul.ofLevel)),
+    realm: realmLabel(soul.ofLevel),
     fragments: soul.fragments,
     sect: soul.ofSectName,
     bonds: soul.bonds,

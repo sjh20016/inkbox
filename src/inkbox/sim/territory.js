@@ -219,8 +219,13 @@ export function growLabeled(world, seeds, budgets, costs) {
       const ni = ny * w + nx;
       const c = costs[ni];
       if (!Number.isFinite(c)) continue;    // 水域与山脊：过不去
-      const nd = d + c;
-      if (nd > budget) continue;
+      const exactNd = d + c;
+      if (exactNd > budget) continue;
+      // dist is Float32Array. Compare against the same rounded value that will
+      // be stored; otherwise an upward Float32 rounding makes this identical
+      // candidate look smaller forever, adding duplicate heap entries each
+      // time its predecessor is popped.
+      const nd = Math.fround(exactNd);
       if (stamp[ni] === gen && dist[ni] <= nd) continue;
       stamp[ni] = gen;
       dist[ni] = nd;

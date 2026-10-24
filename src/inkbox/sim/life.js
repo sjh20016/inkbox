@@ -22,6 +22,7 @@ import {
   SEA_LEVEL, SPECIES, SPECIES_INFO, LIMITS, TERRAIN, TIME,
 } from '../core/config.js';
 import { canAccess } from '../core/mapAccess.js';
+import { ADULT_AGE_DAYS, isAdult, isFertileAge, isHumanPerson, isMortalHuman, hasMortalResidents } from '../core/demographics.js';
 import { clamp, mulberry32 } from '../core/noise.js';
 import { OVER, recomputeRect, markDirty, flushDirty } from '../world/terrain.js';
 import { fireExposure, floodExposure } from './nature.js';
@@ -30,6 +31,7 @@ import {
   initEntity, stepEntity as stepCultivation, combatPower, recordDeath, addKarma, MAX_SITES, placeName,
 } from './cultivation.js';
 import { stepSects, foundSect } from './sects.js';
+import { affiliateSectResident } from './sectEconomy.js';
 import { stepRelations, onDeathRelations, RELATION_TYPES } from './relations.js';
 import { stepFamily, pickParents, registerBirth } from './family.js';
 import { stepWar } from './war.js';
@@ -70,10 +72,10 @@ const TERRAIN_SPEED = Object.freeze({
 const BASE_TILES_PER_DAY = 2.1;
 
 /**
- * 每名村民每天的生育期望。凡人寿元约 4200 天，故维持人口需要 1/4200 ≈ 2.4e-4，
- * 取 4e-4 留一倍冗余，抵消战乱、饥荒、以及觉醒后「不再算凡人」的流失。
+ * Per fertile adult/day, with a real pair, mortal society, food and world caps.
+ * The 18–50 year window replaces the former whole-population short-life rate.
  */
-const BIRTH_PER_CAPITA_DAY = 0.00075;
+const BIRTH_PER_CAPITA_DAY = 0.00035;
 
 /** 满员的村子每天分家外迁的概率。约合每 30 年一次 */
 const SPLIT_PER_DAY = 0.00016;
@@ -104,7 +106,7 @@ const VILLAGE_CAPACITY_BASE = 10;
  * 到那时每个村子都被摊薄成两三个人，画面反而更空。留出余量让人口停在
  * 「热闹但不拥挤」的密度上。
  */
-const POP_SOFT_CAP = 1400;
+export const POP_SOFT_CAP = 1400;
 
 /**
  * 「重伤」的血量比例。低于它就脱离战斗、转入撤退。
@@ -371,8 +373,16 @@ export class Life {
   spawn(x, y, species = SPECIES.HUMAN, count = 1, factionId = 0, opts = {}) {
     const world = this.world;
     const playerPlacement = opts.playerPlacement === true && species === SPECIES.HUMAN;
+    const naturalBirth = opts.allowSouls === true;
+    const parents = opts.parents || null;
+    if (naturalBirth && (!parents?.[0] || !parents?.[1] || parents[0] === parents[1]
+      || !parents.every(parent => world.entities.includes(parent) && isHumanPerson(parent)
+        && isFertileAge(parent) && parent.hp > 0 && !parent._ascended && parent.age < parent.lifespan
+        && parent.village === opts.village)
+      || !hasMortalResidents(world, opts.village))) return 0;
     let created = 0;
     for (let n = 0; n < count; n += 1) {
+      if (world.entities.length >= (naturalBirth ? POP_SOFT_CAP : LIMITS.maxEntities)) break;
       const spot = playerPlacement
         ? this.findSpawnSpot(x, y, 6, { playerPlacement: true })
         : this.findSpawnSpot(x, y, 6);
@@ -380,16 +390,19 @@ export class Life {
       // 转世附魂：只有村庄繁衍才开这个口子（`allowSouls`）。
       // 神力投放的人、野生的灵兽都不该抢神魂——那些不是「投胎」。
       const soul = opts.allowSouls ? takeDueSoul(world) : null;
-      // 带神魂降生的必是修士：能排到转世这一步的都是「值得记一笔」的命，
-      // 让他回来当凡人，等于把前世灵根与记忆碎片全浪费了。
-      const sp = soul ? SPECIES.CULTIVATOR : species;
-      const info = SPECIES_INFO[sp] || SPECIES_INFO.human;
+      // A soul may retain its remembered identity, but every natural baby is
+      // level zero. Direct cultivator spawning is a development fixture only.
+      const sp = soul ? SPECIES.CULTIVATOR : naturalBirth ? SPECIES.HUMAN : species;
+      const info = soul ? SPECIES_INFO.human : SPECIES_INFO[sp] || SPECIES_INFO.human;
       // 取名照旧抽三次（`generateNameParts` 与原来的 `generateName` 逐位同流，
       // 见 core/lore.js 的注释）。拆成「姓 + 名」是为了让世家子弟**继承姓氏**：
       // 抽出来的姓被父姓覆盖——抽签次数一次不多、一次不少。
       const parts = generateNameParts(this.rng);
-      const parents = opts.parents || null;
       const surname = (parents && parents[0] && parents[0].surname) || parts.surname;
+      const human = sp === SPECIES.HUMAN || sp === SPECIES.CULTIVATOR;
+      const lifeRoll = this.rng();
+      const initialAge = opts.genesis || playerPlacement
+        ? ADULT_AGE_DAYS + Math.floor(((parts.given.codePointAt(0) || 0) + world.nextEntityId * 17) % (12 * 360)) : 0;
       const entity = world.addEntity({
         sp,
         x: spot[0] + 0.5,
@@ -398,8 +411,13 @@ export class Life {
         vy: 0,
         hp: info.hp,
         maxHp: info.hp,
-        age: 0,
-        lifespan: info.lifespan * (0.7 + this.rng() * 0.6),
+        age: initialAge,
+        lifespan: human ? SPECIES_INFO.human.lifespan * (0.96 + lifeRoll * 0.08)
+          : info.lifespan * (0.7 + lifeRoll * 0.6),
+        birthOrigin: human ? { kind: naturalBirth ? 'village' : opts.genesis ? 'genesis' : playerPlacement ? 'placed' : 'fixture',
+          day: naturalBirth ? world.day : world.day - initialAge, villageId: opts.village || 0,
+          villageName: world.villageById(opts.village)?.name || null,
+          parentNames: naturalBirth ? parents.map(parent => parent.name) : [] } : null,
         faction: factionId,
         village: opts.village || 0,
         state: 'wander',
@@ -420,7 +438,7 @@ export class Life {
         break;
       }
       if (playerPlacement && typeof opts.onSpawn === 'function') opts.onSpawn(entity);
-      initEntity(entity, this.rng, { cultivator: sp === SPECIES.CULTIVATOR });
+      initEntity(entity, this.rng, { cultivator: !naturalBirth && !soul && sp === SPECIES.CULTIVATOR });
       entity.surname = surname;
       // ── 先天修士也要留一笔 ─────────────────────────────────
       //
@@ -438,11 +456,9 @@ export class Life {
       // ⚠️ 这条**只进个人日志**：`recordLifeEvent` 直接写 `entity.log`，
       // 不经过 `world.record`，所以编年史的窗口预算不受影响。两者别搞混。
       // ⚠️ 它不抽签，所以主随机流一位不动。
-      if (sp === SPECIES.CULTIVATOR) {
-        recordLifeEvent(world, entity, 'cultivate', soul
-          ? `${entity.name} 带着前世的影子降生，落地便已开灵根。`
-          : `${entity.name} 生而有灵根，未及修行便已是修士之身。`);
-      }
+      if (human) recordLifeEvent(world, entity, 'birth', naturalBirth
+        ? `${entity.name} 降生于${entity.birthOrigin.villageName || '村中'}，双亲为${entity.birthOrigin.parentNames.join('、')}；尚未入门。`
+        : `${entity.name} ${opts.genesis ? '在开世人群中现身' : playerPlacement ? '由神力安置为成年凡人' : '由开发夹具创建'}。`);
       // ⚠️ 必须排在 initEntity **之后**：附魂要读 level 与 maxHp，
       // 也要在「已经觉醒」的基础上覆盖寿元。顺序反了，转世者会变成
       // 一个寿元只有凡人长短、且永远想不起前世的修士。
@@ -454,6 +470,7 @@ export class Life {
       if (parents && (parents[0] || parents[1])) {
         registerBirth(world, entity, parents);
       }
+      this.countVillageResident(entity);
       created += 1;
     }
     if (created) world.touch();
@@ -649,12 +666,29 @@ export class Life {
    */
   syncVillagePops() {
     const world = this.world;
-    for (let i = 0; i < world.villages.length; i += 1) world.villages[i].pop = 0;
+    this.villageDemographics = new Map();
+    for (const village of world.villages) {
+      village.pop = 0;
+      this.villageDemographics.set(village.id, { mortals: 0, adults: 0, fertile: 0, humans: 0 });
+    }
     for (let i = 0; i < world.entities.length; i += 1) {
-      const e = world.entities[i];
-      if (!e.village) continue;
-      const v = world.villageById(e.village);
-      if (v) v.pop += 1;
+      this.countVillageResident(world.entities[i]);
+    }
+  }
+
+  countVillageResident(entity) {
+    if (!entity.village || !(entity.hp > 0) || entity._ascended || entity.age >= entity.lifespan) return;
+    const facts = this.villageDemographics?.get(entity.village);
+    if (!facts) return;
+    const village = this.world.villageById(entity.village);
+    if (village) village.pop++;
+    if (isHumanPerson(entity)) {
+      facts.humans++;
+      if (isFertileAge(entity)) facts.fertile++;
+    }
+    if (isMortalHuman(entity)) {
+      facts.mortals++;
+      if (isAdult(entity)) facts.adults++;
     }
   }
 
@@ -694,7 +728,7 @@ export class Life {
     // 加了这一句之后，`hp <= 0` 才真正等于「本 tick 必死」：
     // 它不再行动、不再回血，随后由死亡清扫正常走 `onDeath`。
     if (e.hp <= 0) return false;
-    const info = SPECIES_INFO[e.sp] || SPECIES_INFO.human;
+    const info = isMortalHuman(e) ? SPECIES_INFO.human : SPECIES_INFO[e.sp] || SPECIES_INFO.human;
     e.anim += dtDays * 2.4;
 
     // 修炼推进（内部会累加 age、处理寿元与突破）
@@ -981,6 +1015,7 @@ export class Life {
   }
 
   moveTowards(e, dtDays, info) {
+    if (isMortalHuman(e)) info = SPECIES_INFO.human;
     const world = this.world;
     const dx = e.tx - e.x;
     const dy = e.ty - e.y;
@@ -1399,7 +1434,7 @@ export class Life {
       const e = world.entities[i];
       if (e.faction || e.village) continue;
       if (e.sp !== SPECIES.HUMAN && e.sp !== SPECIES.CULTIVATOR) continue;
-      if (e.age < 300) continue;
+      if (!isAdult(e)) continue;
       settlers.push(e);
     }
     if (settlers.length < 3) return;
@@ -1421,14 +1456,14 @@ export class Life {
       this.forEachNear(tx, ty, 14, (other) => {
         if (other.faction || other.village) return false;
         if (other.sp !== SPECIES.HUMAN && other.sp !== SPECIES.CULTIVATOR) return false;
-        other.faction = village.faction;
+        affiliateSectResident(world, other, nearbySect);
         other.village = village.id;
         other.state = 'return';
         other.timer = 0;
         joined += 1;
         return false;
       });
-      e.faction = village.faction;
+      affiliateSectResident(world, e, nearbySect);
       e.village = village.id;
 
       // 宗门：只有筑基以上、且身上没有宗门归属的修士，才在此开山立派
@@ -1444,7 +1479,7 @@ export class Life {
             sect.villages.push(village.id);
             for (let k = 0; k < world.entities.length; k += 1) {
               const o = world.entities[k];
-              if (o.village === village.id) o.faction = sect.id;
+              if (o.village === village.id && isMortalHuman(o)) o.faction = sect.id;
             }
           }
         }
@@ -1505,6 +1540,7 @@ export class Life {
 
   stepVillages(dtDays) {
     const world = this.world;
+    if (!this.villageDemographics) this.syncVillagePops();
     for (let vi = world.villages.length - 1; vi >= 0; vi -= 1) {
       const village = world.villages[vi];
       village.age += dtDays;
@@ -1580,7 +1616,8 @@ export class Life {
         if (e.village) return false;
         if (e.sp !== SPECIES.HUMAN && e.sp !== SPECIES.CULTIVATOR) return false;
         e.village = village.id;
-        if (!e.faction) e.faction = village.faction;
+        if (!e.faction) affiliateSectResident(world, e, world.factionById(village.faction));
+        this.countVillageResident(e);
         return false;
       });
 
@@ -1588,7 +1625,8 @@ export class Life {
       if (village.pop <= 0) continue;
 
       // 领地：把村周边可耕之地标记为田，形成水墨里的「田垄」
-      if (this.rng() < dtDays * 0.06) {
+      const society = this.villageDemographics.get(village.id) || { humans: 0, mortals: 0, adults: 0, fertile: 0 };
+      if (society.adults > 0 && this.rng() < dtDays * 0.06) {
         const spot = this.findVillageTile(village, 5, (i) => isDryBuildableSettlementTile(world, i) && world.fertility(i) > 0.42);
         if (spot) {
           const i = world.idx(spot[0], spot[1]);
@@ -1620,15 +1658,17 @@ export class Life {
       }
       const workingFields = (village.fieldTiles || []).reduce((count, index) =>
         count + (world.water[index] < SETTLEMENT_FLOOD_DEPTH ? 1 : 0), 0);
-      const yieldPerDay = village.pop * 0.010 * (0.6 + world.fertility(center))
-        + workingFields * FIELD_YIELD_PER_DAY;
+      const effectiveFields = Math.min(workingFields, society.adults * 2);
+      const conditionYield = unsafe ? 0 : clamp(village.hp / 100, 0, 1);
+      const yieldPerDay = (society.adults * 0.018 * (0.6 + world.fertility(center))
+        + effectiveFields * FIELD_YIELD_PER_DAY) * conditionYield;
       village.food += yieldPerDay * dtDays;
-      village.food -= village.pop * dtDays * 0.0085;
+      village.food -= society.humans * dtDays * 0.0085;
       village.food = clamp(village.food, 0, 400);
 
       // 建造
       village.buildCooldown -= dtDays;
-      if (village.buildCooldown <= 0) {
+      if (society.adults > 0 && village.buildCooldown <= 0) {
         village.buildCooldown = 30 + this.rng() * 40;
         const capacity = 3 + village.level * 4;
         const liveHouseCount = village.houses.reduce((count, house) =>
@@ -1663,23 +1703,20 @@ export class Life {
         }
       }
 
-      // 繁衍：按人口算，而不是按村算。
-      // 按村算的话 38 人的村和 3 人的村生得一样多，长期必然负增长而灭绝。
-      // 凡人寿元约 4200 天，所以每人每天约需 1/4200 的生育率才能维持人口；
-      // 取 4e-4 留出约一倍冗余，抵消战乱、饥荒与觉醒流失。
+      // Only a real fertile mortal population can supply the next generation.
       const capacity = VILLAGE_CAPACITY_BASE + village.level * 10;
       const roomLeft = world.entities.length < POP_SOFT_CAP;
-      if (roomLeft && village.pop < capacity && village.food > 20 && village.pop > 0) {
-        const expected = village.pop * BIRTH_PER_CAPITA_DAY * dtDays;
-        const births = Math.floor(expected) + (this.rng() < expected % 1 ? 1 : 0);
+      if (roomLeft && village.pop < capacity && village.food > 20 && society.mortals > 0 && society.fertile > 1) {
+        const expected = society.fertile * BIRTH_PER_CAPITA_DAY * dtDays;
+        const births = Math.min(capacity - village.pop, POP_SOFT_CAP - world.entities.length,
+          Math.floor((village.food - 20) / 5), Math.floor(expected) + (this.rng() < expected % 1 ? 1 : 0));
         if (births > 0) {
-          const innate = this.rng() < 0.1;
           // 双亲：从村里挑一对成年人。**完全确定，不抽签**（见 sim/family.js）——
           // 挑在这里而不是在 spawn 里，是因为「谁生的」得在孩子落地那一刻就定下来。
           // 挑不到双亲也照样生：把出生卡在「有父母」上会直接改掉人口曲线。
           const parents = pickParents(this, village);
           const spawned = this.spawn(
-            cx, cy, innate ? SPECIES.CULTIVATOR : SPECIES.HUMAN, births,
+            cx, cy, SPECIES.HUMAN, births,
             village.faction, { village: village.id, allowSouls: true, parents },
           );
           village.food -= 5 * spawned;
@@ -1730,6 +1767,7 @@ export class Life {
     const migrants = [];
     this.forEachNear(village.x, village.y, 14, (e) => {
       if (e.village !== village.id) return false;
+      if (!isAdult(e) || !isMortalHuman(e) || !isFertileAge(e) || !(e.hp > 0)) return false;
       if (migrants.length >= 4) return true;
       migrants.push(e);
       return false;
@@ -1751,6 +1789,7 @@ export class Life {
       e.timer = 0;
     }
     village.food -= 40;
+    this.syncVillagePops();
     // 村落级事件，无单一当事人：分出去的是整支人马，落不到一个具体的人头上。
     world.record(`${child.name} 自${village.name}分出，另立门户。`, 'settle');
   }

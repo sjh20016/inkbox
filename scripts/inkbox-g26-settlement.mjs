@@ -23,8 +23,9 @@ function fixture() {
   };
   world.villages.push(village);
   const life = new Life(world, () => 0.99);
-  // Building and field work require a real resident after resilience P0.
+  // P0 requires a real resident; C1 building and field work require adulthood.
   assert.equal(life.spawn(12, 12, 'human', 1, 0, { village: village.id }), 1);
+  world.entities[0].age = 18 * 360;
   life.syncVillagePops();
   return { world, village, life };
 }

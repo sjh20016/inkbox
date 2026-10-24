@@ -9,6 +9,8 @@
 // 每个函数都返回一句「发生了什么」的白话，供 UI 提示用。
 
 import { SPECIES } from '../core/config.js';
+import { isMortalHuman } from '../core/demographics.js';
+import { recordSectDisciple, affiliateSectResident } from './sectEconomy.js';
 import { clamp } from '../core/noise.js';
 import { MANUALS, FORBIDDEN_TECHNIQUES, narrate } from '../core/lore.js';
 import { ELEMENTS } from '../core/cultivation.js';
@@ -44,13 +46,14 @@ const byLevelDesc = (a, b) => (b.level || 0) - (a.level || 0);
  */
 export function grantRoot(world, x, y, radius, rng) {
   const targets = near(world, x, y, radius)
-    .filter((e) => (e.level || 0) <= 0 && e.sp === SPECIES.HUMAN && e.hp > 0)
+    .filter((e) => isMortalHuman(e) && e.hp > 0 && !e._ascended && e.age < e.lifespan)
     .slice(0, MAX_TARGETS);
   if (!targets.length) return '范围内没有未觉醒的凡人可点化';
   let n = 0;
   const awakened = [];
   for (const e of targets) {
     if (awaken(e, rng)) {
+      if (world.plane !== 'upper' && world.plane !== 'nether') recordSectDisciple(world, e);
       world.record(`${e.name} 于${placeName(world, e)}觉醒${e.root.rootName}`, 'awaken', e);
       awakened.push(`${e.name}（${e.root.rootName}）`);
       n += 1;
@@ -175,7 +178,7 @@ export function foundSectAt(world, x, y, radius, rng) {
     if (!sect.villages.includes(v.id)) sect.villages.push(v.id);
     for (let m = 0; m < world.entities.length; m += 1) {
       const o = world.entities[m];
-      if (o.village === v.id && !o.faction) o.faction = sect.id;
+      if (o.village === v.id && !o.faction) affiliateSectResident(world, o, sect);
     }
   }
   return `【${sect.name}】开山立派，${founder.name}为开山祖师`;

@@ -469,7 +469,7 @@ function scatterInitialLife(world) {
     const origin = candidates[Math.floor(random() * candidates.length)];
     const ox = origin % world.w;
     const oy = (origin - ox) / world.w;
-    world.pendingSpawns.push({ x: ox, y: oy, species: 'human', count: 6 + Math.floor(random() * 6) });
+    world.pendingSpawns.push({ x: ox, y: oy, species: 'human', count: 6 + Math.floor(random() * 6), genesis: true });
   }
 
   // 荒野生灵：灵兽成小群，山精独居

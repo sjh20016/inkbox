@@ -282,7 +282,7 @@ export function createCharacterCardView(root, { onAction } = {}) {
     put(name, readable(identity.name, "无名之人"));
     put(status, statusLabel(identity.status));
     put(realm, readable(info.realm, "境界未载"));
-    put(summary, [info.ageText, info.affiliation, info.stateText]
+    put(summary, [info.ageText, info.lifespanText, info.affiliation, info.stateText]
       .filter(value => value !== undefined && value !== null && value !== "")
       .map(value => String(value)).join(" · ") || "生平尚待考录");
     const hasProgress = Number.isFinite(cultivationModel.percent) ||

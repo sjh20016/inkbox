@@ -110,6 +110,9 @@ jobs:
       - name: E0 聚落记挂、真实抽水笔录与回访存档
         run: npm run test:e0
 
+      - name: C1 绝对成年、修为寿元、真实出生与宗门供养
+        run: npm run test:c1
+
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0
 

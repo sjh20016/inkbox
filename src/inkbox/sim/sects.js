@@ -22,6 +22,8 @@ import {
 import { speak } from './busanzi.js';
 import { clamp } from '../core/noise.js';
 import { settlementHistory } from './settlementResilience.js';
+import { isAdult, isLivingHuman, isPracticingHuman } from '../core/demographics.js';
+import { affiliateSectResident, sectSupplyStatus, stepSectEconomy, villageSocieties } from './sectEconomy.js';
 import {
   computeTerritory, crossedBoundary, cellOf, leylineAllowance,
 } from './territory.js';
@@ -40,9 +42,12 @@ export function sectCapacity(sect) {
   return Math.floor(SECT_CAPACITY_BASE + sect.reputation / 4);
 }
 
-/** 开宗立派。founder 若为空则为「无主之地自生」的宗门 */
-export function foundSect(world, x, y, founder, rng) {
+/** Formal sects have a living real founder. Empty seats are explicit test fixtures. */
+export function foundSect(world, x, y, founder, rng, { fixture = false } = {}) {
   if (world.factions.length >= LIMITS.maxFactions) return null;
+  if (!fixture && (!founder || !world.entities.includes(founder)
+    || !isPracticingHuman(founder) || !isAdult(founder) || founder.hp <= 0
+    || founder.age >= founder.lifespan || founder._ascended)) return null;
 
   const element = founder && founder.root
     ? founder.root.elements[0]
@@ -79,7 +84,7 @@ export function foundSect(world, x, y, founder, rng) {
 
     reputation: 30,
     stability: 70,
-    resources: { spiritStone: 20, heritage: 5, provisions: 30 },
+    resources: { spiritStone: 20, heritage: 5, provisions: fixture ? 30 : 0 },
     leylines: [],
 
     relations: new Map(),
@@ -176,12 +181,13 @@ export function stepSects(world, life, dtDays, rng) {
     const s = world.factionById(e.faction);
     if (!s) continue;
     s.followers += 1;
-    if ((e.level || 0) > 0) s.pop += 1;
+    if (isPracticingHuman(e) && e.hp > 0 && e.age < e.lifespan && !e._ascended) s.pop += 1;
   }
 
+  const societies = villageSocieties(world);
   for (let i = sects.length - 1; i >= 0; i -= 1) {
     const s = sects[i];
-    stepOneSect(world, s, dtDays, rng);
+    stepOneSect(world, s, dtDays, rng, societies);
     if (s.destroyedDay >= 0) {
       sects.splice(i, 1);
     }
@@ -226,6 +232,7 @@ function maybeFoundSect(world, life, rng) {
   for (let i = 0; i < world.entities.length; i += 1) {
     const e = world.entities[i];
     if (e.faction || !e.root) continue;
+    if (!isPracticingHuman(e) || !isAdult(e) || e.hp <= 0 || e.age >= e.lifespan) continue;
     if ((e.level || 0) < SECT_FOUNDER_MIN_LEVEL) continue;
     candidates.push(e);
   }
@@ -253,7 +260,7 @@ function maybeFoundSect(world, life, rng) {
       if (!sect.villages.includes(v.id)) sect.villages.push(v.id);
       for (let n = 0; n < world.entities.length; n += 1) {
         const o = world.entities[n];
-        if (o.village === v.id && !o.faction) o.faction = sect.id;
+        if (o.village === v.id && !o.faction) affiliateSectResident(world, o, sect);
       }
     }
     return sect;
@@ -261,25 +268,28 @@ function maybeFoundSect(world, life, rng) {
   return null;
 }
 
-function stepOneSect(world, sect, dtDays, rng) {
+function stepOneSect(world, sect, dtDays, rng, societies) {
   const cap = sectCapacity(sect);
 
-  // 资源：灵脉与聚落产出
-  let income = sect.villages.length * 0.4;
+  // Only real leylines generate stones; registered village names produce nothing.
+  let income = 0;
   for (let k = 0; k < sect.leylines.length; k += 1) {
     const l = world.leylineById(sect.leylines[k]);
     if (l) income += 1.6 * l.strength;
   }
   sect.resources.spiritStone = clamp(sect.resources.spiritStone + income * dtDays * 0.02, 0, 9999);
-  sect.resources.provisions = clamp(sect.resources.provisions + sect.villages.length * dtDays * 0.03, 0, 9999);
+  stepSectEconomy(world, sect, dtDays, societies);
+  const supply = sectSupplyStatus(world, sect, societies);
 
   // 声望：人多势众则涨，灵脉多则涨，战败则跌
   const want = Math.min(1, sect.pop / Math.max(1, cap));
-  sect.reputation = clamp(sect.reputation + (want - 0.45) * dtDays * 0.012, 0, 100);
+  const reputationChange = (want - 0.45) * dtDays * 0.012;
+  sect.reputation = clamp(sect.reputation + (supply.canRecruit ? reputationChange
+    : Math.min(0, reputationChange) - dtDays * 0.001), 0, 100);
 
   // 稳定度：人多而资源少则不稳
   const strain = sect.pop > cap ? (sect.pop - cap) * 0.02 : 0;
-  const starving = sect.resources.provisions < sect.pop * 0.3 ? 0.05 : 0;
+  const starving = sect.resources.provisions < supply.demandPerDay * 30 ? 0.12 : 0;
   sect.stability = clamp(sect.stability - (strain + starving) * dtDays * 0.1 + dtDays * 0.01, 0, 100);
 
   // 掌门与长老
@@ -316,6 +326,7 @@ function stepOneSect(world, sect, dtDays, rng) {
 
   // 门庭过盛 → 弟子出走
   maybeShed(world, sect, dtDays, rng);
+  departWithoutSupply(world, sect, dtDays);
 
   // 门史封顶。三个写入点（开宗 / 继任 / 接掌）散在各处，逐个加判断容易漏；
   // 放在这里每 tick 都会走到，最稳妥。
@@ -343,6 +354,24 @@ function stepOneSect(world, sect, dtDays, rng) {
  */
 const SHED_PER_DAY = 0.0006;
 
+function departWithoutSupply(world, sect, dtDays) {
+  const economy = sect.economy;
+  if (!(economy?.unfedDays >= 90) || sect.stability >= 45 || sect.pop < 2) return;
+  const month = Math.floor(world.day / 30);
+  if (month === Math.floor((world.day - dtDays) / 30) || economy.lastDepartureMonth === month) return;
+  const disciple = world.entities.find((e) => e.faction === sect.id && e.id !== sect.leaderId
+    && isPracticingHuman(e) && e.hp > 0 && e.age < e.lifespan);
+  if (!disciple) return;
+  disciple.faction = 0;
+  disciple.village = 0;
+  disciple.foundedSect = 0;
+  economy.lastDepartureMonth = month;
+  sect.pop -= 1;
+  sect.followers = Math.max(0, sect.followers - 1);
+  sect.history.push({ day: world.day, text: `${disciple.name} 因粮草久缺离山` });
+  world.record(`${sect.name} 粮草久缺，${disciple.name} 离山自谋生计。`, 'sect', disciple);
+}
+
 function maybeShed(world, sect, dtDays, rng) {
   if (world.factions.length >= LIMITS.maxFactions) return;
   const cap = sectCapacity(sect);
@@ -355,6 +384,7 @@ function maybeShed(world, sect, dtDays, rng) {
   for (let i = 0; i < world.entities.length; i += 1) {
     const e = world.entities[i];
     if (e.faction !== sect.id || e.id === sect.leaderId) continue;
+    if (!isPracticingHuman(e) || !isAdult(e) || e.hp <= 0 || e.age >= e.lifespan) continue;
     if ((e.level || 0) < ELDER_MIN_LEVEL) continue;
     if (!leader || (e.level || 0) > (leader.level || 0)) leader = e;
   }
@@ -384,6 +414,11 @@ function maybeShed(world, sect, dtDays, rng) {
   const schism = foundSect(world, tx, ty, leader, rng);
   if (!schism) return;
   for (let i = 0; i < followers.length; i += 1) followers[i].faction = schism.id;
+  // A split carries an actual share of the old stores, never a fresh food grant.
+  const moved = 1 + followers.filter(isPracticingHuman).length;
+  const provisions = sect.resources.provisions * Math.min(1, moved / Math.max(1, sect.pop));
+  sect.resources.provisions -= provisions;
+  schism.resources.provisions += provisions;
 
   world.milestone(`${schism.name} 自 ${sect.name} 分出，${leader.name} 自立山门。`, 'sect', leader);
   if (rng() < 0.4) speak(world, rng, 'watch');
@@ -394,7 +429,7 @@ function refreshLeadership(world, sect) {
   const members = [];
   for (let i = 0; i < world.entities.length; i += 1) {
     const e = world.entities[i];
-    if (e.faction === sect.id) members.push(e);
+    if (e.faction === sect.id && isPracticingHuman(e) && e.hp > 0 && e.age < e.lifespan) members.push(e);
   }
   if (!members.length) {
     sect.elders = [];
@@ -406,7 +441,8 @@ function refreshLeadership(world, sect) {
   if (best && (!sect.leaderId || (best.level || 0) > 0)) {
     // 境界高出一截就换掌门——修仙界以力为尊
     const current = world.entities.find((e) => e.id === sect.leaderId);
-    if (!current || (best.level || 0) >= (current.level || 0) + 3) {
+    if (!current || !isPracticingHuman(current) || current.hp <= 0 || current.age >= current.lifespan
+      || (best.level || 0) >= (current.level || 0) + 3) {
       if (sect.leaderId && sect.leaderId !== best.id) {
         sect.history.push({ day: world.day, text: `${best.name} 接掌` });
       }
@@ -421,6 +457,7 @@ function strongestMember(world, sect) {
   for (let i = 0; i < world.entities.length; i += 1) {
     const e = world.entities[i];
     if (e.faction !== sect.id) continue;
+    if (!isPracticingHuman(e) || e.hp <= 0 || e.age >= e.lifespan) continue;
     if (!best || (e.level || 0) > (best.level || 0)) best = e;
   }
   return best;
@@ -430,7 +467,7 @@ function pickHeir(world, sect) {
   const members = [];
   for (let i = 0; i < world.entities.length; i += 1) {
     const e = world.entities[i];
-    if (e.faction === sect.id) members.push(e);
+    if (e.faction === sect.id && isPracticingHuman(e) && e.hp > 0 && e.age < e.lifespan) members.push(e);
   }
   if (!members.length) return null;
   members.sort((a, b) => (b.level || 0) - (a.level || 0));
@@ -464,6 +501,7 @@ function stepTerritory(world, dtDays) {
   world._terrContested = terr.contested;
 
   applyLeylineClaims(world, terr.claims);
+  retrySectResidents(world);
   absorbVillages(world, terr.owner);
 }
 
@@ -530,11 +568,32 @@ function absorbVillages(world, owner) {
     if (!s.villages.includes(v.id)) s.villages.push(v.id);
     for (let m = 0; m < world.entities.length; m += 1) {
       const e = world.entities[m];
-      if (e.village === v.id && !e.faction) e.faction = s.id;
+      if (e.village === v.id && !e.faction) affiliateSectResident(world, e, s);
     }
     // 无单一当事人：这条讲的是一个**村落**归附，`v` 是村落对象而非实体，
     // 归附的村民是多人且并非同一个当事人，故不传 actors（详见 record 的第三参约定）。
     world.record(`${v.name} 归入${s.name}门下。`, 'sect');
+  }
+}
+
+/**
+ * Awakening during a supply cutoff keeps the resident in their village but
+ * clears their sect affiliation. Retry those existing residents only on the
+ * territory's established thirty-day boundary, after this tick's economy step
+ * has had a chance to replenish provisions.
+ */
+function retrySectResidents(world) {
+  for (let i = 0; i < world.villages.length; i += 1) {
+    const village = world.villages[i];
+    if (!village.faction) continue;
+    const sect = world.factionById(village.faction);
+    if (!sect || !sect.villages.includes(village.id)) continue;
+    for (let k = 0; k < world.entities.length; k += 1) {
+      const entity = world.entities[k];
+      if (entity.village !== village.id || entity.faction
+        || !isPracticingHuman(entity) || !isAdult(entity) || !isLivingHuman(entity)) continue;
+      affiliateSectResident(world, entity, sect);
+    }
   }
 }
 
@@ -700,3 +759,4 @@ export function relationOf(world, a, b) {
 }
 
 export { SECT_NAMES, SECT_DOCTRINES };
+export { canSupportRecruitment, recordSectDisciple } from './sectEconomy.js';

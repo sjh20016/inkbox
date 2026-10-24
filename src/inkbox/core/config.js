@@ -156,8 +156,11 @@ export const SPECIES = Object.freeze({
   GHOST: 'ghost',
 });
 
+// C1：出生时的总寿元上限，不是剩余寿命；游戏年固定 360 日。
+export const MORTAL_LIFESPAN_YEARS = 62.5;
+
 export const SPECIES_INFO = Object.freeze({
-  human: { name: '凡人', speed: 1.0, hp: 100, lifespan: 4200, power: 1, diet: 1, canBuild: true, color: '#3c3830' },
+  human: { name: '凡人', speed: 1.0, hp: 100, lifespan: MORTAL_LIFESPAN_YEARS * 360, power: 1, diet: 1, canBuild: true, color: '#3c3830' },
   cultivator: { name: '修士', speed: 1.25, hp: 220, lifespan: 9000, power: 4, diet: 0.6, canBuild: true, color: '#7a5a3a' },
   beast: { name: '灵兽', speed: 0.85, hp: 150, lifespan: 6000, power: 3, diet: 0, canBuild: false, color: '#6b6152' },
   spirit: { name: '山精', speed: 0.7, hp: 80, lifespan: 12000, power: 2, diet: 0, canBuild: false, color: '#5d7a72' },

@@ -174,6 +174,29 @@ check('大步中的宗门收入也能形成后续援助，且同月重复调用�
     f.village.food = 0; f.village.hp = 15;
     f.faction.resources.provisions = 0; f.faction.resources.spiritStone = 0;
     basicCrisis(f);
+    // The damaged village cannot pay its own rescue. A second real, inhabited
+    // village contributes its surplus; a registered leyline funds stone aid.
+    const donor = { ...f.village, id: 8, name: '丰田村', x: 48, y: 48, pop: 0,
+      food: 400, hp: 100, houses: [], history: [], fieldTiles: [], fields: 16,
+      distressDays: 0, lastDamageDay: undefined, damageEpisode: undefined };
+    f.world.villages.push(donor); f.faction.villages.push(donor.id);
+    f.world.nextVillageId = 9;
+    for (let y = 44; y <= 52; y++) for (let x = 44; x <= 52; x++) {
+      f.world.height[f.world.idx(x, y)] = 0.48;
+    }
+    for (let n = 0; n < 16; n++) {
+      const index = f.world.idx(45 + n % 4, 45 + Math.floor(n / 4));
+      f.world.over[index] = OVER.FARMLAND; donor.fieldTiles.push(index);
+    }
+    for (let n = 0; n < 32; n++) {
+      assert.equal(f.life.spawn(47 + n % 3, 47 + Math.floor(n / 12), 'human', 1, f.faction.id,
+        { village: donor.id }), 1);
+      Object.assign(f.world.entities.at(-1), { village: donor.id, age: 25 * 360, lifespan: 65 * 360 });
+    }
+    f.life.syncVillagePops();
+    const leyline = { id: 1, name: '试验灵脉', x: 50, y: 50, strength: 2, radius: 6 };
+    f.world.leylines.push(leyline); f.faction.leylines.push(leyline.id);
+    f.world.nextLeylineId = 2;
   }
   advance(a, 720);
   for (let m = 0; m < 24; m++) advance(b, 30);
@@ -186,6 +209,19 @@ check('大步中的宗门收入也能形成后续援助，且同月重复调用�
   assert.equal(JSON.stringify(a.faction.resources), before, 'same absolute month cannot be spent twice');
   return { lastAidDay: a.village.lastAidDay, hp: a.village.hp,
     spentProvisions: a.village.aidSpentProvisions, spentSpiritStone: a.village.aidSpentSpiritStone };
+});
+
+check('唯一受灾空粮村不能仅凭挂名给宗门生产粮草与援助', () => {
+  const f = setup(31812, { sect: true });
+  f.village.food = 0; f.village.hp = 15;
+  f.faction.resources.provisions = 0; f.faction.resources.spiritStone = 0;
+  basicCrisis(f);
+  advance(f, 30);
+  assert.equal(f.faction.economy.supplied, 0, 'no real surplus means no tribute');
+  assert.equal(f.faction.resources.provisions, 0);
+  assert.equal(f.faction.resources.spiritStone, 0, 'no leyline means no stone income');
+  assert.equal(f.village.aidSpentProvisions || 0, 0);
+  assert.equal(f.village.aidSpentSpiritStone || 0, 0);
 });
 
 check('自然危机走正式入口；旱岁不凭空毁屋，失败措辞与实际人口一致', () => {

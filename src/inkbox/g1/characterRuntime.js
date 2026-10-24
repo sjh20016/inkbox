@@ -1,5 +1,6 @@
 import { ghostTierOf, GHOST_TIER_NAMES } from '../sim/netherLife.js';
 import { characterReason } from './characterMessages.js';
+import { personLifeFacts, personBirthOriginText } from '../ui/personLifeFacts.js';
 import { expToNext, realmLabel, QUALITIES } from '../core/cultivation.js';
 import { cultivationRate } from '../sim/cultivation.js';
 import { toggleWatch, removeWatch, WATCH_CAP, WATCH_MAJOR_KINDS } from '../sim/watch.js';
@@ -30,6 +31,7 @@ function realmText(entity) {
   }
   if (level === null) return '不可考';
   if (entity.sp === 'human' && level === 0) return '凡人';
+  if (entity.sp === 'cultivator' && level === 0) return '凡人修为 · 未入门';
   return entity.sp === 'cultivator' && level > 0 ? realmLabel(level) : '不可考';
 }
 /** Fact-only export for people whose formal biography compiler assumes cultivation. */
@@ -38,7 +40,7 @@ export function compileCharacterFacts(viewModel) {
   const {identity,header,cultivation} = viewModel;
   const lines = [`# ${identity.name} · 人物事实`, '', `- 人物编号：#${identity.id}`,
     `- 当前位面：${planeText(identity.currentPlane)}`, `- 状态：${header.stateText}`,
-    `- 境界：${header.realm}`, `- 年龄：${header.ageText}`, `- 所属：${header.affiliation}`,
+    `- 境界：${header.realm}`, `- 年龄：${header.ageText}`, ...(header.lifespanText ? [`- 当前寿元：${header.lifespanText}`] : []), `- 所属：${header.affiliation}`,
     `- 修为：${shown(cultivation.exp)}`, `- 下一层需求：${shown(cultivation.required)}`,
     `- 修炼速度：${cultivation.rateText}`, '', '## 已知事实'];
   for (const row of [...viewModel.overview,...viewModel.cultivationRows,...viewModel.relations]) lines.push(`- ${row.label}：${row.value}`);
@@ -87,13 +89,14 @@ export function buildCharacterViewModel(world,keyOrToken) {
   const permissions = characterPermissions(world,r);
   const health = characterHealth(r, world);
   const root = e.root;
+  const life = personLifeFacts(e);
   const rootLabel = root ? `${root.rootName || '灵根'}${Number.isInteger(root.quality) && QUALITIES[root.quality] ? ` · ${QUALITIES[root.quality]}` : ''}` : e.rootName || '不可考';
   return freeze({
     schemaVersion:1, permissions, health,
     identity:{key:r.key,id:r.id,plane:r.plane,currentPlane:r.currentPlane || r.plane,status:r.status,name:e.name || '不可考',canFocus:r.accessible},
-    header:{realm:realmText(e),ageText:Number.isFinite(e.age) ? `${Math.floor(e.age / 360)} 岁` : '年龄不可考',affiliation,stateText:e.sp === 'ghost' && r.status === 'alive' ? '鬼魂存续' : r.status === 'ascended' && !r.arrival ? '已飞升 · 去向不可定位' : STATUS[r.status]},
+    header:{realm:realmText(e),ageText:life?.ageText || (Number.isFinite(e.age) ? `${Math.floor(e.age / 360)} 岁` : '年龄不可考'),lifespanText:life?.lifespanText || '',affiliation,stateText:e.sp === 'ghost' && r.status === 'alive' ? '鬼魂存续' : r.status === 'ascended' && !r.arrival ? '已飞升 · 去向不可定位' : STATUS[r.status]},
     cultivation:{exp,required,percent:exp !== null && required !== null ? exp / required * 100 : null,rate,rateText:rate === null ? '修炼速度不可考' : `每日修为 ${rate.toFixed(3)}`,stateText:required === null || exp === null ? '修为不可考' : exp >= required ? '等待模拟突破' : '积累修为'},
-    overview:[{label:'气血',value:health.hpText},{label:'养伤',value:health.restText},{label:'灵根',value:rootLabel},{label:'位置',value:r.accessible ? `${planeText(r.currentPlane || r.plane)} (${e.x}, ${e.y})` : '当前不可定位'}],
+    overview:[{label:'气血',value:health.hpText},{label:'养伤',value:health.restText},...(life ? [{label:'成年',value:life.adulthood},{label:'出生来历',value:personBirthOriginText(e)},...(life.identity ? [{label:'身份',value:life.identity}] : [])] : []),{label:'灵根',value:rootLabel},{label:'位置',value:r.accessible ? `${planeText(r.currentPlane || r.plane)} (${e.x}, ${e.y})` : '当前不可定位'}],
     cultivationRows:[{label:'气运',value:shown(numeric(e.fortune))},{label:'心境',value:shown(numeric(e.mind))}],
     history,
     historyCoverage:{retained:true,capped:true,cap:32,description:'仅显示正式人物日志保留的事件，不能视为完整一生'},

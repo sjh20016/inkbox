@@ -49,17 +49,9 @@
 
 import { CLAN_HALLS, MANUALS, bloodlineByName } from '../core/lore.js';
 import { clamp } from '../core/noise.js';
+import { isFertileAge, isHumanPerson, hasMortalResidents } from '../core/demographics.js';
 
-/**
- * 成年判据取**寿元比例**，不取绝对天数。
- *
- * ⚠️ 这里踩过一次概念坑：凡人 `lifespan` 是 4200 天（约 11.7 游戏年），
- * 而修士觉醒后会被改写成 `lifespanFor(level) * 360`——炼气期就有 39600 天。
- * 两者差一个数量级。若按「16 岁成年」这种绝对天数写，凡人**一辈子都到不了成年**，
- * 于是永远挑不出双亲，整块家世会静悄悄地什么都不发生。
- */
-export const ADULT_FRAC_MIN = 0.22;
-export const ADULT_FRAC_MAX = 0.80;
+// C1: adulthood and fertility use elapsed age in days, independent of longevity.
 
 /** 世家数量上限。世家是「稀有的东西」，不该满地图都是 */
 export const MAX_CLANS = 32;
@@ -111,10 +103,8 @@ function hash01(n) {
  *   · 年长优先——村子里的生育本来就该由成年人承担；
  *   · id 兜底——保证同一个世界每次跑出来的结果逐位相同。
  *
- * @returns {[object|null, object|null]} 双亲。村子太小、没有合格成年人时是 [null, null]。
- *   **拿不到双亲也照样生**——把出生卡在「有父母」上，会直接改掉人口曲线，
- *   而那正是这个世界调了好几轮的参数（见 life.js 的 BIRTH_PER_CAPITA_DAY）。
- *   没有双亲的孩子就是「外来户」，家世栏留白。
+ * @returns {[object|null, object|null]} Two real fertile adults. Their village
+ * must still have a living mortal society; parents can both be cultivators.
  */
 export function pickParents(life, village) {
   const pool = [];
@@ -125,13 +115,11 @@ export function pickParents(life, village) {
     // 这三个条件正好是 `Life.step` 末尾那趟清理的反面，缺一个就会挑到死人，
     // 于是孩子记上一个已经不在世上的爹——而且没有任何地方会报错。
     if (e._ascended || e.hp <= 0 || e.age >= e.lifespan) return false;
-    if (e.sp === 'beast' || e.sp === 'spirit') return false;
-    if (e.age < e.lifespan * ADULT_FRAC_MIN) return false;
-    if (e.age > e.lifespan * ADULT_FRAC_MAX) return false;
+    if (!isHumanPerson(e) || !isFertileAge(e)) return false;
     pool.push(e);
     return false;
   });
-  if (!pool.length) return [null, null];
+  if (pool.length < 2 || !hasMortalResidents(life.world, village.id)) return [null, null];
 
   // 从合格池里**按日轮换**地取一对，而不是永远取排序最前的那两个。
   //
@@ -151,7 +139,6 @@ export function pickParents(life, village) {
   const seed = hash01(day * 7919 + (village.id | 0) * 131);
   const i = Math.floor(seed * pool.length);
   const a = pool[i];
-  if (pool.length === 1) return [a, null];
   const span = pool.length - 1;
   const j = (i + 1 + Math.floor(hash01((seed * 1048576) | 0) * span)) % pool.length;
   return [a, pool[j]];
@@ -168,7 +155,7 @@ export function registerBirth(world, child, parents) {
   if (b) child.parentB = b.id;
 
   // 天资快照：**出生时记，觉醒时用**。
-  // 不能等到觉醒再去查双亲——凡人寿元只有十来年，孩子觉醒时父母多半早没了，
+  // 不能等到觉醒再去查双亲——双亲可能已离世或迁居，
   // 「查不到就当没有」会让家世在第二代就断掉。
   child.heritageQ = Math.max(
     a && a.root ? a.root.quality : -1,

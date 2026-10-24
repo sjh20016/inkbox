@@ -1,5 +1,9 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:c1` 集中检查绝对18岁成年、凡人出生与真实双亲、转世身份与0级寿元、真实修炼延寿/折寿、守恒供养与断供恢复收徒，以及均质地形领地洪泛终止性。已加入 Fast。
+
+C1 有限画像为 `npm run profile:c1 -- --run --out=reports/local/c1/profile-final`（三个正常种子各300年及和平队列），另用 `--supply-only --out=reports/local/c1/profile-final` 生成15年断供/洪水/抽水对照及两个真实存档。启动服务器后用 `INKBOX_URL` 指定地址运行 `npm run test:c1:browser`，默认4207；浏览器需要这两个对照存档。`npm run profile:c1:cpu -- --baseline=<E0源码目录>` 是512×320有限CPU对照，需要基线的 `src/` 和 `package.json`，不测GPU。以上手动项不进入 Fast/Heavy；结论及边界见 [C1交付记录](../docs/development/C1_MORTAL_FOUNDATION_DELIVERY.md)。
+
 `npm run test:e0` 定向验证一座聚落的记挂、真实抽水笔录、同名旧址身份、地方史保留边界、撤销和世界存档，以及 Three 一次手势的正式抽水事务。已加入 Fast；Canvas/Three 实际拾取、书架回访、窄屏与浏览器保存仍需单独操作验收。
 
 长局只读画像手动执行 `node scripts/inkbox-e0-profile.mjs --run`，默认三个正常种子各 300 年与一个明确标注的 100 年视界压力样本，输出在 `reports/local/e0/profile/`；不加入 Fast/Heavy。原始 JSON UTF8 字节、JavaScript 码元与浏览器实际压缩槽位分别取证。

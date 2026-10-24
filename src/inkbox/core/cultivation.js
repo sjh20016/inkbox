@@ -9,6 +9,7 @@
 // 沙盒是单张地图，所以飞升被改成「离开此界 + 留下遗泽」，见 sim/cultivation.js。
 
 import { clamp } from './noise.js';
+import { MORTAL_LIFESPAN_YEARS } from './config.js';
 
 // ── 境界 ─────────────────────────────────────────────────
 // 来源：src/core/constants.js:4 REALMS；min/max 为等级区间。
@@ -131,7 +132,14 @@ export function realmLabel(level) {
 }
 
 export function lifespanFor(level) {
-  return realmFor(level).lifespan;
+  if (!(level > 0)) return MORTAL_LIFESPAN_YEARS;
+  const bounded = Math.min(REALM_CAP, Math.floor(level));
+  const index = realmIndexFor(bounded);
+  const realm = REALMS[index];
+  const previous = index ? REALMS[index - 1].lifespan : MORTAL_LIFESPAN_YEARS;
+  // 每一个真实等级取得本阶的一份延寿；原 REALMS 数值仍是各阶上界。
+  return previous + (realm.lifespan - previous)
+    * (bounded - realm.min + 1) / (realm.max - realm.min + 1);
 }
 
 /** 突破成功额外获得的寿元（天）。来源 cultivationSystem.js:261 BREAKTHROUGH_LIFE_DAYS */

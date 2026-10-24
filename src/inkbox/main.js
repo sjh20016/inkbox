@@ -107,6 +107,8 @@ import { getRealmViewState } from './ui/realmViewState.js';
 import { pickRealmSubject, realmInspectRows, resolvePlaneSubject, planeSubjectInspectRows } from './ui/realmInspector.js';
 import { settlementRuinMarkerId, visibleSettlementRuins } from './world/settlementIdentity.js';
 import { createObserveEchoPanel } from './ui/observeEchoPanel.js';
+import { personLifeRows } from './ui/personLifeFacts.js';
+import { sectSupplyFacts } from './ui/sectSupplyFacts.js';
 // ⚠️ 跨界**追迹**（D8-G）的 `traceTargetOf` 随「记挂」点行导航搬进
 //    `ui/railPanels.js`；`crossRealmChain` 在搬迁之前就已无人调用，一并清掉。
 // 视界的**绘制层**（D8-B 从本文件拔出去）：裁剪 / 贴另一界地形 / 画人与宗门 / 边框。
@@ -1927,6 +1929,7 @@ class Sandbox {
     // 面板上要摊的不是数值，是**这一支人从哪来**：姓氏、双亲、子女、
     // 世家与世代、始祖、家学。凡人也有家世，所以这一段不挂在修士那个分支里。
     if (strongest) {
+      rows.push(...personLifeRows(strongest));
       const kin = lineageOf(world, strongest);
       if (kin.length) {
         rows.push(['—', '—']);
@@ -2412,16 +2415,19 @@ class Sandbox {
       this.factionListBound = true;
     }
     if (factionList) {
+      const supplyFacts = new Map(sorted.map(f => [f.id, sectSupplyFacts(world, f)]));
       const factionSignature = JSON.stringify(sorted.map((f) => [
         f.id, f.color, f.name, f.pop, f.followers || f.pop,
-        f.villages.length, f.war.size,
+        f.villages.length, f.war.size, supplyFacts.get(f.id),
       ]));
       if (this.factionRenderWorld !== world || this.factionRenderSignature !== factionSignature) {
         const factionHtml = sorted.length
           ? sorted.map((f) => `<div class="faction" data-faction-id="${f.id}">`
             + `<i style="background:${f.color}"></i><span>${f.name}</span>`
-            + `<b>${f.pop}</b><em>${f.followers || f.pop} 人 · ${f.villages.length} 村</em>`
-            + (f.war.size ? '<u>战</u>' : '') + '</div>').join('')
+            + `<b>${supplyFacts.get(f.id).practitioners} 修士</b><em>${f.villages.length} 村</em>`
+            + (f.war.size ? '<u>战</u>' : '')
+            + `<em style="grid-column:2/-1">${supplyFacts.get(f.id).ledger}</em>`
+            + `<em style="grid-column:2/-1">${supplyFacts.get(f.id).succession}</em></div>`).join('')
           : '<div class="ink-empty">尚无聚落。用「生灵」撒下凡人，他们会自己结庐成村。</div>';
         factionList.innerHTML = factionHtml;
         this.factionRenderWorld = world;

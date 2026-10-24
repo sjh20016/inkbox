@@ -17,6 +17,7 @@ import {
   THUNDER_ASCEND_MIN_LEVEL,
 } from '../core/cultivation.js';
 import { NEVER_DECAY_DAY } from '../core/config.js';
+import { isAdult, isPracticingHuman } from '../core/demographics.js';
 import { BLOODLINES, narrate, pickFrom, DAO_TITLES, bloodlineProfile } from '../core/lore.js';
 import {
   equipBonus as equipBonusOf, forgeArtifact, dropArtifacts, wearArtifacts, leaveArtifacts,
@@ -34,6 +35,7 @@ import { emitPresentation, emitBreakthroughResult } from './presentation.js';
 import { rememberDead } from './necrology.js';
 import { clamp } from '../core/noise.js';
 import { arriveUpper } from '../world/planes.js';
+import { recordSectDisciple } from './sectEconomy.js';
 
 /** 修行基础速率：每天积累多少修为（再乘灵气与灵根） */
 export const BASE_EXP_PER_DAY = 1.2;
@@ -41,15 +43,13 @@ export const BASE_EXP_PER_DAY = 1.2;
 /**
  * 凡人觉醒灵根的基准概率（每天），实际还要乘当地灵气。
  *
- * 标定依据：凡人寿元约 4200 天，所以「一生中觉醒的概率」≈ 1-(1-p·k)^4200，
- * 其中 k ≈ 1.6（灵气与气运的乘积）。取 1.5e-5 时约有 8% 的人一生中觉醒——
- * 一个村子三四十人，出两三个修士，正是「一村出一两个」该有的样子。
- *
- * 别把这个值调大：修士寿元是凡人的十倍（炼气期就有 110 年），
- * 觉醒率一高，凡人在人口里就会被迅速稀释掉，世界只剩下飞来飞去的修士。
- * 早先取 8e-5 时，活人里七成六都是修士。
+ * C1 将凡人初始寿元均值由 4200 日提高到 22500 日，日概率随之按
+ * 旧 / 新寿元缩放：4e-5 * 4200 / 22500 ≈ 7.5e-6，避免仅因长寿就把
+ * 每命累计觉醒风险放大约五倍。自然觉醒另以实岁 18 年成年为门槛；
+ * 玩家真点化仍直接走 awaken，不受自然门槛限制。这是有限机制标定，
+ * 不是保证任意灵气环境下的固定修士占比。
  */
-export const AWAKEN_BASE = 0.00004;
+export const AWAKEN_BASE = 0.0000075;
 
 /** 心魔自然消散速率（每天）。久不触发的心魔会自己淡去 */
 export const HEART_DEMON_DECAY_PER_DAY = 0.012;
@@ -141,7 +141,8 @@ export function combatPower(entity) {
 
 export function maxHpFor(entity) {
   const level = entity.level || 0;
-  const base = entity.sp === 'cultivator' ? 220 : 100;
+  // 先有真实修为、后有体质：awaken 在转换 sp 前已经写入 level=1。
+  const base = isPracticingHuman(entity) ? 220 : 100;
   return Math.round(base * (1 + level * 0.55));
 }
 
@@ -154,11 +155,14 @@ export function maxHpFor(entity) {
  * 而且不会有任何报错。`awaken()` 里那一处同理。
  */
 export function lifespanForEntity(entity, level) {
-  return Math.round(lifespanFor(level) * 360 * (1 + bloodlineProfile(entity.bloodline, 'lifespan')));
+  // 灵根 / 修士身份 / 血脉本身不能替尚未入门的婴儿取得长寿。
+  const bloodBonus = level > 0 ? bloodlineProfile(entity.bloodline, 'lifespan') : 0;
+  return Math.round(lifespanFor(level) * 360 * (1 + bloodBonus));
 }
 
 /** 给一个新生成的实体补齐修炼字段 */
 export function initEntity(entity, rng, { cultivator = false } = {}) {
+  entity.birthOrigin ??= null;
   entity.level = 0;
   entity.exp = 0;
   entity.root = null;
@@ -284,7 +288,9 @@ export function initEntity(entity, rng, { cultivator = false } = {}) {
  */
 export function awaken(entity, rng, { silent = false } = {}) {
   if (entity.level > 0) return false;
-  const root = rollSpiritRoot(rng);
+  const rolledRoot = rollSpiritRoot(rng);
+  // 前世灵根是潜力，真正觉醒时兑现；不把附魂时保留的资质覆盖掉。
+  const root = entity.soulId && entity.root ? entity.root : rolledRoot;
   entity.root = root;
   entity.level = 1;
   entity.exp = 0;
@@ -309,7 +315,7 @@ export function awaken(entity, rng, { silent = false } = {}) {
   // 精确等于 0（见 core/lore.js 里 BLOODLINES 的注释）。
   // 现在接上「气运」与「寿元」两轴，另两轴在 combatPower / cultivationRate 里。
   entity.fortune = clamp(entity.fortune + bloodlineProfile(entity.bloodline, 'fortune'), 0, 100);
-  entity.lifespan = lifespanForEntity(entity, 1);
+  entity.lifespan = Math.max(entity.lifespan || 0, lifespanForEntity(entity, 1));
   if (entity.sp === 'human') entity.sp = 'cultivator';
   if (!silent) {
     entity._justAwakened = true;
@@ -367,11 +373,13 @@ export function stepEntity(world, entity, dtDays, rng) {
   // 凡人：试着觉醒
   if (entity.level <= 0) {
     if (entity.sp === 'beast' || entity.sp === 'spirit') return 'alive';
+    if (!isAdult(entity)) return 'alive';
     const tile = clamp(Math.floor(entity.y), 0, world.h - 1) * world.w + clamp(Math.floor(entity.x), 0, world.w - 1);
     const qi = world.qi[tile] || 0.3;
     const chance = AWAKEN_BASE * (0.2 + qi * 2.2) * (1 + entity.fortune / 200) * dtDays;
     if (rng() < chance) {
       awaken(entity, rng);
+      if (world.plane !== 'upper' && world.plane !== 'nether') recordSectDisciple(world, entity);
       world.record(`${entity.name} 于${placeName(world, entity)}觉醒${entity.root.rootName}`, 'awaken', entity);
     }
     return 'alive';
@@ -553,10 +561,12 @@ export function attemptBreakthrough(world, entity, rng) {
     entity.hp = entity.maxHp;
     const before = realmIndexFor(entity.level - 1);
     const after = realmIndexFor(entity.level);
-    // 跨大境界或大圆满：寿元按新境界重算（含血脉加成，别漏）
-    entity.lifespan = lifespanForEntity(entity, entity.level);
+    // 只在真实成长时兑现；不按 tick 刷新，避免自动补回失败折寿。
+    // 突破奖是当前目标上的一次领先，不在现有寿元上反复相加。
+    const targetLifespan = lifespanForEntity(entity, entity.level)
+      + (after > before ? BREAKTHROUGH_LIFE_DAYS : 0);
+    entity.lifespan = Math.max(entity.lifespan || 0, targetLifespan);
     if (after > before) {
-      entity.lifespan += BREAKTHROUGH_LIFE_DAYS;
       entity.mind = clamp(entity.mind + 6, 0, 100);
     }
     entity.fortune = clamp(entity.fortune + 1.5, 0, 100);
@@ -628,11 +638,11 @@ function applyBreakthroughFailure(world, entity, rng) {
   if (roll < 0.5) {
     entity.level = Math.max(1, entity.level - 1);
     entity.hp = entity.maxHp * 0.2;
-    entity.lifespan = lifespanForEntity(entity, entity.level);
+    entity.lifespan = Math.min(entity.lifespan, lifespanForEntity(entity, entity.level));
     outcome = '境界倒退一层';
   } else if (roll < 0.8) {
     entity.level = realmFor(entity.level).min;
-    entity.lifespan = lifespanForEntity(entity, entity.level);
+    entity.lifespan = Math.min(entity.lifespan, lifespanForEntity(entity, entity.level));
     outcome = '修为尽失，跌落本阶';
   } else {
     entity.madUntil = world.day + MAD_DAYS;
