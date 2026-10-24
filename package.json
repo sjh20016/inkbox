@@ -7,6 +7,8 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:g7": "node scripts/inkbox-g7-boundaries.mjs && node scripts/inkbox-g7-cancel.mjs",
+    "test:p0": "node scripts/inkbox-p0-input.mjs && node scripts/inkbox-p0-water.mjs && node scripts/inkbox-p0-power-state.mjs",
     "test:c1": "node scripts/inkbox-c1-birth.mjs && node scripts/inkbox-c1-longevity.mjs && node scripts/inkbox-c1-supply.mjs && node scripts/inkbox-c1-ui.mjs && node scripts/inkbox-c1-territory.mjs",
     "profile:c1": "node scripts/inkbox-c1-profile.mjs",
     "test:c1:browser": "node scripts/inkbox-c1-browser.mjs",
