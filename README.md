@@ -18,6 +18,8 @@ G2/G5 功能接纳不代表性能预算封板。PR #26～#28 已进入主线；P
 
 导航：[`HANDOFF.md`](./HANDOFF.md) · [`ROADMAP.md`](./ROADMAP.md) · [`BACKLOG.md`](./BACKLOG.md) · [`tests/README.md`](./tests/README.md) · [`docs/development/REPOSITORY_WORKFLOW.md`](./docs/development/REPOSITORY_WORKFLOW.md)。
 
+本分支的 **T0「山海通衢 · 行路有凭」为独立候选**：书架新增真实运粮/修士远行，Canvas 与 Three 观察同一条行程；正式开发场景为 `inkbox.html?scenario=t0`。它基于 G7，未合并 main，也未接入 G6、山海遗迹或万象拾趣。规则、验收与剩余边界见 [T0 交付记录](./docs/development/T0_TRANSIT_DELIVERY.md)。
+
 ## 仓库治理 RG-P1～P4（2026-10-17 收官）
 
 RG 治理移除旧阶段报告、委托书与 `reports/release/` 已跟踪输出；历史内容可从 [清理前的 main 快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534) 追溯，不改写 Git 历史。默认将新的测试截图、性能报告与 Golden 保存在被忽略的 `reports/` 或 Actions artifact，不随运行包分发。正式程序、3D 美术资源与核心回归没有在此治理中删除；所有测试入口按 [`tests/README.md`](./tests/README.md) 分层，本地小型 UI 改动可运行 `npm run check:ui`，正式候选仍须 Fast/Heavy 全绿。实际验收看相应源码 SHA 的 CI 与实测，不以治理 PR 历史成功替代新产品验证。
