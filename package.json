@@ -7,9 +7,13 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:wti1": "node scripts/inkbox-wti1-selection.mjs && node scripts/inkbox-wti1-activities.mjs && node scripts/inkbox-wti1-integration.mjs",
+    "test:wti1:browser": "node scripts/inkbox-wti1-browser.mjs",
     "test:w01": "node scripts/inkbox-w01-ecology.mjs && node scripts/inkbox-w01-paths.mjs && node scripts/inkbox-w01-disasters.mjs && node scripts/inkbox-w01-render.mjs && node scripts/inkbox-w01-integration.mjs",
     "test:w01:browser": "node scripts/inkbox-w01-browser.mjs",
     "test:w01:haunts:browser": "node scripts/inkbox-w01-haunts-browser.mjs",
+    "test:t0": "node scripts/inkbox-t0-geography.mjs && node scripts/inkbox-t0-journeys.mjs && node scripts/inkbox-t0-integration.mjs",
+    "test:t0:browser": "node scripts/inkbox-t0-browser.mjs",
     "test:g7": "node scripts/inkbox-g7-boundaries.mjs && node scripts/inkbox-g7-cancel.mjs",
     "test:p0": "node scripts/inkbox-p0-input.mjs && node scripts/inkbox-p0-water.mjs && node scripts/inkbox-p0-power-state.mjs",
     "test:c1": "node scripts/inkbox-c1-birth.mjs && node scripts/inkbox-c1-longevity.mjs && node scripts/inkbox-c1-supply.mjs && node scripts/inkbox-c1-ui.mjs && node scripts/inkbox-c1-territory.mjs",

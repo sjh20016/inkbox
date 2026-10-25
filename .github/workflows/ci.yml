@@ -121,6 +121,11 @@ jobs:
 
       - name: W0.1 真实物种、山林生态、道途活动与存档
         run: npm run test:w01
+      - name: T0 地理通达、真实行程、货物守恒与存档
+        run: npm run test:t0
+
+      - name: WT-I1 万灵快选、复行、行程互斥与联合存档
+        run: npm run test:wti1
 
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0

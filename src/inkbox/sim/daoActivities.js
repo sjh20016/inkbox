@@ -4,6 +4,7 @@ import { ensureWraithLog } from './wraiths.js';
 import { claimGroundArtifact, canReceiveArtifact } from './artifacts.js';
 import { addKarma } from './cultivation.js';
 import { addRelation, RELATION_TYPES } from './relations.js';
+import { activeJourneyForEntity } from '../world/transitState.js';
 
 const PERIOD = 30;
 const COOLDOWN = Object.freeze({ alchemy: 90, talisman: 180, formation: 90, artifact: 120,
@@ -24,7 +25,23 @@ function spendPower(world,e,stoneCost,hpFraction=stoneCost*.02) {
 }
 function nearby(list,e,r,pred=()=>true) { let best=null,bd=r; for (const x of list||[]) { if (!pred(x)) continue; const d=dist(e,x); if(d<bd){best=x;bd=d;} } return best; }
 function jobList(world) { return wanlingState(world).jobs; }
-function getJob(world,id) { return (world?.wanling?.jobs||[]).find(j=>j.actorId===id)||null; }
+// History is retained for the codex, but only the current job can own movement.
+function getJob(world,id,activeOnly=true) {
+  const jobs=world?.wanling?.jobs||[];
+  for(let i=jobs.length-1;i>=0;i--) if(jobs[i].actorId===id&&(!activeOnly||jobs[i].stage!=='done')) return jobs[i];
+  return null;
+}
+function cancelJob(world,j,text) {
+  j.stage='done';j.completedDay=world.day;j.nextDay=world.day+COOLDOWN[j.path];j.summary=text;
+}
+/** T0 takes locomotion immediately, including an imported job from an older save. */
+export function yieldDaoActivityToTransit(world,actorId) {
+  const j=getJob(world,actorId);if(!j)return false;
+  cancelJob(world,j,'山海通衢已接管远行，本次行道终止；归来并冷却后重新择事');
+  const actor=world.entities?.find(e=>e.id===actorId);
+  wanlingEvent(world,null,`【${actor?.name||'修士'}】${j.summary}`,'dao');
+  return true;
+}
 function setJob(world,e,path,targetKind,target,summary) {
   const jobs=jobList(world);
   for(let i=jobs.length-1;i>=0;i--) if(jobs[i].stage==='done'&&world.day-(jobs[i].completedDay||jobs[i].startedDay)>360) jobs.splice(i,1);
@@ -148,7 +165,9 @@ export function stepDaoActivities(world,life) {
   const allActors=new Map((world.entities||[]).map(e=>[e.id,e]));
   for(const j of state.jobs) if(j.stage!=='done') {
     const actor=allActors.get(j.actorId);
-    if(!alive(actor)||pathOf(actor)!==j.path) {
+    if(activeJourneyForEntity(world,j.actorId)) {
+      yieldDaoActivityToTransit(world,j.actorId);
+    } else if(!alive(actor)||pathOf(actor)!==j.path) {
       j.stage='done'; j.completedDay=world.day; j.nextDay=world.day;
       j.summary='修士已离世、离开世界或改修他途，行程终止';
     }
@@ -159,8 +178,8 @@ export function stepDaoActivities(world,life) {
   }
   const jobs=jobList(world); let assigned=0;
   for(const e of world.entities||[]) {
-    const key=pathOf(e); if(!key||!alive(e)||jobs.some(j=>j.actorId===e.id&&j.stage!=='done')) continue;
-    const prior=jobs.filter(j=>j.actorId===e.id).sort((a,b)=>(b.completedDay||b.startedDay)-(a.completedDay||a.startedDay))[0];
+    const key=pathOf(e); if(!key||!alive(e)||activeJourneyForEntity(world,e.id)||getJob(world,e.id)) continue;
+    const prior=getJob(world,e.id,false);
     if(prior&&world.day<prior.nextDay) continue;
     const target=targetFor(world,e,key,life); if(!target) continue;
     const j=setJob(world,e,key, key==='blood'||key==='talisman'?'village':key==='formation'?'site':key==='artifact'?'artifact':key==='buddha'||key==='soul'?'wraith':key==='spirit'||key==='sound'||key==='body'?'wanling-or-entity':key==='corpse'?'site':'entity',target,`前往${target.name||target.form||target.kind||'目标'}`);
@@ -172,6 +191,7 @@ export function stepDaoActivities(world,life) {
 /** Run a dao job's movement/action. Returns true while it owns movement for this tick. */
 export function stepDaoTravel(world,life,e,dtDays) {
   if(!world?.wanling || world.wanling.enabled===false) return false;
+  if(activeJourneyForEntity(world,e?.id)) {yieldDaoActivityToTransit(world,e.id);return false;}
   const j=getJob(world,e?.id); if(!j||j.stage==='done') return false;
   if(!alive(e)||!world.entities?.includes(e)||pathOf(e)!==j.path) {
     j.stage='done'; j.completedDay=world.day; j.nextDay=world.day;
@@ -184,17 +204,17 @@ export function stepDaoTravel(world,life,e,dtDays) {
   else if(j.targetKind==='wraith') target=(world.wraiths||[]).find(x=>x.id===j.targetId);
   else if(j.targetKind==='wanling-or-entity') target=wanlingById(world,j.targetId)||world.entities?.find(x=>x.id===j.targetId);
   else target=world.entities?.find(x=>x.id===j.targetId);
-    if(!target||('hp'in target&&target.hp<=0)||world.day-j.startedDay>360){j.stage='done';j.completedDay=world.day;j.summary='目标已消失或行程超期';e.tx=e.x;e.ty=e.y;return false;}
+    if(!target||('hp'in target&&target.hp<=0)||world.day-j.startedDay>360){cancelJob(world,j,'目标已消失或行程超期');e.tx=e.x;e.ty=e.y;return false;}
   j.x=target.x;j.y=target.y; e.tx=target.x;e.ty=target.y;
   if(dist(e,target)<= (j.path==='sword'?1.5:j.path==='corpse'?1.7: j.path==='buddha'||j.path==='spirit'||j.path==='sound'||j.path==='soul'?8:1.8)) {
     if(act(world,life,e,j,target)) { j.nextDay=world.day+COOLDOWN[j.path]; e.tx=e.x;e.ty=e.y; return true; }
-    if(world.day-j.startedDay>90){j.stage='done';j.summary='行动条件不再成立';return false;}
+    if(world.day-j.startedDay>90){cancelJob(world,j,'行动条件不再成立');e.tx=e.x;e.ty=e.y;return false;}
   }
   if(typeof life.moveTowards==='function') life.moveTowards(e,Math.max(0,Math.min(dtDays,30)),MOVE_INFO);
   return true;
 }
 
 export function daoActivityFor(world,actorId) {
-  const j=(world?.wanling?.jobs||[]).filter(x=>x.actorId===actorId).sort((a,b)=>(b.startedDay||0)-(a.startedDay||0))[0];
+  const j=getJob(world,actorId)||getJob(world,actorId,false);
   return j?{...j}:null;
 }

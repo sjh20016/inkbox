@@ -5,6 +5,7 @@
 
 import { SEA_LEVEL, TERRAIN } from '../core/config.js';
 import { clamp, smoothstep } from '../core/noise.js';
+import { invalidateTransitGeography } from './transitGeography.js';
 
 export const OVER = Object.freeze({
   NONE: 0,
@@ -151,6 +152,7 @@ function applyTile(world, x, y, i) {
 
 export function recomputeTile(world, x, y) {
   const i = y * world.w + x;
+  invalidateTransitGeography(world);
   return applyTile(world, x, y, i);
 }
 
@@ -183,6 +185,7 @@ export function markDirtyWithNeighbors(world, i) {
 export function flushDirty(world) {
   const list = world._typeDirtyList;
   if (!list || list.length === 0) return 0;
+  invalidateTransitGeography(world);
   const flags = world._typeDirtyFlags;
   const w = world.w;
   const count = list.length;
@@ -200,6 +203,7 @@ export function flushDirty(world) {
 
 /** 全量重算（生成世界后、载入旧存档后调用） */
 export function recomputeAll(world) {
+  invalidateTransitGeography(world);
   for (let y = 0; y < world.h; y += 1) {
     for (let x = 0; x < world.w; x += 1) {
       const i = y * world.w + x;
@@ -230,6 +234,7 @@ export function recomputeQi(world) {
 
 /** 局部重算（笔刷落点周围一圈，含边界外扩 1 格以修正坡度） */
 export function recomputeRect(world, x0, y0, x1, y1) {
+  invalidateTransitGeography(world);
   const ax = Math.max(0, x0 - 1);
   const ay = Math.max(0, y0 - 1);
   const bx = Math.min(world.w - 1, x1 + 1);

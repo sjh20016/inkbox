@@ -3,6 +3,7 @@ import { liveWanling, wanlingById, WANLING_LIMITS } from '../world/wanlingState.
 import { daoActivityFor } from '../sim/daoActivities.js';
 import { DAO_BY_KEY } from '../core/cultivation.js';
 import { wanlingInspectCard, wanlingStateLabel } from './wanlingFacts.js';
+import { selectedWanling, selectWanlingForm } from './wanlingSelection.js';
 
 // A compact shelf disclosure. Selecting/previewing never writes the World.
 export function createWanlingPanel(sandbox,actions,doc=document) {
@@ -12,17 +13,18 @@ export function createWanlingPanel(sandbox,actions,doc=document) {
   const body=make('div','wanling-body'),select=make('select');select.id='inkWanlingForm';select.setAttribute('aria-label','选择生灵');
   for(const c of WANLING_CATALOG){const o=make('option','',`${c.name}${c.derived?' · 关系派生':''}`);o.value=c.key;select.append(o);}
   const description=make('p','wanling-note'),buttons=make('div','wanling-actions');
-  const place=make('button','','投放到地图'),preview=make('button','','看模型');place.type=preview.type='button';place.id='inkWanlingPlace';preview.id='inkWanlingPreview';
+  const place=make('button','','选中并准备投放'),preview=make('button','','看模型');place.type=preview.type='button';place.id='inkWanlingPlace';preview.id='inkWanlingPreview';
   const status=make('p','wanling-status');status.setAttribute('role','status');
   const list=make('div','wanling-list'),card=make('div','wanling-card'),paths=make('details','wanling-paths'),pathTitle=make('summary','','修士行道'),pathList=make('div');
   paths.append(pathTitle,pathList);buttons.append(place,preview);body.append(select,description,buttons,status,card,list,paths);details.append(summary,body);root.replaceChildren(details);
   let attached=null,selectedId=null,last=-Infinity,previewStop=null,previewToken=0,signature='';
   function choice(){const c=WANLING_BY_KEY.get(select.value);description.textContent=`${c.role}。${c.counter}。${c.model?'复用山海模型。':'程序化代表影。'}`;place.disabled=!!c.derived;preview.disabled=!c.model;}
-  select.addEventListener('change',choice);choice();
+  function syncChoice(){select.value=selectedWanling(sandbox).key;choice();}
+  select.addEventListener('change',()=>selectWanlingForm(sandbox,select.value));syncChoice();
   place.addEventListener('click',()=>{
     const c=WANLING_BY_KEY.get(select.value);if(c.derived)return;
-    sandbox.wanlingForm=c.key;sandbox.selectTool('beast');
-    sandbox.render3d?.setTool?.('beast');
+    selectWanlingForm(sandbox,c.key,{activate:true});
+    const group=doc.querySelector(sandbox.render3d?.active?'[data-r1-group="life"]':'#inkGroups [data-group="life"]');group?.click();
     status.textContent=`已选${c.name} · 合上符匣后单击凡界合法栖地；每次投放一个真实单位。`;
     place.blur();
   });
@@ -40,16 +42,18 @@ export function createWanlingPanel(sandbox,actions,doc=document) {
   function refresh(force=false) {
     const now=globalThis.performance?.now?.()??Date.now(),w=sandbox.world;if(!w)return;
     if(!force&&w===attached&&now-last<1200)return;last=now;
-    if(attached!==w){attached=w;selectedId=null;signature='';card.replaceChildren();}
+    if(attached!==w){attached=w;selectedId=null;signature='';card.replaceChildren();++previewToken;previewStop?.();previewStop=null;}
+    syncChoice();
     const units=liveWanling(w);summary.textContent=`万灵 · 山海图录 (${units.length}/${WANLING_LIMITS.units})`;
     if(!details.open&&!force)return;
     const nextSignature=JSON.stringify([w.day,units.map(u=>[u.id,u.hp,u.count,u.state,u.reason,u.bondedBy,u.mask]),w.wanling?.jobs,w.wanling?.events]);
     if(!force&&nextSignature===signature)return;
-    if(!force&&root.contains(doc.activeElement)&&doc.activeElement.tagName==='BUTTON')return;
+    if(!force&&root.contains(doc.activeElement))return;
     signature=nextSignature;
+    const eventsOpen=!!list.querySelector('.wanling-events')?.open;
     list.replaceChildren();
     for(const u of units.slice(0,32)){
-      const b=make('button','wanling-unit',`${WANLING_BY_KEY.get(u.form)?.name||u.form} #${-u.id} · ${u.count} · ${wanlingStateLabel(u)}`);b.type='button';b.dataset.wanlingId=u.id;b.addEventListener('click',()=>focus(u));list.append(b);
+      const b=make('button','wanling-unit',`${WANLING_BY_KEY.get(u.form)?.name||u.form} ID ${u.id} · ${u.count} · ${wanlingStateLabel(u)}`);b.type='button';b.dataset.wanlingId=u.id;b.addEventListener('click',()=>focus(u));list.append(b);
     }
     if(units.length>32)list.append(make('p','wanling-note',`另有${units.length-32}个单位，可直接在地图上检视。`));
     if(!units.length)list.append(make('p','wanling-note','尚未遇见生灵。天道可直接投放，不受收集进度限制。'));
@@ -62,7 +66,7 @@ export function createWanlingPanel(sandbox,actions,doc=document) {
       b.addEventListener('click',()=>{sandbox.camera.focusOn(e.x,e.y,{zoom:8,duration:.6});sandbox.g1.open({plane:'mortal',entityId:e.id});});pathList.append(b);
     }
     const events=w.wanling?.events||[];
-    if(events.length){const log=make('details','wanling-events'),s=make('summary','','最近见闻');log.append(s);
+    if(events.length){const log=make('details','wanling-events'),s=make('summary','','最近见闻');log.open=eventsOpen;log.append(s);
       for(const e of events.slice(-6).reverse())log.append(make('p','wanling-note',`第${Math.floor(e.day)}日 · ${e.text}`));list.append(log);}
   }
   details.addEventListener('toggle',()=>{if(details.open)refresh(true);});
@@ -77,5 +81,5 @@ export function createWanlingPanel(sandbox,actions,doc=document) {
       if(token!==previewToken){dispose();return;}stop=dispose;
     }catch{holder.textContent='模型暂未载入；仍可在地图投放并检视真实状态。';}
   });
-  refresh(true);return{refresh,inspect,dispose(){++previewToken;previewStop?.();root.replaceChildren();}};
+  refresh(true);return{refresh,inspect,syncChoice,dispose(){++previewToken;previewStop?.();root.replaceChildren();}};
 }

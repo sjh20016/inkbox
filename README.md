@@ -10,6 +10,8 @@ R1「山海入世」在 G5/P1 主线上接入 Opus V1→V1.3 原始美术历史�
 
 ## 正式产品状态（按 main 最新提交核对）
 
+**WT-I1「万象同卷 · 众生可置」集成**：W0.1 #41 与 T0 #40 在同一正式游戏共存；左侧「生灵 → 万灵」直接选择类别和形态，Canvas/Three 与右侧图录同步。修士冷却后复行，交通独占远行移动权，生态与持粮行程共同存档。来源、验收与实际合流状态见 [WT-I1 交付记录](./docs/development/WTI1_INTEGRATION_DELIVERY.md)。下方候选描述保留来源阶段的历史范围，main 以集成 PR 状态为准。
+
 **W0.1 独立开发候选**：`feat/w01-wanling-world-units` 从开工核查的 `main@d4faed3` 开始，增加 17 类可投放生灵、真实道侣派生的比翼鸟、聚合捕食与地灵迁衰、十二道途低频活动，以及 Canvas/Three 共用图录、检视和存档。当前分支未合入 main，T0、GLM、Opus、G6 仍独立。逐单位档位、实际证据与限制见 [W0.1 交付记录](./docs/development/W01_WANLING_DELIVERY.md)。
 
 G7 v1.1 按依赖顺序接纳 **E0 #34 → C1 #35 → 立体观世 P0 #36**：聚落记挂与真实干预、自然双亲出生与宗门供养、原生 3D 神力及有限水响应进入同一主线。G7 #38 补齐取消笔画、存读档并发保护和原生检视入口。合流与验收见 [G7 交付记录](./docs/development/G7_MAIN_INTEGRATION_DELIVERY.md)。S0 静态自然继续保留；G6 #30 与独立山海遗迹美术分支仍未接入。
@@ -19,6 +21,8 @@ G7 v1.1 按依赖顺序接纳 **E0 #34 → C1 #35 → 立体观世 P0 #36**：�
 G2/G5 功能接纳不代表性能预算封板。PR #26～#28 已进入主线；PR #12、#4～17 等旧候选只作来源与研究索引，不重复合并已迁入主线的功能。G3 cost 仍为 **BLOCKED**，独立 B 线与产品线没有共同祖先，历史 RNG 游标持久化仍未决。
 
 导航：[`HANDOFF.md`](./HANDOFF.md) · [`ROADMAP.md`](./ROADMAP.md) · [`BACKLOG.md`](./BACKLOG.md) · [`tests/README.md`](./tests/README.md) · [`docs/development/REPOSITORY_WORKFLOW.md`](./docs/development/REPOSITORY_WORKFLOW.md)。
+
+本分支的 **T0「山海通衢 · 行路有凭」为独立候选**：书架新增真实运粮/修士远行，Canvas 与 Three 观察同一条行程；正式开发场景为 `inkbox.html?scenario=t0`。它基于 G7，未合并 main，也未接入 G6、山海遗迹或万象拾趣。规则、验收与剩余边界见 [T0 交付记录](./docs/development/T0_TRANSIT_DELIVERY.md)。
 
 ## 仓库治理 RG-P1～P4（2026-10-17 收官）
 

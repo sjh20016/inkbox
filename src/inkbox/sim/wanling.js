@@ -55,6 +55,13 @@ function record(world,u,text) {
   if((u.lastEventDay??-Infinity)+90>world.day) return;
   u.lastEventDay=world.day; wanlingEvent(world,u,text);
 }
+export function wanlingCapacityReason(world,form) {
+  const units=world?.wanling?.units||[];
+  if(units.length>=WANLING_LIMITS.units) return `生态名额已满 (${units.length}/${WANLING_LIMITS.units})`;
+  if(units.filter(u=>u.form===form).length>=WANLING_LIMITS.perForm) return `此类生灵过多 (${WANLING_LIMITS.perForm}/${WANLING_LIMITS.perForm})`;
+  if(RARE.has(form)&&units.filter(u=>RARE.has(u.form)).length>=WANLING_LIMITS.rare) return `稀有生态名额已满 (${WANLING_LIMITS.rare}/${WANLING_LIMITS.rare})`;
+  return '';
+}
 export function requestWanling(world,form,x,y,{natural=false}={}) {
   const info=WANLING_BY_KEY.get(form);
   if(!info||info.derived) return {ok:false,reason:'不可投放的万灵形态'};
@@ -62,10 +69,8 @@ export function requestWanling(world,form,x,y,{natural=false}={}) {
   if(!Number.isFinite(x)||!Number.isFinite(y)) return {ok:false,reason:'位置无效'};
   x=Math.floor(x);y=Math.floor(y);
   if(!habitat(world,form,x,y)) return {ok:false,reason:'栖地不符'};
+  const capacity=wanlingCapacityReason(world,form);if(capacity)return {ok:false,reason:capacity};
   const s=wanlingState(world), units=s.units;
-  if(units.length>=WANLING_LIMITS.units) return {ok:false,reason:'生态名额已满'};
-  if(units.filter(u=>u.form===form).length>=WANLING_LIMITS.perForm) return {ok:false,reason:'此类生灵过多'};
-  if(RARE.has(form)&&units.filter(u=>RARE.has(u.form)).length>=WANLING_LIMITS.rare) return {ok:false,reason:'稀有生态名额已满'};
   if(units.some(u=>u.form===form&&distance(u,{x,y})<16)) return {ok:false,reason:'同类生灵过近'};
   const maxHp=HP[form]||50;
   const unit={id:-s.nextId++,sp:SPIRITS.has(form)?'spirit':'beast',form,name:info.name,

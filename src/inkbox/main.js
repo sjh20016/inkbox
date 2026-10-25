@@ -108,8 +108,12 @@ import { pickRealmSubject, realmInspectRows, resolvePlaneSubject, planeSubjectIn
 import { settlementRuinMarkerId, visibleSettlementRuins } from './world/settlementIdentity.js';
 import { createObserveEchoPanel } from './ui/observeEchoPanel.js';
 import { createWanlingPanel } from './ui/wanlingPanel.js';
+import { createWanlingSelection } from './ui/wanlingSelection.js';
 import { removeWanling } from './sim/wanling.js';
 import { drawWanling } from './render/wanlingLayer.js';
+import { createTransitPanel } from './ui/transitPanel.js';
+import { requestCargoJourney, requestPersonJourney, cancelJourney } from './sim/transit.js';
+import { installTransitScenario, isTransitScenario, applyTransitScenarioEdit, TRANSIT_SCENE_SEED } from './dev/transitScenario.js';
 import { personLifeRows } from './ui/personLifeFacts.js';
 import { sectSupplyFacts } from './ui/sectSupplyFacts.js';
 // ⚠️ 跨界**追迹**（D8-G）的 `traceTargetOf` 随「记挂」点行导航搬进
@@ -371,14 +375,28 @@ class Sandbox {
     this.combatObservation = createSandboxCombatObservation(this, $('inkCombatObserver'));
     this.environmentObservation = createSandboxEnvironmentObservation(this, $('inkEnvironmentObserver'));
     this.observeEcho = createObserveEchoPanel(this);
+    this.wanlingSelection = createWanlingSelection(this);
     this.wanlingCodex = createWanlingPanel(this,{remove:id=>{
       if(removeWanling(this.world,id)){this.qol.markDirty('intervention');this.notify('此生灵已收回，局部影响随之撤去',2400);}
     }});
+    this.transitPanel = createTransitPanel(this, {
+      cargo: args => this.dispatchTransit(() => requestCargoJourney(this.world, args)),
+      person: args => this.dispatchTransit(() => requestPersonJourney(this.world, args)),
+      cancel: id => this.cancelTransit(id),
+    });
     this.buildToolPanel();
     this.bindEvents();
     this.setupSectionToggles();
     this.resize();
-    this.newWorld(this.presetKey, this.seed);
+    const transitScene = new URLSearchParams(location.search).get('scenario') === 't0';
+    this.newWorld(transitScene ? 'small' : this.presetKey,
+      transitScene ? TRANSIT_SCENE_SEED : this.seed, transitScene ? { progressive: false } : {});
+    if (transitScene) {
+      installTransitScenario(this.world, this.life);
+      this.terrain.invalidate(); this.dirty = true; this.setSpeed(0);
+      this.mountTransitScenarioControls();
+      this.transitPanel?.refresh(true); this.refreshChronicle(); this.updateHud();
+    }
     // The initial generated landscape is a starting choice, not player progress.
     this.qol.resetDirty();
     this.creationMenu = createCreationHost(this, $('inkCreationMenu'));
@@ -435,6 +453,7 @@ class Sandbox {
     this.syncWorldControls();
     this.syncWorldInfo();
     this.qol.syncToolState();
+    this.wanlingSelection?.refresh();
     this.refreshSlots();
     this.refreshChronicle();
     this.refreshNecrology();
@@ -446,6 +465,55 @@ class Sandbox {
     greetOnBoot(this.world, this.rng);
     this.refreshBusanzi();
     this.environmentObservation?.reset();
+  }
+
+  dispatchTransit(request) {
+    const result = request();
+    if (result?.ok) {
+      this.qol.markDirty('intervention');
+      this.transitPanel?.refresh(true);
+    }
+    return result;
+  }
+
+  cancelTransit(id) {
+    const world = this.world;
+    if (this.qol.confirmOpen()) return Promise.resolve({ ok: false, reason: 'confirmation_open' });
+    return new Promise(resolve => this.qol.confirm({
+      text: '中止行程？出发地可退货；在途弃航会损失粮货，无法安全登岸的船员会遇难。御剑者需先安全落地。',
+      okLabel: '确认中止', cancelLabel: '继续行程',
+      onOk: () => resolve(this.world === world
+        ? this.dispatchTransit(() => cancelJourney(world, id)) : { ok: false, reason: 'world_changed' }),
+      onCancel: () => resolve({ ok: false, reason: 'kept_journey' }),
+    }));
+  }
+
+  mountTransitScenarioControls() {
+    const body = document.querySelector('#inkTransitPanel .transit-body');
+    if (!body || body.querySelector('[data-transit-scene]')) return;
+    const box = document.createElement('div'); box.dataset.transitScene = 't0';
+    const note = document.createElement('p'); note.className = 'transit-note';
+    note.textContent = 'T0 受控实验：先截陆桥，再运粮；船在途中时封海峡，重开水道后继续。岁月需运行。';
+    box.append(note);
+    const controls = document.createElement('div'); controls.className = 'transit-actions';
+    for (const [kind, label] of [['cut','截陆桥'],['dam','封海峡'],['reopen','重开水道']]) {
+      const b = document.createElement('button'); b.type = 'button'; b.dataset.transitEdit = kind; b.textContent = label;
+      b.addEventListener('click', () => this.editTransitScenario(kind)); controls.append(b);
+    }
+    box.append(controls); body.prepend(box);
+  }
+
+  editTransitScenario(kind) {
+    const world = this.world;
+    if (!isTransitScenario(world)) { this.notify('这些实验操作仅用于 T0 受控初始地图。'); return; }
+    try {
+      if (!applyTransitScenarioEdit(world, this.history, kind)) return;
+      this.qol.markDirty('terrain'); this.terrain.invalidate(); this.dirty = true;
+      this.transitPanel?.refresh(true);
+      this.notify(kind === 'dam' ? '海峡已抬升 · 行舟会按实际水路重规划' : '地形已改写 · 继续岁月观察行程', 3500);
+    } catch (error) {
+      this.notify('本次改地未完成，已回滚。', 3500); throw error;
+    }
   }
 
   /**
@@ -733,6 +801,7 @@ class Sandbox {
     this.updateCursor();
     // Q5：工具切换 / 快捷键切换 / 程序切换都必须同步那一行「我手里拿的是什么」。
     this.qol.syncToolState();
+    this.wanlingSelection?.refresh();
   }
 
   get tool() {
@@ -1462,8 +1531,9 @@ class Sandbox {
       || radius < 1 || radius > Math.max(...LIMITS.brushSizes)) return;
     if (!world.inside(x, y)) return;
     const bounds = accessBounds(world);
+    const accessRadius = tool.id === 'beast' ? 0 : radius;
     if (!canAccess(world, x, y) || (world.mapProgress && world.mapProgress.stage < 3 &&
-      (x-radius < bounds.x0 || x+radius > bounds.x1 || y-radius < bounds.y0 || y+radius > bounds.y1))) {
+      (x-accessRadius < bounds.x0 || x+accessRadius > bounds.x1 || y-accessRadius < bounds.y0 || y+accessRadius > bounds.y1))) {
       this.notify('此处尚未开放 · 请拓展地图或将笔刷移入开放区域', 2400); return;
     }
 
@@ -2312,7 +2382,9 @@ class Sandbox {
     if (!world) return;
     // Q8：视界窗口与「关闭视界」按钮同帧同步（判据都是 `this.selection`）。
     this.syncCloseViewBtn();
-    if (this.render3d?.render(now)) return;
+    const rendered3d = this.render3d?.render(now);
+    this.transitPanel?.frame(now);
+    if (rendered3d) return;
     const ctx = this.ctx;
     const { width, height } = this.canvasSize();
 
@@ -2475,6 +2547,7 @@ class Sandbox {
     if (!world) return;
     this.observeEcho?.refresh(false);
     this.wanlingCodex?.refresh(false);
+    this.wanlingSelection?.refresh();
     const inspection = this.settlementInspection, inspectPanel = $('inkInspect');
     if (inspection) {
       if (inspection.world !== world) {

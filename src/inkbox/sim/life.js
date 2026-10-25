@@ -51,8 +51,9 @@ import {
 } from '../world/settlementState.js';
 import { aidSettlement, archiveSettlement, repairSettlementHouse, settlementHistory } from './settlementResilience.js';
 import { wanlingVillageInfluence, isWanlingHostile } from '../world/wanlingInfluence.js';
-import { stepDaoTravel } from './daoActivities.js';
+import { stepDaoTravel, yieldDaoActivityToTransit } from './daoActivities.js';
 import { stableWanlingHash } from '../core/wanlingCatalog.js';
+import { activeJourneyForEntity } from '../world/transitState.js';
 
 const TERRAIN_SPEED = Object.freeze({
   [TERRAIN.SAND]: 0.82,
@@ -742,8 +743,11 @@ export class Life {
     }
     if (status !== 'alive') return false;
 
+    const journey = activeJourneyForEntity(world, e.id);
     const here = this.tileAt(e.x, e.y);
-    if (!world.isWalkable(here)) {
+    // A real ship/flight owns locomotion. Ground escape must not teleport its
+    // passenger ashore or kill them merely because the route crosses water.
+    if (!journey && !world.isWalkable(here)) {
       // 脚下的地没了（被水淹 / 被抬高成山），立刻寻找最近的可行地
       const escape = this.findSpawnSpot(Math.floor(e.x), Math.floor(e.y), 5);
       if (escape) {
@@ -777,6 +781,14 @@ export class Life {
       // 于是「既挨饿又着火」时以火为准（火焰是更直接的致死因由）。
       e.diedOf = 'fire';
       e.hp -= e.maxHp * burningDays * 0.25;
+    }
+
+    // Age, cultivation, hunger, hazards and the ordinary death sweep remain
+    // active. Only the immediate ground AI yields to the persistent journey.
+    if (journey) {
+      yieldDaoActivityToTransit(world,e.id);
+      e.state = journey.mode === 'air' ? 'journey-air' : 'journey-boat';
+      return false;
     }
 
     // 走火入魔：不按常理行事，见谁打谁

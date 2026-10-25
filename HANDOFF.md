@@ -1,8 +1,17 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 2026-10-26 · WT-I1 万象同卷集成
+
+从最新 `main@d4faed3` 独立接入 W0.1 #41 与 T0 #40，保留来源提交。新增左侧目录驱动万灵快选，修复重复行道与交通移动所有权，保留双可选 v11 状态块。验收、门禁、实际合流状态及回退见 [WT-I1 记录](./docs/development/WTI1_INTEGRATION_DELIVERY.md)。以下候选条目为当时快照；#30/#37/#39 不在本次范围。
+
 ## 2026-10-25 · W0.1 万灵入世候选
 
 独立分支 `feat/w01-wanling-world-units` 基于开工时最新 `main@d4faed33509cebc9bdad17384a73c7d0d758f743`，未接纳 T0 #40、GLM #39、Opus #37 或 G6 #30。低成本生态名额与人物名额分开，17 类主动投放、比翼关系派生、十二道途真实活动已接入正常游戏与双 renderer。存档仍为 v11，人物行仅尾追加 `form`，生态状态使用可选版本块。完整清单、回归、真实浏览器与性能边界集中于 [W0.1 交付记录](./docs/development/W01_WANLING_DELIVERY.md)。该记录描述此候选，不宣称已进入 main；后续历史条目保持原时点结论。
+## 2026-10-25 · T0 山海通衢候选
+
+从重新 fetch 的 `main@d4faed3` 建立独立 worktree/分支 `feat/t0-world-transit-foundation`，保持 Draft、不合并 main。新增有界陆路/永久水路/飞行通达性、真实人物与货物行程、低频运粮、封海受阻恢复和 v11 可选独立存档块。正式 `inkbox.html?scenario=t0` 的受控初始地图复用 World/Life/神力和存读档，Canvas/Three 共用12个以内的只读在途标记。
+
+29项实际 Edge 流程通过：两岸截海、实际装载24粮、同船封航、压缩存读档、重开水道后一次交付，以及同修士跨海的双端在途画面。既有 core/G7/C1/P0/S0/保存等价/三界七项本地回归均退出0。最新源码的完整 Fast/Heavy、有限性能、风险和回退统一收束于 [T0 交付记录](./docs/development/T0_TRANSIT_DELIVERY.md)。宗门直供、裂隙冻结语义与 G8 RNG边界保留；不接入 #30/#37/#39。以下是此前阶段的历史记录。
 
 ## 2026-10-24 · G7 v1.1 万象归卷
 

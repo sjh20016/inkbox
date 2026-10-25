@@ -70,7 +70,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
   }
   const canvasArts = add(left, el('section', 'r1-arts-sheet')); canvasArts.id = 'r1CanvasArts'; canvasArts.setAttribute('aria-label', '神力符匣');
   const ch = head('山形'); canvasArts.append(ch.header); const canvasTitle = ch.heading;
-  move($('inkTools'), canvasArts); move($('inkOpportunityOptions'), canvasArts);
+  move($('inkTools'), canvasArts); move($('inkWanlingQuick'), canvasArts); move($('inkOpportunityOptions'), canvasArts);
   const footerClusters = [...doc.querySelectorAll('.bottom > .cluster')];
   move(footerClusters[1], canvasArts); move($('inkToolHint'), canvasArts); move($('inkToolState'), canvasArts);
   let nativeTitle = el('h2', '', '山形');
@@ -204,6 +204,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
   }
   move($('inkObserveEcho'), volumes.get('yi'));
   move($('inkWanling'), volumes.get('yi'));
+  move($('inkTransitPanel'), volumes.get('yi'));
   if ($('inkObserveEcho')) volumes.get('yi').prepend($('inkObserveEcho'));
   if ($('inkWanling')) volumes.get('yi').prepend($('inkWanling'));
   right.prepend(summary); move(doc.querySelector('.p1-observe-nav'), right); right.insertBefore(doc.querySelector('.p1-observe-nav'), shelfHead);
@@ -273,6 +274,9 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
     if (disposed) return;
     const three = !!sandbox.render3d?.active; body.dataset.r1Mode = three ? '3d' : 'canvas';
     body.dataset.r1Realm = three ? sandbox.render3d.renderer.activePlane : 'mortal';
+    const quick = $('inkWanlingQuick'), sheet = three ? $('r1NativeArts') : canvasArts;
+    if (quick && sheet && quick.parentNode !== sheet) sheet.insertBefore(quick, (three ? sheet.querySelector('.r1-native-strips') : $('inkTools'))?.nextSibling || null);
+    sandbox.wanlingSelection?.refresh();
     const mode = three ? sandbox.render3d.mode : sandbox.toolId;
     for (const b of realmButtons) b.setAttribute('aria-pressed', String(b.dataset.realmPlane === body.dataset.r1Realm));
     for (const b of threeRack.children) b.classList.toggle('on', b.dataset.r1Group === activeGroup && body.dataset.r1Arts === 'open');

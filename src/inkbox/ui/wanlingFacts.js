@@ -14,7 +14,7 @@ export function wanlingInspectCard(world,u) {
   const villages=(world.villages||[]).map(v=>({v,impact:wanlingVillageInfluence(world,v)}))
     .filter(({impact})=>impact.sources.some(s=>s.id===u.id));
   const bonded=world.entities.find(e=>e.id===u.bondedBy&&e.hp>0&&!e._ascended&&Math.hypot(e.x-u.x,e.y-u.y)<=10);
-  return {head:`${info?.name||u.form} · #${Math.abs(u.id)}`,rows:[
+  return {head:`${info?.name||u.form} · ID ${u.id}`,rows:[
     ['类别',info?.category==='herd'?'聚合种群':info?.category==='spirit'?'地貌依附地灵':'山海异兽 · 真实个体'],
     ['所在','凡界 · '+u.x.toFixed(1)+', '+u.y.toFixed(1)],
     ['当前',wanlingStateLabel(u)+(u.reason?` · ${u.reason}`:'')],

@@ -240,10 +240,10 @@ export const TOOLS = Object.freeze([
     mode: 'click', playerHidden: true,
     apply: (c) => D.grantRoot(c.world, c.x, c.y, c.radius, c.rng, c.targetEntityId),
   }),
-  T('beast', '万灵', '🐾', 'life', '在山海图录选择生灵，再单击合法栖地投放；默认当康', {
+  T('beast', '万灵', '🐾', 'life', '在此符匣选择类别与形态，再单击凡界合法栖地投放', {
     mode: 'click', species: SPECIES.BEAST, count: 6,
     apply: (c) => { const form=c.wanlingForm||'dangkang',r=requestWanling(c.world,form,c.x,c.y);
-      return r.ok?`${WANLING_BY_KEY.get(form).name}已入世 · 真实单位 #${-r.unit.id}`:`未投放 · ${r.reason}`; },
+      return r.ok?`${WANLING_BY_KEY.get(form).name}已入世 · 真实 ID ${r.unit.id}`:`未投放 · ${r.reason}`; },
   }),
   T('spirit', '山精', '🌫', 'life', '点化山精，游荡于林泉之间', {
     mode: 'click', species: SPECIES.SPIRIT, count: 4,

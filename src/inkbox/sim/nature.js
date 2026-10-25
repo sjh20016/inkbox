@@ -1,6 +1,7 @@
 // Finite, game-day driven mortal environmental changes. No world-wide runtime scan.
 import { OVER, markDirty, flushDirty } from '../world/terrain.js';
 import { emitPresentation } from './presentation.js';
+import { invalidateTransitGeography } from '../world/transitGeography.js';
 
 export const NATURE_VERSION = 2;
 export const NATURE_DAYS = Object.freeze({ fire: 7, scorched: 1080, ash: 720, lava: 180, flood: 30 });
@@ -31,7 +32,9 @@ export function igniteCell(world, i, power = 1, { vegetationBurned = false } = {
   const old = state.fires.get(i);
   const dueDay = Math.max(old?.dueDay || 0, world.day + NATURE_DAYS.fire);
   const strength = Math.min(1, 0.45 + power * 0.4);
+  const blockedBefore = world.fire[i] >= 0.55;
   world.fire[i] = Math.max(world.fire[i], strength);
+  if (blockedBefore !== (world.fire[i] >= 0.55)) invalidateTransitGeography(world);
   if (old) { old.dueDay = dueDay; old.vegetationBurned ||= vegetationBurned; }
   else state.fires.set(i, event(world, 'fire', dueDay, i, {
     startDay: world.day, overlayAtIgnition: world.over[i], vegetationBurned,
@@ -43,6 +46,7 @@ export function igniteCell(world, i, power = 1, { vegetationBurned = false } = {
 
 export function extinguishCell(world, i) {
   if (!world.fire[i] && !world.nature?.fires?.has(i)) return;
+  if (world.fire[i] >= 0.55) invalidateTransitGeography(world);
   world.fire[i] = 0;
   const state = natureState(world), item = state.fires.get(i);
   if (item) { state.fires.delete(i); state.events = state.events.filter((e) => e !== item); }

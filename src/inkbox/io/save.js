@@ -29,6 +29,7 @@ import { readObserveEcho, restoreObserveEcho } from '../sim/observeEcho.js';
 import { snapshotNature, restoreNature } from '../sim/nature.js';
 import { snapshotWanling, restoreWanling } from '../world/wanlingState.js';
 import { creatureFormOf, WANLING_BY_KEY } from '../core/wanlingCatalog.js';
+import { snapshotTransit, restoreTransitSnapshot } from '../world/transitState.js';
 import { OVER, recomputeAll, recomputeQi } from '../world/terrain.js';
 import { DAO_PATHS, TRIBULATION_OMENS } from '../core/cultivation.js';
 import { MANUALS, NETHER_TECHNIQUES } from '../core/lore.js';
@@ -282,6 +283,8 @@ function base64ToBytes(text) {
 export function serializeWorld(world, meta = {}) {
   return {
     v: SAVE_VERSION,
+    // Independent optional v1 block; old v11 rows and realm payloads stay intact.
+    ...(world.plane === 'mortal' && world.transit ? { transit: snapshotTransit(world) } : {}),
     app: APP.version,
     w: world.w,
     h: world.h,
@@ -1479,6 +1482,10 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
   recomputeQiLayer(world);
   for (const entity of world.entities) if (entity.sp === 'beast') entity.form = creatureFormOf(world,entity);
   if (world.plane === 'mortal') restoreWanling(world,data.wanling);
+  if (world.plane === 'mortal' && data.transit !== undefined) {
+    const transit = restoreTransitSnapshot(data.transit, world);
+    if (transit) world.transit = transit;
+  }
   world.touch();
 }
 
