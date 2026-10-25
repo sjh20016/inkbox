@@ -1,6 +1,7 @@
 // Persistent terrain edits shared by Canvas, Three and world events.
 import { clamp } from '../core/noise.js';
 import { playerEditedCell } from '../sim/nature.js';
+import { invalidateTransitGeography } from './transitGeography.js';
 
 /** A height edit preserves the existing water surface; raising land above it exposes land. */
 export function setHeight(world, i, value, { player = true } = {}) {
@@ -14,6 +15,7 @@ export function setHeight(world, i, value, { player = true } = {}) {
   world.height[i] = next;
   if (initialWater > 0 || ownedBase !== undefined)
     world.water[i] = initialWater > 0 ? Math.fround(Math.max(0, surface - next)) : 0;
+  invalidateTransitGeography(world);
   return true;
 }
 
@@ -23,5 +25,6 @@ export function setWater(world, i, value, { player = true } = {}) {
   if (next === world.water[i] && !(player && world.nature?.floods?.has(i))) return false;
   if (player) playerEditedCell(world, i);
   world.water[i] = next;
+  invalidateTransitGeography(world);
   return true;
 }
