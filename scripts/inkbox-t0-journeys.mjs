@@ -86,6 +86,15 @@ function nearIslands() {
   assert.equal(w.villages[1].food,16);
 }
 {
+  const w=nearIslands();w.entities[0].x=3.5;w.entities[0].y=10.5;
+  const {journey:j}=requestCargoJourney(w,{fromVillageId:1,toVillageId:2,food:12});
+  assert.equal(j.goal.sourceReached,false);
+  assert.equal(w.villages[0].food,88);
+  cancelJourney(w,j.id);
+  assert.equal(j.status,'cancelled');assert.equal(w.villages[0].food,100);
+  assert.equal(w.transit.ledger.returned,12);
+}
+{
   const w=fixture(),{journey:j}=requestCargoJourney(w,{fromVillageId:1,toVillageId:2,food:12});
   cancelJourney(w,j.id);assert.equal(w.villages[0].food,100);
   assert.equal(w.transit.ledger.returned,12);assert.equal(j.status,'cancelled');
@@ -102,6 +111,22 @@ function nearIslands() {
   const id=w.entities[1].id,villageId=w.entities[1].village;
   tick(w,20);assert.equal(j.status,'arrived');assert.equal(w.entities[1].id,id);
   assert.equal(w.entities[1].village,villageId);
+}
+{
+  const w=nearIslands(),actor=w.entities[1],socialVillage=actor.village,id=actor.id;
+  const outward=requestPersonJourney(w,{actorId:id,toVillageId:2});
+  assert.equal(outward.ok,true,outward.reason);
+  tick(w,20);assert.equal(outward.journey.status,'arrived');
+  assert.equal(actor.id,id);assert.equal(actor.village,socialVillage);
+  assert.equal(requestPersonJourney(w,{actorId:id,toVillageId:2}).reason,'already_at_destination');
+  const homeward=requestPersonJourney(w,{actorId:id,toVillageId:1});
+  assert.equal(homeward.ok,true,homeward.reason);
+  assert.equal(homeward.journey.fromVillageId,2);
+  tick(w,21);assert.equal(homeward.journey.status,'active');
+  assert.ok(actor.x>4.5&&actor.x<15.5,'return flight advances through space');
+  tick(w,50);assert.equal(homeward.journey.status,'arrived');
+  assert.equal(actor.id,id);assert.equal(actor.village,socialVillage);
+  assert.equal(actor.x,4.5);assert.equal(actor.y,8.5);
 }
 {
   const w=fixture(),{journey:j}=requestCargoJourney(w,{fromVillageId:1,toVillageId:2,food:12});

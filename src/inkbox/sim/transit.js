@@ -97,7 +97,7 @@ function begin(world,{kind,mode,actor,from,to,food=0,route}) {
   const s=state(world);
   const j={id:s.nextId++,kind,mode,status:'active',reason:null,actorId:actor.id,
     vehicleId:kind==='cargo'?`boat-${s.nextId-1}`:null,fromVillageId:from.id,toVillageId:to.id,
-    cargo:{food},position:{x:actor.x,y:actor.y},departDay:world.day,updatedDay:world.day,
+    cargo:{food,amount:food},position:{x:actor.x,y:actor.y},departDay:world.day,updatedDay:world.day,
     etaDay:world.day+route.distance/(mode==='air'?TRANSIT_LIMITS.airTilesPerDay:TRANSIT_LIMITS.waterTilesPerDay),
     goal:{villageId:to.id,cancelRequested:false,
       sourceReached:kind!=='cargo'||Math.hypot(actor.x-from.x-0.5,actor.y-from.y-0.5)<0.01},
@@ -135,10 +135,15 @@ function requestCargoCore(world,{fromVillageId,toVillageId,actorId,food,mode='wa
 export function requestCargoJourney(world,options={}) {return requestCargoCore(world,options);}
 export function requestPersonJourney(world,{actorId,toVillageId,mode='air'}={}) {
   if(mode!=='air') return {ok:false,reason:'unsupported_mode'};
-  const actor=entity(world,actorId),to=village(world,toVillageId),from=village(world,actor?.village);
-  if(!actor||!canFly(actor)||!isLivingHuman(actor)||!validVillage(from)||!validVillage(to)
-    ||from.id===to.id) return {ok:false,reason:'invalid_person_or_village'};
+  const actor=entity(world,actorId),to=village(world,toVillageId);
+  if(!actor||!canFly(actor)||!isLivingHuman(actor)||!validVillage(to))
+    return {ok:false,reason:'invalid_person_or_village'};
   if(activeJourneyForEntity(world,actorId)) return {ok:false,reason:'already_travelling'};
+  if(Math.hypot(actor.x-to.x-0.5,actor.y-to.y-0.5)<1)
+    return {ok:false,reason:'already_at_destination'};
+  const from=world.villages.filter(validVillage).slice()
+    .sort((a,b)=>Math.hypot(actor.x-a.x-0.5,actor.y-a.y-0.5)
+      -Math.hypot(actor.x-b.x-0.5,actor.y-b.y-0.5)||a.id-b.id)[0];
   if((world.transit?.journeys.filter(live).length||0)>=TRANSIT_LIMITS.active)return {ok:false,reason:'capacity'};
   const route=planTransitRoute(world,{x:actor.x,y:actor.y},center(to),{mode,actor});
   if(!route.ok) return {ok:false,reason:route.reason};
@@ -239,6 +244,13 @@ export function stepTransit(world) {
 }
 export function cancelJourney(world,id) {
   const j=byId(world,id);if(!j||!live(j))return {ok:false,reason:'not_active'};
+  if(j.kind==='cargo'&&!j.goal.sourceReached) {
+    const actor=entity(world,j.actorId);
+    if(actor&&!safeLand(world,j.position)) {actor.hp=0;actor.diedOf='lost';}
+    finish(world,j,'cancelled',validVillage(village(world,j.fromVillageId))
+      ?'cancelled_at_source':'source_lost');
+    return {ok:true,journey:j};
+  }
   if(j.kind==='person'&&!safeLand(world,j.position)) {
     j.goal.cancelRequested=true;j.status='landing';j.reason='cancel_requested';return {ok:true,journey:j};
   }

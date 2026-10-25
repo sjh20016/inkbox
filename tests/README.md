@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:t0` 检查陆路/永久水路/飞行可达、港口及缓存边界、真实货物与人物行程、封海恢复、v11独立存档块、同ID/守恒/幂等，以及正式 Life/advance/神力和内部地形事务接线。已加入 Fast。`npm run test:t0:browser` 为手动实际 Edge/CDP 操作，默认先启动4231并打开正式 `inkbox.html?scenario=t0`；它不替代CPU门禁，也不宣称全平台性能通过。场景与结果见 [T0交付](../docs/development/T0_TRANSIT_DELIVERY.md)。
+
 `npm run test:g7` 检查正式 Canvas 拖动的确认/取消、长按力度与水体手势聚合，以及异步保存不清除新编辑、读档固定槽位/保留等待期间的新操作、拒绝神力不消耗玩家工具随机流。它执行正式监听器和 QoL 控制器，加入 Fast；真实菜单、身份、宗门援助与双 renderer 连贯试玩另留浏览器证据。
 
 `npm run test:p0` 复用 P0 的输入/三界、有限水体/洪水归属、真实神力结果与有界三维表现 CPU 检查，加入 Fast。它不替代实际 GPU 试玩或性能对照；已有 P0 场景和硬件边界见 [P0 交付](../docs/development/P0_THREE_PLAYER_EXPERIENCE_DELIVERY.md)。

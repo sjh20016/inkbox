@@ -16,7 +16,7 @@ export function readTransitJourneys(world) {
   return (world?.transit?.journeys || []).slice(0, 36).map(j => ({
     id:j.id, kind:j.kind, mode:j.mode, status:j.status, reason:j.reason,
     actorId:j.actorId, vehicleId:j.vehicleId, fromVillageId:j.fromVillageId,
-    toVillageId:j.toVillageId, cargo:{food:j.cargo.food},
+    toVillageId:j.toVillageId, cargo:{food:j.cargo.food,amount:j.cargo.amount ?? null},
     position:{...j.position}, departDay:j.departDay, updatedDay:j.updatedDay,
     etaDay:j.etaDay, goal:{...j.goal}, progress:j.progress, distance:j.distance,
     legMode:j.legMode,
@@ -47,6 +47,7 @@ export function restoreTransitSnapshot(data, world) {
       || !finite(j.etaDay) || !finite(j.progress) || !finite(j.distance)
       || !['land','water','air'].includes(j.legMode)
       || !j.cargo || !natural(j.cargo.food) || j.cargo.food > 24
+      || (j.cargo.amount != null && (!natural(j.cargo.amount) || j.cargo.amount > 24 || j.cargo.food > j.cargo.amount))
       || !j.goal || j.goal.villageId !== j.toVillageId
       || typeof j.goal.cancelRequested !== 'boolean'
       || typeof j.goal.sourceReached !== 'boolean'
@@ -57,7 +58,7 @@ export function restoreTransitSnapshot(data, world) {
     seen.add(j.id); if (active(j.status)) actors.add(j.actorId);
     journeys.push({id:j.id,kind:j.kind,mode:j.mode,status:j.status,reason:j.reason,
       actorId:j.actorId,vehicleId:j.vehicleId,fromVillageId:j.fromVillageId,
-      toVillageId:j.toVillageId,cargo:{food:j.cargo.food},position:{x:j.position.x,y:j.position.y},
+      toVillageId:j.toVillageId,cargo:{food:j.cargo.food,amount:j.cargo.amount ?? null},position:{x:j.position.x,y:j.position.y},
       departDay:j.departDay,updatedDay:j.updatedDay,etaDay:j.etaDay,
       goal:{villageId:j.toVillageId,cancelRequested:j.goal.cancelRequested,
         sourceReached:j.goal.sourceReached},
