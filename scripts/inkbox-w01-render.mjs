@@ -5,6 +5,7 @@ import { deriveEntities, deriveUpperEntities, deriveNetherEntities, sameEntities
 import { readBiyiPairs } from '../src/inkbox/render/wanlingLayer.js';
 import { CreatureBatch } from '../src/inkbox/render3d/creatures/CreatureBatch.js';
 import { EntityLayer } from '../src/inkbox/render3d/entities/EntityLayer.js';
+import { ElevationField } from '../src/inkbox/render3d/terrain/ElevationField.js';
 
 const lover = { type: 'lover', score: 80 };
 const a = { id: 1, sp: 'human', hp: 30, x: 4, y: 4, relations: new Map([[2, lover]]) };
@@ -68,7 +69,7 @@ assert.equal(castAt(3).length, 0);
 assert.equal(castAt(12)[0]?.instanceId, 0);
 world.water = new Float32Array(world.w * world.h).fill(.2);
 world.height = new Float32Array(world.w * world.h).fill(.4);
-layer.elevation.nodeForHeight = height => height * 10;
+layer.elevation = new ElevationField(world);
 assert(layer.presentationY({ form: 'chiru', x: 5, y: 5, lift: 0 }) > 6);
 assert(layer.presentationY({ form: 'water', x: 5, y: 5, lift: .9 }) > 6.9);
 layer.dispose();

@@ -27,7 +27,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { ElevationField } from '../terrain/ElevationField.js';
-import { interpolateElevation } from '../terrain/VisualElevation.js';
 import { deriveEntities, sameEntities, ENTITY_CLASSES } from './deriveEntities.js';
 import { RegionGeometry } from '../region/RegionGeometry.js';
 import { LIMITS } from '../../core/config.js';
@@ -309,7 +308,7 @@ export class EntityLayer {
     const next = selection.states, previous = this._lodByEntity;
     let changed = next.size !== previous.size;
     if (!changed) for (const [id, lod] of next) if (previous.get(id) !== lod) { changed = true; break; }
-    if (changed) this.writeLOD(this.lastDerived, selection);
+    if (changed) { this.writeLOD(this.lastDerived, selection); this.writeProcedural(this.lastDerived); }
   }
 
   setCharacterLibrary(library) {
@@ -379,13 +378,11 @@ export class EntityLayer {
   presentationY(item) {
     const ground = this.elevation.at(item.x, item.y);
     if ((item.form !== 'chiru' && item.form !== 'water') || !this.world.water
-      || !this.world.height || !this.elevation.nodeForHeight) return ground + item.lift;
+      || !this.world.height || !this.elevation.waterAt) return ground + item.lift;
     const ix = Math.max(0, Math.min(this.world.w - 1, Math.floor(item.x)));
     const iy = Math.max(0, Math.min(this.world.h - 1, Math.floor(item.y)));
     if (this.world.water[iy * this.world.w + ix] <= 0.0015) return ground + item.lift;
-    const water = interpolateElevation(this.world, item.x, item.y, i =>
-      Math.fround(this.elevation.nodeForHeight(this.world.height[i] + this.world.water[i],
-        i % this.world.w, Math.floor(i / this.world.w))));
+    const water = this.elevation.waterAt(item.x, item.y);
     return Math.max(ground, water + 0.08) + item.lift;
   }
 
@@ -398,6 +395,9 @@ export class EntityLayer {
       const items = records.get(form).slice(0, mesh.instanceMatrix.count);
       for (let i = 0; i < items.length; i++) {
         const item = items[i]; const p = this.coordinates.worldToRender(item.x, item.y, 0);
+        const cls = ['wood','water','stone'].includes(form) ? 'spirit' : 'beast';
+        const level = this._lodByEntity.get(`${cls}:${item.id}`) ?? 0;
+        this.stats.lod[level]++;
         this.dummy.position.set(p.x, this.presentationY(item), p.z);
         this.dummy.rotation.set(0, creatureFacingFor(this.world.seed || 0, item.id), 0);
         this.dummy.scale.setScalar(1 + Math.min(0.45, Math.log2(Math.max(1, item.count || 1)) * 0.1));

@@ -42,6 +42,11 @@ function advance(w,days) {w.day+=days;stepWanling(w,days);}
   removeWanling(w,dog.id);
   assert.equal(wanlingGuardAt(w,13,12),0);
 }
+// Undisturbed enabled deer really graze; predator escape takes priority over food.
+{
+  const w=world();place(w,'deer',10,10);const grass=w.veg[w.idx(10,10)];advance(w,30);
+  assert.ok(w.veg[w.idx(10,10)]<grass,'a live enabled herd really consumes its local vegetation');
+}
 // One wolf near two herds takes exactly one deer in one ecology period.
 {
   const w=world(),a=place(w,'deer',10,10),b=place(w,'deer',20,20),wolf=place(w,'wolf',11,10);
@@ -199,4 +204,4 @@ function advance(w,days) {w.day+=days;stepWanling(w,days);}
   assert.equal(requestWanling(empty,'deer',10,10).ok,false);
   assert.deepEqual(empty.wanling,{enabled:false});
 }
-console.log('W0.1 ecology: 17 real-world scenarios passed');
+console.log('W0.1 ecology: 18 real-world scenarios passed');
