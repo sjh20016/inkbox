@@ -1,5 +1,6 @@
 import { OVER, markDirty, recomputeRect, slopeAt } from '../world/terrain.js';
 import { isHabitableSettlementCenter, liveSettlementHouseType, SETTLEMENT_FLOOD_DEPTH } from '../world/settlementState.js';
+import { wanlingVillageInfluence } from '../world/wanlingInfluence.js';
 
 export const LOCAL_HISTORY_LIMIT = 16;
 export const SETTLEMENT_RUINS_LIMIT = 80;
@@ -37,9 +38,10 @@ export function damageSettlement(world, village, {
     // (earthquake). Keep that old anchor from claiming a later new building.
     if (world.struct[index] !== 1 && world.struct[index] !== 2) house.ruinedBySettlement = true;
   }
-  village.hp = Math.max(0, Math.min(100, village.hp - Math.max(0, hp)));
+  const protection = wanlingVillageInfluence(world,village).damageScale;
+  village.hp = Math.max(0, Math.min(100, village.hp - Math.max(0, hp) * protection));
   if (village.hp < 60) village.recoveryRecorded = false;
-  village.food = Math.max(0, village.food - Math.max(0, food));
+  village.food = Math.max(0, village.food - Math.max(0, food) * protection);
   village.lastDamageDay = world.day;
   village.lastDamageReason = reason;
   if (ruinHouse) ruinSettlementHouse(world, village, housePredicate);

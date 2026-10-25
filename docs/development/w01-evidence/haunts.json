@@ -1,0 +1,456 @@
+{
+  "source": "b8fdbece82a48d0cfeaece511e024afb1ec059a4",
+  "fixture": "controlleddaohaunts",
+  "started": "2026-10-25T12:29:25.270Z",
+  "finished": "2026-10-25T12:29:33.103Z",
+  "environment": {
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+    "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "glError": 0,
+    "dpr": 1,
+    "viewport": [
+      1366,
+      768
+    ]
+  },
+  "checks": [
+    {
+      "name": "normal game boots",
+      "pass": true
+    },
+    {
+      "name": "controlled production save imports without changing actor count",
+      "pass": true
+    },
+    {
+      "name": "two actual jobs target separate live ghosts",
+      "pass": true,
+      "evidence": {
+        "jobs": [
+          {
+            "actorId": 72,
+            "path": "buddha",
+            "targetKind": "wraith",
+            "targetId": 2000001,
+            "x": 72.5,
+            "y": 104.5,
+            "stage": "travel",
+            "startedDay": 0,
+            "nextDay": 180,
+            "summary": "前往河外孤魂"
+          },
+          {
+            "actorId": 76,
+            "path": "soul",
+            "targetKind": "wraith",
+            "targetId": 2000002,
+            "x": 96.5,
+            "y": 104.5,
+            "stage": "travel",
+            "startedDay": 0,
+            "nextDay": 180,
+            "summary": "前往游荡鬼修"
+          }
+        ],
+        "targets": [
+          {
+            "id": 2000001,
+            "hp": 60,
+            "soulKind": "ghost",
+            "x": 72.5,
+            "y": 104.5,
+            "live": true,
+            "hpAfter": 60
+          },
+          {
+            "id": 2000002,
+            "hp": 60,
+            "soulKind": "ghostCultivator",
+            "x": 96.5,
+            "y": 104.5,
+            "live": true,
+            "hpAfter": 60
+          }
+        ]
+      }
+    },
+    {
+      "name": "Buddhist completes real exorcism and records the dissolved ghost",
+      "pass": true,
+      "evidence": {
+        "job": {
+          "actorId": 72,
+          "path": "buddha",
+          "targetKind": "wraith",
+          "targetId": 2000001,
+          "x": 72.5,
+          "y": 104.5,
+          "stage": "done",
+          "startedDay": 0,
+          "nextDay": 181,
+          "summary": "为鬼影河外孤魂诵经超度，凡间消散账已记",
+          "completedDay": 1
+        },
+        "targetBefore": {
+          "id": 2000001,
+          "hp": 60,
+          "soulKind": "ghost",
+          "x": 72.5,
+          "y": 104.5,
+          "live": true,
+          "hpAfter": 60
+        },
+        "targetsAfter": [
+          {
+            "id": 2000001,
+            "hp": 60,
+            "soulKind": "ghost",
+            "x": 72.5,
+            "y": 104.5,
+            "live": false
+          },
+          {
+            "id": 2000002,
+            "hp": 60,
+            "soulKind": "ghostCultivator",
+            "x": 96.5,
+            "y": 104.5,
+            "live": true,
+            "hpAfter": 55
+          }
+        ],
+        "logBefore": {
+          "dissolved": 0
+        },
+        "logAfter": {
+          "dissolved": 1
+        }
+      }
+    },
+    {
+      "name": "Soul cultivator changes the actual ghost and completes its paid action",
+      "pass": true,
+      "evidence": {
+        "job": {
+          "actorId": 76,
+          "path": "soul",
+          "targetKind": "wraith",
+          "targetId": 2000002,
+          "x": 96.5,
+          "y": 104.5,
+          "stage": "done",
+          "startedDay": 0,
+          "nextDay": 181,
+          "summary": "净化鬼影游荡鬼修的怨念",
+          "completedDay": 1
+        },
+        "targetBefore": {
+          "id": 2000002,
+          "hp": 60,
+          "soulKind": "ghostCultivator",
+          "x": 96.5,
+          "y": 104.5,
+          "live": true,
+          "hpAfter": 60
+        },
+        "targetsAfter": [
+          {
+            "id": 2000001,
+            "hp": 60,
+            "soulKind": "ghost",
+            "x": 72.5,
+            "y": 104.5,
+            "live": false
+          },
+          {
+            "id": 2000002,
+            "hp": 60,
+            "soulKind": "ghostCultivator",
+            "x": 96.5,
+            "y": 104.5,
+            "live": true,
+            "hpAfter": 55
+          }
+        ],
+        "actorBefore": {
+          "id": 76,
+          "name": "慕容澜昭",
+          "path": "soul",
+          "hp": 1430,
+          "pollution": 0
+        },
+        "actorAfter": {
+          "id": 76,
+          "name": "慕容澜昭",
+          "path": "soul",
+          "hp": 1415.7,
+          "pollution": 0.0022
+        },
+        "note": "soul action spends the cultivator’s actual health when this fixture has no sect treasury"
+      }
+    },
+    {
+      "name": "native activities preserve human and cultivator counts and identity; natural beasts are recorded separately",
+      "pass": true,
+      "evidence": {
+        "importedPeople": 77,
+        "afterFormalDay": 81,
+        "before": {
+          "human": 64,
+          "cultivator": 13,
+          "beast": 0
+        },
+        "after": {
+          "human": 64,
+          "cultivator": 13,
+          "beast": 4
+        },
+        "focusedActorIdsBefore": [
+          72,
+          76
+        ],
+        "focusedActorIdsAfter": [
+          72,
+          76
+        ],
+        "focusedActorCounts": [
+          1,
+          1
+        ],
+        "newHumans": [],
+        "newCultivators": [],
+        "naturalBeasts": [
+          {
+            "id": 78,
+            "sp": "beast",
+            "name": "纪青书",
+            "village": 0,
+            "dao": null
+          },
+          {
+            "id": 79,
+            "sp": "beast",
+            "name": "秦赤央",
+            "village": 0,
+            "dao": null
+          },
+          {
+            "id": 80,
+            "sp": "beast",
+            "name": "谢重庚",
+            "village": 0,
+            "dao": null
+          },
+          {
+            "id": 81,
+            "sp": "beast",
+            "name": "白寒泽",
+            "village": 0,
+            "dao": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "exact Buddhist row is focused for native selection",
+      "pass": true,
+      "evidence": {
+        "row": {
+          "actorId": "72",
+          "text": "沈雪烟 · 佛修 · 为鬼影河外孤魂诵经超度，凡间消散账已记",
+          "focused": true
+        },
+        "expectedActorId": 72
+      }
+    },
+    {
+      "name": "formal activity list shows both named cultivators and their completed consequences",
+      "pass": true,
+      "evidence": {
+        "buddha": {
+          "id": 72,
+          "text": "沈雪烟 · 佛修 · 为鬼影河外孤魂诵经超度，凡间消散账已记"
+        },
+        "soul": {
+          "id": 76,
+          "text": "慕容澜昭 · 魂修 · 净化鬼影游荡鬼修的怨念"
+        }
+      }
+    },
+    {
+      "name": "no browser runtime or WebGL errors",
+      "pass": true,
+      "evidence": {
+        "errors": {
+          "js": [],
+          "console": []
+        },
+        "environment": {
+          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+          "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "glError": 0,
+          "dpr": 1,
+          "viewport": [
+            1366,
+            768
+          ]
+        }
+      }
+    }
+  ],
+  "activityUi": {
+    "buddha": {
+      "id": 72,
+      "text": "沈雪烟 · 佛修 · 为鬼影河外孤魂诵经超度，凡间消散账已记"
+    },
+    "soul": {
+      "id": 76,
+      "text": "慕容澜昭 · 魂修 · 净化鬼影游荡鬼修的怨念"
+    }
+  },
+  "populationDelta": {
+    "before": {
+      "human": 64,
+      "cultivator": 13,
+      "beast": 0
+    },
+    "after": {
+      "human": 64,
+      "cultivator": 13,
+      "beast": 4
+    },
+    "newHumans": [],
+    "newCultivators": [],
+    "naturalBeasts": [
+      {
+        "id": 78,
+        "sp": "beast",
+        "name": "纪青书",
+        "village": 0,
+        "dao": null
+      },
+      {
+        "id": 79,
+        "sp": "beast",
+        "name": "秦赤央",
+        "village": 0,
+        "dao": null
+      },
+      {
+        "id": 80,
+        "sp": "beast",
+        "name": "谢重庚",
+        "village": 0,
+        "dao": null
+      },
+      {
+        "id": 81,
+        "sp": "beast",
+        "name": "白寒泽",
+        "village": 0,
+        "dao": null
+      }
+    ]
+  },
+  "errors": {
+    "js": [],
+    "console": []
+  },
+  "cleanup": {
+    "removed": true,
+    "attempts": 1,
+    "processesExited": true,
+    "complete": true,
+    "processEvidence": {
+      "supported": true,
+      "frozen": 17,
+      "remaining": 0,
+      "discoveryError": null,
+      "termination": {
+        "errors": [],
+        "attempted": 0
+      }
+    }
+  },
+  "pass": true,
+  "scope": "Real ghost activities and formal activity list; no additional modal character-book acceptance claimed.",
+  "earlierAttempts": [
+    {
+      "directory": "2026-10-25T12-15-08.994Z",
+      "pass": false,
+      "checks": 5,
+      "failure": "Error: Soul cultivator changes the actual ghost and completes its paid action: {\"job\":{\"actorId\":76,\"path\":\"soul\",\"targetKind\":\"wraith\",\"targetId\":2000002,\"x\":96.5,\"y\":104.5,\"stage\":\"done\",\"startedDay\":0,\"nextDay\":181,\"summary\":\"净化鬼影游荡鬼修的怨念\",\"completedDay\":1},\"targetBefore\":{\"id\":2000002,\"hp\":60,\"soulKind\":\"ghostCultivator\",\"x\":96.5,\"y\":104.5,\"live\":true,\"hpAfter\":60},\"targetsAfter\":[{\"id\":2000001,\"hp\":60,\"soulKind\":\"ghost\",\"x\":72.5,\"y\":104.5,\"live\":false},{\"id\":2000002,\"hp\":60,\"soulKind\":\"ghostCultivator\",\"x\":96.5,\"y\":104.5,\"live\":true,\"hpAfter\":55}],\"actorBefore\":{\"id\":76,\"name\":\"慕容澜昭\",\"path\":\"soul\",\"hp\":1430,\"pollution\":0},\"actorAfter\":{\"id\":76,\"name\":\"慕容澜昭\",\"path\":\"soul\",\"hp\":1415.7,\"pollution\":0.0022},\"note\":\"soul action spends the cultivator’s actual health when this fixture has no sect treasury\"}",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T12-15-36.283Z",
+      "pass": false,
+      "checks": 6,
+      "failure": "Error: the native activity cycle does not create extra people: {\"before\":77,\"after\":81,\"day\":1}",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T12-16-22.263Z",
+      "pass": false,
+      "checks": 6,
+      "failure": "Error: 页面内脚本抛错: Error: Occluded [data-dao-actor=\"72\"] by undefined",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T12-17-12.035Z",
+      "pass": false,
+      "checks": 6,
+      "failure": "Error: 页面内脚本抛错: Error: Not clickable [data-dao-actor=\"72\"]{\"x\":1187.0859375,\"y\":876.921875,\"width\":1366,\"height\":768,\"rect\":{\"x\":1047.171875,\"y\":850.734375,\"width\":279.828125,\"height\":52.375},\"scroll\":[0,0]}",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T12-17-48.088Z",
+      "pass": false,
+      "checks": 6,
+      "failure": "Error: 页面内脚本抛错: Error: Not clickable [data-dao-actor=\"72\"]{\"x\":1187.0859375,\"y\":876.921875,\"width\":1366,\"height\":768,\"rect\":{\"x\":1047.171875,\"y\":850.734375,\"width\":279.828125,\"height\":52.375},\"scroll\":[0,0]}",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T12-18-42.189Z",
+      "pass": false,
+      "checks": 6,
+      "failure": "Error: 页面内脚本抛错: Error: Not clickable [data-dao-actor=\"72\"]{\"x\":1187.0859375,\"y\":876.921875,\"width\":1366,\"height\":768,\"rect\":{\"x\":1047.171875,\"y\":850.734375,\"width\":279.828125,\"height\":52.375},\"ancestors\":[{\"tag\":\"BUTTON\",\"id\":\"\",\"cls\":\"wanling-unit\",\"y\":850.734375,\"h\":52.375,\"top\":0,\"sh\":50,\"ch\":50,\"overflow\":\"visible\"},{\"tag\":\"DIV\",\"id\":\"\",\"cls\":\"\",\"y\":545.046875,\"h\":568.1875,\"top\":0,\"sh\":568,\"ch\":568,\"overflow\":\"visible\"},{\"tag\":\"DETAILS\",\"id\":\"\",\"cls\":\"wanling-paths\",\"y\":525.859375,\"h\":19.1875,\"top\":0,\"sh\":19,\"ch\":19,\"overflow\":\"visible\"},{\"tag\":\"DIV\",\"id\":\"\",\"cls\":\"wanling-body\",\"y\":159.359375,\"h\":394.6875,\"top\":0,\"sh\":395,\"ch\":395,\"overflow\":\"auto\"},{\"tag\":\"DETAILS\",\"id\":\"\",\"cls\":\"wanling-details\",\"y\":130.171875,\"h\":432.875,\"top\":0,\"sh\":432,\"ch\":432,\"overflow\":\"visible\"},{\"tag\":\"SECTION\",\"id\":\"inkWanling\",\"cls\":\"\",\"y\":130.171875,\"h\":432.875,\"top\":0,\"sh\":433,\"ch\":433,\"overflow\":\"visible\"},{\"tag\":\"SECTION\",\"id\":\"r1Volume-yi\",\"cls\":\"r1-volume\",\"y\":130.171875,\"h\":1891.921875,\"top\":0,\"sh\":1892,\"ch\":1892,\"overflow\":\"visible\"},{\"tag\":\"ASIDE\",\"id\":\"inkExperienceRail\",\"cls\":\"rail right\",\"y\":16,\"h\":656,\"top\":197,\"sh\":2218,\"ch\":654,\"overflow\":\"auto\"}]}",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T12-19-09.396Z",
+      "pass": false,
+      "checks": 6,
+      "failure": "Error: 页面内脚本抛错: Error: Not clickable [data-dao-actor=\"72\"]{\"x\":1187.0859375,\"y\":621.921875,\"width\":1366,\"height\":768,\"rect\":{\"x\":1047.171875,\"y\":595.734375,\"width\":279.828125,\"height\":52.375},\"hit\":\"<section class=\\\"r1-volume\\\" id=\\\"r1Volume-yi\\\" role=\\\"tabpanel\\\" aria-labelledby=\\\"r1VolumeTab-yi\\\"><section id=\\\"inkWanling\\\" ar\",\"ancestors\":[{\"tag\":\"BUTTON\",\"id\":\"\",\"cls\":\"wanling-unit\",\"y\":595.734375,\"h\":52.375,\"top\":0,\"sh\":50,\"ch\":50,\"overflow\":\"visible\"},{\"tag\":\"DIV\",\"id\":\"\",\"cls\":\"\",\"y\":290.046875,\"h\":568.1875,\"top\":0,\"sh\":568,\"ch\":568,\"overflow\":\"visible\"},{\"tag\":\"DETAILS\",\"id\":\"\",\"cls\":\"wanling-paths\",\"y\":270.859375,\"h\":19.1875,\"top\":0,\"sh\":19,\"ch\":19,\"overflow\":\"visible\"},{\"tag\":\"DIV\",\"id\":\"\",\"cls\":\"wanling-body\",\"y\":-95.640625,\"h\":394.6875,\"top\":0,\"sh\":395,\"ch\":395,\"overflow\":\"auto\"},{\"tag\":\"DETAILS\",\"id\":\"\",\"cls\":\"wanling-details\",\"y\":-124.828125,\"h\":432.875,\"top\":0,\"sh\":432,\"ch\":432,\"overflow\":\"visible\"},{\"tag\":\"SECTION\",\"id\":\"inkWanling\",\"cls\":\"\",\"y\":-124.828125,\"h\":432.875,\"top\":0,\"sh\":433,\"ch\":433,\"overflow\":\"visible\"},{\"tag\":\"SECTION\",\"id\":\"r1Volume-yi\",\"cls\":\"r1-volume\",\"y\":-124.828125,\"h\":1807.53125,\"top\":0,\"sh\":1808,\"ch\":1808,\"overflow\":\"visible\"},{\"tag\":\"ASIDE\",\"id\":\"inkExperienceRail\",\"cls\":\"rail right\",\"y\":16,\"h\":656,\"top\":452,\"sh\":2134,\"ch\":654,\"overflow\":\"auto\"}]}",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T12-20-23.231Z",
+      "pass": false,
+      "checks": 7,
+      "failure": "Error: actual path is visible in the formal person inspection card: \"\"",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T12-22-48.196Z",
+      "pass": false,
+      "checks": 7,
+      "failure": "Error: actual path is visible in the formal person inspection card: {\"personOpenId\":72,\"current\":{\"schemaVersion\":1,\"permissions\":{\"canWatch\":true,\"watchReason\":\"\",\"watchDisabledReason\":\"\",\"canFocus\":true,\"canExport\":true,\"canShowRelations\":true},\"health\":{\"hp\":946,\"maxHp\":946,\"restUntil\":-1000000000,\"restRemaining\":0,\"day\":1,\"state\":\"healthy\",\"hpText\":\"946 / 946\",\"restText\":\"当前无养伤期限\"},\"identity\":{\"key\":\"mortal:72\",\"id\":72,\"plane\":\"mortal\",\"currentPlane\":\"mortal\",\"status\":\"alive\",\"name\":\"沈雪烟\",\"canFocus\":true},\"header\":{\"realm\":\"炼气六层\",\"ageText\":\"20 岁\",\"lifespanText\":\"寿元上限 94.2 年\",\"affiliation\":\"散修\",\"stateText\":\"在世\"},\"cultivation\":{\"exp\":1.0837553919160365,\"required\":192,\"percent\":0.5644559332896024,\"rate\":1.0837818069078746,\"rateText\":\"每日修为 1.084\",\"stateText\":\"积累修为\"},\"overview\":[{\"label\":\"气血\",\"value\":\"946 / 946\"},{\"label\":\"养伤\",\"value\":\"当前无养伤期限\"},{\"label\":\"成年\",\"value\":\"成年（满十八岁）\"},{\"label\":\"出生来历\",\"value\":\"开世人群\"},{\"label\":\"灵根\",\"value\":\"木主杂灵根 · 劣\"},{\"label\":\"位置\",\"value\":\"凡间 (72.5, 103.5)\"}],\"cultivationRows\":[{\"label\":\"气运\",\"value\":\"74\"},{\"label\":\"心境\",\"value\":\"60.004\"}],\"history\":[{\"day\":0,\"kind\":\"birth\",\"text\":\"沈雪烟 在开世人群中现身。\"}],\"historyCoverage\":{\"retained\":true,\"capped\":true,\"cap\":32,\"description\":\"仅显示正式人物日志保留的事件，不能视为完整一生\"},\"relations\":[{\"label\":\"所属宗门\",\"value\":\"散修\"}],\"edicts\":[{\"id\":\"cultivation\",\"title\":\"灌顶\",\"description\":\"增加下一层需求25%的修为，突破由模拟判定\",\"enabled\":true,\"disabledReason\":\"\"},{\"id\":\"fortune\",\"title\":\"拨运\",\"description\":\"气运增加8，上限100\",\"enabled\":true,\"disabledReason\":\"\"},{\"id\":\"mind\",\"title\":\"定心\",\"description\":\"心境增加8，上限100\",\"enabled\":true,\"disabledReason\":\"\"},{\"id\":\"root\",\"title\":\"洗髓\",\"description\":\"普通灵根提升一品，最高至优；可再次施行\",\"enabled\":true,\"disabledReason\":\"\"}],\"watched\":false},\"cardText\":\"坐天观井 / 人物命簿\\n记挂\\n寻踪\\n传记\\n收起\\n沈雪烟\\n在世\\n\\n炼气六层\\n\\n20 岁 · 寿元上限 94.2 年 · 散修 · 在世\\n\\n修为积累\\n0.6%\\n1.0837553919160365 / 192\\n积累修为\\n命簿\\n修行\\n改命\\n生平\\n命里所载\\n气血\\n946 / 946\\n养伤\\n当前无养伤期限\\n成年\\n成年（满十八岁）\\n出生来历\\n开世人群\\n灵根\\n木主杂灵根 · 劣\\n位置\\n凡间 (72.5, 103.5)\\n观其所历，不代其所行\",\"cardHtml\":\"<section class=\\\"g1-character\\\" aria-label=\\\"人物命簿\\\" data-status=\\\"alive\\\"><header class=\\\"g1-character__header\\\"><div class=\\\"g1-character__eyebrow-row\\\"><span class=\\\"g1-character__eyebrow\\\">坐天观井  /  人物命簿</span><div class=\\\"g1-character__tools\\\"><button class=\\\"g1-character__tool\\\" type=\\\"button\\\" data-g1-action=\\\"watch\\\" title=\\\"\\\" data-active=\\\"false\\\">记挂</button><button class=\\\"g1-character__tool\\\" type=\\\"button\\\" data-g1-action=\\\"focus\\\">寻踪</button><button class=\\\"g1-character__tool\\\" type=\\\"button\\\" data-g1-action=\\\"export\\\">传记</button><button class=\\\"g1-character__tool\\\" type=\\\"button\\\" data-g1-action=\\\"close\\\">收起</button></div></div><div class=\\\"g1-character__profile\\\"><div class=\\\"g1-character__portrait-root\\\"><figure class=\\\"g1-character__portrait\\\" data-status=\\\"alive\\\"><img class=\\\"g1-character__portrait-image\\\" alt=\\\"沈雪烟 · 人物面相\\\" decoding=\\\"async\\\" draggable=\\\"false\\\" src=\\\"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20aria-hidden%3D%22true%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%23edeae1%22%2F%3E%3Cpath%20d%3D%22M10%2028%20Q34%202%2060%2020%20T97%2030%20M3%2067%20Q45%2053%2096%2075%22%20fill%3D%22none%22%20stroke%3D%22%239da7a0%22%20opacity%3D%22.45%22%2F%3E%3Cpath%20d%3D%22M5%20100%20Q10%2078%2033%2076%20L50%2081%20L67%2076%20Q90%2077%2095%20100%20Z%22%20fill%3D%22%23c2a88c%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.6%22%2F%3E%3Cpath%20d%3D%22M39%2075%20L40%2086%20L50%2092%20L60%2086%20L61%2075%22%20fill%3D%22%234f4844%22%2F%3E%3Cpath%20d%3D%22M34%2031%20Q27%2040%2030%2060%20Q34%2078%2050%2083%20Q66%2078%2070%2060%20Q73%2040%2066%2031%20Z%22%20fill%3D%22%23f1d7b9%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.65%22%2F%3E%3Cpath%20d%3D%22M36%2048%20Q40%2046%2044%2048%20M56%2048%20Q60%2046%2064%2048%22%20fill%3D%22none%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.4%22%20opacity%3D%22.7%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M35%2050%20Q40%2047%2044%2050%22%2F%3E%3Cpath%20d%3D%22M56%2050%20Q60%2047%2065%2050%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M49%2054%20L48%2062%20M46%2069%20Q50%2071%2054%2069%22%20fill%3D%22none%22%20stroke%3D%22%23946e62%22%20stroke-width%3D%221.1%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M29%2059%20Q20%2027%2039%2017%20Q60%208%2072%2027%20Q81%2047%2071%2060%20L65%2040%20Q51%2035%2034%2042%20Z%22%20fill%3D%22%234f4844%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.9%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M29%2041%20Q26%2057%2033%2074%20L29%2087%20Q21%2071%2025%2050%20Z%22%20fill%3D%22%234f4844%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.1%22%2F%3E%3Cpath%20d%3D%22M70%2041%20Q74%2056%2066%2074%20L71%2086%20Q80%2069%2074%2047%20Z%22%20fill%3D%22%234f4844%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.1%22%2F%3E%3Cpath%20d%3D%22M31%2083%20L49%2096%20L58%2086%20L50%2082%20L39%2089%20Z%22%20fill%3D%22%23f8f3e7%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.15%22%2F%3E%3Cpath%20d%3D%22M50%2092%20L57%20100%20L64%20100%22%20fill%3D%22none%22%20stroke%3D%22%238e4942%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M16%2096%20Q50%2091%2084%2096%22%20stroke%3D%22%23333832%22%20stroke-opacity%3D%22.19%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E\\\"><span class=\\\"g1-character__portrait-frame\\\" aria-hidden=\\\"true\\\"></span></figure></div><div class=\\\"g1-character__identity\\\"><div class=\\\"g1-character__name-row\\\"><h2 class=\\\"g1-character__name\\\">沈雪烟</h2><span class=\\\"g1-character__status\\\">在世</span></div><p class=\\\"g1-character__realm\\\">炼气六层</p><p class=\\\"g1-character__summary\\\">20 岁 · 寿元上限 94.2 年 · 散修 · 在世</p></div></div></header><section class=\\\"g1-character__growth\\\"><div class=\\\"g1-character__growth-heading\\\"><span>修为积累</span><strong class=\\\"g1-character__growth-percent\\\">0.6%</strong></div><div class=\\\"g1-character__track\\\" role=\\\"progressbar\\\" aria-label=\\\"修为进度\\\" aria-valuemin=\\\"0\\\" aria-valuemax=\\\"100\\\" aria-valuenow=\\\"0.5644559332896024\\\" aria-valuetext=\\\"0.6%\\\"><div class=\\\"g1-character__track-fill\\\" style=\\\"width: 0.564456%;\\\"></div></div><div class=\\\"g1-character__growth-meta\\\"><span>1.0837553919160365 / 192</span><span>积累修为</span></div></section><div class=\\\"g1-character__tabs\\\" role=\\\"tablist\\\" aria-label=\\\"命簿四卷\\\"><button class=\\\"g1-character__tab\\\" type=\\\"button\\\" data-g1-action=\\\"tab\\\" data-tab=\\\"overview\\\" id=\\\"g1-card-tab-1\\\" role=\\\"tab\\\" aria-controls=\\\"g1-card-pane-1\\\" aria-selected=\\\"true\\\" tabindex=\\\"0\\\">命簿</button><button class=\\\"g1-character__tab\\\" type=\\\"button\\\" data-g1-action=\\\"tab\\\" data-tab=\\\"cultivation\\\" id=\\\"g1-card-tab-2\\\" role=\\\"tab\\\" aria-controls=\\\"g1-card-pane-2\\\" aria-selected=\\\"false\\\" tabindex=\\\"-1\\\">修行</button><button class=\\\"g1-character__tab\\\" type=\\\"button\\\" data-g1-action=\\\"tab\\\" data-tab=\\\"fate\\\" id=\\\"g1-card-tab-3\\\" role=\\\"tab\\\" aria-controls=\\\"g1-card-pane-3\\\" aria-selected=\\\"false\\\" tabindex=\\\"-1\\\">改命</button><button class=\\\"g1-character__tab\\\" type=\\\"button\\\" data-g1-action=\\\"tab\\\" data-tab=\\\"history\\\" id=\\\"g1-card-tab-4\\\" role=\\\"tab\\\" aria-controls=\\\"g1-card-pane-4\\\" aria-selected=\\\"false\\\" tabindex=\\\"-1\\\">生平</button></div><div class=\\\"g1-character__body\\\"><section class=\\\"g1-character__pane\\\" id=\\\"g1-card-pane-1\\\" role=\\\"tabpanel\\\" aria-labelledby=\\\"g1-card-tab-1\\\"><h3 class=\\\"g1-character__section-title\\\">命里所载</h3><dl class=\\\"g1-character__pairs\\\"><dt>气血</dt><dd>946 / 946</dd><dt>养伤</dt><dd>当前无养伤期限</dd><dt>成年</dt><dd>成年（满十八岁）</dd><dt>出生来历</dt><dd>开世人群</dd><dt>灵根</dt><dd>木主杂灵根 · 劣</dd><dt>位置</dt><dd>凡间 (72.5, 103.5)</dd></dl></section><section class=\\\"g1-character__pane\\\" id=\\\"g1-card-pane-2\\\" role=\\\"tabpanel\\\" aria-labelledby=\\\"g1-card-tab-2\\\" hidden=\\\"\\\"><h3 class=\\\"g1-character__section-title\\\">修行之势</h3><p class=\\\"g1-character__prose\\\">每日修为 1.084 · 积累修为</p><dl class=\\\"g1-character__pairs\\\"><dt>气运</dt><dd>74</dd><dt>心境</dt><dd>60.004</dd></dl></section><section class=\\\"g1-character__pane\\\" id=\\\"g1-card-pane-3\\\" role=\\\"tabpanel\\\" aria-labelledby=\\\"g1-card-tab-3\\\" hidden=\\\"\\\"><h3 class=\\\"g1-character__section-title\\\">天道敕令</h3><p class=\\\"g1-character__prose\\\">敕令将作用于当前人物；修为达到门槛后由其自行突破。</p><div class=\\\"g1-character__edicts\\\"><article class=\\\"g1-character__edict\\\"><div class=\\\"g1-character__edict-head\\\"><strong class=\\\"g1-character__edict-name\\\">灌顶</strong><button class=\\\"g1-character__edict-button\\\" type=\\\"button\\\" data-g1-action=\\\"edict\\\" data-edict-id=\\\"cultivation\\\">敕令</button></div><p class=\\\"g1-character__edict-text\\\">增加下一层需求25%的修为，突破由模拟判定</p><p class=\\\"g1-character__reason\\\" hidden=\\\"\\\"></p></article><article class=\\\"g1-character__edict\\\"><div class=\\\"g1-character__edict-head\\\"><strong class=\\\"g1-character__edict-name\\\">拨运</strong><button class=\\\"g1-character__edict-button\\\" type=\\\"button\\\" data-g1-action=\\\"edict\\\" data-edict-id=\\\"fortune\\\">敕令</button></div><p class=\\\"g1-character__edict-text\\\">气运增加8，上限100</p><p class=\\\"g1-character__reason\\\" hidden=\\\"\\\"></p></article><article class=\\\"g1-character__edict\\\"><div class=\\\"g1-character__edict-head\\\"><strong class=\\\"g1-character__edict-name\\\">定心</strong><button class=\\\"g1-character__edict-button\\\" type=\\\"button\\\" data-g1-action=\\\"edict\\\" data-edict-id=\\\"mind\\\">敕令</button></div><p class=\\\"g1-character__edict-text\\\">心境增加8，上限100</p><p class=\\\"g1-character__reason\\\" hidden=\\\"\\\"></p></article><article class=\\\"g1-character__edict\\\"><div class=\\\"g1-character__edict-head\\\"><strong class=\\\"g1-character__edict-name\\\">洗髓</strong><button class=\\\"g1-character__edict-button\\\" type=\\\"button\\\" data-g1-action=\\\"edict\\\" data-edict-id=\\\"root\\\">敕令</button></div><p class=\\\"g1-character__edict-text\\\">普通灵根提升一品，最高至优；可再次施行</p><p class=\\\"g1-character__reason\\\" hidden=\\\"\\\"></p></article></div><p class=\\\"g1-character__volume-empty\\\" hidden=\\\"\\\">暂无可颁之令</p></section><section class=\\\"g1-character__pane\\\" id=\\\"g1-card-pane-4\\\" role=\\\"tabpanel\\\" aria-labelledby=\\\"g1-card-tab-4\\\" hidden=\\\"\\\"><section class=\\\"g1-character__observation\\\" hidden=\\\"\\\"><h3 class=\\\"g1-character__section-title\\\">记挂近况</h3><p class=\\\"g1-character__prose\\\"></p><ol class=\\\"g1-character__history\\\"></ol><p class=\\\"g1-character__volume-empty\\\" hidden=\\\"\\\"></p></section><h3 class=\\\"g1-character__section-title\\\">生平行迹</h3><p class=\\\"g1-character__prose\\\">残卷 · 仅显示正式人物日志保留的事件，不能视为完整一生</p><ol class=\\\"g1-character__history\\\"><li class=\\\"g1-character__event\\\"><span class=\\\"g1-character__event-day\\\">第 0 日</span><span class=\\\"g1-character__event-text\\\">沈雪烟 在开世人群中现身。</span></li></ol><p class=\\\"g1-character__volume-empty\\\" hidden=\\\"\\\">此人生平尚无可考之事</p><h3 class=\\\"g1-character__section-title\\\">人间牵系</h3><dl class=\\\"g1-character__pairs\\\"><dt>所属宗门</dt><dd>散修</dd></dl><button class=\\\"g1-character__section-action\\\" type=\\\"button\\\" data-g1-action=\\\"show-relations\\\">察看人物关系</button></section></div><footer class=\\\"g1-character__footer\\\">观其所历，不代其所行</footer></section>\",\"cardClass\":\"inspect person-detail on\",\"display\":\"block\"}",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T12-23-45.469Z",
+      "pass": false,
+      "checks": 7,
+      "failure": "Error: actual path is visible in the formal person inspection card: {\"personOpenId\":74,\"current\":{\"schemaVersion\":1,\"permissions\":{\"canWatch\":true,\"watchReason\":\"\",\"watchDisabledReason\":\"\",\"canFocus\":true,\"canExport\":true,\"canShowRelations\":true},\"health\":{\"hp\":1188,\"maxHp\":1188,\"restUntil\":-1000000000,\"restRemaining\":0,\"day\":1,\"state\":\"healthy\",\"hpText\":\"1188 / 1188\",\"restText\":\"当前无养伤期限\"},\"identity\":{\"key\":\"mortal:74\",\"id\":74,\"plane\":\"mortal\",\"currentPlane\":\"mortal\",\"status\":\"alive\",\"name\":\"秦砚眠\",\"canFocus\":true},\"header\":{\"realm\":\"炼气八层\",\"ageText\":\"22 岁\",\"lifespanText\":\"寿元上限 104.7 年\",\"affiliation\":\"散修\",\"stateText\":\"在世\"},\"cultivation\":{\"exp\":1.1704558232693196,\"required\":256,\"percent\":0.457209305964578,\"rate\":1.1704738170802724,\"rateText\":\"每日修为 1.170\",\"stateText\":\"积累修为\"},\"overview\":[{\"label\":\"气血\",\"value\":\"1188 / 1188\"},{\"label\":\"养伤\",\"value\":\"当前无养伤期限\"},{\"label\":\"成年\",\"value\":\"成年（满十八岁）\"},{\"label\":\"出生来历\",\"value\":\"开世人群\"},{\"label\":\"灵根\",\"value\":\"水主杂灵根 · 中\"},{\"label\":\"位置\",\"value\":\"凡间 (52.00059174032127, 66.5791653780131)\"}],\"cultivationRows\":[{\"label\":\"气运\",\"value\":\"60\"},{\"label\":\"心境\",\"value\":\"60.004\"}],\"history\":[{\"day\":0,\"kind\":\"birth\",\"text\":\"秦砚眠 在开世人群中现身。\"}],\"historyCoverage\":{\"retained\":true,\"capped\":true,\"cap\":32,\"description\":\"仅显示正式人物日志保留的事件，不能视为完整一生\"},\"relations\":[{\"label\":\"所属宗门\",\"value\":\"散修\"}],\"edicts\":[{\"id\":\"cultivation\",\"title\":\"灌顶\",\"description\":\"增加下一层需求25%的修为，突破由模拟判定\",\"enabled\":true,\"disabledReason\":\"\"},{\"id\":\"fortune\",\"title\":\"拨运\",\"description\":\"气运增加8，上限100\",\"enabled\":true,\"disabledReason\":\"\"},{\"id\":\"mind\",\"title\":\"定心\",\"description\":\"心境增加8，上限100\",\"enabled\":true,\"disabledReason\":\"\"},{\"id\":\"root\",\"title\":\"洗髓\",\"description\":\"普通灵根提升一品，最高至优；可再次施行\",\"enabled\":true,\"disabledReason\":\"\"}],\"watched\":false},\"cardText\":\"坐天观井 / 人物命簿\\n记挂\\n寻踪\\n传记\\n收起\\n秦砚眠\\n在世\\n\\n炼气八层\\n\\n22 岁 · 寿元上限 104.7 年 · 散修 · 在世\\n\\n修为积累\\n0.5%\\n1.1704558232693196 / 256\\n积累修为\\n命簿\\n修行\\n改命\\n生平\\n修行之势\\n\\n每日修为 1.170 · 积累修为\\n\\n气运\\n60\\n心境\\n60.004\\n观其所历，不代其所行\",\"cardHtml\":\"<section class=\\\"g1-character\\\" aria-label=\\\"人物命簿\\\" data-status=\\\"alive\\\"><header class=\\\"g1-character__header\\\"><div class=\\\"g1-character__eyebrow-row\\\"><span class=\\\"g1-character__eyebrow\\\">坐天观井  /  人物命簿</span><div class=\\\"g1-character__tools\\\"><button class=\\\"g1-character__tool\\\" type=\\\"button\\\" data-g1-action=\\\"watch\\\" title=\\\"\\\" data-active=\\\"false\\\">记挂</button><button class=\\\"g1-character__tool\\\" type=\\\"button\\\" data-g1-action=\\\"focus\\\">寻踪</button><button class=\\\"g1-character__tool\\\" type=\\\"button\\\" data-g1-action=\\\"export\\\">传记</button><button class=\\\"g1-character__tool\\\" type=\\\"button\\\" data-g1-action=\\\"close\\\">收起</button></div></div><div class=\\\"g1-character__profile\\\"><div class=\\\"g1-character__portrait-root\\\"><figure class=\\\"g1-character__portrait\\\" data-status=\\\"alive\\\"><img class=\\\"g1-character__portrait-image\\\" alt=\\\"秦砚眠 · 人物面相\\\" decoding=\\\"async\\\" draggable=\\\"false\\\" src=\\\"data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20aria-hidden%3D%22true%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%23edeae1%22%2F%3E%3Cpath%20d%3D%22M8%2070%20Q20%2049%2033%2065%20T60%2063%20T92%2056%22%20fill%3D%22none%22%20stroke%3D%22%239aada8%22%20stroke-width%3D%221.5%22%20opacity%3D%22.6%22%2F%3E%3Cpath%20d%3D%22M5%20100%20Q10%2078%2033%2076%20L50%2081%20L67%2076%20Q90%2077%2095%20100%20Z%22%20fill%3D%22%23c2a88c%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.6%22%2F%3E%3Cpath%20d%3D%22M39%2075%20L40%2086%20L50%2092%20L60%2086%20L61%2075%22%20fill%3D%22%2368635e%22%2F%3E%3Cpath%20d%3D%22M32%2034%20Q27%2048%2032%2066%20Q37%2081%2050%2084%20Q63%2081%2068%2066%20Q73%2048%2068%2034%20Z%22%20fill%3D%22%23dcb193%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.65%22%2F%3E%3Cpath%20d%3D%22M36%2048%20Q40%2046%2044%2048%20M56%2048%20Q60%2046%2064%2048%22%20fill%3D%22none%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.4%22%20opacity%3D%22.7%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M35%2050%20Q40%2047%2044%2050%22%2F%3E%3Cpath%20d%3D%22M56%2050%20Q60%2047%2065%2050%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M49%2054%20L48%2062%20M46%2069%20Q50%2071%2054%2069%22%20fill%3D%22none%22%20stroke%3D%22%23946e62%22%20stroke-width%3D%221.1%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M26%2060%20Q17%2026%2032%2018%20Q52%204%2070%2019%20Q83%2040%2074%2062%20L66%2038%20Q54%2044%2035%2037%20Z%22%20fill%3D%22%2368635e%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.9%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M29%2041%20Q26%2057%2033%2074%20L29%2087%20Q21%2071%2025%2050%20Z%22%20fill%3D%22%2368635e%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.1%22%2F%3E%3Cpath%20d%3D%22M70%2041%20Q74%2056%2066%2074%20L71%2086%20Q80%2069%2074%2047%20Z%22%20fill%3D%22%2368635e%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.1%22%2F%3E%3Cpath%20d%3D%22M31%2083%20L49%2096%20L58%2086%20L50%2082%20L39%2089%20Z%22%20fill%3D%22%23f8f3e7%22%20stroke%3D%22%23353936%22%20stroke-width%3D%221.15%22%2F%3E%3Cpath%20d%3D%22M50%2092%20L57%20100%20L64%20100%22%20fill%3D%22none%22%20stroke%3D%22%237d7365%22%20stroke-width%3D%223%22%2F%3E%3Cpath%20d%3D%22M16%2096%20Q50%2091%2084%2096%22%20stroke%3D%22%23333832%22%20stroke-opacity%3D%22.19%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E\\\"><span class=\\\"g1-character__portrait-frame\\\" aria-hidden=\\\"true\\\"></span></figure></div><div class=\\\"g1-character__identity\\\"><div class=\\\"g1-character__name-row\\\"><h2 class=\\\"g1-character__name\\\">秦砚眠</h2><span class=\\\"g1-character__status\\\">在世</span></div><p class=\\\"g1-character__realm\\\">炼气八层</p><p class=\\\"g1-character__summary\\\">22 岁 · 寿元上限 104.7 年 · 散修 · 在世</p></div></div></header><section class=\\\"g1-character__growth\\\"><div class=\\\"g1-character__growth-heading\\\"><span>修为积累</span><strong class=\\\"g1-character__growth-percent\\\">0.5%</strong></div><div class=\\\"g1-character__track\\\" role=\\\"progressbar\\\" aria-label=\\\"修为进度\\\" aria-valuemin=\\\"0\\\" aria-valuemax=\\\"100\\\" aria-valuenow=\\\"0.457209305964578\\\" aria-valuetext=\\\"0.5%\\\"><div class=\\\"g1-character__track-fill\\\" style=\\\"width: 0.457209%;\\\"></div></div><div class=\\\"g1-character__growth-meta\\\"><span>1.1704558232693196 / 256</span><span>积累修为</span></div></section><div class=\\\"g1-character__tabs\\\" role=\\\"tablist\\\" aria-label=\\\"命簿四卷\\\"><button class=\\\"g1-character__tab\\\" type=\\\"button\\\" data-g1-action=\\\"tab\\\" data-tab=\\\"overview\\\" id=\\\"g1-card-tab-1\\\" role=\\\"tab\\\" aria-controls=\\\"g1-card-pane-1\\\" aria-selected=\\\"false\\\" tabindex=\\\"-1\\\">命簿</button><button class=\\\"g1-character__tab\\\" type=\\\"button\\\" data-g1-action=\\\"tab\\\" data-tab=\\\"cultivation\\\" id=\\\"g1-card-tab-2\\\" role=\\\"tab\\\" aria-controls=\\\"g1-card-pane-2\\\" aria-selected=\\\"true\\\" tabindex=\\\"0\\\">修行</button><button class=\\\"g1-character__tab\\\" type=\\\"button\\\" data-g1-action=\\\"tab\\\" data-tab=\\\"fate\\\" id=\\\"g1-card-tab-3\\\" role=\\\"tab\\\" aria-controls=\\\"g1-card-pane-3\\\" aria-selected=\\\"false\\\" tabindex=\\\"-1\\\">改命</button><button class=\\\"g1-character__tab\\\" type=\\\"button\\\" data-g1-action=\\\"tab\\\" data-tab=\\\"history\\\" id=\\\"g1-card-tab-4\\\" role=\\\"tab\\\" aria-controls=\\\"g1-card-pane-4\\\" aria-selected=\\\"false\\\" tabindex=\\\"-1\\\">生平</button></div><div class=\\\"g1-character__body\\\"><section class=\\\"g1-character__pane\\\" id=\\\"g1-card-pane-1\\\" role=\\\"tabpanel\\\" aria-labelledby=\\\"g1-card-tab-1\\\" hidden=\\\"\\\"><h3 class=\\\"g1-character__section-title\\\">命里所载</h3><dl class=\\\"g1-character__pairs\\\"><dt>气血</dt><dd>1188 / 1188</dd><dt>养伤</dt><dd>当前无养伤期限</dd><dt>成年</dt><dd>成年（满十八岁）</dd><dt>出生来历</dt><dd>开世人群</dd><dt>灵根</dt><dd>水主杂灵根 · 中</dd><dt>位置</dt><dd>凡间 (52.00059174032127, 66.5791653780131)</dd></dl></section><section class=\\\"g1-character__pane\\\" id=\\\"g1-card-pane-2\\\" role=\\\"tabpanel\\\" aria-labelledby=\\\"g1-card-tab-2\\\"><h3 class=\\\"g1-character__section-title\\\">修行之势</h3><p class=\\\"g1-character__prose\\\">每日修为 1.170 · 积累修为</p><dl class=\\\"g1-character__pairs\\\"><dt>气运</dt><dd>60</dd><dt>心境</dt><dd>60.004</dd></dl></section><section class=\\\"g1-character__pane\\\" id=\\\"g1-card-pane-3\\\" role=\\\"tabpanel\\\" aria-labelledby=\\\"g1-card-tab-3\\\" hidden=\\\"\\\"><h3 class=\\\"g1-character__section-title\\\">天道敕令</h3><p class=\\\"g1-character__prose\\\">敕令将作用于当前人物；修为达到门槛后由其自行突破。</p><div class=\\\"g1-character__edicts\\\"><article class=\\\"g1-character__edict\\\"><div class=\\\"g1-character__edict-head\\\"><strong class=\\\"g1-character__edict-name\\\">灌顶</strong><button class=\\\"g1-character__edict-button\\\" type=\\\"button\\\" data-g1-action=\\\"edict\\\" data-edict-id=\\\"cultivation\\\">敕令</button></div><p class=\\\"g1-character__edict-text\\\">增加下一层需求25%的修为，突破由模拟判定</p><p class=\\\"g1-character__reason\\\" hidden=\\\"\\\"></p></article><article class=\\\"g1-character__edict\\\"><div class=\\\"g1-character__edict-head\\\"><strong class=\\\"g1-character__edict-name\\\">拨运</strong><button class=\\\"g1-character__edict-button\\\" type=\\\"button\\\" data-g1-action=\\\"edict\\\" data-edict-id=\\\"fortune\\\">敕令</button></div><p class=\\\"g1-character__edict-text\\\">气运增加8，上限100</p><p class=\\\"g1-character__reason\\\" hidden=\\\"\\\"></p></article><article class=\\\"g1-character__edict\\\"><div class=\\\"g1-character__edict-head\\\"><strong class=\\\"g1-character__edict-name\\\">定心</strong><button class=\\\"g1-character__edict-button\\\" type=\\\"button\\\" data-g1-action=\\\"edict\\\" data-edict-id=\\\"mind\\\">敕令</button></div><p class=\\\"g1-character__edict-text\\\">心境增加8，上限100</p><p class=\\\"g1-character__reason\\\" hidden=\\\"\\\"></p></article><article class=\\\"g1-character__edict\\\"><div class=\\\"g1-character__edict-head\\\"><strong class=\\\"g1-character__edict-name\\\">洗髓</strong><button class=\\\"g1-character__edict-button\\\" type=\\\"button\\\" data-g1-action=\\\"edict\\\" data-edict-id=\\\"root\\\">敕令</button></div><p class=\\\"g1-character__edict-text\\\">普通灵根提升一品，最高至优；可再次施行</p><p class=\\\"g1-character__reason\\\" hidden=\\\"\\\"></p></article></div><p class=\\\"g1-character__volume-empty\\\" hidden=\\\"\\\">暂无可颁之令</p></section><section class=\\\"g1-character__pane\\\" id=\\\"g1-card-pane-4\\\" role=\\\"tabpanel\\\" aria-labelledby=\\\"g1-card-tab-4\\\" hidden=\\\"\\\"><section class=\\\"g1-character__observation\\\" hidden=\\\"\\\"><h3 class=\\\"g1-character__section-title\\\">记挂近况</h3><p class=\\\"g1-character__prose\\\"></p><ol class=\\\"g1-character__history\\\"></ol><p class=\\\"g1-character__volume-empty\\\" hidden=\\\"\\\"></p></section><h3 class=\\\"g1-character__section-title\\\">生平行迹</h3><p class=\\\"g1-character__prose\\\">残卷 · 仅显示正式人物日志保留的事件，不能视为完整一生</p><ol class=\\\"g1-character__history\\\"><li class=\\\"g1-character__event\\\"><span class=\\\"g1-character__event-day\\\">第 0 日</span><span class=\\\"g1-character__event-text\\\">秦砚眠 在开世人群中现身。</span></li></ol><p class=\\\"g1-character__volume-empty\\\" hidden=\\\"\\\">此人生平尚无可考之事</p><h3 class=\\\"g1-character__section-title\\\">人间牵系</h3><dl class=\\\"g1-character__pairs\\\"><dt>所属宗门</dt><dd>散修</dd></dl><button class=\\\"g1-character__section-action\\\" type=\\\"button\\\" data-g1-action=\\\"show-relations\\\">察看人物关系</button></section></div><footer class=\\\"g1-character__footer\\\">观其所历，不代其所行</footer></section>\",\"cardClass\":\"inspect person-detail on\",\"display\":\"block\"}",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T12-25-47.092Z",
+      "pass": false,
+      "checks": 7,
+      "failure": "Error: 页面内脚本抛错: Error: No visible #inkPersonDetail button[data-tab=\"cultivation\"]",
+      "cleanup": true
+    }
+  ]
+}

@@ -39,7 +39,8 @@ export function observeToolBefore(ctx, tool) {
     crisis: crisisSignature(ctx.events), targetEntityId: ctx.targetEntityId,
     chronicle: ledgerStamp(world.chronicle), milestones: ledgerStamp(world.milestones),
     eventHistory: ledgerStamp(ctx.events?.history), nextEventId: ctx.events?.nextEventId,
-    eventState: world.worldEventState };
+    eventState: world.worldEventState,
+    wanling: JSON.stringify((world.wanling?.units||[]).map(u=>[u.id,u.hp,u.count])) };
 }
 
 export function observeToolAfter(ctx, before) {
@@ -65,7 +66,8 @@ export function observeToolAfter(ctx, before) {
   const changedPlaces = before.settlements ? world.villages.filter(v => before.settlements.get(v.id) !== `${v.hp}/${v.food}`).length : 0;
   const changed = affectedCells > 0 || changedPeople > 0 || changedPlaces > 0 || before.leylines !== world.leylines.length
     || before.sites !== world.sites.length || before.factions !== world.factions.length
-    || before.crisis !== crisisSignature(ctx.events);
+    || before.crisis !== crisisSignature(ctx.events)
+    || before.wanling !== JSON.stringify((world.wanling?.units||[]).map(u=>[u.id,u.hp,u.count]));
   const persistentChanged = ledgerChanged(before.chronicle, world.chronicle)
     || ledgerChanged(before.milestones, world.milestones)
     || ledgerChanged(before.eventHistory, ctx.events?.history)

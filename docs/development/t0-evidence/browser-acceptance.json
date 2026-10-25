@@ -1,0 +1,311 @@
+{
+  "kind": "Real product Edge CDP native control acceptance; controlled initial T0 world",
+  "url": "http://127.0.0.1:4231/inkbox.html?scenario=t0",
+  "started": "2026-10-25T03:24:21.896Z",
+  "finished": "2026-10-25T03:24:36.568Z",
+  "sourceAtCapture": "57af4557b9df534fb7e541317712177535056b6a",
+  "dirtyAtCapture": true,
+  "committedRuntime": "6684a6a",
+  "environment": {
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+    "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "glError": 0,
+    "viewport": [
+      1280,
+      720
+    ],
+    "dpr": 1,
+    "map": [
+      200,
+      128
+    ],
+    "speedIndex": 0
+  },
+  "shipId": 1,
+  "sailorId": 3,
+  "pass": true,
+  "checks": [
+    {
+      "name": "world boots",
+      "pass": true
+    },
+    {
+      "name": "controlled real villages and cultivator",
+      "pass": true
+    },
+    {
+      "name": "initial editable land bridge",
+      "pass": true
+    },
+    {
+      "name": "native power cuts land but preserves water passage",
+      "pass": true
+    },
+    {
+      "name": "one native cargo dispatch",
+      "pass": true
+    },
+    {
+      "name": "food debited once and held in journey",
+      "pass": true
+    },
+    {
+      "name": "one native flight dispatch",
+      "pass": true
+    },
+    {
+      "name": "real cultivator is observed in flight before arrival",
+      "pass": true
+    },
+    {
+      "name": "Three flight observation enters",
+      "pass": true
+    },
+    {
+      "name": "same real flying cultivator visible in Three",
+      "pass": true
+    },
+    {
+      "name": "flight observation does not move or settle the journey",
+      "pass": true
+    },
+    {
+      "name": "actual sailor and cargo enter navigable water",
+      "pass": true
+    },
+    {
+      "name": "Three enters without replacing voyage",
+      "pass": true
+    },
+    {
+      "name": "renderer switch preserves all voyage facts",
+      "pass": true
+    },
+    {
+      "name": "real ship visible in Three",
+      "pass": true
+    },
+    {
+      "name": "direct upper with correct transit visibility",
+      "pass": true
+    },
+    {
+      "name": "direct nether with correct transit visibility",
+      "pass": true
+    },
+    {
+      "name": "direct mortal with correct transit visibility",
+      "pass": true
+    },
+    {
+      "name": "realm switches do not settle journeys",
+      "pass": true
+    },
+    {
+      "name": "real sea dam blocks the same ship without delivering",
+      "pass": true
+    },
+    {
+      "name": "native save completes",
+      "pass": true
+    },
+    {
+      "name": "native load completes",
+      "pass": true
+    },
+    {
+      "name": "blocked voyage cargo and identity survive real compressed reload",
+      "pass": true
+    },
+    {
+      "name": "blocked time does not move ship or duplicate food",
+      "pass": true
+    },
+    {
+      "name": "same loaded voyage resumes after real recut",
+      "pass": true
+    },
+    {
+      "name": "one cargo delivery and real flight arrive",
+      "pass": true
+    },
+    {
+      "name": "same people age and keep social identity",
+      "pass": true
+    },
+    {
+      "name": "Canvas returns to the completed same world",
+      "pass": true
+    },
+    {
+      "name": "no GPU or browser errors",
+      "pass": true
+    }
+  ],
+  "final": {
+    "day": 85,
+    "seed": 20261025,
+    "plane": "mortal",
+    "three": false,
+    "journeys": [
+      {
+        "id": 1,
+        "kind": "cargo",
+        "mode": "water",
+        "status": "arrived",
+        "reason": null,
+        "actorId": 3,
+        "vehicleId": "boat-1",
+        "fromVillageId": 1,
+        "toVillageId": 2,
+        "cargo": {
+          "food": 0,
+          "amount": 24
+        },
+        "position": {
+          "x": 132.5,
+          "y": 64.5
+        },
+        "departDay": 0,
+        "updatedDay": 85,
+        "etaDay": 85,
+        "goal": {
+          "villageId": 2,
+          "cancelRequested": false,
+          "sourceReached": true
+        },
+        "progress": 14,
+        "distance": 14,
+        "legMode": "land"
+      },
+      {
+        "id": 2,
+        "kind": "person",
+        "mode": "air",
+        "status": "arrived",
+        "reason": null,
+        "actorId": 13,
+        "vehicleId": null,
+        "fromVillageId": 1,
+        "toVillageId": 2,
+        "cargo": {
+          "food": 0,
+          "amount": 0
+        },
+        "position": {
+          "x": 132.5,
+          "y": 64.5
+        },
+        "departDay": 0,
+        "updatedDay": 14,
+        "etaDay": 13.473919591548313,
+        "goal": {
+          "villageId": 2,
+          "cancelRequested": false,
+          "sourceReached": true
+        },
+        "progress": 7.369597957741574,
+        "distance": 7.369597957741563,
+        "legMode": "air"
+      }
+    ],
+    "ledger": {
+      "loaded": 24,
+      "delivered": 24,
+      "lost": 0,
+      "returned": 0
+    },
+    "villages": [
+      {
+        "id": 1,
+        "name": "西津",
+        "food": 225.49339210866668,
+        "pop": 7
+      },
+      {
+        "id": 2,
+        "name": "东渡",
+        "food": 41.32471874916743,
+        "pop": 6
+      },
+      {
+        "id": 3,
+        "name": "临镇",
+        "food": 9.725224371994612,
+        "pop": 11
+      }
+    ],
+    "people": [
+      {
+        "id": 1,
+        "age": 6838,
+        "lifespan": 23163.5150865186,
+        "village": 1,
+        "faction": 1,
+        "x": 55.30160937099776,
+        "y": 55.73005434997122,
+        "hp": 100
+      },
+      {
+        "id": 2,
+        "age": 10723,
+        "lifespan": 22499.488138547167,
+        "village": 1,
+        "faction": 1,
+        "x": 59.42400688027517,
+        "y": 68.53696533703977,
+        "hp": 100
+      },
+      {
+        "id": 3,
+        "age": 10327,
+        "lifespan": 22413.76368398778,
+        "village": 1,
+        "faction": 1,
+        "x": 132.5,
+        "y": 64.5,
+        "hp": 100
+      },
+      {
+        "id": 13,
+        "age": 7089,
+        "lifespan": 100080,
+        "village": 1,
+        "faction": 1,
+        "x": 124.50057131651668,
+        "y": 38.617611233774795,
+        "hp": 2579.9400000000014
+      }
+    ],
+    "geo": {
+      "builds": 11,
+      "plans": 17,
+      "nodes": 6940,
+      "bytes": 409600,
+      "cachedRoutes": 1,
+      "cachedRoutePoints": 15,
+      "waterSearches": 11,
+      "dirty": false
+    }
+  },
+  "errors": {
+    "js": [],
+    "console": []
+  },
+  "cleanup": {
+    "removed": true,
+    "attempts": 1,
+    "processesExited": true,
+    "complete": true,
+    "processEvidence": {
+      "supported": true,
+      "frozen": 17,
+      "remaining": 0,
+      "discoveryError": null,
+      "termination": {
+        "errors": [],
+        "attempted": 0
+      }
+    }
+  }
+}

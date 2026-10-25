@@ -107,4 +107,11 @@ export class ElevationField {
       return Math.fround(this.nodeForHeight(w.height[i], cx, cy));
     });
   }
+
+  /** Water-dependent units use the same profile and triangle interpolation as the surface. */
+  waterAt(x, y) {
+    const w = this.world;
+    return interpolateElevation(w, x, y, i => Math.fround(this.nodeForHeight(
+      w.height[i] + w.water[i], i % w.w, Math.floor(i / w.w))));
+  }
 }

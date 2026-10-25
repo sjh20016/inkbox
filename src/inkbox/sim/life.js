@@ -50,6 +50,10 @@ import {
   isDryBuildableSettlementTile, isHabitableSettlementCenter, liveSettlementHouseType,
 } from '../world/settlementState.js';
 import { aidSettlement, archiveSettlement, repairSettlementHouse, settlementHistory } from './settlementResilience.js';
+import { wanlingVillageInfluence, isWanlingHostile } from '../world/wanlingInfluence.js';
+import { stepDaoTravel, yieldDaoActivityToTransit } from './daoActivities.js';
+import { stableWanlingHash } from '../core/wanlingCatalog.js';
+import { activeJourneyForEntity } from '../world/transitState.js';
 
 const TERRAIN_SPEED = Object.freeze({
   [TERRAIN.SAND]: 0.82,
@@ -739,8 +743,11 @@ export class Life {
     }
     if (status !== 'alive') return false;
 
+    const journey = activeJourneyForEntity(world, e.id);
     const here = this.tileAt(e.x, e.y);
-    if (!world.isWalkable(here)) {
+    // A real ship/flight owns locomotion. Ground escape must not teleport its
+    // passenger ashore or kill them merely because the route crosses water.
+    if (!journey && !world.isWalkable(here)) {
       // 脚下的地没了（被水淹 / 被抬高成山），立刻寻找最近的可行地
       const escape = this.findSpawnSpot(Math.floor(e.x), Math.floor(e.y), 5);
       if (escape) {
@@ -774,6 +781,14 @@ export class Life {
       // 于是「既挨饿又着火」时以火为准（火焰是更直接的致死因由）。
       e.diedOf = 'fire';
       e.hp -= e.maxHp * burningDays * 0.25;
+    }
+
+    // Age, cultivation, hunger, hazards and the ordinary death sweep remain
+    // active. Only the immediate ground AI yields to the persistent journey.
+    if (journey) {
+      yieldDaoActivityToTransit(world,e.id);
+      e.state = journey.mode === 'air' ? 'journey-air' : 'journey-boat';
+      return false;
     }
 
     // 走火入魔：不按常理行事，见谁打谁
@@ -914,6 +929,8 @@ export class Life {
         e.ty = away[1];
         e.timer = 6 + this.rng() * 6;
       }
+    } else if (stepDaoTravel(world,this,e,dtDays)) {
+      return false;
     } else if (e.timer <= 0) {
       const plan = this.planNext(e, info);
       e.tx = plan.x;
@@ -1122,11 +1139,13 @@ export class Life {
       // 灵兽护食守土，不会跨半张地图追杀凡人。
       // 早先不限距离时，九十头灵兽能把整个人口在四十年内吃干净。
       if (other.sp === SPECIES.BEAST && e.sp !== SPECIES.BEAST) {
+        if (!isWanlingHostile(this.world,other,e)) return false;
         if (d > BEAST_AGGRO_RANGE) return false;
         found = other;
         return true;
       }
       if (e.sp === SPECIES.BEAST && other.sp !== SPECIES.BEAST) {
+        if (!isWanlingHostile(this.world,e,other)) return false;
         if (d > BEAST_AGGRO_RANGE) return false;
         found = other;
         return true;
@@ -1173,19 +1192,21 @@ export class Life {
     return found;
   }
 
-  attack(e, target, dtDays) {
+  attack(e, target, dtDays, { sparring = false } = {}) {
     recordCombatAttempt(this.world);
     const dist = Math.hypot(target.x - e.x, target.y - e.y);
     if (dist > 1.6) return;
     const power = combatPower(e);
     const defense = combatPower(target);
-    const damage = power * 3.4 * dtDays * (0.6 + this.rng() * 0.8);
+    const roll = sparring ? stableWanlingHash(this.world.seed,e.id,`spar:${target.id}:${Math.floor(this.world.day)}`)/0x100000000 : this.rng();
+    const damage = power * 3.4 * dtDays * (0.6 + roll * 0.8);
     // ⚠️ 减伤后的伤害**只算一次**存进 `hit`。原代码在下面的致死判定里
     //    **重算了一遍**同一个表达式——两处一旦分叉，击杀记账会静默算错。
-    const hit = damage * (10 / (10 + defense * 0.35));
+    const normalHit = damage * (10 / (10 + defense * 0.35));
+    const hit = sparring ? Math.min(normalHit,Math.max(0,target.hp-1),target.maxHp*.08) : normalHit;
     const hpBefore = target.hp;
     target.hp -= hit;
-    const ignition = tryCombatIgnition(this.world, e, target, hit, hpBefore);
+    const ignition = sparring ? null : tryCombatIgnition(this.world, e, target, hit, hpBefore);
     emitCombatHit(this.world, e, target, hit, hpBefore, ignition);
 
     // ── 养伤（轻伤档）：打了一架、被打伤但没死 ⇒ 半年不出战 ──────────
@@ -1591,7 +1612,7 @@ export class Life {
       else if (!activeCrisis && village.hp < 100 && village.pop > 0 && village.food >= 10) {
         const live = village.houses.some((house) => liveSettlementHouseType(world, house));
         const pace = live ? 0.06 : 0.025;
-        village.hp = Math.min(100, village.hp + dtDays * pace);
+        village.hp = Math.min(100, village.hp + dtDays * pace * wanlingVillageInfluence(world,village).recoveryScale);
       }
       const declining = unsafe || village.hp <= 0 || (village.pop <= 0 && village.age > 720);
       village.distressDays = declining ? (village.distressDays || 0) + dtDays : 0;
@@ -1662,7 +1683,7 @@ export class Life {
       const conditionYield = unsafe ? 0 : clamp(village.hp / 100, 0, 1);
       const yieldPerDay = (society.adults * 0.018 * (0.6 + world.fertility(center))
         + effectiveFields * FIELD_YIELD_PER_DAY) * conditionYield;
-      village.food += yieldPerDay * dtDays;
+      village.food += yieldPerDay * dtDays * wanlingVillageInfluence(world,village).yieldScale;
       village.food -= society.humans * dtDays * 0.0085;
       village.food = clamp(village.food, 0, 400);
 

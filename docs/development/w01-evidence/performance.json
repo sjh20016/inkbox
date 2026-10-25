@@ -1,0 +1,582 @@
+{
+  "source": "b8fdbece82a48d0cfeaece511e024afb1ec059a4",
+  "baseline": "d4faed33509cebc9bdad17384a73c7d0d758f743",
+  "method": {
+    "viewport": [
+      1366,
+      768
+    ],
+    "dpr": 1,
+    "renderer": "actual AMD Radeon 610M D3D11",
+    "warmupRaf": 30,
+    "measuredRaf": 180,
+    "explicitAdvanceDays": 210,
+    "automaticAdvanceCalls": 0,
+    "view": "full-map far LOD; GLBs resident but creatureGlbInstances zero, representative instances rendered",
+    "note": "Identical initial payload; baseline ignores optional units. Single bounded pair per scene, not an FPS improvement or full performance acceptance."
+  },
+  "pass": true,
+  "runs": [
+    {
+      "profile": "baseline",
+      "scenario": "normal",
+      "payloadSha256": "04b3b5f6654ddef63e99dbf19f2595e38d25ec14405fc1c941bfe71503e60619",
+      "started": "2026-10-25T12:31:52.770Z",
+      "finished": "2026-10-25T12:32:01.533Z",
+      "before": {
+        "day": 0,
+        "speedIndex": 0,
+        "entities": 77,
+        "villages": 2,
+        "units": 0,
+        "models": 4,
+        "modelIds": [
+          "xuangui",
+          "tiangou",
+          "dangkang",
+          "lushu"
+        ],
+        "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "dpr": 1
+      },
+      "after": {
+        "day": 210,
+        "dayDelta": 210,
+        "speed": 0,
+        "entities": 88,
+        "villages": 5,
+        "units": 0,
+        "modelIds": [
+          "xuangui",
+          "tiangou",
+          "dangkang",
+          "lushu"
+        ]
+      },
+      "advance": {
+        "probeCalls": 210,
+        "automaticCalls": 0,
+        "probeRequestedDays": 210,
+        "automaticRequestedDays": 0,
+        "totalCalls": 210
+      },
+      "stats": {
+        "raf": {
+          "n": 180,
+          "p50": 11.300000000000182,
+          "p95": 44.5,
+          "max": 67,
+          "mean": 16.69833333333333
+        },
+        "update": {
+          "n": 180,
+          "p50": 0.09999990463256836,
+          "p95": 1.3000000715255737,
+          "max": 10.300000071525574,
+          "mean": 0.24833333558506435
+        },
+        "advance": {
+          "n": 180,
+          "p50": 0.8000000715255737,
+          "p95": 2.6999999284744263,
+          "max": 37.700000047683716,
+          "mean": 1.5716666652096642
+        },
+        "render": {
+          "n": 180,
+          "p50": 2.899999976158142,
+          "p95": 29,
+          "max": 66.10000002384186,
+          "mean": 6.382222221957313
+        },
+        "over50ms": 4
+      },
+      "renderSnapshot": {
+        "drawCalls": 53,
+        "triangles": 563409,
+        "entityInstances": 90,
+        "creatureGlbInstances": 0,
+        "treeInstances": 8511,
+        "geometries": 38,
+        "textures": 10,
+        "modelCount": 4,
+        "heap": {
+          "usedJSHeapSize": 116284882,
+          "totalJSHeapSize": 163920526
+        },
+        "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "canvas": [
+          912,
+          598
+        ],
+        "glError": 0
+      },
+      "pass": true,
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 17,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    },
+    {
+      "profile": "candidate",
+      "scenario": "normal",
+      "payloadSha256": "04b3b5f6654ddef63e99dbf19f2595e38d25ec14405fc1c941bfe71503e60619",
+      "started": "2026-10-25T12:32:05.262Z",
+      "finished": "2026-10-25T12:32:14.062Z",
+      "before": {
+        "day": 0,
+        "speedIndex": 0,
+        "entities": 77,
+        "villages": 2,
+        "units": 17,
+        "models": 13,
+        "modelIds": [
+          "jingwei",
+          "biyi",
+          "chiru",
+          "xuangui",
+          "tiangou",
+          "dangkang",
+          "jiuweihu",
+          "lushu",
+          "dijiang",
+          "zheng",
+          "qiongqi",
+          "fei",
+          "kaiming"
+        ],
+        "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "dpr": 1
+      },
+      "after": {
+        "day": 210,
+        "dayDelta": 210,
+        "speed": 0,
+        "entities": 86,
+        "villages": 5,
+        "units": 18,
+        "modelIds": [
+          "jingwei",
+          "biyi",
+          "chiru",
+          "xuangui",
+          "tiangou",
+          "dangkang",
+          "jiuweihu",
+          "lushu",
+          "dijiang",
+          "zheng",
+          "qiongqi",
+          "fei",
+          "kaiming"
+        ]
+      },
+      "advance": {
+        "probeCalls": 210,
+        "automaticCalls": 0,
+        "probeRequestedDays": 210,
+        "automaticRequestedDays": 0,
+        "totalCalls": 210
+      },
+      "stats": {
+        "raf": {
+          "n": 180,
+          "p50": 11.199999999999818,
+          "p95": 38.899999999999636,
+          "max": 61.69999999999982,
+          "mean": 15.090555555555557
+        },
+        "update": {
+          "n": 180,
+          "p50": 0.09999990463256836,
+          "p95": 1.2000000476837158,
+          "max": 17.199999928474426,
+          "mean": 0.2816666656070285
+        },
+        "advance": {
+          "n": 180,
+          "p50": 1.100000023841858,
+          "p95": 2.600000023841858,
+          "max": 22.700000047683716,
+          "mean": 1.6566666689183978
+        },
+        "render": {
+          "n": 180,
+          "p50": 2.6999999284744263,
+          "p95": 30.799999952316284,
+          "max": 54.199999928474426,
+          "mean": 5.744999994834264
+        },
+        "over50ms": 4
+      },
+      "renderSnapshot": {
+        "drawCalls": 55,
+        "triangles": 563444,
+        "entityInstances": 106,
+        "creatureGlbInstances": 0,
+        "treeInstances": 8519,
+        "geometries": 41,
+        "textures": 9,
+        "modelCount": 13,
+        "heap": {
+          "usedJSHeapSize": 104836166,
+          "totalJSHeapSize": 174786794
+        },
+        "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "canvas": [
+          912,
+          598
+        ],
+        "glError": 0
+      },
+      "pass": true,
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 17,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    },
+    {
+      "profile": "baseline",
+      "scenario": "high",
+      "payloadSha256": "056df841d2ab9972031488780d5f0cb638002b239eb9400904103134544b48e0",
+      "started": "2026-10-25T12:32:18.092Z",
+      "finished": "2026-10-25T12:32:29.583Z",
+      "before": {
+        "day": 0,
+        "speedIndex": 0,
+        "entities": 213,
+        "villages": 2,
+        "units": 0,
+        "models": 4,
+        "modelIds": [
+          "xuangui",
+          "tiangou",
+          "dangkang",
+          "lushu"
+        ],
+        "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "dpr": 1
+      },
+      "after": {
+        "day": 210,
+        "dayDelta": 210,
+        "speed": 0,
+        "entities": 219,
+        "villages": 3,
+        "units": 0,
+        "modelIds": [
+          "xuangui",
+          "tiangou",
+          "dangkang",
+          "lushu"
+        ]
+      },
+      "advance": {
+        "probeCalls": 210,
+        "automaticCalls": 0,
+        "probeRequestedDays": 210,
+        "automaticRequestedDays": 0,
+        "totalCalls": 210
+      },
+      "stats": {
+        "raf": {
+          "n": 180,
+          "p50": 16.699999999999818,
+          "p95": 77.89999999999964,
+          "max": 105.80000000000109,
+          "mean": 23.192222222222224
+        },
+        "update": {
+          "n": 180,
+          "p50": 0,
+          "p95": 3.3000000715255737,
+          "max": 5.200000047683716,
+          "mean": 0.35166666441493566
+        },
+        "advance": {
+          "n": 180,
+          "p50": 1.2999999523162842,
+          "p95": 5.200000047683716,
+          "max": 31,
+          "mean": 2.300555554363463
+        },
+        "render": {
+          "n": 180,
+          "p50": 4.299999952316284,
+          "p95": 75.5,
+          "max": 102.30000007152557,
+          "mean": 13.229444442854987
+        },
+        "over50ms": 23
+      },
+      "renderSnapshot": {
+        "drawCalls": 40,
+        "triangles": 1098034,
+        "entityInstances": 221,
+        "creatureGlbInstances": 0,
+        "treeInstances": 10000,
+        "geometries": 33,
+        "textures": 9,
+        "modelCount": 4,
+        "heap": {
+          "usedJSHeapSize": 230271619,
+          "totalJSHeapSize": 305712215
+        },
+        "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "canvas": [
+          912,
+          598
+        ],
+        "glError": 0
+      },
+      "pass": true,
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 17,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    },
+    {
+      "profile": "candidate",
+      "scenario": "high",
+      "payloadSha256": "056df841d2ab9972031488780d5f0cb638002b239eb9400904103134544b48e0",
+      "started": "2026-10-25T12:39:11.381Z",
+      "finished": "2026-10-25T12:39:23.554Z",
+      "before": {
+        "day": 0,
+        "speedIndex": 0,
+        "entities": 213,
+        "villages": 2,
+        "units": 96,
+        "models": 11,
+        "modelIds": [
+          "jingwei",
+          "biyi",
+          "chiru",
+          "xuangui",
+          "tiangou",
+          "dangkang",
+          "jiuweihu",
+          "lushu",
+          "dijiang",
+          "zheng",
+          "qiongqi"
+        ],
+        "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "dpr": 1
+      },
+      "after": {
+        "day": 210,
+        "dayDelta": 210,
+        "speed": 0,
+        "entities": 218,
+        "villages": 3,
+        "units": 89,
+        "modelIds": [
+          "jingwei",
+          "biyi",
+          "chiru",
+          "xuangui",
+          "tiangou",
+          "dangkang",
+          "jiuweihu",
+          "lushu",
+          "dijiang",
+          "zheng",
+          "qiongqi"
+        ]
+      },
+      "advance": {
+        "probeCalls": 210,
+        "automaticCalls": 0,
+        "probeRequestedDays": 210,
+        "automaticRequestedDays": 0,
+        "totalCalls": 210
+      },
+      "stats": {
+        "raf": {
+          "n": 180,
+          "p50": 16.600000000000364,
+          "p95": 50.100000000000364,
+          "max": 139.10000000000036,
+          "mean": 18.059444444444438
+        },
+        "update": {
+          "n": 180,
+          "p50": 0.09999990463256836,
+          "p95": 2.600000023841858,
+          "max": 12.200000047683716,
+          "mean": 0.3549999985429976
+        },
+        "advance": {
+          "n": 180,
+          "p50": 1.2000000476837158,
+          "p95": 3.1999999284744263,
+          "max": 27.600000023841858,
+          "mean": 1.967777779367235
+        },
+        "render": {
+          "n": 180,
+          "p50": 3.399999976158142,
+          "p95": 47.5,
+          "max": 65.19999992847443,
+          "mean": 8.562777780161964
+        },
+        "over50ms": 11
+      },
+      "renderSnapshot": {
+        "drawCalls": 49,
+        "triangles": 1099374,
+        "entityInstances": 309,
+        "creatureGlbInstances": 0,
+        "treeInstances": 10000,
+        "geometries": 36,
+        "textures": 9,
+        "modelCount": 11,
+        "heap": {
+          "usedJSHeapSize": 213997633,
+          "totalJSHeapSize": 303493401
+        },
+        "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "canvas": [
+          912,
+          598
+        ],
+        "glError": 0
+      },
+      "pass": true,
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 17,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    }
+  ],
+  "earlierPressure": [
+    {
+      "profile": "baseline",
+      "scenario": "normal",
+      "round": 1,
+      "rafP95": 27.5,
+      "over50": 2,
+      "absoluteEndDay": 226.51319999999998,
+      "note": "x20 pressure; automatic time differs between versions"
+    },
+    {
+      "profile": "candidate",
+      "scenario": "normal",
+      "round": 1,
+      "rafP95": 22.30000000000291,
+      "over50": 0,
+      "absoluteEndDay": 469.44599999999974,
+      "note": "x20 pressure; automatic time differs between versions"
+    },
+    {
+      "profile": "candidate",
+      "scenario": "normal",
+      "round": 2,
+      "rafP95": 22.30000000000291,
+      "over50": 0,
+      "absoluteEndDay": 472.58159999999987,
+      "note": "x20 pressure; automatic time differs between versions"
+    },
+    {
+      "profile": "baseline",
+      "scenario": "normal",
+      "round": 2,
+      "rafP95": 50.100000000000364,
+      "over50": 11,
+      "absoluteEndDay": 229.41899999999978,
+      "note": "x20 pressure; automatic time differs between versions"
+    },
+    {
+      "profile": "baseline",
+      "scenario": "high",
+      "round": 1,
+      "rafP95": 94.60000000000036,
+      "over50": 29,
+      "absoluteEndDay": 354.1583999999998,
+      "note": "x20 pressure; automatic time differs between versions"
+    },
+    {
+      "profile": "candidate",
+      "scenario": "high",
+      "round": 1,
+      "rafP95": 172.5,
+      "over50": 56,
+      "absoluteEndDay": 916.8888000000006,
+      "note": "x20 pressure; automatic time differs between versions"
+    },
+    {
+      "profile": "candidate",
+      "scenario": "high",
+      "round": 2,
+      "rafP95": 50,
+      "over50": 8,
+      "absoluteEndDay": 498.2538000000005,
+      "note": "x20 pressure; automatic time differs between versions"
+    },
+    {
+      "profile": "baseline",
+      "scenario": "high",
+      "round": 2,
+      "rafP95": 78,
+      "over50": 22,
+      "absoluteEndDay": 290.12219999999985,
+      "note": "x20 pressure; automatic time differs between versions"
+    }
+  ],
+  "earlierAttemptNotes": [
+    "First four fixed-step probes did not record sampling start day; absolute end day cannot prove extra automatic simulation or equivalent time.",
+    "Strict high candidate first incorrectly required all 13 models although only 11 forms occur in payload; no metric accepted.",
+    "Actual-form retry omitted return in CDP predicate and always timed out; failed JSON preserved as gpu-final-high-candidate-missing-return.json.",
+    "Final candidate-high predicate corrected; actual expected and loaded 11 models, day0, 210 explicit days, zero automatic calls,180 intervals verified."
+  ],
+  "cleanup": "All owned Edge instances complete; baseline server 4234 stopped, candidate 4233 retained."
+}

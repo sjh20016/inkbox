@@ -189,6 +189,7 @@ export class CreatureLibrary {
     this.sourceMaterials = new Set();
     this.sourceTextures = new Set();
     this.disposed = false;
+    this.loadOptions = null;
     if (material) {
       this.material = material;
       this.texture = material.map || null;
@@ -230,6 +231,24 @@ export class CreatureLibrary {
 
   hasSpecies(id) { return this.species.has(id); }
 
+  /** Add only an encountered form; existing GPU geometry and shared palette stay intact. */
+  async ensureSpecies(id) {
+    if (this.disposed || this.species.has(id) || !this.loadOptions) return false;
+    const info = creatureManifestEntries(this.manifest).find(entry => entry.id === id);
+    if (!info) return false;
+    const gltf = await this.loadOptions.loader.loadAsync(this.loadOptions.urlFor(id));
+    if (this.disposed) { disposeGltf(gltf); return false; }
+    let species;
+    try { species = entryFor(gltf, info, false); }
+    catch (error) { disposeGltf(gltf); throw error; }
+    disposeGltf(gltf);
+    this.species.set(id, species);
+    this.ids.push(id);
+    this.worldSpecies.push(id);
+    this.totalTriangles += species.triangles;
+    return true;
+  }
+
   clipsFor(id) { return this.rigs.get(id)?.animations?.map(clip => clip.name) || this.species.get(id)?.clips || []; }
 
   dispose() {
@@ -254,6 +273,7 @@ export class CreatureLibrary {
     this.species.clear();
     this.ids = [];
     this.worldSpecies = [];
+    this.loadOptions = null;
   }
 }
 
@@ -324,6 +344,7 @@ export async function loadCreatureLibrary({
     }
     if (loaded.length === 0) throw new Error(`No creature GLB loaded${failed.length ? `: ${failed.map(f => f.id).join(', ')}` : ''}`);
     const library = new CreatureLibrary({ entries: loaded, paletteTexture: texture, keepRigs, manifest });
+    if (!keepRigs) library.loadOptions = { loader, urlFor };
     library.errors = failed;
     return library;
   } catch (error) {

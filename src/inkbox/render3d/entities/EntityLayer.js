@@ -25,6 +25,7 @@
 //    与地形网格同一套三角插值）⇒ 玩家抬高山峰后，单位下一次刷新就站在新地表上。
 
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { ElevationField } from '../terrain/ElevationField.js';
 import { deriveEntities, sameEntities, ENTITY_CLASSES } from './deriveEntities.js';
 import { RegionGeometry } from '../region/RegionGeometry.js';
@@ -35,7 +36,8 @@ import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/P
 import { CharacterBatch } from '../characters/CharacterBatch.js';
 import { G26_STYLE_SCALES, getG26Style, subscribeG26Style } from '../characters/CharacterLibrary.js';
 import { CreatureBatch } from '../creatures/CreatureBatch.js';
-import { creatureFacingFor, creatureSpeciesFor } from '../creatures/creatureSpecies.js';
+import { creatureFacingFor } from '../creatures/creatureSpecies.js';
+import { creatureFormOf } from '../../core/wanlingCatalog.js';
 import { createCharacterLODGeometries } from '../lod/CharacterLODAssets.js';
 import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
 import { EnvironmentBatch } from '../environment/EnvironmentBatch.js';
@@ -86,6 +88,45 @@ function geometryFor(cls) {
   return g;
 }
 
+function herdGeometry(form) {
+  const parts = [];
+  const box = (w, h, d, x, y, z) => {
+    const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); parts.push(g);
+  };
+  const horn = (radius, height, x, y, z) => {
+    const g = new THREE.ConeGeometry(radius, height, 4); g.translate(x, y, z); parts.push(g);
+  };
+  box(form === 'deer' ? 1.7 : 1.9, .65, .7, 0, 1, 0);
+  for (const x of [-.55, .55]) for (const z of [-.23, .23]) box(.16, .8, .16, x, .42, z);
+  if (form === 'deer') {
+    box(.42, .75, .4, .9, 1.35, 0);
+    for (const z of [-.24, .24]) horn(.11, .9, 1, 2.05, z);
+  } else {
+    box(.75, .55, .6, 1, 1.2, 0);
+    horn(.2, .48, 1, 1.72, -.25);
+    horn(.2, .48, 1, 1.72, .25);
+    box(.45, .22, .3, 1.54, 1.08, 0);
+    horn(.2, .65, -.96, 1.38, 0);
+  }
+  const merged = mergeGeometries(parts, false);
+  for (const part of parts) part.dispose();
+  return merged;
+}
+
+function disguisedFoxGeometry() {
+  const parts = [];
+  const box = (w, h, d, x, y) => {
+    const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, 0); parts.push(g);
+  };
+  box(.75, 1.1, .4, 0, 1.55);
+  box(.55, .55, .5, 0, 2.4);
+  box(.2, 1, .24, -.53, 1.52); box(.2, 1, .24, .53, 1.52);
+  box(.24, .8, .3, -.22, .4); box(.24, .8, .3, .22, .4);
+  const merged = mergeGeometries(parts, false);
+  for (const part of parts) part.dispose();
+  return merged;
+}
+
 export class EntityLayer {
   constructor(world, coordinates, elevation = new ElevationField(world), { derive = deriveEntities, characterLibrary = null, creatureLibrary = null } = {}) {
     this.world = world;
@@ -105,6 +146,7 @@ export class EntityLayer {
     this.characterBatch = null;
     this.creatureBatch = null;
     this.creatureSpecies = [];
+    this.proceduralMeshes = new Map();
     this.ghostBatch = null; this.productionAssetsEnabled = false;
     this.lodEnabled = false;
     this.artView = {};
@@ -145,6 +187,26 @@ export class EntityLayer {
       this.legacyMaterials[cls] = material;
       this.placeholderMeshes[cls] = mesh;
       this.group.add(mesh);
+    }
+    // Five fixed low-cost silhouettes for grouped herds and anchored spirits.
+    const procedural = {
+      deer: [herdGeometry('deer'), '#aa8054'],
+      wolf: [herdGeometry('wolf'), '#56504c'],
+      wood: [new THREE.ConeGeometry(0.8, 2.5, 5), '#497c55'],
+      water: [new THREE.SphereGeometry(0.8, 6, 4), '#6297a0'],
+      stone: [new THREE.DodecahedronGeometry(0.85, 0), '#82827b'],
+      'fox-mask': [disguisedFoxGeometry(), '#907d6d'],
+    };
+    for (const [form, [geometry, color]] of Object.entries(procedural)) {
+      if (form !== 'deer' && form !== 'wolf' && form !== 'fox-mask')
+        geometry.translate(0, form === 'water' || form === 'stone' ? 0.85 : 1, 0);
+      const mesh = new THREE.InstancedMesh(geometry,
+        new THREE.MeshLambertMaterial({ color, flatShading: true }), 96);
+      mesh.name = `Wanling:${form}`; mesh.count = 0; mesh.visible = false;
+      mesh.frustumCulled = false; mesh.renderOrder = RENDER_ORDER.entities;
+      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      mesh.userData.renderEntities = [];
+      this.proceduralMeshes.set(form, mesh); this.group.add(mesh);
     }
     this.lodGeometries = createCharacterLODGeometries(STYLE);
     this.lodMeshes = {};
@@ -246,7 +308,7 @@ export class EntityLayer {
     const next = selection.states, previous = this._lodByEntity;
     let changed = next.size !== previous.size;
     if (!changed) for (const [id, lod] of next) if (previous.get(id) !== lod) { changed = true; break; }
-    if (changed) this.writeLOD(this.lastDerived, selection);
+    if (changed) { this.writeLOD(this.lastDerived, selection); this.writeProcedural(this.lastDerived); }
   }
 
   setCharacterLibrary(library) {
@@ -297,14 +359,65 @@ export class EntityLayer {
     placeholder.count = 0;
     placeholder.boundingBox = null;
     placeholder.boundingSphere = null;
-    placeholder.removeFromParent();
+    // Keep the fallback batch for forms still loading and legacy worlds.
     this.lastDerived = null;
     this.clock = Infinity;
   }
 
   /** 灵兽 → 异兽物种。只读 `world.seed` 与 `entity.id`，不抽模拟 RNG、不写实体。 */
   creatureSpeciesOf(item) {
-    return creatureSpeciesFor(this.world?.seed ?? 0, item.id, this.creatureSpecies);
+    const form = item.form || creatureFormOf(this.world, item);
+    return this.creatureBatch?.hasSpecies(form) ? form : null;
+  }
+
+  proceduralForm(item) {
+    return item.form === 'jiuweihu' && item.visualMask === 'human' ? 'fox-mask' : item.form;
+  }
+  isProcedural(item) { return this.proceduralMeshes.has(this.proceduralForm(item)); }
+
+  presentationY(item) {
+    const ground = this.elevation.at(item.x, item.y);
+    if ((item.form !== 'chiru' && item.form !== 'water') || !this.world.water
+      || !this.world.height || !this.elevation.waterAt) return ground + item.lift;
+    const ix = Math.max(0, Math.min(this.world.w - 1, Math.floor(item.x)));
+    const iy = Math.max(0, Math.min(this.world.h - 1, Math.floor(item.y)));
+    if (this.world.water[iy * this.world.w + ix] <= 0.0015) return ground + item.lift;
+    const water = this.elevation.waterAt(item.x, item.y);
+    return Math.max(ground, water + 0.08) + item.lift;
+  }
+
+  writeProcedural(derived) {
+    const records = new Map([...this.proceduralMeshes.keys()].map(form => [form, []]));
+    for (const cls of ['beast', 'spirit']) for (const item of this.visibleList(derived, cls))
+      if (this.isProcedural(item)) records.get(this.proceduralForm(item)).push(item);
+    let count = 0;
+    for (const [form, mesh] of this.proceduralMeshes) {
+      const items = records.get(form).slice(0, mesh.instanceMatrix.count);
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]; const p = this.coordinates.worldToRender(item.x, item.y, 0);
+        const cls = ['wood','water','stone'].includes(form) ? 'spirit' : 'beast';
+        const level = this._lodByEntity.get(`${cls}:${item.id}`) ?? 0;
+        this.stats.lod[level]++;
+        this.dummy.position.set(p.x, this.presentationY(item), p.z);
+        this.dummy.rotation.set(0, creatureFacingFor(this.world.seed || 0, item.id), 0);
+        this.dummy.scale.setScalar(1 + Math.min(0.45, Math.log2(Math.max(1, item.count || 1)) * 0.1));
+        this.dummy.updateMatrix(); mesh.setMatrixAt(i, this.dummy.matrix);
+      }
+      mesh.count = items.length; mesh.visible = items.length > 0;
+      // InstancedMesh.raycast caches the union sphere. Movement after a prior
+      // raycast must invalidate it or a new cell can become impossible to pick.
+      mesh.boundingBox = null; mesh.boundingSphere = null;
+      count += items.length;
+      mesh.userData.renderEntities = items;
+      if (items.length) mesh.instanceMatrix.needsUpdate = true;
+    }
+    this.stats.instances += count;
+    this.stats.byClass.beast = (this.stats.byClass.beast || 0)
+      + (this.proceduralMeshes.get('deer').count + this.proceduralMeshes.get('wolf').count
+        + this.proceduralMeshes.get('fox-mask').count);
+    this.stats.byClass.spirit = (this.stats.byClass.spirit || 0)
+      + (this.proceduralMeshes.get('wood').count + this.proceduralMeshes.get('water').count + this.proceduralMeshes.get('stone').count);
+    this.stats.triangles = this.submittedTriangles();
   }
 
   creatureRecord(item) {
@@ -314,9 +427,9 @@ export class EntityLayer {
     return {
       species,
       x: p.x,
-      y: this.elevation.at(item.x, item.y) + item.lift,
+      y: this.presentationY(item),
       z: p.z,
-      rotationY: creatureFacingFor(this.world?.seed ?? 0, item.id),
+      rotationY: creatureFacingFor(this.world?.seed ?? 0, item.facingId ?? item.id),
       scale: 1,
       source: item,
     };
@@ -367,6 +480,7 @@ export class EntityLayer {
   write(derived, world) {
     if (this.artProfile && this.lodEnabled) this.writeLOD(derived);
     else this.writeLegacy(derived);
+    this.writeProcedural(derived);
     this.lastDerived = derived;
   }
 
@@ -428,6 +542,7 @@ export class EntityLayer {
     let instances = 0, overflow = 0;
     const lod = [0, 0, 0];
     for (const { cls, item, lod: level } of selection.entries) {
+      if (this.isProcedural(item)) continue;
       if (cls==='wraith'&&this.useGhostFamily(item)) {ghostRecords.push(this.ghostRecord(item,level));byClass[cls]++;instances++;lod[level]++;continue;}
       const ghost = !!this.characterBatch && cls === 'wraith' && item.appearance?.role === 'ghost';
       if (level === 0 && this.characterBatch && (cls === 'cultivator' || ghost)) {
@@ -447,7 +562,7 @@ export class EntityLayer {
       const batch = batches.get(target);
       if (batch.count >= target.instanceMatrix.count) { overflow++; continue; }
       const p = this.coordinates.worldToRender(item.x, item.y, 0);
-      this.dummy.position.set(p.x, this.elevation.at(item.x, item.y) + item.lift, p.z);
+      this.dummy.position.set(p.x, this.presentationY(item), p.z);
       this.dummy.rotation.set(0, 0, 0);
       this.dummy.scale.setScalar(this.characterVisualScale(cls));
       this.dummy.updateMatrix();
@@ -510,7 +625,7 @@ export class EntityLayer {
     const ghostRecords = [];
     for (const cls of ENTITY_CLASSES) {
       const mesh = this.placeholderMeshes[cls];
-      const list = this.visibleList(derived, cls);
+      let list = this.visibleList(derived, cls).filter(item => !this.isProcedural(item));
       if (this.characterBatch && cls === 'cultivator') {
         for (const item of list) characterRecords.push(this.characterRecord(item));
         byClass[cls] = 0;
@@ -518,12 +633,14 @@ export class EntityLayer {
       }
       // LOD 关闭时灵兽也直接用真实模型（不受屏幕尺寸门槛影响）。
       if (this.creatureBatch && cls === 'beast') {
+        const fallback = [];
         for (const item of list) {
           const record = this.creatureRecord(item);
           if (record) creatureRecords.push(record);
+          else if (!this.isProcedural(item)) fallback.push(item);
         }
-        byClass[cls] = 0;
-        continue;
+        // Unloaded forms remain visible in the ordinary bounded placeholder mesh.
+        list = fallback;
       }
       const family=cls==='wraith'?list.filter(item=>this.useGhostFamily(item)):[];
       for(const item of family)ghostRecords.push(this.ghostRecord(item,0));
@@ -540,7 +657,7 @@ export class EntityLayer {
         const item = drawn[i];
         // ⚠️ 只读 x/y；高度一律走地表插值，不用固定 Y。
         const p = this.coordinates.worldToRender(item.x, item.y, 0);
-        this.dummy.position.set(p.x, this.elevation.at(item.x, item.y) + item.lift, p.z);
+        this.dummy.position.set(p.x, this.presentationY(item), p.z);
         this.dummy.rotation.set(0, 0, 0);
         this.dummy.scale.setScalar(this.characterVisualScale(cls));
         this.dummy.updateMatrix();
@@ -643,6 +760,11 @@ export class EntityLayer {
     this.creatureBatch?.dispose();
     this.creatureBatch = null;
     this.creatureSpecies = [];
+    for (const mesh of this.proceduralMeshes.values()) {
+      mesh.geometry.dispose(); mesh.material.dispose(); mesh.dispose();
+      mesh.userData.renderEntities = [];
+    }
+    this.proceduralMeshes.clear();
     this.ghostBatch?.dispose(); this.ghostBatch = null;
     for (const meshes of Object.values(this.lodMeshes)) for (const mesh of meshes) {
       mesh.dispose(); mesh.userData.renderEntities = [];

@@ -1,0 +1,709 @@
+{
+  "kind": "Finite local samples, not a broad performance sign-off",
+  "source": {
+    "baselineHead": "d4faed33509cebc9bdad17384a73c7d0d758f743",
+    "candidateDirty": true,
+    "baselineDirty": false,
+    "capturedUtc": "2026-10-25T03:34:00Z",
+    "candidateHead": "6684a6aed3ad188d484540b14c14539ee43c214f",
+    "candidateServer": "4231 existing external server, left untouched",
+    "browser": "Edge 155 GPU true, AMD Radeon(TM) 610M, DPR 1",
+    "cleanup": "all owned Edge browsers reported complete=true; no owned server remains",
+    "baselineServer": "4232 own server session 70671, stopped",
+    "normalSetup": "serializeWorld payload imported through native import UI, seed 20261025, day 0, 512x320, 7,877,708 UTF-8 bytes, sha256 f740129167351a395e091dbdc56643bc0c5c2fba809be5b3d4d81c378b8da729"
+  },
+  "normalAB": {
+    "started": "2026-10-25T03:32:59.94Z",
+    "viewport": [
+      512,
+      320
+    ],
+    "dpr": 1,
+    "warmupRaf": 30,
+    "sampleRaf": 180,
+    "rounds": [
+      {
+        "kind": "baseline",
+        "round": 1,
+        "start": {
+          "seed": 20261025,
+          "day": 0.72,
+          "w": 512,
+          "h": 320,
+          "people": 1,
+          "villages": 0,
+          "sects": 0,
+          "journeys": 0,
+          "speedIndex": 0
+        },
+        "metrics": {
+          "rafCount": 180,
+          "rafP50": 5.599999999999909,
+          "rafP95": 5.600000000000364,
+          "rafOver50ms": 0,
+          "cpuP95ms": {
+            "update": 0.20000004768371582,
+            "advanceDays": 0.10000002384185791,
+            "lifeStep": 0.10000002384185791
+          },
+          "cpuCalls": {
+            "update": 210,
+            "advanceDays": 210,
+            "lifeStep": 210
+          },
+          "day": 8.033400000000004,
+          "people": 1,
+          "villages": [],
+          "sects": [],
+          "glRenderer": null,
+          "glMemory": null,
+          "jsHeap": {
+            "used": 49125738,
+            "total": 86790050,
+            "limit": 4395630592
+          },
+          "notes": {
+            "rafFirst30WarmupExcluded": true,
+            "jsHeapSource": "performance.memory Chromium",
+            "glMemorySource": "unavailable"
+          }
+        },
+        "screenshot": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-t0\\reports\\local\\t0\\performance\\baseline-normal-round1.png"
+      },
+      {
+        "kind": "candidate",
+        "round": 1,
+        "start": {
+          "seed": 20261025,
+          "day": 0.19979999999999998,
+          "w": 512,
+          "h": 320,
+          "people": 1,
+          "villages": 0,
+          "sects": 0,
+          "journeys": 0,
+          "speedIndex": 0
+        },
+        "metrics": {
+          "rafCount": 180,
+          "rafP50": 5.599999999999909,
+          "rafP95": 5.699999999999818,
+          "rafOver50ms": 0,
+          "cpuP95ms": {
+            "update": 0.20000004768371582,
+            "advanceDays": 0.10000002384185791,
+            "lifeStep": 0.10000002384185791
+          },
+          "cpuCalls": {
+            "update": 210,
+            "advanceDays": 210,
+            "lifeStep": 210
+          },
+          "day": 7.346999999999999,
+          "people": 1,
+          "villages": [],
+          "sects": [],
+          "glRenderer": null,
+          "glMemory": null,
+          "jsHeap": {
+            "used": 60847902,
+            "total": 87375550,
+            "limit": 4395630592
+          },
+          "notes": {
+            "rafFirst30WarmupExcluded": true,
+            "jsHeapSource": "performance.memory Chromium",
+            "glMemorySource": "unavailable"
+          }
+        },
+        "screenshot": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-t0\\reports\\local\\t0\\performance\\candidate-normal-round1.png"
+      },
+      {
+        "kind": "candidate",
+        "round": 2,
+        "start": {
+          "seed": 20261025,
+          "day": 0.2669999999999999,
+          "w": 512,
+          "h": 320,
+          "people": 1,
+          "villages": 0,
+          "sects": 0,
+          "journeys": 0,
+          "speedIndex": 0
+        },
+        "metrics": {
+          "rafCount": 180,
+          "rafP50": 5.599999999999909,
+          "rafP95": 5.7000000000000455,
+          "rafOver50ms": 0,
+          "cpuP95ms": {
+            "update": 0.19999992847442627,
+            "advanceDays": 0.10000002384185791,
+            "lifeStep": 0.10000002384185791
+          },
+          "cpuCalls": {
+            "update": 210,
+            "advanceDays": 210,
+            "lifeStep": 210
+          },
+          "day": 7.514399999999999,
+          "people": 1,
+          "villages": [],
+          "sects": [],
+          "glRenderer": null,
+          "glMemory": null,
+          "jsHeap": {
+            "used": 49265227,
+            "total": 88161855,
+            "limit": 4395630592
+          },
+          "notes": {
+            "rafFirst30WarmupExcluded": true,
+            "jsHeapSource": "performance.memory Chromium",
+            "glMemorySource": "unavailable"
+          }
+        },
+        "screenshot": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-t0\\reports\\local\\t0\\performance\\candidate-normal-round2.png"
+      },
+      {
+        "kind": "baseline",
+        "round": 2,
+        "start": {
+          "seed": 20261025,
+          "day": 0.16739999999999955,
+          "w": 512,
+          "h": 320,
+          "people": 1,
+          "villages": 0,
+          "sects": 0,
+          "journeys": 0,
+          "speedIndex": 0
+        },
+        "metrics": {
+          "rafCount": 180,
+          "rafP50": 5.599999999999909,
+          "rafP95": 5.699999999999818,
+          "rafOver50ms": 0,
+          "cpuP95ms": {
+            "update": 0.20000004768371582,
+            "advanceDays": 0.10000002384185791,
+            "lifeStep": 0.10000002384185791
+          },
+          "cpuCalls": {
+            "update": 210,
+            "advanceDays": 210,
+            "lifeStep": 210
+          },
+          "day": 7.381800000000002,
+          "people": 1,
+          "villages": [],
+          "sects": [],
+          "glRenderer": null,
+          "glMemory": null,
+          "jsHeap": {
+            "used": 55459872,
+            "total": 70012848,
+            "limit": 4395630592
+          },
+          "notes": {
+            "rafFirst30WarmupExcluded": true,
+            "jsHeapSource": "performance.memory Chromium",
+            "glMemorySource": "unavailable"
+          }
+        },
+        "screenshot": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-t0\\reports\\local\\t0\\performance\\baseline-normal-round2.png"
+      }
+    ],
+    "limitations": [
+      "This is a 512x320 normal Canvas/2D scene and measures only ordinary runtime simulation/frame overhead; no 3D performance claim.",
+      "No WebGL context exists in the sampled normal scene, so WebGL renderer and GL memory are unavailable.",
+      "Shared payload serialized at day 0 with zero entities/villages/factions; each run imported that exact payload, then advanced naturally at speed x2 with no active transit.",
+      "JavaScript heap values use Chromium performance.memory usedJSHeapSize/totalJSHeapSize.",
+      "CPU wrapper percentiles include the 30 warmup RAF calls plus the 180 reported RAF intervals; RAF percentiles exclude warmup."
+    ],
+    "machine": {
+      "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "dpr": 1
+    },
+    "payload": {
+      "seed": 20261025,
+      "day": 0,
+      "w": 512,
+      "h": 320,
+      "entities": 0,
+      "villages": 0,
+      "factions": 0,
+      "bytes": 7877708,
+      "sha256": "f740129167351a395e091dbdc56643bc0c5c2fba809be5b3d4d81c378b8da729"
+    },
+    "finished": "2026-10-25T03:33:28.558Z"
+  },
+  "activeTransit": {
+    "started": "2026-10-25T03:31:14.528Z",
+    "kind": "candidate-only actual T0 scene; native UI dispatch",
+    "viewport": [
+      1366,
+      768
+    ],
+    "warmupRaf": 30,
+    "sampleRaf": 600,
+    "initial": {
+      "seed": 20261025,
+      "day": 0,
+      "map": [
+        200,
+        128
+      ],
+      "villages": [
+        {
+          "id": 1,
+          "name": "西津",
+          "pop": 7,
+          "food": 260
+        },
+        {
+          "id": 2,
+          "name": "东渡",
+          "pop": 6,
+          "food": 8
+        }
+      ],
+      "people": 13,
+      "sects": 0,
+      "actualActive": 0,
+      "terminal": 0,
+      "geo": {
+        "builds": 0,
+        "plans": 0,
+        "nodes": 0,
+        "bytes": 0,
+        "cachedRoutes": 0,
+        "cachedRoutePoints": 0,
+        "waterSearches": 0,
+        "dirty": true
+      },
+      "jsHeap": {
+        "used": 12483663,
+        "total": 22468099,
+        "limit": 4395630592
+      }
+    },
+    "initialRoute": {
+      "land": true,
+      "water": true
+    },
+    "afterNativeBridgeCut": {
+      "seed": 20261025,
+      "day": 0,
+      "map": [
+        200,
+        128
+      ],
+      "villages": [
+        {
+          "id": 1,
+          "name": "西津",
+          "pop": 7,
+          "food": 260
+        },
+        {
+          "id": 2,
+          "name": "东渡",
+          "pop": 6,
+          "food": 8
+        }
+      ],
+      "people": 13,
+      "sects": 0,
+      "actualActive": 0,
+      "terminal": 0,
+      "geo": {
+        "builds": 1,
+        "plans": 2,
+        "nodes": 6997,
+        "bytes": 409600,
+        "cachedRoutes": 0,
+        "cachedRoutePoints": 0,
+        "waterSearches": 2,
+        "dirty": true
+      },
+      "jsHeap": {
+        "used": 15109367,
+        "total": 23615871,
+        "limit": 4395630592
+      }
+    },
+    "routeAfterCut": {
+      "land": false,
+      "water": true
+    },
+    "preNormalRun": {
+      "seed": 20261025,
+      "day": 0,
+      "map": [
+        200,
+        128
+      ],
+      "villages": [
+        {
+          "id": 1,
+          "name": "西津",
+          "pop": 7,
+          "food": 236
+        },
+        {
+          "id": 2,
+          "name": "东渡",
+          "pop": 6,
+          "food": 8
+        }
+      ],
+      "people": 13,
+      "sects": 0,
+      "journeys": [
+        {
+          "id": 1,
+          "kind": "cargo",
+          "status": "active",
+          "legMode": "land",
+          "progress": 0
+        },
+        {
+          "id": 2,
+          "kind": "person",
+          "status": "active",
+          "legMode": "land",
+          "progress": 0
+        }
+      ],
+      "actualActive": 2,
+      "terminal": 0,
+      "geo": {
+        "builds": 2,
+        "plans": 7,
+        "nodes": 6902,
+        "bytes": 409600,
+        "cachedRoutes": 4,
+        "cachedRoutePoints": 76,
+        "waterSearches": 4,
+        "dirty": false
+      },
+      "jsHeap": {
+        "used": 16213117,
+        "total": 24392245,
+        "limit": 4395630592
+      }
+    },
+    "screenshot": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-t0\\reports\\local\\t0\\performance\\candidate-t0-active-ships-flight.png",
+    "metrics": {
+      "rafCount": 601,
+      "rafP50": 5.599999999999909,
+      "rafP95": 5.699999999999818,
+      "rafOver50ms": 0,
+      "day": 23.210400000000003,
+      "journeys": [
+        {
+          "id": 1,
+          "kind": "cargo",
+          "status": "active",
+          "legMode": "water",
+          "progress": 1.402799999999992
+        },
+        {
+          "id": 2,
+          "kind": "person",
+          "status": "arrived",
+          "legMode": "air",
+          "progress": 9.524095895212437
+        }
+      ],
+      "actualActive": 1,
+      "terminal": 1,
+      "geo": {
+        "builds": 8,
+        "plans": 19,
+        "nodes": 6902,
+        "bytes": 409600,
+        "cachedRoutes": 1,
+        "cachedRoutePoints": 53,
+        "waterSearches": 14,
+        "dirty": false
+      },
+      "jsHeap": {
+        "used": 15627995,
+        "total": 27518347,
+        "limit": 4395630592
+      }
+    },
+    "finished": "2026-10-25T03:31:22.955Z",
+    "cleanup": {
+      "removed": true,
+      "attempts": 1,
+      "processesExited": true,
+      "complete": true,
+      "processEvidence": {
+        "supported": true,
+        "frozen": 17,
+        "remaining": 0,
+        "discoveryError": null,
+        "termination": {
+          "errors": [],
+          "attempted": 0
+        }
+      }
+    }
+  },
+  "retention": {
+    "started": "2026-10-25T03:36:06.718Z",
+    "kind": "candidate-only API pressure sample; 32 production person journeys / 16 A-B-A round trips",
+    "dispatch": "requestPersonJourney(actorId=13,toVillageId alternating 2/1)",
+    "advance": "inkbox.advanceDays(1), which forwards to production advanceWorld and runs normal Life; no day assignment or synthetic actor IDs",
+    "samples": [
+      {
+        "completedJourneys": 4,
+        "completedRoundTrips": 2,
+        "label": "journeys-4",
+        "day": 52,
+        "retainedJourneys": 5,
+        "active": 1,
+        "terminal": 4,
+        "geo": {
+          "builds": 9,
+          "plans": 20,
+          "nodes": 6997,
+          "bytes": 409600,
+          "cachedRoutes": 2,
+          "cachedRoutePoints": 59,
+          "waterSearches": 12,
+          "dirty": false
+        },
+        "heap": {
+          "used": 19986292,
+          "total": 27808828,
+          "limit": 4395630592
+        }
+      },
+      {
+        "completedJourneys": 16,
+        "completedRoundTrips": 8,
+        "label": "journeys-16",
+        "day": 208,
+        "retainedJourneys": 18,
+        "active": 0,
+        "terminal": 18,
+        "geo": {
+          "builds": 42,
+          "plans": 102,
+          "nodes": 6997,
+          "bytes": 409600,
+          "cachedRoutes": 1,
+          "cachedRoutePoints": 2,
+          "waterSearches": 55,
+          "dirty": false
+        },
+        "heap": {
+          "used": 26048432,
+          "total": 34793652,
+          "limit": 4395630592
+        }
+      },
+      {
+        "completedJourneys": 32,
+        "completedRoundTrips": 16,
+        "label": "journeys-32",
+        "day": 416,
+        "retainedJourneys": 24,
+        "active": 0,
+        "terminal": 24,
+        "geo": {
+          "builds": 76,
+          "plans": 152,
+          "nodes": 6997,
+          "bytes": 409600,
+          "cachedRoutes": 1,
+          "cachedRoutePoints": 2,
+          "waterSearches": 55,
+          "dirty": false
+        },
+        "heap": {
+          "used": 23255288,
+          "total": 32751796,
+          "limit": 4395630592
+        }
+      }
+    ],
+    "initial": {
+      "seed": 20261025,
+      "day": 0,
+      "map": [
+        200,
+        128
+      ],
+      "actor": {
+        "id": 13,
+        "sp": "cultivator",
+        "village": 1
+      },
+      "villages": [
+        {
+          "id": 1,
+          "name": "西津",
+          "pop": 7
+        },
+        {
+          "id": 2,
+          "name": "东渡",
+          "pop": 6
+        }
+      ],
+      "entities": 13,
+      "journeys": 0,
+      "limits": {
+        "active": 12,
+        "terminal": 24,
+        "maxRoutes": 96,
+        "maxRoutePoints": 16384
+      },
+      "geo": {
+        "builds": 0,
+        "plans": 0,
+        "nodes": 0,
+        "bytes": 0,
+        "cachedRoutes": 0,
+        "cachedRoutePoints": 0,
+        "waterSearches": 0,
+        "dirty": true
+      },
+      "heap": {
+        "used": 13272950,
+        "total": 21941278,
+        "limit": 4395630592
+      }
+    },
+    "startScreenshot": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-t0\\reports\\local\\t0\\performance\\candidate-reserve-start.png",
+    "result": {
+      "completedJourneys": 32,
+      "completedRoundTrips": 16,
+      "finalActor": {
+        "id": 13,
+        "exists": true
+      },
+      "samples": [
+        {
+          "completedJourneys": 4,
+          "completedRoundTrips": 2,
+          "label": "journeys-4",
+          "day": 52,
+          "retainedJourneys": 5,
+          "active": 1,
+          "terminal": 4,
+          "geo": {
+            "builds": 9,
+            "plans": 20,
+            "nodes": 6997,
+            "bytes": 409600,
+            "cachedRoutes": 2,
+            "cachedRoutePoints": 59,
+            "waterSearches": 12,
+            "dirty": false
+          },
+          "heap": {
+            "used": 19986292,
+            "total": 27808828,
+            "limit": 4395630592
+          }
+        },
+        {
+          "completedJourneys": 16,
+          "completedRoundTrips": 8,
+          "label": "journeys-16",
+          "day": 208,
+          "retainedJourneys": 18,
+          "active": 0,
+          "terminal": 18,
+          "geo": {
+            "builds": 42,
+            "plans": 102,
+            "nodes": 6997,
+            "bytes": 409600,
+            "cachedRoutes": 1,
+            "cachedRoutePoints": 2,
+            "waterSearches": 55,
+            "dirty": false
+          },
+          "heap": {
+            "used": 26048432,
+            "total": 34793652,
+            "limit": 4395630592
+          }
+        },
+        {
+          "completedJourneys": 32,
+          "completedRoundTrips": 16,
+          "label": "journeys-32",
+          "day": 416,
+          "retainedJourneys": 24,
+          "active": 0,
+          "terminal": 24,
+          "geo": {
+            "builds": 76,
+            "plans": 152,
+            "nodes": 6997,
+            "bytes": 409600,
+            "cachedRoutes": 1,
+            "cachedRoutePoints": 2,
+            "waterSearches": 55,
+            "dirty": false
+          },
+          "heap": {
+            "used": 23255288,
+            "total": 32751796,
+            "limit": 4395630592
+          }
+        }
+      ]
+    },
+    "finalActor": {
+      "id": 13,
+      "exists": true
+    },
+    "finalScreenshot": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-t0\\reports\\local\\t0\\performance\\candidate-reserve-32-final.png",
+    "finished": "2026-10-25T03:36:11.090Z",
+    "pass": true,
+    "cleanup": {
+      "removed": true,
+      "attempts": 1,
+      "processesExited": true,
+      "complete": true,
+      "processEvidence": {
+        "supported": true,
+        "frozen": 17,
+        "remaining": 0,
+        "discoveryError": null,
+        "termination": {
+          "errors": [],
+          "attempted": 0
+        }
+      }
+    }
+  },
+  "failedAttempts": [
+    {
+      "artifact": "normal-ab.json first attempt",
+      "failure": "Default sandbox CIM access denied by Get-CimInstance Win32_Process. cdp.mjs launch raised AggregateError because owned browser cleanup could not verify process exit; no sample taken. Later inspection: no cdp-* temp profile and zero msedge processes.",
+      "at": "2026-10-25T03:26:40Z"
+    },
+    {
+      "artifact": "normal-ab.json second attempt",
+      "failure": "Escalated run reached payload capture and failed due await used in a non-async Runtime.evaluate wrapper. Fixed only ignored performance script; no product/helper edit.",
+      "at": "2026-10-25T03:27:56Z"
+    },
+    {
+      "artifact": "transit-active.json initial attempt",
+      "failure": "Candidate T0 fixture loaded and native cut ran; native dispatch wait result was not asserted, causing undefined journey lookup. Browser cleanup complete=true. Script now validates native route cut and dispatch.",
+      "at": "2026-10-25T03:30:18Z"
+    }
+  ]
+}

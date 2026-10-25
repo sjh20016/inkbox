@@ -29,7 +29,13 @@ export class CreatureBatch {
     this.bySpecies = {};
     this.disposed = false;
     for (const [id, species] of library.species) {
-      const mesh = new THREE.InstancedMesh(species.geometry, library.material, capacity);
+      this.addSpecies(id, species);
+    }
+  }
+
+  addSpecies(id, species = this.library.species.get(id)) {
+      if (this.disposed || this.meshes.has(id) || !species) return false;
+      const mesh = new THREE.InstancedMesh(species.geometry, this.library.material, this.capacity);
       mesh.name = `Creature:${id}`;
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       // 实例铺在整个世界，单几何的默认包围球会误剔除。
@@ -43,8 +49,9 @@ export class CreatureBatch {
       this.meshes.set(id, mesh);
       this.group.add(mesh);
       mesh.add(attachInkOutline(mesh, { ratio: 0.028 }));
-    }
-    this.speciesIds = Object.freeze([...library.species.keys()]);
+      syncInkOutline(mesh, this.inkOutline);
+      this.speciesIds = Object.freeze([...this.meshes.keys()]);
+      return true;
   }
 
   /** V1 · 山海入画：墨线外轮廓开关（纯表现，不改实例 / 拾取映射）。 */

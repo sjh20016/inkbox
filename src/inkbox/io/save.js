@@ -27,6 +27,9 @@ import { APP, NEVER_DECAY_DAY, WORLD_PRESETS } from '../core/config.js';
 import { World } from '../world/World.js';
 import { readObserveEcho, restoreObserveEcho } from '../sim/observeEcho.js';
 import { snapshotNature, restoreNature } from '../sim/nature.js';
+import { snapshotWanling, restoreWanling } from '../world/wanlingState.js';
+import { creatureFormOf, WANLING_BY_KEY } from '../core/wanlingCatalog.js';
+import { snapshotTransit, restoreTransitSnapshot } from '../world/transitState.js';
 import { OVER, recomputeAll, recomputeQi } from '../world/terrain.js';
 import { DAO_PATHS, TRIBULATION_OMENS } from '../core/cultivation.js';
 import { MANUALS, NETHER_TECHNIQUES } from '../core/lore.js';
@@ -280,6 +283,8 @@ function base64ToBytes(text) {
 export function serializeWorld(world, meta = {}) {
   return {
     v: SAVE_VERSION,
+    // Independent optional v1 block; old v11 rows and realm payloads stay intact.
+    ...(world.plane === 'mortal' && world.transit ? { transit: snapshotTransit(world) } : {}),
     app: APP.version,
     w: world.w,
     h: world.h,
@@ -289,6 +294,7 @@ export function serializeWorld(world, meta = {}) {
     nextEntityId: world.nextEntityId,
     nextVillageId: world.nextVillageId,
     nextFactionId: world.nextFactionId,
+    ...(world.plane === 'mortal' && world.wanling ? { wanling: snapshotWanling(world) } : {}),
     terrain: {
       height: encodeQuantized(world.height, 1),
       water: encodeQuantized(world.water, 1),
@@ -439,6 +445,8 @@ export function serializeWorld(world, meta = {}) {
       e.lastFireCastDay ?? -1e9,
       // C1 immutable birth-source snapshot (row[70]); old ages/lifespans stay as saved.
       e.birthOrigin ? structuredClone(e.birthOrigin) : null,
+      // W0.1 concrete beast identity, append-only row[71].
+      e.sp === 'beast' ? creatureFormOf(world,e) : null,
     ]),
     villages: world.villages.map((v) => ({
       id: v.id, x: v.x, y: v.y, faction: v.faction, name: v.name,
@@ -1472,6 +1480,12 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
   // （上面 `recomputeAll` 已经顺带算过一遍灵气；这里再算一遍是**幂等**的——
   //   凡间两遍结果相同，上界则靠传进来的 `recomputeUpperQi` 把公式换掉。）
   recomputeQiLayer(world);
+  for (const entity of world.entities) if (entity.sp === 'beast') entity.form = creatureFormOf(world,entity);
+  if (world.plane === 'mortal') restoreWanling(world,data.wanling);
+  if (world.plane === 'mortal' && data.transit !== undefined) {
+    const transit = restoreTransitSnapshot(data.transit, world);
+    if (transit) world.transit = transit;
+  }
   world.touch();
 }
 
@@ -1479,6 +1493,7 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
 function restoreEntity(row, id) {
   const entity = {
     id,
+    ...(row[1] === 'beast' && WANLING_BY_KEY.has(row[71]) ? { form: row[71] } : {}),
     sp: row[1], x: row[2], y: row[3], vx: 0, vy: 0,
     hp: row[4], maxHp: row[5], age: row[6], lifespan: row[7],
     faction: row[8], village: row[9], state: row[10], timer: row[11],

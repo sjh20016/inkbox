@@ -33,6 +33,7 @@ import {
   speedStatusText, toolStateText, inspectPoint, isClickWithinDrag,
   toastLocation, toastHint,
 } from './qolState.js';
+import { WANLING_BY_KEY } from '../core/wanlingCatalog.js';
 import { watchNewsCount } from '../sim/watch.js';
 // 档位表（Q6 的文字状态要它）。**纯 config，零副作用**——不是模拟模块。
 import { TIME } from '../core/config.js';
@@ -360,7 +361,9 @@ export function createQol(sb) {
     syncToolState() {
       const el = $('inkToolState');
       if (!el) return;
-      setText(el, toolStateText(sb.tool, sb.brushRadius));
+      setText(el, sb.tool?.id === 'beast'
+        ? `万灵 · ${WANLING_BY_KEY.get(sb.wanlingForm)?.name || '当康'}｜点选地图投放`
+        : toolStateText(sb.tool, sb.brushRadius));
     },
     /**
      * Q6：暂停与档位的**文字**状态（与 `#inkSpeedPill` 同一句话的两个形态）。

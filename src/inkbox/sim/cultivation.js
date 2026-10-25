@@ -17,6 +17,7 @@ import {
   THUNDER_ASCEND_MIN_LEVEL,
 } from '../core/cultivation.js';
 import { NEVER_DECAY_DAY } from '../core/config.js';
+import { wanlingResonanceAt, wanlingBondBonus } from '../world/wanlingInfluence.js';
 import { isAdult, isPracticingHuman } from '../core/demographics.js';
 import { BLOODLINES, narrate, pickFrom, DAO_TITLES, bloodlineProfile } from '../core/lore.js';
 import {
@@ -326,10 +327,10 @@ export function awaken(entity, rng, { silent = false } = {}) {
 // ── 修为积累 ─────────────────────────────────────────────
 export function cultivationRate(world, entity) {
   const tile = clamp(Math.floor(entity.y), 0, world.h - 1) * world.w + clamp(Math.floor(entity.x), 0, world.w - 1);
-  const qi = world.qi[tile] || 0.3;
+  const qi = (world.qi[tile] || 0.3) + wanlingResonanceAt(world,entity.x,entity.y);
   const rootBonus = entity.root ? entity.root.bonus : 0;
   const quality = entity.root ? entity.root.quality : 0;
-  const daoBonus = entity.dao ? 1 + (entity.dao.stage + 1) * 0.15 : 1;
+  const daoBonus = (entity.dao ? 1 + (entity.dao.stage + 1) * 0.15 : 1) * (1 + wanlingBondBonus(world,entity));
   const mindFactor = 0.55 + (entity.mind / 100) * 0.6;
   const pollutionFactor = 1 - Math.min(0.5, entity.pollution * 0.005);
   const madFactor = entity.madUntil > world.day ? 0 : 1;

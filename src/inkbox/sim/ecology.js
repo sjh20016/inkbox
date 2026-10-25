@@ -4,6 +4,7 @@ import { SEA_LEVEL, TERRAIN } from '../core/config.js';
 import { clamp } from '../core/noise.js';
 import { OVER, decayOverlay, markDirty, flushDirty } from '../world/terrain.js';
 import { igniteCell, extinguishCell } from './nature.js';
+import { invalidateTransitGeography } from '../world/transitGeography.js';
 
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 
@@ -133,7 +134,12 @@ export function stepFire(world, dtDays, rng) {
   for (let x = 0; x < w; x += 1) { burnCell(x, 0); if (h > 1) burnCell(x, h - 1); }
   for (let y = 1; y < h - 1; y += 1) { burnCell(0, y); if (w > 1) burnCell(w - 1, y); }
 
-  for (let i = 0; i < world.size; i += 1) fire[i] = next[i];
+  let transitChanged = false;
+  for (let i = 0; i < world.size; i += 1) {
+    if ((fire[i] >= 0.55) !== (next[i] >= 0.55)) transitChanged = true;
+    fire[i] = next[i];
+  }
+  if (transitChanged) invalidateTransitGeography(world);
   if (scorched) flushDirty(world);
   if (active > 0 || clearedResidue) world.touch();
   return active;

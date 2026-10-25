@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T14:43:39.317Z",
+  "generatedAt": "2026-10-25T06:55:55.934Z",
   "pass": true,
   "creatures": {
     "jingwei": {
@@ -536,7 +536,7 @@
       "feetY": 0
     }
   },
-  "checks": 21996,
+  "checks": 22012,
   "warnings": [],
   "palette": {
     "file": "materials/creature_palette.png",

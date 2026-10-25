@@ -9,6 +9,7 @@ import { accessBounds, canAccess } from '../world/mapProgress.js';
 import { isViewTool, VIEW_CLICK_PX } from '../ui/realmView.js';
 import { blockingInputLayer } from '../ui/inputLayers.js';
 import { TOOLS, TOOL_BY_ID } from '../ui/tools.js';
+import { WANLING_BY_KEY } from '../core/wanlingCatalog.js';
 import { withWaterEditBatch } from '../sim/powers.js';
 import { visibleRift } from './readers/riftViewModel.js';
 import { settlementRuinForMarker, settlementRuinIsVisible } from '../world/settlementIdentity.js';
@@ -397,12 +398,14 @@ export class Render3DAdapter {
   }
   setActive(active) {
     this.cancelStroke(); if(!active)this.clearCameraKeys(); this.invalidateHover(active ? '3d-enter' : '3d-exit'); if(this.active&&!active)this.clearHistory('切回 Canvas 已清除沙盘编辑会话');this.active = active; this.lastNow = null;
+    if (active && TOOL_BY_ID[this.sandbox.toolId]) this.setTool(this.sandbox.toolId);
     this.canvas.hidden = !active; this.readout.hidden = !active;
     if (!active && this.powerTarget) this.powerTarget.hidden = true;
     if (this.artDebug) this.artDebug.element.hidden = !active;
     this.sandbox.canvas.style.visibility = active ? 'hidden' : '';
     this.panel.querySelector('[data-action="toggle"]').textContent = active ? '切回 Canvas' : '进入 3D';
-    for (const element of this.panel.querySelectorAll('select,input,button:not([data-action="toggle"])')) element.disabled = !active;
+    for (const element of this.panel.querySelectorAll('select,input,button:not([data-action="toggle"])'))
+      if (!element.closest('#inkWanlingQuick')) element.disabled = !active;
     document.querySelector('.rail.left').inert = active;
     document.querySelector('.rail.left').style.opacity = active ? '0.5' : '';
     for (const id of ['inkBrushRange', 'inkBtnRelief', 'inkBtnGrid']) document.getElementById(id).disabled = active;
@@ -732,9 +735,9 @@ export class Render3DAdapter {
     // §63：界缘检视优先显示（它是中性的界差读数，与格子检视互斥）。
     const boundaryText = this.selectedBoundary ? boundaryInspectorText(this.selectedBoundary) : null;
     const village = cell?.kind === 'settlement' ? viewedWorld.villages?.find(v => v.id === cell.settlementId) : null;
-    this.readout.textContent = boundaryText || (this.mode === 'root' && cell?.entityId != null ? `人物 ${cell.entityId} · 格 ${cell.x}, ${cell.y} · 点击赐灵根` : village ? `聚落 · ${village.name}` : cell && cell.plane
+    this.readout.textContent = (this.mode === 'beast' ? `万灵 · ${WANLING_BY_KEY.get(this.sandbox.wanlingForm)?.name || '当康'}｜点选地图投放 · ` : '') + (boundaryText || (this.mode === 'root' && cell?.entityId != null ? `人物 ${cell.entityId} · 格 ${cell.x}, ${cell.y} · 点击赐灵根` : village ? `聚落 · ${village.name}` : cell && cell.plane
       ? `${cell.plane} · 格 ${cell.x}, ${cell.y} · 高程 ${viewedWorld.height[cell.y * viewedWorld.w + cell.x]?.toFixed(4)} · ${TERRAIN_INFO[viewedWorld.type[cell.y * viewedWorld.w + cell.x]]?.name || '—'}`
-      : 'WASD 平移 · Shift 加速 · 左键检视 / 雕刻 · 中键旋转 · 滚轮缩放 · F 全图');
+      : 'WASD 平移 · Shift 加速 · 左键检视 / 雕刻 · 中键旋转 · 滚轮缩放 · F 全图'));
     if (!this.lastDebug || now - this.lastDebug > 0.3) {
       this.lastDebug = now;
       this.panel.querySelector('[data-debug]').textContent = `WASD 平移 · Shift 加速 · Q/E 旋转 · F 全图\n左键检视 / 雕刻 · 中键旋转 · 滚轮缩放\n${metrics.fps.toFixed(1)} FPS · ${metrics.frameMs.toFixed(1)} ms/frame\n${metrics.drawCalls} draws · ${metrics.triangles} triangles\n${metrics.terrainVertices} terrain vertices · ${metrics.treeInstances} trees\n${metrics.entityInstances} entities · ${metrics.houseInstances} buildings · ${metrics.markerInstances} markers\nRaycast ${metrics.lastRaycastMs.toFixed(2)} ms（上次查询） · hover ${this.hoverStats.raycasts} 次 raycast / ${this.hoverStats.cacheHits} 次复用\nrender submit ${metrics.renderMs.toFixed(2)} ms\nCPU 更新 ${metrics.layerUpdateMs.toFixed(2)} ms（桥扫描 ${metrics.bridgeScanMs.toFixed(2)} · 地形 ${metrics.terrainUpdateMs.toFixed(2)} · 水 ${metrics.waterUpdateMs.toFixed(2)} · 植被 ${metrics.vegetationUpdateMs.toFixed(2)}）\n实体 ${metrics.entityUpdateMs.toFixed(2)} ms · 建筑 ${metrics.settlementUpdateMs.toFixed(2)} ms · 标记 ${metrics.markerUpdateMs.toFixed(2)} ms`;

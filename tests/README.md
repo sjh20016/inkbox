@@ -1,5 +1,10 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:wti1` 覆盖目录驱动的17种真实投放、共享临时选择状态、同修士第二次付费行动、T0移动权接管、双可选区块/旧v11、海上持粮与御空联合存读档、一次交付。加入 Fast，保留原 Fast/Heavy；实机验收另由正式页面的原生控件和地图指针完成。
+
+`npm run test:w01` 检查真实物种、聚合捕食/袭村与安抚、地灵迁衰、浅滩地形/枯痕到期、十二道途目标与实际代价、实例身份/只读性、旧档兼容及正式推进存读档。加入 Fast，既有 Fast/Heavy 完整保留。`npm run test:w01:browser` 为手动真实 Edge 验收：先启动服务（默认4233，`INKBOX_URL` 可改），导入明确标注的受控正式存档，再通过原生控件投放、检视、存读档和施放地形神力；需要本机浏览器及其自有进程清理权限。夹具不增加修士投放按钮。结果、非空场景性能对照和未验证边界见 [W0.1 记录](../docs/development/W01_WANLING_DELIVERY.md)。
+`npm run test:t0` 检查陆路/永久水路/飞行可达、港口及缓存边界、真实货物与人物行程、封海恢复、v11独立存档块、同ID/守恒/幂等，以及正式 Life/advance/神力和内部地形事务接线。已加入 Fast。`npm run test:t0:browser` 为手动实际 Edge/CDP 操作，默认先启动4231并打开正式 `inkbox.html?scenario=t0`；它不替代CPU门禁，也不宣称全平台性能通过。场景与结果见 [T0交付](../docs/development/T0_TRANSIT_DELIVERY.md)。
+
 `npm run test:g7` 检查正式 Canvas 拖动的确认/取消、长按力度与水体手势聚合，以及异步保存不清除新编辑、读档固定槽位/保留等待期间的新操作、拒绝神力不消耗玩家工具随机流。它执行正式监听器和 QoL 控制器，加入 Fast；真实菜单、身份、宗门援助与双 renderer 连贯试玩另留浏览器证据。
 
 `npm run test:p0` 复用 P0 的输入/三界、有限水体/洪水归属、真实神力结果与有界三维表现 CPU 检查，加入 Fast。它不替代实际 GPU 试玩或性能对照；已有 P0 场景和硬件边界见 [P0 交付](../docs/development/P0_THREE_PLAYER_EXPERIENCE_DELIVERY.md)。

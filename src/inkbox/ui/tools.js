@@ -4,6 +4,8 @@
 // apply(ctx) 调用。这样新增一个神力只需要在这里加一条。
 
 import { SPECIES, TERRAIN } from '../core/config.js';
+import { requestWanling, removeWanling } from '../sim/wanling.js';
+import { WANLING_BY_KEY } from '../core/wanlingCatalog.js';
 import { OVER } from '../world/terrain.js';
 import * as P from '../sim/powers.js';
 import * as D from '../sim/divine.js';
@@ -238,9 +240,10 @@ export const TOOLS = Object.freeze([
     mode: 'click', playerHidden: true,
     apply: (c) => D.grantRoot(c.world, c.x, c.y, c.radius, c.rng, c.targetEntityId),
   }),
-  T('beast', '灵兽', '🐾', 'life', '放出灵兽，它们会猎食凡人', {
+  T('beast', '万灵', '🐾', 'life', '在此符匣选择类别与形态，再单击凡界合法栖地投放', {
     mode: 'click', species: SPECIES.BEAST, count: 6,
-    apply: (c) => P.paintLife(c.life, c.x, c.y, c.radius, SPECIES.BEAST, 6),
+    apply: (c) => { const form=c.wanlingForm||'dangkang',r=requestWanling(c.world,form,c.x,c.y);
+      return r.ok?`${WANLING_BY_KEY.get(form).name}已入世 · 真实 ID ${r.unit.id}`:`未投放 · ${r.reason}`; },
   }),
   T('spirit', '山精', '🌫', 'life', '点化山精，游荡于林泉之间', {
     mode: 'click', species: SPECIES.SPIRIT, count: 4,
@@ -248,7 +251,8 @@ export const TOOLS = Object.freeze([
   }),
   T('erase', '抹除', '⌫', 'life', '范围内生灵消散，村落会因此荒废', {
     mode: 'click',
-    apply: (c) => P.eraseLife(c.world, c.x, c.y, c.radius),
+    apply: (c) => { P.eraseLife(c.world,c.x,c.y,c.radius);
+      for(const u of [...(c.world.wanling?.units||[])]) if(Math.hypot(u.x-c.x,u.y-c.y)<=c.radius) removeWanling(c.world,u.id); },
   }),
 
   // ── 仙道 ──────────────────────────────────────────────

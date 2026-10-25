@@ -33,6 +33,9 @@ import { settlementRuinForMarker } from '../world/settlementIdentity.js';
 import { settlementInspectCard } from './settlementInspector.js';
 import { liveSettlementHouseType } from '../world/settlementState.js';
 import { personLifeRows } from './personLifeFacts.js';
+import { wanlingById } from '../world/wanlingState.js';
+import { wanlingInspectCard } from './wanlingFacts.js';
+import { readBiyiPairs } from '../world/wanlingRelations.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
 export const REALM_INSPECT_RADIUS = 4;
@@ -125,6 +128,12 @@ export function resolvePlaneSubject(world, plane, ref) {
   if (ref.kind === 'entity') {
     if (ref.entityId == null) return null;
     const container = ref.entityContainer || 'entities';
+    if (container === 'wanling' || container === 'biyi') {
+      if(plane !== 'mortal') return null;
+      const subject=container==='wanling'?wanlingById(world,ref.entityId):readBiyiPairs(world).find(p=>p.id===ref.entityId);
+      return subject && (subject.hp===undefined || subject.hp>0)
+        ? {kind:container,plane,x:subject.x,y:subject.y,subject,world,container}:null;
+    }
     if (!['entities', 'wraiths'].includes(container) || (container === 'wraiths' && plane !== 'mortal')) return null;
     const subject = world[container]?.find(e => e && e.id === ref.entityId);
     if (!subject || !Number.isFinite(subject.x) || !Number.isFinite(subject.y)) return null;
@@ -154,6 +163,11 @@ export function resolvePlaneSubject(world, plane, ref) {
 /** Exact 3D inspection stays read-only, including mortal house and aggregate cards. */
 export function planeSubjectInspectRows(picked, ctx = {}) {
   if (!picked) return null;
+  if(picked.kind==='wanling') return wanlingInspectCard(picked.world,picked.subject);
+  if(picked.kind==='biyi') return {head:'比翼鸟 · 道侣派生',rows:[['性质','只读双鸟现象，并非独立生灵'],
+    ['道侣',picked.subject.partners.map(id=>picked.world.entities.find(e=>e.id===id)?.name||id).join('、')],
+    ['条件','双方存活、互为道侣，且相距不超过3格；分离即消失']]};
+  if(picked.subject?.sp==='beast' && picked.subject.form) return wanlingInspectCard(picked.world,picked.subject);
   if (picked.kind === 'settlement' || picked.kind === 'settlement-ruin')
     return settlementInspectCard(picked.world, picked.subject, picked.kind === 'settlement-ruin');
   if (picked.kind === 'house') {

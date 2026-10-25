@@ -1,0 +1,755 @@
+{
+  "baseline": "d4faed33509cebc9bdad17384a73c7d0d758f743",
+  "captureSource": "b8fdbece82a48d0cfeaece511e024afb1ec059a4",
+  "dirty": true,
+  "sourceNote": "Runtime source committed at capture; dirty files are delivery documentation and the supplemental browser probe.",
+  "started": "2026-10-25T12:29:48.096Z",
+  "finished": "2026-10-25T12:30:29.980Z",
+  "fixture": {
+    "kind": "controlledfixture",
+    "natural": false,
+    "seed": 20261025,
+    "map": {
+      "w": 200,
+      "h": 128
+    },
+    "initialPeople": 77,
+    "villages": 2
+  },
+  "environment": {
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+    "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "glError": 0,
+    "dpr": 1,
+    "viewport": [
+      1280,
+      720
+    ],
+    "map": [
+      200,
+      128
+    ]
+  },
+  "pass": true,
+  "checks": [
+    {
+      "name": "normal product boots",
+      "pass": true
+    },
+    {
+      "name": "catalog has 13 assets and 5 ecology entries",
+      "pass": true
+    },
+    {
+      "name": "native production save import",
+      "pass": true
+    },
+    {
+      "name": "biyi comes from a real living lover pair",
+      "pass": true
+    },
+    {
+      "name": "native tool selection dangkang",
+      "pass": true
+    },
+    {
+      "name": "native placement dangkang",
+      "pass": true
+    },
+    {
+      "name": "native tool selection tiangou",
+      "pass": true
+    },
+    {
+      "name": "native placement tiangou",
+      "pass": true
+    },
+    {
+      "name": "native tool selection lushu",
+      "pass": true
+    },
+    {
+      "name": "native placement lushu",
+      "pass": true
+    },
+    {
+      "name": "native tool selection xuangui",
+      "pass": true
+    },
+    {
+      "name": "native placement xuangui",
+      "pass": true
+    },
+    {
+      "name": "native tool selection chiru",
+      "pass": true
+    },
+    {
+      "name": "native placement chiru",
+      "pass": true
+    },
+    {
+      "name": "native tool selection jingwei",
+      "pass": true
+    },
+    {
+      "name": "native placement jingwei",
+      "pass": true
+    },
+    {
+      "name": "native tool selection jiuweihu",
+      "pass": true
+    },
+    {
+      "name": "native placement jiuweihu",
+      "pass": true
+    },
+    {
+      "name": "native tool selection zheng",
+      "pass": true
+    },
+    {
+      "name": "native placement zheng",
+      "pass": true
+    },
+    {
+      "name": "native tool selection dijiang",
+      "pass": true
+    },
+    {
+      "name": "native placement dijiang",
+      "pass": true
+    },
+    {
+      "name": "native tool selection qiongqi",
+      "pass": true
+    },
+    {
+      "name": "native placement qiongqi",
+      "pass": true
+    },
+    {
+      "name": "native tool selection fei",
+      "pass": true
+    },
+    {
+      "name": "native placement fei",
+      "pass": true
+    },
+    {
+      "name": "native tool selection kaiming",
+      "pass": true
+    },
+    {
+      "name": "native placement kaiming",
+      "pass": true
+    },
+    {
+      "name": "native tool selection deer",
+      "pass": true
+    },
+    {
+      "name": "native placement deer",
+      "pass": true
+    },
+    {
+      "name": "native tool selection wolf",
+      "pass": true
+    },
+    {
+      "name": "native placement wolf",
+      "pass": true
+    },
+    {
+      "name": "native tool selection wood",
+      "pass": true
+    },
+    {
+      "name": "native placement wood",
+      "pass": true
+    },
+    {
+      "name": "native tool selection water",
+      "pass": true
+    },
+    {
+      "name": "native placement water",
+      "pass": true
+    },
+    {
+      "name": "native tool selection stone",
+      "pass": true
+    },
+    {
+      "name": "native placement stone",
+      "pass": true
+    },
+    {
+      "name": "17 forms use ecology capacity without consuming people",
+      "pass": true
+    },
+    {
+      "name": "dangkang reaches the real village yield input",
+      "pass": true
+    },
+    {
+      "name": "native withdrawal immediately removes harvest influence",
+      "pass": true
+    },
+    {
+      "name": "native tool selection dangkang",
+      "pass": true
+    },
+    {
+      "name": "native placement dangkang",
+      "pass": true
+    },
+    {
+      "name": "one real model preview loads on demand",
+      "pass": true
+    },
+    {
+      "name": "Three enters same product world",
+      "pass": true
+    },
+    {
+      "name": "all 13 encountered creature models load",
+      "pass": true
+    },
+    {
+      "name": "renderer switch has no simulation side effect",
+      "pass": true
+    },
+    {
+      "name": "real Three instance carries exact spirit identity",
+      "pass": true
+    },
+    {
+      "name": "native Three inspect resolves the actual spirit",
+      "pass": true
+    },
+    {
+      "name": "real predator reduces aggregate deer quantity",
+      "pass": true
+    },
+    {
+      "name": "first predation has a visible causal event",
+      "pass": true
+    },
+    {
+      "name": "real dao goals exist without creating people",
+      "pass": true
+    },
+    {
+      "name": "native compressed save finishes",
+      "pass": true
+    },
+    {
+      "name": "native compressed load finishes",
+      "pass": true
+    },
+    {
+      "name": "species groups anchors and dao cooldowns survive reload",
+      "pass": true
+    },
+    {
+      "name": "native Three interventions change actual terrain",
+      "pass": true
+    },
+    {
+      "name": "terrain spirit wood reacts",
+      "pass": true
+    },
+    {
+      "name": "terrain spirit water reacts",
+      "pass": true
+    },
+    {
+      "name": "terrain spirit stone reacts",
+      "pass": true
+    },
+    {
+      "name": "terrain loss has visible spirit events",
+      "pass": true
+    },
+    {
+      "name": "native tool selection dangkang",
+      "pass": true
+    },
+    {
+      "name": "native placement dangkang",
+      "pass": true
+    },
+    {
+      "name": "native Three thunder destroys an actual new unit",
+      "pass": true
+    },
+    {
+      "name": "Canvas returns without changing facts",
+      "pass": true
+    },
+    {
+      "name": "no browser or GPU errors",
+      "pass": true
+    }
+  ],
+  "stateEvidence": [
+    {
+      "name": "real predator reduces aggregate deer quantity",
+      "pass": true,
+      "evidence": {
+        "before": {
+          "id": -13,
+          "sp": "beast",
+          "form": "deer",
+          "name": "鹿群",
+          "x": 36.5,
+          "y": 35.5,
+          "tx": 36.5,
+          "ty": 35.5,
+          "hp": 22,
+          "maxHp": 22,
+          "count": 9,
+          "state": "settled",
+          "bornDay": 0,
+          "lastActDay": 0
+        },
+        "after": {
+          "id": -13,
+          "sp": "beast",
+          "form": "deer",
+          "name": "鹿群",
+          "x": 36.533,
+          "y": 35.456,
+          "tx": 39.5,
+          "ty": 31.5,
+          "hp": 22,
+          "maxHp": 22,
+          "count": 8,
+          "state": "flee",
+          "bornDay": 0,
+          "lastActDay": 30,
+          "lastEventDay": 30
+        },
+        "wolf": {
+          "id": -14,
+          "sp": "beast",
+          "form": "wolf",
+          "name": "狼群",
+          "x": 36.5,
+          "y": 35.5,
+          "tx": 36.5,
+          "ty": 35.5,
+          "hp": 32,
+          "maxHp": 32,
+          "count": 6,
+          "state": "hunting",
+          "bornDay": 0,
+          "lastActDay": 30,
+          "lastEventDay": 30
+        }
+      }
+    },
+    {
+      "name": "first predation has a visible causal event",
+      "pass": true,
+      "evidence": [
+        {
+          "day": 0,
+          "id": -13,
+          "form": "deer",
+          "x": 36.5,
+          "y": 35.5,
+          "text": "鹿群在（36,35）现身。"
+        },
+        {
+          "day": 30,
+          "id": -13,
+          "form": "deer",
+          "x": 36.5,
+          "y": 35.5,
+          "text": "鹿群遭狼捕食，数量9→8。"
+        }
+      ]
+    },
+    {
+      "name": "native Three interventions change actual terrain",
+      "pass": true,
+      "evidence": {
+        "fire": 0.7471480965614319,
+        "water": 0.002127293962985277,
+        "height": 0.5003882050514221
+      }
+    },
+    {
+      "name": "terrain spirit wood reacts",
+      "pass": true,
+      "evidence": {
+        "before": {
+          "id": -15,
+          "sp": "spirit",
+          "form": "wood",
+          "name": "木魅",
+          "x": 30.5,
+          "y": 29.5,
+          "tx": 30.5,
+          "ty": 29.5,
+          "hp": 26,
+          "maxHp": 26,
+          "count": 1,
+          "state": "settled",
+          "bornDay": 0,
+          "lastActDay": 0
+        },
+        "after": {
+          "id": -15,
+          "sp": "spirit",
+          "form": "wood",
+          "name": "木魅",
+          "x": 30.493178089597592,
+          "y": 29.55457528321925,
+          "tx": 29.5,
+          "ty": 37.5,
+          "hp": 26,
+          "maxHp": 26,
+          "count": 1,
+          "state": "migrating",
+          "bornDay": 0,
+          "lastActDay": 30,
+          "lastEventDay": 60
+        }
+      }
+    },
+    {
+      "name": "terrain spirit water reacts",
+      "pass": true,
+      "evidence": {
+        "before": {
+          "id": -16,
+          "sp": "spirit",
+          "form": "water",
+          "name": "水精",
+          "x": 100.5,
+          "y": 63.5,
+          "tx": 100.5,
+          "ty": 63.5,
+          "hp": 26,
+          "maxHp": 26,
+          "count": 1,
+          "state": "settled",
+          "bornDay": 0,
+          "lastActDay": 0
+        },
+        "after": {
+          "id": -16,
+          "sp": "spirit",
+          "form": "water",
+          "name": "水精",
+          "x": 100.55457528321925,
+          "y": 63.49317808959759,
+          "tx": 108.5,
+          "ty": 62.5,
+          "hp": 26,
+          "maxHp": 26,
+          "count": 1,
+          "state": "migrating",
+          "bornDay": 0,
+          "lastActDay": 30,
+          "lastEventDay": 60
+        }
+      }
+    },
+    {
+      "name": "terrain spirit stone reacts",
+      "pass": true,
+      "evidence": {
+        "before": {
+          "id": -17,
+          "sp": "spirit",
+          "form": "stone",
+          "name": "石灵",
+          "x": 148.5,
+          "y": 29.5,
+          "tx": 148.5,
+          "ty": 29.5,
+          "hp": 32,
+          "maxHp": 32,
+          "count": 1,
+          "state": "settled",
+          "bornDay": 0,
+          "lastActDay": 0
+        },
+        "after": {
+          "id": -17,
+          "sp": "spirit",
+          "form": "stone",
+          "name": "石灵",
+          "x": 148.4694914892076,
+          "y": 29.45423723381142,
+          "tx": 146.5,
+          "ty": 26.5,
+          "hp": 32,
+          "maxHp": 32,
+          "count": 1,
+          "state": "migrating",
+          "bornDay": 0,
+          "lastActDay": 30,
+          "lastEventDay": 60
+        }
+      }
+    },
+    {
+      "name": "terrain loss has visible spirit events",
+      "pass": true,
+      "evidence": [
+        {
+          "day": 0,
+          "id": -15,
+          "form": "wood",
+          "x": 30.5,
+          "y": 29.5,
+          "text": "木魅在（30,29）现身。"
+        },
+        {
+          "day": 0,
+          "id": -16,
+          "form": "water",
+          "x": 100.5,
+          "y": 63.5,
+          "text": "水精在（100,63）现身。"
+        },
+        {
+          "day": 0,
+          "id": -17,
+          "form": "stone",
+          "x": 148.5,
+          "y": 29.5,
+          "text": "石灵在（148,29）现身。"
+        },
+        {
+          "day": 60,
+          "id": -15,
+          "form": "wood",
+          "x": 30.5,
+          "y": 29.5,
+          "text": "木魅失去旧栖地，迁往附近。"
+        },
+        {
+          "day": 60,
+          "id": -16,
+          "form": "water",
+          "x": 100.5,
+          "y": 63.5,
+          "text": "水精失去旧栖地，迁往附近。"
+        },
+        {
+          "day": 60,
+          "id": -17,
+          "form": "stone",
+          "x": 148.5,
+          "y": 29.5,
+          "text": "石灵失去旧栖地，迁往附近。"
+        }
+      ]
+    },
+    {
+      "name": "native Three thunder destroys an actual new unit",
+      "pass": true,
+      "evidence": {
+        "target": {
+          "id": -19,
+          "sp": "beast",
+          "form": "dangkang",
+          "name": "当康",
+          "x": 185.5,
+          "y": 115.5,
+          "tx": 185.5,
+          "ty": 115.5,
+          "hp": 50,
+          "maxHp": 50,
+          "count": 1,
+          "state": "settled",
+          "bornDay": 60,
+          "lastActDay": 60
+        },
+        "events": [
+          {
+            "day": 60,
+            "id": -19,
+            "form": "dangkang",
+            "x": 185.5,
+            "y": 115.5,
+            "text": "当康在（185,115）现身。"
+          },
+          {
+            "day": 60,
+            "id": -19,
+            "form": "dangkang",
+            "x": 185.5,
+            "y": 115.5,
+            "text": "【雷击】当康受灾：已消散。"
+          }
+        ]
+      }
+    }
+  ],
+  "final": {
+    "day": 60,
+    "people": 85,
+    "units": 17,
+    "daoActions": 11,
+    "jobs": [
+      {
+        "path": "sword",
+        "stage": "done",
+        "summary": "与方东微具名切磋，沿正式战斗路径轻触即止"
+      },
+      {
+        "path": "body",
+        "stage": "done",
+        "summary": "近身驱逐wolf，其已受惊迁离"
+      },
+      {
+        "path": "alchemy",
+        "stage": "done",
+        "summary": "以灵丹术为纪眠宵疗伤，恢复10.5气血"
+      },
+      {
+        "path": "talisman",
+        "stage": "done",
+        "summary": "在临驿留下护村符，效力至第216日"
+      },
+      {
+        "path": "formation",
+        "stage": "done",
+        "summary": "巡检并稳固传送阵阵眼，为附近村落护持阵法"
+      },
+      {
+        "path": "artifact",
+        "stage": "done",
+        "summary": "以灵力收取遗物「普通灵品饰」，履历记为拾得"
+      },
+      {
+        "path": "sound",
+        "stage": "done",
+        "summary": "以音律安抚qiongqi，平息九十日"
+      },
+      {
+        "path": "spirit",
+        "stage": "done",
+        "summary": "与tiangou结缘，留下可查的关系记录"
+      },
+      {
+        "path": "blood",
+        "stage": "done",
+        "summary": "袭扰临驿，掠去一份粮食并增业；留下可追索的血债"
+      },
+      {
+        "path": "corpse",
+        "stage": "done",
+        "summary": "调查旧阵遗迹的亡者遗痕，未造魂傀"
+      },
+      {
+        "path": "sword",
+        "stage": "done",
+        "summary": "与云寒庚具名切磋，沿正式战斗路径轻触即止"
+      },
+      {
+        "path": "soul",
+        "stage": "travel",
+        "summary": "前往河外孤魂"
+      }
+    ]
+  },
+  "errors": {
+    "js": [],
+    "console": []
+  },
+  "cleanup": {
+    "removed": true,
+    "attempts": 1,
+    "processesExited": true,
+    "complete": true,
+    "processEvidence": {
+      "supported": true,
+      "frozen": 10,
+      "remaining": 0,
+      "discoveryError": null,
+      "termination": {
+        "errors": [],
+        "attempted": 0
+      }
+    }
+  },
+  "earlierAttempts": [
+    {
+      "directory": "2026-10-25T07-18-13.763Z",
+      "pass": false,
+      "checks": 27,
+      "failure": "Error: 页面内脚本抛错: Error: Occluded [data-wanling-id=\"-2\"] by <body class=\"r1-scroll-ui\" data-r1-arts=\"closed\" data-r1-mode=\"3d\" data-r1-realm=\"mortal\">",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T07-21-31.834Z",
+      "pass": false,
+      "checks": 32,
+      "failure": "Error: 页面内脚本抛错: Error: Missing option",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T07-24-30.798Z",
+      "pass": false,
+      "checks": 29,
+      "failure": "Error: 页面内脚本抛错: TypeError: Cannot read properties of undefined (reading 'traverse')",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T07-26-53.005Z",
+      "pass": false,
+      "checks": 30,
+      "failure": "Error: real Three instance carries exact spirit identity",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T07-29-45.124Z",
+      "pass": false,
+      "checks": 30,
+      "failure": "Error: real Three instance carries exact spirit identity",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T07-37-02.187Z",
+      "pass": false,
+      "checks": 37,
+      "failure": "Error: native Three interventions change actual terrain",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T11-54-57.010Z",
+      "pass": false,
+      "checks": 1,
+      "failure": "Error: normal product boots",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T11-56-25.704Z",
+      "pass": false,
+      "checks": 37,
+      "failure": "Error: native Three interventions change actual terrain",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T11-58-09.411Z",
+      "pass": false,
+      "checks": 7,
+      "failure": "Error: native placement lushu",
+      "cleanup": true
+    },
+    {
+      "directory": "2026-10-25T11-59-25.338Z",
+      "pass": true,
+      "checks": 60,
+      "cleanup": true
+    }
+  ]
+}
