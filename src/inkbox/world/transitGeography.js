@@ -287,7 +287,9 @@ function planWater(world, from, to, a, b, topology, state) {
   const legs = [];
   if (best.p.path.length > 1) legs.push({ mode: 'land', points: pointsFor(world, best.p.path) });
   legs.push({ mode: 'water', points: pointsFor(world, best.sea) });
-  if (best.q.path.length > 1) legs.push({ mode: 'land', points: pointsFor(world, best.q.path.slice().reverse()) });
+  // Always end at the requested safe land destination. It may itself be the port tile,
+  // in which case this is a valid one-point landfall leg rather than a water endpoint.
+  legs.push({ mode: 'land', points: pointsFor(world, best.q.path.slice().reverse()) });
   return routeResult('water', legs, best.cost - 2, {
     fromPort: fromWater >= 0 ? null : { x: best.p.land % world.w, y: Math.floor(best.p.land / world.w) },
     toPort: { x: best.q.land % world.w, y: Math.floor(best.q.land / world.w) },

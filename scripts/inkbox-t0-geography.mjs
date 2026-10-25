@@ -21,6 +21,11 @@ assert.equal(planTransitRoute(world, left, right).reason, 'no_land_connection', 
 const crossing = planTransitRoute(world, left, right, { mode: 'water' });
 assert.equal(crossing.ok, true, 'large permanent water supports ports and crossing');
 assert(crossing.legs.some(leg => leg.mode === 'land') && crossing.legs.some(leg => leg.mode === 'water'));
+const coastTarget = { x: 22, y: 12 };
+const coastRoute = planTransitRoute(world, left, coastTarget, { mode: 'water' });
+const coastFinalLeg = coastRoute.legs.at(-1);
+assert.equal(coastFinalLeg.mode, 'land', 'water route always includes a landfall leg');
+assert.deepEqual(coastFinalLeg.points.at(-1), coastTarget, 'single-cell shore destination is the route endpoint');
 const builds = transitGeographyStats(world).builds;
 planTransitRoute(world, left, right, { mode: 'water' });
 assert.equal(transitGeographyStats(world).builds, builds, 'cached topology reused');

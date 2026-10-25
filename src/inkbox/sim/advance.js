@@ -44,6 +44,7 @@ import { stepRifts, RIFT_PERIOD_DAYS } from './rifts.js';
 import { stepMortalWraiths, WRAITH_PERIOD_DAYS } from './wraiths.js';
 import { settleNature } from './nature.js';
 import { updateMapProgress } from '../world/mapProgress.js';
+import { stepTransit } from './transit.js';
 
 /**
  * 各低频时钟的节拍（游戏日）。
@@ -101,7 +102,7 @@ export function advanceWorld(world, days, deps = {}) {
   // 判定前各有一次结算机会。正常帧的小步路径保持原有调用次序。
   if (days > 30) {
     const total = { upper: false, nether: false, rift: false, wraith: false,
-      nature: false, mapProgress: false };
+      nature: false, mapProgress: false, transit: false };
     let remaining = days;
     while (remaining > 1e-8) {
       const phase = ((world.day % 30) + 30) % 30;
@@ -221,6 +222,10 @@ export function advanceWorld(world, days, deps = {}) {
   // Life reads fire overlap against the just-completed interval. Expire after
   // life.step so a step crossing dueDay cannot apply full-interval fire damage.
   fired.nature = settleNature(world) > 0;
+
+  // Transit consumes the same absolute game-day clock after life/deaths and
+  // terrain expiry. Arrival cannot then receive a second ground-AI move.
+  fired.transit = !!stepTransit(world)?.changed;
 
   // Access grows only after the simulation succeeds, independently of all streams.
   fired.mapProgress = updateMapProgress(world);

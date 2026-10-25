@@ -27,6 +27,7 @@ import { APP, NEVER_DECAY_DAY, WORLD_PRESETS } from '../core/config.js';
 import { World } from '../world/World.js';
 import { readObserveEcho, restoreObserveEcho } from '../sim/observeEcho.js';
 import { snapshotNature, restoreNature } from '../sim/nature.js';
+import { snapshotTransit, restoreTransitSnapshot } from '../world/transitState.js';
 import { OVER, recomputeAll, recomputeQi } from '../world/terrain.js';
 import { DAO_PATHS, TRIBULATION_OMENS } from '../core/cultivation.js';
 import { MANUALS, NETHER_TECHNIQUES } from '../core/lore.js';
@@ -280,6 +281,8 @@ function base64ToBytes(text) {
 export function serializeWorld(world, meta = {}) {
   return {
     v: SAVE_VERSION,
+    // Independent optional v1 block; old v11 rows and realm payloads stay intact.
+    ...(world.plane === 'mortal' && world.transit ? { transit: snapshotTransit(world) } : {}),
     app: APP.version,
     w: world.w,
     h: world.h,
@@ -1472,6 +1475,10 @@ function restoreWorldState(world, data, recomputeQiLayer = recomputeQi) {
   // （上面 `recomputeAll` 已经顺带算过一遍灵气；这里再算一遍是**幂等**的——
   //   凡间两遍结果相同，上界则靠传进来的 `recomputeUpperQi` 把公式换掉。）
   recomputeQiLayer(world);
+  if (world.plane === 'mortal' && data.transit !== undefined) {
+    const transit = restoreTransitSnapshot(data.transit, world);
+    if (transit) world.transit = transit;
+  }
   world.touch();
 }
 
