@@ -5,6 +5,7 @@ import { TOOL_BY_ID } from '../src/inkbox/ui/tools.js';
 import { createWanlingScene } from './fixtures/wanling-scene.mjs';
 import { removeWanling } from '../src/inkbox/sim/wanling.js';
 import { serializeWorld } from '../src/inkbox/io/save.js';
+import { Render3DAdapter } from '../src/inkbox/render3d/Render3DAdapter.js';
 
 const {world}=createWanlingScene();
 const sandbox={world,toolId:'inspect',selectTool(id){this.toolId=id;},
@@ -41,3 +42,21 @@ assert.equal(world.wanling.units.length,before);
 const first=world.wanling.units.find(u=>u.form==='deer');removeWanling(world,first.id);
 assert(!world.wanling.units.some(u=>u.id===first.id));
 console.log('WT-I1 selection: all 17 catalog-driven real species, shared transient choice, derived refusal, failures and removal passed');
+{
+  const previous=globalThis.document,shared={disabled:false,closest:s=>s==='#inkWanlingQuick'?{}:null},native={disabled:false,closest:()=>null};
+  const rail={style:{}},toggle={},elements=new Map();
+  globalThis.document={querySelector:()=>rail,getElementById:id=>{if(!elements.has(id))elements.set(id,{style:{}});return elements.get(id);}};
+  const calls=[],adapter=Object.create(Render3DAdapter.prototype);
+  Object.assign(adapter,{active:true,cancelStroke(){},clearCameraKeys(){},invalidateHover(){},clearHistory(){},setTool(id){calls.push(id);},
+    canvas:{},readout:{},panel:{querySelector:()=>toggle,querySelectorAll:()=>[shared,native]},
+    sandbox:{toolId:'beast',canvas:{style:{}},pointer:{},qol:{syncWorldInfo(){}}}});
+  try {
+    adapter.setActive(false);
+    assert.equal(native.disabled,true,'inactive Three controls are disabled');
+    assert.equal(shared.disabled,false,'selector moved back to Canvas remains operable');
+    adapter.setActive(true);
+    assert.equal(native.disabled,false);
+    assert.equal(calls.at(-1),'beast','entering Three adopts the existing formal tool intent');
+  } finally {globalThis.document=previous;}
+  console.log('WT-I1 selection: renderer activation preserves formal intent and never disables shared selectors');
+}

@@ -398,12 +398,14 @@ export class Render3DAdapter {
   }
   setActive(active) {
     this.cancelStroke(); if(!active)this.clearCameraKeys(); this.invalidateHover(active ? '3d-enter' : '3d-exit'); if(this.active&&!active)this.clearHistory('切回 Canvas 已清除沙盘编辑会话');this.active = active; this.lastNow = null;
+    if (active && TOOL_BY_ID[this.sandbox.toolId]) this.setTool(this.sandbox.toolId);
     this.canvas.hidden = !active; this.readout.hidden = !active;
     if (!active && this.powerTarget) this.powerTarget.hidden = true;
     if (this.artDebug) this.artDebug.element.hidden = !active;
     this.sandbox.canvas.style.visibility = active ? 'hidden' : '';
     this.panel.querySelector('[data-action="toggle"]').textContent = active ? '切回 Canvas' : '进入 3D';
-    for (const element of this.panel.querySelectorAll('select,input,button:not([data-action="toggle"])')) element.disabled = !active;
+    for (const element of this.panel.querySelectorAll('select,input,button:not([data-action="toggle"])'))
+      if (!element.closest('#inkWanlingQuick')) element.disabled = !active;
     document.querySelector('.rail.left').inert = active;
     document.querySelector('.rail.left').style.opacity = active ? '0.5' : '';
     for (const id of ['inkBrushRange', 'inkBtnRelief', 'inkBtnGrid']) document.getElementById(id).disabled = active;

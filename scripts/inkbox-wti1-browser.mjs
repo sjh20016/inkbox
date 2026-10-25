@@ -19,7 +19,7 @@ const report={url,started:new Date().toISOString(),source:execFileSync('git',['r
 let b;const js=body=>b.js(`return(async()=>{${body}})();`,{timeoutMs:45000});
 function check(name,condition,evidence){report.checks.push({name,pass:!!condition,evidence});if(!condition)throw Error(name);}
 async function click(selector){const p=await js(`const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.getClientRects().length);if(!e)throw Error('No visible '+${JSON.stringify(selector)});e.scrollIntoView({block:'center',behavior:'instant'});await new Promise(r=>setTimeout(r,110));const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,h=document.elementFromPoint(x,y);if(h!==e&&!e.contains(h))throw Error('Occluded '+${JSON.stringify(selector)}+' by '+h?.outerHTML.slice(0,140));return{x,y};`);await b.click(p.x,p.y);report.actions.push({selector,...p});}
-async function value(selector,v,event='change'){await js(`const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing input');e.value=${JSON.stringify(String(v))};if(e.value!==${JSON.stringify(String(v))})throw Error('No option');e.dispatchEvent(new Event(${JSON.stringify(event)},{bubbles:true}));return true;`);}
+async function value(selector,v,event='change'){await js(`const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing input');if(e.disabled)throw Error('Disabled input');e.value=${JSON.stringify(String(v))};if(e.value!==${JSON.stringify(String(v))})throw Error('No option');e.dispatchEvent(new Event(${JSON.stringify(event)},{bubbles:true}));return true;`);}
 async function shot(name){report.screenshots.push(await b.screenshot(path.join(out,`${name}.png`)));}
 async function confirm(){if(await js('return inkbox.qol.confirmOpen();'))await click('#inkConfirmOk');}
 async function advance(days){await js(`for(let n=0;n<${days};n++)inkbox.advanceDays(1);inkbox.updateHud();inkbox.transitPanel.refresh(true);inkbox.wanlingCodex.refresh(true);await new Promise(requestAnimationFrame);return true;`);}
@@ -52,10 +52,12 @@ try {
   await group();await shot('01-left-native-multiform');await click('#inkWanlingReady');
   const beforeThree=await facts();await click('#r1CanvasView button[title="进入立体沙盘，保留当前世界"]');check('Three enters',await b.waitFor('return inkbox.render3d?.active;',{timeoutMs:45000}));
   check('renderer switch preserves choice and all ecology',JSON.stringify((await facts()).wanling)===JSON.stringify(beforeThree.wanling)&&(await facts()).choice==='tiangou');
+  check('first Three entry uses the actual selected tool intent',await js('return inkbox.render3d.mode===inkbox.toolId&&inkbox.toolId==="beast";'));
   await put('lushu',land.x+18,land.y);check('Three loads the different real models',await b.waitFor('return ["dangkang","tiangou","lushu"].every(k=>inkbox.render3d.renderer.creatureLibrary.ids.includes(k));',{timeoutMs:45000}));
   await rightOpen();await value('#inkWanlingForm','xuangui');check('codex and left choice synchronize without spawning',(await facts()).choice==='xuangui'&&(await facts()).units.length===beforeThree.units.length+1);await click('#inkWanlingPlace');check('codex prepares the same left tool',await js('return inkbox.toolId==="beast"&&document.querySelector("#inkWanlingQuickForm").value==="xuangui";'));
   await click('#inkWanlingReady');
   await click('#inkRender3DTools [data-action="toggle"]');check('Canvas returns without defaulting to Dang Kang',(await facts()).choice==='xuangui'&&!(await facts()).three);
+  check('returned Canvas selector is truly enabled',await js('return !document.querySelector("#inkWanlingQuickForm").disabled&&!document.querySelector("#inkWanlingCategory").disabled;'));
   await choose('water');await click('#inkWanlingReady');const count=(await facts()).units.length;await mapClick(land.x,land.y);check('illegal habitat gives real failure without a phantom',(await facts()).units.length===count&&await js('return inkbox.toast.includes("栖地不符");'));
   for(const [width,height]of [[1280,720],[1024,720]]) {
     await b.cdp.send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});

@@ -206,6 +206,7 @@ export function bindSecretScrollUi(sandbox, doc = document, win = window) {
   move($('inkWanling'), volumes.get('yi'));
   move($('inkTransitPanel'), volumes.get('yi'));
   if ($('inkObserveEcho')) volumes.get('yi').prepend($('inkObserveEcho'));
+  if ($('inkTransitPanel')) volumes.get('yi').prepend($('inkTransitPanel'));
   if ($('inkWanling')) volumes.get('yi').prepend($('inkWanling'));
   right.prepend(summary); move(doc.querySelector('.p1-observe-nav'), right); right.insertBefore(doc.querySelector('.p1-observe-nav'), shelfHead);
   const collapse = $('inkBtnCollapseAll'); if (collapse) { move(collapse, settings); }
