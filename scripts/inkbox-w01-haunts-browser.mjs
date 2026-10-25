@@ -99,13 +99,23 @@ try {
 
   await click('#inkWanling summary');
   await click('#inkWanling .wanling-paths>summary');
-  await click(`[data-dao-actor="${buddha.id}"]`);
-  await browser.waitFor('return !!inkbox.g1.current();',{timeoutMs:5000});
-  await click('#inkPersonDetail button[data-tab="cultivation"]');
-  report.personUi = await js('const p=document.querySelector("#inkPersonDetail"),m=inkbox.g1.current();return{personOpenId:inkbox.personOpenId,current:m,cardText:p?.innerText||"",cardHtml:p?.innerHTML||"",cardClass:p?.className,display:p?getComputedStyle(p).display:"missing"};');
-  report.personCard = report.personUi.cardText;
-  check('actual path is visible in the formal person inspection card', report.personCard.includes('佛') || report.personCard.includes('渡')
-    || report.personCard.includes('佛修'), report.personUi);
+  const daoRowSelector = `[data-dao-actor="${buddha.id}"]`;
+  const daoRow = await js(`const e=document.querySelector(${JSON.stringify(daoRowSelector)});
+    if(!e)throw Error('Missing exact Buddha dao row');e.scrollIntoView({block:'center',behavior:'instant'});
+    for(let n=e.parentElement;n;n=n.parentElement){if(n.scrollHeight<=n.clientHeight)continue;const p=n.getBoundingClientRect(),r=e.getBoundingClientRect();
+      if(r.bottom>p.bottom-12)n.scrollTop+=r.bottom-p.bottom+24;else if(r.top<p.top+12)n.scrollTop-=p.top-r.top+24;}
+    e.scrollIntoView({block:'nearest',inline:'nearest'});await new Promise(r=>setTimeout(r,160));
+    e.focus({preventScroll:true});return{actorId:e.dataset.daoActor,text:e.innerText,focused:document.activeElement===e};`);
+  check('exact Buddhist row is focused for native selection', Number(daoRow.actorId)===buddha.id
+    && daoRow.focused && (daoRow.text.includes('佛') || daoRow.text.includes('渡')),
+    { row: daoRow, expectedActorId: buddha.id });
+  // Keep the two completed activity results visible together. Opening the modal
+  // character book would cover this evidence; its controls have their own G1 QA.
+  report.activityUi = await js(`const a=document.querySelector('[data-dao-actor="${buddha.id}"]'),b=document.querySelector('[data-dao-actor="${soul.id}"]');
+    a.scrollIntoView({block:'start',behavior:'instant'});return{buddha:{id:Number(a.dataset.daoActor),text:a.innerText},soul:{id:Number(b.dataset.daoActor),text:b.innerText}};`);
+  check('formal activity list shows both named cultivators and their completed consequences',
+    report.activityUi.buddha.id===buddha.id&&report.activityUi.buddha.text.includes('超度')
+      &&report.activityUi.soul.id===soul.id&&report.activityUi.soul.text.includes('净化'),report.activityUi);
   await screenshot('01-real-buddha-and-soul-paths');
   report.environment = await js(`const c=document.createElement('canvas'),gl=c.getContext('webgl2',{preserveDrawingBuffer:false})||c.getContext('webgl',{preserveDrawingBuffer:false});
     const ext=gl?.getExtension('WEBGL_debug_renderer_info'),gpu=ext&&gl?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):null,glError=gl?.getError()??null;
