@@ -1,0 +1,1621 @@
+{
+  "browser": {
+    "source": "8f567f829b7ecbbc9a30b697fcb6402dcd8fde56",
+    "dirty": true,
+    "environment": {
+      "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "glError": 0,
+      "viewport": [
+        1366,
+        768
+      ],
+      "dpr": 1
+    },
+    "pass": true,
+    "checks": [
+      {
+        "name": "ordinary product boots",
+        "pass": true
+      },
+      {
+        "name": "native ordinary creation uses worldgen",
+        "pass": true
+      },
+      {
+        "name": "ordinary world has legal grassland",
+        "pass": true,
+        "evidence": {
+          "x": 153,
+          "y": 122
+        }
+      },
+      {
+        "name": "shared left choice deer",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 564,
+            "y": 313.812890291214
+          },
+          "target": "inkCanvas"
+        }
+      },
+      {
+        "name": "one real placement deer",
+        "pass": true,
+        "evidence": {
+          "unit": {
+            "id": -1,
+            "sp": "beast",
+            "form": "deer",
+            "name": "鹿群",
+            "x": 153.5,
+            "y": 122.5,
+            "tx": 153.5,
+            "ty": 122.5,
+            "hp": 22,
+            "maxHp": 22,
+            "count": 9,
+            "state": "settled",
+            "bornDay": 1.5306,
+            "lastActDay": 1.5306
+          },
+          "toast": "鹿群已入世 · 真实 ID -1"
+        }
+      },
+      {
+        "name": "shared left choice wolf",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 564,
+            "y": 313.812890291214
+          },
+          "target": "inkCanvas"
+        }
+      },
+      {
+        "name": "one real placement wolf",
+        "pass": true,
+        "evidence": {
+          "unit": {
+            "id": -2,
+            "sp": "beast",
+            "form": "wolf",
+            "name": "狼群",
+            "x": 153.5,
+            "y": 122.5,
+            "tx": 153.5,
+            "ty": 122.5,
+            "hp": 32,
+            "maxHp": 32,
+            "count": 5,
+            "state": "settled",
+            "bornDay": 1.5306,
+            "lastActDay": 1.5306
+          },
+          "toast": "狼群已入世 · 真实 ID -2"
+        }
+      },
+      {
+        "name": "right codex never opened for first deer and wolf",
+        "pass": true
+      },
+      {
+        "name": "keyboard changes species without spawning",
+        "pass": true
+      },
+      {
+        "name": "Escape closes quick selection",
+        "pass": true
+      },
+      {
+        "name": "ordinary-world predation changes actual group count",
+        "pass": true,
+        "evidence": {
+          "before": {
+            "id": -1,
+            "sp": "beast",
+            "form": "deer",
+            "name": "鹿群",
+            "x": 153.5,
+            "y": 122.5,
+            "tx": 153.5,
+            "ty": 122.5,
+            "hp": 22,
+            "maxHp": 22,
+            "count": 9,
+            "state": "settled",
+            "bornDay": 1.5306,
+            "lastActDay": 1.5306
+          },
+          "after": {
+            "id": -1,
+            "sp": "beast",
+            "form": "deer",
+            "name": "鹿群",
+            "x": 153.39564483721443,
+            "y": 122.53478505426185,
+            "tx": 147.5,
+            "ty": 124.5,
+            "hp": 22,
+            "maxHp": 22,
+            "count": 8,
+            "state": "flee",
+            "bornDay": 1.5306,
+            "lastActDay": 30,
+            "lastEventDay": 30
+          },
+          "wolf": {
+            "id": -2,
+            "sp": "beast",
+            "form": "wolf",
+            "name": "狼群",
+            "x": 153.5,
+            "y": 122.5,
+            "tx": 153.5,
+            "ty": 122.5,
+            "hp": 32,
+            "maxHp": 32,
+            "count": 5,
+            "state": "hunting",
+            "bornDay": 1.5306,
+            "lastActDay": 30
+          }
+        }
+      },
+      {
+        "name": "shared left choice dangkang",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 564,
+            "y": 323.0491180419922
+          },
+          "target": "inkCanvas"
+        }
+      },
+      {
+        "name": "one real placement dangkang",
+        "pass": true,
+        "evidence": {
+          "unit": {
+            "id": -3,
+            "sp": "beast",
+            "form": "dangkang",
+            "name": "当康",
+            "x": 159.5,
+            "y": 122.5,
+            "tx": 159.5,
+            "ty": 122.5,
+            "hp": 50,
+            "maxHp": 50,
+            "count": 1,
+            "state": "settled",
+            "bornDay": 31.5306,
+            "lastActDay": 31.5306
+          },
+          "toast": "当康已入世 · 真实 ID -3"
+        }
+      },
+      {
+        "name": "shared left choice tiangou",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 564,
+            "y": 322.44525492191315
+          },
+          "target": "inkCanvas"
+        }
+      },
+      {
+        "name": "one real placement tiangou",
+        "pass": true,
+        "evidence": {
+          "unit": {
+            "id": -4,
+            "sp": "beast",
+            "form": "tiangou",
+            "name": "天狗",
+            "x": 165.5,
+            "y": 122.5,
+            "tx": 165.5,
+            "ty": 122.5,
+            "hp": 80,
+            "maxHp": 80,
+            "count": 1,
+            "state": "settled",
+            "bornDay": 31.5306,
+            "lastActDay": 31.5306
+          },
+          "toast": "天狗已入世 · 真实 ID -4"
+        }
+      },
+      {
+        "name": "Three enters",
+        "pass": true
+      },
+      {
+        "name": "renderer switch preserves choice and all ecology",
+        "pass": true
+      },
+      {
+        "name": "first Three entry uses the actual selected tool intent",
+        "pass": true
+      },
+      {
+        "name": "shared left choice lushu",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 544.0859375000001,
+            "y": 367
+          },
+          "target": "inkCanvas3D"
+        }
+      },
+      {
+        "name": "one real placement lushu",
+        "pass": true,
+        "evidence": {
+          "unit": {
+            "id": -5,
+            "sp": "beast",
+            "form": "lushu",
+            "name": "鹿蜀",
+            "x": 171.5,
+            "y": 122.5,
+            "tx": 171.5,
+            "ty": 122.5,
+            "hp": 50,
+            "maxHp": 50,
+            "count": 1,
+            "state": "settled",
+            "bornDay": 31.5306,
+            "lastActDay": 31.5306
+          },
+          "toast": "鹿蜀已入世 · 真实 ID -5"
+        }
+      },
+      {
+        "name": "Three loads the different real models",
+        "pass": true
+      },
+      {
+        "name": "codex and left choice synchronize without spawning",
+        "pass": true
+      },
+      {
+        "name": "codex prepares the same left tool",
+        "pass": true
+      },
+      {
+        "name": "Canvas returns without defaulting to Dang Kang",
+        "pass": true
+      },
+      {
+        "name": "returned Canvas selector is truly enabled",
+        "pass": true
+      },
+      {
+        "name": "shared left choice water",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 564,
+            "y": 313.812890291214
+          },
+          "target": "inkCanvas"
+        }
+      },
+      {
+        "name": "illegal habitat gives real failure without a phantom",
+        "pass": true
+      },
+      {
+        "name": "shared left choice deer",
+        "pass": true
+      },
+      {
+        "name": "usable left selector at 1280",
+        "pass": true,
+        "evidence": {
+          "width": 1280,
+          "scroll": 1280,
+          "rect": {
+            "x": 234.890625,
+            "y": 480.703125,
+            "width": 154.109375,
+            "height": 34,
+            "top": 480.703125,
+            "right": 389,
+            "bottom": 514.703125,
+            "left": 234.890625
+          },
+          "focus": false
+        }
+      },
+      {
+        "name": "shared left choice deer",
+        "pass": true
+      },
+      {
+        "name": "usable left selector at 1024",
+        "pass": true,
+        "evidence": {
+          "width": 1024,
+          "scroll": 1024,
+          "rect": {
+            "x": 234.890625,
+            "y": 480.703125,
+            "width": 154.109375,
+            "height": 34,
+            "top": 480.703125,
+            "right": 389,
+            "bottom": 514.703125,
+            "left": 234.890625
+          },
+          "focus": false
+        }
+      },
+      {
+        "name": "labelled T0 joint scene boots",
+        "pass": true
+      },
+      {
+        "name": "shared left choice deer",
+        "pass": true
+      },
+      {
+        "name": "native import settles",
+        "pass": true
+      },
+      {
+        "name": "import attaches selector to new world and keeps choice",
+        "pass": true
+      },
+      {
+        "name": "shared left choice deer",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 564,
+            "y": 351.90005373954773
+          },
+          "target": "inkCanvas"
+        }
+      },
+      {
+        "name": "one real placement deer",
+        "pass": true,
+        "evidence": {
+          "unit": {
+            "id": -1,
+            "sp": "beast",
+            "form": "deer",
+            "name": "鹿群",
+            "x": 35.5,
+            "y": 50.5,
+            "tx": 35.5,
+            "ty": 50.5,
+            "hp": 22,
+            "maxHp": 22,
+            "count": 9,
+            "state": "settled",
+            "bornDay": 0,
+            "lastActDay": 0
+          },
+          "toast": "鹿群已入世 · 真实 ID -1"
+        }
+      },
+      {
+        "name": "shared left choice wolf",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 564,
+            "y": 351.90005373954773
+          },
+          "target": "inkCanvas"
+        }
+      },
+      {
+        "name": "one real placement wolf",
+        "pass": true,
+        "evidence": {
+          "unit": {
+            "id": -2,
+            "sp": "beast",
+            "form": "wolf",
+            "name": "狼群",
+            "x": 35.5,
+            "y": 50.5,
+            "tx": 35.5,
+            "ty": 50.5,
+            "hp": 32,
+            "maxHp": 32,
+            "count": 5,
+            "state": "settled",
+            "bornDay": 0,
+            "lastActDay": 0
+          },
+          "toast": "狼群已入世 · 真实 ID -2"
+        }
+      },
+      {
+        "name": "shared left choice dangkang",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 564,
+            "y": 351.90005373954773
+          },
+          "target": "inkCanvas"
+        }
+      },
+      {
+        "name": "one real placement dangkang",
+        "pass": true,
+        "evidence": {
+          "unit": {
+            "id": -3,
+            "sp": "beast",
+            "form": "dangkang",
+            "name": "当康",
+            "x": 64.5,
+            "y": 66.5,
+            "tx": 64.5,
+            "ty": 66.5,
+            "hp": 50,
+            "maxHp": 50,
+            "count": 1,
+            "state": "settled",
+            "bornDay": 0,
+            "lastActDay": 0
+          },
+          "toast": "当康已入世 · 真实 ID -3"
+        }
+      },
+      {
+        "name": "shared left choice tiangou",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 564,
+            "y": 351.90005373954773
+          },
+          "target": "inkCanvas"
+        }
+      },
+      {
+        "name": "one real placement tiangou",
+        "pass": true,
+        "evidence": {
+          "unit": {
+            "id": -4,
+            "sp": "beast",
+            "form": "tiangou",
+            "name": "天狗",
+            "x": 68.5,
+            "y": 66.5,
+            "tx": 68.5,
+            "ty": 66.5,
+            "hp": 80,
+            "maxHp": 80,
+            "count": 1,
+            "state": "settled",
+            "bornDay": 0,
+            "lastActDay": 0
+          },
+          "toast": "天狗已入世 · 真实 ID -4"
+        }
+      },
+      {
+        "name": "actual auspicious units influence real village",
+        "pass": true,
+        "evidence": {
+          "yieldScale": 1.15,
+          "recoveryScale": 1,
+          "damageScale": 0.9,
+          "sources": [
+            {
+              "id": -3,
+              "form": "dangkang",
+              "name": "当康"
+            },
+            {
+              "id": -4,
+              "form": "tiangou",
+              "name": "天狗"
+            }
+          ]
+        }
+      },
+      {
+        "name": "codex inspects real deer",
+        "pass": true
+      },
+      {
+        "name": "codex inspects real wolf",
+        "pass": true
+      },
+      {
+        "name": "codex inspects real tiangou",
+        "pass": true
+      },
+      {
+        "name": "codex withdrawal removes actual influence",
+        "pass": true
+      },
+      {
+        "name": "native dispatch reserves actual food and cancels old DAO job",
+        "pass": true,
+        "evidence": {
+          "v": 1,
+          "nextId": 3,
+          "dispatchDay": 0,
+          "ledger": {
+            "loaded": 24,
+            "delivered": 0,
+            "lost": 0,
+            "returned": 0
+          },
+          "journeys": [
+            {
+              "id": 1,
+              "kind": "cargo",
+              "mode": "water",
+              "status": "active",
+              "reason": null,
+              "actorId": 3,
+              "vehicleId": "boat-1",
+              "fromVillageId": 1,
+              "toVillageId": 2,
+              "cargo": {
+                "food": 24,
+                "amount": 24
+              },
+              "position": {
+                "x": 67.5,
+                "y": 65.5
+              },
+              "departDay": 0,
+              "updatedDay": 0,
+              "etaDay": 70,
+              "goal": {
+                "villageId": 2,
+                "cancelRequested": false,
+                "sourceReached": false
+              },
+              "progress": 0,
+              "distance": 70,
+              "legMode": "land"
+            },
+            {
+              "id": 2,
+              "kind": "person",
+              "mode": "air",
+              "status": "active",
+              "reason": null,
+              "actorId": 13,
+              "vehicleId": null,
+              "fromVillageId": 1,
+              "toVillageId": 2,
+              "cargo": {
+                "food": 0,
+                "amount": 0
+              },
+              "position": {
+                "x": 30.5,
+                "y": 61.5
+              },
+              "departDay": 0,
+              "updatedDay": 0,
+              "etaDay": 20.40882162203394,
+              "goal": {
+                "villageId": 2,
+                "cancelRequested": false,
+                "sourceReached": true
+              },
+              "progress": 0,
+              "distance": 102.0441081101697,
+              "legMode": "land"
+            }
+          ]
+        }
+      },
+      {
+        "name": "same payload contains a laden ship and active real flight",
+        "pass": true,
+        "evidence": {
+          "v": 1,
+          "nextId": 3,
+          "dispatchDay": 0,
+          "ledger": {
+            "loaded": 24,
+            "delivered": 0,
+            "lost": 0,
+            "returned": 0
+          },
+          "journeys": [
+            {
+              "id": 1,
+              "kind": "cargo",
+              "mode": "water",
+              "status": "active",
+              "reason": null,
+              "actorId": 3,
+              "vehicleId": "boat-1",
+              "fromVillageId": 1,
+              "toVillageId": 2,
+              "cargo": {
+                "food": 24,
+                "amount": 24
+              },
+              "position": {
+                "x": 76.5,
+                "y": 62.5
+              },
+              "departDay": 0,
+              "updatedDay": 12,
+              "etaDay": 70,
+              "goal": {
+                "villageId": 2,
+                "cancelRequested": false,
+                "sourceReached": true
+              },
+              "progress": 2,
+              "distance": 60,
+              "legMode": "water"
+            },
+            {
+              "id": 2,
+              "kind": "person",
+              "mode": "air",
+              "status": "active",
+              "reason": null,
+              "actorId": 13,
+              "vehicleId": null,
+              "fromVillageId": 1,
+              "toVillageId": 2,
+              "cargo": {
+                "food": 0,
+                "amount": 0
+              },
+              "position": {
+                "x": 90.07127186054937,
+                "y": 62.86812584079036
+              },
+              "departDay": 0,
+              "updatedDay": 12,
+              "etaDay": 20.492019747510966,
+              "goal": {
+                "villageId": 2,
+                "cancelRequested": false,
+                "sourceReached": true
+              },
+              "progress": 10,
+              "distance": 52.46009873755482,
+              "legMode": "air"
+            }
+          ]
+        }
+      },
+      {
+        "name": "Three joint view keeps the same people and cargos",
+        "pass": true
+      },
+      {
+        "name": "shared left choice tiangou",
+        "pass": true
+      },
+      {
+        "name": "spatial tool has pointer priority over transit badges",
+        "pass": true
+      },
+      {
+        "name": "shared left choice tiangou",
+        "pass": true
+      },
+      {
+        "name": "placement notice in upper",
+        "pass": true
+      },
+      {
+        "name": "shared left choice tiangou",
+        "pass": true
+      },
+      {
+        "name": "placement notice in nether",
+        "pass": true
+      },
+      {
+        "name": "shared left choice tiangou",
+        "pass": true
+      },
+      {
+        "name": "placement notice in mortal",
+        "pass": true
+      },
+      {
+        "name": "real dam blocks loaded ship",
+        "pass": true,
+        "evidence": {
+          "v": 1,
+          "nextId": 3,
+          "dispatchDay": 0,
+          "ledger": {
+            "loaded": 24,
+            "delivered": 0,
+            "lost": 0,
+            "returned": 0
+          },
+          "journeys": [
+            {
+              "id": 1,
+              "kind": "cargo",
+              "mode": "water",
+              "status": "blocked",
+              "reason": "blocked_water",
+              "actorId": 3,
+              "vehicleId": "boat-1",
+              "fromVillageId": 1,
+              "toVillageId": 2,
+              "cargo": {
+                "food": 24,
+                "amount": 24
+              },
+              "position": {
+                "x": 76.5,
+                "y": 62.5
+              },
+              "departDay": 0,
+              "updatedDay": 13,
+              "etaDay": 70,
+              "goal": {
+                "villageId": 2,
+                "cancelRequested": false,
+                "sourceReached": true
+              },
+              "progress": 2,
+              "distance": 60,
+              "legMode": "water"
+            },
+            {
+              "id": 2,
+              "kind": "person",
+              "mode": "air",
+              "status": "active",
+              "reason": null,
+              "actorId": 13,
+              "vehicleId": null,
+              "fromVillageId": 1,
+              "toVillageId": 2,
+              "cargo": {
+                "food": 0,
+                "amount": 0
+              },
+              "position": {
+                "x": 94.92989228646074,
+                "y": 62.71094725173623
+              },
+              "departDay": 0,
+              "updatedDay": 13,
+              "etaDay": 20.522536017442555,
+              "goal": {
+                "villageId": 2,
+                "cancelRequested": false,
+                "sourceReached": true
+              },
+              "progress": 5,
+              "distance": 42.612680087212766,
+              "legMode": "air"
+            }
+          ]
+        }
+      },
+      {
+        "name": "native save completes",
+        "pass": true
+      },
+      {
+        "name": "native load completes",
+        "pass": true
+      },
+      {
+        "name": "compressed joint reload retains both exact versioned blocks",
+        "pass": true
+      },
+      {
+        "name": "native x20 advances real time while loaded ship remains blocked",
+        "pass": true,
+        "evidence": {
+          "startDay": 13,
+          "endDay": 76.79200000000012,
+          "ship": {
+            "id": 1,
+            "kind": "cargo",
+            "mode": "water",
+            "status": "blocked",
+            "reason": "blocked_water",
+            "actorId": 3,
+            "vehicleId": "boat-1",
+            "fromVillageId": 1,
+            "toVillageId": 2,
+            "cargo": {
+              "food": 24,
+              "amount": 24
+            },
+            "position": {
+              "x": 76.5,
+              "y": 62.5
+            },
+            "departDay": 0,
+            "updatedDay": 76.79200000000012,
+            "etaDay": 70,
+            "goal": {
+              "villageId": 2,
+              "cancelRequested": false,
+              "sourceReached": true
+            },
+            "progress": 2,
+            "distance": 60,
+            "legMode": "water"
+          }
+        }
+      },
+      {
+        "name": "original ship and flight arrive with one actual delivery",
+        "pass": true,
+        "evidence": {
+          "v": 1,
+          "nextId": 3,
+          "dispatchDay": 180,
+          "ledger": {
+            "loaded": 24,
+            "delivered": 24,
+            "lost": 0,
+            "returned": 0
+          },
+          "journeys": [
+            {
+              "id": 1,
+              "kind": "cargo",
+              "mode": "water",
+              "status": "arrived",
+              "reason": null,
+              "actorId": 3,
+              "vehicleId": "boat-1",
+              "fromVillageId": 1,
+              "toVillageId": 2,
+              "cargo": {
+                "food": 0,
+                "amount": 24
+              },
+              "position": {
+                "x": 132.5,
+                "y": 64.5
+              },
+              "departDay": 0,
+              "updatedDay": 183.79200000000012,
+              "etaDay": 183.79200000000012,
+              "goal": {
+                "villageId": 2,
+                "cancelRequested": false,
+                "sourceReached": true
+              },
+              "progress": 12,
+              "distance": 12,
+              "legMode": "land"
+            },
+            {
+              "id": 2,
+              "kind": "person",
+              "mode": "air",
+              "status": "arrived",
+              "reason": null,
+              "actorId": 13,
+              "vehicleId": null,
+              "fromVillageId": 1,
+              "toVillageId": 2,
+              "cargo": {
+                "food": 0,
+                "amount": 0
+              },
+              "position": {
+                "x": 132.5,
+                "y": 64.5
+              },
+              "departDay": 0,
+              "updatedDay": 21.682000000000016,
+              "etaDay": 20.706290873576013,
+              "goal": {
+                "villageId": 2,
+                "cancelRequested": false,
+                "sourceReached": true
+              },
+              "progress": 38.53145436788006,
+              "distance": 38.531454367880066,
+              "legMode": "air"
+            }
+          ]
+        }
+      },
+      {
+        "name": "same alchemy actually completes twice",
+        "pass": true,
+        "evidence": [
+          {
+            "actorId": 14,
+            "path": "alchemy",
+            "targetKind": "entity",
+            "targetId": 15,
+            "x": 55.5,
+            "y": 76.5,
+            "stage": "done",
+            "startedDay": 0,
+            "nextDay": 91,
+            "summary": "以灵丹术为待疗修士疗伤，恢复171.6气血",
+            "completedDay": 1
+          },
+          {
+            "actorId": 16,
+            "path": "talisman",
+            "targetKind": "village",
+            "targetId": 1,
+            "x": 67,
+            "y": 64,
+            "stage": "done",
+            "startedDay": 0,
+            "nextDay": 182,
+            "summary": "在西津留下护村符，效力至第182日",
+            "completedDay": 2
+          },
+          {
+            "actorId": 14,
+            "path": "alchemy",
+            "targetKind": "entity",
+            "targetId": 15,
+            "x": 55.5,
+            "y": 76.5,
+            "stage": "done",
+            "startedDay": 120.79200000000012,
+            "nextDay": 211.79200000000012,
+            "summary": "以灵丹术为待疗修士疗伤，恢复171.6气血",
+            "completedDay": 121.79200000000012
+          },
+          {
+            "actorId": 16,
+            "path": "talisman",
+            "targetKind": "village",
+            "targetId": 1,
+            "x": 67,
+            "y": 64,
+            "stage": "done",
+            "startedDay": 210.79200000000012,
+            "nextDay": 391.79200000000014,
+            "summary": "在西津留下护村符，效力至第392日",
+            "completedDay": 211.79200000000012
+          }
+        ]
+      },
+      {
+        "name": "same talisman actually completes twice",
+        "pass": true,
+        "evidence": [
+          {
+            "actorId": 14,
+            "path": "alchemy",
+            "targetKind": "entity",
+            "targetId": 15,
+            "x": 55.5,
+            "y": 76.5,
+            "stage": "done",
+            "startedDay": 0,
+            "nextDay": 91,
+            "summary": "以灵丹术为待疗修士疗伤，恢复171.6气血",
+            "completedDay": 1
+          },
+          {
+            "actorId": 16,
+            "path": "talisman",
+            "targetKind": "village",
+            "targetId": 1,
+            "x": 67,
+            "y": 64,
+            "stage": "done",
+            "startedDay": 0,
+            "nextDay": 182,
+            "summary": "在西津留下护村符，效力至第182日",
+            "completedDay": 2
+          },
+          {
+            "actorId": 14,
+            "path": "alchemy",
+            "targetKind": "entity",
+            "targetId": 15,
+            "x": 55.5,
+            "y": 76.5,
+            "stage": "done",
+            "startedDay": 120.79200000000012,
+            "nextDay": 211.79200000000012,
+            "summary": "以灵丹术为待疗修士疗伤，恢复171.6气血",
+            "completedDay": 121.79200000000012
+          },
+          {
+            "actorId": 16,
+            "path": "talisman",
+            "targetKind": "village",
+            "targetId": 1,
+            "x": 67,
+            "y": 64,
+            "stage": "done",
+            "startedDay": 210.79200000000012,
+            "nextDay": 391.79200000000014,
+            "summary": "在西津留下护村符，效力至第392日",
+            "completedDay": 211.79200000000012
+          }
+        ]
+      },
+      {
+        "name": "native import settles",
+        "pass": true
+      },
+      {
+        "name": "bad wanling protects current live world",
+        "pass": true
+      },
+      {
+        "name": "native import settles",
+        "pass": true
+      },
+      {
+        "name": "bad transit protects current live world",
+        "pass": true
+      },
+      {
+        "name": "native import settles",
+        "pass": true
+      },
+      {
+        "name": "shared left choice deer",
+        "pass": true
+      },
+      {
+        "name": "96/96 capacity is clear and not presented as placeable",
+        "pass": true
+      },
+      {
+        "name": "map pointer reaches actual canvas",
+        "pass": true,
+        "evidence": {
+          "point": {
+            "x": 544.0859375,
+            "y": 366.99999999999994
+          },
+          "target": "inkCanvas3D"
+        }
+      },
+      {
+        "name": "full map request adds no ghost unit",
+        "pass": true
+      },
+      {
+        "name": "no runtime console or WebGL errors",
+        "pass": true,
+        "evidence": {
+          "js": [],
+          "console": []
+        }
+      }
+    ],
+    "errors": {
+      "js": [],
+      "console": []
+    },
+    "cleanup": {
+      "removed": true,
+      "attempts": 1,
+      "processesExited": true,
+      "complete": true,
+      "processEvidence": {
+        "supported": true,
+        "frozen": 10,
+        "remaining": 0,
+        "discoveryError": null,
+        "termination": {
+          "errors": [],
+          "attempted": 0
+        }
+      }
+    },
+    "repeatedActions": [
+      {
+        "actorId": 14,
+        "path": "alchemy",
+        "targetKind": "entity",
+        "targetId": 15,
+        "x": 55.5,
+        "y": 76.5,
+        "stage": "done",
+        "startedDay": 0,
+        "nextDay": 91,
+        "summary": "以灵丹术为待疗修士疗伤，恢复171.6气血",
+        "completedDay": 1
+      },
+      {
+        "actorId": 16,
+        "path": "talisman",
+        "targetKind": "village",
+        "targetId": 1,
+        "x": 67,
+        "y": 64,
+        "stage": "done",
+        "startedDay": 0,
+        "nextDay": 182,
+        "summary": "在西津留下护村符，效力至第182日",
+        "completedDay": 2
+      },
+      {
+        "actorId": 14,
+        "path": "alchemy",
+        "targetKind": "entity",
+        "targetId": 15,
+        "x": 55.5,
+        "y": 76.5,
+        "stage": "done",
+        "startedDay": 120.79200000000012,
+        "nextDay": 211.79200000000012,
+        "summary": "以灵丹术为待疗修士疗伤，恢复171.6气血",
+        "completedDay": 121.79200000000012
+      },
+      {
+        "actorId": 16,
+        "path": "talisman",
+        "targetKind": "village",
+        "targetId": 1,
+        "x": 67,
+        "y": 64,
+        "stage": "done",
+        "startedDay": 210.79200000000012,
+        "nextDay": 391.79200000000014,
+        "summary": "在西津留下护村符，效力至第392日",
+        "completedDay": 211.79200000000012
+      }
+    ],
+    "fixture": {
+      "fixture": "WT-I1 controlled initial conditions",
+      "naturalSample": false,
+      "map": [
+        200,
+        128
+      ],
+      "seed": 20261025,
+      "transit": {
+        "leftId": 1,
+        "rightId": 2,
+        "flierId": 13,
+        "left": {
+          "x": 67,
+          "y": 64
+        },
+        "right": {
+          "x": 132,
+          "y": 64
+        },
+        "cut": {
+          "x": 100,
+          "y": 64
+        },
+        "damX": 110,
+        "dam": [
+          {
+            "x": 110,
+            "y": 54
+          },
+          {
+            "x": 110,
+            "y": 59
+          },
+          {
+            "x": 110,
+            "y": 64
+          },
+          {
+            "x": 110,
+            "y": 69
+          },
+          {
+            "x": 110,
+            "y": 74
+          }
+        ],
+        "reopen": {
+          "x": 110,
+          "y": 58
+        }
+      },
+      "actors": {
+        "flier": 13,
+        "healer": 14,
+        "patient": 15,
+        "talisman": 16
+      },
+      "note": "初始修为、伤势、静养计时与两岸地形预置；后续使用正式 Life/advance、工具、行程和存读档。静养仍结算年龄、修炼、饥饿与死亡。",
+      "placement": {
+        "deer": {
+          "x": 35,
+          "y": 50
+        },
+        "wolf": {
+          "x": 35,
+          "y": 50
+        },
+        "dangkang": {
+          "x": 64,
+          "y": 66
+        },
+        "tiangou": {
+          "x": 68,
+          "y": 66
+        }
+      }
+    }
+  },
+  "supplement": {
+    "source": "0af9b52f52113a507ad5e9996982cfa71e5bf622",
+    "dirty": true,
+    "environment": {
+      "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+      "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "glError": 0,
+      "viewport": [
+        1024,
+        720
+      ],
+      "dpr": 1
+    },
+    "pass": true,
+    "checks": [
+      {
+        "name": "product boots",
+        "pass": true
+      },
+      {
+        "name": "formal import",
+        "pass": true
+      },
+      {
+        "name": "Three native view",
+        "pass": true
+      },
+      {
+        "name": "real dog GLB loads",
+        "pass": true
+      },
+      {
+        "name": "actual GLB instance is pickable with its exact negative ID",
+        "pass": true,
+        "evidence": {
+          "x": 543.8699746654349,
+          "y": 365.67352628841087,
+          "hit": {
+            "kind": "entity",
+            "id": -1,
+            "container": "wanling"
+          }
+        }
+      },
+      {
+        "name": "native 3D map inspector resolves dog and actual stats",
+        "pass": true
+      },
+      {
+        "name": "held WASD moves the real 3D camera",
+        "pass": true,
+        "evidence": {
+          "before": [
+            180.00000000000003,
+            250,
+            240.0000000000001
+          ],
+          "after": [
+            135.75456000000003,
+            249.99999999999997,
+            181.00608000000014
+          ]
+        }
+      },
+      {
+        "name": "camera motion is simulation-pure",
+        "pass": true
+      },
+      {
+        "name": "focused selector does not retain WASD camera keys",
+        "pass": true
+      },
+      {
+        "name": "one genuine touch creates one deer group on folded layout",
+        "pass": true
+      },
+      {
+        "name": "native re-creation replaces the real world",
+        "pass": true
+      },
+      {
+        "name": "choice survives creation while previous units and inspection clear",
+        "pass": true
+      },
+      {
+        "name": "no JavaScript or GL errors",
+        "pass": true,
+        "evidence": []
+      }
+    ],
+    "errors": [],
+    "cleanup": {
+      "removed": true,
+      "attempts": 1,
+      "processesExited": true,
+      "complete": true,
+      "processEvidence": {
+        "supported": true,
+        "frozen": 17,
+        "remaining": 0,
+        "discoveryError": null,
+        "termination": {
+          "errors": [],
+          "attempted": 0
+        }
+      }
+    }
+  },
+  "history": {
+    "earlierBrowserAttempts": [
+      {
+        "directory": "2026-10-25T17-43-00.495Z",
+        "checks": 19,
+        "failure": "Error: one real placement tiangou",
+        "cleanup": true
+      },
+      {
+        "directory": "2026-10-25T17-44-00.786Z",
+        "checks": 23,
+        "failure": "Error: map pointer reaches actual canvas",
+        "cleanup": true
+      },
+      {
+        "directory": "2026-10-25T17-44-45.811Z",
+        "checks": 50,
+        "failure": "Error: 页面内脚本抛错: Error: Occluded [data-wanling-id=\"-1\"] by <body class=\"r1-scroll-ui\" data-r1-arts=\"closed\" data-r1-mode=\"canvas\" data-r1-realm=\"mortal\">",
+        "cleanup": true
+      },
+      {
+        "directory": "2026-10-25T17-46-09.659Z",
+        "checks": 54,
+        "failure": "Error: 页面内脚本抛错: Error: No visible [data-transit-edit=\"cut\"]",
+        "cleanup": true
+      },
+      {
+        "directory": "2026-10-25T17-48-41.952Z",
+        "checks": 64,
+        "failure": "Error: 页面内脚本抛错: Error: No visible #inkWanlingReady",
+        "cleanup": true
+      }
+    ],
+    "nativePicking": "T0 fixture foreground ridge actually occluded the dog: self ray 389.77 vs terrain 354.45. Native middle-button orbit and wheel exposed it; no product picker change.",
+    "performance": "First probe used nonexistent renderer.metrics and stopped. Next pair did not pin the save-external accumulator phases, so final worlds differed. Final pair explicitly prepared all four driver phases at zero, then equal serialized final worlds. Raw reports remain local.",
+    "nativeControlBug": "Native checks caught two real regressions hidden by programmatic value assignment: initial Three remained inspect, and exiting disabled the selector moved back to Canvas. Fixed in 8f567f8; strict 87-check browser flow refuses disabled fields, and native keyboard control smoke passes."
+  },
+  "sources": {
+    "baseline": "d4faed33509cebc9bdad17384a73c7d0d758f743",
+    "w01": "4aac2ef84072c5d99f8fc35d4a6b1ca0c961278d",
+    "t0": "244ded6a4571718afa01b06552fceba4888867be",
+    "runtime": "8f567f829b7ecbbc9a30b697fcb6402dcd8fde56",
+    "runtimeTree": "6cf0099869d7f6f0622dbbc0f3339c177192546e",
+    "runtimeEntryBlob": "fe6e0ce81e47bba7c5a05c6f5f2c937ed2366650"
+  },
+  "runtimeNormalizedSha256": {
+    "src/inkbox/sim/daoActivities.js": "49faa344ec74aec63ae91b6dfe35c4bdd311c18acdf6339b40773cfcd2641ad9",
+    "src/inkbox/sim/transit.js": "d9b312461011ae21e688d9c308319e483e4c2f7bc083b9276c8ae8ad4ca410f7",
+    "src/inkbox/io/save.js": "08633e9b40b3385b303011164755c68ebcbc9d42051bc53dfbaabcade7724ef5",
+    "src/inkbox/ui/wanlingSelection.js": "1ae3f8db97bac2de92745111f4e1f8a6f9d80d74a24d7405eb479e747677e063",
+    "src/inkbox/ui/r1/secretScrollHost.js": "96b5067625454c533948017af7f801932cfd654924979a985ac24c002689ebaa",
+    "src/inkbox/render3d/Render3DAdapter.js": "55ca017e1dc4cfc8e1aaf75a19de20f048dfb1339de1de43412486e29827796a"
+  },
+  "rendererControlsBefore": {
+    "url": "http://127.0.0.1:4235/inkbox.html",
+    "source": "ed12548252f77296b9590c59872691a7c156d36d",
+    "dirty": true,
+    "checks": [
+      {
+        "name": "both compact observation entries are adjacent",
+        "pass": true
+      },
+      {
+        "name": "transit entry is visible without scrolling to the old operation appendix",
+        "pass": true
+      },
+      {
+        "name": "17 placeable forms behind one primary tool",
+        "pass": true
+      },
+      {
+        "name": "first Three entry adopts actual beast dispatch intent",
+        "pass": false,
+        "evidence": {
+          "shell": "beast",
+          "native": "inspect",
+          "form": "wolf"
+        }
+      },
+      {
+        "name": "shared selector is operable after returning to Canvas",
+        "pass": false,
+        "evidence": {
+          "form": "wolf",
+          "disabled": true,
+          "parent": "r1CanvasArts"
+        }
+      }
+    ],
+    "enter": {
+      "shell": "beast",
+      "native": "inspect",
+      "form": "wolf"
+    },
+    "returned": {
+      "form": "wolf",
+      "disabled": true,
+      "parent": "r1CanvasArts"
+    },
+    "failure": "Error: renderer control ownership regression\n    at file:///D:/worldxxxxx/%E5%9D%90%E5%A4%A9%E8%A7%82%E4%BA%95%E7%AC%AC%E4%BA%8C%E7%BA%AA%E5%85%83/inkbox-wti1/reports/local/wti1/final-smoke.mjs:24:42",
+    "screenshot": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-wti1\\reports\\local\\wti1\\final-smoke\\2026-10-25T18-31-21.396Z\\failure.png",
+    "cleanup": {
+      "removed": true,
+      "attempts": 1,
+      "processesExited": true,
+      "complete": true,
+      "processEvidence": {
+        "supported": true,
+        "frozen": 17,
+        "remaining": 0,
+        "discoveryError": null,
+        "termination": {
+          "errors": [],
+          "attempted": 0
+        }
+      }
+    }
+  },
+  "rendererControlsAfter": {
+    "url": "http://127.0.0.1:4235/inkbox.html",
+    "source": "ed12548252f77296b9590c59872691a7c156d36d",
+    "dirty": true,
+    "checks": [
+      {
+        "name": "both compact observation entries are adjacent",
+        "pass": true
+      },
+      {
+        "name": "transit entry is visible without scrolling to the old operation appendix",
+        "pass": true
+      },
+      {
+        "name": "17 placeable forms behind one primary tool",
+        "pass": true
+      },
+      {
+        "name": "first Three entry adopts actual beast dispatch intent",
+        "pass": true,
+        "evidence": {
+          "shell": "beast",
+          "native": "beast",
+          "form": "wolf"
+        }
+      },
+      {
+        "name": "shared selector is operable after returning to Canvas",
+        "pass": true,
+        "evidence": {
+          "form": "wolf",
+          "disabled": false,
+          "parent": "r1CanvasArts"
+        }
+      },
+      {
+        "name": "native keyboard can change the returned selector",
+        "pass": true
+      },
+      {
+        "name": "selection and two view swaps never spawn units",
+        "pass": true
+      },
+      {
+        "name": "no runtime or GL errors",
+        "pass": true
+      }
+    ],
+    "enter": {
+      "shell": "beast",
+      "native": "beast",
+      "form": "wolf"
+    },
+    "returned": {
+      "form": "wolf",
+      "disabled": false,
+      "parent": "r1CanvasArts"
+    },
+    "screenshot": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-wti1\\reports\\local\\wti1\\final-smoke\\2026-10-25T18-32-08.989Z\\discoverable-entries-and-shared-selector.png",
+    "environment": {
+      "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "glError": 0,
+      "viewport": [
+        1366,
+        768
+      ],
+      "dpr": 1
+    },
+    "errors": [],
+    "pass": true,
+    "cleanup": {
+      "removed": true,
+      "attempts": 1,
+      "processesExited": true,
+      "complete": true,
+      "processEvidence": {
+        "supported": true,
+        "frozen": 18,
+        "remaining": 0,
+        "discoveryError": null,
+        "termination": {
+          "errors": [],
+          "attempted": 0
+        }
+      }
+    }
+  },
+  "runtimeMatchesCommit": true
+}

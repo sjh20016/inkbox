@@ -12,7 +12,7 @@ R1「山海入世」在 G5/P1 主线上接入 Opus V1→V1.3 原始美术历史�
 
 **WT-I1「万象同卷 · 众生可置」集成**：W0.1 #41 与 T0 #40 在同一正式游戏共存；左侧「生灵 → 万灵」直接选择类别和形态，Canvas/Three 与右侧图录同步。修士冷却后复行，交通独占远行移动权，生态与持粮行程共同存档。来源、验收与实际合流状态见 [WT-I1 交付记录](./docs/development/WTI1_INTEGRATION_DELIVERY.md)。下方候选描述保留来源阶段的历史范围，main 以集成 PR 状态为准。
 
-**W0.1 独立开发候选**：`feat/w01-wanling-world-units` 从开工核查的 `main@d4faed3` 开始，增加 17 类可投放生灵、真实道侣派生的比翼鸟、聚合捕食与地灵迁衰、十二道途低频活动，以及 Canvas/Three 共用图录、检视和存档。当前分支未合入 main，T0、GLM、Opus、G6 仍独立。逐单位档位、实际证据与限制见 [W0.1 交付记录](./docs/development/W01_WANLING_DELIVERY.md)。
+**W0.1 来源 #41**：17类可投放生灵、真实道侣派生比翼、聚合捕食、地灵迁衰、十二道途及双renderer图录由WT-I1完整收纳。逐单位档位与保留边界见 [W0.1交付记录](./docs/development/W01_WANLING_DELIVERY.md)。
 
 G7 v1.1 按依赖顺序接纳 **E0 #34 → C1 #35 → 立体观世 P0 #36**：聚落记挂与真实干预、自然双亲出生与宗门供养、原生 3D 神力及有限水响应进入同一主线。G7 #38 补齐取消笔画、存读档并发保护和原生检视入口。合流与验收见 [G7 交付记录](./docs/development/G7_MAIN_INTEGRATION_DELIVERY.md)。S0 静态自然继续保留；G6 #30 与独立山海遗迹美术分支仍未接入。
 
@@ -22,7 +22,7 @@ G2/G5 功能接纳不代表性能预算封板。PR #26～#28 已进入主线；P
 
 导航：[`HANDOFF.md`](./HANDOFF.md) · [`ROADMAP.md`](./ROADMAP.md) · [`BACKLOG.md`](./BACKLOG.md) · [`tests/README.md`](./tests/README.md) · [`docs/development/REPOSITORY_WORKFLOW.md`](./docs/development/REPOSITORY_WORKFLOW.md)。
 
-本分支的 **T0「山海通衢 · 行路有凭」为独立候选**：书架新增真实运粮/修士远行，Canvas 与 Three 观察同一条行程；正式开发场景为 `inkbox.html?scenario=t0`。它基于 G7，未合并 main，也未接入 G6、山海遗迹或万象拾趣。规则、验收与剩余边界见 [T0 交付记录](./docs/development/T0_TRANSIT_DELIVERY.md)。
+**T0 来源 #40**：真实运粮与修士远行由WT-I1完整收纳；普通游戏书架可派遣，`inkbox.html?scenario=t0` 保留明确标注的受控初始场景。规则与边界见 [T0交付记录](./docs/development/T0_TRANSIT_DELIVERY.md)。
 
 ## 仓库治理 RG-P1～P4（2026-10-17 收官）
 
@@ -83,7 +83,7 @@ A1 轮把三组原创 3D 资产接进了正式游戏（详见 [A1 交付文档](
 
 - **修士**：3D 模式从 `assets/characters/cultivator/mesh/cultivator_library.glb` 加载 2026-10 重做版（legacy cells 版，保留旧色格 / 16 骨 / Idle·Walk 语义）；旧模型以 `mesh/cultivator_library_prev.glb` 随包保留可回退。六身份、宗门色、LOD、拾取与实例化路径不变。
 - **卜算子**：山河右下的「观其真形」肖像入口采用本地交付的执伞插画，SVG 与原模型渲染 PNG 随包保留。点开仍是 A1 的独立 three.js 三维小窗，Idle / Walk / 风起（Wind）三动画可切换；关闭 / 换世界 / 读档释放独立 renderer。没有风力事实，因此只提供可演示的风起，不伪造天气机制。
-- **山海异兽**：`assets/creatures/` 收录 13 种《山海经》异兽 GLB（每只 8 套动画，共享 16×1 调色板，与修士同单位制）。W0.1 候选将全部接入正式图录，12 种可投放，比翼鸟由真实道侣关系派生。真实物种由模拟层 `form` 持有；旧档四种试装外形按原哈希兼容回填。世界只按实际出现的形态加载模型，图录预览单只按需加载；LOD2 保留低成本代表影。
+- **山海异兽**：`assets/creatures/` 收录 13 种《山海经》异兽 GLB（每只 8 套动画，共享 16×1 调色板，与修士同单位制）。W0.1 已全部接入正式图录，12 种可投放，比翼鸟由真实道侣关系派生。真实物种由模拟层 `form` 持有；旧档四种试装外形按原哈希兼容回填。世界只按实际出现的形态加载模型，图录预览单只按需加载；LOD2 保留低成本代表影。
 
 启动服务器后可打开三个资产 Lab：
 

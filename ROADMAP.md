@@ -2,6 +2,8 @@
 
 ## 正式产品线
 
+WT-I1 将 W0.1 #41 与 T0 #40 合成单一候选：左侧万灵快选、重复行道修复、交通移动权及双存档块共同验收。交付与实际主线状态见 [WT-I1记录](./docs/development/WTI1_INTEGRATION_DELIVERY.md)；下方为来源阶段快照。
+
 W0.1「万灵入世」在独立候选 `feat/w01-wanling-world-units` 中实施：17 类生灵主动投放、道侣比翼、捕食与地灵迁衰、十二道途空间活动。基于 `main@d4faed3`，不接纳其他候选分支。当前完成档位及尚未实现的尸傀、完整填海、跨界镇泄等边界见 [交付记录](./docs/development/W01_WANLING_DELIVERY.md)，合入 main 前仍属于候选。
 
 G7 v1.1 已按 **E0 #34 → C1 #35 → 立体观世 P0 #36** 顺序接入真实聚落观察、自然人口与宗门供养、原生3D神力和有限水响应；G7 #38 收束事务、存读档并发和检视入口。S0 静态自然方向保留。验收、合流提交和历史边界见 [G7 交付记录](./docs/development/G7_MAIN_INTEGRATION_DELIVERY.md)，下文早期性能结论仍只覆盖其原场景。
