@@ -44,6 +44,8 @@ import { stepRifts, RIFT_PERIOD_DAYS } from './rifts.js';
 import { stepMortalWraiths, WRAITH_PERIOD_DAYS } from './wraiths.js';
 import { settleNature } from './nature.js';
 import { updateMapProgress } from '../world/mapProgress.js';
+import { stepWanling } from './wanling.js';
+import { stepDaoActivities } from './daoActivities.js';
 
 /**
  * 各低频时钟的节拍（游戏日）。
@@ -101,7 +103,7 @@ export function advanceWorld(world, days, deps = {}) {
   // 判定前各有一次结算机会。正常帧的小步路径保持原有调用次序。
   if (days > 30) {
     const total = { upper: false, nether: false, rift: false, wraith: false,
-      nature: false, mapProgress: false };
+      nature: false, mapProgress: false, wanling: false };
     let remaining = days;
     while (remaining > 1e-8) {
       const phase = ((world.day % 30) + 30) % 30;
@@ -120,9 +122,11 @@ export function advanceWorld(world, days, deps = {}) {
 
   world.day += days;
   world.year = Math.floor(world.day / TIME.daysPerYear);
+  if (world.plane === 'mortal') fired.wanling = !!stepWanling(world,days,{life:deps.life});
 
   // ── 凡间主循环（每拍都跑，不节流）────────────────────────────
   if (deps.life) deps.life.step(days);
+  if (deps.life && world.plane === 'mortal') stepDaoActivities(world,deps.life);
 
   // ── 上界：与凡间共享同一条时间轴，但**更新频率低**（每 10 日）──
   // ⚠️ 绝不能拿凡间的 `deps.life` 去 step 上界：`stepEntity` 会抽 `Life.rng`，

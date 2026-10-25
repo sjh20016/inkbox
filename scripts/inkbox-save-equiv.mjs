@@ -129,7 +129,8 @@ const VOLATILE = new Set([
  * 「实体行最长长度 == 本常量」那条断言会当场红——这正是它存在的意义。
  * 反过来说，若哪天要动这个数，**先去 save.js 数一遍列**，别只改这里。
  */
-const ENTITY_COLUMNS = 71;
+// W0.1 appends concrete beast form at row[71]; all earlier columns stay fixed.
+const ENTITY_COLUMNS = 72;
 /**
  * 从 `src/inkbox/io/save.js` 的源码里，把 `world.entities.map((e) => [ … ])`
  * 这个**实体行数组**的顶层元素表达式逐个切出来（注释剥掉，字符串保留）。
@@ -1315,7 +1316,7 @@ check('逝者账本三字段一致',
 {
   const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const birthColumn = entityColumnIndex('birthOrigin');
-  check('C1 birthOrigin 唯一追加在 row[70]，实体行共 71 列',
+  check('C1 birthOrigin 保持 row[70]，W0.1 物种尾追加后共 72 列',
     birthColumn === 70 && ENTITY_SOURCE_EXPRS.length === ENTITY_COLUMNS,
     `row[${birthColumn}] / ${ENTITY_SOURCE_EXPRS.length} 列`);
   const source = clone.entities[0];

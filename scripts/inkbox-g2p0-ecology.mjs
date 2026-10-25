@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { wanlingState } from '../src/inkbox/world/wanlingState.js';
 import { World } from '../src/inkbox/world/World.js';
 import { TERRAIN } from '../src/inkbox/core/config.js';
 import { OVER, classify, qiAt, recomputeAll } from '../src/inkbox/world/terrain.js';
@@ -121,6 +122,9 @@ check('simultaneous due fires leave real scorch and reduce fuel in one settlemen
 
 check('vegetation stays fixed while timed scorch remains until dueDay', () => {
   const world = fixture(1, 1), i = 0;
+  // This isolates S0's timed overlay contract. W0.1 can legitimately spawn a
+  // grazing herd even on this one-cell fixture; real grazing is checked in W0.1.
+  wanlingState(world).enabled = false;
   world.veg[i] = 0.34;
   setRecoveringOverlay(world, i, OVER.SCORCHED);
   const overlay = natureState(world).overlays.get(i);

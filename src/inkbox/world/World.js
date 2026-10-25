@@ -12,6 +12,7 @@
 import { SEA_LEVEL, LIMITS, TERRAIN_INFO, reliefScaleFor } from '../core/config.js';
 import { realmIndexFor, REALMS } from '../core/cultivation.js';
 import { recordLifeEvent } from '../sim/biography.js';
+import { creatureFormOf } from '../core/wanlingCatalog.js';
 
 /**
  * 「世界大事」账本的容量。
@@ -370,6 +371,7 @@ export class World {
     if (this.entities.length >= LIMITS.maxEntities) return null;
     entity.id = this.nextEntityId;
     this.nextEntityId += 1;
+    if (entity.sp === 'beast') entity.form = creatureFormOf(this,entity);
     // ── 飞升者来历的**唯一漏斗**（v8 内追加）──────────────
     // `fromMortal` / `fromSect` 是上界副本实体的来源快照（`planes.arriveUpper` 落）。
     // 实体的创建路径有好几条（`sim/life.js` 的 spawn、`sim/cultivation.js` 的

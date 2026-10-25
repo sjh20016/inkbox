@@ -14,6 +14,7 @@ import { resolvePlaneSubject } from '../src/inkbox/ui/realmInspector.js';
 import { WORLD_PRESETS, STRUCT } from '../src/inkbox/core/config.js';
 import { mulberry32 } from '../src/inkbox/core/noise.js';
 import { createAdvanceState, advanceWorld } from '../src/inkbox/sim/advance.js';
+import { wanlingState } from '../src/inkbox/world/wanlingState.js';
 import { Life } from '../src/inkbox/sim/life.js';
 import { UpperLife } from '../src/inkbox/sim/upperLife.js';
 import { greetOnBoot } from '../src/inkbox/sim/busanzi.js';
@@ -43,6 +44,9 @@ function naturalGolden() {
     newWorld(presetKey, seed) {
       const preset = WORLD_PRESETS[presetKey] || WORLD_PRESETS.medium;
       this.world = generateWorld({ preset, seed: seed >>> 0, scatter: true });
+      // Preserve this historical A1 building/ownership fixture. W0.1 can alter
+      // its four-year settlement history; its effects have their own live tests.
+      wanlingState(this.world).enabled = false;
       this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
       this.world.upper = generateUpperWorld({ preset, seed: this.world.seed }); recomputeUpperQi(this.world.upper);
       this.upperLife = new UpperLife(this.world.upper);

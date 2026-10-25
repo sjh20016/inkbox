@@ -447,8 +447,15 @@ function grantTechnique(entity, techName) {
  * 把一件法宝交到某人手上。
  * @returns {boolean} 是否真的收下了（手上那件更好时会拒绝）
  */
+/** Read-only preflight for paid activities, using the same capacity/replacement rule. */
+export function canReceiveArtifact(entity, artifact) {
+  if (!canHold(entity) || !artifact) return false;
+  const held = entity.artifacts || [];
+  return held.length < ARTIFACT_CAP || held.some(a => artifactPower(a) < artifactPower(artifact));
+}
+
 export function giveTo(world, entity, a, rng, kind = 'gained') {
-  if (!canHold(entity)) return false;
+  if (!canReceiveArtifact(entity, a)) return false;
   entity.artifacts = entity.artifacts || [];
   if (entity.artifacts.length >= ARTIFACT_CAP) {
     // 挑出最弱的那件比一比。新的更弱就干脆不捡——「这把不如我手上的」

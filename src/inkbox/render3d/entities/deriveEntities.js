@@ -23,6 +23,8 @@
 import { SPECIES, SPECIES_INFO } from '../../core/config.js';
 import { REALMS, realmIndexFor } from '../../core/cultivation.js';
 import { characterAppearanceOf } from '../characters/characterAppearance.js';
+import { creatureFormOf, WANLING_BY_KEY } from '../../core/wanlingCatalog.js';
+import { readBiyiPairs } from '../../world/wanlingRelations.js';
 
 /**
  * 视觉类别。前四个来自 `world.entities`，`wraith` 来自 `world.wraiths`（凡间鬼影）。
@@ -109,12 +111,35 @@ function deriveFromWorld(world, includeWraiths) {
     const color = entityColorOf(cls, level, faction, factionColorById);
     out[cls].push({
       id: e.id, x: e.x, y: e.y, level, faction,
+      form: cls === 'beast' ? creatureFormOf(world, e) : null,
       identityContainer: 'entities', soulKind: e.soulKind || null,
       lift: entityLiftOf(cls, level),
       color,
       appearance: characterAppearanceOf(e, cls, color),
     });
     out.total += 1;
+  }
+
+  // 万灵拥有独立身份容器；只允许凡间 Stage 派生，绝不走 entities 的魂路。
+  if (includeWraiths && (!world.plane || world.plane === 'mortal')) {
+    for (const u of world.wanling?.units || []) {
+      if (!u || u.hp <= 0 || u.state === 'dissipated'
+        || !Number.isFinite(u.x) || !Number.isFinite(u.y)) continue;
+      const info = WANLING_BY_KEY.get(u.form);
+      if (!info || info.derived) continue;
+      const cls = info.category === 'spirit' ? 'spirit' : 'beast';
+      out[cls].push({ id: u.id, x: u.x, y: u.y, form: u.form,
+        visualMask: u.form === 'jiuweihu' && u.mask === 'human' ? 'human' : null,
+        count: u.count || 1, level: 0, faction: 0, identityContainer: 'wanling',
+        soulKind: null, lift: entityLiftOf(cls, 0),
+        color: cls === 'spirit' ? '#588a78' : '#79694e', appearance: null });
+      out.total++;
+    }
+    for (const pair of readBiyiPairs(world)) {
+      out.beast.push({ ...pair, count: 2, level: 0, faction: 0, soulKind: null,
+        lift: 0.65, color: '#887363', appearance: null });
+      out.total++;
+    }
   }
 
   const wraiths = includeWraiths && Array.isArray(world.wraiths) ? world.wraiths : [];
@@ -155,7 +180,8 @@ export function sameEntities(a, b) {
       const p = x[i]; const q = y[i];
       if (p.id !== q.id || p.x !== q.x || p.y !== q.y
         || p.level !== q.level || p.faction !== q.faction || p.color !== q.color
-        || p.lift !== q.lift
+        || p.lift !== q.lift || p.form !== q.form || p.count !== q.count
+        || p.visualMask !== q.visualMask
         || p.identityContainer !== q.identityContainer || p.soulKind !== q.soulKind
         || p.appearance?.role !== q.appearance?.role
         || p.appearance?.paletteIndex !== q.appearance?.paletteIndex) return false;

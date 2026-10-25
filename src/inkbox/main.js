@@ -107,6 +107,9 @@ import { getRealmViewState } from './ui/realmViewState.js';
 import { pickRealmSubject, realmInspectRows, resolvePlaneSubject, planeSubjectInspectRows } from './ui/realmInspector.js';
 import { settlementRuinMarkerId, visibleSettlementRuins } from './world/settlementIdentity.js';
 import { createObserveEchoPanel } from './ui/observeEchoPanel.js';
+import { createWanlingPanel } from './ui/wanlingPanel.js';
+import { removeWanling } from './sim/wanling.js';
+import { drawWanling } from './render/wanlingLayer.js';
 import { personLifeRows } from './ui/personLifeFacts.js';
 import { sectSupplyFacts } from './ui/sectSupplyFacts.js';
 // ⚠️ 跨界**追迹**（D8-G）的 `traceTargetOf` 随「记挂」点行导航搬进
@@ -368,6 +371,9 @@ class Sandbox {
     this.combatObservation = createSandboxCombatObservation(this, $('inkCombatObserver'));
     this.environmentObservation = createSandboxEnvironmentObservation(this, $('inkEnvironmentObserver'));
     this.observeEcho = createObserveEchoPanel(this);
+    this.wanlingCodex = createWanlingPanel(this,{remove:id=>{
+      if(removeWanling(this.world,id)){this.qol.markDirty('intervention');this.notify('此生灵已收回，局部影响随之撤去',2400);}
+    }});
     this.buildToolPanel();
     this.bindEvents();
     this.setupSectionToggles();
@@ -855,7 +861,7 @@ class Sandbox {
       }
       if (tool.readonly) {
         this.environmentObservation?.select({ plane: 'mortal', x: this.hoverTile.x, y: this.hoverTile.y });
-        if (!this.g1.inspectCanvas(this.pointer.x, this.pointer.y)) this.inspectAt(this.hoverTile.x, this.hoverTile.y);
+        if (!this.inspectWanlingCanvas(this.pointer.x,this.pointer.y) && !this.g1.inspectCanvas(this.pointer.x, this.pointer.y)) this.inspectAt(this.hoverTile.x, this.hoverTile.y);
         return;
       }
       this.history.begin(tool.id === 'drain' ? { toolId: tool.id, x: this.hoverTile.x, y: this.hoverTile.y, radius: this.brushRadius } : undefined);
@@ -1477,6 +1483,7 @@ class Sandbox {
       history: this.history,
       rng: this.rng,
       siteTheme: this.opportunityTheme || 'random',
+      wanlingForm: this.wanlingForm || 'dangkang',
     };
     const observation = observeToolBefore(ctx, tool);
     ctx.result = tool.apply(ctx);
@@ -1772,11 +1779,22 @@ class Sandbox {
   }
 
   /** Inspect the World identity carried by a submitted 3D instance. */
+  inspectWanlingCanvas(sx,sy) {
+    const world=this.world,view=this.getRealmViewState();let found=null,distance=16;
+    for(const u of world.wanling?.units||[]){
+      if(u.hp<=0||!canAccess(world,u.x,u.y)||view.open&&view.targetPlane!=='mortal'&&view.region?.contains(u.x,u.y))continue;
+      const h=world.height[world.idx(Math.floor(u.x),Math.floor(u.y))],p=this.camera.tileScreen(u.x,u.y,h);
+      const d=Math.hypot(p[0]-sx,p[1]-sy);if(d<distance){distance=d;found=u;}
+    }
+    if(!found)return false;this.wanlingCodex?.inspect(found.id);
+    this.inspectPlaneSubject('mortal',{kind:'entity',entityContainer:'wanling',entityId:found.id});return true;
+  }
+
   inspectPlaneSubject(planeId, ref) {
     if (!['mortal', 'upper', 'nether'].includes(planeId)) return;
     ref ||= {};
     const world = planeId === 'mortal' ? this.world : this.world?.[planeId];
-    if (ref.kind === 'entity' && ref.entityContainer !== 'wraiths') {
+    if (ref.kind === 'entity' && (ref.entityContainer || 'entities') === 'entities') {
       const entity = world?.entities.find(e => e.id === ref.entityId);
       if (entity && ['human', 'cultivator', 'ghost'].includes(entity.sp)) return this.g1.open({ plane: planeId, entityId: ref.entityId });
     }
@@ -1893,6 +1911,9 @@ class Sandbox {
     const world = this.world;
     const i = world.idx(x, y);
     const info = TERRAIN_INFO[world.type[i]];
+    const wild=(world.wanling?.units||[]).filter(u=>u.hp>0&&Math.hypot(u.x-x-.5,u.y-y-.5)<2.5)
+      .sort((a,b)=>Math.hypot(a.x-x,a.y-y)-Math.hypot(b.x-x,b.y-y))[0];
+    if(wild){this.wanlingCodex?.inspect(wild.id);return this.inspectPlaneSubject('mortal',{kind:'entity',entityContainer:'wanling',entityId:wild.id});}
     const village = world.villages.find(v => v.houses?.some(h => h.x === x && h.y === y))
       || world.villages.slice().sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))
         .find(v => Math.hypot(v.x - x, v.y - y) < 4);
@@ -2338,6 +2359,7 @@ class Sandbox {
     this.units.drawSects(ctx, this.camera, world);
     this.units.drawSites(ctx, this.camera, world, now);
     this.units.drawEntities(ctx, this.camera, world, now);
+    drawWanling(ctx,this.camera,world,now);
     // 凡间鬼影（D6-3 工程包 B）。**必须单独调**：这批实体不在 `world.entities`
     // 里（理由见 `sim/wraiths.js` 头注释），`drawEntities` 一行都画不到它们。
     // 画在凡人**之后**：鬼浮在人上面（半透明），视觉上像「从人身里透出来」。
@@ -2452,6 +2474,7 @@ class Sandbox {
     const world = this.world;
     if (!world) return;
     this.observeEcho?.refresh(false);
+    this.wanlingCodex?.refresh(false);
     const inspection = this.settlementInspection, inspectPanel = $('inkInspect');
     if (inspection) {
       if (inspection.world !== world) {
