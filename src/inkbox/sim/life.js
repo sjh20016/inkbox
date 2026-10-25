@@ -52,6 +52,7 @@ import {
 import { aidSettlement, archiveSettlement, repairSettlementHouse, settlementHistory } from './settlementResilience.js';
 import { wanlingVillageInfluence, isWanlingHostile } from '../world/wanlingInfluence.js';
 import { stepDaoTravel } from './daoActivities.js';
+import { stableWanlingHash } from '../core/wanlingCatalog.js';
 
 const TERRAIN_SPEED = Object.freeze({
   [TERRAIN.SAND]: 0.82,
@@ -1179,19 +1180,21 @@ export class Life {
     return found;
   }
 
-  attack(e, target, dtDays) {
+  attack(e, target, dtDays, { sparring = false } = {}) {
     recordCombatAttempt(this.world);
     const dist = Math.hypot(target.x - e.x, target.y - e.y);
     if (dist > 1.6) return;
     const power = combatPower(e);
     const defense = combatPower(target);
-    const damage = power * 3.4 * dtDays * (0.6 + this.rng() * 0.8);
+    const roll = sparring ? stableWanlingHash(this.world.seed,e.id,`spar:${target.id}:${Math.floor(this.world.day)}`)/0x100000000 : this.rng();
+    const damage = power * 3.4 * dtDays * (0.6 + roll * 0.8);
     // ⚠️ 减伤后的伤害**只算一次**存进 `hit`。原代码在下面的致死判定里
     //    **重算了一遍**同一个表达式——两处一旦分叉，击杀记账会静默算错。
-    const hit = damage * (10 / (10 + defense * 0.35));
+    const normalHit = damage * (10 / (10 + defense * 0.35));
+    const hit = sparring ? Math.min(normalHit,Math.max(0,target.hp-1),target.maxHp*.08) : normalHit;
     const hpBefore = target.hp;
     target.hp -= hit;
-    const ignition = tryCombatIgnition(this.world, e, target, hit, hpBefore);
+    const ignition = sparring ? null : tryCombatIgnition(this.world, e, target, hit, hpBefore);
     emitCombatHit(this.world, e, target, hit, hpBefore, ignition);
 
     // ── 养伤（轻伤档）：打了一架、被打伤但没死 ⇒ 半年不出战 ──────────

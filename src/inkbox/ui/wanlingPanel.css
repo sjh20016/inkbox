@@ -1,0 +1,11 @@
+.wanling-details{border-top:1px solid #b9ab8b;padding:9px 2px;color:#403b31;font-size:12px}
+.wanling-details>summary{cursor:pointer;font-weight:650;letter-spacing:1px}
+.wanling-body{display:grid;gap:8px;padding:9px 0;max-height:66vh;overflow:auto}
+.wanling-body select{width:100%;padding:7px;background:#eee5d1;border:1px solid #a99b7f;color:#3f392e}
+.wanling-note,.wanling-status{line-height:1.6;margin:1px 0;font-size:11px;color:#685e4c}
+.wanling-actions{display:flex;gap:7px}.wanling-body button,.wanling-preview button{font:inherit;background:#e7ddc6;border:1px solid #aa9877;padding:6px 8px;border-radius:3px;color:#443c2d;cursor:pointer}
+.wanling-body button:disabled{opacity:.45;cursor:default}
+.wanling-list,.wanling-paths>div{display:grid;gap:5px}.wanling-unit{text-align:left;line-height:1.5}
+.wanling-card{border-left:2px solid #99815b;padding-left:7px}.wanling-card:empty{display:none}.wanling-card h4{margin:4px 0}.wanling-card p{margin:4px 0;font-size:11px;line-height:1.5}
+.wanling-preview{max-width:min(430px,92vw);background:#e9e0cd;border:1px solid #887654;color:#40392d;box-shadow:0 12px 60px #30271980}
+.wanling-preview::backdrop{background:#171a1b88}.wanling-preview h3{font-size:16px;margin:2px 0 8px}.wanling-model canvas{display:block;max-width:100%;height:auto}

@@ -1,4 +1,5 @@
 import { WANLING_BY_KEY } from '../core/wanlingCatalog.js';
+import { DAO_BY_KEY } from '../core/cultivation.js';
 
 export const WANLING_LIMITS = Object.freeze({ units: 96, rare: 36, perForm: 8, effects: 64, events: 64, jobs: 96 });
 export function wanlingState(world) {
@@ -26,7 +27,11 @@ export function wanlingEffectAt(world,kind,x,y) {
     if (e.kind !== kind || e.untilDay <= world.day) continue;
     const source = e.sourceId < 0 ? wanlingById(world,e.sourceId) : world.entities?.find(p => p.id === e.sourceId);
     if (e.sourceId && (!source || source.hp <= 0 || source._ascended)) continue;
-    if (Math.hypot(x-e.x,y-e.y) <= (e.radius || 0)) value += e.value || 0;
+    const target = kind==='calm' && e.targetId
+      ? (e.targetId<0?wanlingById(world,e.targetId):world.entities?.find(p=>p.id===e.targetId)) : null;
+    if(kind==='calm' && e.targetId && (!target || target.hp<=0)) continue;
+    const center=target||e;
+    if (Math.hypot(x-center.x,y-center.y) <= (e.radius || 0)) value += e.value || 0;
   }
   return value;
 }
@@ -51,13 +56,23 @@ export function restoreWanling(world,data) {
   }
   for (const e of data.effects) if (typeof e.kind !== 'string' || !Number.isFinite(e.untilDay)
     || !Number.isFinite(e.x) || !Number.isFinite(e.y) || !Number.isFinite(e.radius) || e.radius < 0 || e.radius > 32 || !Number.isFinite(e.value)) fail();
+  const workingActors=new Set();
+  for(const j of data.jobs) {
+    if(!Number.isSafeInteger(j.actorId)||j.actorId<=0||!DAO_BY_KEY[j.path]||!['travel','done'].includes(j.stage)
+      || !Number.isFinite(j.startedDay)||!Number.isFinite(j.nextDay)||!Number.isFinite(j.x)||!Number.isFinite(j.y)
+      || j.x<0||j.y<0||j.x>=world.w||j.y>=world.h||typeof j.summary!=='string') fail();
+    if(j.stage!=='done'){if(workingActors.has(j.actorId))fail();workingActors.add(j.actorId);}
+  }
   // Only JSON data: no accidental World references, non-finite cooldowns or unbounded strings.
   function validate(value,depth=0) {
     if (depth > 12) fail();
     if (typeof value === 'number' && !Number.isFinite(value)) fail();
     if (typeof value === 'string' && value.length > 1200) fail();
-    if (value && typeof value === 'object') for (const key of Object.keys(value)) {
+    if (value && typeof value === 'object') {
+      if(Object.keys(value).length>1200)fail();
+      for (const key of Object.keys(value)) {
       if (['__proto__','constructor','prototype'].includes(key)) fail(); validate(value[key],depth+1);
+      }
     }
   }
   validate(data); world.wanling = structuredClone(data);

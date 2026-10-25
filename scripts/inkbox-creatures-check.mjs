@@ -24,6 +24,7 @@ import {
   creatureFacingFor, creatureSpeciesFor, stableCreatureHash,
 } from '../src/inkbox/render3d/creatures/creatureSpecies.js';
 import { EntityLayer } from '../src/inkbox/render3d/entities/EntityLayer.js';
+import { creatureFormOf } from '../src/inkbox/core/wanlingCatalog.js';
 import { createCoordinates } from '../src/inkbox/render3d/coordinates.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../assets/creatures');
@@ -384,7 +385,7 @@ check(facingA === creatureFacingFor(20261017, 77) && facingA >= 0 && facingA < M
 const world = {
   w: 24, h: 18, seed: 20261017,
   entities: [
-    { id: 1, sp: 'beast', level: 0, x: 4.5, y: 5.5, lift: 0, color: '#6b6152' },
+    { id: 1, sp: 'beast', form: 'jingwei', level: 0, x: 4.5, y: 5.5, lift: 0, color: '#6b6152' },
     { id: 2, sp: 'beast', level: 0, x: 5.5, y: 5.5, lift: 0, color: '#6b6152' },
     { id: 3, sp: 'beast', level: 0, x: 6.5, y: 5.5, lift: 0, color: '#6b6152' },
     { id: 4, sp: 'beast', level: 0, x: 7.5, y: 6.5, lift: 0, color: '#6b6152' },
@@ -408,7 +409,8 @@ layer.update(1, world, { heightChanged: true });
 check(layer.creatureBatch, 'EntityLayer builds a creature batch when the library is present');
 check(layer.stats.byClass.beast === 12 && layer.stats.creatures === 12, 'LOD-off path draws every visible beast with real models');
 check(layer.stats.instances === 12, 'placeholder beast instances are replaced by real models');
-check(layer.placeholderMeshes.beast.count === 0 && !layer.placeholderMeshes.beast.parent, 'legacy beast placeholder is detached');
+check(layer.placeholderMeshes.beast.count === 0 && layer.placeholderMeshes.beast.parent === layer.group,
+  'fallback beast batch stays attached but submits no draw while all forms are loaded');
 const speciesOf = {};
 for (const mesh of layer.creatureBatch.group.children) {
   speciesOf[mesh.userData.species] = mesh.count;
@@ -417,11 +419,14 @@ for (const mesh of layer.creatureBatch.group.children) {
     const matrix = new THREE.Matrix4(); mesh.getMatrixAt(index, matrix);
     const position = new THREE.Vector3().setFromMatrixPosition(matrix);
     check(Math.abs(position.y - 1.25) < 1e-6, 'creature y = elevation.at + lift');
-    const expected = creatureSpeciesFor(world.seed, entity.id, [...DEFAULT_WORLD_TRIAL_IDS]);
-    check(mesh.userData.species === expected, 'creature species uses seed + entity id stable hash');
+    const expected = creatureFormOf(world, entity);
+    check(mesh.userData.species === expected, 'explicit form wins, legacy beast uses fixed four-form hash');
+    if (entity.id === 1) check(mesh.userData.species === 'jingwei', 'explicit nontrial form is rendered');
+    else check(expected === creatureSpeciesFor(world.seed, entity.id, [...DEFAULT_WORLD_TRIAL_IDS]),
+      'legacy beast preserves the original four-form order and hash');
   }
 }
-check(Object.values(speciesOf).filter(count => count > 0).length >= 3, 'at least 3 world trial species appear in the world');
+check(Object.values(speciesOf).filter(count => count > 0).length >= 3, 'at least 3 form batches appear in the world');
 check(layer.stats.triangles >= 12 * 12, 'submitted triangles include real creature geometry');
 check(JSON.stringify(world) === worldBefore, 'EntityLayer creature presentation is read-only for the world');
 const layerSnapshot = JSON.stringify(layer.stats);
@@ -453,6 +458,24 @@ layer.update(1, world, { heightChanged: true });
 check(layer.stats.creatures === 4, `Region mask filters creature models through visibleList (got ${layer.stats.creatures})`);
 layer.setRegionGeometry(null);
 
+// Incremental library: a loaded explicit form stays a GLB instance; an unavailable
+// form remains visible and pickable in the bounded fallback batch.
+const partialMaterial = new THREE.MeshLambertMaterial({ name: 'partial_world_shared' });
+const partialLibrary = new CreatureLibrary({ entries: entries.filter(info =>
+  [...DEFAULT_WORLD_TRIAL_IDS, 'jingwei'].includes(info.id)).map(syntheticEntry), material: partialMaterial });
+world.entities[1].form = 'chiru';
+layer.setCreatureLibrary(partialLibrary);
+layer.update(1, world, { heightChanged: true });
+check(layer.stats.creatures === 11, 'loaded forms remain GLB instances');
+check(layer.placeholderMeshes.beast.count === 1 && layer.placeholderMeshes.beast.visible,
+  'unloaded or failed form keeps visible fallback');
+check(layer.placeholderMeshes.beast.userData.renderEntities[0].id === 2
+  && layer.placeholderMeshes.beast.userData.renderEntities[0].identityContainer === 'entities',
+  'fallback pick maps to original identity');
+check([...layer.creatureBatch.meshes.values()].some(mesh =>
+  mesh.userData.species === 'jingwei' && mesh.userData.renderEntities.some(entity => entity.id === 1)),
+  'loaded explicit jingwei uses its own GLB batch');
+
 // 回退：卸下库 ⇒ 完全回到旧占位几何
 layer.setCreatureLibrary(null);
 layer.update(1, world, { heightChanged: true });
@@ -463,6 +486,7 @@ check(layer.stats.instances === 12, 'fallback keeps every beast visible');
 layer.dispose();
 check(worldLibrary.species.size === 13, 'EntityLayer dispose never disposes the shared library');
 worldLibrary.dispose();
+partialLibrary.dispose();
 
 // ── 8. 视觉变体不得抽模拟 RNG ────────────────────────────────────────────
 const noRngFiles = [

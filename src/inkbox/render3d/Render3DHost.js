@@ -19,7 +19,9 @@ import { ArtPass } from './art/ArtPass.js';
 import { ShanhaiAtmosphere } from './shanhai/ShanhaiAtmosphere.js';
 import { RealmVeilRim } from './shanhai/RealmVeilRim.js';
 import { loadCharacterLibrary } from './characters/CharacterLibrary.js';
-import { DEFAULT_WORLD_TRIAL_IDS, loadCreatureLibrary } from './creatures/CreatureLibrary.js';
+import { loadCreatureLibrary } from './creatures/CreatureLibrary.js';
+import { creatureFormOf, WANLING_BY_KEY } from '../core/wanlingCatalog.js';
+import { readBiyiPairs } from '../render/wanlingLayer.js';
 import { loadEnvironmentAssetLibrary } from './environment/EnvironmentAssetLibrary.js';
 import { GEOGRAPHY_FEATURES, geographyFeatures } from './stage/GeographyFeatures.js';
 
@@ -93,24 +95,12 @@ export class Render3DHost {
         if (!this.disposed) console.error('Cultivator character library failed to load', error);
       });
     }
-    // 山海异兽库：默认只预载世界试装 4 种；失败只 console.error，绝不阻断游戏。
-    const loadCreatures = options.loadCreatureLibrary
+    // Only forms actually present in the mortal world enter GPU memory.
+    this.loadCreatures = options.loadCreatureLibrary
       || (typeof window !== 'undefined' && options.creatures !== false ? loadCreatureLibrary : null);
-    if (!this.creatureLibrary && loadCreatures) {
-      const ids = options.creatureIds === undefined ? DEFAULT_WORLD_TRIAL_IDS : options.creatureIds;
-      this.creatureLoadPromise = Promise.resolve().then(() => loadCreatures({ ids, keepRigs: false })).then(library => {
-        if (this.disposed) { library.dispose(); return; }
-        this.creatureLibrary = library;
-        for (const stage of this.stages.values()) {
-          stage.creatureLibrary = library;
-          stage.entities?.setCreatureLibrary(library);
-        }
-        return library;
-      }).catch(error => {
-        this.creatureLoadError = error;
-        if (!this.disposed) console.error('Creature asset library failed to load', error);
-      });
-    }
+    this.creatureFailedForms = new Set();
+    this.creatureScanClock = Infinity;
+    this.ensureCreatureForms();
     const loadEnvironment = options.loadEnvironmentAssetLibrary
       || (typeof window !== 'undefined' && options.environment !== false ? loadEnvironmentAssetLibrary : null);
     if (!this.environmentLibrary && loadEnvironment) {
@@ -131,6 +121,55 @@ export class Render3DHost {
         if (!this.disposed) console.error('Environment asset library failed to load', error);
       });
     }
+  }
+  activeCreatureForms() {
+    const forms = new Set();
+    for (const e of this.world?.entities || []) if (e?.sp === 'beast' && e.hp > 0)
+      forms.add(creatureFormOf(this.world, e));
+    for (const u of this.world?.wanling?.units || []) if (u?.hp > 0 && u.state !== 'dissipated'
+      && WANLING_BY_KEY.get(u.form)?.model
+      && !(u.form === 'jiuweihu' && u.mask === 'human')) forms.add(u.form);
+    if (readBiyiPairs(this.world).length) forms.add('biyi');
+    return [...forms].sort();
+  }
+  ensureCreatureForms() {
+    if (!this.loadCreatures || this.disposed) return;
+    const needed = this.activeCreatureForms().filter(id => !this.creatureFailedForms.has(id));
+    if (!needed.length) return;
+    if (!this.creatureLibrary) {
+      if (this.creatureLoadPromise) return;
+      this.creatureLoadPromise = Promise.resolve().then(() => this.loadCreatures({ ids: needed, keepRigs: false }))
+        .then(library => {
+          if (this.disposed) { library.dispose(); return; }
+          this.creatureLibrary = library;
+          for (const stage of this.stages.values()) stage.setCreatureLibrary(library);
+          for (const error of library.errors || []) this.creatureFailedForms.add(error.id);
+          this.ensureCreatureForms();
+          return library;
+        }).catch(error => {
+          this.creatureLoadError = error;
+          needed.forEach(id => this.creatureFailedForms.add(id));
+          if (!this.disposed) console.error('Creature asset library failed to load', error);
+        }).finally(() => { this.creatureLoadPromise = null; });
+      return;
+    }
+    if (this.creatureEnsurePromise) return;
+    const missing = needed.filter(id => !this.creatureLibrary.hasSpecies(id));
+    if (!missing.length) return;
+    this.creatureEnsurePromise = (async () => {
+      for (const id of missing) {
+        try {
+          if (!await this.creatureLibrary.ensureSpecies(id) || this.disposed) continue;
+          for (const stage of this.stages.values()) {
+            stage.entities?.creatureBatch?.addSpecies(id);
+            if (stage.entities) { stage.entities.lastDerived = null; stage.entities.clock = Infinity; }
+          }
+        } catch (error) {
+          this.creatureFailedForms.add(id);
+          if (!this.disposed) console.error(`Creature ${id} failed to load`, error);
+        }
+      }
+    })().finally(() => { this.creatureEnsurePromise = null; });
   }
   setWorld(world) {
     const next = snapshotWorldSet(world);
@@ -160,7 +199,9 @@ export class Render3DHost {
     this.boundaryKey = null; this.boundaryField = null;
     this.art.setProfile(this.art.profile);
     this.setLODEnabled(this.lodEnabled);
-    this.accessKey = null; this.debug.samples = []; this.applyView(); return true;
+    this.accessKey = null; this.debug.samples = []; this.applyView();
+    this.creatureScanClock = Infinity;
+    return true;
   }
   setArtProfile(profile) { return this.art.setProfile(profile); }
   /** V1 · 山海入画：纯装饰景观总开关（不影响任何可交互对象）。 */
@@ -326,6 +367,8 @@ export class Render3DHost {
     this.art.syncStyleContext();
   }
   update(dt) {
+    this.creatureScanClock += Number.isFinite(dt) ? dt : 0;
+    if (this.creatureScanClock >= 2) { this.creatureScanClock = 0; this.ensureCreatureForms(); }
     const start = performance.now(); this.applyView();
     const totals = { bridgeScanMs: 0, terrainUpdateMs: 0, waterUpdateMs: 0, vegetationUpdateMs: 0, entityUpdateMs: 0, settlementUpdateMs: 0, markerUpdateMs: 0 };
     this.updatedPlanes = [];
@@ -405,7 +448,7 @@ export class Render3DHost {
       productionAssetsEnabled: this.productionAssetsEnabled,
       environmentAssetsReady: !!this.environmentLibrary && !this.environmentLibrary.disposed,
       creatureLibraryReady: !!this.creatureLibrary && !this.creatureLibrary.disposed,
-      creatureSpecies: this.creatureLibrary ? [...(this.creatureLibrary.worldSpecies || [])] : [],
+      creatureSpecies: this.creatureLibrary ? [...this.creatureLibrary.ids] : [],
       creatureInstances: sum(s => s.entities?.creatureBatch?.stats.instances || 0),
       geography: this.getGeographyStats(),
     });

@@ -119,6 +119,9 @@ jobs:
       - name: G7 取消事务、异步存读档与拒绝神力边界
         run: npm run test:g7
 
+      - name: W0.1 真实物种、山林生态、道途活动与存档
+        run: npm run test:w01
+
       - name: G2-P0 真实生态与 Canvas 颜色缓存等价
         run: npm run test:g2p0
 

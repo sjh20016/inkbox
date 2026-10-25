@@ -33,6 +33,8 @@ function advance(w,days) {w.day+=days;stepWanling(w,days);}
 {
   const w=world(),deer=place(w,'deer',10,10),wolf=place(w,'wolf',11,10);
   const count=deer.count;advance(w,30);assert.ok(deer.count<count);
+  assert.ok(w.wanling.events.some(e=>e.id===deer.id&&e.day===30&&e.text.includes('数量')),
+    'the first real predation after placement is visible without waiting ninety days');
   const dog=place(w,'tiangou',13,12),wolfHp=wolf.hp;advance(w,30);
   assert.ok(wolf.hp<wolfHp);assert.ok(wanlingGuardAt(w,13,12)>0);
   assert.equal(isWanlingHostile(w,{form:'dangkang',sp:'beast'}, {sp:'human'}),false);
@@ -48,6 +50,37 @@ function advance(w,days) {w.day+=days;stepWanling(w,days);}
   advance(w,30);
   assert.equal(a.count+b.count,before-1);
   assert.equal(wolf.state,'hunting');
+}
+// Coincident predator/prey still produces a nonzero escape destination.
+{
+  const w=world(),deer=place(w,'deer',10,10),wolf=place(w,'wolf',11,10);
+  wolf.x=wolf.tx=deer.x;wolf.y=wolf.ty=deer.y;
+  const before=deer.count;advance(w,30);
+  assert.equal(deer.count,before-1);
+  assert.ok(Math.hypot(deer.tx-10.5,deer.ty-10.5)>0.1);
+}
+// Low grass causes bounded migration toward an actual greener legal cell.
+{
+  const w=world(),deer=place(w,'deer',10,10);
+  w.veg.fill(0);w.veg[w.idx(12,10)]=0.8;
+  const before=deer.count;advance(w,30);
+  assert.equal(deer.count,before);assert.equal(deer.state,'migrating');
+  assert.ok(deer.tx>deer.x);
+}
+// A hungry pack takes at most one food per month; dog or sound prevents it.
+{
+  const w=world(),v={id:1,name:'试村',x:12,y:12,hp:60,food:10};w.villages.push(v);
+  const wolf=place(w,'wolf',11,12);advance(w,30);
+  assert.equal(v.food,9);assert.equal(wolf.state,'raiding');
+  advance(w,1);assert.equal(v.food,9);
+  const dog=place(w,'tiangou',12,14);advance(w,29);assert.equal(v.food,9);
+  removeWanling(w,dog.id);
+  wolf.x=wolf.tx=11.5;wolf.y=wolf.ty=12.5;
+  addWanlingEffect(w,{kind:'calm',sourceId:0,targetId:wolf.id,x:11.5,y:12.5,radius:1,value:.5,untilDay:150});
+  advance(w,30);assert.equal(v.food,9);
+  wolf.x=wolf.tx=18.5;wolf.y=wolf.ty=12.5;
+  assert.ok(wanlingState(w).effects.some(e=>e.kind==='calm'));
+  advance(w,30);assert.equal(wolf.state,'calm');
 }
 // 3. Forest anchor uses actual vegetation; losing forest weakens/dissipates.
 {
@@ -81,6 +114,16 @@ function advance(w,days) {w.day+=days;stepWanling(w,days);}
   assert.equal(wanlingResonanceAt(w,30,30),0);
   const p={id:1,x:20,y:20,hp:30,maxHp:30,karma:-50,sp:'human'};w.entities.push(p);
   place(w,'qiongqi',20,21);advance(w,30);assert.ok(p.hp<30&&p.hp>0);
+}
+// Qiongqi honors target-following sound calm for the effect's full lifetime.
+{
+  const w=world(),p={id:2,x:10,y:10,hp:30,maxHp:30,karma:-50,sp:'human'};
+  w.entities.push(p);const q=place(w,'qiongqi',11,10);
+  addWanlingEffect(w,{kind:'calm',sourceId:0,targetId:q.id,x:11.5,y:10.5,radius:1,value:.5,untilDay:120});
+  q.x=q.tx=13.5;q.y=q.ty=10.5;
+  advance(w,30);assert.equal(p.hp,30);assert.equal(q.state,'calm');
+  w.day=121;stepWanling(w,1);
+  assert.equal(wanlingState(w).effects.some(e=>e.kind==='calm'&&e.untilDay>w.day),false);
 }
 // Movement is bounded per step; legacy beasts receive both influence and calm.
 {
@@ -156,4 +199,4 @@ function advance(w,days) {w.day+=days;stepWanling(w,days);}
   assert.equal(requestWanling(empty,'deer',10,10).ok,false);
   assert.deepEqual(empty.wanling,{enabled:false});
 }
-console.log('W0.1 ecology: 13 real-world scenarios passed');
+console.log('W0.1 ecology: 17 real-world scenarios passed');

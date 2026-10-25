@@ -1,8 +1,8 @@
 import { DAO_BY_KEY } from '../core/cultivation.js';
 import { addWanlingEffect, liveWanling, wanlingById, wanlingEvent, wanlingState } from '../world/wanlingState.js';
 import { ensureWraithLog } from './wraiths.js';
-import { claimGroundArtifact } from './artifacts.js';
-import { addKarma, combatPower } from './cultivation.js';
+import { claimGroundArtifact, canReceiveArtifact } from './artifacts.js';
+import { addKarma } from './cultivation.js';
 import { addRelation, RELATION_TYPES } from './relations.js';
 
 const PERIOD = 30;
@@ -24,7 +24,7 @@ function spendPower(world,e,stoneCost,hpFraction=stoneCost*.02) {
 }
 function nearby(list,e,r,pred=()=>true) { let best=null,bd=r; for (const x of list||[]) { if (!pred(x)) continue; const d=dist(e,x); if(d<bd){best=x;bd=d;} } return best; }
 function jobList(world) { return wanlingState(world).jobs; }
-function getJob(world,id) { return jobList(world).find(j=>j.actorId===id)||null; }
+function getJob(world,id) { return (world?.wanling?.jobs||[]).find(j=>j.actorId===id)||null; }
 function setJob(world,e,path,targetKind,target,summary) {
   const jobs=jobList(world);
   for(let i=jobs.length-1;i>=0;i--) if(jobs[i].stage==='done'&&world.day-(jobs[i].completedDay||jobs[i].startedDay)>360) jobs.splice(i,1);
@@ -43,7 +43,7 @@ function targetFor(world,e,path,life) {
   if(path==='talisman'||path==='blood') return nearby(world.villages,e,36,v=>v.hp>0&&v.food>0);
   if(path==='formation') return nearby(world.sites,e,42,s=>s.kind==='formation'
     && (world.villages||[]).some(v=>v.hp>0&&Math.hypot(v.x-s.x,v.y-s.y)<=5));
-  if(path==='artifact') return nearby(world.artifacts,e,35,a=>a.ownerId===0&&Number.isFinite(a.durability)&&a.durability>0&&Array.isArray(a.history));
+  if(path==='artifact') return nearby(world.artifacts,e,35,a=>a.ownerId===0&&Number.isFinite(a.durability)&&a.durability>0&&Array.isArray(a.history)&&canReceiveArtifact(e,a));
   if(path==='sword') return nearby(people,e,32,x=>x.sp==='cultivator'&&x.level>0&&e.level>0&&x.hp>=x.maxHp*.9&&x.dao?.path?.key==='sword');
   if(path==='body') {
     const enemy=life?.findEnemy?.(e,12);
@@ -75,12 +75,13 @@ function act(world,life,e,j,target) {
     finish(world,e,j,`在${target.name||'村落'}留下护村符，效力至第${Math.round(world.day+180)}日`); return true;
   }
   if(key==='formation') {
-    if(!target||target.kind!=='formation'||!spendPower(world,e,.25,.01)) return false;
+    if(!target||target.kind!=='formation'||!(world.villages||[]).some(v=>v.hp>0&&Math.hypot(v.x-target.x,v.y-target.y)<=5)
+      ||!spendPower(world,e,.25,.01)) return false;
     addWanlingEffect(world,{kind:'formation',sourceId:e.id,targetId:target.id,x:target.x,y:target.y,radius:5,value:.1,untilDay:world.day+90});
     finish(world,e,j,`巡检并稳固${target.name||'古阵'}阵眼，为附近村落护持阵法`); return true;
   }
   if(key==='artifact') {
-    if(!target||target.ownerId!==0||!spendPower(world,e,.35,.015)) return false;
+    if(!target||target.ownerId!==0||!world.artifacts.includes(target)||!canReceiveArtifact(e,target)||!spendPower(world,e,.35,.015)) return false;
     const claimed=claimGroundArtifact(world,e,target.id,()=>0.5,'found');
     if(!claimed) return false;
     finish(world,e,j,`以灵力收取遗物「${claimed.name||'无名法宝'}」，履历记为拾得`); return true;
@@ -88,9 +89,7 @@ function act(world,life,e,j,target) {
   if(key==='sword') {
     if(!alive(target)||target.dao?.path?.key!=='sword'||dist(e,target)>1.5||target.hp<target.maxHp*.9) return false;
     if(typeof life?.attack!=='function') return false;
-    const power=Math.max(1,combatPower(e));
-    const safeDays=Math.min(.01,Math.max(.000001,target.hp-1)/(power*3.4*1.4));
-    life.attack(e,target,safeDays);
+    life.attack(e,target,.01,{sparring:true});
     target.restUntil=Math.max(target.restUntil||0,world.day+30);
     finish(world,e,j,`与${target.name||'剑修'}具名切磋，沿正式战斗路径轻触即止`); return true;
   }
@@ -146,6 +145,14 @@ export function stepDaoActivities(world,life) {
   if(!world||!life||world.wanling?.enabled===false||world.day-(world.wanling?.lastPathDay??-Infinity)<PERIOD) return 0;
   const state=wanlingState(world); state.lastPathDay=world.day;
   const byId=new Map((world.entities||[]).filter(alive).map(e=>[e.id,e]));
+  const allActors=new Map((world.entities||[]).map(e=>[e.id,e]));
+  for(const j of state.jobs) if(j.stage!=='done') {
+    const actor=allActors.get(j.actorId);
+    if(!alive(actor)||pathOf(actor)!==j.path) {
+      j.stage='done'; j.completedDay=world.day; j.nextDay=world.day;
+      j.summary='修士已离世、离开世界或改修他途，行程终止';
+    }
+  }
   for(const u of liveWanling(world)) if(u.bondedBy && (u.bondUntilDay<=world.day || !byId.has(u.bondedBy)
     || Math.hypot(u.x-byId.get(u.bondedBy).x,u.y-byId.get(u.bondedBy).y)>12)) {
     delete u.bondedBy; delete u.bondDay; delete u.bondUntilDay;
@@ -164,8 +171,12 @@ export function stepDaoActivities(world,life) {
 
 /** Run a dao job's movement/action. Returns true while it owns movement for this tick. */
 export function stepDaoTravel(world,life,e,dtDays) {
-  const j=getJob(world,e?.id); if(!j||j.stage==='done'||!alive(e)) return false;
-  const key=pathOf(e); if(key!==j.path){j.stage='done';return false;}
+  if(!world?.wanling || world.wanling.enabled===false) return false;
+  const j=getJob(world,e?.id); if(!j||j.stage==='done') return false;
+  if(!alive(e)||!world.entities?.includes(e)||pathOf(e)!==j.path) {
+    j.stage='done'; j.completedDay=world.day; j.nextDay=world.day;
+    j.summary='修士已离世、离开世界或改修他途，行程终止'; return false;
+  }
   let target=null;
   if(j.targetKind==='village') target=(world.villages||[]).find(x=>x.id===j.targetId);
   else if(j.targetKind==='site') target=[...(world.sites||[]),...(world.ruins||[])].find(x=>x.id===j.targetId);

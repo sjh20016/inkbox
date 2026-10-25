@@ -87,6 +87,7 @@ function guardedSite(world,u) {
   return world.sites?.some(s=>close(u,s,8)) || world.rifts?.some(r=>r.closedDay<0&&close(u,r,8));
 }
 export function isWanlingHostile(world,beast,other) {
+  if(world?.wanling?.enabled===false) return true;
   const form=beast?.form;
   if(!form) return true; // generic legacy beasts retain their old behavior
   if(soundCalm(world,beast.x,beast.y)) return false;

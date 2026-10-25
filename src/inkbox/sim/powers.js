@@ -15,6 +15,7 @@ import { NATURE_DAYS, igniteCell, extinguishCell, setRecoveringOverlay, floodCel
 import { placeOf } from './sects.js';
 import { damageSettlement } from './settlementResilience.js';
 import { beginDrainEcho, commitDrainEcho, updateDrainUndo } from './observeEcho.js';
+import { wanlingEvent } from '../world/wanlingState.js';
 
 // ── 撤销栈 ────────────────────────────────────────────────
 function historyCell(world, i) {
@@ -581,6 +582,54 @@ function disasterMilestone(world, kind, x, y, radius, killed,
   return text;
 }
 
+// Low-cost ecology lives outside `world.entities`, so direct calamities need a
+// bounded second pass. Herd members share one saved pack: lightning/impact can
+// destroy a pack, while plague removes 55% of its animals on a stable local roll.
+// This never enters the mortal death/soul ledger or the disaster's human count.
+function damageWanlings(world, x, y, radius, kind, damage = Infinity) {
+  const state = world?.wanling;
+  if (!state || state.enabled === false || !Array.isArray(state.units)) return '';
+  const r2 = radius * radius, affected = [], casualties = [];
+  for (const unit of state.units) {
+    if (!(unit.hp > 0) || (unit.x-x) ** 2 + (unit.y-y) ** 2 > r2) continue;
+    const herd = unit.form === 'deer' || unit.form === 'wolf';
+    let lost = 0;
+    if (kind === '瘟疫') {
+      if (seedFrom(Math.round(unit.x), Math.round(unit.y), 4242) >= 0.55) continue;
+      lost = herd ? Math.max(1, Math.ceil(unit.count * 0.55)) : 1;
+      if (herd && lost < unit.count) unit.hp = Math.max(1, unit.hp * 0.65);
+    } else if (damage >= unit.hp) {
+      lost = herd ? unit.count : 1;
+    } else {
+      unit.hp = Math.max(1, unit.hp - damage);
+    }
+    if (lost) {
+      if (herd) unit.count = Math.max(0, unit.count - lost);
+      if (!herd || unit.count <= 0) casualties.push(unit);
+      affected.push({ unit, lost });
+    } else affected.push({ unit, lost: 0 });
+  }
+  if (!affected.length) return '';
+  const dead = new Set(casualties);
+  if (dead.size) {
+    const deadIds=new Set([...dead].map(unit=>unit.id));
+    for (const unit of dead) unit.hp=0;
+    state.units = state.units.filter(unit => !dead.has(unit));
+    state.effects = (state.effects || []).filter(effect => !deadIds.has(effect.sourceId) && !deadIds.has(effect.targetId));
+    for (const job of state.jobs || []) if (job.stage !== 'done' && deadIds.has(job.targetId)) {
+      job.stage = 'done'; job.completedDay = world.day; job.summary = '目标遭灾消散，行程终止';
+    }
+  }
+  for (const { unit, lost } of affected) {
+    const result = dead.has(unit) ? (unit.form==='deer'||unit.form==='wolf'?'已覆灭':'已消散')
+      : lost ? `数量损失${lost}，余${unit.count}` : `气血${Math.ceil(unit.hp)}/${Math.ceil(unit.maxHp)}`;
+    wanlingEvent(world, unit, `【${kind}】${unit.name}受灾：${result}。`,'wanling');
+  }
+  world.touch?.();
+  const lost = affected.reduce((sum, item) => sum + item.lost, 0);
+  return `另有${affected.length}群万灵受灾，${lost ? `共损失${lost}只` : '部分气血受损'}。`;
+}
+
 // ── 天灾 ──────────────────────────────────────────────────
 
 /** 闪电：点燃落点，并可击碎一格山体 */
@@ -613,7 +662,8 @@ export function lightning(world, x, y, history) {
   // 原先返回 `{ lit, killed }` 对象，而 `applyTool` 只认字符串 ⇒ 玩家看到的
   // 是通用提示「雷霆 · 落于 (x, y)」：点燃了几处草木、劈没劈死人，一个字都没有。
   const said = disasterMilestone(world, '落下一道雷霆', x, y, 4, killed, 6);
-  return lit > 0 ? `${said}雷火点燃 ${lit} 处草木。` : said;
+  const ecology = damageWanlings(world,x,y,4,'雷击',400);
+  return `${lit > 0 ? `${said}雷火点燃 ${lit} 处草木。` : said}${ecology}`;
 }
 
 /** 陨石：砸出环形坑，坑内成焦土与熔岩，冲击波夷平建筑 */
@@ -656,8 +706,9 @@ export function meteor(world, x, y, radius, history) {
     e.hp = 0;
     killed += 1;
   }
-  return disasterMilestone(world, '天降陨石', x, y, radius + 2, killed,
+  const said = disasterMilestone(world, '天降陨石', x, y, radius + 2, killed,
     22, radius, history, [cx, cy]);
+  return `${said}${damageWanlings(world,x,y,radius+2,'陨石',Infinity)}`;
 }
 
 /** 地震：地层错动 + 建筑倒塌 */
@@ -735,7 +786,8 @@ export function plague(world, x, y, radius) {
       killed += 1;
     }
   }
-  return disasterMilestone(world, '瘟疫横行', x, y, radius, killed, 16);
+  const said=disasterMilestone(world, '瘟疫横行', x, y, radius, killed, 16);
+  return `${said}${damageWanlings(world,x,y,radius,'瘟疫')}`;
 }
 
 /**

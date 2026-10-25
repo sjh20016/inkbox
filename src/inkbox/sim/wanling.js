@@ -73,7 +73,7 @@ export function requestWanling(world,form,x,y,{natural=false}={}) {
     count:form==='deer'?9:form==='wolf'?5:1,state:natural?'forage':'settled',
     bornDay:world.day,lastActDay:world.day};
   units.push(unit);
-  if(!natural) record(world,unit,`${unit.name}在（${x},${y}）现身。`);
+  if(!natural) wanlingEvent(world,unit,`${unit.name}在（${x},${y}）现身。`);
   return {ok:true,unit};
 }
 export function removeWanling(world,id) {
@@ -89,6 +89,23 @@ function move(world,u,x,y) {
   if(!spot) return false;
   u.tx=spot[0]+0.5;u.ty=spot[1]+0.5;
   return true;
+}
+function away(world,u,threat,steps=5) {
+  let dx=u.x-threat.x,dy=u.y-threat.y;
+  let d=Math.hypot(dx,dy);
+  if(d<0.001) {const a=rand(world,u.id,`escape:${threat.id||0}:${world.day}`)*Math.PI*2;dx=Math.cos(a);dy=Math.sin(a);d=1;}
+  return move(world,u,u.x+dx/d*steps,u.y+dy/d*steps);
+}
+function greenerSpot(world,u) {
+  const x=Math.floor(u.x),y=Math.floor(u.y),current=world.veg[at(world,u)];
+  let best=null,score=current+0.08;
+  for(const r of [2,4,6]) for(let k=0;k<8;k++) {
+    const a=k*Math.PI/4,xx=Math.floor(x+Math.cos(a)*r),yy=Math.floor(y+Math.sin(a)*r);
+    if(!habitat(world,u.form,xx,yy)) continue;
+    const veg=world.veg[world.idx(xx,yy)];
+    if(veg>score) {score=veg;best=[xx,yy];}
+  }
+  return best;
 }
 function advanceMotion(world,days) {
   const limit=Math.min(2,Math.max(0,days)*0.055);
@@ -157,8 +174,9 @@ function act(world,u) {
   switch(u.form) {
     case 'deer': {
       const wolf=nearest(units,u.x,u.y,5,v=>v.form==='wolf'&&v.hp>0&&wanlingEffectAt(world,'calm',v.x,v.y)<=0);
-      if(wolf) {move(world,u,u.x+(u.x-wolf.x)*2,u.y+(u.y-wolf.y)*2);u.state='flee';}
-      else {const available=world.veg[i];const eaten=Math.min(available,0.015*u.count);world.veg[i]=Math.fround(available-eaten);u.state='grazing';if(eaten) {markDirty(world,i);flushDirty(world);world.touch();}if(world.veg[i]<0.08) herdCount(world,u,-1,'缺草');else if(available>0.65&&rand(world,u.id,`fawn:${world.day}`)<0.25) herdCount(world,u,1,'繁衍');}
+      if(wolf) {away(world,u,wolf);u.state='flee';}
+      else if(world.veg[i]<0.08) {const grass=greenerSpot(world,u);if(grass) {move(world,u,...grass);u.state='migrating';}else herdCount(world,u,-1,'缺草');}
+      else {const available=world.veg[i];const eaten=Math.min(available,0.015*u.count);world.veg[i]=Math.fround(available-eaten);u.state='grazing';if(eaten) {markDirty(world,i);flushDirty(world);world.touch();}if(available>0.65&&rand(world,u.id,`fawn:${world.day}`)<0.25) herdCount(world,u,1,'繁衍');}
       break;
     }
     case 'wolf': {
@@ -166,7 +184,14 @@ function act(world,u) {
       const guard=nearest(units,u.x,u.y,7,v=>v!==u&&v.hp>0&&['tiangou','kaiming','zheng'].includes(v.form));
       if(guard) repel(world,guard,u);
       else if(calm) {u.state='calm';move(world,u,u.x+4,u.y+4);}
-      else {const deer=nearest(units,u.x,u.y,7,v=>v.form==='deer'&&v.hp>0);if(deer) {const caught=distance(u,deer)<=1.8**2;if(caught) herdCount(world,deer,-1,'遭狼捕食');move(world,u,deer.x,deer.y);u.state=caught?'hunting':'chasing';if(caught&&u.count<12&&rand(world,u.id,`pups:${world.day}`)<0.2) herdCount(world,u,1,'获食繁衍');}else u.state='forage';}
+      else {const deer=nearest(units,u.x,u.y,7,v=>v.form==='deer'&&v.hp>0);if(deer) {const caught=distance(u,deer)<=1.8**2;if(caught) herdCount(world,deer,-1,'遭狼捕食');move(world,u,deer.x,deer.y);u.state=caught?'hunting':'chasing';if(caught&&u.count<12&&rand(world,u.id,`pups:${world.day}`)<0.2) herdCount(world,u,1,'获食繁衍');}
+        else {const v=nearest(world.villages,u.x,u.y,30,p=>p.hp>0&&p.food>0);
+          if(v&&wanlingGuardAt(world,v.x,v.y)>0) {away(world,u,v);u.state='flee';}
+          else if(v) {const d=Math.sqrt(distance(u,v));
+            if(d<=4&&(u.lastRaidDay??-Infinity)+30<=world.day) {v.food=Math.max(0,v.food-1);u.lastRaidDay=world.day;u.state='raiding';record(world,u,`${u.name}在${v.name||'村落'}边掠去一份粮食。`);}
+            else {const dx=(u.x-v.x)/(d||1),dy=(u.y-v.y)/(d||1);move(world,u,v.x+dx*2,v.y+dy*2);u.state='prowling';}
+          } else {const a=rand(world,u.id,`wander:${world.day}`)*Math.PI*2;move(world,u,u.x+Math.cos(a)*4,u.y+Math.sin(a)*4);u.state='forage';}
+        }}
       break;
     }
     case 'tiangou': case 'zheng': case 'kaiming': {
@@ -206,6 +231,7 @@ function act(world,u) {
     }
     case 'dijiang': u.state=nearest(world.leylines,u.x,u.y,8)?'resonating':'wandering';break;
     case 'qiongqi': {
+      if(wanlingEffectAt(world,'calm',u.x,u.y)>0) {u.state='calm';break;}
       const victim=nearest(world.entities,u.x,u.y,5,p=>p.hp>0&&!p._ascended&&(p.karma||0)<=-20);
       if(victim&&!wanlingGuardAt(world,victim.x,victim.y)) {victim.hp=Math.max(1,victim.hp-Math.min(8,(victim.maxHp||40)*0.12));u.state='hunting';record(world,u,`${u.name}循善业袭扰【${victim.name}】。`);} else u.state='prowling';break;
     }
@@ -221,11 +247,11 @@ function naturalSpawn(world,period) {
     const n=period*17+k,form=options[stableWanlingHash(world.seed,n,'form')%options.length].key;
     const x=stableWanlingHash(world.seed,n,'x')%world.w,y=stableWanlingHash(world.seed,n,'y')%world.h;
     const spot=localSpot(world,form,x,y,12,`natural:${n}`);
-    if(spot) {const added=requestWanling(world,form,...spot,{natural:true});if(added.ok) {record(world,added.unit,`${added.unit.name}自然出现。`);return;}}
+    if(spot) {const added=requestWanling(world,form,...spot,{natural:true});if(added.ok) {wanlingEvent(world,added.unit,`${added.unit.name}自然出现。`);return;}}
   }
 }
 function cleanBonds(world,s) {
-  if(!s.units.some(u=>u.bondedBy)||!s.effects.some(e=>e.kind==='bond')) return;
+  if(!s.units.some(u=>u.bondedBy)&&!s.effects.some(e=>e.kind==='bond')) return;
   const people=new Map((world.entities||[]).filter(e=>e.hp>0&&!e._ascended).map(e=>[e.id,e]));
   const units=new Map(s.units.filter(u=>u.hp>0).map(u=>[u.id,u]));
   for(const u of s.units) if(u.bondedBy) {
