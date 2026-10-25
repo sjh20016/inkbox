@@ -50,6 +50,8 @@ import {
   isDryBuildableSettlementTile, isHabitableSettlementCenter, liveSettlementHouseType,
 } from '../world/settlementState.js';
 import { aidSettlement, archiveSettlement, repairSettlementHouse, settlementHistory } from './settlementResilience.js';
+import { wanlingVillageInfluence, isWanlingHostile } from '../world/wanlingInfluence.js';
+import { stepDaoTravel } from './daoActivities.js';
 
 const TERRAIN_SPEED = Object.freeze({
   [TERRAIN.SAND]: 0.82,
@@ -914,6 +916,8 @@ export class Life {
         e.ty = away[1];
         e.timer = 6 + this.rng() * 6;
       }
+    } else if (stepDaoTravel(world,this,e,dtDays)) {
+      return false;
     } else if (e.timer <= 0) {
       const plan = this.planNext(e, info);
       e.tx = plan.x;
@@ -1122,11 +1126,13 @@ export class Life {
       // 灵兽护食守土，不会跨半张地图追杀凡人。
       // 早先不限距离时，九十头灵兽能把整个人口在四十年内吃干净。
       if (other.sp === SPECIES.BEAST && e.sp !== SPECIES.BEAST) {
+        if (!isWanlingHostile(this.world,other,e)) return false;
         if (d > BEAST_AGGRO_RANGE) return false;
         found = other;
         return true;
       }
       if (e.sp === SPECIES.BEAST && other.sp !== SPECIES.BEAST) {
+        if (!isWanlingHostile(this.world,e,other)) return false;
         if (d > BEAST_AGGRO_RANGE) return false;
         found = other;
         return true;
@@ -1591,7 +1597,7 @@ export class Life {
       else if (!activeCrisis && village.hp < 100 && village.pop > 0 && village.food >= 10) {
         const live = village.houses.some((house) => liveSettlementHouseType(world, house));
         const pace = live ? 0.06 : 0.025;
-        village.hp = Math.min(100, village.hp + dtDays * pace);
+        village.hp = Math.min(100, village.hp + dtDays * pace * wanlingVillageInfluence(world,village).recoveryScale);
       }
       const declining = unsafe || village.hp <= 0 || (village.pop <= 0 && village.age > 720);
       village.distressDays = declining ? (village.distressDays || 0) + dtDays : 0;
@@ -1662,7 +1668,7 @@ export class Life {
       const conditionYield = unsafe ? 0 : clamp(village.hp / 100, 0, 1);
       const yieldPerDay = (society.adults * 0.018 * (0.6 + world.fertility(center))
         + effectiveFields * FIELD_YIELD_PER_DAY) * conditionYield;
-      village.food += yieldPerDay * dtDays;
+      village.food += yieldPerDay * dtDays * wanlingVillageInfluence(world,village).yieldScale;
       village.food -= society.humans * dtDays * 0.0085;
       village.food = clamp(village.food, 0, 400);
 
