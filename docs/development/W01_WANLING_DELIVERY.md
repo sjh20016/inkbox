@@ -1,6 +1,6 @@
 # W0.1 万灵入世 · 实施与验收
 
-本记录描述独立功能分支 `feat/w01-wanling-world-units`，不代表 main 已接纳。开工重新 fetch 并核对的 main 是 `d4faed33509cebc9bdad17384a73c7d0d758f743`。T0 #40、GLM #39、Opus #37、G6 #30 均未合并、关闭或改写。第一批模拟提交为 `de959361ddca7e677165b3476024b36f39338d38`，第二批运行时代码为 `b8fdbece82a48d0cfeaece511e024afb1ec059a4`；其后仅收束浏览器探针和交付材料。最终 HEAD 和该 SHA 的 Fast/Heavy 以本轮 Draft PR 的 Actions 为准。
+本记录描述独立功能分支 `feat/w01-wanling-world-units`，不代表 main 已接纳。开工重新 fetch 并核对的 main 是 `d4faed33509cebc9bdad17384a73c7d0d758f743`。T0 #40、GLM #39、Opus #37、G6 #30 均未合并、关闭或改写。第一批模拟提交为 `de959361ddca7e677165b3476024b36f39338d38`，第二批运行时代码为 `b8fdbece82a48d0cfeaece511e024afb1ec059a4`。门禁随后要求比翼只读推导从Canvas文件原样抽到共享模块，算法与公开接口不变。最终 HEAD 和该 SHA 的 Fast/Heavy 以本轮 Draft PR 的 Actions 为准。
 
 ## 玩家闭环与实现边界
 
@@ -94,6 +94,8 @@ v11不升级；人物行从71列尾追加为72列，`row[70]`出生来源不动�
 
 最终只读审查指出并复核关闭了瞬时天灾绕过容器、投放节流掩盖首事件、满仓器修领不到遗物却先付费三项问题。器修现在复用既有持物容量/品质比较的只读预检，选目标及付费前都核对领取资格；没有剩余阻断发现。
 
+首轮CI的 `test:view` 在模块边界断言失败：`realmInspector` 为比翼关系引用了Canvas绘制文件。已将原函数抽到只读 `world/wanlingRelations.js`，检视/Three直接读取共享层，Canvas保留原导出兼容；没有放宽断言。抽取前后函数体规范化SHA256均为 `52c9c3767355f41afc736a8bc65011a129f54edd1ec00461dcafe5da2954e574`，123项视界断言与W0.1五脚本重跑退出0。此前完整浏览器/性能仍准确标注其采集源码，不因无算法变动重启整套GPU长测。
+
 ## 性能与门禁记录
 
 有界性能对照由串行独立Edge运行：同一正式存档分别导入开工main与本候选，普通200×128为77人物/2村/17新单位，重载512×320为213人物/2村/96新单位；均有真实道侣关系。旧main忽略新万灵块，故它实际新单位为0，A/B包含新增工作的成本，不能称为完全等工作量的模拟对照。
@@ -116,17 +118,17 @@ v11不升级；人物行从71列尾追加为72列，`row[70]`出生来源不动�
 | 命令 / 证据 | 结果与范围 |
 | --- | --- |
 | `npm run test:w01` | 退出0；17生态场景、12道途、4天灾场景、实例/只读检查、8集成检查及3种子各3年观察 |
-| `npm test` | 退出0；213模块/670导入边、核心、启动、13运行事件检查 |
+| `npm test` | 退出0；共享层抽取前213模块/670导入边，抽取后214模块/672边，核心、启动、13运行事件检查 |
 | `test:creatures` / `test:render3d:m1` | 退出0；22012资产/接线检查，M1原38检查保留 |
 | `test:g7` / `test:c1` / `test:p0` / `test:s0` / `test:three-realms` | 均退出0；原有事务、出生供养、神力、静态自然、三界边界 |
 | `test:save-equivalence` | 固定列契约迁移后退出0；上述未来人口偏差如实保留 |
 | 主流程 / 佛魂补充 | 65/65与9/9，真实GPU，无JS/console/GL错误，专属Edge均清理 |
-| `npm run build` / `npm run test:package` | 退出0；520文件、17GLB、154本地脚本目标，运行包无报告/截图/预览 |
+| `npm run build` / `npm run test:package` | 退出0；共享层抽取前520文件、抽取后521文件，17GLB、154本地脚本目标，运行包无报告/截图/预览 |
 
 保留全部现有Fast与Heavy，新W0.1五个检查脚本加入Fast；最终SHA完整CI结论见Draft PR。不把手动BrowserSmoke的设计性跳过当成功，没有启动800年GPU长测。
 
 ## 文件职责与回退
 
-核心新增位于 `core/wanlingCatalog`、`world/wanlingState`、`world/wanlingInfluence`、`sim/wanling`、`sim/daoActivities`。推进、Life、修炼、地方韧性和save只接入必要消费点；未重写原框架。图录/事实卡/单模型预览、Canvas代表影及Three既有实例批次负责读取，渲染不反写模拟。测试脚本、受控夹具、包白名单与Fast接线使实现可复核。
+核心新增位于 `core/wanlingCatalog`、`world/wanlingState`、`world/wanlingInfluence`、`world/wanlingRelations`、`sim/wanling`、`sim/daoActivities`。推进、Life、修炼、地方韧性和save只接入必要消费点；未重写原框架。图录/事实卡/单模型预览、Canvas代表影及Three既有实例批次负责读取，渲染不反写模拟。测试脚本、受控夹具、包白名单与Fast接线使实现可复核。
 
 保留当前分支和新存档后，可在另一干净工作树运行基线 `d4faed3` 对照；撤回候选使用正常revert本分支提交。没有强推、重写main、合并其他候选或删除分支。需回到旧程序时先备份新格式存档，避免旧程序忽略万灵块后覆盖唯一副本。

@@ -35,7 +35,7 @@ import { liveSettlementHouseType } from '../world/settlementState.js';
 import { personLifeRows } from './personLifeFacts.js';
 import { wanlingById } from '../world/wanlingState.js';
 import { wanlingInspectCard } from './wanlingFacts.js';
-import { readBiyiPairs } from '../render/wanlingLayer.js';
+import { readBiyiPairs } from '../world/wanlingRelations.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
 export const REALM_INSPECT_RADIUS = 4;

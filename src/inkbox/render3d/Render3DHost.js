@@ -21,7 +21,7 @@ import { RealmVeilRim } from './shanhai/RealmVeilRim.js';
 import { loadCharacterLibrary } from './characters/CharacterLibrary.js';
 import { loadCreatureLibrary } from './creatures/CreatureLibrary.js';
 import { creatureFormOf, WANLING_BY_KEY } from '../core/wanlingCatalog.js';
-import { readBiyiPairs } from '../render/wanlingLayer.js';
+import { readBiyiPairs } from '../world/wanlingRelations.js';
 import { loadEnvironmentAssetLibrary } from './environment/EnvironmentAssetLibrary.js';
 import { GEOGRAPHY_FEATURES, geographyFeatures } from './stage/GeographyFeatures.js';
 

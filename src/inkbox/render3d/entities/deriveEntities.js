@@ -24,7 +24,7 @@ import { SPECIES, SPECIES_INFO } from '../../core/config.js';
 import { REALMS, realmIndexFor } from '../../core/cultivation.js';
 import { characterAppearanceOf } from '../characters/characterAppearance.js';
 import { creatureFormOf, WANLING_BY_KEY } from '../../core/wanlingCatalog.js';
-import { readBiyiPairs } from '../../render/wanlingLayer.js';
+import { readBiyiPairs } from '../../world/wanlingRelations.js';
 
 /**
  * 视觉类别。前四个来自 `world.entities`，`wraith` 来自 `world.wraiths`（凡间鬼影）。
