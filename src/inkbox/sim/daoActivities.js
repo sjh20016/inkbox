@@ -39,6 +39,8 @@ export function yieldDaoActivityToTransit(world,actorId) {
   const j=getJob(world,actorId);if(!j)return false;
   cancelJob(world,j,'山海通衢已接管远行，本次行道终止；归来并冷却后重新择事');
   const actor=world.entities?.find(e=>e.id===actorId);
+  // Life must choose a fresh ground intent after arrival, not resume this target.
+  if(actor){actor.tx=actor.x;actor.ty=actor.y;actor.timer=0;}
   wanlingEvent(world,null,`【${actor?.name||'修士'}】${j.summary}`,'dao');
   return true;
 }

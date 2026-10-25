@@ -23,6 +23,8 @@ assert.equal(daoActivityFor(w,m.actors.flier).stage,'done','T0 immediately cance
 assert.match(daoActivityFor(w,m.actors.flier).summary,/山海通衢/);
 const peopleBefore=w.entities.map(e=>e.id);
 const flier=w.entities.find(e=>e.id===m.actors.flier),position=[flier.x,flier.y];
+assert.equal(flier.timer,0,'a cancelled DAO target must not survive the journey as a long ground intent');
+assert.deepEqual([flier.tx,flier.ty],position,'old DAO ground destination is cleared when T0 takes ownership');
 assert.equal(stepDaoTravel(w,life,flier,1),false);assert.deepEqual([flier.x,flier.y],position,'DAO cannot move a T0 actor');
 let groundMoves=0;const realMove=life.moveTowards.bind(life);
 life.moveTowards=(e,...args)=>{if(e.id===m.actors.flier&&activeJourneyForEntity(w,e.id))groundMoves++;return realMove(e,...args);};
@@ -70,6 +72,12 @@ const lastFlight=daoActivityFor(w,m.actors.flier);
 assert(!activeJourneyForEntity(w,m.actors.flier));
 const cargo=w.transit.ledger,heldFood=w.transit.journeys.reduce((n,j)=>n+j.cargo.food,0);
 assert.equal(cargo.loaded,cargo.delivered+cargo.returned+cargo.lost+heldFood);
+// Provide a new local injury after return; the same real person can work again.
+const returned=w.entities.find(e=>e.id===m.actors.flier),nearby=w.entities.find(e=>e.sp==='human'&&e.village===2);
+assert(returned&&nearby);Object.assign(nearby,{x:returned.x+.4,y:returned.y,hp:nearby.maxHp*.4});
+w.day+=30;stepDaoActivities(w,life);const beforeHeal=nearby.hp;
+assert.equal(daoActivityFor(w,returned.id).stage,'travel');
+assert.equal(stepDaoTravel(w,life,returned,1),true);assert(nearby.hp>beforeHeal,'returned traveller completes a new local treatment');
 // A legacy overlapping pair is reconciled before any DAO target or movement write.
 const overlap=deserializeWorld(payload),actor=overlap.entities.find(e=>e.id===m.actors.flier);
 const current=overlap.wanling.jobs.find(j=>j.actorId===actor.id);current.stage='travel';
@@ -79,4 +87,4 @@ assert.equal(moved,false);assert.equal(current.stage,'done');
 overlap.day+=30;stepDaoActivities(overlap,new Life(overlap,()=>.5));
 assert(!overlap.wanling.jobs.some(j=>j.actorId===actor.id&&j.stage!=='done'));
 console.log('WT-I1 joint integration passed',JSON.stringify({day:w.day,heals:treatments.length,wards:wards.length,
-  ship:loadedShip.id,flight:air.id,ledger:cargo,returningActorJob:lastFlight,groundMoves}));
+  ship:loadedShip.id,flight:air.id,ledger:cargo,returningActorJob:daoActivityFor(w,m.actors.flier),groundMoves}));
