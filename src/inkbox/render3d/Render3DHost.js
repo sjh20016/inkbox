@@ -199,7 +199,7 @@ export class Render3DHost {
     this.boundaryKey = null; this.boundaryField = null;
     this.art.setProfile(this.art.profile);
     this.setLODEnabled(this.lodEnabled);
-    this.accessKey = null; this.debug.samples = []; this.applyView();
+    this.accessKey = null; this.debug.samples = []; this.debug.sampleTotal = 0; this.applyView();
     this.creatureScanClock = Infinity;
     return true;
   }
@@ -259,7 +259,16 @@ export class Render3DHost {
     if (!this.stages.has(plane)) return false;
     this.activePlane = plane; this.setSlabProbe(false); this.applyView(); return true;
   }
-  setRealmViewState(state) { this.realmViewState = state; this.applyView(); }
+  setRealmViewState(state) {
+    // getRealmViewState() returns a fresh wrapper every frame, but its cached
+    // RegionMask identity is stable until the actual selection geometry changes.
+    // update() still refreshes access bounds, animated rifts and art each frame.
+    const current = this.realmViewState;
+    if (current?.open === state?.open && current?.targetPlane === state?.targetPlane
+      && current?.region === state?.region) return false;
+    this.realmViewState = state; this.applyView();
+    return true;
+  }
 
   /**
    * M2-B B2（§34 / §54）：切换垂直表现模式 `raw` / `strata`。

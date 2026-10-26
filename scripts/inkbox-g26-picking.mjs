@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { PlanePicker } from '../src/inkbox/render3d/picking/PlanePicker.js';
 import { Render3DAdapter } from '../src/inkbox/render3d/Render3DAdapter.js';
+import { Render3DHost } from '../src/inkbox/render3d/Render3DHost.js';
+import { RenderDebug } from '../src/inkbox/render3d/debug/RenderDebug.js';
 
 const scene=new THREE.Scene();
 const camera=new THREE.OrthographicCamera(-10,10,10,-10,.1,100);
@@ -82,6 +84,45 @@ assert.equal(adapter.hoverStats.staticRaycasts,initialStatic,'water animation ca
 host.world.sites.length=0;
 assert.equal(adapterHover()?.kind,'terrain','removed Site cannot survive an unchanged hover signature');
 picker.clearHoverCache();assert.equal(picker.hoverStatic,null,'lifecycle release clears cached intersections');
+
+// P0-A: signature scratch buffers are reused without masking a moving actor.
+const signatureBuffers = [adapter._hoverStaticValues, adapter._hoverDynamicValues];
+adapterHover();
+assert.strictEqual(adapter._hoverStaticValues, signatureBuffers[0], 'static signature buffer reused');
+assert.strictEqual(adapter._hoverDynamicValues, signatureBuffers[1], 'dynamic signature buffer reused');
+const dynamicBefore = adapter.hoverSignature(450,300).dynamicKey;
+actor.setMatrixAt(0,new THREE.Matrix4().makeTranslation(0,2,1));
+actor.instanceMatrix.needsUpdate=true;
+assert.notEqual(adapter.hoverSignature(450,300).dynamicKey,dynamicBefore,'scratch reuse retains dynamic invalidation');
+
+// P0-A: wrapper object identity never forces a second view application.
+// Same-mask submissions are elided; a new RegionMask or target is not.
+let viewApplications = 0;
+const viewHost = Object.assign(Object.create(Render3DHost.prototype), {
+  realmViewState:{open:false,targetPlane:null,region:null},
+  applyView(){viewApplications++;}
+});
+const mask1 = {}, mask2 = {};
+assert.equal(viewHost.setRealmViewState({open:false,targetPlane:null,region:null}),false);
+assert.equal(viewApplications,0);
+assert.equal(viewHost.setRealmViewState({open:true,targetPlane:'upper',region:mask1}),true);
+assert.equal(viewApplications,1);
+for(let i=0;i<10;i++)viewHost.setRealmViewState({open:true,targetPlane:'upper',region:mask1});
+assert.equal(viewApplications,1,'identical view has no repeat applyView');
+viewHost.setRealmViewState({open:true,targetPlane:'upper',region:mask2});
+viewHost.setRealmViewState({open:true,targetPlane:'nether',region:mask2});
+viewHost.setRealmViewState({open:false,targetPlane:null,region:null});
+assert.equal(viewApplications,4,'region / target / close each reapply view');
+
+// P0-A: O(1) debug average agrees with a 120-frame rolling window and resets.
+const debug = new RenderDebug();
+const gpu = {info:{render:{calls:1,triangles:2}}};
+for(let i=1;i<=130;i++)debug.record(i / 1000,gpu,{});
+const expectedMs = Array.from({length:120},(_,i)=>i+11).reduce((a,b)=>a+b,0)/120;
+assert(Math.abs(debug.metrics.frameMs-expectedMs)<1e-9);
+debug.samples=[];debug.sampleTotal=0;
+assert.equal(debug.record(.016,gpu,{}).frameMs,16,'world reset clears rolling state');
+
 
 // RealmBoundaryLayer.edges is a numeric count, not an object identity.
 const boundary = new THREE.Mesh(new THREE.PlaneGeometry(2,2), new THREE.MeshBasicMaterial());
