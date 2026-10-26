@@ -147,7 +147,6 @@ export function classify(world, x, y, i = y * world.w + x) {
 /** 一次把该格的所有推导量都算好：地表类型 + 灵气。 */
 function applyTile(world, x, y, i) {
   world.type[i] = classify(world, x, y, i);
-  noteTerrainCell(world, 'type', i);
   world.qi[i] = qiAt(world, x, y, i);
   return world.type[i];
 }
@@ -155,7 +154,9 @@ function applyTile(world, x, y, i) {
 export function recomputeTile(world, x, y) {
   const i = y * world.w + x;
   invalidateTransitGeography(world);
-  return applyTile(world, x, y, i);
+  const result = applyTile(world, x, y, i);
+  noteTerrainCell(world, 'type', i);
+  return result;
 }
 
 /**
@@ -191,14 +192,18 @@ export function flushDirty(world) {
   const flags = world._typeDirtyFlags;
   const w = world.w;
   const count = list.length;
+  let ax = world.w, ay = world.h, bx = -1, by = -1;
   for (let k = 0; k < count; k += 1) {
     const i = list[k];
     const x = i % w;
     const y = (i - x) / w;
     applyTile(world, x, y, i);
+    ax = Math.min(ax, x); ay = Math.min(ay, y);
+    bx = Math.max(bx, x); by = Math.max(by, y);
     flags[i] = 0;
   }
   list.length = 0;
+  noteTerrainRegion(world, 'type', { x0: ax, y0: ay, x1: bx, y1: by });
   world.touch();
   return count;
 }
