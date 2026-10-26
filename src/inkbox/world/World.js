@@ -9,6 +9,7 @@
 //   flow    汇流量（生成期算河流用）
 // 生灵与聚落是轻量对象数组，数量有上限。
 
+import { noteAllTerrain } from './terrainChanges.js';
 import { SEA_LEVEL, LIMITS, TERRAIN_INFO, reliefScaleFor } from '../core/config.js';
 import { realmIndexFor, REALMS } from '../core/cultivation.js';
 import { recordLifeEvent } from '../sim/biography.js';
@@ -365,6 +366,9 @@ export class World {
   touch() {
     this.revision += 1;
     this.terrainDirty = true;
+    // Conservative catch-all for older writers without a precise notification.
+    // On non-activated worlds this is a no-op; arrays remain the source of truth.
+    noteAllTerrain(this);
   }
 
   addEntity(entity) {
