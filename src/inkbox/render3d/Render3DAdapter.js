@@ -109,6 +109,9 @@ export class Render3DAdapter {
     for (const [id, name] of [['smooth', '平滑'], ['ridge', '山脊'], ['basin', '盆地']]) modeSelect.add(new Option(name, id));
     this.panel.querySelector('[aria-label="笔刷半径"]').max = String(Math.max(...LIMITS.brushSizes));
     stage.append(this.panel);
+    // These nodes live for the entire adapter session; no per-frame selector work.
+    this.editStateNode = this.panel.querySelector('[data-edit-state]');
+    this.debugNode = this.panel.querySelector('[data-debug]');
     this.readout = document.createElement('div'); this.readout.id = 'inkRender3DReadout';
     Object.assign(this.readout.style, { position: 'absolute', bottom: '12px', left: '12px', zIndex: '3', padding: '6px 10px', background: '#eee5d3eb', borderRadius: '4px', fontSize: '12px', pointerEvents: 'none' });
     stage.append(this.readout);
@@ -241,7 +244,8 @@ export class Render3DAdapter {
   }
   clearCameraKeys() { this.heldCameraKeys.clear(); }
   syncFeedback() {
-    const hint = typeof document === 'undefined' ? null : document.getElementById?.('inkHint');
+    const hint = this.feedbackHint?.isConnected ? this.feedbackHint
+      : (this.feedbackHint = typeof document === 'undefined' ? null : document.getElementById?.('inkHint'));
     if (!hint) return;
     const timer = this.sandbox.toastTimer;
     const visible = this.active && Number.isFinite(timer) && timer > 0 && timer < 60;
@@ -455,9 +459,10 @@ export class Render3DAdapter {
     if (!this.powerTarget) return;
     const person = this.active && this.mode === 'root' && !this.editReason(hit) && hit?.entityId != null
       ? this.sandbox.world.entities.find(e => e.id === hit.entityId && e.hp > 0 && !e._ascended) : null;
-    this.powerTarget.hidden = !person;
+    if (this.powerTarget.hidden !== !person) this.powerTarget.hidden = !person;
     if (!person || !this.pointer) return;
-    this.powerTarget.textContent = `◇ ${person.name || '无名'} · ${person.level > 0 ? '已有灵根' : '凡人 · 点击赐灵根'}`;
+    const targetText = `◇ ${person.name || '无名'} · ${person.level > 0 ? '已有灵根' : '凡人 · 点击赐灵根'}`;
+    if (this.powerTarget.textContent !== targetText) this.powerTarget.textContent = targetText;
     const rect = this.canvas.parentElement.getBoundingClientRect();
     this.powerTarget.style.left = `${Math.max(0, Math.min(rect.width - 240, this.pointer.x - rect.left + 14))}px`;
     this.powerTarget.style.top = `${Math.max(0, Math.min(rect.height - 45, this.pointer.y - rect.top + 16))}px`;
@@ -586,7 +591,7 @@ export class Render3DAdapter {
   }
   clearHistory(message){
     this.stroke=null;this.undoStack=[];this.redoStack=[];this.historyBytes=0;this.historyNotice=message||null;this.syncHistoryState();
-    if(message&&this.panel?.querySelector('[data-edit-state]'))this.panel.querySelector('[data-edit-state]').textContent=message;
+    if (message && this.editStateNode && this.editStateNode.textContent !== message) this.editStateNode.textContent = message;
   }
   cancelStroke() {
     this.powerStroke = null; this.drainStroke = null; this.cancelRealmDraw();
@@ -729,27 +734,32 @@ export class Render3DAdapter {
     this.updatePowerTarget(hit);
     this.syncFeedback();
     this.renderer.brush(this.mode === 'inspect' || this.editReason(hit) ? null : hit, this.radius);
-    const editState=this.panel.querySelector('[data-edit-state]');
-    if(editState&&this.mode!=='inspect')editState.textContent=this.editReason(hit)||
-      (this.mode === 'root' ? (hit?.entityId != null ? `赐灵根目标：人物 ${hit.entityId} · 点击确认` : '请点选高亮的真实凡人')
-        : TOOL_BY_ID[this.mode]?.mode === 'click' ? '单击施放 · 将改变真实世界' : '拖动选取范围 · 松手施放');
+    const editState = this.editStateNode;
+    if (editState && this.mode !== 'inspect') {
+      const editText = this.editReason(hit) ||
+        (this.mode === 'root' ? (hit?.entityId != null ? `赐灵根目标：人物 ${hit.entityId} · 点击确认` : '请点选高亮的真实凡人')
+          : TOOL_BY_ID[this.mode]?.mode === 'click' ? '单击施放 · 将改变真实世界' : '拖动选取范围 · 松手施放');
+      if (editState.textContent !== editText) editState.textContent = editText;
+    }
     const metrics = this.renderer.render();
     const cell = hit || this.selectedCell;
     const viewedWorld = this.renderer.stages.get(cell?.plane || this.renderer.activePlane)?.world || world;
     // §63：界缘检视优先显示（它是中性的界差读数，与格子检视互斥）。
     const boundaryText = this.selectedBoundary ? boundaryInspectorText(this.selectedBoundary) : null;
     const village = cell?.kind === 'settlement' ? viewedWorld.villages?.find(v => v.id === cell.settlementId) : null;
-    this.readout.textContent = (this.mode === 'beast' ? `万灵 · ${WANLING_BY_KEY.get(this.sandbox.wanlingForm)?.name || '当康'}｜点选地图投放 · ` : '') + (boundaryText || (this.mode === 'root' && cell?.entityId != null ? `人物 ${cell.entityId} · 格 ${cell.x}, ${cell.y} · 点击赐灵根` : village ? `聚落 · ${village.name}` : cell && cell.plane
+    const readoutText = (this.mode === 'beast' ? `万灵 · ${WANLING_BY_KEY.get(this.sandbox.wanlingForm)?.name || '当康'}｜点选地图投放 · ` : '') + (boundaryText || (this.mode === 'root' && cell?.entityId != null ? `人物 ${cell.entityId} · 格 ${cell.x}, ${cell.y} · 点击赐灵根` : village ? `聚落 · ${village.name}` : cell && cell.plane
       ? `${cell.plane} · 格 ${cell.x}, ${cell.y} · 高程 ${viewedWorld.height[cell.y * viewedWorld.w + cell.x]?.toFixed(4)} · ${TERRAIN_INFO[viewedWorld.type[cell.y * viewedWorld.w + cell.x]]?.name || '—'}`
       : 'WASD 平移 · Shift 加速 · 左键检视 / 雕刻 · 中键旋转 · 滚轮缩放 · F 全图'));
+    if (this.readout.textContent !== readoutText) this.readout.textContent = readoutText;
     if (!this.lastDebug || now - this.lastDebug > 0.3) {
       this.lastDebug = now;
-      this.panel.querySelector('[data-debug]').textContent = `WASD 平移 · Shift 加速 · Q/E 旋转 · F 全图\n左键检视 / 雕刻 · 中键旋转 · 滚轮缩放\n${metrics.fps.toFixed(1)} FPS · ${metrics.frameMs.toFixed(1)} ms/frame\n${metrics.drawCalls} draws · ${metrics.triangles} triangles\n${metrics.terrainVertices} terrain vertices · ${metrics.treeInstances} trees\n${metrics.entityInstances} entities · ${metrics.houseInstances} buildings · ${metrics.markerInstances} markers\nRaycast ${metrics.lastRaycastMs.toFixed(2)} ms（上次查询） · hover ${this.hoverStats.raycasts} 次 raycast / ${this.hoverStats.cacheHits} 次复用\nrender submit ${metrics.renderMs.toFixed(2)} ms\nCPU 更新 ${metrics.layerUpdateMs.toFixed(2)} ms（桥扫描 ${metrics.bridgeScanMs.toFixed(2)} · 地形 ${metrics.terrainUpdateMs.toFixed(2)} · 水 ${metrics.waterUpdateMs.toFixed(2)} · 植被 ${metrics.vegetationUpdateMs.toFixed(2)}）\n实体 ${metrics.entityUpdateMs.toFixed(2)} ms · 建筑 ${metrics.settlementUpdateMs.toFixed(2)} ms · 标记 ${metrics.markerUpdateMs.toFixed(2)} ms`;
+      let debugText = `WASD 平移 · Shift 加速 · Q/E 旋转 · F 全图\n左键检视 / 雕刻 · 中键旋转 · 滚轮缩放\n${metrics.fps.toFixed(1)} FPS · ${metrics.frameMs.toFixed(1)} ms/frame\n${metrics.drawCalls} draws · ${metrics.triangles} triangles\n${metrics.terrainVertices} terrain vertices · ${metrics.treeInstances} trees\n${metrics.entityInstances} entities · ${metrics.houseInstances} buildings · ${metrics.markerInstances} markers\nRaycast ${metrics.lastRaycastMs.toFixed(2)} ms（上次查询） · hover ${this.hoverStats.raycasts} 次 raycast / ${this.hoverStats.cacheHits} 次复用\nrender submit ${metrics.renderMs.toFixed(2)} ms\nCPU 更新 ${metrics.layerUpdateMs.toFixed(2)} ms（桥扫描 ${metrics.bridgeScanMs.toFixed(2)} · 地形 ${metrics.terrainUpdateMs.toFixed(2)} · 水 ${metrics.waterUpdateMs.toFixed(2)} · 植被 ${metrics.vegetationUpdateMs.toFixed(2)}）\n实体 ${metrics.entityUpdateMs.toFixed(2)} ms · 建筑 ${metrics.settlementUpdateMs.toFixed(2)} ms · 标记 ${metrics.markerUpdateMs.toFixed(2)} ms`;
       if (metrics.lod) {
         const names = { tree: 'Trees', character: 'Characters', building: 'Buildings' };
-        this.panel.querySelector('[data-debug]').textContent += '\n' + Object.entries(metrics.lod).map(([key, value]) =>
+        debugText += '\n' + Object.entries(metrics.lod).map(([key, value]) =>
           `${names[key]} L0/L1/L2 ${value.lod.join('/')} · ${value.triangles} tris · overflow ${value.overflow} · capacity ${value.capacity}${value.hlod ? ` · HLOD ${value.hlod}` : ''}`).join('\n');
       }
+      if (this.debugNode.textContent !== debugText) this.debugNode.textContent = debugText;
     }
     return true;
   }
