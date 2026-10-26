@@ -6,7 +6,23 @@ import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { createPilotMaterial, updatePilotMaterial, setPilotView } from '../art/PilotMaterial.js';
 import { createTreeLODBatches } from '../lod/TreeLODAssets.js';
 import { createShanhaiTreeLODs, createShanhaiTreeMaterial, setShanhaiTreeView } from '../shanhai/ShanhaiFlora.js';
-import { budgetLOD, chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
+import { chooseLOD, LOD_BUDGETS, projectedPixels } from '../lod/PresentationBudget.js';
+
+// Projected orthographic bounds of a bucket's tree-top AABB. The six
+// comparisons are conservative: an entire bucket is classified only when
+// every tree center is provably inside or outside the existing NDC margin.
+function axisMin(m, i, b) {
+  return m[i + 12]
+    + m[i] * (m[i] >= 0 ? b.minX : b.maxX)
+    + m[i + 4] * (m[i + 4] >= 0 ? b.minY : b.maxY)
+    + m[i + 8] * (m[i + 8] >= 0 ? b.minZ : b.maxZ);
+}
+function axisMax(m, i, b) {
+  return m[i + 12]
+    + m[i] * (m[i] >= 0 ? b.maxX : b.minX)
+    + m[i + 4] * (m[i + 4] >= 0 ? b.maxY : b.minY)
+    + m[i + 8] * (m[i + 8] >= 0 ? b.maxZ : b.minZ);
+}
 
 function pixelTree() {
   const data = new Uint8Array(16 * 24 * 4);
@@ -44,6 +60,9 @@ export class VegetationLayer {
     this._viewPpu = NaN; this._viewVerticalPpu = NaN;
     this._cameraMatrix = new Float64Array(16); this._cameraMatrix.fill(NaN);
     this._projectPoint = new THREE.Vector3();
+    this._projectionMatrix = new THREE.Matrix4();
+    this._projectionSource = null; this._projectionBuckets = [];
+    this._projectionCenters = null; this._projectionFlags = null;
     this._requestedLods = new Map(); this._visibleBudgetTrees = []; this._outsideBudgetTrees = [];
     this._budgetCrowded = false;
     this._lodByTree = new Map();
@@ -163,12 +182,16 @@ export class VegetationLayer {
       ? all.filter(tree => this.regionGeometry.isInsideCell(tree.x, tree.y) === this.regionInside)
       : all;
     this.pendingRegionRebuild = false;
+    this._projectionSource = null; // Membership and Region masks replace derived trees.
     this._reassignAndUpload(true);
   }
 
   // A tree's fractional anchor samples the four surrounding terrain nodes.
   // Keep membership, LOD, colors and matrix rotation/scale intact on ground edits.
   updateGround(region = null) {
+    // Heights can shift tree centers without changing membership. Rebuild
+    // conservative bucket bounds on the next camera-driven LOD pass.
+    this._projectionSource = null;
     const changedMeshes = [false, false, false];
     const s = this.stats; s.groundPasses++;
     let writes = 0;
@@ -268,9 +291,85 @@ export class VegetationLayer {
     this.lodProbe = {
       calls: 0, matrixUploadCount: 0, matrixInstancesWritten: 0, matrixNeedsUpdateMarks: 0,
       concatTemporaryArrays: 0, concatTemporaryElements: 0, concatTemporaryElementsAvoided: 0,
-      partitionElementsProcessed: 0, renderTreesArraysAllocated: 0, last: null,
+      partitionElementsProcessed: 0, renderTreesArraysAllocated: 0,
+      exactTreeProjections: 0, bucketClassifiedTrees: 0, last: null,
     };
     return this.lodProbe;
+  }
+
+  // Rebuilt only on changed membership, source array or ground heights.
+  // These positions exactly match the old per-tree projection center.
+  _prepareProjectionBuckets() {
+    const trees = this.trees;
+    if (this._projectionSource === trees && this._projectionCenters?.length === trees.length * 3) return;
+    const centers = new Float64Array(trees.length * 3), bins = new Map();
+    for (let i = 0; i < trees.length; i++) {
+      const t = trees[i], p = this.coordinates.worldToRender(t.x, t.y, this.elevation.at(t.x, t.y));
+      const x = p.x, y = p.y + t.size * .75, z = p.z, k = i * 3;
+      centers[k] = x; centers[k + 1] = y; centers[k + 2] = z;
+      const key = `${Math.floor(t.x / 32)}:${Math.floor(t.y / 32)}`;
+      let b = bins.get(key);
+      if (!b) {
+        b = { indices: [], minX: x, maxX: x, minY: y, maxY: y, minZ: z, maxZ: z };
+        bins.set(key, b);
+      }
+      b.indices.push(i);
+      b.minX = Math.min(b.minX, x); b.maxX = Math.max(b.maxX, x);
+      b.minY = Math.min(b.minY, y); b.maxY = Math.max(b.maxY, y);
+      b.minZ = Math.min(b.minZ, z); b.maxZ = Math.max(b.maxZ, z);
+    }
+    this._projectionSource = trees;
+    this._projectionBuckets = [...bins.values()];
+    this._projectionCenters = centers;
+    this._projectionFlags = new Uint8Array(trees.length);
+  }
+
+  // Retain the original two stable source-order partitions. An orthographic
+  // bucket wholly inside/outside ±1.1 NDC needs no individual projection;
+  // crossing buckets use the original exact .project(camera) test.
+  _partitionBudgetTrees() {
+    const trees = this.trees, camera = this.artView.camera;
+    const visible = this._visibleBudgetTrees, outside = this._outsideBudgetTrees;
+    visible.length = 0; outside.length = 0;
+    let exactTreeProjections = 0, bucketClassifiedTrees = 0;
+    if (camera.isOrthographicCamera) {
+      this._prepareProjectionBuckets();
+      const m = this._projectionMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).elements;
+      const flags = this._projectionFlags, centers = this._projectionCenters;
+      for (const b of this._projectionBuckets) {
+        const minX = axisMin(m, 0, b), maxX = axisMax(m, 0, b);
+        const minY = axisMin(m, 1, b), maxY = axisMax(m, 1, b);
+        const minZ = axisMin(m, 2, b), maxZ = axisMax(m, 2, b);
+        const allInside = minX >= -1.1 && maxX <= 1.1
+          && minY >= -1.1 && maxY <= 1.1 && minZ >= -1.1 && maxZ <= 1.1;
+        const allOutside = maxX < -1.1 || minX > 1.1
+          || maxY < -1.1 || minY > 1.1 || maxZ < -1.1 || minZ > 1.1;
+        if (allInside || allOutside) {
+          for (const i of b.indices) flags[i] = allInside ? 1 : 0;
+          bucketClassifiedTrees += b.indices.length;
+        } else {
+          for (const i of b.indices) {
+            const k = i * 3;
+            this._projectPoint.set(centers[k], centers[k + 1], centers[k + 2]).project(camera);
+            const { x, y, z } = this._projectPoint;
+            flags[i] = Math.abs(x) <= 1.1 && Math.abs(y) <= 1.1 && Math.abs(z) <= 1.1 ? 1 : 0;
+            exactTreeProjections++;
+          }
+        }
+      }
+      // Bucket iteration is spatial, but budget order MUST remain source order.
+      for (let i = 0; i < trees.length; i++) (flags[i] ? visible : outside).push(trees[i]);
+    } else {
+      // Do not approximate perspective projection; preserve the former path.
+      for (const tree of trees) {
+        const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
+        this._projectPoint.set(p.x, p.y + tree.size * .75, p.z).project(camera);
+        const { x, y, z } = this._projectPoint;
+        (Math.abs(x) <= 1.1 && Math.abs(y) <= 1.1 && Math.abs(z) <= 1.1 ? visible : outside).push(tree);
+        exactTreeProjections++;
+      }
+    }
+    return { exactTreeProjections, bucketClassifiedTrees };
   }
 
   _reassignAndUpload(forceUpload) {
@@ -290,21 +389,14 @@ export class VegetationLayer {
     const budget = LOD_BUDGETS.categories.tree;
     this._budgetCrowded = enabled && (desiredCounts[0] > budget.lod0
       || desiredCounts[1] + Math.max(0, desiredCounts[0] - budget.lod0) > budget.lod1);
-    let partitioned = false;
+    let partitioned = false, projectionWork = null;
     const partitionStart = probe ? performance.now() : 0;
     if (this._budgetCrowded && this.artView.camera) {
       // Scarce near-detail slots belong to the visible forest first. Source
       // ordering must not consume the budget in an off-screen map corner.
-      const visible = this._visibleBudgetTrees, outside = this._outsideBudgetTrees;
-      visible.length = outside.length = 0;
-      for (const tree of this.trees) {
-        const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
-        this._projectPoint.set(p.x, p.y + tree.size * .75, p.z).project(this.artView.camera);
-        const { x, y, z } = this._projectPoint;
-        (Math.abs(x) <= 1.1 && Math.abs(y) <= 1.1 && Math.abs(z) <= 1.1 ? visible : outside).push(tree);
-      }
-      // Linear, stable partition; stationary overview cameras do no projection
-      // work, and a crowded moving view does not allocate/sort N entry objects.
+      projectionWork = this._partitionBudgetTrees();
+      // A moving crowded camera now precisely projects only boundary buckets;
+      // fully inside/outside buckets retain identical source-order priority.
       partitioned = true;
     }
     const crowdedPartitionMs = probe ? performance.now() - partitionStart : 0;
@@ -315,9 +407,13 @@ export class VegetationLayer {
         let lod = 0;
         if (this.artProfile && this.lodEnabled) {
           const desired = requested.get(tree.cell);
-          const budgetResult = budgetLOD('tree', desired, this._lodCounts);
-          lod = budgetResult.lod;
-          if (budgetResult.demoted) this._budgetDemotions++;
+          // Identical rules to budgetLOD('tree'), without one temporary
+          // result object (and category normalization) for every tree.
+          lod = desired;
+          if (lod === 0 && this._lodCounts[0] >= budget.lod0) lod = 1;
+          if (lod === 1 && this._lodCounts[1] >= budget.lod1) lod = 2;
+          this._lodCounts[lod]++;
+          if (lod !== desired) this._budgetDemotions++;
         } else this._lodCounts[0]++;
         nextStates.set(tree.cell, lod);
       }
@@ -337,6 +433,8 @@ export class VegetationLayer {
       probe.calls++;
       const partitionElementsProcessed = partitioned ? this._visibleBudgetTrees.length + this._outsideBudgetTrees.length : 0;
       probe.partitionElementsProcessed += partitionElementsProcessed;
+      probe.exactTreeProjections += projectionWork?.exactTreeProjections || 0;
+      probe.bucketClassifiedTrees += projectionWork?.bucketClassifiedTrees || 0;
       probe.concatTemporaryElementsAvoided += partitionElementsProcessed;
       probe.renderTreesArraysAllocated += uploaded ? this.lodMeshes.length : 0;
       if (uploaded) {
@@ -352,6 +450,9 @@ export class VegetationLayer {
         budgetDemotions: this._budgetDemotions, concatTemporaryArrays: 0, concatTemporaryElements: 0,
         concatTemporaryElementsAvoided: partitionElementsProcessed, partitionElementsProcessed,
         matrixInstancesWritten, matrixNeedsUpdateMarks: uploaded ? this.lodMeshes.length : 0,
+        exactTreeProjections: projectionWork?.exactTreeProjections || 0,
+        bucketClassifiedTrees: projectionWork?.bucketClassifiedTrees || 0,
+        projectionBuckets: this._projectionBuckets.length,
       };
     }
   }
