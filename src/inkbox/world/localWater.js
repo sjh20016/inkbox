@@ -1,5 +1,6 @@
 // Event-driven, bounded water adjustment. This module never runs from the frame loop.
 import { markDirty, flushDirty } from './terrain.js';
+import { noteTerrainRegion } from './terrainChanges.js';
 import { emitPresentation } from '../sim/presentation.js';
 import { accessBounds as worldAccessBounds } from './mapProgress.js';
 
@@ -109,6 +110,7 @@ export function respondLocalWater(world, bounds, { source = 'terrain', phase = '
     event.cells = [...owned];
   }
   if (changed) {
+    noteTerrainRegion(world, 'water', { x0: minX, y0: minY, x1: maxX, y1: maxY });
     flushDirty(world);
     if (present) emitPresentation(world, 'tool-impact', { x: cx, y: cy, data: { tool: 'water-response', phase, radius: Math.max(maxX - minX, maxY - minY) / 2, affectedCells: changed, source, fromDepth, toDepth } });
   }
