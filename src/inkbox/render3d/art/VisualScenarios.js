@@ -115,9 +115,10 @@ export async function applyVisibleCamera(host,name) {
   const ray=new T.Raycaster();
   const blockers=[stage.terrain.mesh];
   const refreshBlockers=()=>{
+    stage.vegetation.updateSpatialVisibility?.(host.cameraRig.camera);
     blockers.length=0;blockers.push(stage.terrain.mesh);
     for(const group of [stage.vegetation.group||stage.vegetation.mesh,stage.entities.group,stage.settlements.group])
-      group.traverse(o=>{if(o.isInstancedMesh&&o.visible&&o.count)blockers.push(o);});
+      group.traverseVisible(o=>{if(o.isInstancedMesh&&!o.userData.presentationOnly&&o.count)blockers.push(o);});
   };
   refreshBlockers();
   const visibleObject=(mesh,x,y,lift)=>{
@@ -146,7 +147,8 @@ export async function applyVisibleCamera(host,name) {
       const house=poi.house,houseMeshes=[];stage.settlements.group.traverse(o=>{if(o.isInstancedMesh)houseMeshes.push(o);});
       const houseProof=houseMeshes.map(mesh=>visibleObject(mesh,house.x+.5,house.y+.5,1.5)).find(v=>v.visible);
       const trees=[...stage.vegetation.trees].sort((a,b)=>Math.hypot(a.x-entity.x,a.y-entity.y)-Math.hypot(b.x-entity.x,b.y-entity.y)).slice(0,40);
-      const treeMeshes=blockers.filter(mesh=>(stage.vegetation.lodMeshes||[stage.vegetation.mesh]).includes(mesh));
+      const vegetationMeshes=stage.vegetation.spatialBatches?stage.vegetation.getPickMeshes():(stage.vegetation.lodMeshes||[stage.vegetation.mesh]);
+      const treeMeshes=blockers.filter(mesh=>vegetationMeshes.includes(mesh));
       const treeProof=trees.flatMap(tree=>treeMeshes.map(mesh=>({...visibleObject(mesh,tree.x,tree.y,tree.size*.9),world:[tree.x,tree.y]}))).find(v=>v.visible);
       if(!houseProof||!treeProof)continue;
       proof.house=houseProof;proof.tree=treeProof;

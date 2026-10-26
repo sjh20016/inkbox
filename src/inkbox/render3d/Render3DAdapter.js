@@ -86,6 +86,7 @@ export class Render3DAdapter {
     // V1.3：自然雕刻默认开启；`?sculpt=classic` 回到 V1.2 的线性累加 + 硬夹笔刷（对照 / 回退）。
     if (artParams.get('sculpt') === 'classic') SCULPT_OPTIONS.natural = false;
     try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
+      forestCull: artParams.get('forestCull') === 'on',
       artDevelopment: diagnostics.development, artDebugView: diagnostics.debugView,
       productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off',
       // 异兽库：默认异步加载世界试装 4 种；测试可从 sandbox 注入库/加载器，`?creatures=off` 回退旧占位。
@@ -296,6 +297,12 @@ export class Render3DAdapter {
       // PlanePicker does not intersect the visual water mesh. Flowing water
       // must not invalidate cached terrain; actual terrain/structure edits do.
       for (const key of ['terrain', 'terrainSides', 'settlements', 'markers', 'realmArtifacts', 'decorations', 'vegetation']) {
+        if (key === 'vegetation' && stage.vegetation?.spatialBatches) {
+          const layer = stage.vegetation;
+          layer.updateSpatialVisibility(camera);
+          staticValues.push(key, hoverObjectId(layer), layer.group.visible ? 1 : 0, layer.pickRevision);
+          continue;
+        }
         const root = stage[key]?.mesh || stage[key]?.group;
         staticValues.push(key, hoverObjectId(root), root?.visible ? 1 : 0);
         root?.traverse?.(mesh => addMesh(mesh, staticValues));

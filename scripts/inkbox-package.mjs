@@ -164,6 +164,8 @@ const FILES = [
   'scripts/inkbox-render3d-m2c-browser.mjs',
   'scripts/inkbox-render3d-m2c-soak.mjs',
   'scripts/inkbox-render3d-m2c2a.mjs',
+  'scripts/inkbox-render3d-s1.mjs',
+  'scripts/inkbox-render3d-s1-browser.mjs',
   'scripts/inkbox-render3d-m2c2a-audit.mjs',
   'scripts/inkbox-render3d-m2c2a-browser.mjs',
   'scripts/inkbox-render3d-m2c2a-soak.mjs',

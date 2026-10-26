@@ -69,6 +69,7 @@ export class Render3DHost {
     this.art = new ArtPass(this, { profile: options.artProfile || 'baseline',
       development: options.artDevelopment === true, debugView: options.artDebugView || 'final' });
     this.lodEnabled = !!options.lodEnabled;
+    this.forestCull = options.forestCull === true;
     this.characterLibrary = options.characterLibrary || null;
     this.ownsCharacterLibrary = !options.characterLibrary;
     this.creatureLibrary = options.creatureLibrary || null;
@@ -182,6 +183,7 @@ export class Render3DHost {
         if (!entry) return;
         const plane = PLANES[i];
         const stage = new PlaneStage({ plane, world: entry.world, profile: PLANE_RENDER_PROFILE[plane],
+          forestCull: this.forestCull,
           coordinates: this.coordinates, characterLibrary: this.characterLibrary,
           creatureLibrary: this.creatureLibrary,
           environmentLibrary: this.environmentLibrary, productionAssets: this.productionAssetsEnabled,
