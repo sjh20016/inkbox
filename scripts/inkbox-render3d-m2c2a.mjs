@@ -111,6 +111,75 @@ check('tree fixed batches reduce real geometry; camera changes preserve facts an
     assert.deepEqual(after,geometries);assert.equal(digest(w),before);
   }finally{host.dispose();}
 });
+check('P0-B: conservative forest buckets equal exact per-tree priority and budget',()=>{
+  const w=worldFor(902),before=digest(w),host=hostFor(w),layer=host.vegetation;
+  const camera=host.cameraRig.camera,point=new THREE.Vector3();
+  try{
+    host.setArtProfile('pilot');host.setLODEnabled(true);
+    const all=Array.from({length:2400},(_,i)=>({
+      cell:i,x:i%60+.5,y:Math.floor(i/60)+.5,size:.8+(i%7)*.1,rotation:0
+    }));
+    layer.trees=all;layer._lodByTree.clear();layer._nextLodByTree.clear();
+    layer.setLODProbeEnabled(true);
+    const exactReference=previous=>{
+      const desired=new Map(),counts=[0,0,0],requested=[0,0,0],out=[[],[]];
+      for(const t of layer.trees){
+        const px=projectedPixels(1.5*t.size,layer.artView,.8*t.size);
+        const lod=chooseLOD('tree',px,previous.get(t.cell),true);
+        desired.set(t.cell,lod);requested[lod]++;
+        const p=layer.coordinates.worldToRender(t.x,t.y,layer.elevation.at(t.x,t.y));
+        point.set(p.x,p.y+t.size*.75,p.z).project(camera);
+        out[Math.abs(point.x)<=1.1&&Math.abs(point.y)<=1.1&&Math.abs(point.z)<=1.1?0:1].push(t);
+      }
+      const cap=LOD_BUDGETS.categories.tree;
+      const crowded=requested[0]>cap.lod0||requested[1]+Math.max(0,requested[0]-cap.lod0)>cap.lod1;
+      const ordered=crowded?[...out[0],...out[1]]:layer.trees;
+      const states=new Map();let demoted=0;
+      for(const t of ordered){
+        const item=budgetLOD('tree',desired.get(t.cell),counts);
+        states.set(t.cell,item.lod);if(item.demoted)demoted++;
+      }
+      return {states,counts,demoted,crowded,visible:out[0].map(t=>t.cell)};
+    };
+    const evaluate=(zoom,ppu)=>{
+      camera.zoom=zoom;camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
+      layer.artView={pixelsPerUnit:ppu,verticalPixelsPerUnit:ppu,camera};
+      const expected=exactReference(new Map(layer._lodByTree));
+      layer._reassignAndUpload(false);
+      assert.deepEqual([...layer._lodByTree].sort((a,b)=>a[0]-b[0]),[...expected.states].sort((a,b)=>a[0]-b[0]));
+      assert.deepEqual([...layer._lodCounts],expected.counts);
+      assert.equal(layer._budgetDemotions,expected.demoted);
+      assert.equal(layer._budgetCrowded,expected.crowded);
+      assert.equal(layer.stats.trees,layer.trees.length);
+      assert.equal(layer.stats.lod.reduce((a,b)=>a+b,0),layer.trees.length);
+      assert.deepEqual(layer._visibleBudgetTrees.map(t=>t.cell),expected.crowded?expected.visible:layer._visibleBudgetTrees.map(t=>t.cell));
+      return layer.lodProbe.last;
+    };
+    camera.position.set(30,100,90);camera.lookAt(30,0,20);
+    let result=evaluate(.5,80);
+    assert(result.crowded,'fixture must exercise scarcity');
+    assert.equal(result.exactTreeProjections,0,'fully visible forest needs no tree-level projections');
+    assert.equal(result.bucketClassifiedTrees,all.length);
+    camera.position.x+=.3;camera.lookAt(30.3,0,20);
+    result=evaluate(.5,80);
+    assert.equal(result.exactTreeProjections,0,'small pan preserves safe bucket classification');
+    assert.equal(result.uploaded,false,'unchanged budget does not rewrite matrices');
+    camera.position.set(30,100,90);camera.lookAt(30,0,20);
+    evaluate(8,80); // zoom changes which buckets straddle the viewport
+    camera.position.set(400,110,400);camera.lookAt(400,0,360);
+    result=evaluate(8,80);
+    assert.equal(result.exactTreeProjections,0,'offscreen buckets need no individual projections');
+    camera.position.set(25,100,90);camera.lookAt(20,0,20);
+    evaluate(3,9); // hysteresis/budget transitions
+    layer.updateGround({x0:0,y0:0,x1:0,y1:0});
+    assert.equal(layer._projectionSource,null,'height updates invalidate cached tree tops');
+    evaluate(5,80);
+    layer.trees=all.slice(0,1900); // exact same source keys after membership change
+    evaluate(4,80);
+    assert.equal(layer._projectionSource,layer.trees);
+    assert.equal(digest(w),before,'LOD probes and camera movement cannot mutate World');
+  }finally{host.dispose();}
+});
 check('all LOD batches use Stage RegionGeometry; realm transitions preserve ownership and identity',()=>{
   const w=populatedWorld(928),before=digest(w),host=hostFor(w);
   try{
