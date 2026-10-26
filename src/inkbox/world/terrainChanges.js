@@ -11,7 +11,7 @@ function stateFor(world) { return journals.get(world) || null; }
 export function activateTerrainChanges(world) {
   if (!world || !Number.isInteger(world.size) || world.size !== world.w * world.h) return false;
   if (!journals.has(world)) journals.set(world, {
-    serial: 0, count: 0, layer: new Uint8Array(CAPACITY),
+    serial: 0, count: 0, readers: 0, layer: new Uint8Array(CAPACITY),
     bounds: new Int32Array(CAPACITY * 4),
   });
   return true;
@@ -20,7 +20,7 @@ export function terrainChangesActive(world) { return journals.has(world); }
 
 function append(world, layer, x0, y0, x1, y1) {
   const j = stateFor(world), id = layerIds[layer];
-  if (!j || id === undefined || x0 > x1 || y0 > y1) return;
+  if (!j || !j.readers || id === undefined || x0 > x1 || y0 > y1) return;
   const seq = ++j.serial, slot = (seq - 1) % CAPACITY, offset = slot * 4;
   j.layer[slot] = id;
   j.bounds[offset] = Math.max(0, Math.min(world.w - 1, x0));
@@ -49,6 +49,7 @@ export function noteAllTerrain(world) {
 export function subscribeTerrainChanges(world) {
   const journal = stateFor(world);
   if (!journal) return null;
+  journal.readers++;
   return { world, journal, cursor: journal.serial, disposed: false };
 }
 export function readTerrainChanges(subscription) {
@@ -74,7 +75,9 @@ export function readTerrainChanges(subscription) {
 }
 export function disposeTerrainSubscription(subscription) {
   if (!subscription) return;
+  if (subscription.disposed) return;
   subscription.disposed = true;
+  subscription.journal.readers--;
   subscription.world = null;
   subscription.journal = null;
 }
