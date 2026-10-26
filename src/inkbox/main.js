@@ -429,7 +429,9 @@ class Sandbox {
     // 与上界并列，同样放在 terrain 之后。
     this.attachNether(this.world);
     // Product-owned Worlds opt into the journal only after full generation/load.
-    for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
+    if (typeof activateTerrainChanges === 'function') {
+      for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
+    }
     this.camera.bind(this.world);
     this.camera.fit(this.world);
     this.history.clear();
@@ -1264,7 +1266,9 @@ class Sandbox {
           // 幽冥同理：存档带 nether 就复用，没带就按凡间 seed 重新派生（旧档降级）。
           this.attachNether(this.world);
     // Product-owned Worlds opt into the journal only after full generation/load.
-    for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
+    if (typeof activateTerrainChanges === 'function') {
+      for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
+    }
           this.camera.bind(this.world);
           this.camera.fit(this.world);
           this.history.clear();
@@ -1364,7 +1368,9 @@ class Sandbox {
         // 幽冥同理：导入的世界也要挂上它自己的幽冥。
         this.attachNether(this.world);
     // Product-owned Worlds opt into the journal only after full generation/load.
-    for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
+    if (typeof activateTerrainChanges === 'function') {
+      for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
+    }
         this.camera.bind(this.world);
         this.camera.fit(this.world);
         this.history.clear();
