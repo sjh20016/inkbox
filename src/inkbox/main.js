@@ -1565,7 +1565,7 @@ class Sandbox {
     const observation = observeToolBefore(ctx, tool);
     ctx.result = tool.apply(ctx);
     // Tool effects may invoke legacy setters that do not carry a per-cell note.
-    noteAllTerrain(world);
+    if (typeof noteAllTerrain === 'function') noteAllTerrain(world);
     const impact = observeToolAfter(ctx, observation);
     this.lastToolImpact = impact;
     if (priorSites) showOpportunityPlacement(this, world.sites.find(site => !priorSites.has(site.id)), ctx.result);
