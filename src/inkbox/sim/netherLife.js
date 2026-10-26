@@ -59,6 +59,7 @@ import { NEVER_DECAY_DAY, TIME, SPECIES, SPECIES_INFO } from '../core/config.js'
 // 依赖方向：`netherLife → planes → core/config`，planes 不回头引 sim，不成环
 // （`scripts/inkbox-import-check.mjs` 会验）。
 import { netherWalkable } from '../world/planes.js';
+import { noteTerrainCell } from '../world/terrainChanges.js';
 // 幽冥独有法宝 / 功法的**铭名池**（D6-3 工程包 C）。命名纪律见 `core/lore.js` 里
 // 那两个池子的头注释（避开幽冥三物 / 鬼修六级 / 魂五路）。槽位 / 品阶 / 品质
 // 沿用凡间那套常量——幽冥物品走的是**同一套** `artifacts.js` 形状，不另立一套。
@@ -1185,6 +1186,7 @@ function leaveDecayTrace(nether, e) {
   const i = y * w + x;
   const cur = nether.veg[i] || 0;
   nether.veg[i] = Math.min(1, cur + DECAY_TRACE_VEG);
+  if (nether.veg[i] !== cur) noteTerrainCell(nether, 'veg', i);
 }
 
 /**
