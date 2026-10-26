@@ -204,7 +204,7 @@ export function flushDirty(world) {
   }
   list.length = 0;
   noteTerrainRegion(world, 'type', { x0: ax, y0: ay, x1: bx, y1: by });
-  world.touch();
+  world.touch({ terrain: false });
   return count;
 }
 
@@ -218,7 +218,7 @@ export function recomputeAll(world) {
     }
   }
   noteTerrainFull(world, 'type');
-  world.touch();
+  world.touch({ terrain: false });
 }
 
 /**
@@ -237,7 +237,7 @@ export function recomputeQi(world) {
       qi[i] = qiAt(world, x, y, i);
     }
   }
-  world.touch();
+  world.touch({ terrain: false });
 }
 
 /** 局部重算（笔刷落点周围一圈，含边界外扩 1 格以修正坡度） */
@@ -254,7 +254,7 @@ export function recomputeRect(world, x0, y0, x1, y1) {
     }
   }
   noteTerrainRegion(world, 'type', { x0: ax, y0: ay, x1: bx, y1: by });
-  world.touch();
+  world.touch({ terrain: false });
 }
 
 /**
