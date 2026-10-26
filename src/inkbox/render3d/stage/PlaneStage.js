@@ -316,6 +316,7 @@ export class PlaneStage {
   }
 
   releaseLayers() {
+    this.bridge?.dispose?.();
     this.terrainSides?.dispose();this.terrainSides=null;
     this.terrainLines?.dispose(); this.terrainLines = null;
     this.terrain?.dispose(); this.water?.dispose(); this.vegetation?.dispose();
