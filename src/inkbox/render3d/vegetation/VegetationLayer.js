@@ -340,10 +340,13 @@ export class VegetationLayer {
         const minX = axisMin(m, 0, b), maxX = axisMax(m, 0, b);
         const minY = axisMin(m, 1, b), maxY = axisMax(m, 1, b);
         const minZ = axisMin(m, 2, b), maxZ = axisMax(m, 2, b);
-        const allInside = minX >= -1.1 && maxX <= 1.1
-          && minY >= -1.1 && maxY <= 1.1 && minZ >= -1.1 && maxZ <= 1.1;
-        const allOutside = maxX < -1.1 || minX > 1.1
-          || maxY < -1.1 || minY > 1.1 || maxZ < -1.1 || minZ > 1.1;
+        // Small guard keeps floating-point roundoff near ±1.1 on the exact
+        // per-tree path rather than incorrectly classifying a whole bucket.
+        const lo = -1.1 + 1e-9, hi = 1.1 - 1e-9;
+        const allInside = minX >= lo && maxX <= hi
+          && minY >= lo && maxY <= hi && minZ >= lo && maxZ <= hi;
+        const allOutside = maxX < -1.1 - 1e-9 || minX > 1.1 + 1e-9
+          || maxY < -1.1 - 1e-9 || minY > 1.1 + 1e-9 || maxZ < -1.1 - 1e-9;
         if (allInside || allOutside) {
           for (const i of b.indices) flags[i] = allInside ? 1 : 0;
           bucketClassifiedTrees += b.indices.length;
