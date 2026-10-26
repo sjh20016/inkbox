@@ -42,6 +42,8 @@ import { generateNetherWorld } from '../src/inkbox/world/worldgenNether.js';
 import { Life } from '../src/inkbox/sim/life.js';
 import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
 import { spawnNetherGhost } from '../src/inkbox/sim/netherLife.js';
+import { recomputeQi, recomputeRect } from '../src/inkbox/world/terrain.js';
+import { igniteCell, extinguishCell, floodCells, settleNature } from '../src/inkbox/sim/nature.js';
 
 import { createCoordinates } from '../src/inkbox/render3d/coordinates.js';
 import { visualElevation, surfaceElevation } from '../src/inkbox/render3d/terrain/VisualElevation.js';
@@ -217,6 +219,80 @@ check('范围通知只局部比较；数组整体替换与 touch 回退均保持
   w.veg[i]=.2;w.touch();
   assert(bridge.changes()?.veg,'unported legacy touch has conservative full fallback');
   assert.equal(bridge.scanStats.fullScans,fullBefore+1);
+  bridge.dispose();
+});
+// ══ P0-C.1 · 官方推进与精确生产者通知 ═════════════════════════════════
+section('P0-C.1 · 运行期冗余全图通知清扫');
+check('纯状态 touch 与 qi 重算不检查五层；已标记 type 区域不膨胀为整图', () => {
+  const w = flatWorld(7821);
+  activateTerrainChanges(w);
+  const bridge = new WorldRenderBridge(w);
+  const revision = w.revision;
+  w.touch({ terrain: false });
+  assert.equal(w.revision, revision + 1, 'Canvas revision must still update');
+  assert.equal(bridge.changes(), null);
+  recomputeQi(w);
+  assert.equal(bridge.changes(), null, 'derived qi is not a five-layer terrain change');
+  recomputeRect(w, 12, 11, 12, 11);
+  bridge.changes();
+  assert.equal(bridge.scanStats.fullScans, 0);
+  assert.equal(bridge.scanStats.comparedCells, 9, 'type recompute should check only 3×3');
+  bridge.dispose();
+});
+check('无修改的正式推进不通知三界整图', () => {
+  const w = flatWorld(8342);
+  w.upper = generateUpperWorld({ preset: { w: W, h: H }, seed: w.seed });
+  w.nether = generateNetherWorld({ preset: { w: W, h: H }, seed: w.seed });
+  const bridges = [w, w.upper, w.nether].map(plane => {
+    activateTerrainChanges(plane);
+    return new WorldRenderBridge(plane);
+  });
+  advanceWorld(w, 1, { state: createAdvanceState(), riftActive: false });
+  for (const bridge of bridges) {
+    assert.equal(bridge.changes(), null);
+    assert.equal(bridge.scanStats.comparedCells, 0);
+    bridge.dispose();
+  }
+});
+check('火、水、洪水到期维持局部通知，历史 touch 仍可全量兜底', () => {
+  const w = flatWorld(7182);
+  const i = w.water.findIndex((depth, idx) => depth <= .02 && w.height[idx] > .4);
+  assert(i >= 0, 'requires one dry cell');
+  activateTerrainChanges(w);
+  const bridge = new WorldRenderBridge(w);
+  assert(igniteCell(w, i), 'ignite should succeed on a dry cell');
+  assert(bridge.changes()?.fire, 'fire appears immediately');
+  extinguishCell(w, i);
+  assert(bridge.changes()?.fire, 'fire extinguishes immediately');
+  floodCells(w, [[i, .05]], 10, { present: false });
+  assert(bridge.changes()?.water, 'finite flood is a local water change');
+  settleNature(w, w.day + 11);
+  assert(bridge.changes()?.water, 'flood expiry reverts its water cell');
+  assert.equal(bridge.scanStats.fullScans, 0, 'finite nature must not trigger full-plane scans');
+  w.veg[i] = .42;
+  w.touch();
+  assert(bridge.changes()?.veg, 'unknown legacy writes retain conservative full fallback');
+  assert.equal(bridge.scanStats.fullScans, 1);
+  bridge.dispose();
+});
+check('正式 Life tick 的五层变化被桥捕获，无变化位面不出现整图通知', () => {
+  const w = flatWorld(7281);
+  const life = new Life(w, mulberry32(w.seed ^ 0xa5a5a5a5));
+  activateTerrainChanges(w);
+  const bridge = new WorldRenderBridge(w);
+  const before = Object.fromEntries(['height', 'water', 'type', 'veg', 'fire'].map(k => [k, w[k].slice()]));
+  advanceWorld(w, 3, { life, state: createAdvanceState(), riftActive: false });
+  const changes = bridge.changes();
+  for (const layer of Object.keys(before)) {
+    const region = changes?.[layer];
+    for (let i = 0; i < w.size; i += 1) {
+      if (before[layer][i] === w[layer][i]) continue;
+      assert(region, layer + ' changed without a bridge dirty region');
+      const x = i % w.w, y = Math.floor(i / w.w);
+      assert(x >= region.x0 && x <= region.x1 && y >= region.y0 && y <= region.y1,
+        layer + ': changed cell omitted by journal');
+    }
+  }
   bridge.dispose();
 });
 // ══ G1 · mergeRegion 是纯函数 ═════════════════════════════════════════
