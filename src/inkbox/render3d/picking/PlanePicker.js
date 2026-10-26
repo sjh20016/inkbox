@@ -29,12 +29,16 @@ function collectObjects(stage, onlyPlane) {
     if (object.isInstancedMesh && visiblySubmitted(object) && object.count && object.userData.renderArtifacts?.length) staticObjects.push(object);
   });
   // Opaque stone/tree geometry wins depth; alpha billboard rectangles do not.
-  for (const layer of [stage.decorations, stage.vegetation]) layer?.group.traverse(object => {
+  const addOpaque = object => {
     const material = object.material;
-    if (object.isInstancedMesh && visiblySubmitted(object) && object.count && material
+    if (object.isInstancedMesh && !object.userData.presentationOnly && visiblySubmitted(object) && object.count && material
       && !Array.isArray(material) && !material.transparent && !(material.alphaTest > 0)
       && !staticObjects.includes(object)) staticObjects.push(object);
-  });
+  };
+  stage.decorations?.group.traverse(addOpaque);
+  if (stage.vegetation?.spatialBatches) {
+    for (const object of stage.vegetation.getPickMeshes()) addOpaque(object);
+  } else stage.vegetation?.group.traverse(addOpaque);
   return { staticObjects, dynamicObjects };
 }
 
@@ -68,6 +72,7 @@ export class PlanePicker {
   pick(x, y, width, height, onlyPlane = null, { reuseStatic = false, staticKey = null } = {}) {
     const start = performance.now(), host = this.host, camera = host.cameraRig.camera;
     camera.updateMatrixWorld(); host.scene.updateMatrixWorld(true);
+    for (const stage of host.stages.values()) if (stage.visible) stage.vegetation?.updateSpatialVisibility?.(camera);
     this.raycaster.setFromCamera(new THREE.Vector2(x / width * 2 - 1, 1 - y / height * 2), camera);
     const reuse = reuseStatic && !onlyPlane && typeof staticKey === 'string';
     const cached = reuse && this.hoverStatic?.key === staticKey ? this.hoverStatic.entries : null;
@@ -104,6 +109,7 @@ export class PlanePicker {
         break;
       }
       if (inaccessibleStages.has(stage)) continue;
+      if (!visiblySubmitted(hit.object)) continue;
       if (!currentRecord(hit, stage)) continue;
       const entity = hit.instanceId == null ? null : hit.object.userData.renderEntities?.[hit.instanceId];
       const settlement = hit.instanceId == null ? null : hit.object.userData.renderSettlements?.[hit.instanceId];

@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:render3d:s1` 检查实验植被分区的全局 LOD、实例映射、保守边界、贴地、描边、区域和释放契约。`npm run test:render3d:s1:browser` 是有限串行 GPU 对照：先起服务器并用 `INKBOX_URL` 指定地址（默认4197），在同一固定世界比较 `forestCull=off/on` 的远景、近景、移动和视界/雕刻；报告与截图写入 `reports/r3d-s1/browser/`。实验默认关闭，CPU 提交耗时和 RAF 不等于 GPU 执行时间。
+
 `npm run test:wti1` 覆盖目录驱动的17种真实投放、共享临时选择状态、同修士第二次付费行动、T0移动权接管、双可选区块/旧v11、海上持粮与御空联合存读档、一次交付。加入 Fast，保留原 Fast/Heavy；实机验收另由正式页面的原生控件和地图指针完成。
 
 `npm run test:w01` 检查真实物种、聚合捕食/袭村与安抚、地灵迁衰、浅滩地形/枯痕到期、十二道途目标与实际代价、实例身份/只读性、旧档兼容及正式推进存读档。加入 Fast，既有 Fast/Heavy 完整保留。`npm run test:w01:browser` 为手动真实 Edge 验收：先启动服务（默认4233，`INKBOX_URL` 可改），导入明确标注的受控正式存档，再通过原生控件投放、检视、存读档和施放地形神力；需要本机浏览器及其自有进程清理权限。夹具不增加修士投放按钮。结果、非空场景性能对照和未验证边界见 [W0.1 记录](../docs/development/W01_WANLING_DELIVERY.md)。

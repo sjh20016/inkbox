@@ -24,7 +24,7 @@ import { SurfaceVisualFieldTexture } from '../art/SurfaceVisualFieldTexture.js';
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
   constructor({ plane, world, profile = renderProfileFor(plane), coordinates, characterLibrary = null,
-    creatureLibrary = null, environmentLibrary = null, productionAssets = false, decorations = true, geography = false } = {}) {
+    creatureLibrary = null, environmentLibrary = null, productionAssets = false, decorations = true, geography = false, forestCull = false } = {}) {
     if (!world) throw new Error(`PlaneStage ${plane}: world is required`);
     this.plane = plane;
     this.profile = profile;
@@ -37,6 +37,7 @@ export class PlaneStage {
     this.environmentLibrary = environmentLibrary;
     this.productionAssetsEnabled = !!productionAssets;
     this.decorationsEnabled = !!decorations;
+    this.forestCull = forestCull === true;
     this.geographyFeatures = geographyFeatures(geography);
     this.setWorld(world, coordinates);
   }
@@ -70,7 +71,7 @@ export class PlaneStage {
     this.surfaceField = p.water ? new SurfaceVisualFieldTexture(world) : null;
     this.terrain?.setSurfaceField(this.surfaceField);
     this.water?.setSurfaceField(this.surfaceField);
-    this.vegetation = p.vegetation ? new VegetationLayer(world, this.coordinates, this.elevation) : null;
+    this.vegetation = p.vegetation ? new VegetationLayer(world, this.coordinates, this.elevation, { forestCull: this.forestCull }) : null;
     if (this.vegetation) this.root.add(this.vegetation.group || this.vegetation.mesh);
     this.entities = p.entities ? new EntityLayer(world, this.coordinates, this.elevation,
       { derive: p.entities, characterLibrary: this.characterLibrary, creatureLibrary: this.creatureLibrary }) : null;

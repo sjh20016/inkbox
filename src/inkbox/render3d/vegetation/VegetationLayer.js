@@ -49,7 +49,7 @@ function pixelTree() {
  * 禁止每帧全量重写实例（过滤逻辑见 B1，本文件只提供重建入口）。
  */
 export class VegetationLayer {
-  constructor(world, coordinates, elevation = new ElevationField(world)) {
+  constructor(world, coordinates, elevation = new ElevationField(world), { forestCull = false } = {}) {
     this.world = world; this.coordinates = coordinates; this.elevation = elevation;
     this.regionGeometry = null;
     this.regionInside = true;
@@ -76,6 +76,18 @@ export class VegetationLayer {
     this._batchCounts = [0, 0, 0]; this._lodCounts = [0, 0, 0];
     this._budgetDemotions = 0;
     this.lodProbe = null;
+    this.spatialBatches = !!forestCull;
+    this.pickRevision = 0;
+    this._spatialPartitions = new Map();
+    this._spatialAssetsDirty = false;
+    this._spatialFrustum = new THREE.Frustum();
+    this._spatialViewProjection = new THREE.Matrix4();
+    this._spatialWorldBounds = new THREE.Box3();
+    this._spatialGeometryBounds = new THREE.Box3();
+    this._spatialInstanceBounds = new THREE.Box3();
+    this._spatialInstanceMatrix = new THREE.Matrix4();
+    this.spatialStats = { partitions: 0, visiblePartitions: 0, meshes: 0, activeMeshes: 0,
+      submittedInstances: 0, submittedTriangles: 0, matrixWrites: 0, uploadMarks: 0, rebuildMs: 0 };
     this.stats = { trees: 0, instances: 0, triangles: 0, lod: [0, 0, 0],
       lodCounts: { lod0: 0, lod1: 0, lod2: 0 }, lod0: 0, lod1: 0, lod2: 0,
       budgetDemotions: 0, capacity: LOD_BUDGETS.categories.tree.capacity,
@@ -104,6 +116,7 @@ export class VegetationLayer {
       this.group.add(mesh);
       this.lodMeshes[lod] = mesh;
     }
+    if (this.spatialBatches) for (const mesh of this.lodMeshes) mesh.removeFromParent();
     this.update();
   }
 
@@ -134,7 +147,10 @@ export class VegetationLayer {
     }
     this._syncFloraOutlines();
     this.mesh.boundingBox = null; this.mesh.boundingSphere = null;
-    if (changed) this._reassignAndUpload(true);
+    if (changed) {
+      this._spatialAssetsDirty = true;
+      this._reassignAndUpload(true);
+    }
   }
 
   setLODEnabled(enabled) {
@@ -161,6 +177,7 @@ export class VegetationLayer {
       this._viewPpu = ppu; this._viewVerticalPpu = verticalPpu;
       this._reassignAndUpload(false);
     }
+    if (this.spatialBatches) this.updateSpatialVisibility(this.artView.camera);
   }
   /**
    * §19：区域判据只来自 `RegionGeometry`。
@@ -192,7 +209,8 @@ export class VegetationLayer {
     // Heights can shift tree centers without changing membership. Rebuild
     // conservative bucket bounds on the next camera-driven LOD pass.
     this._projectionSource = null;
-    const changedMeshes = [false, false, false];
+    const changedMeshes = this.spatialBatches ? new Set() : [false, false, false];
+    const changedPartitions = this.spatialBatches ? new Set() : null;
     const s = this.stats; s.groundPasses++;
     let writes = 0;
     const varied = this.artProfile?.realmStyle?.plane === 'mortal';
@@ -210,7 +228,10 @@ export class VegetationLayer {
       const cliffChanged = cliffHidden !== !!tree.cliffHidden;
       const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
       const nextY = Math.fround(p.y);
-      const lod = tree.renderLod, mesh = this.lodMeshes[lod], attribute = mesh.instanceMatrix;
+      const lod = tree.renderLod, mesh = this.spatialBatches ? tree.renderMesh : this.lodMeshes[lod];
+      if (!mesh) continue;
+      tree.renderY = nextY;
+      const attribute = mesh.instanceMatrix;
       if (cliffChanged) {
         tree.cliffHidden = cliffHidden;
         const variant = varied ? treeVariantIndex(this.world.seed, tree.cell) : 0;
@@ -218,7 +239,9 @@ export class VegetationLayer {
           const index = tree.renderIndex + side;
           mesh.setMatrixAt(index, this._treeMatrix(tree, p, variant, side));
           attribute.addUpdateRange(index * 16, 16);
-          changedMeshes[lod] = true; writes++;
+          if (this.spatialBatches) { changedMeshes.add(mesh); changedPartitions.add(tree.renderPartition); }
+          else changedMeshes[lod] = true;
+          writes++;
         }
         continue;
       }
@@ -227,10 +250,25 @@ export class VegetationLayer {
         if (attribute.array[offset] === nextY) continue;
         attribute.array[offset] = nextY;
         attribute.addUpdateRange(offset, 1);
-        changedMeshes[lod] = true; writes++;
+        if (this.spatialBatches) { changedMeshes.add(mesh); changedPartitions.add(tree.renderPartition); }
+        else changedMeshes[lod] = true;
+        writes++;
       }
     }
-    for (let lod = 0; lod < 3; lod++) if (changedMeshes[lod]) {
+    if (this.spatialBatches) {
+      for (const mesh of changedMeshes) {
+        mesh.instanceMatrix.needsUpdate = true;
+        mesh.boundingBox = null; mesh.boundingSphere = null;
+      }
+      for (const partition of changedPartitions) this._updateSpatialBounds(partition);
+      if (writes) {
+        this.spatialStats.matrixWrites += writes;
+        this.spatialStats.uploadMarks += changedMeshes.size;
+        s.groundUploadMarks += changedMeshes.size;
+        this.pickRevision++;
+        this.updateSpatialVisibility(this.artView.camera);
+      }
+    } else for (let lod = 0; lod < 3; lod++) if (changedMeshes[lod]) {
       const mesh = this.lodMeshes[lod];
       mesh.instanceMatrix.needsUpdate = true;
       mesh.boundingBox = null; mesh.boundingSphere = null;
@@ -268,6 +306,7 @@ export class VegetationLayer {
   /** Scenery footprints (ShanhaiSceneryLayer) the forest yields to; presentation only. */
   setYieldZones(zones) {
     this.yieldZones = zones?.length ? zones : null;
+    this._spatialTransformDirty = true;
     if (this.shanhaiActive && this.trees?.length) this._writeMatrices();
   }
   _structNear(tree) {
@@ -428,7 +467,7 @@ export class VegetationLayer {
     let matrixUploadMs = 0, matrixInstancesWritten = 0, uploaded = false;
     if (forceUpload || changed) {
       const uploadStart = probe ? performance.now() : 0;
-      matrixInstancesWritten = this._writeMatrices(); uploaded = true;
+      matrixInstancesWritten = this._writeMatrices(); uploaded = this.spatialBatches ? matrixInstancesWritten > 0 : true;
       if (probe) matrixUploadMs = performance.now() - uploadStart;
     }
     this._updateStats();
@@ -439,11 +478,11 @@ export class VegetationLayer {
       probe.exactTreeProjections += projectionWork?.exactTreeProjections || 0;
       probe.bucketClassifiedTrees += projectionWork?.bucketClassifiedTrees || 0;
       probe.concatTemporaryElementsAvoided += partitionElementsProcessed;
-      probe.renderTreesArraysAllocated += uploaded ? this.lodMeshes.length : 0;
+      probe.renderTreesArraysAllocated += uploaded ? (this.spatialBatches ? this._spatialLastArrays : this.lodMeshes.length) : 0;
       if (uploaded) {
         probe.matrixUploadCount++;
         probe.matrixInstancesWritten += matrixInstancesWritten;
-        probe.matrixNeedsUpdateMarks += this.lodMeshes.length;
+        probe.matrixNeedsUpdateMarks += this.spatialBatches ? this._spatialLastMarks : this.lodMeshes.length;
       }
       probe.last = {
         treeCount: this.trees.length, enabled, forceUpload: !!forceUpload, changed, uploaded,
@@ -452,7 +491,7 @@ export class VegetationLayer {
         crowded: this._budgetCrowded, requestedLOD: [...desiredCounts], assignedLOD: [...this._lodCounts],
         budgetDemotions: this._budgetDemotions, concatTemporaryArrays: 0, concatTemporaryElements: 0,
         concatTemporaryElementsAvoided: partitionElementsProcessed, partitionElementsProcessed,
-        matrixInstancesWritten, matrixNeedsUpdateMarks: uploaded ? this.lodMeshes.length : 0,
+        matrixInstancesWritten, matrixNeedsUpdateMarks: uploaded ? (this.spatialBatches ? this._spatialLastMarks : this.lodMeshes.length) : 0,
         exactTreeProjections: projectionWork?.exactTreeProjections || 0,
         bucketClassifiedTrees: projectionWork?.bucketClassifiedTrees || 0,
         projectionBuckets: this._projectionBuckets.length,
@@ -460,7 +499,225 @@ export class VegetationLayer {
     }
   }
 
+  _disposeSpatialPartition(partition) {
+    partition.group.removeFromParent();
+    for (const mesh of partition.meshes.values()) {
+      for (const child of [...mesh.children]) { child.removeFromParent(); child.dispose(); }
+      mesh.dispose(); // InstancedMesh buffers only; layer owns shared geometry/material.
+    }
+  }
+
+  _makeSpatialMesh(partition, lod, capacity) {
+    const source = this.lodMeshes[lod];
+    const mesh = new THREE.InstancedMesh(source.geometry, source.material, capacity);
+    mesh.name = `Vegetation:${partition.key}:LOD${lod}`;
+    mesh.userData.lod = lod;
+    mesh.userData.s1VegetationBody = true;
+    mesh.userData.renderTrees = [];
+    mesh.renderOrder = RENDER_ORDER.vegetation;
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    mesh.frustumCulled = false; // Partition group owns the conservative visibility test.
+    partition.group.add(mesh);
+    if (this.shanhaiActive && lod === 0) {
+      const ink = new THREE.InstancedMesh(this.shanhaiFlora.geometries[0], this.shanhaiFlora.ink, capacity);
+      ink.instanceMatrix = mesh.instanceMatrix;
+      ink.count = 0;
+      ink.frustumCulled = false;
+      ink.raycast = () => {};
+      ink.userData.presentationOnly = true;
+      ink.userData.inkOutline = true;
+      ink.name = `${mesh.name}:ink`;
+      ink.renderOrder = mesh.renderOrder;
+      mesh.add(ink);
+    }
+    return mesh;
+  }
+
+  _updateSpatialBounds(partition) {
+    const bounds = partition.bounds;
+    bounds.makeEmpty();
+    for (const mesh of partition.meshes.values()) {
+      const geometry = mesh.geometry;
+      if (!geometry.boundingBox) geometry.computeBoundingBox();
+      const local = this._spatialGeometryBounds.copy(geometry.boundingBox);
+      if (this.shanhaiActive) {
+        // Vertex shader: outline displacement precedes crown x/z 1.35 and
+        // crown y 1.12. Pine/leaf species both remain in this source geometry.
+        const outline = (this.shanhaiFlora.ink.uniforms.uOutlineWidth.value || 0.04) * 1.6;
+        local.min.x = (local.min.x - outline) * 1.35;
+        local.max.x = (local.max.x + outline) * 1.35;
+        local.min.z = (local.min.z - outline) * 1.35;
+        local.max.z = (local.max.z + outline) * 1.35;
+        local.min.y = (local.min.y - outline) * 1.12;
+        local.max.y = (local.max.y + outline) * 1.12;
+      }
+      for (let i = 0; i < mesh.count; i++) {
+        mesh.getMatrixAt(i, this._spatialInstanceMatrix);
+        bounds.union(this._spatialInstanceBounds.copy(local).applyMatrix4(this._spatialInstanceMatrix));
+      }
+    }
+  }
+
+  _writeSpatialBatches() {
+    const start = performance.now();
+    const old = this._spatialPartitions;
+    const next = new Map();
+    const varied = this.artProfile?.realmStyle?.plane === 'mortal';
+    this._variantCounts.fill(0); this._batchCounts.fill(0);
+    let writes = 0, marks = 0, arrays = 0, changed = false;
+    if (this._spatialAssetsDirty) {
+      for (const partition of old.values()) this._disposeSpatialPartition(partition);
+      old.clear();
+      changed = true;
+    }
+    for (const tree of this.trees) {
+      const key = `${Math.floor(tree.x / 64)}:${Math.floor(tree.y / 64)}`;
+      let partition = next.get(key);
+      if (!partition) {
+        partition = old.get(key) || { key, group: new THREE.Group(), meshes: new Map(),
+          trees: [], bounds: new THREE.Box3(), members: [[], [], []] };
+        if (!old.has(key)) { partition.group.name = `VegetationPartition:${key}`; this.group.add(partition.group); changed = true; }
+        partition.nextTrees = [];
+        partition.nextMembers = [[], [], []];
+        next.set(key, partition);
+      }
+      const lod = this._lodByTree.get(tree.cell) ?? 0;
+      partition.nextTrees.push(tree);
+      partition.nextMembers[lod].push(tree);
+      const variant = varied ? treeVariantIndex(this.world.seed, tree.cell) : 0;
+      this._variantCounts[variant]++;
+    }
+    for (const [key, partition] of old) if (!next.has(key)) {
+      this._disposeSpatialPartition(partition); changed = true;
+    }
+    for (const partition of next.values()) {
+      let partitionChanged = partition.trees.length !== partition.nextTrees.length;
+      if (!partitionChanged) for (let i = 0; i < partition.trees.length; i++) {
+        if (partition.trees[i].cell !== partition.nextTrees[i].cell) { partitionChanged = true; break; }
+      }
+      partition.trees = partition.nextTrees;
+      let partitionBoundsDirty = partitionChanged;
+      for (let lod = 0; lod < 3; lod++) {
+        const members = partition.nextMembers[lod];
+        const previous = partition.members[lod];
+        const count = members.length * (lod === 0 && !this.artProfile ? 2 : 1);
+        this._batchCounts[lod] += count;
+        let memberChanged = members.length !== previous.length;
+        if (!memberChanged) for (let i = 0; i < members.length; i++) {
+          const tree = members[i], oldTree = previous[i];
+          if (tree.cell !== oldTree.cell || tree.size !== oldTree.size || tree.rotation !== oldTree.rotation) { memberChanged = true; break; }
+          if (tree !== oldTree) {
+            const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
+            if (Math.fround(p.y) !== oldTree.renderY
+              || (this.shanhaiActive && this._onCliff(tree) !== !!oldTree.cliffHidden)) { memberChanged = true; break; }
+          }
+        }
+        let mesh = partition.meshes.get(lod);
+        if (!count) {
+          if (mesh) { mesh.removeFromParent(); for (const child of [...mesh.children]) { child.removeFromParent(); child.dispose(); } mesh.dispose(); partition.meshes.delete(lod); changed = true; }
+          partition.members[lod] = members;
+          continue;
+        }
+        const capacity = mesh?.instanceMatrix.count || 0;
+        if (count > capacity) {
+          if (mesh) { mesh.removeFromParent(); for (const child of [...mesh.children]) { child.removeFromParent(); child.dispose(); } mesh.dispose(); }
+          mesh = this._makeSpatialMesh(partition, lod, Math.max(count, Math.ceil(capacity * 1.5)));
+          partition.meshes.set(lod, mesh); memberChanged = true; changed = true;
+        }
+        mesh.count = count;
+        const renderTrees = mesh.userData.renderTrees;
+        renderTrees.length = 0;
+        let index = 0;
+        for (const tree of members) {
+          tree.renderPartition = partition;
+          tree.renderMesh = mesh;
+          tree.renderLod = lod;
+          tree.renderIndex = index;
+          tree.renderCount = lod === 0 && !this.artProfile ? 2 : 1;
+          for (let side = 0; side < tree.renderCount; side++) { renderTrees.push(tree); index++; }
+        }
+        if (memberChanged || this._spatialTransformDirty) {
+          partitionBoundsDirty = true;
+          index = 0;
+          for (const tree of members) {
+            const p = this.coordinates.worldToRender(tree.x, tree.y, this.elevation.at(tree.x, tree.y));
+            tree.renderY = Math.fround(p.y);
+            tree.cliffHidden = this.shanhaiActive ? this._onCliff(tree) : false;
+            const variant = varied ? treeVariantIndex(this.world.seed, tree.cell) : 0;
+            const tint = varied ? this._variantTints[variant] : this._whiteTint;
+            for (let side = 0; side < tree.renderCount; side++) {
+              mesh.setColorAt(index, tint);
+              mesh.setMatrixAt(index++, this._treeMatrix(tree, p, variant, side));
+              writes++;
+            }
+          }
+          mesh.instanceMatrix.clearUpdateRanges();
+          mesh.instanceMatrix.addUpdateRange(0, count * 16);
+          mesh.instanceMatrix.needsUpdate = true;
+          if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+          mesh.boundingBox = null; mesh.boundingSphere = null;
+          marks++; arrays++; changed = true;
+        }
+        else for (let i = 0; i < members.length; i++) {
+          members[i].renderY = previous[i].renderY;
+          members[i].cliffHidden = previous[i].cliffHidden;
+        }
+        for (const ink of mesh.children) { ink.count = count; ink.instanceColor = mesh.instanceColor; }
+        partition.members[lod] = members;
+      }
+      if (partitionBoundsDirty || this._spatialAssetsDirty) this._updateSpatialBounds(partition);
+    }
+    this._spatialPartitions = next;
+    this._spatialAssetsDirty = false;
+    this._spatialTransformDirty = false;
+    this._spatialLastMarks = marks;
+    this._spatialLastArrays = arrays;
+    this.spatialStats.partitions = next.size;
+    this.spatialStats.meshes = [...next.values()].reduce((n, p) => n + p.meshes.size, 0);
+    this.spatialStats.matrixWrites += writes;
+    this.spatialStats.uploadMarks += marks;
+    this.spatialStats.rebuildMs = performance.now() - start;
+    if (changed) this.pickRevision++;
+    this.updateSpatialVisibility(this.artView.camera);
+    return writes;
+  }
+
+  updateSpatialVisibility(camera) {
+    if (!this.spatialBatches || !camera) return;
+    camera.updateMatrixWorld();
+    this._spatialViewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    this._spatialFrustum.setFromProjectionMatrix(this._spatialViewProjection);
+    let visible = 0, activeMeshes = 0, instances = 0, triangles = 0, changed = false;
+    for (const partition of this._spatialPartitions.values()) {
+      partition.group.updateWorldMatrix(true, false);
+      const worldBounds = this._spatialWorldBounds.copy(partition.bounds).applyMatrix4(partition.group.matrixWorld);
+      const shown = this._spatialFrustum.intersectsBox(worldBounds);
+      if (shown !== partition.group.visible) { partition.group.visible = shown; changed = true; }
+      if (!shown) continue;
+      visible++;
+      for (const mesh of partition.meshes.values()) {
+        if (!mesh.count) continue;
+        activeMeshes++; instances += mesh.count;
+        triangles += mesh.count * (mesh.geometry.index?.count ?? mesh.geometry.getAttribute('position').count) / 3;
+        if (mesh.children.length) triangles += mesh.count * (mesh.children[0].geometry.index?.count ?? mesh.children[0].geometry.getAttribute('position').count) / 3;
+      }
+    }
+    const s = this.spatialStats;
+    s.visiblePartitions = visible; s.activeMeshes = activeMeshes;
+    s.submittedInstances = instances; s.submittedTriangles = triangles;
+    if (changed) this.pickRevision++;
+  }
+
+  getPickMeshes() {
+    if (!this.spatialBatches) return this.lodMeshes.filter(mesh => mesh.visible && mesh.count);
+    const meshes = [];
+    for (const partition of this._spatialPartitions.values()) if (partition.group.visible)
+      for (const mesh of partition.meshes.values()) if (mesh.count) meshes.push(mesh);
+    return meshes;
+  }
+
   _writeMatrices() {
+    if (this.spatialBatches) return this._writeSpatialBatches();
     const counts = this._batchCounts;
     const varied = this.artProfile?.realmStyle?.plane === 'mortal';
     this._variantCounts.fill(0);
@@ -521,10 +778,27 @@ export class VegetationLayer {
     s.overflow = overflow; s.capacityOverflow = overflow;
   }
   dispose() {
+    if (this.spatialBatches) {
+      for (const tree of this.trees || []) {
+        tree.renderMesh = null;
+        tree.renderPartition = null;
+      }
+      for (const partition of this._spatialPartitions.values()) this._disposeSpatialPartition(partition);
+      this._spatialPartitions.clear();
+      this._lodByTree.clear(); this._nextLodByTree.clear(); this._requestedLods.clear();
+      this._visibleBudgetTrees.length = 0; this._outsideBudgetTrees.length = 0;
+      this._projectionSource = null; this._projectionBuckets.length = 0;
+      this.trees = [];
+    }
     this.mesh.dispose(); this.geometry.dispose(); this.material.dispose(); this.texture.dispose();
     this.pilotMaterial?.dispose();
     if (this.shanhaiFlora) { for (const ink of this.shanhaiFlora.outlines) { ink?.removeFromParent(); ink?.dispose(); } for (const g of this.shanhaiFlora.geometries) g.dispose(); this.shanhaiFlora.material.dispose(); this.shanhaiFlora.ink.dispose(); this.shanhaiFlora = null; }
     for (let lod = 1; lod <= 2; lod++) this.lodMeshes[lod].dispose();
     for (const geometry of this.lodGeometries) geometry.dispose();
+    if (this.spatialBatches) {
+      this.group.clear();
+      this.world = null; this.coordinates = null; this.elevation = null;
+      this.artView = null; this.regionGeometry = null; this.yieldZones = null;
+    }
   }
 }
