@@ -38,6 +38,7 @@ import { terrainChangesActive, subscribeTerrainChanges, readTerrainChanges, disp
 
 /** 历史四层地形数组的键（顺序即渲染顺序契约）；fire 单列快照。 */
 export const BRIDGE_LAYERS = Object.freeze(['height', 'water', 'type', 'veg']);
+const OBSERVED_LAYERS = Object.freeze([...BRIDGE_LAYERS, 'fire']);
 
 /**
  * 合并两块脏区域 —— **纯函数**（不修改入参，返回值总是新对象）。
@@ -77,7 +78,7 @@ export class WorldRenderBridge {
     this.coordinates = createCoordinates(world);
     this.snapshots = Object.fromEntries(BRIDGE_LAYERS.map(key => [key, world[key].slice()]));
     this.fireSnapshot = world.fire.slice();
-    this.arraySources = Object.fromEntries([...BRIDGE_LAYERS, 'fire'].map(key => [key, world[key]]));
+    this.arraySources = Object.fromEntries(OBSERVED_LAYERS.map(key => [key, world[key]]));
     // Only explicitly activated worlds opt in. Direct TypedArray mutation
     // callers keep the historical full-diff behavior without any registration.
     this.subscription = subscribeTerrainChanges(world);
@@ -108,17 +109,17 @@ export class WorldRenderBridge {
     }
     let full = !this.subscription || this.needsFullScan || subscriptionJustCreated;
     this.needsFullScan = false;
-    const arrays = { height, water, type, veg, fire };
-    for (const name of [...BRIDGE_LAYERS, 'fire']) {
-      if (this.arraySources[name] !== arrays[name] || arrays[name].length !== w.size) {
+    for (const name of OBSERVED_LAYERS) {
+      const source = w[name];
+      if (this.arraySources[name] !== source || source.length !== w.size) {
         full = true;
-        this.arraySources[name] = arrays[name];
+        this.arraySources[name] = source;
       }
       // A caller may replace a TypedArray or reconstitute the World in place.
       // Snapshot capacity must match the authoritative array before diffing.
       if (name === 'fire') {
-        if (this.fireSnapshot.length !== arrays[name].length) this.fireSnapshot = arrays[name].slice();
-      } else if (old[name].length !== arrays[name].length) old[name] = arrays[name].slice();
+        if (this.fireSnapshot.length !== source.length) this.fireSnapshot = source.slice();
+      } else if (old[name].length !== source.length) old[name] = source.slice();
     }
     const pending = this.subscription ? readTerrainChanges(this.subscription) : null;
     if (pending?.full) { full = true; if (pending.overflow) stats.overflows++; }
@@ -135,6 +136,9 @@ export class WorldRenderBridge {
       }
     }
     if (!bounds) { stats.idleSkips++; return null; }
+    // A conservative all-layer notification still compares the full map.
+    // Classify its work accurately rather than calling it an incremental scan.
+    if (bounds.x0 === 0 && bounds.y0 === 0 && bounds.x1 === w.w - 1 && bounds.y1 === w.h - 1) full = true;
     if (full) stats.fullScans++; else stats.incrementalScans++;
     let vegetationMembership = false;
     // 每层各一条包围盒：`[x0, y0, x1, y1]`，`x1 < 0` = 这层没脏。
