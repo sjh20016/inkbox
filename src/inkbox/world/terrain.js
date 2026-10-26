@@ -6,6 +6,7 @@
 import { SEA_LEVEL, TERRAIN } from '../core/config.js';
 import { clamp, smoothstep } from '../core/noise.js';
 import { invalidateTransitGeography } from './transitGeography.js';
+import { noteTerrainCell, noteTerrainRegion, noteTerrainFull } from './terrainChanges.js';
 
 export const OVER = Object.freeze({
   NONE: 0,
@@ -146,6 +147,7 @@ export function classify(world, x, y, i = y * world.w + x) {
 /** 一次把该格的所有推导量都算好：地表类型 + 灵气。 */
 function applyTile(world, x, y, i) {
   world.type[i] = classify(world, x, y, i);
+  noteTerrainCell(world, 'type', i);
   world.qi[i] = qiAt(world, x, y, i);
   return world.type[i];
 }
@@ -210,6 +212,7 @@ export function recomputeAll(world) {
       applyTile(world, x, y, i);
     }
   }
+  noteTerrainFull(world, 'type');
   world.touch();
 }
 
@@ -245,6 +248,7 @@ export function recomputeRect(world, x0, y0, x1, y1) {
       applyTile(world, x, y, i);
     }
   }
+  noteTerrainRegion(world, 'type', { x0: ax, y0: ay, x1: bx, y1: by });
   world.touch();
 }
 
@@ -272,6 +276,7 @@ export function decayOverlay(world, dtDays, rng) {
     } else if (value === OVER.LAVA) {
       over[i] = OVER.ASH;
       height[i] = clamp(height[i] + 0.012, 0, 1);
+      noteTerrainCell(world, 'height', i);
       markDirtyWithNeighbors(world, i);
       changed = true;
     } else if (value === OVER.RUINS) {
