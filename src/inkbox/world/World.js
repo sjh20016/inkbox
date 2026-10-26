@@ -363,12 +363,12 @@ export class World {
     return info.fertility * vegBonus * waterBonus;
   }
 
-  touch() {
+  touch({ terrain = true } = {}) {
+    // Keep Canvas invalidation and revision behavior unchanged for all callers.
+    // Proven non-terrain writers can suppress only the Render3D journal fallback.
     this.revision += 1;
     this.terrainDirty = true;
-    // Conservative catch-all for older writers without a precise notification.
-    // On non-activated worlds this is a no-op; arrays remain the source of truth.
-    noteAllTerrain(this);
+    if (terrain) noteAllTerrain(this);
   }
 
   addEntity(entity) {
