@@ -39,7 +39,6 @@
 // 本模块不为自然环境抽签，凡间人物随机流保持独立。
 
 import { TIME } from '../core/config.js';
-import { noteAllTerrain } from '../world/terrainChanges.js';
 import { stepNether } from './netherLife.js';
 import { stepRifts, RIFT_PERIOD_DAYS } from './rifts.js';
 import { stepMortalWraiths, WRAITH_PERIOD_DAYS } from './wraiths.js';
@@ -234,11 +233,9 @@ export function advanceWorld(world, days, deps = {}) {
 
   // Access grows only after the simulation succeeds, independently of all streams.
   fired.mapProgress = updateMapProgress(world);
-  // All official day-driven terrain writers (including cross-plane rifts,
-  // beasts and nature expiry) finish before the journal is signalled. This
-  // intentionally requests a conservative full diff for a changed sim tick.
-  noteAllTerrain(world);
-  noteAllTerrain(world.upper);
-  noteAllTerrain(world.nether);
+  // P0-C.1: producers publish their own five-layer writes (Life grazing,
+  // Wanling, Nether decay, rifts and finite nature events). Never invalidate
+  // three entire planes just because the calendar advanced. Legacy writers
+  // that call World.touch() without a precise note retain the full fallback.
   return fired;
 }

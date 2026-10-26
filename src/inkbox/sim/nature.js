@@ -1,5 +1,6 @@
 // Finite, game-day driven mortal environmental changes. No world-wide runtime scan.
 import { OVER, markDirty, flushDirty } from '../world/terrain.js';
+import { noteTerrainCell } from '../world/terrainChanges.js';
 import { emitPresentation } from './presentation.js';
 import { invalidateTransitGeography } from '../world/transitGeography.js';
 
@@ -34,13 +35,14 @@ export function igniteCell(world, i, power = 1, { vegetationBurned = false } = {
   const strength = Math.min(1, 0.45 + power * 0.4);
   const blockedBefore = world.fire[i] >= 0.55;
   world.fire[i] = Math.max(world.fire[i], strength);
+  noteTerrainCell(world, 'fire', i);
   if (blockedBefore !== (world.fire[i] >= 0.55)) invalidateTransitGeography(world);
   if (old) { old.dueDay = dueDay; old.vegetationBurned ||= vegetationBurned; }
   else state.fires.set(i, event(world, 'fire', dueDay, i, {
     startDay: world.day, overlayAtIgnition: world.over[i], vegetationBurned,
     recoverVeg: world.veg[i], expectedVeg: world.veg[i],
   }));
-  world.touch();
+  world.touch({ terrain: false });
   return true;
 }
 
@@ -48,9 +50,10 @@ export function extinguishCell(world, i) {
   if (!world.fire[i] && !world.nature?.fires?.has(i)) return;
   if (world.fire[i] >= 0.55) invalidateTransitGeography(world);
   world.fire[i] = 0;
+  noteTerrainCell(world, 'fire', i);
   const state = natureState(world), item = state.fires.get(i);
   if (item) { state.fires.delete(i); state.events = state.events.filter((e) => e !== item); }
-  world.touch();
+  world.touch({ terrain: false });
 }
 
 export function fireExposure(world, i, startDay, endDay) {
@@ -104,6 +107,7 @@ export function floodCells(world, cells, duration = NATURE_DAYS.flood, { present
     entry.levels.set(id, depth);
     item.cells.push(i);
     world.water[i] = Math.fround(entry.base + [...entry.levels.values()].reduce((a, b) => a + b, 0));
+    if (world.water[i] !== oldWater) noteTerrainCell(world, 'water', i);
     if (world.water[i] !== oldWater) { changed++; fromDepth += oldWater; toDepth += world.water[i]; xSum += i % world.w; ySum += Math.floor(i / world.w); }
     extinguishCell(world, i);
     markDirty(world, i);
@@ -125,6 +129,7 @@ function removeFlood(world, item, present = true) {
     entry.levels.delete(item.id);
     if (!entry.levels.size) state.floods.delete(i);
     world.water[i] = Math.fround(entry.base + [...entry.levels.values()].reduce((a, b) => a + b, 0));
+    if (world.water[i] !== oldWater) noteTerrainCell(world, 'water', i);
     if (world.water[i] !== oldWater) { changed++; fromDepth += oldWater; toDepth += world.water[i]; xSum += i % world.w; ySum += Math.floor(i / world.w); }
     markDirty(world, i);
   }
@@ -169,6 +174,7 @@ export function editFloodWater(world, i, delta) {
   }
   if (!entry.levels.size) world.nature.floods.delete(i);
   world.water[i] = Math.fround(entry.base + [...entry.levels.values()].reduce((sum, depth) => sum + depth, 0));
+  if (world.water[i] !== old) noteTerrainCell(world, 'water', i);
   markDirty(world, i);
   return world.water[i] !== old;
 }
@@ -222,6 +228,7 @@ export function restoreFloodCell(world, i, snapshot) {
   else state.floods.delete(i);
   if (levels.size !== snapshot[1].length) {
     world.water[i] = restoredFloodWater(world, snapshot, world.water[i]);
+    noteTerrainCell(world, 'water', i);
     markDirty(world, i);
   }
 }
@@ -232,11 +239,11 @@ export function cancelNatureEvent(world, id) {
   const item = state.events.find((e) => e.id === id);
   if (!item) return false;
   if (item.kind === 'flood') removeFlood(world, item, false);
-  else if (item.kind === 'fire' && state.fires.get(item.cell) === item) { state.fires.delete(item.cell); world.fire[item.cell] = 0; }
+  else if (item.kind === 'fire' && state.fires.get(item.cell) === item) { state.fires.delete(item.cell); world.fire[item.cell] = 0; noteTerrainCell(world, 'fire', item.cell); }
   else if (item.kind === 'overlay' && state.overlays.get(item.cell) === item) state.overlays.delete(item.cell);
   state.events = state.events.filter((e) => e !== item);
   flushDirty(world);
-  world.touch();
+  world.touch({ terrain: false });
   return true;
 }
 
@@ -258,6 +265,7 @@ export function settleNature(world, day = world.day) {
     else if (item.kind === 'fire' && state.fires.get(item.cell) === item) {
       state.fires.delete(item.cell);
       world.fire[item.cell] = 0;
+      noteTerrainCell(world, 'fire', item.cell);
       let recovery = null;
       const priorRecovery = state.overlays.get(item.cell);
       if (item.vegetationBurned) {
@@ -267,6 +275,7 @@ export function settleNature(world, day = world.day) {
       } else if (item.expectedVeg === undefined || sameSavedVeg(world.veg[item.cell], item.expectedVeg)) {
         const recoverVeg = item.recoverVeg ?? world.veg[item.cell];
         world.veg[item.cell] = Math.max(0, world.veg[item.cell] * 0.25);
+        noteTerrainCell(world, 'veg', item.cell);
         if (!item.recoveryCancelled) recovery = { recoverVeg, expectedVeg: world.veg[item.cell] };
       }
       markDirty(world, item.cell);
@@ -282,6 +291,7 @@ export function settleNature(world, day = world.day) {
       if (world.over[item.cell] === item.overlay) {
         if (item.recoverVeg !== undefined && sameSavedVeg(world.veg[item.cell], item.expectedVeg) && world.water[item.cell] <= 0.02) {
           world.veg[item.cell] = item.recoverVeg;
+          noteTerrainCell(world, 'veg', item.cell);
           markDirty(world, item.cell);
         }
         const next = setRecoveringOverlay(world, item.cell, item.overlay === OVER.LAVA ? OVER.ASH : OVER.NONE, null, item.dueDay);
@@ -290,7 +300,7 @@ export function settleNature(world, day = world.day) {
     }
     changed++;
   }
-  if (changed) { flushDirty(world); world.touch(); }
+  if (changed) { flushDirty(world); world.touch({ terrain: false }); }
   return changed;
 }
 

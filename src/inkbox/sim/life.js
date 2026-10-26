@@ -25,6 +25,7 @@ import { canAccess } from '../core/mapAccess.js';
 import { ADULT_AGE_DAYS, isAdult, isFertileAge, isHumanPerson, isMortalHuman, hasMortalResidents } from '../core/demographics.js';
 import { clamp, mulberry32 } from '../core/noise.js';
 import { OVER, recomputeRect, markDirty, flushDirty } from '../world/terrain.js';
+import { noteTerrainCell } from '../world/terrainChanges.js';
 import { fireExposure, floodExposure } from './nature.js';
 import { generateNameParts, generateName, generateVillageName, narrate, fillTemplate } from '../core/lore.js';
 import {
@@ -477,7 +478,7 @@ export class Life {
       this.countVillageResident(entity);
       created += 1;
     }
-    if (created) world.touch();
+    if (created) world.touch({ terrain: false });
     return created;
   }
 
@@ -768,7 +769,10 @@ export class Life {
       const eat = Math.min(1, fert * dtDays * 0.05);
       e.hp = Math.min(e.maxHp, e.hp + e.maxHp * eat * 0.35);
       e.carried = Math.min(1, e.carried + eat * (info.diet > 0 ? 0.5 : 0));
-      if (world.veg[here] > 0.05) world.veg[here] = Math.max(0, world.veg[here] - eat * 0.35);
+      if (world.veg[here] > 0.05) {
+        world.veg[here] = Math.max(0, world.veg[here] - eat * 0.35);
+        noteTerrainCell(world, 'veg', here);
+      }
     } else {
       // 死因标记：站在无肥力的地上挨饿 ⇒ `deathOther`（不是寿终）。
       e.diedOf = 'famine';
@@ -1600,7 +1604,7 @@ export class Life {
       if (floodedHousesLost) {
         world.record(`${village.name} 有${floodedHousesLost}处屋舍因积水坍毁`, 'settle');
         settlementHistory(world, village, 'disaster', `${floodedHousesLost}处屋舍因积水坍毁`);
-        world.touch();
+        world.touch({ terrain: false });
       }
 
       // 村子被毁：中心不可居 → 废弃。
@@ -1710,7 +1714,7 @@ export class Life {
             world.struct[i] = first ? 2 : 1;
             village.houses.push({ x: spot[0], y: spot[1], type: world.struct[i] });
             village.food -= 8;
-            world.touch();
+            world.touch({ terrain: false });
           }
           }
         } else if (village.level < 4 && liveHouseCount >= capacity && village.food > 40) {
@@ -1927,7 +1931,7 @@ export class Life {
     }
     // 村落级事件，无单一当事人：村子没了，没有活人可承接这条记录。
     world.record(`${village.name} 荒废：${reason}`, 'settle');
-    world.touch();
+    world.touch({ terrain: false });
   }
 }
 

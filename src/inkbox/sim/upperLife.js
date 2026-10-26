@@ -469,7 +469,7 @@ export class UpperLife {
     ensureUpperPopLog(upper).died += 1;
     upper.record(`${e.name} 于上界陨落，寿 ${Math.floor(e.age / 360)} 岁。`, 'death', e);
     upper.removeEntity(e);
-    upper.touch();
+    upper.touch({ terrain: false });
   }
 
   /**
@@ -545,7 +545,7 @@ export class UpperLife {
       'cultivate',
       `${entity.name} 于上界化生，${parent.name} 的道脉得续。`,
     );
-    upper.touch();
+    upper.touch({ terrain: false });
   }
 
   /**
@@ -637,7 +637,7 @@ export class UpperLife {
       'born',
       `${entity.name} 生于上界，${parent.name} 的血脉得续。`,
     );
-    upper.touch();
+    upper.touch({ terrain: false });
   }
 
   /**
@@ -970,7 +970,7 @@ export class UpperLife {
         founder,
       );
     }
-    if (founded) upper.touch();
+    if (founded) upper.touch({ terrain: false });
   }
 
   /**
