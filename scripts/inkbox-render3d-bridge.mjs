@@ -46,6 +46,8 @@ import { spawnNetherGhost } from '../src/inkbox/sim/netherLife.js';
 import { createCoordinates } from '../src/inkbox/render3d/coordinates.js';
 import { visualElevation, surfaceElevation } from '../src/inkbox/render3d/terrain/VisualElevation.js';
 import { WorldRenderBridge, mergeRegion, BRIDGE_LAYERS } from '../src/inkbox/render3d/WorldRenderBridge.js';
+import { activateTerrainChanges, noteTerrainCell, noteTerrainRegion, noteTerrainFull,
+  subscribeTerrainChanges, readTerrainChanges, disposeTerrainSubscription, TERRAIN_JOURNAL_CAPACITY } from '../src/inkbox/world/terrainChanges.js';
 import { TerrainMesh } from '../src/inkbox/render3d/terrain/TerrainMesh.js';
 import { WaterLayer } from '../src/inkbox/render3d/water/WaterLayer.js';
 import { VegetationLayer } from '../src/inkbox/render3d/vegetation/VegetationLayer.js';
@@ -137,6 +139,86 @@ console.log('══════════════════════�
 console.log('inkbox Render3D M1.1D 回归（WorldRenderBridge dirty 分类）');
 console.log('══════════════════════════════════════════════════════════════');
 
+// ══ P0-C · 中立日志/独立游标/快照严格对照 ════════════════════════════
+section('P0-C · 增量桥与兼容扫描');
+check('512×320 稳定桥零比较；五层逐格分类、恢复原值与强制恢复', () => {
+  const world = generateWorld({ preset: { w: 512, h: 320 }, seed: 9012, scatter: true });
+  activateTerrainChanges(world);
+  const bridge = new WorldRenderBridge(world);
+  assert(bridge.subscription, 'activated World must use the incremental path');
+  for (let k = 0; k < 6; k++) assert.equal(bridge.changes(), null);
+  assert.equal(bridge.scanStats.comparedCells, 0);
+  assert.equal(bridge.scanStats.idleSkips, 6);
+  const i = 5 * world.w + 7;
+  for (const layer of ['height', 'water', 'type', 'veg', 'fire']) {
+    const old = world[layer][i], next = layer === 'type' ? (old + 1) % 23 : old + .125;
+    world[layer][i] = next;
+    noteTerrainCell(world, layer, i);
+    const d = bridge.changes();
+    assert(d && d[layer], layer + ' must report its own region');
+    assert.deepEqual(d[layer], { x0: 7, y0: 5, x1: 7, y1: 5 });
+    for (const other of ['height', 'water', 'type', 'veg', 'fire']) if (other !== layer) assert.equal(d[other], null);
+    assert.equal(bridge.changes(), null);
+    world[layer][i] = old;
+    noteTerrainCell(world, layer, i);
+    assert(bridge.changes()?.[layer], 'restored value must dirty once');
+  }
+  const before = world.height[i];
+  world.height[i] = before + .2;
+  noteTerrainCell(world, 'height', i);
+  world.height[i] = before;
+  noteTerrainCell(world, 'height', i);
+  assert.equal(bridge.changes(), null, 'same-frame write and restore is not dirty');
+  assert(bridge.scanStats.comparedCells < 50, 'one-cell edits must not walk a 163840-cell world');
+  assert.equal(bridge.scanStats.fullScans, 0);
+  // Raw TypedArray writes remain supported by a mandatory compatibility route.
+  world.height[i] = before + .1;
+  bridge.forceRescan();
+  assert(bridge.changes()?.height, 'explicit forceRescan detects unnotified direct writes');
+  assert.equal(bridge.scanStats.fullScans, 1);
+  assert.equal(bridge.changes(), null, 'full sync consumes its one-time marker');
+  bridge.dispose();
+});
+check('双订阅观察者互不抢占；4096 次写入溢出只让落后者全量重同步', () => {
+  const w = generateWorld({ preset: { w: 64, h: 48 }, seed: 388, scatter: true });
+  activateTerrainChanges(w);
+  const a = new WorldRenderBridge(w), b = new WorldRenderBridge(w);
+  const index = 5 * w.w + 2;
+  w.water[index] = .25; noteTerrainCell(w, 'water', index);
+  assert(a.changes()?.water);
+  assert(b.changes()?.water, 'observer B must see event even after A consumes');
+  for(let i=0;i<TERRAIN_JOURNAL_CAPACITY+5;i++){
+    noteTerrainCell(w,'height',i%w.size);
+    if(i%20===0) a.changes();
+  }
+  assert.equal(b.changes(), null, 'unmodified height should not create false dirty after overflow');
+  assert(b.scanStats.fullScans >= 1 && b.scanStats.overflows >= 1, 'stale cursor triggers full resync');
+  assert.equal(b.changes(), null);
+  a.dispose();b.dispose();
+  const subscriber=subscribeTerrainChanges(w);
+  noteTerrainFull(w,'fire');
+  assert(readTerrainChanges(subscriber).regions[4]);
+  disposeTerrainSubscription(subscriber);
+  assert.equal(readTerrainChanges(subscriber),null);
+});
+check('范围通知只局部比较；数组整体替换与 touch 回退均保持可见', () => {
+  const w = generateWorld({preset:{w:64,h:48},seed:183,scatter:true});
+  activateTerrainChanges(w);
+  const bridge = new WorldRenderBridge(w);
+  const i=11*w.w+12;
+  w.water[i]=.4;noteTerrainRegion(w,'water',{x0:11,y0:10,x1:13,y1:12});
+  const d=bridge.changes();
+  assert.deepEqual(d.water,{x0:12,y0:11,x1:12,y1:11});
+  assert.equal(bridge.scanStats.comparedCells,9);
+  w.fire = w.fire.slice();
+  w.fire[i]=.9;
+  assert(bridge.changes()?.fire,'array reference change requires full resync');
+  const fullBefore=bridge.scanStats.fullScans;
+  w.veg[i]=.2;w.touch();
+  assert(bridge.changes()?.veg,'unported legacy touch has conservative full fallback');
+  assert.equal(bridge.scanStats.fullScans,fullBefore+1);
+  bridge.dispose();
+});
 // ══ G1 · mergeRegion 是纯函数 ═════════════════════════════════════════
 section('G1 · mergeRegion 纯函数（不许改入参、不许漏方向）');
 

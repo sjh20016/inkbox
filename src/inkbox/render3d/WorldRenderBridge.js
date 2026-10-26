@@ -34,9 +34,11 @@
 
 import { createCoordinates } from './coordinates.js';
 import { vegetationEligible } from './vegetation/deriveVegetation.js';
+import { terrainChangesActive, subscribeTerrainChanges, readTerrainChanges, disposeTerrainSubscription } from '../world/terrainChanges.js';
 
 /** 历史四层地形数组的键（顺序即渲染顺序契约）；fire 单列快照。 */
 export const BRIDGE_LAYERS = Object.freeze(['height', 'water', 'type', 'veg']);
+const OBSERVED_LAYERS = Object.freeze([...BRIDGE_LAYERS, 'fire']);
 
 /**
  * 合并两块脏区域 —— **纯函数**（不修改入参，返回值总是新对象）。
@@ -76,7 +78,15 @@ export class WorldRenderBridge {
     this.coordinates = createCoordinates(world);
     this.snapshots = Object.fromEntries(BRIDGE_LAYERS.map(key => [key, world[key].slice()]));
     this.fireSnapshot = world.fire.slice();
+    this.arraySources = Object.fromEntries(OBSERVED_LAYERS.map(key => [key, world[key]]));
+    // Only explicitly activated worlds opt in. Direct TypedArray mutation
+    // callers keep the historical full-diff behavior without any registration.
+    this.subscription = subscribeTerrainChanges(world);
+    this.needsFullScan = false;
+    this.scanStats = { calls: 0, comparedCells: 0, valueComparisons: 0, fullScans: 0, incrementalScans: 0, idleSkips: 0, overflows: 0 };
   }
+  forceRescan() { this.needsFullScan = true; }
+  dispose() { disposeTerrainSubscription(this.subscription); this.subscription = null; }
 
   /**
    * 对比本帧与上一帧的地形数组和活动火势。
@@ -88,7 +98,48 @@ export class WorldRenderBridge {
   changes() {
     const w = this.world;
     const { height, water, type, veg, fire } = w;
-    const old = this.snapshots;
+    const old = this.snapshots, stats = this.scanStats;
+    stats.calls++;
+    // A bridge can outlive the moment product code activates its World.
+    // Establish a new snapshot comparison before switching from legacy scan.
+    let subscriptionJustCreated = false;
+    if (!this.subscription && terrainChangesActive(w)) {
+      this.subscription = subscribeTerrainChanges(w);
+      subscriptionJustCreated = true;
+    }
+    let full = !this.subscription || this.needsFullScan || subscriptionJustCreated;
+    this.needsFullScan = false;
+    for (const name of OBSERVED_LAYERS) {
+      const source = w[name];
+      if (this.arraySources[name] !== source || source.length !== w.size) {
+        full = true;
+        this.arraySources[name] = source;
+      }
+      // A caller may replace a TypedArray or reconstitute the World in place.
+      // Snapshot capacity must match the authoritative array before diffing.
+      if (name === 'fire') {
+        if (this.fireSnapshot.length !== source.length) this.fireSnapshot = source.slice();
+      } else if (old[name].length !== source.length) old[name] = source.slice();
+    }
+    const pending = this.subscription ? readTerrainChanges(this.subscription) : null;
+    if (pending?.full) { full = true; if (pending.overflow) stats.overflows++; }
+    if (!full && !pending) { stats.idleSkips++; return null; }
+    // A single union rectangle is safe because the old five-layer snapshot
+    // decides which individual cells/layers really changed. It may be broader
+    // than the logged writes, but never misses any of them.
+    let bounds = full ? { x0: 0, y0: 0, x1: w.w - 1, y1: w.h - 1 } : null;
+    if (!full) for (const r of pending.regions) if (r) {
+      if (!bounds) bounds = { ...r };
+      else {
+        bounds.x0 = Math.min(bounds.x0, r.x0); bounds.y0 = Math.min(bounds.y0, r.y0);
+        bounds.x1 = Math.max(bounds.x1, r.x1); bounds.y1 = Math.max(bounds.y1, r.y1);
+      }
+    }
+    if (!bounds) { stats.idleSkips++; return null; }
+    // A conservative all-layer notification still compares the full map.
+    // Classify its work accurately rather than calling it an incremental scan.
+    if (bounds.x0 === 0 && bounds.y0 === 0 && bounds.x1 === w.w - 1 && bounds.y1 === w.h - 1) full = true;
+    if (full) stats.fullScans++; else stats.incrementalScans++;
     let vegetationMembership = false;
     // 每层各一条包围盒：`[x0, y0, x1, y1]`，`x1 < 0` = 这层没脏。
     // ⚠️ 四层**分开记**——揉成一个 region 就是 M1 那套过粗的 dirty。
@@ -96,7 +147,9 @@ export class WorldRenderBridge {
       height: [w.w, w.h, -1, -1], water: [w.w, w.h, -1, -1],
       type: [w.w, w.h, -1, -1], veg: [w.w, w.h, -1, -1], fire: [w.w, w.h, -1, -1],
     };
-    for (let i = 0; i < w.size; i++) {
+    for (let y = bounds.y0; y <= bounds.y1; y++) for (let x = bounds.x0; x <= bounds.x1; x++) {
+      const i = y * w.w + x;
+      stats.comparedCells++; stats.valueComparisons += 5;
       const dHeight = old.height[i] !== height[i];
       const dWater = old.water[i] !== water[i];
       const dType = old.type[i] !== type[i];
@@ -107,7 +160,6 @@ export class WorldRenderBridge {
         vegetationMembership = vegetationEligible(w.seed, i, old.height[i], old.water[i], old.veg[i])
           !== vegetationEligible(w.seed, i, height[i], water[i], veg[i]);
       }
-      const x = i % w.w, y = (i / w.w) | 0;
       // ⚠️ 每层**各自**更新快照：漏更一层，那一层会「只脏一次」然后永久沉默，
       //    而且不报错——症状是「地形改完画面不再跟」。
       if (dHeight) { old.height[i] = height[i]; grow(box.height, x, y); }

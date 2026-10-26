@@ -6,6 +6,7 @@
 import { SEA_LEVEL, TERRAIN } from '../core/config.js';
 import { clamp, smoothstep } from '../core/noise.js';
 import { invalidateTransitGeography } from './transitGeography.js';
+import { noteTerrainCell, noteTerrainRegion, noteTerrainFull } from './terrainChanges.js';
 
 export const OVER = Object.freeze({
   NONE: 0,
@@ -153,7 +154,9 @@ function applyTile(world, x, y, i) {
 export function recomputeTile(world, x, y) {
   const i = y * world.w + x;
   invalidateTransitGeography(world);
-  return applyTile(world, x, y, i);
+  const result = applyTile(world, x, y, i);
+  noteTerrainCell(world, 'type', i);
+  return result;
 }
 
 /**
@@ -189,14 +192,18 @@ export function flushDirty(world) {
   const flags = world._typeDirtyFlags;
   const w = world.w;
   const count = list.length;
+  let ax = world.w, ay = world.h, bx = -1, by = -1;
   for (let k = 0; k < count; k += 1) {
     const i = list[k];
     const x = i % w;
     const y = (i - x) / w;
     applyTile(world, x, y, i);
+    ax = Math.min(ax, x); ay = Math.min(ay, y);
+    bx = Math.max(bx, x); by = Math.max(by, y);
     flags[i] = 0;
   }
   list.length = 0;
+  noteTerrainRegion(world, 'type', { x0: ax, y0: ay, x1: bx, y1: by });
   world.touch();
   return count;
 }
@@ -210,6 +217,7 @@ export function recomputeAll(world) {
       applyTile(world, x, y, i);
     }
   }
+  noteTerrainFull(world, 'type');
   world.touch();
 }
 
@@ -245,6 +253,7 @@ export function recomputeRect(world, x0, y0, x1, y1) {
       applyTile(world, x, y, i);
     }
   }
+  noteTerrainRegion(world, 'type', { x0: ax, y0: ay, x1: bx, y1: by });
   world.touch();
 }
 
@@ -272,6 +281,7 @@ export function decayOverlay(world, dtDays, rng) {
     } else if (value === OVER.LAVA) {
       over[i] = OVER.ASH;
       height[i] = clamp(height[i] + 0.012, 0, 1);
+      noteTerrainCell(world, 'height', i);
       markDirtyWithNeighbors(world, i);
       changed = true;
     } else if (value === OVER.RUINS) {

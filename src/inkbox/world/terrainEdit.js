@@ -2,6 +2,7 @@
 import { clamp } from '../core/noise.js';
 import { playerEditedCell } from '../sim/nature.js';
 import { invalidateTransitGeography } from './transitGeography.js';
+import { noteTerrainCell } from './terrainChanges.js';
 
 /** A height edit preserves the existing water surface; raising land above it exposes land. */
 export function setHeight(world, i, value, { player = true } = {}) {
@@ -13,8 +14,11 @@ export function setHeight(world, i, value, { player = true } = {}) {
   const surface = old + initialWater;
   if (player) playerEditedCell(world, i);
   world.height[i] = next;
-  if (initialWater > 0 || ownedBase !== undefined)
+  noteTerrainCell(world, 'height', i);
+  if (initialWater > 0 || ownedBase !== undefined) {
     world.water[i] = initialWater > 0 ? Math.fround(Math.max(0, surface - next)) : 0;
+    noteTerrainCell(world, 'water', i);
+  }
   invalidateTransitGeography(world);
   return true;
 }
@@ -25,6 +29,7 @@ export function setWater(world, i, value, { player = true } = {}) {
   if (next === world.water[i] && !(player && world.nature?.floods?.has(i))) return false;
   if (player) playerEditedCell(world, i);
   world.water[i] = next;
+  noteTerrainCell(world, 'water', i);
   invalidateTransitGeography(world);
   return true;
 }

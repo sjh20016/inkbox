@@ -1,4 +1,5 @@
 import { recomputeRect } from '../../world/terrain.js';
+import { noteTerrainCell } from '../../world/terrainChanges.js';
 import { setHeight } from '../../world/terrainEdit.js';
 import { respondLocalWater } from '../../world/localWater.js';
 import { snapshotFloodCell, restoreFloodCell, restoredFloodWater } from '../../sim/nature.js';
@@ -247,7 +248,8 @@ export function restoreTerrainStroke(world,entry,side='before'){
       || (world.riverBase?.[i]??0)!==record[expected+2])return null;
   }
   for(const record of entry.records){const i=record[0];world.height[i]=record[offset];
-    if(world.water)world.water[i]=record[offset+1];if(world.riverBase)world.riverBase[i]=record[offset+2];
+    noteTerrainCell(world,'height',i);
+    if(world.water){world.water[i]=record[offset+1];noteTerrainCell(world,'water',i);}if(world.riverBase)world.riverBase[i]=record[offset+2];
     if(record.length>7)restoreFloodCell(world,i,record[side==='after'?8:7]);}
   const r=entry.region;recomputeRect(world,r.x0,r.y0,r.x1,r.y1);return {...r,count:entry.records.length};
 }

@@ -27,6 +27,7 @@ import { generateUpperWorld, recomputeUpperQi } from './world/worldgenUpper.js';
 // （阴气在 `veg` 层，不在 `qi` 层），生成器内部已 `recomputeQi` 一次，调用方无事可做。
 import { generateNetherWorld } from './world/worldgenNether.js';
 import { recomputeRect } from './world/terrain.js';
+import { activateTerrainChanges, noteAllTerrain } from './world/terrainChanges.js';
 import { Life } from './sim/life.js';
 import { UpperLife } from './sim/upperLife.js';
 // ⚠️ 三界面板要的那几份只读读数（五路中文名 `ROUTE_LABEL` / 幽冥实体口径
@@ -427,6 +428,10 @@ class Sandbox {
     // 幽冥：与凡间同尺寸的第三张图，但没有 TerrainLayer、没有 Life（见 attachNether）。
     // 与上界并列，同样放在 terrain 之后。
     this.attachNether(this.world);
+    // Product-owned Worlds opt into the journal only after full generation/load.
+    if (typeof activateTerrainChanges === 'function') {
+      for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
+    }
     this.camera.bind(this.world);
     this.camera.fit(this.world);
     this.history.clear();
@@ -1260,6 +1265,10 @@ class Sandbox {
           this.attachUpper(this.world);
           // 幽冥同理：存档带 nether 就复用，没带就按凡间 seed 重新派生（旧档降级）。
           this.attachNether(this.world);
+    // Product-owned Worlds opt into the journal only after full generation/load.
+    if (typeof activateTerrainChanges === 'function') {
+      for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
+    }
           this.camera.bind(this.world);
           this.camera.fit(this.world);
           this.history.clear();
@@ -1358,6 +1367,10 @@ class Sandbox {
         this.attachUpper(this.world);
         // 幽冥同理：导入的世界也要挂上它自己的幽冥。
         this.attachNether(this.world);
+    // Product-owned Worlds opt into the journal only after full generation/load.
+    if (typeof activateTerrainChanges === 'function') {
+      for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
+    }
         this.camera.bind(this.world);
         this.camera.fit(this.world);
         this.history.clear();
@@ -1557,6 +1570,8 @@ class Sandbox {
     };
     const observation = observeToolBefore(ctx, tool);
     ctx.result = tool.apply(ctx);
+    // Tool effects may invoke legacy setters that do not carry a per-cell note.
+    if (typeof noteAllTerrain === 'function') noteAllTerrain(world);
     const impact = observeToolAfter(ctx, observation);
     this.lastToolImpact = impact;
     if (priorSites) showOpportunityPlacement(this, world.sites.find(site => !priorSites.has(site.id)), ctx.result);

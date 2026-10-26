@@ -54,6 +54,7 @@
 //     一条缝能活 30–40 年，玩家关掉视界以后它仍然必须知道自己原本连接哪里。
 //     老档没有这个键 → 兜底 `'upper'`（诚实缺省：本契约之前只有上界裂缝）。
 
+import { noteTerrainCell } from '../world/terrainChanges.js';
 import { mulberry32 } from '../core/noise.js';
 import { SPECIES } from '../core/config.js';
 // ⚠️ `RIFT_CROSS_MAX_LEVEL`（= 40，化神期起点）由**飞升代理**在
@@ -1166,6 +1167,7 @@ function leakUpperHerb(world, rift, r, rng) {
 
   // ── 4. 采走：清零（理由见函数头）─────────────────────────
   upper.veg[pick.i] = 0;
+  noteTerrainCell(upper, 'veg', pick.i);
 
   // ── 5. 记账：与法宝共用 `leaked`（不扩契约）───────────────
   // ⚠️ **不**记 `artifactLog.riftIn`：那是法宝的跨位面流入账，灵植不是法宝，
