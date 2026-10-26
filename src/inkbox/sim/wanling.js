@@ -3,6 +3,7 @@ import { WANLING_BY_KEY, WANLING_CATALOG, stableWanlingHash } from '../core/wanl
 import { WANLING_LIMITS, wanlingState, wanlingEvent, wanlingEffectAt, addWanlingEffect } from '../world/wanlingState.js';
 import { OVER, markDirty, markDirtyWithNeighbors, flushDirty } from '../world/terrain.js';
 import { setHeight } from '../world/terrainEdit.js';
+import { noteTerrainCell } from '../world/terrainChanges.js';
 import { setRecoveringOverlay } from './nature.js';
 import { wanlingGuardAt } from '../world/wanlingInfluence.js';
 export { wanlingVillageInfluence, wanlingResonanceAt, wanlingGuardAt, isWanlingHostile } from '../world/wanlingInfluence.js';
@@ -155,7 +156,7 @@ function buildShore(world,u) {
     const i=world.idx(xx,yy),depth=world.water[i];
     if(depth<=0.0015||depth>0.014||world.struct[i]||world.nature?.floods?.has(i)||!coast(world,xx,yy)) continue;
     if(setHeight(world,i,world.height[i]+Math.min(0.004,depth),{player:false})) {
-      markDirtyWithNeighbors(world,i);flushDirty(world);world.touch();
+      markDirtyWithNeighbors(world,i);flushDirty(world);world.touch({ terrain: false });
       u.lastBuildDay=world.day;u.state='building';
       record(world,u,`${u.name}在（${xx},${yy}）衔石筑岸，浅滩高程改变。`);return;
     }
@@ -169,9 +170,10 @@ function scorch(world,u) {
     const i=world.idx(xx,yy);
     if(world.water[i]>0.0015||world.struct[i]||world.over[i]===OVER.LAVA||world.nature?.overlays?.has(i)) continue;
     const old=world.veg[i];world.veg[i]=Math.fround(Math.max(0,old*0.4));
+    if (world.veg[i] !== old) noteTerrainCell(world, 'veg', i);
     setRecoveringOverlay(world,i,OVER.SCORCHED,360,world.day,{recoverVeg:old,expectedVeg:world.veg[i]});count++;
   }
-  if(count) {flushDirty(world);world.touch();u.lastScorchDay=world.day;u.state='scorching';record(world,u,`${u.name}留下${count}格可恢复枯痕。`);}
+  if(count) {flushDirty(world);world.touch({ terrain: false });u.lastScorchDay=world.day;u.state='scorching';record(world,u,`${u.name}留下${count}格可恢复枯痕。`);}
 }
 function act(world,u) {
   if((SPIRITS.has(u.form)||u.form==='chiru'||u.form==='xuangui')&&lostHabitat(world,u)) return;
@@ -181,7 +183,7 @@ function act(world,u) {
       const wolf=nearest(units,u.x,u.y,5,v=>v.form==='wolf'&&v.hp>0&&wanlingEffectAt(world,'calm',v.x,v.y)<=0);
       if(wolf) {away(world,u,wolf);u.state='flee';}
       else if(world.veg[i]<0.08) {const grass=greenerSpot(world,u);if(grass) {move(world,u,...grass);u.state='migrating';}else herdCount(world,u,-1,'缺草');}
-      else {const available=world.veg[i];const eaten=Math.min(available,0.015*u.count);world.veg[i]=Math.fround(available-eaten);u.state='grazing';if(eaten) {markDirty(world,i);flushDirty(world);world.touch();}if(available>0.65&&rand(world,u.id,`fawn:${world.day}`)<0.25) herdCount(world,u,1,'繁衍');}
+      else {const available=world.veg[i];const eaten=Math.min(available,0.015*u.count);world.veg[i]=Math.fround(available-eaten);u.state='grazing';if(eaten) {noteTerrainCell(world, 'veg', i);markDirty(world,i);flushDirty(world);world.touch({ terrain: false });}if(available>0.65&&rand(world,u.id,`fawn:${world.day}`)<0.25) herdCount(world,u,1,'繁衍');}
       break;
     }
     case 'wolf': {
@@ -241,7 +243,7 @@ function act(world,u) {
       if(victim&&!wanlingGuardAt(world,victim.x,victim.y)) {victim.hp=Math.max(1,victim.hp-Math.min(8,(victim.maxHp||40)*0.12));u.state='hunting';record(world,u,`${u.name}循善业袭扰【${victim.name}】。`);} else u.state='prowling';break;
     }
     case 'fei': scorch(world,u);break;
-    case 'wood': {const old=world.veg[i];world.veg[i]=Math.fround(Math.min(1,old+0.04));if(world.veg[i]!==old) {markDirty(world,i);flushDirty(world);world.touch();}u.state='rooted';break;}
+    case 'wood': {const old=world.veg[i];world.veg[i]=Math.fround(Math.min(1,old+0.04));if(world.veg[i]!==old) {noteTerrainCell(world, 'veg', i);markDirty(world,i);flushDirty(world);world.touch({ terrain: false });}u.state='rooted';break;}
     case 'water': case 'stone': u.state='anchored';break;
   }
   u.lastActDay=world.day;
