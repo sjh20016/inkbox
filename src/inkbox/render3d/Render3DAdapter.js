@@ -270,7 +270,12 @@ export class Render3DAdapter {
     const common = [x, y, host.width, host.height, ...camera.matrixWorld.elements, ...camera.projectionMatrix.elements];
     const world = host.world, access = accessBounds(world);
     common.push(hoverObjectId(world), hoverObjectId(world?.mapProgress), access?.x0, access?.y0, access?.x1, access?.y1);
-    const staticValues = [...common], dynamicValues = [...common];
+    // Reuse the two large signature buffers; the resulting string keys retain
+    // the same per-mesh versions, so moving entities still invalidate hover.
+    const staticValues = this._hoverStaticValues || (this._hoverStaticValues = []);
+    const dynamicValues = this._hoverDynamicValues || (this._hoverDynamicValues = []);
+    staticValues.length = 0; dynamicValues.length = 0;
+    staticValues.push(...common); dynamicValues.push(...common);
     const addMesh = (mesh, values) => {
       if (!mesh) return;
       const geometry = mesh.geometry;
@@ -520,7 +525,7 @@ export class Render3DAdapter {
     const changed = sandbox.history.end('焚林');
     if (changed) {
       sandbox.history.stack.at(-1).adapterOrder = ++this.editOrder;
-      this.redoStack = [];
+      this.redoStack = []; this.syncHistoryState();
     }
     sandbox.qol.syncUndoState();
     if (changed) sandbox.notify('焚林已落笔 · 火势与灾迹可用检视观察。', 2600);
@@ -728,7 +733,6 @@ export class Render3DAdapter {
     if(editState&&this.mode!=='inspect')editState.textContent=this.editReason(hit)||
       (this.mode === 'root' ? (hit?.entityId != null ? `赐灵根目标：人物 ${hit.entityId} · 点击确认` : '请点选高亮的真实凡人')
         : TOOL_BY_ID[this.mode]?.mode === 'click' ? '单击施放 · 将改变真实世界' : '拖动选取范围 · 松手施放');
-    this.syncHistoryState();
     const metrics = this.renderer.render();
     const cell = hit || this.selectedCell;
     const viewedWorld = this.renderer.stages.get(cell?.plane || this.renderer.activePlane)?.world || world;
