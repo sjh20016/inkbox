@@ -34,7 +34,7 @@
 
 import { createCoordinates } from './coordinates.js';
 import { vegetationEligible } from './vegetation/deriveVegetation.js';
-import { subscribeTerrainChanges, readTerrainChanges, disposeTerrainSubscription } from '../world/terrainChanges.js';
+import { terrainChangesActive, subscribeTerrainChanges, readTerrainChanges, disposeTerrainSubscription } from '../world/terrainChanges.js';
 
 /** 历史四层地形数组的键（顺序即渲染顺序契约）；fire 单列快照。 */
 export const BRIDGE_LAYERS = Object.freeze(['height', 'water', 'type', 'veg']);
@@ -86,7 +86,6 @@ export class WorldRenderBridge {
   }
   forceRescan() { this.needsFullScan = true; }
   dispose() { disposeTerrainSubscription(this.subscription); this.subscription = null; }
-  }
 
   /**
    * 对比本帧与上一帧的地形数组和活动火势。
@@ -100,7 +99,14 @@ export class WorldRenderBridge {
     const { height, water, type, veg, fire } = w;
     const old = this.snapshots, stats = this.scanStats;
     stats.calls++;
-    let full = !this.subscription || this.needsFullScan;
+    // A bridge can outlive the moment product code activates its World.
+    // Establish a new snapshot comparison before switching from legacy scan.
+    let subscriptionJustCreated = false;
+    if (!this.subscription && terrainChangesActive(w)) {
+      this.subscription = subscribeTerrainChanges(w);
+      subscriptionJustCreated = true;
+    }
+    let full = !this.subscription || this.needsFullScan || subscriptionJustCreated;
     this.needsFullScan = false;
     const arrays = { height, water, type, veg, fire };
     for (const name of [...BRIDGE_LAYERS, 'fire']) {
@@ -108,6 +114,11 @@ export class WorldRenderBridge {
         full = true;
         this.arraySources[name] = arrays[name];
       }
+      // A caller may replace a TypedArray or reconstitute the World in place.
+      // Snapshot capacity must match the authoritative array before diffing.
+      if (name === 'fire') {
+        if (this.fireSnapshot.length !== arrays[name].length) this.fireSnapshot = arrays[name].slice();
+      } else if (old[name].length !== arrays[name].length) old[name] = arrays[name].slice();
     }
     const pending = this.subscription ? readTerrainChanges(this.subscription) : null;
     if (pending?.full) { full = true; if (pending.overflow) stats.overflows++; }
