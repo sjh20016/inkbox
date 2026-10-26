@@ -6,6 +6,7 @@
 
 import { SEA_LEVEL } from '../core/config.js';
 import { clamp } from '../core/noise.js';
+import { noteTerrainFull } from '../world/terrainChanges.js';
 import {
   recomputeRect, markDirty, markDirtyWithNeighbors, flushDirty,
 } from '../world/terrain.js';
@@ -15,15 +16,18 @@ const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 /** 海洋补水：高程低于海平面的格子始终保持至少海平面水深 */
 export function refillSea(world) {
   const { height, water } = world;
+  let changed = false;
   for (let i = 0; i < world.size; i += 1) {
     if (height[i] < SEA_LEVEL) {
       const need = SEA_LEVEL - height[i];
       if (water[i] < need) {
         water[i] = need;
+        changed = true;
         markDirty(world, i);
       }
     }
   }
+  if (changed) noteTerrainFull(world, 'water');
 }
 
 /** 河道基流：水系不会因为蒸发而断流，玩家的水库也会被河流慢慢灌满 */
@@ -39,6 +43,7 @@ export function maintainRivers(world) {
       fed += 1;
     }
   }
+  if (fed) noteTerrainFull(world, 'water');
   return fed;
 }
 
@@ -95,6 +100,8 @@ export function stepWater(world, dtDays, opts = {}) {
     water[i] = Math.max(0, depth - evapRate * dtDays * (0.35 + temp[i]));
   }
 
+  // Legacy hydrology is not on the product clock; support direct invocation.
+  noteTerrainFull(world, 'water');
   if (moved > 0.0001) world.touch();
   return moved;
 }
@@ -154,6 +161,7 @@ export function stepErosion(world, dtDays, opts = {}) {
       height[i] = clamp(height[i] + d, 0, 1);
       markDirtyWithNeighbors(world, i);
     }
+    noteTerrainFull(world, 'height');
     world.touch();
   }
   return touched;
@@ -196,6 +204,7 @@ export function stepThermal(world, dtDays, opts = {}) {
       height[i] = clamp(height[i] + d, 0, 1);
       markDirtyWithNeighbors(world, i);
     }
+    noteTerrainFull(world, 'height');
     world.touch();
   }
   return touched;
