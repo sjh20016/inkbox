@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { World } from '../src/inkbox/world/World.js';
 import { Life } from '../src/inkbox/sim/life.js';
+import { History } from '../src/inkbox/sim/powers.js';
 import { TERRAIN } from '../src/inkbox/core/config.js';
 import { rngStream } from '../src/inkbox/core/noise.js';
 import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
@@ -42,6 +43,38 @@ test('焚林按独立真实差分计格，保存有界样本、回访纯读', ()
   const many = new Map(Array.from({length:50},(_,i)=>[i,{h:0,w:0,o:0,t:0,s:0,v:1,f:0,n:0}]));
   const now = new Map([...many].map(([i,s])=>[i,{...s,v:0}]));
   const large = recordBurnReceipt(world,{toolId:'burn'},many,now); assert.equal(large.changedCells,50); assert.equal(large.samples.length,16);
+});
+test('正式焚林 History.undo 成功后按笔录 ID 标记撤销并保存，旧 v1 记录仍兼容', () => {
+  const {world} = fixture(), hist = new History(), i = world.idx(30,31);
+  hist.begin({toolId:'burn',x:30,y:31,radius:2});
+  hist.record(world,i);
+  world.veg[i] = .11;
+  assert.equal(hist.end('焚林'),true);
+  const receipt = readJournal(world).receipts[0];
+  assert.equal(receipt.kind,'burn');
+  assert.equal(receipt.undo,undefined);
+  assert.equal(hist.undo(world),'焚林');
+  const updated = readJournal(world).receipts[0];
+  assert.deepEqual(updated.undo,{status:'undone',day:world.day});
+  assert(receiptRevisit(world,updated).direct.some(x => x.includes('已成功撤销')));
+  assert.equal(hist.undo(world),null);
+  assert.equal(readJournal(world).receipts[0].undo.status,'undone');
+  assert.deepEqual(deserializeWorld(serializeWorld(world)).journal.receipts[0].undo,updated.undo);
+  const legacy = serializeWorld(world); delete legacy.journal.receipts[0].undo;
+  assert.equal(deserializeWorld(legacy).journal.receipts[0].undo,undefined);
+  const damaged = serializeWorld(world); damaged.journal.receipts[0].undo.status='refused';
+  assert.throws(() => deserializeWorld(damaged), /手札数据损坏/);
+});
+test('焚林撤销被后续地形修改拒绝时不得误记已撤销', () => {
+  const {world} = fixture(), hist = new History(), i=world.idx(31,32);
+  hist.begin({toolId:'burn',x:31,y:32,radius:2});
+  hist.record(world,i); world.veg[i]=.25;
+  assert.equal(hist.end('焚林'),true);
+  world.veg[i]=.33;
+  assert.equal(hist.undo(world),null);
+  assert.match(hist.lastUndoFailure,/后续变化/);
+  assert.equal(readJournal(world).receipts[0].undo,undefined);
+  assert.equal(hist.stack.length,1,'refused undo must preserve history stack');
 });
 test('自然格快照按内容比较，重复焚林不因新对象伪增计格', () => {
   const {world}=fixture(); const cell={h:0,w:0,o:0,t:0,s:0,v:0,f:1,n:{fire:{id:2,dueDay:30},overlay:null,flood:null}};
