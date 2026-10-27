@@ -49,7 +49,7 @@
 // 用自己的累加器记，不读 `upper.day` 做差。
 
 import { SEA_LEVEL, SPECIES, SPECIES_INFO, LIMITS } from '../core/config.js';
-import { mulberry32 } from '../core/noise.js';
+import { rngStream, rngStateOf, isRngState } from '../core/noise.js';
 import { isFertileAge, isMortalHuman } from '../core/demographics.js';
 import { generateNameParts, generateSectName, DAO_TITLES, pickFrom, narrate } from '../core/lore.js';
 import { initEntity, stepEntity as stepCultivation } from './cultivation.js';
@@ -281,11 +281,11 @@ export function isUpperMortal(e) {
 export class UpperLife {
   constructor(upper) {
     this.upper = upper;
-    this.rng = mulberry32(((upper.seed || 0) ^ UPPER_LIFE_SEED_KEY) >>> 0);
+    this.rng = rngStream(((upper.seed || 0) ^ UPPER_LIFE_SEED_KEY) >>> 0);
     // 空间行为的**独立**流（D6-2 工程包 C）。为什么另开一条、不共用 `this.rng`：
     // 见文件头「随机流纪律」第 3 条。它同样**不入档**，重建点与 `this.rng` 一致
     // （`attachUpper()` → `new UpperLife(upper)`），所以读档后两条流从同一个位置重来。
-    this.spatialRng = mulberry32(((upper.seed || 0) ^ UPPER_SPATIAL_SEED_KEY) >>> 0);
+    this.spatialRng = rngStream(((upper.seed || 0) ^ UPPER_SPATIAL_SEED_KEY) >>> 0);
     this.foundAccum = 0;
     // 人口账本的**唯一**归一入口（形状与兜底都在 `planes.ensureUpperPopLog`）。
     // 为什么放在构造器：新档 / 读档 / 导入三条路径都汇聚在 `attachUpper()` →
@@ -295,6 +295,20 @@ export class UpperLife {
     //    `if (!upper.popLog)` 那种兜底**不会触发**——账本存在但缺键，
     //    于是 `popLog.sucked` 一路是 `undefined`，某天 `+= 1` 变成 NaN。
     ensureUpperPopLog(upper);
+  }
+
+  /** G8 运行期检查点（见 `Life.captureRuntime`）。 */
+  captureRuntime() {
+    return { rng: rngStateOf(this.rng), spatialRng: rngStateOf(this.spatialRng), foundAccum: this.foundAccum };
+  }
+
+  restoreRuntime(data) {
+    for (const key of ['rng', 'spatialRng']) {
+      if (!isRngState(data[key])) throw new TypeError(`upperLife.${key} invalid`);
+      this[key].setState(data[key]);
+    }
+    if (!Number.isFinite(data.foundAccum) || data.foundAccum < 0) throw new TypeError('upperLife.foundAccum invalid');
+    this.foundAccum = data.foundAccum;
   }
 
   /**

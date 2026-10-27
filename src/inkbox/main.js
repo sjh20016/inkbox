@@ -6,7 +6,8 @@
 
 import { APP, LIMITS, TIME, WORLD_PRESETS, SEA_LEVEL, SPECIES_INFO, TERRAIN_INFO, TERRAIN, INK } from './core/config.js';
 import { REALMS, realmLabel, pollutionLabel, POLLUTION_ASCEND_LIMIT } from './core/cultivation.js';
-import { mulberry32 } from './core/noise.js';
+import { rngStream } from './core/noise.js';
+import { captureRuntimeState, restoreRuntimeState } from './sim/runtimeState.js';
 import { generateWorld } from './world/worldgen.js';
 import { createSandboxWorld, creationOptions, parseSeed, syncCreationControls, syncMapProgress, expandSandboxMap } from './ui/worldCreation.js';
 import { accessBounds, canAccess } from './world/mapProgress.js';
@@ -125,6 +126,7 @@ import { drawRealmView, drawSelectHint } from './render/realmViewLayer.js';
 import { toCss } from './render/palette.js';
 import {
   saveToStorage, loadFromStorage, exportFile, importFile, listSlots, deleteSlot,
+  savedRuntimeOf,
 } from './io/save.js';
 import {
   CAUSAL_TOOL_IDS, createInterventionOutcome, measureChangedCells,
@@ -206,6 +208,8 @@ function plainSaveNotice(reason) {
 // ── 镜头动作时长（D7-C）──────────────────────────────────
 // 走真实时间（秒）。找人物 0.6~0.9 取 0.75，找宗门 0.7~1.0 取 0.85——
 // 宗门是「更大的地方」，稍慢一点读起来更稳。**不做镜头晃动、不自动跟随**。
+/** 玩家工具随机流的固定种子（历史值 12345）。 */
+const PLAYER_RNG_SEED = 12345;
 const PERSON_FOCUS_DURATION = 0.75;
 const SECT_FOCUS_DURATION = 0.85;
 
@@ -245,7 +249,8 @@ class Sandbox {
     this.world = null;
     this.life = null;
     this.terrain = null;
-    this.rng = mulberry32(12345);
+    // 玩家工具随机流（G8：可快照；每次换世界重置，读档恢复存档时刻的游标）。
+    this.rng = rngStream(PLAYER_RNG_SEED);
 
     // ── 上界（另一个 world，同尺寸的另一张地图）─────────────
     // 它与凡间共用一条时间轴（day 由凡间赋值，见 update），但渲染、模拟各走各的。
@@ -414,13 +419,49 @@ class Sandbox {
     requestAnimationFrame((ts) => this.frame(ts));
   }
 
+  /**
+   * G8：换世界时重置会话自有的运行期状态（推进时钟、玩家工具流）。
+   * 原地重置而不换对象，已持有引用的调用方不受影响。新世界不继承旧世界游标。
+   */
+  resetSessionRuntime() {
+    Object.assign(this.advanceState, createAdvanceState());
+    if (typeof this.rng?.setState === 'function') this.rng.setState(PLAYER_RNG_SEED);
+    else this.rng = rngStream(PLAYER_RNG_SEED);
+  }
+
+  /** 当前会话的运行期检查点（纯数据、不抽签）。 */
+  captureRuntime() {
+    return captureRuntimeState({ world: this.world, life: this.life, upperLife: this.upperLife,
+      advanceState: this.advanceState, playerRng: this.rng });
+  }
+
+  /**
+   * 读档 / 导入后、第一次推进前套用存档里的运行期检查点。
+   * @returns {string} 给玩家的附注（精确续跑时为空串）
+   */
+  applySavedRuntime(world) {
+    const saved = savedRuntimeOf(world);
+    if (saved.status === 'absent') return ' · 旧存档无运行状态，随机与时钟自读档处重新起算';
+    if (saved.status === 'corrupt') return ' · 存档运行状态损坏，未精确续跑';
+    try {
+      const { exact } = restoreRuntimeState(saved.state, { world, life: this.life, upperLife: this.upperLife,
+        advanceState: this.advanceState, playerRng: this.rng });
+      return exact ? '' : ' · 运行状态不完整，未精确续跑';
+    } catch (error) {
+      console.error('[inkbox] 运行状态无法恢复', error);
+      this.resetSessionRuntime();
+      return ' · 存档运行状态无法恢复，未精确续跑';
+    }
+  }
+
   newWorld(presetKey = this.presetKey, seed = this.seed, options = {}) {
     const preset = WORLD_PRESETS[presetKey] || WORLD_PRESETS.medium;
     this.presetKey = presetKey;
     this.seed = seed >>> 0;
     this.world = createSandboxWorld(preset, this.seed, options);
     this.combatObservation?.reset();
-    this.life = new Life(this.world, mulberry32(this.seed ^ 0xa5a5a5a5));
+    this.resetSessionRuntime();
+    this.life = new Life(this.world, rngStream(this.seed ^ 0xa5a5a5a5));
     this.terrain = new TerrainLayer(this.world, { relief: this.camera.relief });
     // 上界：与凡间同尺寸的另一张地图 + 第二个 TerrainLayer。
     // 放在 terrain 之后，是因为第二个图层要用相机当前的 relief 设置。
@@ -1198,7 +1239,8 @@ class Sandbox {
         return this.qol.runOnce('inkBtnSave', async () => {
           const savedIdentity = { seed: requestedWorld.seed, day: requestedWorld.day };
           const savedEditRevision = this.qol.editRevision();
-          const result = await saveToStorage(requestedWorld, slot, { name: slot });
+          // 运行期检查点与世界本体在同一同步段取（saveToStorage 在首个 await 前序列化）。
+          const result = await saveToStorage(requestedWorld, slot, { name: slot }, this.captureRuntime());
           if (result.ok) {
             // Q24：往**侧索引**里记一笔「这一格现在是仙历几年 / 什么种子」。
             // 它不进正式存档、不改 `save.js` 的 schema——只是槽位旁边那一行小字。
@@ -1258,7 +1300,8 @@ class Sandbox {
           this.world = world;
           this.combatObservation?.reset();
           this.environmentObservation?.reset();
-          this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
+          this.resetSessionRuntime();
+        this.life = new Life(this.world, rngStream(this.world.seed ^ 0xa5a5a5a5));
           this.terrain.setWorld(this.world);
           // 上界也要跟着换：存档里带 upper 就复用，没带就按凡间 seed 重新派生
           // （旧档降级路径）。不换的话视界会贴上一个世界的上界——看着完全正常，只是全错。
@@ -1269,6 +1312,7 @@ class Sandbox {
     if (typeof activateTerrainChanges === 'function') {
       for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
     }
+          const runtimeNote = this.applySavedRuntime(this.world);
           this.camera.bind(this.world);
           this.camera.fit(this.world);
           this.history.clear();
@@ -1285,7 +1329,7 @@ class Sandbox {
           this.dirty = true;
           // Q21：刚读进来的世界与存档逐字一致 ⇒ 没有未保存的变化。
           this.qol.resetDirty();
-          this.notify(`已读取「${this.qol.slotLabel(slot)}」`);
+          this.notify(`已读取「${this.qol.slotLabel(slot)}」${runtimeNote}`, runtimeNote ? 5000 : undefined);
           this.syncWorldControls();
           this.syncWorldInfo();
           this.qol.syncToolState();
@@ -1304,7 +1348,7 @@ class Sandbox {
     $('inkBtnExport').addEventListener('click', () => {
       this.qol.runOnce('inkBtnExport', async () => {
         const name = this.qol.exportFileName(this.world);
-        exportFile(this.world, name);
+        exportFile(this.world, name, this.captureRuntime());
         // 导出一份到磁盘也算「给了玩家可恢复的副本」⇒ 清 dirty（Q21）。
         this.qol.markPersisted('export');
         this.notify(`已导出 ${name}`, 4000);
@@ -1361,7 +1405,8 @@ class Sandbox {
         this.world = world;
         this.combatObservation?.reset();
         this.environmentObservation?.reset();
-        this.life = new Life(this.world, mulberry32(this.world.seed ^ 0xa5a5a5a5));
+        this.resetSessionRuntime();
+          this.life = new Life(this.world, rngStream(this.world.seed ^ 0xa5a5a5a5));
         this.terrain.setWorld(this.world);
         // 同读档：导入的世界也要挂上它自己的上界，否则视界贴的是上一个世界的上界。
         this.attachUpper(this.world);
@@ -1371,6 +1416,7 @@ class Sandbox {
     if (typeof activateTerrainChanges === 'function') {
       for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
     }
+        const runtimeNote = this.applySavedRuntime(this.world);
         this.camera.bind(this.world);
         this.camera.fit(this.world);
         this.history.clear();
@@ -1386,7 +1432,7 @@ class Sandbox {
         this.dirty = true;
         // Q21：刚导入的世界与文件逐字一致 ⇒ 没有未保存的变化。
         this.qol.resetDirty();
-        this.notify('世界已导入');
+        this.notify(`世界已导入${runtimeNote}`, runtimeNote ? 5000 : undefined);
         this.syncWorldControls();
         this.syncWorldInfo();
         this.qol.syncToolState();

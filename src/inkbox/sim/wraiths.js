@@ -70,6 +70,7 @@
 
 import { SPECIES, SPECIES_INFO } from '../core/config.js';
 import { mulberry32 } from '../core/noise.js';
+import { worldStream } from './worldStreams.js';
 
 /**
  * 凡间鬼影的独立随机流派生键（`'HAUN'` = haunt，鬼魂作祟 / 游荡）。
@@ -84,7 +85,6 @@ import { mulberry32 } from '../core/noise.js';
 export const MORTALHAUNT_SEED_KEY = 0x4841554e;
 
 /** 每个 world 专属的流实例（模块级 WeakMap ⇒ 序列化器看不见，铁律一）。 */
-const HAUNT_RNG = new WeakMap();
 
 /**
  * 取该 world 的凡间鬼影随机流（惰性建立）。
@@ -92,12 +92,7 @@ const HAUNT_RNG = new WeakMap();
  */
 export function mortalHauntRngFor(world) {
   if (!world || typeof world !== 'object') return mulberry32(MORTALHAUNT_SEED_KEY >>> 0);
-  let rng = HAUNT_RNG.get(world);
-  if (!rng) {
-    rng = mulberry32(((world.seed || 0) ^ MORTALHAUNT_SEED_KEY) >>> 0);
-    HAUNT_RNG.set(world, rng);
-  }
-  return rng;
+  return worldStream(world, 'haunt', MORTALHAUNT_SEED_KEY);
 }
 
 // ── 标定 ────────────────────────────────────────────────────────────────

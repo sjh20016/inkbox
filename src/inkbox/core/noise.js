@@ -22,6 +22,48 @@ export function mulberry32(seed) {
   };
 }
 
+/**
+ * 可快照的 mulberry32 随机流（G8）。
+ *
+ * 与 `mulberry32(seed)` **逐签同序**：同一初始化规则（seed 为 0 时取 0x9e3779b9）、
+ * 同一 32 位整数运算，返回值仍是可直接调用的 `rng()`。区别只有两点：
+ *   · `rng.getState()` 返回当前 32 位内部状态（不抽签）；
+ *   · `rng.setState(s)` 把游标恢复到该状态（不抽签）。
+ * mulberry32 的状态每签恒加 0x6d2b79f5，所以这个 32 位整数本身就是完整游标，
+ * 不需要记录抽签次数或历史。
+ *
+ * 只给**跨节拍长期持有**的模拟流用；一次性生成 / 纯哈希随机仍用 `mulberry32`，
+ * 不为它们分配额外的闭包。
+ */
+export function rngStream(seed) {
+  let state = (Number(seed) >>> 0) || 0x9e3779b9;
+  function random() {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  Object.defineProperties(random, {
+    getState: { value: () => state },
+    setState: { value: (next) => {
+      if (!isRngState(next)) throw new TypeError(`invalid rng state: ${next}`);
+      state = next >>> 0;
+    } },
+  });
+  return random;
+}
+
+/** 合法的 32 位无符号游标（0 也合法：状态在运行中可以恰好经过 0）。 */
+export function isRngState(value) {
+  return Number.isInteger(value) && value >= 0 && value <= 0xffffffff;
+}
+
+/** 读取流游标；不可快照的流（测试注入的任意函数）返回 null。 */
+export function rngStateOf(rng) {
+  return typeof rng?.getState === 'function' ? rng.getState() : null;
+}
+
 /** 二维梯度噪声（Perlin 风格），值域约 [-1, 1] */
 export function createNoise2D(seed) {
   const random = mulberry32(seed);

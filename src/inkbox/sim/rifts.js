@@ -55,7 +55,7 @@
 //     老档没有这个键 → 兜底 `'upper'`（诚实缺省：本契约之前只有上界裂缝）。
 
 import { noteTerrainCell } from '../world/terrainChanges.js';
-import { mulberry32 } from '../core/noise.js';
+import { worldStream } from './worldStreams.js';
 import { SPECIES } from '../core/config.js';
 // ⚠️ `RIFT_CROSS_MAX_LEVEL`（= 40，化神期起点）由**飞升代理**在
 // `core/cultivation.js` 里创建，本模块只 import、**不自己定义**。
@@ -423,7 +423,6 @@ export const NETHRIFT_SEED_KEY = 0x4e524654;
  * 于是「玩家反复新建/丢弃世界」会积压一批永不释放的旧 world（内存泄漏）。
  * `WeakMap` 的键是弱引用，world 被回收时这一项自动消失。
  */
-const RIFT_RNG = new WeakMap();
 
 /**
  * 裂缝独立随机流。**同一条 world 永远是同一条流。**
@@ -439,19 +438,13 @@ const RIFT_RNG = new WeakMap();
  * @returns {() => number} 该 world 专属、且持续演进的随机流
  */
 export function riftRngFor(world) {
-  let rng = RIFT_RNG.get(world);
-  if (!rng) {
-    rng = mulberry32(((world.seed || 0) ^ RIFT_SEED_KEY) >>> 0);
-    RIFT_RNG.set(world, rng);
-  }
-  return rng;
+  return worldStream(world, 'rift', RIFT_SEED_KEY);
 }
 
 /**
  * **幽冥**裂缝跨界随机流的缓存。理由与 `RIFT_RNG` 逐条相同
  * （模块级 `WeakMap` ⇒ 序列化器结构上看不见；弱引用 ⇒ 不泄漏旧 world）。
  */
-const NETHRIFT_RNG = new WeakMap();
 
 /**
  * 幽冥裂缝跨界随机流。**同一条 world 永远是同一条流**，且与 `riftRngFor`
@@ -464,12 +457,7 @@ const NETHRIFT_RNG = new WeakMap();
  * @returns {() => number} 该 world 专属、且持续演进的幽冥裂缝流
  */
 export function netherRiftRngFor(world) {
-  let rng = NETHRIFT_RNG.get(world);
-  if (!rng) {
-    rng = mulberry32(((world.seed || 0) ^ NETHRIFT_SEED_KEY) >>> 0);
-    NETHRIFT_RNG.set(world, rng);
-  }
-  return rng;
+  return worldStream(world, 'netherRift', NETHRIFT_SEED_KEY);
 }
 
 /**
@@ -490,7 +478,6 @@ export function netherRiftRngFor(world) {
 export const NETHERITEM_SEED_KEY = 0x4e49544d;
 
 /** **幽冥物品泄漏**随机流的缓存。理由与 `RIFT_RNG` / `NETHRIFT_RNG` 逐条相同。 */
-const NETHERITEM_RNG = new WeakMap();
 
 /**
  * 幽冥物品泄漏随机流。**同一条 world 永远是同一条流**，且与其余六条
@@ -500,12 +487,7 @@ const NETHERITEM_RNG = new WeakMap();
  * @returns {() => number} 该 world 专属、且持续演进的幽冥物品流
  */
 export function netherItemRngFor(world) {
-  let rng = NETHERITEM_RNG.get(world);
-  if (!rng) {
-    rng = mulberry32(((world.seed || 0) ^ NETHERITEM_SEED_KEY) >>> 0);
-    NETHERITEM_RNG.set(world, rng);
-  }
-  return rng;
+  return worldStream(world, 'netherItem', NETHERITEM_SEED_KEY);
 }
 
 /**
@@ -526,7 +508,6 @@ export function netherItemRngFor(world) {
 export const NETHER_POSSESS_SEED_KEY = 0x4e505358;
 
 /** **跨位面夺舍**随机流的缓存。理由与其余六条逐条相同。 */
-const NETHER_POSSESS_RNG = new WeakMap();
 
 /**
  * 跨位面夺舍随机流。**同一条 world 永远是同一条流**，且与其余七条
@@ -536,12 +517,7 @@ const NETHER_POSSESS_RNG = new WeakMap();
  * @returns {() => number} 该 world 专属、且持续演进的跨位面夺舍流
  */
 export function netherPossessRngFor(world) {
-  let rng = NETHER_POSSESS_RNG.get(world);
-  if (!rng) {
-    rng = mulberry32(((world.seed || 0) ^ NETHER_POSSESS_SEED_KEY) >>> 0);
-    NETHER_POSSESS_RNG.set(world, rng);
-  }
-  return rng;
+  return worldStream(world, 'netherPossess', NETHER_POSSESS_SEED_KEY);
 }
 
 /**
@@ -986,6 +962,11 @@ function leakUpperArtifact(world, rift, r, rng) {
   const fromX = pick.x; const fromY = pick.y; const fromId = pick.id;
   const at = upper.artifacts.indexOf(pick);
   if (at >= 0) upper.artifacts.splice(at, 1);
+  // G8：重赋凡间 id（与 上行 / 幽冥 两个方向对称）。上界 `forgeArtifact` 用
+  // `upper.nextArtifactId` 从 1 起编号，原样落地会与凡间同号法宝撞 id——
+  // 按 id 拾取会拿错件，长测「法宝归属两份记录互相吻合」变红。零抽签。
+  pick.id = world.nextArtifactId || 1;
+  world.nextArtifactId = pick.id + 1;
   toGround(world, pick, spot.x, spot.y);
   // ── 跨位面流入的账 ────────────────────────────────────────
   // `toGround` 把一件**上界炼出**的法宝推进了 `world.artifacts`，于是凡间的

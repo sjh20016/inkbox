@@ -72,6 +72,7 @@ import { restoreWraiths } from '../sim/wraiths.js';
 import {
   encodeSave, decodeSave, lastCodecUsed, lastFallbackReason, isCompressed,
 } from './codec.js';
+import { normalizeRuntimeState } from '../sim/runtimeState.js';
 
 // ── 版本 ─────────────────────────────────────────────────
 // v1 → v2：加 id 列与修仙层（境界/灵根/道途/关系网）。
@@ -280,9 +281,16 @@ function base64ToBytes(text) {
   return bytes;
 }
 
-export function serializeWorld(world, meta = {}) {
+/**
+ * @param {object} [options]
+ *   · `runtime` —— G8 运行期检查点（`sim/runtimeState.captureRuntimeState()` 的产物）。
+ *     由驱动世界的会话在**同一个同步段**里取得后显式传入；保存层只校验形状、
+ *     原样写入，不依赖任何模拟子系统的内部实现。缺省则不写该键（旧形状逐字不变）。
+ */
+export function serializeWorld(world, meta = {}, options = {}) {
   return {
     v: SAVE_VERSION,
+    ...(options.runtime ? { runtime: normalizeRuntimeState(options.runtime) } : {}),
     // Independent optional v1 block; old v11 rows and realm payloads stay intact.
     ...(world.plane === 'mortal' && world.transit ? { transit: snapshotTransit(world) } : {}),
     app: APP.version,
@@ -815,7 +823,24 @@ export function deserializeWorld(data) {
   world.nether = data.nether
     ? deserializeNetherWorld(data.nether, data.seed)
     : generateNetherWorld({ preset: { w: data.w, h: data.h }, seed: data.seed });
+  // G8：运行期检查点不挂在 world 上（序列化器看不见），由会话读档后取走套用。
+  // 损坏的块不阻止读世界本体，但明确记为 corrupt——调用方必须如实告知非精确续跑。
+  if (data.runtime === undefined) SAVED_RUNTIME.set(world, { status: 'absent', state: null });
+  else {
+    try { SAVED_RUNTIME.set(world, { status: 'ok', state: normalizeRuntimeState(data.runtime) }); }
+    catch (error) { SAVED_RUNTIME.set(world, { status: 'corrupt', state: null, error: String(error?.message || error) }); }
+  }
   return world;
+}
+
+const SAVED_RUNTIME = new WeakMap();
+
+/**
+ * 读档 / 导入得到的运行期检查点：`{status:'ok'|'absent'|'corrupt', state, error?}`。
+ * 非读档来源的 world 返回 `{status:'absent'}`。
+ */
+export function savedRuntimeOf(world) {
+  return SAVED_RUNTIME.get(world) || { status: 'absent', state: null };
 }
 
 // ── 上界（v8）──────────────────────────────────────────────
@@ -1657,8 +1682,9 @@ function restoreLegacyEntity(row, id) {
  * 而 `await` 期间帧循环还在推进世界——挪到后面会让「存档那一刻」与「被存的世界」错开，
  * 存下来的是一份缝合怪，而且不报任何错。
  */
-export async function saveToStorage(world, slot = 'auto', meta = {}) {
-  const payload = JSON.stringify(serializeWorld(world, meta));
+export async function saveToStorage(world, slot = 'auto', meta = {}, runtime = null) {
+  // `runtime` 必须由调用方在本函数被调用的同一同步段取得（见 serializeWorld）。
+  const payload = JSON.stringify(serializeWorld(world, meta, { runtime }));
   const encoded = await encodeSave(payload);
   // 紧接在 encodeSave 之后读。这两个是模块级状态、只反映**最近一次**编码，
   // 中间只要再夹一次 encodeSave（别处也存了一次档）就会被覆盖成别人的结果。
@@ -1729,8 +1755,8 @@ export function deleteSlot(slot) {
 // 压成 gzip 之后它就不再是一个 JSON 文件了，而换来的是**磁盘**上的体积——
 // 磁盘没有 localStorage 那个 5,242,877 码元的硬上限，没必要付这个代价。
 // 读回来不成问题：importFile 走 decodeSave，两种格式都认。
-export function exportFile(world, filename) {
-  const payload = JSON.stringify(serializeWorld(world));
+export function exportFile(world, filename, runtime = null) {
+  const payload = JSON.stringify(serializeWorld(world, {}, { runtime }));
   const blob = new Blob([payload], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
