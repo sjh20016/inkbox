@@ -1,0 +1,21 @@
+{
+  "file": "G8_C1_LONGRUN_DATA.xlsx",
+  "bytes": 258053,
+  "sha256": "f8ad365edd7e04c6627cb2c6b82613cf8e02beeac9380e97d54685ded1e38ee9",
+  "sourceDataSha256": "c88e537562043486011501359eff2d6ae078e836c954dff519ba32aa259da04f",
+  "sheets": [
+    "世纪采样",
+    "全部断言",
+    "运行资料",
+    "完整记录"
+  ],
+  "verifiedCells": 21025,
+  "centurySamples": 8,
+  "assertionRows": 1218,
+  "rawRecordRows": 1609,
+  "originalSmokeFailureExcelRow": 374,
+  "authoringAndExport": "Artifact Tool JS; four sheets recalculated, inspected, rendered and exported",
+  "verification": "Every saved cell value/type, freeze pane, table and conditional formula read back independently",
+  "textEncoding": "UTC source strings have a literal apostrophe text prefix; '=' log text remains a string, not a formula. XML-disallowed controls are represented by '[JSON escaped] ' plus JSON string escaping. Canonical JSON/log.gz retains the exact source.",
+  "nativeExcelApplicationRun": false
+}

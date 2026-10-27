@@ -1,5 +1,7 @@
 # G8 · 岁序与生息 交付说明
 
+本页保留历史研究记录；本轮实际修复、测试、CI与长局裁决见 [G8-C.1 合流验收记录](./G8_C1_MERGE_ACCEPTANCE.md)。
+
 > 历史恢复说明：本文从聊天中恢复，因果数据及 Fast/Heavy 结论属于原会话记录，并非本次重跑结果。本次仅确认 `test:g8`、`test:g7` 和修改文件语法检查通过；G8-A+B+C 的最终 800 年长测未确认，未创建 PR。
 
 基线：`main@4cf7f9fcda3a4ae77bf0e1ef2c20174bc591a2a7`。分支：`fix/g8-runtime-and-demography`。

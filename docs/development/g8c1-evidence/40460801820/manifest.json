@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "runId": 40460801820,
+  "candidate": "c3c6852d8fa1d6ccf0d237c16de232a5bfb2bf1a",
+  "collectedAt": "2026-10-27T07:52:55.335Z",
+  "rawLogs": [
+    {
+      "file": "job-122044671390.log.gz",
+      "jobId": 122044671390,
+      "rawBytes": 120551,
+      "rawSha256": "9cf826fd3ccd7cc10d3ec97d9eb91cb759caea343b820d3b78f0af483ecf8e52",
+      "compressedBytes": 44256,
+      "compressedSha256": "eed8296c5cbe0d24f483901e4040585a1940115a5dcce2a2db8add471f64012e",
+      "source": "https://api.github.com/repos/sjh20016/inkbox/actions/jobs/122044671390/logs"
+    }
+  ],
+  "files": [
+    {
+      "file": "FIELD_DICTIONARY.md",
+      "bytes": 4541,
+      "sha256": "4313f7489ffdde41828dea93f15e7a1e78ab6e4b17265908eb80f1fb652176eb"
+    },
+    {
+      "file": "FULL_RECORD.md",
+      "bytes": 88439,
+      "sha256": "65cc5b13300afa9b0349afe53c51cdd4d3f5da21b34eea95d8680ebbe28a2445"
+    },
+    {
+      "file": "G8_C1_LONGRUN_DATA.xlsx",
+      "bytes": 258053,
+      "sha256": "f8ad365edd7e04c6627cb2c6b82613cf8e02beeac9380e97d54685ded1e38ee9"
+    },
+    {
+      "file": "README.md",
+      "bytes": 4853,
+      "sha256": "4ae3cfcc2fc10160e8f2e7706224232450806120c4e3ee58da315ee88ff0f846"
+    },
+    {
+      "file": "actions-jobs.json",
+      "bytes": 2443,
+      "sha256": "08a6b6565510886bf35fbf66e7c6abf521c4e264cb1188af0e0ab3b39edb2d21"
+    },
+    {
+      "file": "actions-run.json",
+      "bytes": 12061,
+      "sha256": "d1f5cad573019fc93debae195d5a74d77984e86d4cb1537021ca936ac662fd58"
+    },
+    {
+      "file": "all-checks.csv",
+      "bytes": 103017,
+      "sha256": "d9ad18ed5c911a54d2bd6e2184893d08a192bd5cedc0d442c6ec40c80f77da27"
+    },
+    {
+      "file": "all-records.csv",
+      "bytes": 188157,
+      "sha256": "533462129677c2a98dbc3167e3c6c3fec3fe49f968e9962140c075c2746f7575"
+    },
+    {
+      "file": "century-samples.csv",
+      "bytes": 899,
+      "sha256": "4fef3f197d478e9a36b8b5900fca2a12a2a25dfcd2e353dd4ea652bc10843809"
+    },
+    {
+      "file": "diagnostics.csv",
+      "bytes": 615,
+      "sha256": "3536a7cde80eaf3aa2171eac980486cd54345b723fa7543eb6fd9d5f201536e9"
+    },
+    {
+      "file": "job-122044671390.log.gz",
+      "bytes": 44256,
+      "sha256": "eed8296c5cbe0d24f483901e4040585a1940115a5dcce2a2db8add471f64012e"
+    },
+    {
+      "file": "limitations-and-definitions.csv",
+      "bytes": 1026,
+      "sha256": "5d36278a9b4148a772bff1f8b52921ea4eba331d4a38d0ec1055bc05f35855c9"
+    },
+    {
+      "file": "nightly-data.json",
+      "bytes": 640708,
+      "sha256": "c88e537562043486011501359eff2d6ae078e836c954dff519ba32aa259da04f"
+    },
+    {
+      "file": "smoke-followup-checks.csv",
+      "bytes": 67758,
+      "sha256": "c66d8bb13a2d1ef8eca7121cb548cbfe163d6291bd4127b859de09bb58d7debc"
+    },
+    {
+      "file": "smoke-followup.json",
+      "bytes": 204041,
+      "sha256": "1e0101a594a838d06185de073d30153e7e2c3ab7274776daa23d913ec33b9f0c"
+    },
+    {
+      "file": "smoke-followup.log.gz",
+      "bytes": 25199,
+      "sha256": "524017f1f56a5d46ed7cb2e2b0a129fe718bfd07eb65a597f73418d552b5e519"
+    },
+    {
+      "file": "workbook-delivery.json",
+      "bytes": 1006,
+      "sha256": "5f05e5f60415af92254d34f498fd41b116ddf98fd4ac457b6752fe12a50ec802"
+    }
+  ],
+  "followup": {
+    "codeSha": "eedb6d7962c24770487ef19644e7f7585efcaf94",
+    "runtimeSameAsNightlySha": "c3c6852d8fa1d6ccf0d237c16de232a5bfb2bf1a",
+    "checks": 568,
+    "exitCode": 0,
+    "elapsedSeconds": 278.2046621
+  },
+  "workbook": {
+    "file": "G8_C1_LONGRUN_DATA.xlsx",
+    "bytes": 258053,
+    "sha256": "f8ad365edd7e04c6627cb2c6b82613cf8e02beeac9380e97d54685ded1e38ee9",
+    "sourceDataSha256": "c88e537562043486011501359eff2d6ae078e836c954dff519ba32aa259da04f",
+    "sheets": [
+      "世纪采样",
+      "全部断言",
+      "运行资料",
+      "完整记录"
+    ],
+    "verifiedCells": 21025,
+    "centurySamples": 8,
+    "assertionRows": 1218,
+    "rawRecordRows": 1609,
+    "originalSmokeFailureExcelRow": 374,
+    "authoringAndExport": "Artifact Tool JS; four sheets recalculated, inspected, rendered and exported",
+    "verification": "Every saved cell value/type, freeze pane, table and conditional formula read back independently",
+    "textEncoding": "UTC source strings have a literal apostrophe text prefix; '=' log text remains a string, not a formula. XML-disallowed controls are represented by '[JSON escaped] ' plus JSON string escaping. Canonical JSON/log.gz retains the exact source.",
+    "nativeExcelApplicationRun": false
+  }
+}
