@@ -421,11 +421,14 @@ for (let y = 1; y <= YEARS; y += 1) {
   if (y === midYear) possMid = possessionStats(world);
   for (const [plane, target] of [['mortal', world], ['upper', upper], ['nether', nether]]) {
     const ids = new Set();
-    for (const item of target.artifacts || []) {
+    const auditItem = (item, ownerId) => {
       if ((!Number.isSafeInteger(item.id) || item.id < 1 || ids.has(item.id)) && artifactIdIssues.length < 10)
-        artifactIdIssues.push({ year: y, plane, id: item.id });
+        artifactIdIssues.push({ year: y, plane, id: item.id, ownerId });
       ids.add(item.id);
-    }
+    };
+    for (const item of target.artifacts || []) auditItem(item, 0);
+    for (const entity of target.entities || [])
+      for (const item of entity.artifacts || []) auditItem(item, entity.id);
   }
   if (!QUIET && (y % 100 === 0 || y === YEARS)) {
     const c = world.cultivationStats();
