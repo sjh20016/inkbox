@@ -10,7 +10,7 @@ R1「山海入世」在 G5/P1 主线上接入 Opus V1→V1.3 原始美术历史�
 
 ## 正式产品状态（按 main 最新提交核对）
 
-**本分支 E2-Lite「观井有痕」候选**：右栏「手札」串起焚林、降灾、赐灵根与原抽水回声；可从真实人物/聚落卡立下两种只读行愿，并随 v11 存档回访。只交付独立 Draft PR，不自动进入 main。操作和验收见 [E2-Lite 交付说明](./docs/development/E2_LITE_DELIVERY.md)。
+**E2-Lite「观井有痕」玩家观察闭环（来源 PR [#54](https://github.com/sjh20016/inkbox/pull/54)）**：右栏「手札」串起焚林、降灾、赐灵根与原抽水回声；可从真实人物/聚落卡立下两种只读行愿，并随 v11 存档回访。具体合流状态以 PR #54 为准，操作和验收见 [E2-Lite 交付说明](./docs/development/E2_LITE_DELIVERY.md)。
 
 **G8-M1「岁序归一」已完成正式合流**：PR #52 以合并提交 `06043766d937ac42e8f4a04305e256cf5b9a43ce` 接纳运行期 RNG 与时钟续跑、人口生态及跨界法宝修复。新档可恢复已保存的游标；旧档无法倒推出历史游标，地形仍为 16 位有损量化。固定种子 800 年终局 1400 生灵是单次样本，长期平衡及真实成熟世界性能仍待研究。见 [G8 合流记录](./docs/development/G8_M1_MERGE_REPORT.md) 与 [成熟世界基线](./docs/development/G8_MATURE_WORLD_BASELINE.md)。
 
