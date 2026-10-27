@@ -26,6 +26,7 @@
 import { APP, NEVER_DECAY_DAY, WORLD_PRESETS } from '../core/config.js';
 import { World } from '../world/World.js';
 import { readObserveEcho, restoreObserveEcho } from '../sim/observeEcho.js';
+import { normalizeJournal } from '../sim/journal.js';
 import { snapshotNature, restoreNature } from '../sim/nature.js';
 import { snapshotWanling, restoreWanling } from '../world/wanlingState.js';
 import { creatureFormOf, WANLING_BY_KEY } from '../core/wanlingCatalog.js';
@@ -750,11 +751,14 @@ export function serializeWorld(world, meta = {}, options = {}) {
     ...(world.generation ? { generation: { ...world.generation } } : {}),
     ...(world.mapProgress ? { mapProgress: { ...world.mapProgress } } : {}),
     ...(world.observeEcho ? { observeEcho: readObserveEcho(world) } : {}),
+    ...(world.journal ? { journal: normalizeJournal(world.journal) } : {}),
     meta,
   };
 }
 
 export function deserializeWorld(data) {
+  // Validate optional player metadata before allocating/restoring any world.
+  const journal = data.journal === undefined ? null : normalizeJournal(data.journal);
   const preset = { w: data.w, h: data.h };
   const world = new World(preset.w, preset.h, data.seed);
   // Optional metadata never regenerates the saved terrain or changes legacy key sets.
@@ -830,6 +834,7 @@ export function deserializeWorld(data) {
     try { SAVED_RUNTIME.set(world, { status: 'ok', state: normalizeRuntimeState(data.runtime) }); }
     catch (error) { SAVED_RUNTIME.set(world, { status: 'corrupt', state: null, error: String(error?.message || error) }); }
   }
+  if (journal) world.journal = journal;
   return world;
 }
 

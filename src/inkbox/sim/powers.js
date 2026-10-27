@@ -15,6 +15,7 @@ import { NATURE_DAYS, igniteCell, extinguishCell, setRecoveringOverlay, floodCel
 import { placeOf } from './sects.js';
 import { damageSettlement } from './settlementResilience.js';
 import { beginDrainEcho, commitDrainEcho, updateDrainUndo } from './observeEcho.js';
+import { planToolReceipt, commitReceipt, recordBurnReceipt, markBurnReceiptUndone } from './journal.js';
 import { wanlingEvent } from '../world/wanlingState.js';
 
 // ── 撤销栈 ────────────────────────────────────────────────
@@ -64,11 +65,15 @@ export class History {
     this.lastUndoFailure = null;
     this.echoMeta = null;
     this.pendingEcho = null;
+    this.pendingJournal = null;
+    this.lastJournalReceipt = null;
   }
 
   begin(meta = null) {
     this.echoMeta = meta ? { toolId: meta.toolId, x: meta.x, y: meta.y, radius: meta.radius } : null;
     this.pendingEcho = null;
+    this.pendingJournal = null;
+    this.lastJournalReceipt = null;
     this.current = new Map();
     this.bounds = null;
     this.eventIds = [];
@@ -99,7 +104,18 @@ export class History {
     this.currentSettlements.set(village.id, historySettlement(village));
   }
 
+  // Click powers can change people or events without changing terrain cells.
+  // Keep their factual plan pending until the same successful gesture commit.
+  queueToolReceipt(ctx, before, impact, event) {
+    if (!this.current) return;
+    const plan = planToolReceipt(ctx, before, impact, event);
+    this.pendingJournal = plan ? { world: ctx.world, plan } : null;
+  }
+
   end(label) {
+    const pending = this.pendingJournal;
+    this.pendingJournal = null;
+    this.lastJournalReceipt = pending ? commitReceipt(pending.world, pending.plan) : null;
     if (!this.current || this.current.size === 0) {
       this.current = null;
       this.bounds = null;
@@ -113,7 +129,13 @@ export class History {
     const settlementsAfter = new Map([...this.currentSettlements.keys()].map((id) =>
       [id, historySettlement(this.recordWorld.villageById(id))]));
     const observeMarkId = commitDrainEcho(this.recordWorld, this.pendingEcho, this.current, after);
-    this.stack.push({ observeMarkId, echoWorld: observeMarkId ? this.recordWorld : null, changes: this.current, after, label, bounds: this.bounds,
+    if (this.echoMeta?.toolId === 'burn') {
+      this.lastJournalReceipt = recordBurnReceipt(this.recordWorld, this.echoMeta, this.current, after);
+    }
+    const burnReceiptId = this.lastJournalReceipt?.kind === 'burn' ? this.lastJournalReceipt.id : null;
+    this.stack.push({ observeMarkId, echoWorld: observeMarkId ? this.recordWorld : null,
+      burnReceiptId, burnReceiptWorld: burnReceiptId ? this.recordWorld : null,
+      changes: this.current, after, label, bounds: this.bounds,
       eventIds: this.eventIds, settlementsBefore: this.currentSettlements, settlementsAfter });
     if (this.stack.length > this.limit) {
       const dropped = this.stack.shift();
@@ -129,6 +151,8 @@ export class History {
   }
 
   cancel() {
+    this.pendingJournal = null;
+    this.lastJournalReceipt = null;
     this.current = null;
     this.bounds = null;
     this.recordWorld = null;
@@ -192,10 +216,13 @@ export class History {
     recomputeRect(world, b.x0, b.y0, b.x1, b.y1);
     world.touch();
     updateDrainUndo(world, entry.observeMarkId, 'undone');
+    if (entry.burnReceiptWorld === world) markBurnReceiptUndone(world, entry.burnReceiptId);
     return entry.label;
   }
 
   clear() {
+    this.pendingJournal = null;
+    this.lastJournalReceipt = null;
     for (const entry of this.stack) {
       if (entry.echoWorld) updateDrainUndo(entry.echoWorld, entry.observeMarkId, null);
     }

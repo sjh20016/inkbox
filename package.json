@@ -7,6 +7,8 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:e2-lite": "node scripts/inkbox-e2-lite.mjs && node scripts/inkbox-e2-lite-input.mjs",
+    "test:e2-lite:browser": "node scripts/inkbox-e2-lite-browser.mjs",
     "test:wti1": "node scripts/inkbox-wti1-selection.mjs && node scripts/inkbox-wti1-activities.mjs && node scripts/inkbox-wti1-integration.mjs",
     "test:wti1:browser": "node scripts/inkbox-wti1-browser.mjs",
     "test:w01": "node scripts/inkbox-w01-ecology.mjs && node scripts/inkbox-w01-paths.mjs && node scripts/inkbox-w01-disasters.mjs && node scripts/inkbox-w01-render.mjs && node scripts/inkbox-w01-integration.mjs",

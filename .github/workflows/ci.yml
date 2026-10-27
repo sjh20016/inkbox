@@ -122,6 +122,9 @@ jobs:
       - name: G8 运行时检查点、随机流续接与凡间生息
         run: npm run test:g8
 
+      - name: E2-Lite 落笔回执、只读行愿与事务存档
+        run: npm run test:e2-lite
+
       - name: W0.1 真实物种、山林生态、道途活动与存档
         run: npm run test:w01
       - name: T0 地理通达、真实行程、货物守恒与存档
