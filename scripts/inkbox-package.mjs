@@ -85,6 +85,7 @@ const FILES = [
   'scripts/inkbox-p0-power-state.mjs',
   'scripts/inkbox-g7-boundaries.mjs',
   'scripts/inkbox-g8-runtime.mjs',
+  'scripts/inkbox-g8-save-browser.mjs',
   'scripts/inkbox-g8-demography.mjs',
   'scripts/inkbox-g8-rift-artifacts.mjs',
   'scripts/inkbox-g8-demography-probe.mjs',

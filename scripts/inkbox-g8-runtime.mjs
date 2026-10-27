@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // G8-A「岁序不断」：随机流历史兼容、无损检查点续跑、正式存读档运行状态与世界替换隔离。
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { mulberry32, rngStream, rngStateOf } from '../src/inkbox/core/noise.js';
 import { generateWorld } from '../src/inkbox/world/worldgen.js';
 import { generateUpperWorld, recomputeUpperQi } from '../src/inkbox/world/worldgenUpper.js';
@@ -167,28 +166,64 @@ globalThis.localStorage = { getItem: k => (store.has(k) ? store.get(k) : null), 
   ok(s.life.captureRuntime().rng === cp.life.rng, 'restore overrides constructor-time draws');
 }
 
-// ── 4. 会话生命周期（main.js 正式方法）─────────────────────────
+// ── 4. 异常恢复：在任何控制器生效前拒绝，意外控制器异常回滚 ──────
+// 正式 main.js 的保存/加载/换世界生命周期由真实浏览器脚本验证；不抽取源码拼测试类。
 {
-  const src = readFileSync(new URL('../src/inkbox/main.js', import.meta.url), 'utf8');
-  const method = (name) => { const i = src.indexOf(`  ${name}(`); const j = src.indexOf('\n  }\n', i); assert(i > 0 && j > i, name); return src.slice(i, j + 4); };
-  const body = `return class { ${method('resetSessionRuntime')} ${method('captureRuntime')} ${method('applySavedRuntime')} }`;
-  const Klass = new Function('createAdvanceState', 'rngStream', 'PLAYER_RNG_SEED', 'captureRuntimeState', 'restoreRuntimeState', 'savedRuntimeOf', body)(
-    createAdvanceState, rngStream, 12345, captureRuntimeState, restoreRuntimeState, savedRuntimeOf);
-  const sb = new Klass();
-  sb.advanceState = createAdvanceState(); sb.rng = rngStream(12345);
-  const held = sb.advanceState, heldRng = sb.rng;
-  Object.assign(sb, { world: A.world, life: A.life, upperLife: A.upperLife });
-  Object.assign(sb.advanceState, A.advanceState); for (let i = 0; i < 9; i += 1) sb.rng();
-  const snap = sb.captureRuntime();
-  sb.resetSessionRuntime();            // 换世界
-  eq({ ...sb.advanceState }, createAdvanceState(), 'world switch clears every advance clock (rift / wraith included)');
-  ok(sb.rng.getState() === 12345 && sb.advanceState === held && sb.rng === heldRng, 'player stream reset in place');
-  const loaded = deserializeWorld(JSON.parse(JSON.stringify(serializeWorld(A.world, {}, { runtime: snap }))));
-  sb.resetSessionRuntime(); Object.assign(sb, createSession(loaded)); sb.advanceState = held; sb.rng = heldRng;
-  ok(sb.applySavedRuntime(loaded) === '', 'exact restore reports no caveat');
-  ok(sb.rng.getState() === snap.player && sb.advanceState.rift === snap.advance.rift, 'player stream and clocks resume');
-  const legacy = deserializeWorld(JSON.parse(JSON.stringify(serializeWorld(A.world))));
-  sb.resetSessionRuntime(); Object.assign(sb, createSession(legacy)); sb.advanceState = held; sb.rng = heldRng;
-  ok(/旧存档/.test(sb.applySavedRuntime(legacy)) && sb.rng.getState() === 12345, 'legacy load states the limitation');
+  const checkpoint = capture(A);
+  const candidate = () => createSession(losslessCopy(A.world, checkpoint));
+  const rejected = (name, mutateSnapshot = () => {}, mutateTarget = () => {}, error = /runtime|stream/) => {
+    const snapshot = structuredClone(checkpoint), target = candidate();
+    mutateSnapshot(snapshot); mutateTarget(target);
+    const before = capture(target);
+    const cacheRefs = ['_terrArea', '_terrBorder', '_terrBorderAt', '_terrContested'].map(key => target.world[key]);
+    assert.throws(() => restoreRuntimeState(snapshot, target), error, name); checks += 1;
+    eq(capture(target), before, `${name}: no partial cursors or clocks`);
+    ok(cacheRefs.every((value, index) => value === target.world[['_terrArea', '_terrBorder', '_terrBorderAt', '_terrContested'][index]]),
+      `${name}: territory references preserved`);
+  };
+  rejected('invalid RNG', s => { s.life.warRng = 2 ** 32; });
+  rejected('invalid clock', s => { s.advance.wraith = -1; });
+  rejected('non-finite clock', s => { s.advance.nether = NaN; });
+  rejected('negative upper clock', s => { s.upperLife.foundAccum = -1; });
+  rejected('unsupported version', s => { s.v = 99; });
+  rejected('day mismatch', s => { s.day += 1; });
+  rejected('incomplete checkpoint', s => { s.exact = false; });
+  rejected('missing snapshot controller', s => { s.life = null; });
+  rejected('missing target controller', undefined, target => { target.life = null; });
+  rejected('missing upper controller', undefined, target => { target.upperLife = null; });
+  rejected('Life belongs to another World', undefined, target => { target.life.world = {}; });
+  rejected('UpperLife belongs to another World', undefined, target => { target.upperLife.upper = {}; });
+  rejected('missing restore method', undefined, target => { target.upperLife.restoreRuntime = null; });
+  rejected('player stream not restorable', undefined, target => { target.playerRng = mulberry32(12345); });
+  rejected('immutable later clock', undefined, target => {
+    Object.defineProperty(target.advanceState, 'wraith', { value: 0, writable: false });
+  });
+  rejected('immutable later cooldown', undefined, target => {
+    Object.defineProperty(target.upperLife, 'foundAccum', { value: 0, writable: false });
+  });
+  rejected('World stream already active', undefined, target => { worldStream(target.world, 'rift', 0x1234); });
+  rejected('upper World stream already active', undefined, target => { worldStream(target.world.upper, 'test', 0x1234); });
+  rejected('stream plane missing', s => { s.streams.nether = { test: 4 }; }, target => { target.world.nether = null; });
+  rejected('territory target immutable', undefined, target => {
+    Object.defineProperty(target.world, '_terrArea', { value: new Map(), writable: false });
+  });
+  rejected('unexpected controller exception', undefined, target => {
+    const restore = target.upperLife.restoreRuntime;
+    target.upperLife.restoreRuntime = function (state) { restore.call(this, state); throw new Error('injected restore failure'); };
+  }, /injected restore failure/);
+
+  const negativeCooldown = structuredClone(checkpoint), target = candidate();
+  for (const key of ['foundingCooldown', 'wildCooldown', 'clanCooldown', 'yearTickCooldown']) negativeCooldown.life[key] = -3;
+  restoreRuntimeState(negativeCooldown, target);
+  eq(capture(target), negativeCooldown, 'legitimate expired Life cooldowns restore unchanged');
+
+  const noTerritory = structuredClone(checkpoint), cleanTarget = candidate();
+  noTerritory.territory = null;
+  cleanTarget.world._terrArea = new Map([[999, 123]]);
+  cleanTarget.world._terrBorder = new Map([['stale', 1]]);
+  cleanTarget.world._terrBorderAt = new Map([['stale', 1]]);
+  cleanTarget.world._terrContested = new Set([999]);
+  restoreRuntimeState(noTerritory, cleanTarget);
+  eq(capture(cleanTarget), noTerritory, 'absent territory checkpoint clears previous derived caches');
 }
 console.log(`G8 runtime: ${checks} checks passed`);

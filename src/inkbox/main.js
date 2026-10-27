@@ -436,22 +436,28 @@ class Sandbox {
   }
 
   /**
-   * 读档 / 导入后、第一次推进前套用存档里的运行期检查点。
-   * @returns {string} 给玩家的附注（精确续跑时为空串）
+   * 在候选世界的独立控制器中恢复，成功前不触碰玩家当前会话。
+   * 历史旧档仍兼容；损坏或不完整的新检查点拒绝加载。
    */
-  applySavedRuntime(world) {
+  prepareSavedRuntime(world) {
     const saved = savedRuntimeOf(world);
-    if (saved.status === 'absent') return ' · 旧存档无运行状态，随机与时钟自读档处重新起算';
-    if (saved.status === 'corrupt') return ' · 存档运行状态损坏，未精确续跑';
-    try {
-      const { exact } = restoreRuntimeState(saved.state, { world, life: this.life, upperLife: this.upperLife,
-        advanceState: this.advanceState, playerRng: this.rng });
-      return exact ? '' : ' · 运行状态不完整，未精确续跑';
-    } catch (error) {
-      console.error('[inkbox] 运行状态无法恢复', error);
-      this.resetSessionRuntime();
-      return ' · 存档运行状态无法恢复，未精确续跑';
+    if (saved.status === 'corrupt' || (saved.status === 'ok' && !saved.state.exact)) {
+      throw new TypeError('存档运行状态损坏或不完整');
     }
+    const prepared = { world, life: new Life(world, rngStream(world.seed ^ 0xa5a5a5a5)),
+      upperLife: world.upper ? new UpperLife(world.upper) : null,
+      advanceState: createAdvanceState(), playerRng: rngStream(PLAYER_RNG_SEED), note: '' };
+    if (saved.status === 'absent') prepared.note = ' · 旧存档无运行状态，随机与时钟自读档处重新起算';
+    else restoreRuntimeState(saved.state, prepared);
+    return prepared;
+  }
+
+  /** 保留时钟与玩家流的对象身份，仅提交已成功预检的运行状态。 */
+  commitSavedRuntime(prepared) {
+    this.life = prepared.life;
+    if (prepared.upperLife) this.upperLife = prepared.upperLife;
+    Object.assign(this.advanceState, prepared.advanceState);
+    this.rng.setState(prepared.playerRng.getState());
   }
 
   newWorld(presetKey = this.presetKey, seed = this.seed, options = {}) {
@@ -585,7 +591,7 @@ class Sandbox {
    * ⚠️ 读档进来的世界若已自带 `upper`（存档侧在加这个块），**直接复用、不要重生成**——
    *    重生成会与存档里那份上界分叉，而两条线看起来都「正常」。
    */
-  attachUpper(mortal) {
+  attachUpper(mortal, restoredLife = null) {
     let upper = mortal.upper;
     const shapeOk = upper && upper.height && upper.w === mortal.w && upper.h === mortal.h;
     if (!shapeOk) {
@@ -601,7 +607,7 @@ class Sandbox {
     this.upper = upper;
     // UpperLife 的随机流从 upper.seed 派生（铁律一），重建点唯一——
     // 与凡间 Life 的重建方式完全对称：新档/读档/导入三条路径都汇聚在这里。
-    this.upperLife = new UpperLife(upper);
+    this.upperLife = restoredLife || new UpperLife(upper);
     // 第二个 TerrainLayer：全量渲染到它自己的离屏 canvas，视界贴图时再裁剪。
     this.upperTerrain = new TerrainLayer(upper, { relief: this.camera.relief });
     // 换世界 / 读档后上界时钟归零，免得新一局继承上一局残留的累加量。
@@ -1297,22 +1303,27 @@ class Sandbox {
             this.notify('读取期间山河有新改动，已保留当前世界；请重新读档。', 5000);
             return;
           }
+          let prepared;
+          try { prepared = this.prepareSavedRuntime(world); }
+          catch {
+            this.notify('读取失败 · 存档运行状态损坏或不兼容，已保留当前世界。', 8000);
+            return;
+          }
           this.world = world;
           this.combatObservation?.reset();
           this.environmentObservation?.reset();
-          this.resetSessionRuntime();
-        this.life = new Life(this.world, rngStream(this.world.seed ^ 0xa5a5a5a5));
           this.terrain.setWorld(this.world);
           // 上界也要跟着换：存档里带 upper 就复用，没带就按凡间 seed 重新派生
           // （旧档降级路径）。不换的话视界会贴上一个世界的上界——看着完全正常，只是全错。
-          this.attachUpper(this.world);
+          this.attachUpper(this.world, prepared.upperLife);
           // 幽冥同理：存档带 nether 就复用，没带就按凡间 seed 重新派生（旧档降级）。
           this.attachNether(this.world);
     // Product-owned Worlds opt into the journal only after full generation/load.
     if (typeof activateTerrainChanges === 'function') {
       for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
     }
-          const runtimeNote = this.applySavedRuntime(this.world);
+          this.commitSavedRuntime(prepared);
+          const runtimeNote = prepared.note;
           this.camera.bind(this.world);
           this.camera.fit(this.world);
           this.history.clear();
@@ -1402,21 +1413,21 @@ class Sandbox {
           this.notify('导入期间山河有新改动，已保留当前世界；请重新导入。', 5000);
           return;
         }
+        const prepared = this.prepareSavedRuntime(world);
         this.world = world;
         this.combatObservation?.reset();
         this.environmentObservation?.reset();
-        this.resetSessionRuntime();
-          this.life = new Life(this.world, rngStream(this.world.seed ^ 0xa5a5a5a5));
         this.terrain.setWorld(this.world);
         // 同读档：导入的世界也要挂上它自己的上界，否则视界贴的是上一个世界的上界。
-        this.attachUpper(this.world);
+        this.attachUpper(this.world, prepared.upperLife);
         // 幽冥同理：导入的世界也要挂上它自己的幽冥。
         this.attachNether(this.world);
     // Product-owned Worlds opt into the journal only after full generation/load.
     if (typeof activateTerrainChanges === 'function') {
       for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
     }
-        const runtimeNote = this.applySavedRuntime(this.world);
+        this.commitSavedRuntime(prepared);
+        const runtimeNote = prepared.note;
         this.camera.bind(this.world);
         this.camera.fit(this.world);
         this.history.clear();
@@ -1447,7 +1458,7 @@ class Sandbox {
         // Q22：说清「哪一步坏了」而不是只写 console。
         // ⚠️ Q23：这里**只**发一条提示——`this.world` 上一行都没碰过，
         //    玩家原来的世界原封不动。
-        this.notify('导入失败 · 文件不是有效存档', 6000);
+        this.notify('导入失败 · 文件或运行状态无效，已保留当前世界。', 6000);
       } finally {
         // 版本冲突也会提前返回；仍须允许玩家再次选择同一份文件。
         e.target.value = '';
@@ -1552,7 +1563,8 @@ class Sandbox {
     if (this.autoSaving) return;
     this.autoSaving = true;
     try {
-      const result = await saveToStorage(this.world, 'auto');
+      // 与手动保存相同：检查点与世界序列化均发生在首个 await 之前。
+      const result = await saveToStorage(this.world, 'auto', {}, this.captureRuntime());
       if (!result.ok) {
         this.notify(`自动存档失败：${result.error}`, 8000);
       } else if (result.codec !== 'gzip' && !this.warnedPlainAutoSave) {
@@ -1564,6 +1576,7 @@ class Sandbox {
       // 兜底：`void this.autoSave()` 甩出去之后没人接这个 promise，
       // 漏出去就是一个 unhandled rejection，而它在控制台里与「世界坏了」长得一样。
       console.error('[inkbox] 自动存档异常', error);
+      this.notify('自动存档失败，请手动重试或导出备份。', 8000);
     } finally {
       this.autoSaving = false;
     }

@@ -36,13 +36,21 @@ export function captureWorldStreams(world) {
   return out;
 }
 
-/** 登记待恢复游标。必须在该 world 的任何流被取用之前调用。 */
-export function restoreWorldStreams(world, states) {
+/** 只预检，不登记游标；会话恢复必须在改动任何控制器之前检查所有位面。 */
+export function validateWorldStreamsRestore(world, states) {
+  if (!world || typeof world !== 'object') throw new TypeError('world stream target invalid');
   if (STREAMS.get(world)?.size) throw new Error('world streams already in use; restore before simulation');
+  if (!states || typeof states !== 'object' || Array.isArray(states)) throw new TypeError('world stream states invalid');
   const pending = new Map();
-  for (const [name, state] of Object.entries(states || {})) {
+  for (const [name, state] of Object.entries(states)) {
     if (!isRngState(state)) throw new TypeError(`invalid world stream state ${name}`);
     pending.set(name, state);
   }
+  return pending;
+}
+
+/** 登记待恢复游标。必须在该 world 的任何流被取用之前调用。 */
+export function restoreWorldStreams(world, states = {}) {
+  const pending = validateWorldStreamsRestore(world, states);
   PENDING.set(world, pending);
 }

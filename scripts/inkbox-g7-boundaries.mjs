@@ -35,7 +35,8 @@ function sandbox(seed=7001){
     terrain:{setWorld(){}},camera:{bind(){},fit(){}},history:new History(),
     attachUpper(){},attachNether(){},hideDeadBiography(){},hidePersonCard(){},closeBusanziViewer(){},
     syncWorldControls(){},runtimeCalls:[],captureRuntime(){this.runtimeCalls.push('capture');return null;},
-    resetSessionRuntime(){this.runtimeCalls.push('reset');},applySavedRuntime(){this.runtimeCalls.push('apply');return '';},
+    prepareSavedRuntime(){this.runtimeCalls.push('prepare');return {note:'',upperLife:null};},
+    commitSavedRuntime(){this.runtimeCalls.push('commit');},
     syncWorldInfo(){},refreshTerritory(){},refreshChronicle(){},refreshNecrology(){},refreshThreeRealms(){},refreshBusanzi(){},refreshMilestones(){}};
   sb.qol=createQol(sb);return sb;
 }
@@ -78,7 +79,7 @@ try{
     bindPersistence(sb,{load:()=>gate.promise});element('inkBtnLoad').listeners.click();
     sb.qol.markDirty('terrain');gate.resolve(new World(32,24,999));await tick();
     assert.equal(sb.world,original,'async load cannot overwrite a newer edit');assert(sb.qol.isDirty());
-    assert(!sb.runtimeCalls.includes('reset')&&!sb.runtimeCalls.includes('apply'),'stale load leaves session runtime untouched');
+    assert.deepEqual(sb.runtimeCalls,[],'stale load leaves session runtime untouched');
     assert(sb.notices.some(s=>s.includes('已保留当前世界')));checks++;
   }
   {
@@ -88,7 +89,7 @@ try{
     assert(sb.qol.confirmOpen());assert(element('inkConfirmText').textContent.includes(sb.qol.slotLabel('slot1')));
     element('inkSlotSelect').value='slot2';sb.qol.closeConfirm(true);assert.equal(loadedSlot,'slot1');
     gate.resolve(new World(32,24,999));await tick();assert.equal(sb.world.seed,999);assert(!sb.qol.isDirty());
-    assert.deepEqual(sb.runtimeCalls,['reset','apply'],'accepted load resets then applies saved runtime once');checks++;
+    assert.deepEqual(sb.runtimeCalls,['prepare','commit'],'accepted load validates the candidate before committing runtime once');checks++;
   }
   {
     const sb=sandbox(),gate=deferred(),original=sb.world;
