@@ -1,0 +1,14 @@
+.journal { border-bottom:1px solid var(--line,#b6a88c); padding:8px 0; font-size:12px; line-height:1.6; }
+.journal > summary { cursor:pointer; font-size:16px; font-weight:bold; color:var(--cin,#8d4135); padding:5px 0; }
+.journal section { border-top:1px solid var(--line,#b6a88c); padding:4px 0 9px; }
+.journal h4 { margin:8px 0 4px; font-size:13px; }
+.journal h5 { margin:8px 0 2px; font-size:12px; }
+.journal p { margin:4px 0; overflow-wrap:anywhere; }
+.journal-intro { color:var(--ink-3,#655b4b); }
+.journal details { margin:5px 0; }
+.journal details summary { cursor:pointer; }
+.journal button,.journal-card-actions button { border:1px solid var(--line,#b6a88c); background:var(--paper,#ede5ce); color:var(--ink,#302d26); padding:4px 7px; margin:2px 2px 2px 0; font:inherit; cursor:pointer; }
+.journal button:hover,.journal-card-actions button:hover { color:var(--cin,#8d4135); border-color:var(--cin,#8d4135); }
+.journal-vow { border-left:2px solid var(--cin,#8d4135); padding:3px 8px; margin:8px 0; }
+.journal-card-actions { padding:5px 10px; }
+.journal-echo { border-top:1px solid var(--line,#b6a88c); padding-top:6px; }

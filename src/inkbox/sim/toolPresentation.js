@@ -33,7 +33,10 @@ export function observeToolBefore(ctx, tool) {
     for (const field of CELL_FIELDS) cells[k++] = world[field][i];
   }
   return { world, tool: tool.id, x, y, radius: ctx.radius, x0, y0, x1, y1, cells,
-    entities: ENTITY_TOOLS.has(tool.id) ? new Map(world.entities.map(e => [e.id, { signature: lifeSignature(e), hp: e.hp }])) : null,
+    entities: ENTITY_TOOLS.has(tool.id) ? new Map(world.entities.map(e => [e.id, {
+      signature: lifeSignature(e), hp: e.hp,
+      ...(tool.id === 'root' ? { level: e.level || 0, root: e.root == null ? null : JSON.parse(JSON.stringify(e.root)), name: e.name || '' } : {}),
+    }])) : null,
     settlements: SETTLEMENT_TOOLS.has(tool.id) ? new Map(world.villages.map(v => [v.id, `${v.hp}/${v.food}`])) : null,
     leylines: world.leylines.length, sites: world.sites.length, factions: world.factions.length,
     crisis: crisisSignature(ctx.events), targetEntityId: ctx.targetEntityId,

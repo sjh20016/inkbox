@@ -47,6 +47,7 @@ import { updateMapProgress } from '../world/mapProgress.js';
 import { stepWanling } from './wanling.js';
 import { stepDaoActivities } from './daoActivities.js';
 import { stepTransit } from './transit.js';
+import { settleVows } from './journal.js';
 
 /**
  * 各低频时钟的节拍（游戏日）。
@@ -233,6 +234,9 @@ export function advanceWorld(world, days, deps = {}) {
 
   // Access grows only after the simulation succeeds, independently of all streams.
   fired.mapProgress = updateMapProgress(world);
+  // At most two player observations, after a successful existing simulation
+  // slice. Vow deadlines never alter step sizes or random-call ordering.
+  settleVows(world);
   // P0-C.1: producers publish their own five-layer writes (Life grazing,
   // Wanling, Nether decay, rifts and finite nature events). Never invalidate
   // three entire planes just because the calendar advanced. Legacy writers

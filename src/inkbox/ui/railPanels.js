@@ -606,6 +606,7 @@ export function showPersonCardPanel(sb, model, onAction, { revision } = {}) {
   panel.dataset.plane = model.identity.currentPlane || model.identity.plane;
   panel.dataset.characterKey = model.identity.key;
   state.view.render(model);
+  sb.journal?.appendPersonActions(panel, model.identity);
   panel.classList.add('on');
 }
 export function showCharacterChoicesPanel(sb, candidates, choose) {

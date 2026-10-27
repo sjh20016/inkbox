@@ -12,6 +12,7 @@ export function bindPlayerExperienceNav(doc = document, win = window) {
   if (!right || !left || !scrim || !observeOpen || !observeClose || !toolsOpen || !toolsClose) return () => {};
 
   const targets = {
+    journal: $('inkJournalTitle'),
     combat: $('inkCombatTitle'),
     environment: $('inkEnvironmentTitle'),
     watch: $('inkWatchTitle'),
@@ -51,6 +52,7 @@ export function bindPlayerExperienceNav(doc = document, win = window) {
   }
   function reveal(target) {
     if (!target) return;
+    if (target.id === 'inkJournalTitle' && !target.parentElement.open) target.click();
     const body = target.nextElementSibling;
     // Preserve the original section-state/prefs listener. A fast-jump must not race
     // against its 350ms max-height animation, otherwise Three can land a heading

@@ -153,7 +153,14 @@ export function createObserveEchoPanel(sandbox, doc = document) {
       if (!b.hidden) { b.style.transform = `translate(${Math.round(x)}px,${Math.round(y)}px)`; used.push(box); }
     });
   }
-  return { refresh, project, focusId: () => readObserveEcho(sandbox.world).focus?.settlementId,
+  return { refresh, project,
+    locate(id) { refresh(); locate(id); },
+    openMark(id) {
+      refresh();
+      if (!readObserveEcho(sandbox.world).marks.some(mark => String(mark.id) === String(id))) return;
+      selectedMark = String(id); signature = ''; refresh();
+    },
+    focusId: () => readObserveEcho(sandbox.world).focus?.settlementId,
     appendCardActions(panel, id) {
       const cardWorld = sandbox.world;
       const controls = doc.createElement('div'); controls.className = 'e0-card-actions';

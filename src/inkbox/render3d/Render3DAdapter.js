@@ -481,6 +481,10 @@ export class Render3DAdapter {
       this.sandbox.applyTool(true, { point, radius: this.radius, targetEntityId: hit.entityId, plane: hit.plane });
       this.sandbox.history.end(tool.name);
       this.sandbox.observeEcho?.refresh?.();
+      if (this.sandbox.history.lastJournalReceipt) {
+        this.sandbox.notify(`${this.sandbox.clickSaid || tool.name} · 回执已记入观井手札`, 5200);
+        this.sandbox.journal?.refresh?.();
+      }
       return true;
     } catch (error) {
       this.sandbox.history.cancel?.();
@@ -509,6 +513,10 @@ export class Render3DAdapter {
       else apply();
       this.sandbox.history.end(tool.name);
       this.sandbox.observeEcho?.refresh?.();
+      if (this.sandbox.history.lastJournalReceipt) {
+        this.sandbox.notify(`${tool.name} · 回执已记入观井手札`, 4000);
+        this.sandbox.journal?.refresh?.();
+      }
       return true;
     } catch (error) {
       this.sandbox.history.cancel?.();
@@ -525,7 +533,7 @@ export class Render3DAdapter {
     }
     const sandbox = this.sandbox;
     sandbox.selectTool('burn');
-    sandbox.history.begin();
+    sandbox.history.begin({ toolId: 'burn', x: Math.round(hit.x), y: Math.round(hit.y), radius: this.radius });
     sandbox.applyTool(true, { point: { x: Math.round(hit.x), y: Math.round(hit.y) }, radius: this.radius });
     const changed = sandbox.history.end('焚林');
     if (changed) {
@@ -534,6 +542,10 @@ export class Render3DAdapter {
     }
     sandbox.qol.syncUndoState();
     if (changed) sandbox.notify('焚林已落笔 · 火势与灾迹可用检视观察。', 2600);
+    if (sandbox.history.lastJournalReceipt) {
+      sandbox.notify('焚林 · 回执已记入观井手札', 4000);
+      sandbox.journal?.refresh?.();
+    }
     return !!changed;
   }
   sampleDrainStroke(event) {

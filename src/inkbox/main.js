@@ -109,6 +109,7 @@ import { getRealmViewState } from './ui/realmViewState.js';
 import { pickRealmSubject, realmInspectRows, resolvePlaneSubject, planeSubjectInspectRows } from './ui/realmInspector.js';
 import { settlementRuinMarkerId, visibleSettlementRuins } from './world/settlementIdentity.js';
 import { createObserveEchoPanel } from './ui/observeEchoPanel.js';
+import { createJournalPanel } from './ui/journalPanel.js';
 import { createWanlingPanel } from './ui/wanlingPanel.js';
 import { createWanlingSelection } from './ui/wanlingSelection.js';
 import { removeWanling } from './sim/wanling.js';
@@ -381,6 +382,7 @@ class Sandbox {
     this.combatObservation = createSandboxCombatObservation(this, $('inkCombatObserver'));
     this.environmentObservation = createSandboxEnvironmentObservation(this, $('inkEnvironmentObserver'));
     this.observeEcho = createObserveEchoPanel(this);
+    this.journal = createJournalPanel(this);
     this.wanlingSelection = createWanlingSelection(this);
     this.wanlingCodex = createWanlingPanel(this,{remove:id=>{
       if(removeWanling(this.world,id)){this.qol.markDirty('intervention');this.notify('此生灵已收回，局部影响随之撤去',2400);}
@@ -985,7 +987,7 @@ class Sandbox {
         if (!this.inspectWanlingCanvas(this.pointer.x,this.pointer.y) && !this.g1.inspectCanvas(this.pointer.x, this.pointer.y)) this.inspectAt(this.hoverTile.x, this.hoverTile.y);
         return;
       }
-      this.history.begin(tool.id === 'drain' ? { toolId: tool.id, x: this.hoverTile.x, y: this.hoverTile.y, radius: this.brushRadius } : undefined);
+      this.history.begin(['drain', 'burn'].includes(tool.id) ? { toolId: tool.id, x: this.hoverTile.x, y: this.hoverTile.y, radius: this.brushRadius } : undefined);
       this.clickSaid = '';
       this.lastInterventionOutcome = null;
       this.strokeIntervention = CAUSAL_TOOL_IDS.includes(tool.id)
@@ -1107,6 +1109,10 @@ class Sandbox {
           const said = this.clickSaid;
           this.notify(said || `${label} · 已记入世界`);
           this.observeEcho?.refresh();
+        }
+        if (this.history.lastJournalReceipt) {
+          this.notify(`${this.clickSaid || label} · 回执已记入观井手札`, 5200);
+          this.journal?.refresh();
         }
       }
       this.strokeIntervention = null;
@@ -1671,6 +1677,7 @@ class Sandbox {
           ? this.life.events.activeCrises.find((row) => row.id === eventIdBefore)
             || this.life.events.history.find((row) => row.id === eventIdBefore)
           : null;
+        this.history.queueToolReceipt?.(ctx, observation, impact, event);
         const outcome = createInterventionOutcome({
           toolId: tool.id,
           action: tool.name,
@@ -1954,6 +1961,12 @@ class Sandbox {
     panel.classList.toggle('settlement-card', settlement);
     const signature = settlement ? JSON.stringify([planeId, ref, card, this.observeEcho?.focusId()]) : null;
     if (signature && panel.classList.contains('on') && this.settlementInspectionSignature === signature) return picked;
+    // A low-frequency card refresh must not detach a vow button between its
+    // pointerdown and click, or steal keyboard focus from the same subject.
+    const sameSubject = panel.dataset.plane === planeId && panel.dataset.subjectKind === ref.kind
+      && panel.dataset.subjectId === String(ref.settlementId ?? ref.siteId ?? ref.houseKey ?? '');
+    if (signature && sameSubject && panel.classList.contains('on')
+      && panel.querySelector('.journal-card-actions')?.contains(document.activeElement)) return picked;
     this.settlementInspectionSignature = signature;
     const scrollTop = panel.scrollTop;
     const text = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;')
@@ -1974,6 +1987,7 @@ class Sandbox {
       + (card?.predecessors || []).map(ruin => `<button class="inspect-link" data-inspect-ruin="${text(ruin.id)}">旧址 · ${text(ruin.name)}</button>`).join('');
     panel.classList.add('on');
     if (card?.settlementId != null) this.observeEcho?.appendCardActions(panel, card.settlementId);
+    if (card?.settlementId != null) this.journal?.appendSettlementActions(panel, card.settlementId, planeId);
     panel.scrollTop = scrollTop;
     for (const button of panel.querySelectorAll('[data-inspect-faction]')) button.addEventListener('click', () => {
       const faction = this.world.factions.find(item => String(item.id) === button.dataset.inspectFaction);
@@ -2620,6 +2634,7 @@ class Sandbox {
     const world = this.world;
     if (!world) return;
     this.observeEcho?.refresh(false);
+    this.journal?.refresh(false);
     this.wanlingCodex?.refresh(false);
     this.wanlingSelection?.refresh();
     const inspection = this.settlementInspection, inspectPanel = $('inkInspect');
