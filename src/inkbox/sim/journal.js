@@ -41,6 +41,7 @@ function checkReceipt(r) {
     || !validDay(r.day) || !Array.isArray(r.direct) || !r.direct.every(x => typeof x === 'string')
     || !Number.isFinite(r.x) || !Number.isFinite(r.y) || !Number.isFinite(r.radius) || r.radius < 0) fail();
   if (r.kind === 'burn') {
+    if (r.undo !== undefined && (!r.undo || r.undo.status !== 'undone' || !validDay(r.undo.day))) fail();
     if (!validId(r.changedCells) || !Array.isArray(r.samples) || r.samples.length > 16 || !r.bounds) fail();
     for (const key of ['x0','y0','x1','y1']) if (!Number.isFinite(r.bounds[key])) fail();
     for (const s of r.samples) {
@@ -142,6 +143,14 @@ function cellSnapshot(cell) {
       overlayDueDay:Number.isFinite(cell.n?.overlay?.dueDay) ? finite(cell.n.overlay.dueDay) : null,
       flood:!!cell.n?.flood } };
 }
+// Persist only a successful History.undo against the original gesture identity.
+// Older v1 receipts have no undo field and remain valid without migration.
+export function markBurnReceiptUndone(world, id) {
+  const receipt = world?.journal?.receipts?.find(r => r.id === id && r.kind === 'burn');
+  if (!receipt || receipt.undo) return false;
+  receipt.undo = { status: 'undone', day: finite(world.day) };
+  return true;
+}
 export function recordBurnReceipt(world, meta, changes, after) {
   if (meta?.toolId !== 'burn') return null;
   let changedCells = 0; const samples = [], bounds = { x0: world.w, y0: world.h, x1: 0, y1: 0 };
@@ -163,6 +172,10 @@ export function receiptRevisit(world, receipt) {
   if (!receipt) return { direct, following, uncertain, targets };
   targets.push({ type:'position', plane:'mortal', x:receipt.x, y:receipt.y });
   if (receipt.kind === 'burn') {
+    if (receipt.undo?.status === 'undone') {
+      direct.push('这次笔划的直接地形修改已成功撤销，不代表原修改仍然有效。');
+      following.push({ day:receipt.undo.day, text:'此笔划经正式历史撤销成功；此后的环境变化仍需按世界现状观察。' });
+    }
     for (const sample of receipt.samples) {
       if (!world.inside(sample.x,sample.y)) continue;
       const i = world.idx(sample.x,sample.y);
