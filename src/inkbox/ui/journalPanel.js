@@ -54,7 +54,7 @@ export function createJournalPanel(sb, doc = document) {
     const receiptHtml = receipts.map((r, i) => {
       const key = `receipt-${r.source === 'echo' ? 'echo-' : ''}${r.id}`;
       const result = projections[i];
-      return `<details data-journal-detail="${esc(key)}" ${opened.has(key) ? 'open' : ''}><summary>${esc(when(r.day))} · ${esc(labels[r.kind] || r.kind)}</summary>` + (r.source === 'echo'
+      return `<details data-journal-detail="${esc(key)}" ${opened.has(key) ? 'open' : ''}><summary>${esc(when(r.day))} · ${esc(labels[r.kind] || r.kind)}${r.kind === 'burn' && r.undo?.status === 'undone' ? ' · 已撤销' : ''}</summary>` + (r.source === 'echo'
         ? `<p>抽水 ${esc(r.changedCells)} 格，位置（${esc(r.x)}, ${esc(r.y)}）。</p>${button('echo', r.id, '查看抽水详录')}`
         : result ? `<h5>当时直接改变</h5>${lines(result.direct)}<h5>此后真实发生</h5>${lines(result.following)}<h5>无法确定的关联</h5>${lines(result.uncertain)}${(result.targets || []).map((t, n) => button('target', `${r.id}:${n}`, t.type === 'person' ? '回访人物' : t.type === 'settlement' ? '回访聚落' : '回到落笔处')).join(' ')}` : '') + '</details>';
     }).join('');
