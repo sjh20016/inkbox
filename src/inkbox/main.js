@@ -765,6 +765,8 @@ class Sandbox {
     this.dirty = true;
     this.qol.markDirty('undo');
     this.qol.syncUndoState();
+    // The journal panel may already be open; reflect the committed undo now.
+    this.journal?.refresh();
     return true;
   }
 
