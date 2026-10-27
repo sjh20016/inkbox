@@ -1,5 +1,12 @@
 # Inkbox 测试入口与脚本分层
 
+## G8 验证选择
+
+- RNG、时钟与保存恢复：运行 `npm run test:g8`，并按改动运行相关 Fast/Heavy；正式集成保留完整门禁。
+- 正式入口存读档：运行 `npm run test:g8:browser`，检查真实浏览器交互。
+- 长期生态：按影响选择定向人口验证；需要长时段证据时使用 800 年 Nightly，并区分长测阶段与整个 job 的结论，不要求每次人口修改都跑 800 年。
+- 成熟世界性能：使用真实浏览器和明确记录的成熟世界场景进行性能测量；软件光栅功能测试、Node 长测不替代 GPU 性能证据。见 [成熟世界基线](../docs/development/G8_MATURE_WORLD_BASELINE.md)。
+
 `npm run test:g8` 检查历史 RNG 序列、运行期完整恢复及异常回滚、普通进食的静态植被契约、跨界法宝 ID。
 `npm run test:g8:browser` 复用隔离 Edge/CDP 实际打开正式页面，覆盖自动/手动保存、异步快照边界、配额失败、导出/文件导入、旧档、坏检查点拒载与世界切换；加入现有手动 Browser Smoke。默认端口4241，`INKBOX_URL` / `INKBOX_REPORT_DIR` 可指定，采用软件光栅做功能检查，不作GPU性能裁决。
 
@@ -73,7 +80,7 @@ CI 继续保留全部原有 Fast / Heavy 检查项。RG-P4 新增同分支并发
 ## CI 与手动验收的区别
 
 - [ci.yml](../.github/workflows/ci.yml) 每次 Push / PR 都跑 **Fast Gate + Heavy Gate**，两者都要通过。Fast 包含 `npm run build`，它会执行包审计；Heavy 保留模拟、存档与 G1 长局。
-- CI 内的 Windows **Browser Smoke** 仅 `workflow_dispatch` 手动触发；先跑 G1 浏览器，再由 `scripts/inkbox-browser-smoke.mjs` 串行管理 Canvas、M2-A/B/C/C2A/C2B0，附带 C2B0 和 C2B Pass1 的浏览器/耐久检查。
+- CI 内的 Windows **Browser Smoke** 仅 `workflow_dispatch` 手动触发；先跑 G8 浏览器，再跑 G1 等浏览器检查，随后由 `scripts/inkbox-browser-smoke.mjs` 串行管理 Canvas、M2-A/B/C/C2A/C2B0，附带 C2B0 和 C2B Pass1 的浏览器/耐久检查。
 - [c2c-browser.yml](../.github/workflows/c2c-browser.yml) 手动复验真实 GLB、拾取、C2C 23 对镜头及 600/6000 帧；不是普通 Push 硬门槛。
 - [nightly.yml](../.github/workflows/nightly.yml) 定时/手动跑 `inkbox:longrun` 和 `test:simulation`。Fast/Heavy 全绿不等于浏览器、GPU、Nightly 已通过。
 

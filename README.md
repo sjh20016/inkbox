@@ -10,15 +10,17 @@ R1「山海入世」在 G5/P1 主线上接入 Opus V1→V1.3 原始美术历史�
 
 ## 正式产品状态（按 main 最新提交核对）
 
+**G8-M1「岁序归一」已完成正式合流**：PR #52 以合并提交 `06043766d937ac42e8f4a04305e256cf5b9a43ce` 接纳运行期 RNG 与时钟续跑、人口生态及跨界法宝修复。新档可恢复已保存的游标；旧档无法倒推出历史游标，地形仍为 16 位有损量化。固定种子 800 年终局 1400 生灵是单次样本，长期平衡及真实成熟世界性能仍待研究。见 [G8 合流记录](./docs/development/G8_M1_MERGE_REPORT.md) 与 [成熟世界基线](./docs/development/G8_MATURE_WORLD_BASELINE.md)。
+
 **WT-I1「万象同卷 · 众生可置」集成**：W0.1 #41 与 T0 #40 在同一正式游戏共存；左侧「生灵 → 万灵」直接选择类别和形态，Canvas/Three 与右侧图录同步。修士冷却后复行，交通独占远行移动权，生态与持粮行程共同存档。来源、验收与实际合流状态见 [WT-I1 交付记录](./docs/development/WTI1_INTEGRATION_DELIVERY.md)。下方候选描述保留来源阶段的历史范围，main 以集成 PR 状态为准。
 
 **W0.1 来源 #41**：17类可投放生灵、真实道侣派生比翼、聚合捕食、地灵迁衰、十二道途及双renderer图录由WT-I1完整收纳。逐单位档位与保留边界见 [W0.1交付记录](./docs/development/W01_WANLING_DELIVERY.md)。
 
 G7 v1.1 按依赖顺序接纳 **E0 #34 → C1 #35 → 立体观世 P0 #36**：聚落记挂与真实干预、自然双亲出生与宗门供养、原生 3D 神力及有限水响应进入同一主线。G7 #38 补齐取消笔画、存读档并发保护和原生检视入口。合流与验收见 [G7 交付记录](./docs/development/G7_MAIN_INTEGRATION_DELIVERY.md)。S0 静态自然继续保留；G6 #30 与独立山海遗迹美术分支仍未接入。
 
-正式产品基线为 **M2-C2E + G1 + G2-R1 + A1 + G2.4-C + G2.5 + G2.6 + G5 + P1 + R1 + S0 + 地方韧性 + E0 + C1 + 立体观世 P0 + G7**。R1 从 `c45f9be` 起步；2026-10-19 的 G5 合流提交为 `3dabf8c`；RG 治理前的历史基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`。后续实际开发始终从开工时重新核对的 GitHub 最新 `main` HEAD 起步。
+正式产品基线为 **M2-C2E + G1 + G2-R1 + A1 + G2.4-C + G2.5 + G2.6 + G5 + P1 + R1 + S0 + 地方韧性 + E0 + C1 + 立体观世 P0 + G7 + WT-I1 + G8**。R1 从 `c45f9be` 起步；2026-10-19 的 G5 合流提交为 `3dabf8c`；RG 治理前的历史基线为 `e1e55039bb56efda7a307513ede07a9fab3bf534`。后续实际开发始终从开工时重新核对的 GitHub 最新 `main` HEAD 起步。
 
-G2/G5 功能接纳不代表性能预算封板。PR #26～#28 已进入主线；PR #12、#4～17 等旧候选只作来源与研究索引，不重复合并已迁入主线的功能。G3 cost 仍为 **BLOCKED**，独立 B 线与产品线没有共同祖先，历史 RNG 游标持久化仍未决。
+G2/G5 功能接纳不代表性能预算封板。PR #26～#28 已进入主线；PR #12、#4～17 等旧候选只作来源与研究索引，不重复合并已迁入主线的功能。G3 cost 仍为 **BLOCKED**，独立 B 线与产品线没有共同祖先。
 
 导航：[`HANDOFF.md`](./HANDOFF.md) · [`ROADMAP.md`](./ROADMAP.md) · [`BACKLOG.md`](./BACKLOG.md) · [`tests/README.md`](./tests/README.md) · [`docs/development/REPOSITORY_WORKFLOW.md`](./docs/development/REPOSITORY_WORKFLOW.md)。
 
@@ -140,7 +142,7 @@ M2-A 浏览器探针：先运行 `npm run dev`（端口 4180），另开终端�
 
 ## 工程状态
 
-当前产品与候选状态见本文顶部。M2-C2E 的最大地图性能边界、最终视觉裁决与历史 RNG 游标存档决策见 [BACKLOG](./BACKLOG.md)。G1 行为与契约见 [集成报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_INTEGRATION_REPORT.md)，模块职责见 [ARCHITECTURE](./ARCHITECTURE.md)，三界与视界约束见 [THREE_REALMS](./THREE_REALMS.md) / [VIEW_CONTRACT](./VIEW_CONTRACT.md)。
+当前产品与候选状态见本文顶部。M2-C2E 的最大地图性能边界、最终视觉裁决与长期人口和存档边界见 [BACKLOG](./BACKLOG.md)。G1 行为与契约见 [集成报告](https://github.com/sjh20016/inkbox/blob/e1e55039bb56efda7a307513ede07a9fab3bf534/G1_INTEGRATION_REPORT.md)，模块职责见 [ARCHITECTURE](./ARCHITECTURE.md)，三界与视界约束见 [THREE_REALMS](./THREE_REALMS.md) / [VIEW_CONTRACT](./VIEW_CONTRACT.md)。
 
 当前工作树没有旧 V3/V4 的 `src/main.js`、demo 或 `scripts/v*`；需要考古时查 Git 历史。根 `index.html` / `game.html` 是跳转到 Inkbox 的入口。旧 `scripts/_*.mjs` 一次性视图探针已移出当前工作树，按需查阅历史提交。
 
