@@ -321,6 +321,9 @@ function auditRiftPools() {
 }
 
 const t0 = Date.now();
+// G8-C.1 acceptance evidence: annual ID audit, century samples; no simulation writes or RNG.
+const artifactIdIssues = [];
+const longrunSamples = [];
 // 中途采样一次夺舍账本，收尾时用它判「累计量单调不减」（见下面「夺舍」那一段）。
 const midYear = Math.floor(YEARS / 2);
 let possMid = null;
@@ -416,6 +419,14 @@ for (let y = 1; y <= YEARS; y += 1) {
     if (unowned > upperUnownedPeak) upperUnownedPeak = unowned;
   }
   if (y === midYear) possMid = possessionStats(world);
+  for (const [plane, target] of [['mortal', world], ['upper', upper], ['nether', nether]]) {
+    const ids = new Set();
+    for (const item of target.artifacts || []) {
+      if ((!Number.isSafeInteger(item.id) || item.id < 1 || ids.has(item.id)) && artifactIdIssues.length < 10)
+        artifactIdIssues.push({ year: y, plane, id: item.id });
+      ids.add(item.id);
+    }
+  }
   if (!QUIET && (y % 100 === 0 || y === YEARS)) {
     const c = world.cultivationStats();
     // 转世那几个读数一定要进轨迹：只看终点分不清「一直在转世」和
@@ -429,6 +440,14 @@ for (let y = 1; y <= YEARS; y += 1) {
     // 分不清「从来没发生过」和「发生过、只是那些人和战事都不在了」。
     const pt = possessionStats(world);
     const wt = warStats(world);
+    const sample = { year: y, population: world.entities.length, villages: world.villages.length,
+      mortals: c.mortals, cultivators: c.cultivators, sects: world.factions.length,
+      clans: kt.clans, clanMembers: kt.members,
+      upper: { population: upper.entities.length, mortals: upper.entities.filter(isUpperMortal).length,
+        bornMortal: upper.popLog?.bornMortal || 0, awakened: mortalAwakened },
+      artifacts: { live: af.live, held: af.onPeople, ground: af.ground }, idIssues: artifactIdIssues.length };
+    longrunSamples.push(sample);
+    console.log('G8_SAMPLE ' + JSON.stringify(sample));
     console.log(
       `  第${String(y).padStart(4)}年`
       + ` 生灵${String(world.entities.length).padStart(4)}`
@@ -1716,7 +1735,11 @@ console.log(`  · 幽冥名册：鬼魂 + 鬼修 ${nEco.alive}`
   + ` · 幽冥物品 ${nItems.alive} 件（自生 ${nItems.spawned} · 朽 ${nItems.decayed}）`
   + ` · 凡间鬼影 ${wStats.alive} 只（已消散 ${wStats.dissolved}）`);
 
+add('G8 三界法宝 ID 在逐年检查中均合法且各位面唯一', artifactIdIssues.length === 0,
+  artifactIdIssues.length ? JSON.stringify(artifactIdIssues) : `${YEARS} 次逐年检查`);
 const failed = checks.filter((c) => !c.ok);
+console.log('G8_ACCEPTANCE ' + JSON.stringify({ years: YEARS, seed: SEED, preset: PRESET_KEY, step: STEP,
+  elapsedMs: elapsed, samples: longrunSamples, checks: checks.length, failed, artifactIdIssues }));
 
 // ── 报告 ────────────────────────────────────────────────────
 if (!QUIET) {

@@ -261,6 +261,11 @@ jobs:
       - name: 安装依赖
         run: npm ci
 
+      - name: G8-C.1 正式自动存档、读档与文件导入导出
+        run: npm run test:g8:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g8c1-browser
+
       - name: G1 正式命簿 Canvas / 3D 真实身份、命令与存读档
         run: npm run test:g1:browser
         env:
