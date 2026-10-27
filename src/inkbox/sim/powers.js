@@ -15,7 +15,7 @@ import { NATURE_DAYS, igniteCell, extinguishCell, setRecoveringOverlay, floodCel
 import { placeOf } from './sects.js';
 import { damageSettlement } from './settlementResilience.js';
 import { beginDrainEcho, commitDrainEcho, updateDrainUndo } from './observeEcho.js';
-import { planToolReceipt, commitReceipt, recordBurnReceipt } from './journal.js';
+import { planToolReceipt, commitReceipt, recordBurnReceipt, markBurnReceiptUndone } from './journal.js';
 import { wanlingEvent } from '../world/wanlingState.js';
 
 // ── 撤销栈 ────────────────────────────────────────────────
@@ -132,7 +132,10 @@ export class History {
     if (this.echoMeta?.toolId === 'burn') {
       this.lastJournalReceipt = recordBurnReceipt(this.recordWorld, this.echoMeta, this.current, after);
     }
-    this.stack.push({ observeMarkId, echoWorld: observeMarkId ? this.recordWorld : null, changes: this.current, after, label, bounds: this.bounds,
+    const burnReceiptId = this.lastJournalReceipt?.kind === 'burn' ? this.lastJournalReceipt.id : null;
+    this.stack.push({ observeMarkId, echoWorld: observeMarkId ? this.recordWorld : null,
+      burnReceiptId, burnReceiptWorld: burnReceiptId ? this.recordWorld : null,
+      changes: this.current, after, label, bounds: this.bounds,
       eventIds: this.eventIds, settlementsBefore: this.currentSettlements, settlementsAfter });
     if (this.stack.length > this.limit) {
       const dropped = this.stack.shift();
@@ -213,6 +216,7 @@ export class History {
     recomputeRect(world, b.x0, b.y0, b.x1, b.y1);
     world.touch();
     updateDrainUndo(world, entry.observeMarkId, 'undone');
+    if (entry.burnReceiptWorld === world) markBurnReceiptUndone(world, entry.burnReceiptId);
     return entry.label;
   }
 
