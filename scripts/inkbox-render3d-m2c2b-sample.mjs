@@ -28,9 +28,12 @@ import { normalizeRegion } from '../src/inkbox/ui/tools.js';
 import { houseFamilyFor } from '../src/inkbox/render3d/settlements/houseFamily.js';
 
 // C1 starts genesis residents at adulthood and retains real mortal labor.
-// The unchanged four-year GOLDEN_A recipe yields 104 houses and 6 halls.
+// G8: feeding no longer permanently strips vegetation (S0 static-flora contract),
+// so the unchanged four-year GOLDEN_A recipe now yields 95 houses and 7 halls
+// (was 104 + 6). The shift is reproduced on main with only that one line
+// ablated; the G8 RNG/runtime refactor alone leaves the old counts intact.
 // Keep exact counts and every ownership/LOD assertion; no render budget changes.
-const GOLDEN_HOUSES = 104, GOLDEN_HALLS = 6, GOLDEN_BUILDINGS = 110;
+const GOLDEN_HOUSES = 95, GOLDEN_HALLS = 7, GOLDEN_BUILDINGS = 102;
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.resolve(process.env.INKBOX_REPORT_DIR || path.join(ROOT, 'reports/m2c2b/pass1/sample'));

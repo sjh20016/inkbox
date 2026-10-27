@@ -119,6 +119,9 @@ jobs:
       - name: G7 取消事务、异步存读档与拒绝神力边界
         run: npm run test:g7
 
+      - name: G8 运行时检查点、随机流续接与凡间生息
+        run: npm run test:g8
+
       - name: W0.1 真实物种、山林生态、道途活动与存档
         run: npm run test:w01
       - name: T0 地理通达、真实行程、货物守恒与存档
@@ -257,6 +260,11 @@ jobs:
 
       - name: 安装依赖
         run: npm ci
+
+      - name: G8-C.1 正式自动存档、读档与文件导入导出
+        run: npm run test:g8:browser
+        env:
+          INKBOX_REPORT_DIR: reports/ci/g8c1-browser
 
       - name: G1 正式命簿 Canvas / 3D 真实身份、命令与存读档
         run: npm run test:g1:browser

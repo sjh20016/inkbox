@@ -15,6 +15,8 @@
     "test:t0": "node scripts/inkbox-t0-geography.mjs && node scripts/inkbox-t0-journeys.mjs && node scripts/inkbox-t0-integration.mjs",
     "test:t0:browser": "node scripts/inkbox-t0-browser.mjs",
     "test:g7": "node scripts/inkbox-g7-boundaries.mjs && node scripts/inkbox-g7-cancel.mjs",
+    "test:g8": "node scripts/inkbox-g8-runtime.mjs && node scripts/inkbox-g8-demography.mjs && node scripts/inkbox-g8-rift-artifacts.mjs",
+    "test:g8:browser": "node scripts/inkbox-g8-save-browser.mjs",
     "test:p0": "node scripts/inkbox-p0-input.mjs && node scripts/inkbox-p0-water.mjs && node scripts/inkbox-p0-power-state.mjs",
     "test:c1": "node scripts/inkbox-c1-birth.mjs && node scripts/inkbox-c1-longevity.mjs && node scripts/inkbox-c1-supply.mjs && node scripts/inkbox-c1-ui.mjs && node scripts/inkbox-c1-territory.mjs",
     "profile:c1": "node scripts/inkbox-c1-profile.mjs",

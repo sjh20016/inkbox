@@ -23,9 +23,9 @@ import {
 } from '../core/config.js';
 import { canAccess } from '../core/mapAccess.js';
 import { ADULT_AGE_DAYS, isAdult, isFertileAge, isHumanPerson, isMortalHuman, hasMortalResidents } from '../core/demographics.js';
-import { clamp, mulberry32 } from '../core/noise.js';
+import { clamp, mulberry32, rngStream, rngStateOf, isRngState } from '../core/noise.js';
+import { worldStream } from './worldStreams.js';
 import { OVER, recomputeRect, markDirty, flushDirty } from '../world/terrain.js';
-import { noteTerrainCell } from '../world/terrainChanges.js';
 import { fireExposure, floodExposure } from './nature.js';
 import { generateNameParts, generateName, generateVillageName, narrate, fillTemplate } from '../core/lore.js';
 import {
@@ -166,19 +166,14 @@ export const MERCY_SEED_KEY = 0x4d455243;
  * 挂上去就得写一条「跳过它」的例外——那是「靠人记得」。挂在模块级 `WeakMap` 上，
  * 序列化器**在结构上就看不见它**。用 `WeakMap` 而不是 `Map`，是为了不阻止 world 被回收。
  */
-const MERCY_RNG = new WeakMap();
+// G8：实例登记在 `worldStreams.js` 的共享 WeakMap（同样不挂 world 属性）。
 
 /**
  * 取该 world 的手下留情随机流。**必须是长活的同一条**——每次重建的话，
  * 每次抽签都拿到同一串数的开头，「随机」这件事在结构上就没了。
  */
 export function mercyRngFor(world) {
-  let rng = MERCY_RNG.get(world);
-  if (!rng) {
-    rng = mulberry32(((world.seed || 0) ^ MERCY_SEED_KEY) >>> 0);
-    MERCY_RNG.set(world, rng);
-  }
-  return rng;
+  return worldStream(world, 'mercy', MERCY_SEED_KEY);
 }
 
 /**
@@ -355,8 +350,37 @@ export class Life {
      * `Life` 的），代价是「跨页面读档」与「接着玩」会分叉——这是这个沙盒
      * 既有且已知的性质，不是这一块引入的。
      */
-    this.warRng = mulberry32(((world.seed || 0) ^ 0x776172) >>> 0);
+    // G8：可快照流，与旧 mulberry32 逐签同序；游标经运行期检查点续接。
+    this.warRng = rngStream(((world.seed || 0) ^ 0x776172) >>> 0);
     this.events = new WorldEvents(world, rng, world.worldEventState);
+  }
+
+  /**
+   * G8 运行期检查点：本控制器自己持有、跨节拍累积、且不在 world 上的状态。
+   * 纯数据；读取不抽签。主流不可快照（测试注入的任意函数）时记 null。
+   */
+  captureRuntime() {
+    return {
+      rng: rngStateOf(this.rng),
+      warRng: rngStateOf(this.warRng),
+      foundingCooldown: this.foundingCooldown,
+      wildCooldown: this.wildCooldown,
+      clanCooldown: this.clanCooldown || 0,
+      yearTickCooldown: this.yearTickCooldown,
+    };
+  }
+
+  /** 由 `sim/runtimeState.js` 在校验后调用；构造期（WorldEvents）抽过的签在此被覆盖。 */
+  restoreRuntime(data) {
+    for (const key of ['rng', 'warRng']) {
+      if (data[key] === null) continue;
+      if (!isRngState(data[key]) || typeof this[key]?.setState !== 'function') throw new TypeError(`life.${key} not restorable`);
+      this[key].setState(data[key]);
+    }
+    for (const key of ['foundingCooldown', 'wildCooldown', 'clanCooldown', 'yearTickCooldown']) {
+      if (!Number.isFinite(data[key])) throw new TypeError(`life.${key} invalid`);
+      this[key] = data[key];
+    }
   }
 
   name() {
@@ -764,15 +788,14 @@ export class Life {
     }
 
     // 进食：站在有肥力的地上就回血
+    // G8：进食只取地力的出产，不再永久削减 `world.veg`。S0 起草木不随时间
+    // 再生（只有落笔与到期事件改写植被），旧的「啃一口减一点」便成了只减
+    // 不增的单向漏斗：数十年后全图肥力跌破分村门槛，村落只灭不生。
     const fert = world.fertility(here);
     if (fert > 0.2 && world.fire[here] < 0.2) {
       const eat = Math.min(1, fert * dtDays * 0.05);
       e.hp = Math.min(e.maxHp, e.hp + e.maxHp * eat * 0.35);
       e.carried = Math.min(1, e.carried + eat * (info.diet > 0 ? 0.5 : 0));
-      if (world.veg[here] > 0.05) {
-        world.veg[here] = Math.max(0, world.veg[here] - eat * 0.35);
-        noteTerrainCell(world, 'veg', here);
-      }
     } else {
       // 死因标记：站在无肥力的地上挨饿 ⇒ `deathOther`（不是寿终）。
       e.diedOf = 'famine';

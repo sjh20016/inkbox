@@ -11,7 +11,8 @@ import { CAUSAL_TOOL_IDS, createInterventionOutcome } from '../src/inkbox/sim/in
 import { observeToolBefore, observeToolAfter } from '../src/inkbox/sim/toolPresentation.js';
 import { reactToTool } from '../src/inkbox/sim/busanzi.js';
 import { peekRuntimeEvents } from '../src/inkbox/core/runtimeEvents.js';
-import { mulberry32 } from '../src/inkbox/core/noise.js';
+import { rngStream } from '../src/inkbox/core/noise.js';
+import { savedRuntimeOf } from '../src/inkbox/io/save.js';
 
 const source=readFileSync(new URL('../src/inkbox/main.js',import.meta.url),'utf8');
 const previousDocument=globalThis.document;
@@ -33,22 +34,25 @@ function sandbox(seed=7001){
   const sb={world,notices:[],notify(text){this.notices.push(text);},refreshSlots(){},
     terrain:{setWorld(){}},camera:{bind(){},fit(){}},history:new History(),
     attachUpper(){},attachNether(){},hideDeadBiography(){},hidePersonCard(){},closeBusanziViewer(){},
-    syncWorldControls(){},syncWorldInfo(){},refreshTerritory(){},refreshChronicle(){},refreshNecrology(){},refreshThreeRealms(){},refreshBusanzi(){},refreshMilestones(){}};
+    syncWorldControls(){},runtimeCalls:[],captureRuntime(){this.runtimeCalls.push('capture');return null;},
+    prepareSavedRuntime(){this.runtimeCalls.push('prepare');return {note:'',upperLife:null};},
+    commitSavedRuntime(){this.runtimeCalls.push('commit');},
+    syncWorldInfo(){},refreshTerritory(){},refreshChronicle(){},refreshNecrology(){},refreshThreeRealms(){},refreshBusanzi(){},refreshMilestones(){}};
   sb.qol=createQol(sb);return sb;
 }
 function bindPersistence(sb,{save,load}){
   const start=source.indexOf("    $('inkBtnSave').addEventListener('click'");
   const end=source.indexOf('    // Q26：',start);
   assert(start>0&&end>start);
-  new Function('$','saveToStorage','loadFromStorage','listSlots','plainSaveTag','Life','mulberry32',source.slice(start,end))
-    .call(sb,id=>element(id),save,load,()=>[],()=>'',Life,mulberry32);
+  new Function('$','saveToStorage','loadFromStorage','listSlots','plainSaveTag','Life','rngStream','savedRuntimeOf',source.slice(start,end))
+    .call(sb,id=>element(id),save,load,()=>[],()=>'',Life,rngStream,savedRuntimeOf);
 }
 function bindImport(sb,importer){
   const start=source.indexOf("    $('inkBtnImport').addEventListener('click'");
   const end=source.indexOf('    // Q40：',start);
   assert(start>0&&end>start);
-  new Function('$','importFile','Life','mulberry32',source.slice(start,end))
-    .call(sb,id=>element(id),importer,Life,mulberry32);
+  new Function('$','importFile','Life','rngStream','savedRuntimeOf',source.slice(start,end))
+    .call(sb,id=>element(id),importer,Life,rngStream,savedRuntimeOf);
 }
 try{
   {
@@ -75,6 +79,7 @@ try{
     bindPersistence(sb,{load:()=>gate.promise});element('inkBtnLoad').listeners.click();
     sb.qol.markDirty('terrain');gate.resolve(new World(32,24,999));await tick();
     assert.equal(sb.world,original,'async load cannot overwrite a newer edit');assert(sb.qol.isDirty());
+    assert.deepEqual(sb.runtimeCalls,[],'stale load leaves session runtime untouched');
     assert(sb.notices.some(s=>s.includes('已保留当前世界')));checks++;
   }
   {
@@ -83,7 +88,8 @@ try{
     sb.qol.markDirty('terrain');element('inkSlotSelect').value='slot1';element('inkBtnLoad').listeners.click();
     assert(sb.qol.confirmOpen());assert(element('inkConfirmText').textContent.includes(sb.qol.slotLabel('slot1')));
     element('inkSlotSelect').value='slot2';sb.qol.closeConfirm(true);assert.equal(loadedSlot,'slot1');
-    gate.resolve(new World(32,24,999));await tick();assert.equal(sb.world.seed,999);assert(!sb.qol.isDirty());checks++;
+    gate.resolve(new World(32,24,999));await tick();assert.equal(sb.world.seed,999);assert(!sb.qol.isDirty());
+    assert.deepEqual(sb.runtimeCalls,['prepare','commit'],'accepted load validates the candidate before committing runtime once');checks++;
   }
   {
     const sb=sandbox(),gate=deferred(),original=sb.world;

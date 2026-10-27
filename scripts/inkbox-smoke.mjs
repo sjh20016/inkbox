@@ -2565,7 +2565,7 @@ section('5l. 编年史 kind：白名单、映射表与写入方');
   }
 
   /**
-   * 从 `record(` 的第二个实参里取字符串字面量。
+   * 从 World 的 `world.record(` / `world.milestone(` 第二个实参里取字符串字面量。
    * 按**括号深度**找第二参（`record(\n  `...`,\n  'kind',\n  actor,\n)` 这种跨行写法很常见），
    * 遇到引号就整段跳过，所以字符串里的逗号不会把实参切歪。
    *
@@ -2585,7 +2585,11 @@ section('5l. 编年史 kind：白名单、映射表与写入方');
     // 之后，`ascend` 当场被误判成「没有任何写入方的死映射」——**假红**。
     // 修法是把扫描面补全（契约变了：写入方从一种变成两种），
     // **不是**把 `ascend` 从 KIND_TAG 里删掉（那才是真的删断言）。
-    const re = /(?:world\.(?:record|milestone)|(?<![.\w$])(?:record|milestone))\s*\(/g;
+    // Chronicle 是 World 方法，不是任意同名函数。wanling.js 的裸
+    // record(world, unit, text) 是业务节流 helper，第二参是生灵而非 kind；
+    // helper 内真正的 world.record 调用仍须照常审计，不能豁免 unit 变量名。
+    // 扫描面保持直接成员调用；world.record?.(...) 的既有盲点未在此扩展。
+    const re = /world\.(?:record|milestone)\s*\(/g;
     let m;
     while ((m = re.exec(src)) !== null) {
       let i = m.index + m[0].length;
@@ -2631,6 +2635,22 @@ section('5l. 编年史 kind：白名单、映射表与写入方');
     }
     return out;
   }
+
+  // 同名 helper 不是 Chronicle API；同一模块中的真正写入方仍须抓住漏配与动态 kind。
+  const scannerProbe = extractKinds(stripComments(`
+    function record(world, u, text) { world.record(text, 'world'); }
+    record(world, u, 'helper'); record(world, guard, 'helper');
+    world.record('unknown', 'scanner-unknown-record');
+    world.milestone('unknown', 'scanner-unknown-milestone');
+    world.record('dynamic', u); world.milestone('dynamic', guard);
+  `));
+  check('kind 扫描区分裸同名 helper，仍扫描其内部 World 调用',
+    scannerProbe.length === 5 && scannerProbe.filter((entry) => entry.kind === 'world').length === 1);
+  check('同名 helper 不掩盖真正 World 调用的未知字面量 kind',
+    scannerProbe.filter((entry) => entry.kind && !(entry.kind in KIND_TAG)).map((entry) => entry.kind).join(',')
+      === 'scanner-unknown-record,scanner-unknown-milestone');
+  check('真正 World 调用的非字面量 u/guard 仍须进入豁免审计',
+    scannerProbe.filter((entry) => entry.kind === null).map((entry) => entry.raw).join(',') === 'u,guard');
 
   // 第二参**不是**字符串字面量的**真实调用**：静态取不出名字，但人工复核过它确实在传 kind。
   // 所以这里登记的不只是一句说明，还有**解析出来的 kind**——它要一并计入 usedKinds，

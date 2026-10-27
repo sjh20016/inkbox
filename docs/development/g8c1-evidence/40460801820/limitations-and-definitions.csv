@@ -1,0 +1,10 @@
+﻿metric,status,reason
+per_tick_history,未采集,原脚本只保留每100年采样和终局报告，没有逐拍完整状态导出
+complete_world_save,未采集,本轮Nightly没有导出终局World存档或全部实体逐字段快照
+rng_final_cursors,未采集,Nightly使用原有mulberry32会话，未打印终局全部游标
+cpu_model_and_peak_rss,未采集,现有workflow没有采集CPU型号、峰值RSS或硬件计数器
+gpu_metrics,不适用,本轮为Node无渲染模拟，不测GPU/RAF/FPS
+mortals_plus_cultivators_equals_total,口径差异,总生灵含野兽等其它物种，两类人物人数不一定相加等于总生灵
+upper_awakened,逐年观察累计,既有Nightly按年度level 0至>=1的存续人物转变累计，沿用原口径
+artifact_unique,年度边界观测,每个年度边界在各位面以同一集合检查地面和持有法宝；不宣称记录每一拍
+csv_formula_escaping,显示保护,CSV文本以=、+、-、@开头时前置单引号；原字符串在JSON和原日志完整保留
