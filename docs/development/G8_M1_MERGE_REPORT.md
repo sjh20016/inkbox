@@ -32,7 +32,7 @@ G8 共 43 个变更文件，生产代码、测试/探针、CI/打包接线、文
 | 证据 | SHA / 范围 | 实际结果 |
 | --- | --- | --- |
 | [G8 最终 PR CI](https://github.com/sjh20016/inkbox/actions/runs/40475950482) | `3bcdcf0` | Fast / Heavy 成功 |
-| [G8 合流后的 main CI](https://github.com/sjh20016/inkbox/actions/runs/40489846424) | `0604376` | 正在运行；完成后更新本表 |
+| [G8 合流后的 main CI](https://github.com/sjh20016/inkbox/actions/runs/40489846424) | `0604376` | Fast / Heavy 均完成成功；手动 Browser Smoke 按原设计 skipped |
 | [历史 Nightly](https://github.com/sjh20016/inkbox/actions/runs/40460801820) | `c3c6852` | 800 年阶段 85/85；工作流整体 **failure** |
 | [独立 Smoke 复验](./g8c1-evidence/40460801820/smoke-followup.json) | `eedb6d7` | 568/568、exit 0；仅修扫描面并补三个回归，原断言/预算保留 |
 | [历史 Edge 正式入口验收](./G8_C1_MERGE_ACCEPTANCE.md) | G8-C.1 文档记录 | Edge 156、1366×900、九组通过；本轮复用，未重跑 |
@@ -45,7 +45,7 @@ Nightly 原失败为尾随旧 Smoke 把万灵局部 `record(world,u,text)` 当�
 
 ## 4. 工程收尾
 
-活跃 README、HANDOFF、ROADMAP、BACKLOG 与测试入口同步 G8 已合流、运行期续跑已实现和人口生态修复；保留历史 C1/E0 诊断的版本背景。测试说明区分 RNG/时钟功能、正式浏览器存读档、生态 Nightly 和真实浏览器性能。`scripts/inkbox-longrun.mjs` 两处旧 11.7 年寿元注释改为当前 62.5 游戏年基础寿元及按实体 `lifespan` 结算的口径；不改实际年龄、寿元、生育概率、软上限或任何行为断言，去除行注释后的脚本文本与 main 相同。收尾提交以本文件 Git 历史为准。
+活跃 README、HANDOFF、ROADMAP、BACKLOG 与测试入口同步 G8 已合流、运行期续跑已实现和人口生态修复；保留历史 C1/E0 诊断的版本背景。测试说明区分 RNG/时钟功能、正式浏览器存读档、生态 Nightly 和真实浏览器性能。`scripts/inkbox-longrun.mjs` 两处旧 11.7 年寿元注释改为当前 62.5 游戏年基础寿元及按实体 `lifespan` 结算的口径；不改实际年龄、寿元、生育概率、软上限或任何行为断言，去除行注释后的脚本文本与 main 相同。基线与入口收尾提交为 `ccbca9d64b7306870228b0ccf12d6b6e7c95e3da`，随后仅补本报告的主干 CI 结果；最终文档提交见本文件 Git 历史。
 
 旧档缺少的历史 RNG 游标不能恢复；正式地形仍有 16 位量化误差。固定种子在第 200–300 年约 1,400 生灵且第 800 年仍持续繁衍，不等于所有种子已证明自然平衡。收尾没有新增证据大包或生产代码重构。
 
@@ -59,7 +59,7 @@ Nightly 原失败为尾随旧 Smoke 把万灵局部 `record(world,u,text)` 当�
 
 [PR #51](https://github.com/sjh20016/inkbox/pull/51) HEAD 仍为 `66f11f6d59bef4c064a5bab514c94537f5ad71b0`，独立、Draft、`CONDITIONAL`、默认关闭。本轮没有合并或修改该分支。
 
-与 G8 的实际文件交集为 `.github/workflows/ci.yml`、`package.json`、`scripts/inkbox-package.mjs`、`tests/README.md`。使用 `git merge-tree --write-tree --name-only 0604376 66f11f6` 只检查 Git 对象，没有变动任何工作树：前三项可自动合并，**`tests/README.md` 有内容冲突**。后续 S1 必须基于新 main 同步这四项，人工保留 G8 与 S1 两套测试说明，不能用一侧覆盖整个文件；本次文档收尾后须重新核对最终交集。
+与 G8 的实际文件交集为 `.github/workflows/ci.yml`、`package.json`、`scripts/inkbox-package.mjs`、`tests/README.md`。使用 `git merge-tree --write-tree --name-only 0604376 66f11f6` 只检查 Git 对象，没有变动任何工作树：前三项可自动合并，**`tests/README.md` 有内容冲突**。基于文档收尾提交 `ccbca9d` 再检查，交集与冲突结论相同。后续 S1 必须基于新 main 同步这四项，人工保留 G8 与 S1 两套测试说明，不能用一侧覆盖整个文件。
 
 后续接线须保留 G8 CPU 与正式浏览器入口、Fast/Heavy 全部原门禁、运行期模块与脚本打包清单、RNG/四时钟/UpperLife 检查点、自动/手动保存及坏档拒载、静态植被进食规则、跨界法宝 ID。继续检验 renderer 与 forestCull 切换的模拟只读性和存读档等价，不从开局低人口性能推导成熟世界性能。不得自动启用 forestCull、扩大分区对象或改写 S1 已有远近景成本结论。
 
@@ -72,6 +72,6 @@ Nightly 原失败为尾随旧 Smoke 把万灵局部 `record(world,u,text)` 当�
 
 ## 8. 最终裁决与回退
 
-G8 已正式合流；当前等待合流后 main Fast/Heavy 完成，再记录最终裁决。没有剩余生产代码开发。
+**`MERGED`：G8 已正式进入 main，合流前与合流后的关键 Fast/Heavy 门禁均通过。** 人口长期平衡与成熟世界真实设备性能属于后续独立研究，不阻断本次合流。没有剩余生产代码开发；后续纯文档收尾仍通过正常 PR 和完整既有门禁接纳。
 
 如需回退 G8，走正常 PR 执行 `git revert -m 1 06043766d937ac42e8f4a04305e256cf5b9a43ce` 并恢复完整门禁；文档收尾可单独 revert。不得 reset/强推主干或删除原分支与证据。
