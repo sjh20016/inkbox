@@ -20,6 +20,8 @@ import { ShanhaiSceneryLayer } from '../shanhai/ShanhaiSceneryLayer.js';
 import { geographyFeatures } from './GeographyFeatures.js';
 import { ScalarFieldTexture } from '../art/ScalarFieldTexture.js';
 import { SurfaceVisualFieldTexture } from '../art/SurfaceVisualFieldTexture.js';
+import { NetherRiverLayer } from '../nether/NetherRiverLayer.js';
+import { NetherEcologyLayer } from '../nether/NetherEcologyLayer.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
@@ -38,6 +40,7 @@ export class PlaneStage {
     this.productionAssetsEnabled = !!productionAssets;
     this.decorationsEnabled = !!decorations;
     this.geographyFeatures = geographyFeatures(geography);
+    this.netherLandscapeEnabled = new URLSearchParams(globalThis.location?.search || '').get('netherLandscape') !== 'off';
     this.setWorld(world, coordinates);
   }
 
@@ -84,6 +87,7 @@ export class PlaneStage {
     // V1 · 山海入画：纯装饰景观（亭 / 塔 / 牌坊 / 桥 / 舟；悬殿 / 天门 / 阵纹；断柱 / 碑林 / 魂灯 / 枯木）。
     this.scenery = new ShanhaiSceneryLayer(world, this.coordinates, this.elevation);
     this.root.add(this.scenery.group);
+    this.netherRiver = null; this.netherEcology = null;
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
     this.markers?.setGeographyFeatures?.(this.geographyFeatures);
@@ -106,6 +110,34 @@ export class PlaneStage {
   setVisible(visible) {
     this.visible = !!visible;
     this.root.visible = this.visible;
+  }
+
+  /** Presentation switch only. Candidate generation/editing stays in the lab. */
+  setNetherLandscapeEnabled(enabled) {
+    this.netherLandscapeEnabled = !!enabled;
+    this.setNetherLandscapeStyle(this.netherLandscapeStyle);
+  }
+  setNetherLandscapeStyle(active, ecology = this.netherEcologyEnabled ?? true) {
+    this.netherLandscapeStyle = !!active;
+    this.netherEcologyEnabled = !!ecology;
+    if (this.plane !== 'nether') return;
+    const enabled = this.netherLandscapeEnabled && this.netherLandscapeStyle;
+    if (enabled && !this.netherRiver && this.terrain) {
+      this.netherRiver = new NetherRiverLayer(this.world, this.coordinates, this.elevation, this.terrain.geometry);
+      this.netherEcology = new NetherEcologyLayer(this.world, this.coordinates, this.elevation);
+      this.root.add(this.netherRiver.mesh, this.netherEcology.group);
+      this.netherRiver.setRegionGeometry(this.contentGeometry || null, this.contentInside ?? true);
+      this.netherEcology.setRegionGeometry(this.contentGeometry || null, this.contentInside ?? true);
+    }
+    if (this.netherRiver) {
+      const changed = this.netherRiver.mesh.visible !== enabled;
+      this.netherRiver.mesh.visible = enabled; this.netherEcology.group.visible = enabled && this.netherEcologyEnabled;
+      if (changed && enabled) {
+        this.netherRiver.update({ x0: 0, y0: 0, x1: this.world.w - 1, y1: this.world.h - 1 });
+        this.netherEcology.update(0, true);
+      }
+    }
+    this.scenery?.setNetherRegional?.(enabled);
   }
 
   setEnvironmentAssets(library, enabled = this.productionAssetsEnabled) {
@@ -181,6 +213,8 @@ export class PlaneStage {
     this.terrain?.update(region, { height: true, type: false });
     this.terrainLines?.markDirty();
     this.water?.update(region);
+    this.netherRiver?.update(region);
+    this.netherEcology?.update(0, true);
     this.terrainSides?.update();
     if (this.entities) { this.entities.lastDerived = null; this.entities.clock = Infinity; }
     if (this.settlements) { this.settlements.lastDerived = null; this.settlements.clock = Infinity; }
@@ -234,7 +268,7 @@ export class PlaneStage {
       this.contentGeometry = content.geometry; this.contentInside = content.inside;
     }
     for (const layer of [this.terrain, this.water, this.terrainSides, this.vegetation, this.settlements,
-      this.markers, this.entities, this.decorations, this.realmArtifacts, this.scenery]) {
+      this.markers, this.entities, this.decorations, this.realmArtifacts, this.scenery, this.netherRiver, this.netherEcology]) {
       layer?.setRegionGeometry(this.contentGeometry, this.contentInside);
     }
     this.terrainLines?.setRegionGeometry(this.contentGeometry, this.contentInside);
@@ -275,6 +309,8 @@ export class PlaneStage {
     if (fireRegion) this.terrain?.update(fireRegion, { height: false, type: false, fire: true });
     const t1 = performance.now();
     if ((heightChanged || waterRegion) && this.water) this.water.update(mergeRegion(heightRegion, waterRegion));
+    if (this.netherRiver?.mesh.visible && (heightChanged || waterRegion)) this.netherRiver.update(mergeRegion(heightRegion, waterRegion));
+    this.netherRiver?.tick(dt);
     // P1：视觉场只接现有 water dirty（值只编码水深）；扩核由场自己负责。
     if (waterRegion) this.surfaceField?.update(waterRegion);
     const t2 = performance.now();
@@ -299,7 +335,9 @@ export class PlaneStage {
     this.markers?.setZoom(zoom);
     this.decorations?.update({layoutChanged:heightChanged||!!typeRegion});
     this.realmArtifacts?.update(dt,{heightChanged});
-    this.scenery?.update(dt, { heightChanged });
+    const netherTerrainChanged = this.plane === 'nether' && !!(heightChanged || typeRegion || waterRegion || dirty?.veg);
+    this.scenery?.update(dt, { heightChanged: heightChanged || netherTerrainChanged });
+    this.netherEcology?.update(dt, netherTerrainChanged);
     if (this.scenery && this.vegetation && this.scenery.zonesVersion !== this._sceneryZonesVersion) {
       this._sceneryZonesVersion = this.scenery.zonesVersion; this.vegetation.setYieldZones?.(this.scenery.zones);
     }
@@ -326,6 +364,8 @@ export class PlaneStage {
     this.decorations?.dispose();this.decorations=null;
     this.realmArtifacts?.dispose();this.realmArtifacts=null;
     this.scenery?.dispose();this.scenery=null;
+    this.netherRiver?.dispose(); this.netherRiver = null;
+    this.netherEcology?.dispose(); this.netherEcology = null;
     this.environmentMaterial?.dispose(); this.environmentMaterial = null;
     this.selectionMarker?.dispose();
     this.root.clear();

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>幽冥造境 · 坐天观井 D-N1</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./preview.css">
+  <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
+</head>
+<body>
+  <aside>
+    <a class="back" href="/inkbox.html?renderer=3d&plane=nether">坐天观井 / 返回正式山河 ↗</a>
+    <p class="eyebrow">D-N1 · 独立地貌候选</p>
+    <h1>幽冥造境</h1><p class="poem">墨骨成山 · 黄泉有岸 · 万魂栖野</p>
+    <div class="notice">此卷只塑地形，不推进世界时间。<br>新版生成与编辑尚未写入正式存档。</div>
+    <form id="generate">
+      <label>地貌<select id="version"><option value="candidate">墨骨山河 · 新版候选</option><option value="legacy">黄泉地脉 · 原版</option></select></label>
+      <div class="row"><label>画幅<select id="size"><option value="small">小景</option><option value="medium" selected>中堂</option><option value="large">长卷</option><option value="expanse">广境</option></select></label><label>世界种子<input id="seed" type="number" min="0" max="4294967295" value="20260914" required></label></div>
+      <button type="submit" class="primary">重绘此卷（清除编辑）</button>
+    </form>
+    <h2>巡境</h2>
+    <div class="views"><button data-view="whole">全卷</button><button data-view="river">黄泉河岸</button><button data-view="ridge">墨骨山岭</button><button data-view="waste">荒魂原野</button><button data-view="valley">阴雾深谷</button><button data-view="tour">山体巡游</button></div>
+    <div class="switches"><label><input id="landscape" type="checkbox" checked> 黄泉新表现</label><label><input id="ecology" type="checkbox" checked> 地域画中景</label><label><input id="lines" type="checkbox" checked> 墨骨线刻</label></div>
+    <label>笔墨<select id="inkStyle"><option value="brush">枯笔皴擦 · 新版</option><option value="line-c">原版完整线刻</option><option value="line-a">极简轮廓</option><option value="ink">焦墨积染</option></select></label>
+    <h2>试塑地脉 <span>隔离适配</span></h2>
+    <label>落笔<select id="tool"><option value="inspect">观世（只读）</option><option value="raise">抬山</option><option value="lower">压地</option><option value="flatten">平整</option><option value="river">引黄泉</option><option value="drain">收黄泉</option><option value="yin">聚阴</option><option value="clearYin">散阴</option></select></label>
+    <label class="radius">笔径 <input id="radius" type="range" min="1" max="14" value="6"><output id="radiusValue">6 格</output></label>
+    <div class="row actions"><button id="undo">撤销</button><button id="redo">重做</button><button id="cancel">回到初卷</button><button id="commit">完成试塑</button></div>
+    <p id="status" role="status">正在展开山河…</p>
+    <details><summary>地理与绘制读数</summary><pre id="stats"></pre><p>提交为 CPU 调用耗时；不等同 GPU 执行时间。</p></details>
+  </aside>
+  <main><canvas id="scene" aria-label="幽冥真实地形预览"></canvas><div class="scene-title"><span id="sceneLabel">黄泉山河</span><small>滚轮缩放 · 中键旋转 · 右键平移 · 左键落笔</small></div><div id="legend">黄泉河川　／　墨骨山岭　／　荒魂原野　／　断碑古冢　／　阴雾深谷</div></main>
+  <script type="module" src="./preview.js"></script>
+</body></html>

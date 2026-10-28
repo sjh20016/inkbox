@@ -138,6 +138,7 @@ export class ArtPass {
     } : null);
     stage.setEnvironmentArtProfile(profile);
     stage.scenery?.setEnabled(!!realmStyle?.shanhai && this.host.sceneryEnabled !== false);
+    stage.setNetherLandscapeStyle?.(!!realmStyle?.shanhai && !this.comparisonSnapshot, this.host.sceneryEnabled !== false);
     const pilot = profile?.pilots ? profile : null;
     for (const [category, layer] of [['entity', stage.entities], ['vegetation', stage.vegetation], ['building', stage.settlements]])
       layer?.setArtProfile(realmStyle ? { ...pilot, layerCategory: category,

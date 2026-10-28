@@ -1,5 +1,7 @@
 # 坐天观井 · Inkbox 1.0.0
 
+D-N1「幽冥造境」候选：Three 的幽冥黄泉河面与地域生态读取既有世界事实；`&netherLandscape=off` 回退旧表现。[独立试卷](./research/nether-landscape/index.html) 可切换原版/新版地貌、巡境和试塑。新版生成与编辑只在试卷运行，尚未接入正式存档或 G-EDIT；范围和验收见 [D-N1 交付记录](./docs/development/DN1_DELIVERY.md)。
+
 R1「山海入世」在 G5/P1 主线上接入 Opus V1→V1.3 原始美术历史：Three 默认使用低饱和三界、浮岛云层、幽冥立体线刻与自然雕刻。界面依照本地 Opus《玄门秘卷》原型，以印令、符箓、纸卷书架和摊开的命簿呈现正式游戏；创世菜单、稳定人物肖像和执伞卜算子插画接入现有处理器。启动后先显示山河菜单，可继续、创世或选择真实存档；菜单开启时暂停模拟。操作见 [玩家指引](./PLAYER_GUIDE.md)，来源、验收与保留边界见 [R1 集成记录](./docs/development/R1_ART_UI_INTEGRATION.md)。
 
 截至 2026-10-19 的 P0 合流中，G2.5 PR #26、G2.6 PR #27、G5 PR #28 已按依赖顺序通过 Merge Commit 接纳。对应合流提交为 `59cd08d`、`9ec8ec7`、`3dabf8c`，保留 main → G2.5 → G2.6 → G5 的 Git 祖先关系。
