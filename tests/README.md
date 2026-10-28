@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:dn2a` 检查叠狱候选四画幅/七种子（含 0、0xffffffff）、低频构图差异、黄泉四邻连通、三阶高程、深渊/崖缘、单源拾取、Region、闲帧及 Stage 资源所有权，加入 Fast。`npm run test:dn2a:browser` 使用既有独占 Edge/CDP，默认端口 4261，验证只读展厅、原生控件、三处地貌、三档笔墨、1440/768/430 宽视口与中广卷 A/B/C/D/D/C/B/A 成对测量。`--smoke` 仅检查启动与三处地貌，`--skip-perf` 跳过性能。`INKBOX_URL` / `INKBOX_REPORT_DIR` 可指定；GPU 串行，CPU 提交不当作 GPU 执行。见 [D-N2A 交付](../docs/development/DN2A_DELIVERY.md)。
+
 `npm run test:dn1` 检查幽冥候选四档尺寸/三种子的确定性与连通、五地域派生、隔离笔刷与有界撤销、河岸活动落点、旧档六层及生成期字段、视界裁切、渲染纯度、空闲帧零额外河岸扫描/阴雾重建和资源释放，加入 Fast。`npm run test:dn1:browser` 复用独占 Edge/CDP，默认端口4257、1440×900，验证正式游戏与独立预览、真实落笔/撤销/回滚、四档地图及同机视觉 off/on；GPU 串行，CPU 提交不冒称 GPU 执行。可设 `INKBOX_URL` / `INKBOX_REPORT_DIR`；`--smoke` 只检查预览启动。候选编辑没有模拟推进或正式存档导出；见 [D-N1 交付](../docs/development/DN1_DELIVERY.md)。
 
 > RG2（2026-10-28）：新增玩法原型的定向检查与集成边界见 [玩法扩展接入约定](../docs/development/FEATURE_EXTENSION_CONTRACT.md)。`scripts/` 中仍有大量核心、手动浏览器、GPU、开发和历史可复现实验；文件数量不构成删除依据。本次治理**未减少任何测试断言或 CI 门禁**，也未调整打包脚本清单。

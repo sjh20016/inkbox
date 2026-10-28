@@ -102,6 +102,12 @@ const LINE_BASE = { ...SHANHAI_SCENE.nether.terrain, low: '#D8D2C5', mid: '#CFC9
   shadow: '#3A3732', mist: '#EDE8DE', shade: 0.30, cun: 0.0, ridge: 0.0, line: 0.0, wash: 0.10, inkMode: 'none', inkAmt: 0,
   mistAmt: 0.22, air: 0.24, lineFill: 1 };
 export const NETHER_VARIANTS = deepFreeze({
+  // D-N2A is selected explicitly by the isolated lab; the product keeps brush.
+  strata: { scene: merge(SHANHAI_SCENE.nether, { ...NETHER_BW_SCENE, terrain: { ...LINE_BASE,
+    strata: 1, brush: 0, lineTone: 0.32, mistAmt: 0.20, air: 0.26,
+    lines: { brush: 1, contour: null,
+      ridge: 0.60, valley: 0, cliff: 0.85, hatch: 0, minLen: 10, gate: 0.35, width: 1.7,
+      kindWidth: [0.7, 0, 1, 0], dry: 0.55, color: '#302C27', alpha: 0.76 } } }) },
   brush: { scene: merge(SHANHAI_SCENE.nether, { ...NETHER_BW_SCENE, terrain: { ...LINE_BASE, brush: 1, lineTone: 0.45, mistAmt: 0.30, air: 0.36,
     lines: { brush: 1, contour: { width: 3.3, widthVar: 0.7, color: '#171512', alpha: 0.9, facing: 0.24, breakup: 0.35 },
       ridge: 1, valley: 0.45, cliff: 0.85, hatch: 0.90, minLen: 5, gate: 0.10, width: 3.8, kindWidth: [1, 0.55, 0.85, 0.50], dry: 0.65, color: '#1b1916', alpha: 0.94 } } }) },
@@ -136,7 +142,7 @@ for (const [key, v] of Object.entries(NETHER_VARIANTS)) netherVariantStyle[key] 
   pigment: { density: 0.70, saturation: 0.10 },
   ink: { structure: 0.70, silhouette: 0.40, density: 0.40, dryBrush: 0.70, feibai: 0.40, color: '#0E0D0C' },
   contrast: 1.12, atmosphere: { color: '#ECE6DA', strength: 0.10, low: -20, high: 4 },
-  ...(key === 'brush' ? { terrain: { palette: REALM_STYLES.nether.terrain.palette.map(inkGrey), rock: '#57534C' },
+  ...(key === 'brush' || key === 'strata' ? { terrain: { palette: REALM_STYLES.nether.terrain.palette.map(inkGrey), rock: '#57534C' },
     vegetation: { palette: ['#36332E', '#5E5A52', '#777065'] } } : {}),
 }));
 // `?nether=v12` = V1.2 原始幽冥（焦墨 ink，无线刻），作为对照与回退。

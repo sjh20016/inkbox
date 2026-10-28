@@ -104,6 +104,9 @@ jobs:
       - name: D-N1 幽冥地域、隔离编辑、旧档与渲染纯度
         run: npm run test:dn1
 
+      - name: D-N2A 叠狱候选、确定性与崖壁生命周期
+        run: npm run test:dn2a
+
       - name: S0 静态水域、环境事件、存档及云雾植被批次
         run: npm run test:s0
 

@@ -22,6 +22,7 @@ import { ScalarFieldTexture } from '../art/ScalarFieldTexture.js';
 import { SurfaceVisualFieldTexture } from '../art/SurfaceVisualFieldTexture.js';
 import { NetherRiverLayer } from '../nether/NetherRiverLayer.js';
 import { NetherEcologyLayer } from '../nether/NetherEcologyLayer.js';
+import { NetherCliffLayer } from '../nether/NetherCliffLayer.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
@@ -87,7 +88,7 @@ export class PlaneStage {
     // V1 · 山海入画：纯装饰景观（亭 / 塔 / 牌坊 / 桥 / 舟；悬殿 / 天门 / 阵纹；断柱 / 碑林 / 魂灯 / 枯木）。
     this.scenery = new ShanhaiSceneryLayer(world, this.coordinates, this.elevation);
     this.root.add(this.scenery.group);
-    this.netherRiver = null; this.netherEcology = null;
+    this.netherRiver = null; this.netherEcology = null; this.netherCliffs = null;
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
     this.markers?.setGeographyFeatures?.(this.geographyFeatures);
@@ -116,6 +117,16 @@ export class PlaneStage {
   setNetherLandscapeEnabled(enabled) {
     this.netherLandscapeEnabled = !!enabled;
     this.setNetherLandscapeStyle(this.netherLandscapeStyle);
+  }
+  /** Explicit lab opt-in. No candidate geometry is allocated by the product. */
+  setNetherStrataEnabled(enabled) {
+    if (this.plane !== 'nether') return;
+    if (enabled && !this.netherCliffs) {
+      this.netherCliffs = new NetherCliffLayer(this.world, this.coordinates, this.elevation);
+      this.root.add(this.netherCliffs.group);
+      this.netherCliffs.setRegionGeometry(this.contentGeometry, this.contentInside ?? true);
+    }
+    this.netherCliffs?.setEnabled(enabled);
   }
   setNetherLandscapeStyle(active, ecology = this.netherEcologyEnabled ?? true) {
     this.netherLandscapeStyle = !!active;
@@ -215,6 +226,7 @@ export class PlaneStage {
     this.water?.update(region);
     this.netherRiver?.update(region);
     this.netherEcology?.update(0, true);
+    this.netherCliffs?.rebuild();
     this.terrainSides?.update();
     if (this.entities) { this.entities.lastDerived = null; this.entities.clock = Infinity; }
     if (this.settlements) { this.settlements.lastDerived = null; this.settlements.clock = Infinity; }
@@ -268,7 +280,7 @@ export class PlaneStage {
       this.contentGeometry = content.geometry; this.contentInside = content.inside;
     }
     for (const layer of [this.terrain, this.water, this.terrainSides, this.vegetation, this.settlements,
-      this.markers, this.entities, this.decorations, this.realmArtifacts, this.scenery, this.netherRiver, this.netherEcology]) {
+      this.markers, this.entities, this.decorations, this.realmArtifacts, this.scenery, this.netherRiver, this.netherEcology, this.netherCliffs]) {
       layer?.setRegionGeometry(this.contentGeometry, this.contentInside);
     }
     this.terrainLines?.setRegionGeometry(this.contentGeometry, this.contentInside);
@@ -305,6 +317,7 @@ export class PlaneStage {
     if (heightRegion) this.terrain?.update(heightRegion, { height: true, type: false });
     if (heightRegion) this.terrainLines?.markDirty();
     if(heightRegion)this.terrainSides?.update(heightRegion);
+    if(heightRegion)this.netherCliffs?.rebuild();
     if (typeRegion) this.terrain?.update(typeRegion, { height: false, type: true });
     if (fireRegion) this.terrain?.update(fireRegion, { height: false, type: false, fire: true });
     const t1 = performance.now();
@@ -366,6 +379,7 @@ export class PlaneStage {
     this.scenery?.dispose();this.scenery=null;
     this.netherRiver?.dispose(); this.netherRiver = null;
     this.netherEcology?.dispose(); this.netherEcology = null;
+    this.netherCliffs?.dispose(); this.netherCliffs = null;
     this.environmentMaterial?.dispose(); this.environmentMaterial = null;
     this.selectionMarker?.dispose();
     this.root.clear();
