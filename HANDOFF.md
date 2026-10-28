@@ -1,5 +1,12 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 2026-10-28 · RG2 轻量治理（状态与扩展约定）
+
+已核对正式 `main@5746e4e`：G8 #52/#53 与 E2-Lite #54 已合并，最新主干 Fast/Heavy 及定时 Nightly 均成功；Browser Smoke 仍属手动项。此 SHA 仅为治理前快照。G6 #30、山海遗迹 #37、万象拾趣 #39、R3D-S1 #51 保持独立，G2/G3 旧研究 PR 仅保留可追溯性。请从 [RG2 当前状态](./docs/development/RG2_CURRENT_STATE.md) 判别候选，从 [玩法扩展约定](./docs/development/FEATURE_EXTENSION_CONTRACT.md) 接入独立玩法；正文后续各阶段条目是当时的历史快照，不代表当前尚未合并。
+
+本轮仅整理开发说明与治理边界，没有修改 `src/`、`package.json`、CI/打包清单或世界规则；不以文档整理宣称完成模块重构。
+
+
 ## 2026-10-27 · G8-M1 岁序归一已合流
 
 PR #52 已以 `06043766d937ac42e8f4a04305e256cf5b9a43ce` 合入 main。新档保存运行期 RNG 与时钟以续跑；旧档无法恢复未保存的历史游标，地形仍为 16 位有损量化。人口生态修复已入主线：固定种子 800 年终局 1400 生灵是有限样本，长期平衡和真实成熟世界性能仍待研究。原 Nightly 的 800 年阶段通过，整体因尾随旧 Smoke 扫描误报失败，修复后独立 Smoke 通过；详情见 [合流记录](./docs/development/G8_M1_MERGE_REPORT.md) 与 [成熟世界基线](./docs/development/G8_MATURE_WORLD_BASELINE.md)。以下为各阶段历史快照。

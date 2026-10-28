@@ -1,37 +1,30 @@
-# Inkbox 开发入口
+# Inkbox 开发入口（RG2 · 2026-10-28）
 
-1. 先读 README.md、HANDOFF.md 顶部、ROADMAP.md、BACKLOG.md。
-2. 当前状态以这些入口为准；已清理的 STATUS.md 与阶段报告仅从固定历史提交 e1e55039 读取。
-3. 分支与审计见 docs/development/REPOSITORY_WORKFLOW.md。
-4. 日期快照会过期，施工前重新核对 Git 与 PR / Actions。
-5. main 是唯一正式产品线；G1 已合并。
-6. G2-R1 / A1 / G2.4-C 已合并；G2.6 依赖 G2.5 Draft #26，功能接纳不等于性能通过。
-7. G3 是成本未过的研究，不能当正式功能开发。
-8. B 数值系统是独立历史，不普通合并或替换正式参数。
-9. 从任务指定已核查基线建隔离 worktree 或克隆。
-10. 不覆盖既有修改、未跟踪材料、其他研究 worktree。
-11. 合并、关闭 PR、删除分支 / 证据须在当前任务授权内。
-12. 不强推、重写历史、批量清理分支或自动合并 main。
-13. 唯一活跃产品源码为 src/inkbox。
-14. 模块看 ARCHITECTURE.md，接口以源码与对应契约为准。
-15. 页面入口 inkbox.html；index.html / game.html 为跳转。
-16. 默认 Canvas；Three 用 ?renderer=3d。
-17. npm run dev 默认端口 4180。
-18. 多工作区使用不同端口、各自拥有的进程。
-19. 推荐 Node 24 / npm ci，对齐 CI。
-20. 测试以 tests/README.md 与实际 workflow 为准。
-21. 文档查差异、链接、状态、白名单和必要包审计。
-22. UI 查受影响交互，必要时双 renderer / 关键分辨率。
-23. 模拟 / 存档保留 Fast、相关 Heavy、RNG / 保存等价。
-24. 3D 性能按对应契约与 GPU 预算验证，GPU 串行。
-25. 正式集成保留现有完整发布门禁。
-26. npm test 只代表 core，不代表全部门禁。
-27. Fast / Heavy 均需通过；失败 / 跳过 / 未完成如实报告。
-28. 不删除断言、放宽预算或用旧成功掩盖新失败。
-29. 打包是显式清单；文档链接变动后查 build / test:package。
-30. 新开发文档不自动入运行包，包外引用由打包器标明。
-31. 不擅改 World / Sim / RNG / 保存 / Canvas / Three 行为。
-32. 历史材料在 Git 基线 e1e55039；B2 重跑独立授权。
-33. 清理仅限本任务可再生输出，保留用途不明的证据。
-34. 只清理由本任务创建且归属明确的服务器 / 浏览器。
-35. 交付列基线 / HEAD、文件原因、命令退出码与回滚方法。
+> 本页陈述**当前开发规则**。治理取证基线为 `main@5746e4e`；SHA 是历史快照，不是永久施工基线。每次开工必须重新核对 GitHub main、PR、CI 和对应源码。
+
+## 一、正式产品与候选
+
+- 唯一正式产品分支：`main`；唯一活跃源码：`src/inkbox/`；正式页面 `inkbox.html`，默认 Canvas，`?renderer=3d` 启用 Three。
+- 当前主线已经包含 G1/G2、R1/S0、E0/C1/P0/G7、W0.1/T0 的 WT-I1 合流、G8 运行期与人口修复、E2-Lite 观井手札及行愿。实际合流状态以 GitHub PR 与最新源码为准。
+- 未合流候选：G6 血仇 #30、山海遗迹 #37、万象拾趣 #39、R3D-S1 植被剔除 #51。不得将其当作 main 功能；#51 默认关闭且有远景成本与合并冲突。
+- G2/G3 早期开放研究 PR 是历史证据/阻塞实验，不意味着应按原候选重新合并。独立 `B数值系统` 无共同 Git 祖先，不能普通合并或用其参数覆盖主线。
+- 详细分类与遗留 Issue：[`RG2_CURRENT_STATE.md`](./docs/development/RG2_CURRENT_STATE.md)。阶段时间线见 `HANDOFF.md`；旧 `REPOSITORY_WORKFLOW.md` 是 10 月 17 日历史审计，不是实时 PR 清单。
+
+## 二、开发边界
+
+1. 开工先核对远端最新 HEAD、工作区已有改动和正在进行的候选；从确定的 main SHA 创建隔离分支/worktree。
+2. 先读 `README.md`、`HANDOFF.md` 顶部、`ROADMAP.md`、`BACKLOG.md`、`ARCHITECTURE.md` 和 `tests/README.md`；源码优先于阶段报告。
+3. 新玩法原型先遵循 [`FEATURE_EXTENSION_CONTRACT.md`](./docs/development/FEATURE_EXTENSION_CONTRACT.md)，复用已有模拟/观察/存档机制；不要为单个原型新建全局事件总线、第二套时钟或第二个世界事实源。
+4. 玩家可编辑词条、人物经历、遗物和奇遇可以独立生产，但正式状态写入、RNG 流、低频节拍、身份与存档迁移由主线集成统一裁决。
+5. UI、Canvas、Three 只呈现正式世界事实；不可为了视觉证据或测试结果伪造世界进展。
+6. 不擅自变更世界规则、人口数值、随机签序、存档格式、渲染回退选项；不得让实验默认开启。
+7. 多工作区分别使用端口和报告目录；GPU 实测串行，只清理归属明确的本任务进程与临时物。
+
+## 三、验证、交付与仓库操作
+
+1. Node 24 / `npm ci`；`npm run dev` 默认端口 4180。`npm test` 仅是核心入口，不是完整门禁。
+2. 小改动先做相应定向检查，正式集成必须通过现有 Fast/Heavy；浏览器手动 Smoke、真实 GPU 和 800 年 Nightly 依据改动风险独立验收。参照 `tests/README.md`。
+3. 不删除有效断言、不放宽预算、不用旧 SHA 的成功结果替代当前版本；失败、跳过和未测均须明记。
+4. 打包使用显式清单；涉及入口或文档链接时核查 `build` / `test:package`。
+5. 合并、关闭 PR、删除分支/关键证据、修改主干保护属于独立的有影响操作；需按任务范围逐项确认。禁止强推和重写历史。
+6. 每次交付写明基线/HEAD、文件清单、行为边界、实际验收与回退路径。历史资料从 Git 固定提交追溯，不反复搬回根目录。

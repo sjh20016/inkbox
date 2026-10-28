@@ -1,5 +1,8 @@
 # Inkbox 测试入口与脚本分层
 
+> RG2（2026-10-28）：新增玩法原型的定向检查与集成边界见 [玩法扩展接入约定](../docs/development/FEATURE_EXTENSION_CONTRACT.md)。`scripts/` 中仍有大量核心、手动浏览器、GPU、开发和历史可复现实验；文件数量不构成删除依据。本次治理**未减少任何测试断言或 CI 门禁**，也未调整打包脚本清单。
+
+
 `npm run test:e2-lite` 检查三类真实回执、Canvas/Three 完整笔划与取消、两类只读行愿、本世身份/期限、v11 兼容和坏块拒载、观察开关的世界事实与 RNG 等价；加入 Fast，不削减原 Fast/Heavy。
 
 `npm run test:e2-lite:browser` 使用现有隔离 Edge/CDP，通过正式创世菜单与原生鼠标操作验证手札、真实人物/聚落立愿、回执、十年结算、命名槽/自动保存及非法新块导入；Canvas 1366×768、Three 1280×720，默认端口4243。`INKBOX_URL`、`INKBOX_PORT`、`INKBOX_REPORT_DIR` 可指定；`INKBOX_RENDERER=canvas` 或 `3d` 可单独复验。时间以原 `advanceDays` 加速，未伪造人口或结局；软件光栅只作功能验收，不作 GPU 性能结论。范围、截图和限制见 [E2-Lite 交付说明](../docs/development/E2_LITE_DELIVERY.md)。
