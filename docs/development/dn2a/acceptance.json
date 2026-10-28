@@ -1,0 +1,2011 @@
+{
+  "pass": true,
+  "checks": [
+    {
+      "name": "page identity, meaningful content, WebGL and overlay",
+      "pass": true,
+      "evidence": {
+        "title": "叠狱成形 · 坐天观井 D-N2A",
+        "url": "http://127.0.0.1:4261/research/nether-strata/index.html",
+        "content": 338,
+        "overlay": false,
+        "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "viewport": [
+          1440,
+          900
+        ],
+        "metrics": {
+          "seed": 20260914,
+          "worldSeed": 1332771936,
+          "version": "strata",
+          "candidateVersion": "dn2a-strata-1",
+          "family": "裂谷纵贯",
+          "size": [
+            288,
+            180
+          ],
+          "day": 0,
+          "style": "strata",
+          "cliffsEnabled": true,
+          "frames": 46,
+          "updateP95": 4.099999904632568,
+          "submitP95": 3.5,
+          "rafP95": 27.800000000000182,
+          "over50": 2,
+          "draws": 62,
+          "triangles": 136676,
+          "memory": {
+            "geometries": 27,
+            "textures": 7
+          },
+          "cliffs": {
+            "quads": 3853,
+            "triangles": 7706,
+            "segments": 991,
+            "rebuilds": 1,
+            "families": {
+              "strata": 385,
+              "fracture": 3301,
+              "abyss": 167
+            }
+          },
+          "lines": {
+            "builds": 1,
+            "segments": 5187,
+            "lastBuildMs": 16.800000429153442,
+            "lastWallMs": 874.1000001430511,
+            "lastMaxSliceMs": 3.1000001430511475,
+            "chains": 49
+          },
+          "river": {
+            "quads": 1902,
+            "triangles": 3830,
+            "rebuilds": 1,
+            "sampledCells": 51373
+          },
+          "camera": {
+            "zoom": 1.18,
+            "position": [
+              195.87622700305252,
+              213.617798326228,
+              261.1683026707367
+            ],
+            "target": [
+              0,
+              4,
+              0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "native landmark plateau",
+      "pass": true,
+      "evidence": {
+        "landmark": "plateau",
+        "status": "断狱台地 · 格 101, 42。可选近察，或中键旋转观察断面。",
+        "metrics": {
+          "seed": 20260914,
+          "worldSeed": 1332771936,
+          "version": "strata",
+          "candidateVersion": "dn2a-strata-1",
+          "family": "裂谷纵贯",
+          "size": [
+            288,
+            180
+          ],
+          "day": 0,
+          "style": "strata",
+          "cliffsEnabled": true,
+          "frames": 96,
+          "updateP95": 3.700000047683716,
+          "submitP95": 1.2999999523162842,
+          "rafP95": 27.800000000000182,
+          "over50": 2,
+          "draws": 22,
+          "triangles": 133148,
+          "memory": {
+            "geometries": 27,
+            "textures": 7
+          },
+          "cliffs": {
+            "quads": 3853,
+            "triangles": 7706,
+            "segments": 991,
+            "rebuilds": 1,
+            "families": {
+              "strata": 385,
+              "fracture": 3301,
+              "abyss": 167
+            }
+          },
+          "lines": {
+            "builds": 1,
+            "segments": 5187,
+            "lastBuildMs": 16.800000429153442,
+            "lastWallMs": 874.1000001430511,
+            "lastMaxSliceMs": 3.1000001430511475,
+            "chains": 49
+          },
+          "river": {
+            "quads": 1902,
+            "triangles": 3830,
+            "rebuilds": 1,
+            "sampledCells": 51373
+          },
+          "camera": {
+            "zoom": 2.8,
+            "position": [
+              162.80068262300128,
+              234.48761305548567,
+              226.23424349733517
+            ],
+            "target": [
+              -42.5,
+              51.62921524047853,
+              -47.5
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "native landmark cliff",
+      "pass": true,
+      "evidence": {
+        "landmark": "cliff",
+        "status": "墨骨绝壁 · 格 73, 83。可选近察，或中键旋转观察断面。",
+        "metrics": {
+          "seed": 20260914,
+          "worldSeed": 1332771936,
+          "version": "strata",
+          "candidateVersion": "dn2a-strata-1",
+          "family": "裂谷纵贯",
+          "size": [
+            288,
+            180
+          ],
+          "day": 0,
+          "style": "strata",
+          "cliffsEnabled": true,
+          "frames": 164,
+          "updateP95": 1.2000000476837158,
+          "submitP95": 1.0999999046325684,
+          "rafP95": 22.40000000000009,
+          "over50": 2,
+          "draws": 22,
+          "triangles": 133148,
+          "memory": {
+            "geometries": 27,
+            "textures": 7
+          },
+          "cliffs": {
+            "quads": 3853,
+            "triangles": 7706,
+            "segments": 991,
+            "rebuilds": 1,
+            "families": {
+              "strata": 385,
+              "fracture": 3301,
+              "abyss": 167
+            }
+          },
+          "lines": {
+            "builds": 1,
+            "segments": 5187,
+            "lastBuildMs": 16.800000429153442,
+            "lastWallMs": 874.1000001430511,
+            "lastMaxSliceMs": 3.1000001430511475,
+            "chains": 49
+          },
+          "river": {
+            "quads": 1902,
+            "triangles": 3830,
+            "rebuilds": 1,
+            "sampledCells": 51373
+          },
+          "camera": {
+            "zoom": 5.7,
+            "position": [
+              140.02757671916353,
+              218.0168834400823,
+              274.20343562555144
+            ],
+            "target": [
+              -70.5,
+              52.488273620605476,
+              -6.500000000000001
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "native landmark abyss",
+      "pass": true,
+      "evidence": {
+        "landmark": "abyss",
+        "status": "无间深渊 · 格 130, 44。可选近察，或中键旋转观察断面。",
+        "metrics": {
+          "seed": 20260914,
+          "worldSeed": 1332771936,
+          "version": "strata",
+          "candidateVersion": "dn2a-strata-1",
+          "family": "裂谷纵贯",
+          "size": [
+            288,
+            180
+          ],
+          "day": 0,
+          "style": "strata",
+          "cliffsEnabled": true,
+          "frames": 229,
+          "updateP95": 1.1000001430511475,
+          "submitP95": 1,
+          "rafP95": 22.399999999999636,
+          "over50": 2,
+          "draws": 21,
+          "triangles": 133146,
+          "memory": {
+            "geometries": 27,
+            "textures": 7
+          },
+          "cliffs": {
+            "quads": 3853,
+            "triangles": 7706,
+            "segments": 991,
+            "rebuilds": 1,
+            "families": {
+              "strata": 385,
+              "fracture": 3301,
+              "abyss": 167
+            }
+          },
+          "lines": {
+            "builds": 1,
+            "segments": 5187,
+            "lastBuildMs": 16.800000429153442,
+            "lastWallMs": 874.1000001430511,
+            "lastMaxSliceMs": 3.1000001430511475,
+            "chains": 49
+          },
+          "river": {
+            "quads": 1902,
+            "triangles": 3830,
+            "rebuilds": 1,
+            "sampledCells": 51373
+          },
+          "camera": {
+            "zoom": 4,
+            "position": [
+              98.09988558861149,
+              331.3503673052207,
+              103.29984745148207
+            ],
+            "target": [
+              -13.499999999999998,
+              -9.119999885559082,
+              -45.5
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "cliff off/on preserves world, topology and idle cache",
+      "pass": true,
+      "evidence": {
+        "seed": 20260914,
+        "worldSeed": 1332771936,
+        "version": "strata",
+        "candidateVersion": "dn2a-strata-1",
+        "family": "裂谷纵贯",
+        "size": [
+          288,
+          180
+        ],
+        "day": 0,
+        "style": "strata",
+        "cliffsEnabled": true,
+        "frames": 42,
+        "updateP95": 0.9000000953674316,
+        "submitP95": 0.5,
+        "rafP95": 22.300000000000182,
+        "over50": 0,
+        "draws": 21,
+        "triangles": 133146,
+        "memory": {
+          "geometries": 27,
+          "textures": 7
+        },
+        "cliffs": {
+          "quads": 3853,
+          "triangles": 7706,
+          "segments": 991,
+          "rebuilds": 1,
+          "families": {
+            "strata": 385,
+            "fracture": 3301,
+            "abyss": 167
+          }
+        },
+        "lines": {
+          "builds": 1,
+          "segments": 5187,
+          "lastBuildMs": 16.800000429153442,
+          "lastWallMs": 874.1000001430511,
+          "lastMaxSliceMs": 3.1000001430511475,
+          "chains": 49
+        },
+        "river": {
+          "quads": 1902,
+          "triangles": 3830,
+          "rebuilds": 1,
+          "sampledCells": 51373
+        },
+        "camera": {
+          "zoom": 4,
+          "position": [
+            98.09988558861149,
+            331.3503673052207,
+            103.29984745148207
+          ],
+          "target": [
+            -13.499999999999998,
+            -9.119999885559082,
+            -45.5
+          ]
+        }
+      }
+    },
+    {
+      "name": "same camera D-N1 brush / strata / line drawing",
+      "pass": true,
+      "evidence": true
+    },
+    {
+      "name": "rendered size small",
+      "pass": true,
+      "evidence": {
+        "seed": 20260914,
+        "worldSeed": 1332771936,
+        "version": "strata",
+        "candidateVersion": "dn2a-strata-1",
+        "family": "裂谷纵贯",
+        "size": [
+          200,
+          128
+        ],
+        "day": 0,
+        "style": "strata",
+        "cliffsEnabled": true,
+        "frames": 53,
+        "updateP95": 3.299999952316284,
+        "submitP95": 0.8000001907348633,
+        "rafP95": 22.19999999999891,
+        "over50": 1,
+        "draws": 60,
+        "triangles": 75558,
+        "memory": {
+          "geometries": 26,
+          "textures": 7
+        },
+        "cliffs": {
+          "quads": 2500,
+          "triangles": 5000,
+          "segments": 558,
+          "rebuilds": 1,
+          "families": {
+            "strata": 6,
+            "fracture": 2357,
+            "abyss": 137
+          }
+        },
+        "lines": {
+          "builds": 1,
+          "segments": 3146,
+          "lastBuildMs": 11.5,
+          "lastWallMs": 115.29999995231628,
+          "lastMaxSliceMs": 3.5,
+          "chains": 34
+        },
+        "river": {
+          "quads": 1323,
+          "triangles": 2674,
+          "rebuilds": 1,
+          "sampledCells": 25273
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "name": "rendered size large",
+      "pass": true,
+      "evidence": {
+        "seed": 20260914,
+        "worldSeed": 1332771936,
+        "version": "strata",
+        "candidateVersion": "dn2a-strata-1",
+        "family": "裂谷纵贯",
+        "size": [
+          384,
+          240
+        ],
+        "day": 0,
+        "style": "strata",
+        "cliffsEnabled": true,
+        "frames": 45,
+        "updateP95": 3.9000000953674316,
+        "submitP95": 0.9000000953674316,
+        "rafP95": 22.30000000000109,
+        "over50": 2,
+        "draws": 55,
+        "triangles": 226058,
+        "memory": {
+          "geometries": 25,
+          "textures": 7
+        },
+        "cliffs": {
+          "quads": 5348,
+          "triangles": 10696,
+          "segments": 1569,
+          "rebuilds": 1,
+          "families": {
+            "strata": 873,
+            "fracture": 4262,
+            "abyss": 213
+          }
+        },
+        "lines": {
+          "builds": 1,
+          "segments": 7572,
+          "lastBuildMs": 22.999999284744263,
+          "lastWallMs": 169,
+          "lastMaxSliceMs": 3.0999999046325684,
+          "chains": 64
+        },
+        "river": {
+          "quads": 2571,
+          "triangles": 5166,
+          "rebuilds": 1,
+          "sampledCells": 91537
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "name": "rendered size expanse",
+      "pass": true,
+      "evidence": {
+        "seed": 20260914,
+        "worldSeed": 1332771936,
+        "version": "strata",
+        "candidateVersion": "dn2a-strata-1",
+        "family": "裂谷纵贯",
+        "size": [
+          512,
+          320
+        ],
+        "day": 0,
+        "style": "strata",
+        "cliffsEnabled": true,
+        "frames": 37,
+        "updateP95": 4.5,
+        "submitP95": 54.5,
+        "rafP95": 55.49999999999818,
+        "over50": 2,
+        "draws": 56,
+        "triangles": 378714,
+        "memory": {
+          "geometries": 25,
+          "textures": 7
+        },
+        "cliffs": {
+          "quads": 6820,
+          "triangles": 13640,
+          "segments": 2092,
+          "rebuilds": 1,
+          "families": {
+            "strata": 1200,
+            "fracture": 5338,
+            "abyss": 282
+          }
+        },
+        "lines": {
+          "builds": 1,
+          "segments": 9648,
+          "lastBuildMs": 26.700000047683716,
+          "lastWallMs": 243.10000014305115,
+          "lastMaxSliceMs": 3.1000001430511475,
+          "chains": 76
+        },
+        "river": {
+          "quads": 3413,
+          "triangles": 6850,
+          "rebuilds": 1,
+          "sampledCells": 163009
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "name": "narrow layout, native camera controls and seed zero",
+      "pass": true,
+      "evidence": true
+    },
+    {
+      "name": "repeated Host replacement has bounded resources",
+      "pass": true,
+      "evidence": {
+        "first": {
+          "geometries": 27,
+          "textures": 7
+        },
+        "last": {
+          "geometries": 27,
+          "textures": 7
+        }
+      }
+    },
+    {
+      "name": "Stage disposal releases owned cliff resources",
+      "pass": true,
+      "evidence": {
+        "geometry": 1,
+        "material": 1,
+        "rootChildren": 0
+      }
+    }
+  ],
+  "screenshots": [
+    "dn2a/dn1-full-20260914.jpg",
+    "dn2a/strata-full-20260914.jpg",
+    "dn2a/strata-full-42.jpg",
+    "dn2a/strata-plateau.jpg",
+    "dn2a/strata-cliff.jpg",
+    "dn2a/strata-abyss.jpg",
+    "dn2a/same-camera-brush.jpg",
+    "dn2a/same-camera-strata.jpg",
+    "dn2a/strata-expanse.jpg"
+  ],
+  "performance": [
+    {
+      "mode": "A",
+      "size": [
+        288,
+        180
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "dn1",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "dn1",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": false,
+      "frames": 139,
+      "updateP95": 1,
+      "submitP95": 0.7999999523162842,
+      "rafP95": 16.799999999999272,
+      "over50": 0,
+      "draws": 69,
+      "triangles": 231090,
+      "memory": {
+        "geometries": 26,
+        "textures": 7
+      },
+      "cliffs": null,
+      "lines": {
+        "builds": 1,
+        "segments": 4793,
+        "lastBuildMs": 18.200000047683716,
+        "lastWallMs": 286.39999985694885,
+        "lastMaxSliceMs": 4,
+        "chains": 553
+      },
+      "river": {
+        "quads": 1960,
+        "triangles": 3940,
+        "rebuilds": 1,
+        "sampledCells": 51373
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "B",
+      "size": [
+        288,
+        180
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": false,
+      "frames": 129,
+      "updateP95": 1,
+      "submitP95": 0.9000000953674316,
+      "rafP95": 22.200000000000728,
+      "over50": 0,
+      "draws": 62,
+      "triangles": 246886,
+      "memory": {
+        "geometries": 26,
+        "textures": 7
+      },
+      "cliffs": null,
+      "lines": {
+        "builds": 1,
+        "segments": 12772,
+        "lastBuildMs": 21.299999952316284,
+        "lastWallMs": 291.10000014305115,
+        "lastMaxSliceMs": 3.5,
+        "chains": 872
+      },
+      "river": {
+        "quads": 1902,
+        "triangles": 3830,
+        "rebuilds": 1,
+        "sampledCells": 51373
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "C",
+      "size": [
+        288,
+        180
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": true,
+      "frames": 133,
+      "updateP95": 0.9000000953674316,
+      "submitP95": 1,
+      "rafP95": 22.299999999995634,
+      "over50": 0,
+      "draws": 63,
+      "triangles": 254592,
+      "memory": {
+        "geometries": 27,
+        "textures": 7
+      },
+      "cliffs": {
+        "quads": 3853,
+        "triangles": 7706,
+        "segments": 991,
+        "rebuilds": 1,
+        "families": {
+          "strata": 385,
+          "fracture": 3301,
+          "abyss": 167
+        }
+      },
+      "lines": {
+        "builds": 1,
+        "segments": 12772,
+        "lastBuildMs": 18.50000023841858,
+        "lastWallMs": 271,
+        "lastMaxSliceMs": 3,
+        "chains": 872
+      },
+      "river": {
+        "quads": 1902,
+        "triangles": 3830,
+        "rebuilds": 1,
+        "sampledCells": 51373
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "D",
+      "size": [
+        288,
+        180
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "strata",
+      "cliffsEnabled": true,
+      "frames": 132,
+      "updateP95": 0.8000001907348633,
+      "submitP95": 0.7000000476837158,
+      "rafP95": 16.80000000000291,
+      "over50": 0,
+      "draws": 62,
+      "triangles": 136676,
+      "memory": {
+        "geometries": 27,
+        "textures": 7
+      },
+      "cliffs": {
+        "quads": 3853,
+        "triangles": 7706,
+        "segments": 991,
+        "rebuilds": 1,
+        "families": {
+          "strata": 385,
+          "fracture": 3301,
+          "abyss": 167
+        }
+      },
+      "lines": {
+        "builds": 1,
+        "segments": 5187,
+        "lastBuildMs": 13.399999618530273,
+        "lastWallMs": 122.30000019073486,
+        "lastMaxSliceMs": 3,
+        "chains": 49
+      },
+      "river": {
+        "quads": 1902,
+        "triangles": 3830,
+        "rebuilds": 1,
+        "sampledCells": 51373
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "D",
+      "size": [
+        288,
+        180
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "strata",
+      "cliffsEnabled": true,
+      "frames": 127,
+      "updateP95": 0.7999999523162842,
+      "submitP95": 0.6000001430511475,
+      "rafP95": 16.80000000000291,
+      "over50": 0,
+      "draws": 62,
+      "triangles": 136676,
+      "memory": {
+        "geometries": 27,
+        "textures": 7
+      },
+      "cliffs": {
+        "quads": 3853,
+        "triangles": 7706,
+        "segments": 991,
+        "rebuilds": 1,
+        "families": {
+          "strata": 385,
+          "fracture": 3301,
+          "abyss": 167
+        }
+      },
+      "lines": {
+        "builds": 1,
+        "segments": 5187,
+        "lastBuildMs": 15.600000143051147,
+        "lastWallMs": 124.09999990463257,
+        "lastMaxSliceMs": 7,
+        "chains": 49
+      },
+      "river": {
+        "quads": 1902,
+        "triangles": 3830,
+        "rebuilds": 1,
+        "sampledCells": 51373
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "C",
+      "size": [
+        288,
+        180
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": true,
+      "frames": 133,
+      "updateP95": 0.8000001907348633,
+      "submitP95": 0.7000000476837158,
+      "rafP95": 16.80000000000291,
+      "over50": 0,
+      "draws": 63,
+      "triangles": 254592,
+      "memory": {
+        "geometries": 27,
+        "textures": 7
+      },
+      "cliffs": {
+        "quads": 3853,
+        "triangles": 7706,
+        "segments": 991,
+        "rebuilds": 1,
+        "families": {
+          "strata": 385,
+          "fracture": 3301,
+          "abyss": 167
+        }
+      },
+      "lines": {
+        "builds": 1,
+        "segments": 12772,
+        "lastBuildMs": 18.899999618530273,
+        "lastWallMs": 243.09999990463257,
+        "lastMaxSliceMs": 3.1999998092651367,
+        "chains": 872
+      },
+      "river": {
+        "quads": 1902,
+        "triangles": 3830,
+        "rebuilds": 1,
+        "sampledCells": 51373
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "B",
+      "size": [
+        288,
+        180
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": false,
+      "frames": 137,
+      "updateP95": 0.7999999523162842,
+      "submitP95": 0.6999998092651367,
+      "rafP95": 16.80000000000291,
+      "over50": 0,
+      "draws": 62,
+      "triangles": 246886,
+      "memory": {
+        "geometries": 26,
+        "textures": 7
+      },
+      "cliffs": null,
+      "lines": {
+        "builds": 1,
+        "segments": 12772,
+        "lastBuildMs": 16.799999237060547,
+        "lastWallMs": 216.29999995231628,
+        "lastMaxSliceMs": 3.299999952316284,
+        "chains": 872
+      },
+      "river": {
+        "quads": 1902,
+        "triangles": 3830,
+        "rebuilds": 1,
+        "sampledCells": 51373
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "A",
+      "size": [
+        288,
+        180
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "dn1",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "dn1",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": false,
+      "frames": 138,
+      "updateP95": 0.7000000476837158,
+      "submitP95": 0.7000000476837158,
+      "rafP95": 16.80000000000291,
+      "over50": 0,
+      "draws": 69,
+      "triangles": 231090,
+      "memory": {
+        "geometries": 26,
+        "textures": 7
+      },
+      "cliffs": null,
+      "lines": {
+        "builds": 1,
+        "segments": 4793,
+        "lastBuildMs": 9.399999618530273,
+        "lastWallMs": 197.5,
+        "lastMaxSliceMs": 3,
+        "chains": 553
+      },
+      "river": {
+        "quads": 1960,
+        "triangles": 3940,
+        "rebuilds": 1,
+        "sampledCells": 51373
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "A",
+      "size": [
+        512,
+        320
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "dn1",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "dn1",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": false,
+      "frames": 128,
+      "updateP95": 1.6000001430511475,
+      "submitP95": 0.6000001430511475,
+      "rafP95": 22.30000000000291,
+      "over50": 0,
+      "draws": 56,
+      "triangles": 680506,
+      "memory": {
+        "geometries": 24,
+        "textures": 7
+      },
+      "cliffs": null,
+      "lines": {
+        "builds": 1,
+        "segments": 4239,
+        "lastBuildMs": 18.299999952316284,
+        "lastWallMs": 276.2999999523163,
+        "lastMaxSliceMs": 3,
+        "chains": 560
+      },
+      "river": {
+        "quads": 3520,
+        "triangles": 7060,
+        "rebuilds": 1,
+        "sampledCells": 163009
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "B",
+      "size": [
+        512,
+        320
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": false,
+      "frames": 122,
+      "updateP95": 1.5,
+      "submitP95": 0.6000001430511475,
+      "rafP95": 27.89999999999418,
+      "over50": 0,
+      "draws": 56,
+      "triangles": 718084,
+      "memory": {
+        "geometries": 24,
+        "textures": 7
+      },
+      "cliffs": null,
+      "lines": {
+        "builds": 1,
+        "segments": 23144,
+        "lastBuildMs": 33.99999928474426,
+        "lastWallMs": 409.39999985694885,
+        "lastMaxSliceMs": 3.0999999046325684,
+        "chains": 1598
+      },
+      "river": {
+        "quads": 3413,
+        "triangles": 6850,
+        "rebuilds": 1,
+        "sampledCells": 163009
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "C",
+      "size": [
+        512,
+        320
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": true,
+      "frames": 126,
+      "updateP95": 1.5999999046325684,
+      "submitP95": 0.6000001430511475,
+      "rafP95": 27.80000000000291,
+      "over50": 0,
+      "draws": 57,
+      "triangles": 731724,
+      "memory": {
+        "geometries": 25,
+        "textures": 7
+      },
+      "cliffs": {
+        "quads": 6820,
+        "triangles": 13640,
+        "segments": 2092,
+        "rebuilds": 1,
+        "families": {
+          "strata": 1200,
+          "fracture": 5338,
+          "abyss": 282
+        }
+      },
+      "lines": {
+        "builds": 1,
+        "segments": 23144,
+        "lastBuildMs": 29.59999990463257,
+        "lastWallMs": 371.2000000476837,
+        "lastMaxSliceMs": 3.0999999046325684,
+        "chains": 1598
+      },
+      "river": {
+        "quads": 3413,
+        "triangles": 6850,
+        "rebuilds": 1,
+        "sampledCells": 163009
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "D",
+      "size": [
+        512,
+        320
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "strata",
+      "cliffsEnabled": true,
+      "frames": 128,
+      "updateP95": 1.5,
+      "submitP95": 0.5999999046325684,
+      "rafP95": 22.30000000000291,
+      "over50": 0,
+      "draws": 56,
+      "triangles": 378714,
+      "memory": {
+        "geometries": 25,
+        "textures": 7
+      },
+      "cliffs": {
+        "quads": 6820,
+        "triangles": 13640,
+        "segments": 2092,
+        "rebuilds": 1,
+        "families": {
+          "strata": 1200,
+          "fracture": 5338,
+          "abyss": 282
+        }
+      },
+      "lines": {
+        "builds": 1,
+        "segments": 9648,
+        "lastBuildMs": 20.5,
+        "lastWallMs": 194.10000014305115,
+        "lastMaxSliceMs": 3,
+        "chains": 76
+      },
+      "river": {
+        "quads": 3413,
+        "triangles": 6850,
+        "rebuilds": 1,
+        "sampledCells": 163009
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "D",
+      "size": [
+        512,
+        320
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "strata",
+      "cliffsEnabled": true,
+      "frames": 131,
+      "updateP95": 1.7000000476837158,
+      "submitP95": 0.6000001430511475,
+      "rafP95": 22.30000000000291,
+      "over50": 0,
+      "draws": 56,
+      "triangles": 378714,
+      "memory": {
+        "geometries": 25,
+        "textures": 7
+      },
+      "cliffs": {
+        "quads": 6820,
+        "triangles": 13640,
+        "segments": 2092,
+        "rebuilds": 1,
+        "families": {
+          "strata": 1200,
+          "fracture": 5338,
+          "abyss": 282
+        }
+      },
+      "lines": {
+        "builds": 1,
+        "segments": 9648,
+        "lastBuildMs": 20.899999856948853,
+        "lastWallMs": 209.20000004768372,
+        "lastMaxSliceMs": 3,
+        "chains": 76
+      },
+      "river": {
+        "quads": 3413,
+        "triangles": 6850,
+        "rebuilds": 1,
+        "sampledCells": 163009
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "C",
+      "size": [
+        512,
+        320
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": true,
+      "frames": 121,
+      "updateP95": 1.4000000953674316,
+      "submitP95": 0.6000001430511475,
+      "rafP95": 27.80000000000291,
+      "over50": 0,
+      "draws": 57,
+      "triangles": 731724,
+      "memory": {
+        "geometries": 25,
+        "textures": 7
+      },
+      "cliffs": {
+        "quads": 6820,
+        "triangles": 13640,
+        "segments": 2092,
+        "rebuilds": 1,
+        "families": {
+          "strata": 1200,
+          "fracture": 5338,
+          "abyss": 282
+        }
+      },
+      "lines": {
+        "builds": 1,
+        "segments": 23144,
+        "lastBuildMs": 32.80000019073486,
+        "lastWallMs": 405.09999990463257,
+        "lastMaxSliceMs": 3.1000001430511475,
+        "chains": 1598
+      },
+      "river": {
+        "quads": 3413,
+        "triangles": 6850,
+        "rebuilds": 1,
+        "sampledCells": 163009
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "B",
+      "size": [
+        512,
+        320
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": false,
+      "frames": 126,
+      "updateP95": 1.5,
+      "submitP95": 0.5999999046325684,
+      "rafP95": 27.80000000000291,
+      "over50": 0,
+      "draws": 56,
+      "triangles": 718084,
+      "memory": {
+        "geometries": 24,
+        "textures": 7
+      },
+      "cliffs": null,
+      "lines": {
+        "builds": 1,
+        "segments": 23144,
+        "lastBuildMs": 27.799999475479126,
+        "lastWallMs": 359.09999990463257,
+        "lastMaxSliceMs": 3,
+        "chains": 1598
+      },
+      "river": {
+        "quads": 3413,
+        "triangles": 6850,
+        "rebuilds": 1,
+        "sampledCells": 163009
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    },
+    {
+      "mode": "A",
+      "size": [
+        512,
+        320
+      ],
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "dn1",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "dn1",
+      "day": 0,
+      "style": "brush",
+      "cliffsEnabled": false,
+      "frames": 132,
+      "updateP95": 1.5999999046325684,
+      "submitP95": 0.5999999046325684,
+      "rafP95": 22.30000000000291,
+      "over50": 0,
+      "draws": 56,
+      "triangles": 680506,
+      "memory": {
+        "geometries": 24,
+        "textures": 7
+      },
+      "cliffs": null,
+      "lines": {
+        "builds": 1,
+        "segments": 4239,
+        "lastBuildMs": 17.999999523162842,
+        "lastWallMs": 268.40000009536743,
+        "lastMaxSliceMs": 3.0999999046325684,
+        "chains": 560
+      },
+      "river": {
+        "quads": 3520,
+        "triangles": 7060,
+        "rebuilds": 1,
+        "sampledCells": 163009
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    }
+  ],
+  "browserPath": "Browser plugin not available; repository owned Edge/CDP workflow",
+  "flow": "Open the strata lab -> choose candidate/seed -> inspect three landforms -> switch cliff geometry and brush -> observe actual WebGL",
+  "limitations": [
+    "CPU submission is not GPU execution time.",
+    "Read-only candidate, no simulation or save export."
+  ],
+  "source": {
+    "src/inkbox/world/netherStrataCandidate.js": "403dab1d41a6300a95444421de295081c2592f47d1f3bf43a81ec96dcfcc704e",
+    "src/inkbox/render3d/nether/NetherCliffLayer.js": "c11467e7509dd82ddd23196d211da34cbbb16616adcfcd2c0c4eadc50259c79e",
+    "src/inkbox/render3d/art/PigmentTerrainMaterial.js": "814fc3ab2f632e9eea27eec7ebecb2dd5c288ae312d8e3cfb3963309f4a8d085",
+    "src/inkbox/render3d/shanhai/ShanhaiStyle.js": "a40431d2b21a6518094e1a48d14ae1351bc9facd72478b3c29bdd817b1f34575",
+    "src/inkbox/render3d/stage/PlaneStage.js": "5166e4f90264477028643d2cc36bcfb3af9925e19de5a98aa26f8f11b128de8d",
+    "research/nether-strata/preview.js": "297a907cef9a9279e74013235f3be02eab1ca6b595d9c017772951a6a4d109ed"
+  },
+  "environment": {
+    "title": "叠狱成形 · 坐天观井 D-N2A",
+    "url": "http://127.0.0.1:4261/research/nether-strata/index.html",
+    "content": 338,
+    "overlay": false,
+    "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "viewport": [
+      1440,
+      900
+    ],
+    "metrics": {
+      "seed": 20260914,
+      "worldSeed": 1332771936,
+      "version": "strata",
+      "candidateVersion": "dn2a-strata-1",
+      "family": "裂谷纵贯",
+      "size": [
+        288,
+        180
+      ],
+      "day": 0,
+      "style": "strata",
+      "cliffsEnabled": true,
+      "frames": 46,
+      "updateP95": 4.099999904632568,
+      "submitP95": 3.5,
+      "rafP95": 27.800000000000182,
+      "over50": 2,
+      "draws": 62,
+      "triangles": 136676,
+      "memory": {
+        "geometries": 27,
+        "textures": 7
+      },
+      "cliffs": {
+        "quads": 3853,
+        "triangles": 7706,
+        "segments": 991,
+        "rebuilds": 1,
+        "families": {
+          "strata": 385,
+          "fracture": 3301,
+          "abyss": 167
+        }
+      },
+      "lines": {
+        "builds": 1,
+        "segments": 5187,
+        "lastBuildMs": 16.800000429153442,
+        "lastWallMs": 874.1000001430511,
+        "lastMaxSliceMs": 3.1000001430511475,
+        "chains": 49
+      },
+      "river": {
+        "quads": 1902,
+        "triangles": 3830,
+        "rebuilds": 1,
+        "sampledCells": 51373
+      },
+      "camera": {
+        "zoom": 1.18,
+        "position": [
+          195.87622700305252,
+          213.617798326228,
+          261.1683026707367
+        ],
+        "target": [
+          0,
+          4,
+          0
+        ]
+      }
+    }
+  },
+  "errors": [],
+  "browser": {
+    "browser": "Edg/156.0.4314.50",
+    "debugPort": 55181,
+    "width": 1440,
+    "height": 900,
+    "profileCleanup": {
+      "removed": true,
+      "attempts": 1,
+      "processesExited": true,
+      "complete": true,
+      "processEvidence": {
+        "supported": true,
+        "frozen": 10,
+        "remaining": 0,
+        "discoveryError": null,
+        "termination": {
+          "errors": [],
+          "attempted": 0
+        }
+      }
+    }
+  },
+  "cleanup": {
+    "removed": true,
+    "attempts": 1,
+    "processesExited": true,
+    "complete": true,
+    "processEvidence": {
+      "supported": true,
+      "frozen": 10,
+      "remaining": 0,
+      "discoveryError": null,
+      "termination": {
+        "errors": [],
+        "attempted": 0
+      }
+    }
+  },
+  "base": "0c5c3b67f026313227d68b15a4e9762216b00af7",
+  "branch": "feature/d-n2a-nether-strata",
+  "date": "2026-10-29",
+  "localChecks": [
+    {
+      "command": "test:core",
+      "exitCode": 0
+    },
+    {
+      "command": "test:render3d",
+      "exitCode": 0
+    },
+    {
+      "command": "test:r1",
+      "exitCode": 0
+    },
+    {
+      "command": "test:three-realms",
+      "exitCode": 0
+    },
+    {
+      "command": "test:save-equivalence",
+      "exitCode": 0
+    },
+    {
+      "command": "test:dn1",
+      "exitCode": 0
+    },
+    {
+      "command": "check:ui",
+      "exitCode": 0
+    },
+    {
+      "command": "test:dn2a",
+      "exitCode": 0
+    },
+    {
+      "command": "test:dn2a:browser",
+      "exitCode": 0
+    },
+    {
+      "command": "build",
+      "exitCode": 0
+    },
+    {
+      "command": "test:package",
+      "exitCode": 0
+    }
+  ],
+  "finalSource": {
+    "src/inkbox/world/netherStrataCandidate.js": "403dab1d41a6300a95444421de295081c2592f47d1f3bf43a81ec96dcfcc704e",
+    "src/inkbox/render3d/nether/NetherCliffLayer.js": "c11467e7509dd82ddd23196d211da34cbbb16616adcfcd2c0c4eadc50259c79e",
+    "src/inkbox/render3d/art/PigmentTerrainMaterial.js": "814fc3ab2f632e9eea27eec7ebecb2dd5c288ae312d8e3cfb3963309f4a8d085",
+    "src/inkbox/render3d/shanhai/ShanhaiStyle.js": "a40431d2b21a6518094e1a48d14ae1351bc9facd72478b3c29bdd817b1f34575",
+    "src/inkbox/render3d/stage/PlaneStage.js": "5166e4f90264477028643d2cc36bcfb3af9925e19de5a98aa26f8f11b128de8d",
+    "research/nether-strata/preview.js": "3a3ce064916667e1e615373fe22c3548ef014da914c9a9e27c9a9f6fcd7dcd8b"
+  },
+  "postCaptureVerification": {
+    "reason": "Only the read-only lab right-drag binding was added after the full capture; rendering shaders, geometry and performance camera parameters are unchanged.",
+    "pass": true,
+    "checks": [
+      {
+        "name": "page identity, meaningful content, WebGL and overlay",
+        "pass": true,
+        "evidence": {
+          "title": "叠狱成形 · 坐天观井 D-N2A",
+          "url": "http://127.0.0.1:4261/research/nether-strata/index.html",
+          "content": 338,
+          "overlay": false,
+          "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "viewport": [
+            1440,
+            900
+          ],
+          "metrics": {
+            "seed": 20260914,
+            "worldSeed": 1332771936,
+            "version": "strata",
+            "candidateVersion": "dn2a-strata-1",
+            "family": "裂谷纵贯",
+            "size": [
+              288,
+              180
+            ],
+            "day": 0,
+            "style": "strata",
+            "cliffsEnabled": true,
+            "frames": 42,
+            "updateP95": 3.8000001907348633,
+            "submitP95": 2.299999952316284,
+            "rafP95": 27.800000000000182,
+            "over50": 2,
+            "draws": 62,
+            "triangles": 136676,
+            "memory": {
+              "geometries": 27,
+              "textures": 7
+            },
+            "cliffs": {
+              "quads": 3853,
+              "triangles": 7706,
+              "segments": 991,
+              "rebuilds": 1,
+              "families": {
+                "strata": 385,
+                "fracture": 3301,
+                "abyss": 167
+              }
+            },
+            "lines": {
+              "builds": 1,
+              "segments": 5187,
+              "lastBuildMs": 20.200000286102295,
+              "lastWallMs": 716.2999999523163,
+              "lastMaxSliceMs": 3,
+              "chains": 49
+            },
+            "river": {
+              "quads": 1902,
+              "triangles": 3830,
+              "rebuilds": 1,
+              "sampledCells": 51373
+            },
+            "camera": {
+              "zoom": 1.18,
+              "position": [
+                195.87622700305252,
+                213.617798326228,
+                261.1683026707367
+              ],
+              "target": [
+                0,
+                4,
+                0
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "native right pan, middle orbit and wheel zoom",
+        "pass": true,
+        "evidence": {
+          "before": {
+            "zoom": 1.18,
+            "position": [
+              195.87622700305252,
+              213.617798326228,
+              261.1683026707367
+            ],
+            "target": [
+              0,
+              4,
+              0
+            ]
+          },
+          "pan": {
+            "zoom": 1.18,
+            "position": [
+              171.69965162734135,
+              213.617798326228,
+              267.30838530583793
+            ],
+            "target": [
+              -24.176575375711163,
+              3.9999999999999996,
+              6.1400826351012485
+            ]
+          },
+          "orbit": {
+            "zoom": 1.18,
+            "position": [
+              13.028901107748585,
+              235.87990471492034,
+              314.9498336292016
+            ],
+            "target": [
+              -24.176575375711163,
+              3.9999999999999996,
+              6.1400826351012485
+            ]
+          },
+          "zoom": {
+            "zoom": 1.5249794131817835,
+            "position": [
+              13.028901107748577,
+              235.87990471492034,
+              314.9498336292016
+            ],
+            "target": [
+              -24.176575375711163,
+              3.9999999999999996,
+              6.1400826351012485
+            ]
+          }
+        }
+      }
+    ],
+    "screenshots": [
+      "dn2a/strata-full-20260914.jpg"
+    ],
+    "performance": [],
+    "browserPath": "Browser plugin not available; repository owned Edge/CDP workflow",
+    "flow": "Open the strata lab -> choose candidate/seed -> inspect three landforms -> switch cliff geometry and brush -> observe actual WebGL",
+    "limitations": [
+      "CPU submission is not GPU execution time.",
+      "Read-only candidate, no simulation or save export."
+    ],
+    "source": {
+      "src/inkbox/world/netherStrataCandidate.js": "403dab1d41a6300a95444421de295081c2592f47d1f3bf43a81ec96dcfcc704e",
+      "src/inkbox/render3d/nether/NetherCliffLayer.js": "c11467e7509dd82ddd23196d211da34cbbb16616adcfcd2c0c4eadc50259c79e",
+      "src/inkbox/render3d/art/PigmentTerrainMaterial.js": "814fc3ab2f632e9eea27eec7ebecb2dd5c288ae312d8e3cfb3963309f4a8d085",
+      "src/inkbox/render3d/shanhai/ShanhaiStyle.js": "a40431d2b21a6518094e1a48d14ae1351bc9facd72478b3c29bdd817b1f34575",
+      "src/inkbox/render3d/stage/PlaneStage.js": "5166e4f90264477028643d2cc36bcfb3af9925e19de5a98aa26f8f11b128de8d",
+      "research/nether-strata/preview.js": "3a3ce064916667e1e615373fe22c3548ef014da914c9a9e27c9a9f6fcd7dcd8b"
+    },
+    "environment": {
+      "title": "叠狱成形 · 坐天观井 D-N2A",
+      "url": "http://127.0.0.1:4261/research/nether-strata/index.html",
+      "content": 338,
+      "overlay": false,
+      "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "viewport": [
+        1440,
+        900
+      ],
+      "metrics": {
+        "seed": 20260914,
+        "worldSeed": 1332771936,
+        "version": "strata",
+        "candidateVersion": "dn2a-strata-1",
+        "family": "裂谷纵贯",
+        "size": [
+          288,
+          180
+        ],
+        "day": 0,
+        "style": "strata",
+        "cliffsEnabled": true,
+        "frames": 42,
+        "updateP95": 3.8000001907348633,
+        "submitP95": 2.299999952316284,
+        "rafP95": 27.800000000000182,
+        "over50": 2,
+        "draws": 62,
+        "triangles": 136676,
+        "memory": {
+          "geometries": 27,
+          "textures": 7
+        },
+        "cliffs": {
+          "quads": 3853,
+          "triangles": 7706,
+          "segments": 991,
+          "rebuilds": 1,
+          "families": {
+            "strata": 385,
+            "fracture": 3301,
+            "abyss": 167
+          }
+        },
+        "lines": {
+          "builds": 1,
+          "segments": 5187,
+          "lastBuildMs": 20.200000286102295,
+          "lastWallMs": 716.2999999523163,
+          "lastMaxSliceMs": 3,
+          "chains": 49
+        },
+        "river": {
+          "quads": 1902,
+          "triangles": 3830,
+          "rebuilds": 1,
+          "sampledCells": 51373
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        }
+      }
+    },
+    "errors": [],
+    "browser": {
+      "browser": "Edg/156.0.4314.50",
+      "debugPort": 60914,
+      "width": 1440,
+      "height": 900,
+      "profileCleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 17,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    },
+    "cleanup": {
+      "removed": true,
+      "attempts": 1,
+      "processesExited": true,
+      "complete": true,
+      "processEvidence": {
+        "supported": true,
+        "frozen": 17,
+        "remaining": 0,
+        "discoveryError": null,
+        "termination": {
+          "errors": [],
+          "attempted": 0
+        }
+      }
+    }
+  }
+}

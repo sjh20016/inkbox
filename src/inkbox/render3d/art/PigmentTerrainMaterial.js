@@ -96,7 +96,7 @@ uniform float colorLayerStrength;
 uniform float feibaiStrength, atmosphereStrength, atmosphereLow, atmosphereHigh;
 uniform vec3 slopeRockColor, slopeSoilColor, terrainWaterColor, realmInkColor, atmosphereColor;
 // V1 · 山海入画：青绿 / 浅绛 / 焦墨分层、阴阳面、皴笔、山脊墨线与空气透视（仅表现）。
-uniform float shanhaiMode, shStrength, shShade, shCun, shRidge, shGoldAmt, shMistAmt, shAir, shSpan, shWash, shLine, shInkMode, shInkAmt, shMineral, shLineFill, shLineTone, shInkThr, shKeepInk, shBrush;
+uniform float shanhaiMode, shStrength, shShade, shCun, shRidge, shGoldAmt, shMistAmt, shAir, shSpan, shWash, shLine, shInkMode, shInkAmt, shMineral, shLineFill, shLineTone, shInkThr, shKeepInk, shBrush, shStrata;
 uniform vec2 shBand, shViewXZ, shTarget;
 uniform vec3 shLow, shMid, shHigh, shPeak, shShadow, shLight, shGold, shMist;
 varying vec3 vWorld;
@@ -449,6 +449,25 @@ void main() {
       float ink = mountain * clamp(broken * (0.28 + 0.42 * shadowSide) + fine + pooled * 0.48, 0.0, 0.8);
       color = mix(color, realmInkColor, ink);
     }
+    if (shStrata > 0.5) {
+      // Broad grey cliff masses, pale tables and low ink. The elevation remains
+      // the shared displaced terrain; these are pigment marks, never geometry.
+      // Interpolated broad slope keeps the wash continuous across the real
+      // grid triangles; a hard per-face threshold made cliff rims look toothed.
+      float face = smoothstep(0.45, 1.7, bSlope);
+      float pooled = 1.0-smoothstep(-7.0, 7.0, vWorld.y);
+      float seam = vWorld.y*0.18 + noise(p*0.09)*0.40;
+      float aa = max(fwidth(seam), 0.025);
+      float bed = 1.0-smoothstep(0.035, 0.035+aa, abs(fract(seam)-0.5));
+      float broken = smoothstep(0.30, 0.68, noise(p*0.18+vec2(3.7,seed*0.003)));
+      float nearInk = mix(0.10, 0.26, detail);
+      vec3 bone = mix(paperColor, shPeak, 0.30);
+      vec3 rock = mix(bone, realmInkColor, 0.55+0.18*shadowSide);
+      vec3 strataColor = mix(bone, rock, face);
+      strataColor = mix(strataColor, realmInkColor, face*bed*broken*nearInk);
+      strataColor = mix(strataColor, realmInkColor, pooled*(0.66+0.16*face));
+      color = mix(color, strataColor, land);
+    }
     float far=dot(vWorld.xz-shTarget,shViewXZ)/max(shSpan*0.5,1.0);
     color=mix(color,shMist,smoothstep(0.05,1.1,far)*shAir);
   }
@@ -497,7 +516,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       slopeRockColor: { value: new THREE.Color('#808080') }, slopeSoilColor: { value: new THREE.Color('#808080') },
       terrainWaterColor: { value: new THREE.Color().setRGB(0.30, 0.43, 0.46) },
       realmInkColor: { value: new THREE.Color('#202020') }, atmosphereColor: { value: new THREE.Color('#ffffff') },
-      shBrush: { value: 0 }, shanhaiMode: { value: 0 }, shInkMode: { value: 0 }, shInkAmt: { value: 0 }, shMineral: { value: 0 }, shLineFill: { value: 0 }, shLineTone: { value: 0 }, shInkThr: { value: 0.47 }, shKeepInk: { value: 0 }, shWash: { value: 0 }, shLine: { value: 0 }, shStrength: { value: 0 }, shShade: { value: 0 }, shCun: { value: 0 }, shRidge: { value: 0 },
+      shStrata: { value: 0 }, shBrush: { value: 0 }, shanhaiMode: { value: 0 }, shInkMode: { value: 0 }, shInkAmt: { value: 0 }, shMineral: { value: 0 }, shLineFill: { value: 0 }, shLineTone: { value: 0 }, shInkThr: { value: 0.47 }, shKeepInk: { value: 0 }, shWash: { value: 0 }, shLine: { value: 0 }, shStrength: { value: 0 }, shShade: { value: 0 }, shCun: { value: 0 }, shRidge: { value: 0 },
       shGoldAmt: { value: 0 }, shMistAmt: { value: 0 }, shAir: { value: 0 }, shSpan: { value: 200 },
       shBand: { value: new THREE.Vector2(-4, 28) }, shViewXZ: { value: new THREE.Vector2(0, -1) }, shTarget: { value: new THREE.Vector2() },
       ...Object.fromEntries(['shLow','shMid','shHigh','shPeak','shShadow','shLight','shGold','shMist'].map(k => [k, { value: new THREE.Color('#808080') }])),
@@ -592,7 +611,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
     if (sh) {
       u.shBand.value.set(sh.band[0], sh.band[1]);
       for (const [key, name] of [['shLow','low'],['shMid','mid'],['shHigh','high'],['shPeak','peak'],['shShadow','shadow'],['shLight','light'],['shGold','gold'],['shMist','mist']]) u[key].value.set(sh[name]);
-      for (const [key, name] of [['shStrength','strength'],['shShade','shade'],['shCun','cun'],['shRidge','ridge'],['shGoldAmt','goldAmt'],['shMistAmt','mistAmt'],['shAir','air'],['shWash','wash'],['shLine','line'],['shInkAmt','inkAmt'],['shMineral','mineral'],['shLineFill','lineFill'],['shLineTone','lineTone'],['shKeepInk','keepInk'],['shBrush','brush']]) u[key].value = sh[name] ?? 0;
+      for (const [key, name] of [['shStrength','strength'],['shShade','shade'],['shCun','cun'],['shRidge','ridge'],['shGoldAmt','goldAmt'],['shMistAmt','mistAmt'],['shAir','air'],['shWash','wash'],['shLine','line'],['shInkAmt','inkAmt'],['shMineral','mineral'],['shLineFill','lineFill'],['shLineTone','lineTone'],['shKeepInk','keepInk'],['shBrush','brush'],['shStrata','strata']]) u[key].value = sh[name] ?? 0;
       u.shInkThr.value = sh.inkThr ?? 0.47;
       u.shInkMode.value = sh.inkMode === 'print' ? 1 : sh.inkMode === 'ink' ? 2 : 0;
       this.shanhaiBaseBand = [sh.band[0], sh.band[1]];

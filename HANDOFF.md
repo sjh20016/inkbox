@@ -1,5 +1,9 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 2026-10-29 · D-N2A 叠狱成形候选
+
+从 D-N1 `0c5c3b6` 起独立分支 `feature/d-n2a-nether-strata`：新增确定性的台地/断崖/深渊候选、高程共面的合批崖壁笔触及只读对照展厅。正式生成、模拟、存档及默认 brush 未切换；Draft PR 以 D-N1 分支为 base，不自动合 main。真实浏览器画面、同机成对成本、测试与 D-N2B 接口见 [D-N2A 交付](./docs/development/DN2A_DELIVERY.md)。
+
 ## 2026-10-28 · D-N1 幽冥造境候选
 
 本分支从 `main@bd62ade` 接入幽冥真实黄泉、地域生态、枯笔皴擦和原 Opus 深色 UI；新版地貌及可撤销编辑留在独立试卷，G-EDIT / 正式候选存档尚未接入。旧生成器、人物规则与 v11 保存路径保持；独立 Draft 不自动合 main。实际测试、同机成本、八张图、接口和回退见 [D-N1 交付](./docs/development/DN1_DELIVERY.md)。

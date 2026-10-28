@@ -18,6 +18,13 @@ const STAGE = fs.mkdtempSync(path.join(DIST, '.inkbox-package-'));
 
 // Explicit runtime/developer package entry points. Historical reports live in Git history.
 const FILES = [
+  'scripts/inkbox-dn2a-geography.mjs',
+  'scripts/inkbox-dn2a-render.mjs',
+  'scripts/inkbox-dn2a-browser.mjs',
+  // Explicit, read-only D-N2A lab, independent of product generation/save.
+  'research/nether-strata/index.html',
+  'research/nether-strata/preview.js',
+  'research/nether-strata/preview.css',
   'scripts/inkbox-dn1-geography.mjs',
   'scripts/inkbox-dn1-edit.mjs',
   'scripts/inkbox-dn1-render.mjs',
