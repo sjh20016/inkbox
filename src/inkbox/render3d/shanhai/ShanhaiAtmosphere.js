@@ -43,6 +43,19 @@ function paintBackdrop(plane, seed = 7) {
     g.fillStyle = grad; g.beginPath(); g.moveTo(0, H);
     for (const [x, y] of ridge) g.lineTo(x, y);
     g.lineTo(W, H); g.closePath(); g.globalAlpha = 0.55 + li * 0.15; g.fill(); g.globalAlpha = 1;
+    if (plane === 'nether' && s.terrain.brush) {
+      // Cached painted scenery outside the playable world: dry fibres fade
+      // down the same ridge silhouette, rather than a flat vector cutout.
+      g.save(); g.clip(); g.strokeStyle = s.hillInk;
+      for (let n = 0; n < 900; n++) {
+        const k = Math.floor(r() * (ridge.length - 1)), [x, top] = ridge[k];
+        const y = top + r() * amp * 1.1, length = 5 + r() * 45;
+        g.globalAlpha = (.025 + li * .018) * (1 - Math.min(1, (y - top) / (amp * 1.2)));
+        g.lineWidth = .4 + r() * 1.7;
+        g.beginPath(); g.moveTo(x + r() * 6, y); g.lineTo(x + (r() - .5) * 12, y + length); g.stroke();
+      }
+      g.restore(); g.globalAlpha = 1;
+    }
     // Dry ink along the ridge: broken strokes, thicker on the nearer layer.
     g.strokeStyle = s.hillInk; g.lineCap = 'round';
     for (let i = 1; i < ridge.length; i++) {
@@ -157,7 +170,8 @@ export class ShanhaiAtmosphere {
   }
   setContext({ enabled, plane = 'mortal' }) {
     this.captureLights();
-    const key = `${!!enabled}|${plane}|${this.worldKey()}`;
+    const brush = plane === 'nether' && !!shanhaiSceneFor(plane).terrain.brush;
+    const key = `${!!enabled}|${plane}|${brush}|${this.worldKey()}`;
     if (key === this.key) return; this.key = key;
     this.enabled = !!enabled; this.plane = plane;
     const { hemiLight: hemi, sunLight: sun, scene } = this.host;
@@ -176,8 +190,9 @@ export class ShanhaiAtmosphere {
       this.backdrops.clear();
       this.backdropWorldKey = backdropWorldKey;
     }
-    if (!this.backdrops.has(plane)) this.backdrops.set(plane, paintBackdrop(plane, (this.host.world?.seed >>> 0) % 997));
-    scene.background = this.backdrops.get(plane); this.stats.backdrop = plane;
+    const backdropKey = brush ? 'nether:brush' : plane;
+    if (!this.backdrops.has(backdropKey)) this.backdrops.set(backdropKey, paintBackdrop(plane, (this.host.world?.seed >>> 0) % 997));
+    scene.background = this.backdrops.get(backdropKey); this.stats.backdrop = plane;
     if (hemi && sun) {
       hemi.color.set(s.light.sky); hemi.groundColor.set(s.light.ground); hemi.intensity = s.light.hemi;
       sun.color.set(s.light.sun); sun.intensity = s.light.sunIntensity; sun.position.set(...s.light.sunDir);

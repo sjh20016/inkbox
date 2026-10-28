@@ -1,5 +1,9 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 2026-10-28 · D-N1 幽冥造境候选
+
+本分支从 `main@bd62ade` 接入幽冥真实黄泉、地域生态、枯笔皴擦和原 Opus 深色 UI；新版地貌及可撤销编辑留在独立试卷，G-EDIT / 正式候选存档尚未接入。旧生成器、人物规则与 v11 保存路径保持；独立 Draft 不自动合 main。实际测试、同机成本、八张图、接口和回退见 [D-N1 交付](./docs/development/DN1_DELIVERY.md)。
+
 ## 2026-10-28 · RG2 轻量治理（状态与扩展约定）
 
 已核对正式 `main@5746e4e`：G8 #52/#53 与 E2-Lite #54 已合并，最新主干 Fast/Heavy 及定时 Nightly 均成功；Browser Smoke 仍属手动项。此 SHA 仅为治理前快照。G6 #30、山海遗迹 #37、万象拾趣 #39、R3D-S1 #51 保持独立，G2/G3 旧研究 PR 仅保留可追溯性。请从 [RG2 当前状态](./docs/development/RG2_CURRENT_STATE.md) 判别候选，从 [玩法扩展约定](./docs/development/FEATURE_EXTENSION_CONTRACT.md) 接入独立玩法；正文后续各阶段条目是当时的历史快照，不代表当前尚未合并。

@@ -4,6 +4,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { hashString } from '../../core/noise.js';
 import { TERRAIN_INFO } from '../../core/config.js';
 import { decorationFootprintOwned } from '../environment/RealmDecorationLayer.js';
+import { NETHER_REGIONS, sampleNetherGeography } from '../../world/netherGeography.js';
 
 /**
  * V1 · 山海入画 — 纯装饰景观层（Scenery）。
@@ -219,7 +220,7 @@ export function sceneryCandidates(world) {
   return out;
 }
 
-export function deriveScenery(world, candidates = sceneryCandidates(world)) {
+export function deriveScenery(world, candidates = sceneryCandidates(world), { netherRegional = false } = {}) {
   const kinds = KINDS[world?.plane]; if (!kinds) return [];
   const { w, h } = world, H = world.height, T = world.type, out = [], taken = [];
   const waterAt = i => !!TERRAIN_INFO[T[i]]?.water;
@@ -274,6 +275,10 @@ export function deriveScenery(world, candidates = sceneryCandidates(world)) {
     const cands = (byKind.get(kind) || []).filter(c => {
       const i = c.cy * w + c.cx;
       if (!Number.isFinite(H[i]) || !accept[kind](i, c.cx, c.cy)) return false;
+      if (netherRegional && world.plane === 'nether') {
+        const g = sampleNetherGeography(world, c.cx, c.cy), rule = NETHER_REGIONS[g.kind];
+        if (g.water > .0015 || !rule.sceneryKinds.includes(kind) || (c.hash % 100) / 100 > rule.density) return false;
+      }
       return !(world.plane === 'mortal' && kind !== 'boat' && structAt(c.cx, c.cy, 3));
     }).sort((p, q) => p.hash - q.hash);
     let n = 0;
@@ -322,7 +327,7 @@ export class ShanhaiSceneryLayer {
   get layout() { const out = []; for (const e of this.meshes.values()) for (const r of e.slots) if (r) out.push(r); return out; }
   /** Re-evaluate candidates against the *current* terrain; surviving records keep their slot (no jumping). */
   relayout() {
-    const next = deriveScenery(this.world, this.candidates), byKind = new Map();
+    const next = deriveScenery(this.world, this.candidates, { netherRegional: this.netherRegional }), byKind = new Map();
     for (const r of next) { if (!r.key) r.key = `${r.kind}:${Math.round(r.x * 2)},${Math.round(r.y * 2)}`; if (!byKind.has(r.kind)) byKind.set(r.kind, []); byKind.get(r.kind).push(r); }
     const counts = {};
     for (const [kind, e] of this.meshes) {
@@ -337,6 +342,7 @@ export class ShanhaiSceneryLayer {
     this.dirty = true;
   }
   setEnabled(enabled) { this.enabled = !!enabled; this.group.visible = this.enabled; if (this.enabled) this.dirty = true; else if (this.zones?.length) { this.zones = []; this._zoneSig = ''; this.zonesVersion = (this.zonesVersion || 0) + 1; } }
+  setNetherRegional(enabled) { if (this.netherRegional === !!enabled) return; this.netherRegional = !!enabled; this.relayout(); }
   setRegionGeometry(geometry, inside = true) { if (this.regionGeometry !== geometry || this.regionInside !== !!inside) { this.regionGeometry = geometry; this.regionInside = !!inside; this.dirty = true; } }
   invalidateGround() { this.dirty = true; this.relayoutAt = this.time + 0.4; }
   /** Yield to real settlements: a village grown onto a pavilion site wins, always. */

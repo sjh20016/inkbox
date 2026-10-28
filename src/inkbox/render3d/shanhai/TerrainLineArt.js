@@ -30,7 +30,7 @@ float farMist(vec3 w){ float far=dot(w.xz-shTarget,shViewXZ)/max(shSpan*0.5,1.0)
 const hullVertex = `
 uniform sampler2D heightTexture;
 uniform vec2 mapSize, resolution;
-uniform float gpuDisplacement, widthPx, widthVar;
+uniform float gpuDisplacement, widthPx, widthVar, brushMode;
 varying vec3 vWorld; varying vec3 vN; varying float vVar;
 ${heightSampling}
 ${lineNoise}
@@ -49,11 +49,12 @@ void main(){
   // 线宽：随山势高度与低频噪声起伏（提按），屏幕像素恒定。
   vVar=lnoise(grid*0.09)*0.7+lnoise(grid*0.31)*0.3;
   float w=widthPx*(1.0+widthVar*(vVar*2.0-1.0))*(0.75+0.25*smoothstep(2.0,20.0,local.y));
+  if(brushMode>0.5) w*=0.66+0.65*lnoise(grid*0.38+vec2(local.y*0.06));
   clip.xy+=d*w*2.0/resolution*clip.w;
   gl_Position=clip;
 }`;
 const hullFragment = `
-uniform vec3 lineColor; uniform float lineAlpha, facingMax, breakup;
+uniform vec3 lineColor; uniform float lineAlpha, facingMax, breakup, brushMode;
 uniform vec2 shViewXZ, shTarget; uniform float shSpan, shAir; uniform vec3 shMist;
 varying vec3 vWorld; varying vec3 vN; varying float vVar;
 ${lineNoise}
@@ -64,6 +65,7 @@ void main(){
   // 平滑法线仍正对镜头 ⇒ 只是网格小折面，不是轮廓：丢弃（避免碎点）。
   float a=lineAlpha*(1.0-smoothstep(facingMax-0.06,facingMax+0.06,facing));
   if(breakup>0.0){ float n=lnoise(vWorld.xz*0.55+vec2(vWorld.y*0.21,0.0)); a*=mix(1.0,smoothstep(0.28,0.52,n),breakup); }
+  if(brushMode>0.5) a*=mix(0.65,1.0,lnoise(vWorld.xz*3.2+vec2(vWorld.y*0.35)));
   float m=farMist(vWorld);
   a*=1.0-m*0.55;
   if(a<0.02) discard;
@@ -74,10 +76,11 @@ const strokeVertex = `
 attribute vec2 aPos; attribute vec2 aOther; attribute float aSide; attribute vec4 aInfo;
 uniform sampler2D heightTexture;
 uniform vec2 mapSize, resolution;
-uniform float widthPx, depthBias, adaptiveDiagonal;
+uniform float widthPx, depthBias, adaptiveDiagonal, brushMode;
 uniform vec4 kindWidth;
 varying vec3 vWorld; varying float vS, vL, vWeight, vKind, vSide;
 ${heightSampling}
+${lineNoise}
 float strokeHeight(vec2 p){
   vec2 c=clamp(p,vec2(0.0),mapSize-1.0);
   if(all(equal(c,floor(c)))) return hAt(c);
@@ -109,11 +112,12 @@ void main(){
   float kw=vKind<0.5?kindWidth.x:vKind<1.5?kindWidth.y:vKind<2.5?kindWidth.z:kindWidth.w;
   float taper=smoothstep(0.0,3.0,min(aInfo.x,aInfo.y-aInfo.x));
   float w=widthPx*kw*(0.45+0.80*aInfo.z)*(0.30+0.70*taper);
+  if(brushMode>0.5) w*=0.55+0.90*lnoise(vec2(vS*0.22+vKind*7.0,vL*0.08));
   cA.xy+=nrm*aSide*w/resolution*cA.w;
   gl_Position=cA;
 }`;
 const strokeFragment = `
-uniform vec3 lineColor; uniform float lineAlpha, gate, dry, pixelsPerUnit;
+uniform vec3 lineColor; uniform float lineAlpha, gate, dry, pixelsPerUnit, brushMode;
 uniform vec4 kindAlpha;
 uniform vec2 shViewXZ, shTarget; uniform float shSpan, shAir; uniform vec3 shMist;
 varying vec3 vWorld; varying float vS, vL, vWeight, vKind, vSide;
@@ -135,6 +139,15 @@ void main(){
     float f=lnoise(vec2(vS*0.45,vSide*1.7+vWeight*9.0));
     float paper=0.82+0.18*smoothstep(0.22,0.50,n)*smoothstep(0.25,0.55,f);
     a*=mix(1.0,paper,dry);
+  }
+  if(brushMode>0.5){
+    // Ragged sides, pressure and lengthwise paper fibres; the stroke keeps a
+    // continuous core instead of becoming a dotted path when zoomed out.
+    float rag=0.72+0.20*lnoise(vec2(vS*0.65,vL*0.09));
+    a*=1.0-smoothstep(rag-0.18,rag,abs(vSide));
+    float fibre=lnoise(vec2(vS*0.65,vSide*13.0+vKind*9.0));
+    float dryPaper=smoothstep(0.58,0.77,fibre)*smoothstep(0.1,0.55,abs(vSide));
+    a*=1.0-dryPaper*0.72;
   }
   float m=farMist(vWorld);
   a*=1.0-m*0.65;
@@ -222,7 +235,7 @@ function* linkChainsSteps(str, tx, ty, w, h) {
  * 从「格点显示高程」提取结构线。返回链：{pts:[[x,y],...], kind, weight}。
  * kind: 0 山脊 · 1 山谷 · 2 崖顶折线（凸形坡折）· 3 皴笔（陡坡背光面的顺坡短笔）。
  */
-export function* extractTerrainStructureSteps(E, w, h, { ridge = true, valley = false, cliff = false, hatch = false, minLen = 6, inside = null, sun = [-0.45, 0.80, -0.40] } = {}) {
+export function* extractTerrainStructureSteps(E, w, h, { ridge = true, valley = false, cliff = false, hatch = false, brush = false, minLen = 6, inside = null, sun = [-0.45, 0.80, -0.40] } = {}) {
   const S = yield* blur5Steps(E, w, h), B = yield* boxBlurSteps(S, w, h, 7), N = w * h;
   const kinds = []; if (ridge) kinds.push(0); if (valley) kinds.push(1); if (cliff) kinds.push(2);
   const str = kinds.map(() => new Float32Array(N)), tx = kinds.map(() => new Float32Array(N)), ty = kinds.map(() => new Float32Array(N));
@@ -304,21 +317,23 @@ export function* extractTerrainStructureSteps(E, w, h, { ridge = true, valley = 
     // 落在竖墙上即成竖向披麻；坡度与受光变化时自然稀疏 / 消失。完全由地形决定，无 RNG。
     const sl = Math.hypot(sun[0], sun[1], sun[2]), lx = sun[0] / sl, ly = sun[1] / sl, lz = sun[2] / sl;
     const hsh = (x, y, k) => { const v = Math.sin(x * 127.1 + y * 311.7 + k * 74.7) * 43758.5453; return v - Math.floor(v); };
-    for (let y = 3; y < h - 3; y += 2) { for (let x = 3; x < w - 3; x += 2) {
+    const stride = brush ? 3 : 2;
+    for (let y = 3; y < h - 3; y += stride) { for (let x = 3; x < w - 3; x += stride) {
       const jx = x + Math.floor(hsh(x, y, 1) * 2), jy = y + Math.floor(hsh(x, y, 2) * 2), i = jy * w + jx;
       if (inside && !inside(jx, jy)) continue;
       const gx = gxA[i], gy = gyA[i], gm = Math.hypot(gx, gy);
-      if (gm < 1.3) continue;
+      if (gm < (brush ? 0.55 : 1.3)) continue;
       const nl = Math.hypot(gx, 1, gy), ndl = (-gx * lx + ly - gy * lz) / nl;
       const shade = Math.min(1, Math.max(0, (0.55 - ndl) / 0.45));
-      const steep = Math.min(1, (gm - 1.3) / 2.5);
+      const steep = Math.min(1, (gm - (brush ? 0.55 : 1.3)) / (brush ? 1.8 : 2.5));
       if (hsh(jx, jy, 3) > 0.25 + 0.65 * shade * (0.4 + 0.6 * steep)) continue;
       let px = jx + hsh(jx, jy, 4) - 0.5, py = jy + hsh(jx, jy, 5) - 0.5;
-      const pts = [[px, py]], L = 1.4 + 1.6 * hsh(jx, jy, 6);
-      for (let t = 0; t < 3; t++) {
+      const pts = [[px, py]], L = brush ? 2.5 + 4.5 * hsh(jx, jy, 6) : 1.4 + 1.6 * hsh(jx, jy, 6), steps = brush ? 6 : 3;
+      for (let t = 0; t < steps; t++) {
         const ci = Math.round(py) * w + Math.round(px), qx = gxA[ci], qy = gyA[ci], qm = Math.hypot(qx, qy) || 1;
-        px -= qx / qm * L / 3; py -= qy / qm * L / 3;
+        px -= qx / qm * L / steps; py -= qy / qm * L / steps;
         if (px < 1 || py < 1 || px > w - 2 || py > h - 2) break;
+        if (brush && inside && !inside(Math.round(px), Math.round(py))) break;
         pts.push([px, py]);
       }
       if (pts.length > 2) out.push({ pts, kind: 3, weight: 0.35 + 0.65 * shade * steep });
@@ -425,6 +440,7 @@ function* buildLineSteps(terrain, style, regionGeometry, regionInside) {
   const chains = yield* extractTerrainStructureSteps(E, w, h, {
     ridge: (style.ridge ?? 1) > 0, valley: (style.valley ?? 0) > 0,
     cliff: (style.cliff ?? 0) > 0, hatch: (style.hatch ?? 0) > 0,
+    brush: !!style.brush,
     minLen: style.minLen ?? 6, inside,
   });
   return { chains, packed: yield* packStrokeGeometrySteps(chains) };
@@ -448,7 +464,7 @@ export class TerrainLineArt {
     this.hullMaterial = new THREE.ShaderMaterial({ vertexShader: hullVertex, fragmentShader: hullFragment, side: THREE.BackSide,
       transparent: true, depthWrite: false, uniforms: { ...shared, resolution: this.resolution,
         widthPx: { value: 2 }, widthVar: { value: 0.3 }, lineColor: { value: new THREE.Color('#141311') }, lineAlpha: { value: 1 },
-        facingMax: { value: 0.22 }, breakup: { value: 0 } } });
+        facingMax: { value: 0.22 }, breakup: { value: 0 }, brushMode: { value: 0 } } });
     this.hullMaterial.name = 'TerrainLineArtHull';
     this.hull = new THREE.Mesh(t.geometry, this.hullMaterial);
     this.hull.name = 'TerrainLineArt:contour'; this.hull.raycast = () => {}; this.hull.frustumCulled = false;
@@ -461,7 +477,7 @@ export class TerrainLineArt {
         widthPx: { value: 2 }, depthBias: { value: 1.6 }, adaptiveDiagonal: { value: adaptiveTopology(t.world) ? 1 : 0 },
         kindWidth: { value: new THREE.Vector4(1, 0.7, 0.85, 0.6) },
         kindAlpha: { value: new THREE.Vector4(1, 0.6, 0.8, 0) }, lineColor: { value: new THREE.Color('#141311') }, lineAlpha: { value: 1 },
-        gate: { value: 0 }, dry: { value: 0 }, pixelsPerUnit: { value: 4 } } });
+        gate: { value: 0 }, dry: { value: 0 }, pixelsPerUnit: { value: 4 }, brushMode: { value: 0 } } });
     this.strokeMaterial.name = 'TerrainLineArtStrokes';
     this.strokes = new THREE.Mesh(this.strokeGeometry, this.strokeMaterial);
     this.strokes.visible = false;
@@ -476,6 +492,7 @@ export class TerrainLineArt {
     if (!this.style) { this.cancelBuild(); this.dirty = true; this.group.visible = false; return; }
     if (!this.ensure()) { this.group.visible = false; return; }
     const s = this.style, hu = this.hullMaterial.uniforms, su = this.strokeMaterial.uniforms;
+    hu.brushMode.value = su.brushMode.value = s.brush ? 1 : 0;
     const hull = s.contour || null;
     this.hull.visible = !!hull;
     if (hull) {
@@ -486,11 +503,11 @@ export class TerrainLineArt {
     // Hatching remains as sparse slope texture, while ridge/cliff strokes keep
     // their profile values. Dense line-c hatching previously read as a second,
     // unrelated layer of black dotted paths over the terrain.
-    su.kindAlpha.value.set(s.ridge ?? 1, s.valley ?? 0, s.cliff ?? 0, (s.hatch ?? 0) * 0.28);
+    su.kindAlpha.value.set(s.ridge ?? 1, s.valley ?? 0, s.cliff ?? 0, (s.hatch ?? 0) * (s.brush ? 0.65 : 0.28));
     su.kindWidth.value.set(...[1, 0.7, 0.85, 0.6].map((d, i) => s.kindWidth?.[i] ?? d));
     su.gate.value = s.gate ?? 0; su.dry.value = s.dry ?? 0;
     this.group.visible = true;
-    const key = JSON.stringify([s.ridge > 0, s.valley > 0, s.cliff > 0, s.hatch > 0, s.minLen]);
+    const key = JSON.stringify([s.ridge > 0, s.valley > 0, s.cliff > 0, s.hatch > 0, s.minLen, !!s.brush]);
     if (key !== this.styleKey) { this.cancelBuild(); this.styleKey = key; this.dirty = true; }
   }
   markDirty() {

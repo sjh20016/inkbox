@@ -18,6 +18,14 @@ const STAGE = fs.mkdtempSync(path.join(DIST, '.inkbox-package-'));
 
 // Explicit runtime/developer package entry points. Historical reports live in Git history.
 const FILES = [
+  'scripts/inkbox-dn1-geography.mjs',
+  'scripts/inkbox-dn1-edit.mjs',
+  'scripts/inkbox-dn1-render.mjs',
+  'scripts/inkbox-dn1-browser.mjs',
+  // Explicit, isolated D-N1 lab; no other research probes are shipped.
+  'research/nether-landscape/index.html',
+  'research/nether-landscape/preview.js',
+  'research/nether-landscape/preview.css',
   'scripts/inkbox-wti1-selection.mjs',
   'scripts/inkbox-wti1-activities.mjs',
   'scripts/inkbox-wti1-integration.mjs',

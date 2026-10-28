@@ -90,7 +90,7 @@ export const SHANHAI_STYLES = deepFreeze({
  * `ink` = B 焦墨干笔（默认，融合 A 的大块黑白结构与 B 的笔势飞白）。
  * 运行时通过 `?nether=v1|print|ink` 切换，只改表现参数。
  */
-export const SHANHAI_OPTIONS = { nether: 'line-c', lines: 'on' };
+export const SHANHAI_OPTIONS = { nether: typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('netherLandscape') === 'off' ? 'line-c' : 'brush', lines: 'on' };
 const NETHER_BW_SCENE = {
   sky: { top: '#D9D3C6', bottom: '#EEE9DE', horizon: '#E4DED2' },
   hills: ['#C4BEB2', '#8E897F', '#3E3B36'], hillInk: '#1A1816', mistBand: '#F1ECE3',
@@ -101,7 +101,10 @@ const NETHER_BW_SCENE = {
 const LINE_BASE = { ...SHANHAI_SCENE.nether.terrain, low: '#D8D2C5', mid: '#CFC9BC', high: '#E3DED2', peak: '#F3EFE6',
   shadow: '#3A3732', mist: '#EDE8DE', shade: 0.30, cun: 0.0, ridge: 0.0, line: 0.0, wash: 0.10, inkMode: 'none', inkAmt: 0,
   mistAmt: 0.22, air: 0.24, lineFill: 1 };
-const NETHER_VARIANTS = deepFreeze({
+export const NETHER_VARIANTS = deepFreeze({
+  brush: { scene: merge(SHANHAI_SCENE.nether, { ...NETHER_BW_SCENE, terrain: { ...LINE_BASE, brush: 1, lineTone: 0.45, mistAmt: 0.30, air: 0.36,
+    lines: { brush: 1, contour: { width: 3.3, widthVar: 0.7, color: '#171512', alpha: 0.9, facing: 0.24, breakup: 0.35 },
+      ridge: 1, valley: 0.45, cliff: 0.85, hatch: 0.90, minLen: 5, gate: 0.10, width: 3.8, kindWidth: [1, 0.55, 0.85, 0.50], dry: 0.65, color: '#1b1916', alpha: 0.94 } } }) },
   print: {
     scene: merge(SHANHAI_SCENE.nether, { ...NETHER_BW_SCENE, terrain: { ...SHANHAI_SCENE.nether.terrain, low: '#2A2724', mid: '#8A857B', high: '#D8D2C4', peak: '#F1ECE2',
       shadow: '#0E0D0C', mist: '#E9E3D7', shade: 0.55, cun: 0.10, ridge: 0.90, line: 0.30, wash: 0.10, inkMode: 'print', inkAmt: 0.94, mistAmt: 0.18, air: 0.22 } }),
@@ -123,12 +126,18 @@ const NETHER_VARIANTS = deepFreeze({
       ridge: 1, valley: 0.55, cliff: 0.85, hatch: 0.90, minLen: 5, gate: 0.10, width: 2.4, kindWidth: [1, 0.6, 0.85, 0.75], dry: 0.50, color: '#161513', alpha: 0.92 } } }) },
 });
 const netherVariantStyle = {};
+const inkGrey = hex => {
+  const value = Number.parseInt(hex.slice(1), 16), n = Math.round(((value >> 16) * .299 + ((value >> 8) & 255) * .587 + (value & 255) * .114));
+  return `#${[n, Math.max(0, n - 2), Math.max(0, n - 6)].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+};
 for (const [key, v] of Object.entries(NETHER_VARIANTS)) netherVariantStyle[key] = deepFreeze(merge(SHANHAI_STYLES.nether, {
   name: `NetherShanhaiV11_${key}`, shanhai: v.scene.terrain,
   paper: { color: '#ECE6DA', background: '#ECE6DA', exposure: 1.0 },
   pigment: { density: 0.70, saturation: 0.10 },
   ink: { structure: 0.70, silhouette: 0.40, density: 0.40, dryBrush: 0.70, feibai: 0.40, color: '#0E0D0C' },
   contrast: 1.12, atmosphere: { color: '#ECE6DA', strength: 0.10, low: -20, high: 4 },
+  ...(key === 'brush' ? { terrain: { palette: REALM_STYLES.nether.terrain.palette.map(inkGrey), rock: '#57534C' },
+    vegetation: { palette: ['#36332E', '#5E5A52', '#777065'] } } : {}),
 }));
 // `?nether=v12` = V1.2 原始幽冥（焦墨 ink，无线刻），作为对照与回退。
 const netherKey = () => { const k = SHANHAI_OPTIONS.nether === 'v12' ? 'ink' : SHANHAI_OPTIONS.nether; return NETHER_VARIANTS[k] ? k : null; };

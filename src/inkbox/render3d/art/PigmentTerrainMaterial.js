@@ -96,7 +96,7 @@ uniform float colorLayerStrength;
 uniform float feibaiStrength, atmosphereStrength, atmosphereLow, atmosphereHigh;
 uniform vec3 slopeRockColor, slopeSoilColor, terrainWaterColor, realmInkColor, atmosphereColor;
 // V1 · 山海入画：青绿 / 浅绛 / 焦墨分层、阴阳面、皴笔、山脊墨线与空气透视（仅表现）。
-uniform float shanhaiMode, shStrength, shShade, shCun, shRidge, shGoldAmt, shMistAmt, shAir, shSpan, shWash, shLine, shInkMode, shInkAmt, shMineral, shLineFill, shLineTone, shInkThr, shKeepInk;
+uniform float shanhaiMode, shStrength, shShade, shCun, shRidge, shGoldAmt, shMistAmt, shAir, shSpan, shWash, shLine, shInkMode, shInkAmt, shMineral, shLineFill, shLineTone, shInkThr, shKeepInk, shBrush;
 uniform vec2 shBand, shViewXZ, shTarget;
 uniform vec3 shLow, shMid, shHigh, shPeak, shShadow, shLight, shGold, shMist;
 varying vec3 vWorld;
@@ -428,6 +428,27 @@ void main() {
       vec3 fillc=mix(bone,mix(bone,realmInkColor,0.40),tone*shLineTone);
       color=mix(color,fillc,shLineFill*land*(1.0-inkBlack*shKeepInk));
     }
+    if (shBrush > 0.5) {
+      // Stable world projections: never rotate global coordinates per fragment.
+      float mountain = smoothstep(0.28, 1.25, bSlope) * land;
+      vec2 weights = abs(vBroadGradient) + vec2(0.001);
+      weights /= weights.x + weights.y;
+      vec2 px = vec2(p.y, vWorld.y), pz = vec2(p.x, vWorld.y);
+      float sx = noise(px * vec2(1.25, 0.22) + vec2(seed * 0.021, 3.4));
+      float sz = noise(pz * vec2(1.25, 0.22) + vec2(seed * 0.021, 3.4));
+      float fx = noise(px * vec2(3.3, 0.65) + vec2(1.7, seed * 0.01));
+      float fz = noise(pz * vec2(3.3, 0.65) + vec2(1.7, seed * 0.01));
+      float stroke = mix(sz, sx, weights.x);
+      float fiber = mix(fz, fx, weights.x);
+      float gaps = noise(p * 0.31 + vec2(seed * 0.015, 6.1));
+      float aa = max(fwidth(stroke), 0.035);
+      float broken = smoothstep(0.58-aa, 0.72+aa, stroke) * smoothstep(0.36, 0.67, gaps);
+      float fine = smoothstep(0.55, 0.8, fiber) * detail * 0.16;
+      float wet = noise(p * 0.085 + vec2(seed * 0.013, 7.2));
+      float pooled = smoothstep(0.47, 0.76, wet) * (0.15 + 0.85 * shadowSide);
+      float ink = mountain * clamp(broken * (0.28 + 0.42 * shadowSide) + fine + pooled * 0.48, 0.0, 0.8);
+      color = mix(color, realmInkColor, ink);
+    }
     float far=dot(vWorld.xz-shTarget,shViewXZ)/max(shSpan*0.5,1.0);
     color=mix(color,shMist,smoothstep(0.05,1.1,far)*shAir);
   }
@@ -476,7 +497,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
       slopeRockColor: { value: new THREE.Color('#808080') }, slopeSoilColor: { value: new THREE.Color('#808080') },
       terrainWaterColor: { value: new THREE.Color().setRGB(0.30, 0.43, 0.46) },
       realmInkColor: { value: new THREE.Color('#202020') }, atmosphereColor: { value: new THREE.Color('#ffffff') },
-      shanhaiMode: { value: 0 }, shInkMode: { value: 0 }, shInkAmt: { value: 0 }, shMineral: { value: 0 }, shLineFill: { value: 0 }, shLineTone: { value: 0 }, shInkThr: { value: 0.47 }, shKeepInk: { value: 0 }, shWash: { value: 0 }, shLine: { value: 0 }, shStrength: { value: 0 }, shShade: { value: 0 }, shCun: { value: 0 }, shRidge: { value: 0 },
+      shBrush: { value: 0 }, shanhaiMode: { value: 0 }, shInkMode: { value: 0 }, shInkAmt: { value: 0 }, shMineral: { value: 0 }, shLineFill: { value: 0 }, shLineTone: { value: 0 }, shInkThr: { value: 0.47 }, shKeepInk: { value: 0 }, shWash: { value: 0 }, shLine: { value: 0 }, shStrength: { value: 0 }, shShade: { value: 0 }, shCun: { value: 0 }, shRidge: { value: 0 },
       shGoldAmt: { value: 0 }, shMistAmt: { value: 0 }, shAir: { value: 0 }, shSpan: { value: 200 },
       shBand: { value: new THREE.Vector2(-4, 28) }, shViewXZ: { value: new THREE.Vector2(0, -1) }, shTarget: { value: new THREE.Vector2() },
       ...Object.fromEntries(['shLow','shMid','shHigh','shPeak','shShadow','shLight','shGold','shMist'].map(k => [k, { value: new THREE.Color('#808080') }])),
@@ -571,7 +592,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
     if (sh) {
       u.shBand.value.set(sh.band[0], sh.band[1]);
       for (const [key, name] of [['shLow','low'],['shMid','mid'],['shHigh','high'],['shPeak','peak'],['shShadow','shadow'],['shLight','light'],['shGold','gold'],['shMist','mist']]) u[key].value.set(sh[name]);
-      for (const [key, name] of [['shStrength','strength'],['shShade','shade'],['shCun','cun'],['shRidge','ridge'],['shGoldAmt','goldAmt'],['shMistAmt','mistAmt'],['shAir','air'],['shWash','wash'],['shLine','line'],['shInkAmt','inkAmt'],['shMineral','mineral'],['shLineFill','lineFill'],['shLineTone','lineTone'],['shKeepInk','keepInk']]) u[key].value = sh[name] ?? 0;
+      for (const [key, name] of [['shStrength','strength'],['shShade','shade'],['shCun','cun'],['shRidge','ridge'],['shGoldAmt','goldAmt'],['shMistAmt','mistAmt'],['shAir','air'],['shWash','wash'],['shLine','line'],['shInkAmt','inkAmt'],['shMineral','mineral'],['shLineFill','lineFill'],['shLineTone','lineTone'],['shKeepInk','keepInk'],['shBrush','brush']]) u[key].value = sh[name] ?? 0;
       u.shInkThr.value = sh.inkThr ?? 0.47;
       u.shInkMode.value = sh.inkMode === 'print' ? 1 : sh.inkMode === 'ink' ? 2 : 0;
       this.shanhaiBaseBand = [sh.band[0], sh.band[1]];

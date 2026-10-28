@@ -273,6 +273,11 @@ export const NETHER_BANK_RADIUS = BANK_RADIUS;
  */
 const BANK_CACHE = new WeakMap();
 
+/** Terrain editing invalidates the cached bank candidate list once per edit. */
+export function invalidateNetherBanks(nether) {
+  BANK_CACHE.delete(nether);
+}
+
 /**
  * 32 位字符串 / 数字哈希（FNV-1a 变体）。**纯函数、不抽签**。
  * 用来把「这条魂是谁」映射成一个稳定的落点，同种子逐次可复现。
@@ -1035,10 +1040,16 @@ function netherCanStep(nether, x, y) {
  *   `moveNetherSpatially` 每拍都撞墙、原地不动——「鬼魂不会动」会以
  *   「偶尔有几个人不动」的形态藏起来（同上界 `spatialTargetValid` 的教训）。
  */
-function netherSpatialTargetValid(nether, e) {
+export function netherSpatialTargetValid(nether, e) {
   if (!Number.isFinite(e.tx) || !Number.isFinite(e.ty)) return false;
-  const x = Math.floor(e.tx);
-  const y = Math.floor(e.ty);
+  return netherActivityTileValid(nether, e, e.tx, e.ty);
+}
+
+/** Same walkable river activity band used by spatial target selection. */
+export function netherActivityTileValid(nether, e, px, py) {
+  if (!Number.isFinite(px) || !Number.isFinite(py)) return false;
+  const x = Math.floor(px);
+  const y = Math.floor(py);
   if (x < 0 || y < 0 || x >= nether.w || y >= nether.h) return false;
   if (!netherWalkable(nether, y * nether.w + x)) return false;
   return nearRiverAt(nether, x, y, activityRadiusOf(e));

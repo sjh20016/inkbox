@@ -1,0 +1,1275 @@
+{
+  "base": "bd62ade03c56908ce5942f7100d6b5cb2bc38934",
+  "branch": "feature/d-n1-nether-landscape",
+  "functional": {
+    "pass": true,
+    "checks": [
+      {
+        "name": "preview identity, WebGL, meaningful first screen",
+        "pass": true,
+        "evidence": {
+          "url": "http://127.0.0.1:4257/research/nether-landscape/index.html",
+          "title": "幽冥造境 · 坐天观井 D-N1",
+          "content": 415,
+          "overlay": false,
+          "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "timerQuery": true,
+          "viewport": [
+            1440,
+            900
+          ],
+          "metrics": {
+            "seed": 20260914,
+            "version": "candidate",
+            "candidateVersion": "dn1-candidate-1",
+            "size": [
+              288,
+              180
+            ],
+            "day": 0,
+            "frames": 28,
+            "updateP95": 5.599999904632568,
+            "submitP95": 131.20000004768372,
+            "rafP95": 139.0999999999999,
+            "over50": 3,
+            "draws": 75,
+            "triangles": 234930,
+            "memory": {
+              "geometries": 29,
+              "textures": 8
+            },
+            "river": {
+              "quads": 1960,
+              "triangles": 3940,
+              "rebuilds": 1,
+              "sampledCells": 51373
+            },
+            "mist": {
+              "instances": 24,
+              "capacity": 24,
+              "rebuilds": 2,
+              "soulInfluences": 0
+            },
+            "scenery": {
+              "records": 30,
+              "visible": 30,
+              "yielded": 0,
+              "regionHidden": 0,
+              "relayouts": 2,
+              "kinds": {
+                "remnant": 4,
+                "pillar": 5,
+                "tombs": 1,
+                "lamp": 8,
+                "deadtree": 12,
+                "ruin": 0
+              }
+            },
+            "lines": {
+              "builds": 1,
+              "segments": 4793,
+              "lastBuildMs": 33.39999985694885,
+              "lastWallMs": 1114.4000000953674,
+              "lastMaxSliceMs": 3.4000000953674316,
+              "chains": 553
+            },
+            "lastEditMs": 0
+          }
+        }
+      },
+      {
+        "name": "legacy generation and visual rollback",
+        "pass": true,
+        "evidence": {
+          "seed": 20260914,
+          "version": "legacy",
+          "candidateVersion": "dn1-candidate-1",
+          "size": [
+            288,
+            180
+          ],
+          "day": 0,
+          "frames": 64,
+          "updateP95": 4.599999904632568,
+          "submitP95": 49.40000009536743,
+          "rafP95": 61.29999999999973,
+          "over50": 5,
+          "draws": 70,
+          "triangles": 284810,
+          "memory": {
+            "geometries": 29,
+            "textures": 9
+          },
+          "river": {
+            "quads": 3162,
+            "triangles": 6380,
+            "rebuilds": 2,
+            "sampledCells": 102746
+          },
+          "mist": {
+            "instances": 8,
+            "capacity": 24,
+            "rebuilds": 3,
+            "soulInfluences": 0
+          },
+          "scenery": {
+            "records": 26,
+            "visible": 26,
+            "yielded": 0,
+            "regionHidden": 0,
+            "relayouts": 4,
+            "kinds": {
+              "remnant": 3,
+              "pillar": 8,
+              "tombs": 0,
+              "lamp": 3,
+              "deadtree": 12,
+              "ruin": 0
+            }
+          },
+          "lines": {
+            "builds": 2,
+            "segments": 28534,
+            "lastBuildMs": 45.99999952316284,
+            "lastWallMs": 288,
+            "lastMaxSliceMs": 3.299999952316284,
+            "chains": 2049
+          },
+          "lastEditMs": 0
+        }
+      },
+      {
+        "name": "native viewpoint river",
+        "pass": true,
+        "evidence": {
+          "text": "黄泉河川 · 格 143, 80。景物与阴雾由真实地形和阴气派生。",
+          "metrics": {
+            "seed": 20260914,
+            "version": "candidate",
+            "candidateVersion": "dn1-candidate-1",
+            "size": [
+              288,
+              180
+            ],
+            "day": 0,
+            "frames": 76,
+            "updateP95": 3.799999952316284,
+            "submitP95": 2,
+            "rafP95": 33.400000000000546,
+            "over50": 2,
+            "draws": 36,
+            "triangles": 232192,
+            "memory": {
+              "geometries": 32,
+              "textures": 8
+            },
+            "river": {
+              "quads": 1960,
+              "triangles": 3940,
+              "rebuilds": 1,
+              "sampledCells": 51373
+            },
+            "mist": {
+              "instances": 24,
+              "capacity": 24,
+              "rebuilds": 2,
+              "soulInfluences": 0
+            },
+            "scenery": {
+              "records": 30,
+              "visible": 30,
+              "yielded": 0,
+              "regionHidden": 0,
+              "relayouts": 2,
+              "kinds": {
+                "remnant": 4,
+                "pillar": 5,
+                "tombs": 1,
+                "lamp": 8,
+                "deadtree": 12,
+                "ruin": 0
+              }
+            },
+            "lines": {
+              "builds": 1,
+              "segments": 4793,
+              "lastBuildMs": 16.700000047683716,
+              "lastWallMs": 903.5999999046326,
+              "lastMaxSliceMs": 3,
+              "chains": 553
+            },
+            "lastEditMs": 0
+          }
+        }
+      },
+      {
+        "name": "native viewpoint ridge",
+        "pass": true,
+        "evidence": {
+          "text": "墨骨山岭 · 格 101, 140。景物与阴雾由真实地形和阴气派生。",
+          "metrics": {
+            "seed": 20260914,
+            "version": "candidate",
+            "candidateVersion": "dn1-candidate-1",
+            "size": [
+              288,
+              180
+            ],
+            "day": 0,
+            "frames": 123,
+            "updateP95": 2.5,
+            "submitP95": 1.6000001430511475,
+            "rafP95": 33.399999999999636,
+            "over50": 2,
+            "draws": 37,
+            "triangles": 232274,
+            "memory": {
+              "geometries": 32,
+              "textures": 8
+            },
+            "river": {
+              "quads": 1960,
+              "triangles": 3940,
+              "rebuilds": 1,
+              "sampledCells": 51373
+            },
+            "mist": {
+              "instances": 24,
+              "capacity": 24,
+              "rebuilds": 3,
+              "soulInfluences": 0
+            },
+            "scenery": {
+              "records": 30,
+              "visible": 30,
+              "yielded": 0,
+              "regionHidden": 0,
+              "relayouts": 2,
+              "kinds": {
+                "remnant": 4,
+                "pillar": 5,
+                "tombs": 1,
+                "lamp": 8,
+                "deadtree": 12,
+                "ruin": 0
+              }
+            },
+            "lines": {
+              "builds": 1,
+              "segments": 4793,
+              "lastBuildMs": 16.700000047683716,
+              "lastWallMs": 903.5999999046326,
+              "lastMaxSliceMs": 3,
+              "chains": 553
+            },
+            "lastEditMs": 0
+          }
+        }
+      },
+      {
+        "name": "native viewpoint valley",
+        "pass": true,
+        "evidence": {
+          "text": "阴雾深谷 · 格 65, 56。景物与阴雾由真实地形和阴气派生。",
+          "metrics": {
+            "seed": 20260914,
+            "version": "candidate",
+            "candidateVersion": "dn1-candidate-1",
+            "size": [
+              288,
+              180
+            ],
+            "day": 0,
+            "frames": 170,
+            "updateP95": 1.4000000953674316,
+            "submitP95": 1.3999998569488525,
+            "rafP95": 33.399999999999636,
+            "over50": 2,
+            "draws": 36,
+            "triangles": 232392,
+            "memory": {
+              "geometries": 32,
+              "textures": 8
+            },
+            "river": {
+              "quads": 1960,
+              "triangles": 3940,
+              "rebuilds": 1,
+              "sampledCells": 51373
+            },
+            "mist": {
+              "instances": 24,
+              "capacity": 24,
+              "rebuilds": 3,
+              "soulInfluences": 0
+            },
+            "scenery": {
+              "records": 30,
+              "visible": 30,
+              "yielded": 0,
+              "regionHidden": 0,
+              "relayouts": 2,
+              "kinds": {
+                "remnant": 4,
+                "pillar": 5,
+                "tombs": 1,
+                "lamp": 8,
+                "deadtree": 12,
+                "ruin": 0
+              }
+            },
+            "lines": {
+              "builds": 1,
+              "segments": 4793,
+              "lastBuildMs": 16.700000047683716,
+              "lastWallMs": 903.5999999046326,
+              "lastMaxSliceMs": 3,
+              "chains": 553
+            },
+            "lastEditMs": 0
+          }
+        }
+      },
+      {
+        "name": "native viewpoint waste",
+        "pass": true,
+        "evidence": {
+          "text": "荒魂原野 · 格 143, 89。景物与阴雾由真实地形和阴气派生。",
+          "metrics": {
+            "seed": 20260914,
+            "version": "candidate",
+            "candidateVersion": "dn1-candidate-1",
+            "size": [
+              288,
+              180
+            ],
+            "day": 0,
+            "frames": 180,
+            "updateP95": 1.1000001430511475,
+            "submitP95": 1,
+            "rafP95": 27.900000000001455,
+            "over50": 0,
+            "draws": 36,
+            "triangles": 232072,
+            "memory": {
+              "geometries": 32,
+              "textures": 8
+            },
+            "river": {
+              "quads": 1960,
+              "triangles": 3940,
+              "rebuilds": 1,
+              "sampledCells": 51373
+            },
+            "mist": {
+              "instances": 24,
+              "capacity": 24,
+              "rebuilds": 4,
+              "soulInfluences": 0
+            },
+            "scenery": {
+              "records": 30,
+              "visible": 30,
+              "yielded": 0,
+              "regionHidden": 0,
+              "relayouts": 2,
+              "kinds": {
+                "remnant": 4,
+                "pillar": 5,
+                "tombs": 1,
+                "lamp": 8,
+                "deadtree": 12,
+                "ruin": 0
+              }
+            },
+            "lines": {
+              "builds": 1,
+              "segments": 4793,
+              "lastBuildMs": 16.700000047683716,
+              "lastWallMs": 903.5999999046326,
+              "lastMaxSliceMs": 3,
+              "chains": 553
+            },
+            "lastEditMs": 0
+          }
+        }
+      },
+      {
+        "name": "native terrain stroke, undo, redo and cancel",
+        "pass": true,
+        "evidence": {
+          "lastEdit": {
+            "changed": 112,
+            "rect": {
+              "x": 136,
+              "y": 81,
+              "w": 15,
+              "h": 16
+            },
+            "moved": 0,
+            "clearedTargets": 0,
+            "x": 143,
+            "y": 88.99999999999994,
+            "tool": "raise"
+          },
+          "day": 0,
+          "metrics": {
+            "seed": 20260914,
+            "version": "candidate",
+            "candidateVersion": "dn1-candidate-1",
+            "size": [
+              288,
+              180
+            ],
+            "day": 0,
+            "frames": 180,
+            "updateP95": 4.3999998569488525,
+            "submitP95": 1.2000000476837158,
+            "rafP95": 33.399999999999636,
+            "over50": 0,
+            "draws": 36,
+            "triangles": 232072,
+            "memory": {
+              "geometries": 32,
+              "textures": 8
+            },
+            "river": {
+              "quads": 1960,
+              "triangles": 3940,
+              "rebuilds": 5,
+              "sampledCells": 52101
+            },
+            "mist": {
+              "instances": 24,
+              "capacity": 24,
+              "rebuilds": 9,
+              "soulInfluences": 0
+            },
+            "scenery": {
+              "records": 30,
+              "visible": 30,
+              "yielded": 0,
+              "regionHidden": 0,
+              "relayouts": 3,
+              "kinds": {
+                "remnant": 4,
+                "pillar": 5,
+                "tombs": 1,
+                "lamp": 8,
+                "deadtree": 12,
+                "ruin": 0
+              }
+            },
+            "lines": {
+              "builds": 4,
+              "segments": 4793,
+              "lastBuildMs": 10.600000381469727,
+              "lastWallMs": 79,
+              "lastMaxSliceMs": 3,
+              "chains": 553
+            },
+            "lastEditMs": 1
+          }
+        }
+      },
+      {
+        "name": "tour and display controls",
+        "pass": true,
+        "evidence": true
+      },
+      {
+        "name": "actual rendered size small",
+        "pass": true,
+        "evidence": {
+          "seed": 20260914,
+          "version": "candidate",
+          "candidateVersion": "dn1-candidate-1",
+          "size": [
+            200,
+            128
+          ],
+          "day": 0,
+          "frames": 21,
+          "updateP95": 3.5,
+          "submitP95": 74.60000014305115,
+          "rafP95": 77.89999999999964,
+          "over50": 3,
+          "draws": 74,
+          "triangles": 127216,
+          "memory": {
+            "geometries": 28,
+            "textures": 8
+          },
+          "river": {
+            "quads": 1368,
+            "triangles": 2756,
+            "rebuilds": 1,
+            "sampledCells": 25273
+          },
+          "mist": {
+            "instances": 24,
+            "capacity": 24,
+            "rebuilds": 2,
+            "soulInfluences": 0
+          },
+          "scenery": {
+            "records": 34,
+            "visible": 34,
+            "yielded": 0,
+            "regionHidden": 0,
+            "relayouts": 2,
+            "kinds": {
+              "remnant": 4,
+              "pillar": 4,
+              "tombs": 2,
+              "lamp": 12,
+              "deadtree": 12,
+              "ruin": 0
+            }
+          },
+          "lines": {
+            "builds": 1,
+            "segments": 4219,
+            "lastBuildMs": 9.299999952316284,
+            "lastWallMs": 771.8999998569489,
+            "lastMaxSliceMs": 3,
+            "chains": 413
+          },
+          "lastEditMs": 1
+        }
+      },
+      {
+        "name": "actual rendered size large",
+        "pass": true,
+        "evidence": {
+          "seed": 20260914,
+          "version": "candidate",
+          "candidateVersion": "dn1-candidate-1",
+          "size": [
+            384,
+            240
+          ],
+          "day": 0,
+          "frames": 30,
+          "updateP95": 4.5,
+          "submitP95": 88.29999995231628,
+          "rafP95": 94.69999999999709,
+          "over50": 3,
+          "draws": 65,
+          "triangles": 396366,
+          "memory": {
+            "geometries": 29,
+            "textures": 8
+          },
+          "river": {
+            "quads": 2632,
+            "triangles": 5284,
+            "rebuilds": 1,
+            "sampledCells": 91537
+          },
+          "mist": {
+            "instances": 23,
+            "capacity": 24,
+            "rebuilds": 2,
+            "soulInfluences": 0
+          },
+          "scenery": {
+            "records": 26,
+            "visible": 26,
+            "yielded": 0,
+            "regionHidden": 0,
+            "relayouts": 2,
+            "kinds": {
+              "remnant": 2,
+              "pillar": 3,
+              "tombs": 3,
+              "lamp": 5,
+              "deadtree": 12,
+              "ruin": 1
+            }
+          },
+          "lines": {
+            "builds": 1,
+            "segments": 4642,
+            "lastBuildMs": 13.800000667572021,
+            "lastWallMs": 685.4000000953674,
+            "lastMaxSliceMs": 3,
+            "chains": 620
+          },
+          "lastEditMs": 1
+        }
+      },
+      {
+        "name": "actual rendered size expanse",
+        "pass": true,
+        "evidence": {
+          "seed": 20260914,
+          "version": "candidate",
+          "candidateVersion": "dn1-candidate-1",
+          "size": [
+            512,
+            320
+          ],
+          "day": 0,
+          "frames": 30,
+          "updateP95": 6,
+          "submitP95": 108,
+          "rafP95": 116.90000000000146,
+          "over50": 2,
+          "draws": 64,
+          "triangles": 683734,
+          "memory": {
+            "geometries": 29,
+            "textures": 8
+          },
+          "river": {
+            "quads": 3520,
+            "triangles": 7060,
+            "rebuilds": 1,
+            "sampledCells": 163009
+          },
+          "mist": {
+            "instances": 19,
+            "capacity": 24,
+            "rebuilds": 2,
+            "soulInfluences": 0
+          },
+          "scenery": {
+            "records": 26,
+            "visible": 26,
+            "yielded": 0,
+            "regionHidden": 0,
+            "relayouts": 2,
+            "kinds": {
+              "remnant": 4,
+              "pillar": 3,
+              "tombs": 2,
+              "lamp": 4,
+              "deadtree": 12,
+              "ruin": 1
+            }
+          },
+          "lines": {
+            "builds": 1,
+            "segments": 4239,
+            "lastBuildMs": 18.40000057220459,
+            "lastWallMs": 934.1999998092651,
+            "lastMaxSliceMs": 3,
+            "chains": 560
+          },
+          "lastEditMs": 1
+        }
+      },
+      {
+        "name": "narrow preview viewport",
+        "pass": true,
+        "evidence": {
+          "w": 768,
+          "scroll": 768,
+          "canvas": 492
+        }
+      },
+      {
+        "name": "formal creation, full nether, scenery control and Canvas fact parity",
+        "pass": true,
+        "evidence": {
+          "theme": {
+            "realm": "nether",
+            "paper": "#25221e",
+            "ink": "#ece3cf",
+            "desk": "#161513",
+            "seal": "#d0583f",
+            "railBackground": "rgb(37, 34, 30)",
+            "railColor": "rgb(236, 227, 207)"
+          },
+          "secondary": {
+            "catalog": "rgb(212, 202, 182)",
+            "guideButton": "rgb(212, 202, 182)",
+            "scheme": "dark"
+          },
+          "canvas": {
+            "title": "水墨沙盒 · 坐天观井 v1.0.0",
+            "url": "http://127.0.0.1:4257/inkbox.html?renderer=3d",
+            "seed": 20260914,
+            "day": 2.156400000000004,
+            "renderer": "Canvas"
+          }
+        }
+      }
+    ],
+    "errors": [],
+    "source": {
+      "render3d": "6c1c5e77e882114e1864188e6735a9072765be6a14e8dcd6d948036a5b8413b9",
+      "world": "1b324d7554c650cc6f9d21729c786c7361120d8edb85066ff31f8d89b1072a45",
+      "ui": "26d9a52bdac1dc969eb91b56b08e22e7d3063e7e8fa54712b059692084961208",
+      "performanceSkipped": true
+    },
+    "cleanup": true
+  },
+  "performance": {
+    "origin": "reports/local/dn1/acceptance-1/acceptance.json",
+    "originOverallPass": false,
+    "originFailure": "Test harness attempted a hidden scenery checkbox before opening the native tool sheet; later formal and full functional runs passed.",
+    "sourceChangesAfterMeasurement": "Nether UI CSS and browser harness only; render3d and world implementation unchanged.",
+    "environment": {
+      "url": "http://127.0.0.1:4255/research/nether-landscape/index.html",
+      "title": "幽冥造境 · 坐天观井 D-N1",
+      "content": 415,
+      "overlay": false,
+      "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "timerQuery": true,
+      "viewport": [
+        1440,
+        900
+      ],
+      "metrics": {
+        "seed": 20260914,
+        "version": "candidate",
+        "candidateVersion": "dn1-candidate-1",
+        "size": [
+          288,
+          180
+        ],
+        "day": 0,
+        "frames": 30,
+        "updateP95": 6.5,
+        "submitP95": 97.79999995231628,
+        "rafP95": 100.29999999999995,
+        "over50": 4,
+        "draws": 75,
+        "triangles": 234930,
+        "memory": {
+          "geometries": 29,
+          "textures": 8
+        },
+        "river": {
+          "quads": 1960,
+          "triangles": 3940,
+          "rebuilds": 1,
+          "sampledCells": 51373
+        },
+        "mist": {
+          "instances": 24,
+          "capacity": 24,
+          "rebuilds": 2,
+          "soulInfluences": 0
+        },
+        "scenery": {
+          "records": 30,
+          "visible": 30,
+          "yielded": 0,
+          "regionHidden": 0,
+          "relayouts": 2,
+          "kinds": {
+            "remnant": 4,
+            "pillar": 5,
+            "tombs": 1,
+            "lamp": 8,
+            "deadtree": 12,
+            "ruin": 0
+          }
+        },
+        "lines": {
+          "builds": 1,
+          "segments": 4793,
+          "lastBuildMs": 36.80000019073486,
+          "lastWallMs": 1261.5,
+          "lastMaxSliceMs": 4.299999952316284,
+          "chains": 553
+        },
+        "lastEditMs": 0
+      }
+    },
+    "windows": [
+      {
+        "label": "ABBA-0",
+        "size": [
+          288,
+          180
+        ],
+        "enabled": false,
+        "seed": 20260914,
+        "version": "legacy",
+        "candidateVersion": "dn1-candidate-1",
+        "day": 0,
+        "frames": 124,
+        "updateP95": 1.4000000953674316,
+        "submitP95": 1.4000000953674316,
+        "rafP95": 33.29999999999927,
+        "over50": 0,
+        "draws": 77,
+        "triangles": 271202,
+        "memory": {
+          "geometries": 29,
+          "textures": 9
+        },
+        "river": {
+          "quads": 3162,
+          "triangles": 6380,
+          "rebuilds": 1,
+          "sampledCells": 51373
+        },
+        "mist": {
+          "instances": 8,
+          "capacity": 24,
+          "rebuilds": 2,
+          "soulInfluences": 0
+        },
+        "scenery": {
+          "records": 43,
+          "visible": 43,
+          "yielded": 0,
+          "regionHidden": 0,
+          "relayouts": 3,
+          "kinds": {
+            "remnant": 4,
+            "pillar": 8,
+            "tombs": 5,
+            "lamp": 12,
+            "deadtree": 12,
+            "ruin": 2
+          }
+        },
+        "lines": {
+          "builds": 2,
+          "segments": 24919,
+          "lastBuildMs": 30.5,
+          "lastWallMs": 245.10000014305115,
+          "lastMaxSliceMs": 3.200000047683716,
+          "chains": 2372
+        },
+        "lastEditMs": 1.0999999046325684
+      },
+      {
+        "label": "ABBA-1",
+        "size": [
+          288,
+          180
+        ],
+        "enabled": true,
+        "seed": 20260914,
+        "version": "legacy",
+        "candidateVersion": "dn1-candidate-1",
+        "day": 0,
+        "frames": 130,
+        "updateP95": 1.4000000953674316,
+        "submitP95": 1.4000000953674316,
+        "rafP95": 27.799999999999272,
+        "over50": 0,
+        "draws": 70,
+        "triangles": 284810,
+        "memory": {
+          "geometries": 29,
+          "textures": 9
+        },
+        "river": {
+          "quads": 3162,
+          "triangles": 6380,
+          "rebuilds": 2,
+          "sampledCells": 102746
+        },
+        "mist": {
+          "instances": 8,
+          "capacity": 24,
+          "rebuilds": 5,
+          "soulInfluences": 0
+        },
+        "scenery": {
+          "records": 26,
+          "visible": 26,
+          "yielded": 0,
+          "regionHidden": 0,
+          "relayouts": 4,
+          "kinds": {
+            "remnant": 3,
+            "pillar": 8,
+            "tombs": 0,
+            "lamp": 3,
+            "deadtree": 12,
+            "ruin": 0
+          }
+        },
+        "lines": {
+          "builds": 3,
+          "segments": 28534,
+          "lastBuildMs": 34.60000038146973,
+          "lastWallMs": 259.7999999523163,
+          "lastMaxSliceMs": 3,
+          "chains": 2049
+        },
+        "lastEditMs": 1.0999999046325684
+      },
+      {
+        "label": "ABBA-2",
+        "size": [
+          288,
+          180
+        ],
+        "enabled": true,
+        "seed": 20260914,
+        "version": "legacy",
+        "candidateVersion": "dn1-candidate-1",
+        "day": 0,
+        "frames": 124,
+        "updateP95": 1.2999999523162842,
+        "submitP95": 1.2999999523162842,
+        "rafP95": 39,
+        "over50": 0,
+        "draws": 70,
+        "triangles": 284810,
+        "memory": {
+          "geometries": 29,
+          "textures": 9
+        },
+        "river": {
+          "quads": 3162,
+          "triangles": 6380,
+          "rebuilds": 2,
+          "sampledCells": 102746
+        },
+        "mist": {
+          "instances": 8,
+          "capacity": 24,
+          "rebuilds": 8,
+          "soulInfluences": 0
+        },
+        "scenery": {
+          "records": 26,
+          "visible": 26,
+          "yielded": 0,
+          "regionHidden": 0,
+          "relayouts": 4,
+          "kinds": {
+            "remnant": 3,
+            "pillar": 8,
+            "tombs": 0,
+            "lamp": 3,
+            "deadtree": 12,
+            "ruin": 0
+          }
+        },
+        "lines": {
+          "builds": 3,
+          "segments": 28534,
+          "lastBuildMs": 34.60000038146973,
+          "lastWallMs": 259.7999999523163,
+          "lastMaxSliceMs": 3,
+          "chains": 2049
+        },
+        "lastEditMs": 1.0999999046325684
+      },
+      {
+        "label": "ABBA-3",
+        "size": [
+          288,
+          180
+        ],
+        "enabled": false,
+        "seed": 20260914,
+        "version": "legacy",
+        "candidateVersion": "dn1-candidate-1",
+        "day": 0,
+        "frames": 137,
+        "updateP95": 1.5999999046325684,
+        "submitP95": 1.4000000953674316,
+        "rafP95": 27.900000000001455,
+        "over50": 0,
+        "draws": 77,
+        "triangles": 271202,
+        "memory": {
+          "geometries": 29,
+          "textures": 9
+        },
+        "river": {
+          "quads": 3162,
+          "triangles": 6380,
+          "rebuilds": 2,
+          "sampledCells": 102746
+        },
+        "mist": {
+          "instances": 8,
+          "capacity": 24,
+          "rebuilds": 8,
+          "soulInfluences": 0
+        },
+        "scenery": {
+          "records": 43,
+          "visible": 43,
+          "yielded": 0,
+          "regionHidden": 0,
+          "relayouts": 5,
+          "kinds": {
+            "remnant": 4,
+            "pillar": 8,
+            "tombs": 5,
+            "lamp": 12,
+            "deadtree": 12,
+            "ruin": 2
+          }
+        },
+        "lines": {
+          "builds": 4,
+          "segments": 24919,
+          "lastBuildMs": 32.69999933242798,
+          "lastWallMs": 246.40000009536743,
+          "lastMaxSliceMs": 4.1000001430511475,
+          "chains": 2372
+        },
+        "lastEditMs": 1.0999999046325684
+      },
+      {
+        "label": "ABBA-0",
+        "size": [
+          512,
+          320
+        ],
+        "enabled": false,
+        "seed": 20260914,
+        "version": "legacy",
+        "candidateVersion": "dn1-candidate-1",
+        "day": 0,
+        "frames": 122,
+        "updateP95": 3.299999952316284,
+        "submitP95": 1.5999999046325684,
+        "rafP95": 39,
+        "over50": 3,
+        "draws": 70,
+        "triangles": 766244,
+        "memory": {
+          "geometries": 27,
+          "textures": 7
+        },
+        "river": {
+          "quads": 5632,
+          "triangles": 11322,
+          "rebuilds": 1,
+          "sampledCells": 163009
+        },
+        "mist": {
+          "instances": 6,
+          "capacity": 24,
+          "rebuilds": 1,
+          "soulInfluences": 0
+        },
+        "scenery": {
+          "records": 43,
+          "visible": 43,
+          "yielded": 0,
+          "regionHidden": 0,
+          "relayouts": 3,
+          "kinds": {
+            "remnant": 4,
+            "pillar": 8,
+            "tombs": 5,
+            "lamp": 12,
+            "deadtree": 12,
+            "ruin": 2
+          }
+        },
+        "lines": {
+          "builds": 1,
+          "segments": 49035,
+          "lastBuildMs": 69.89999961853027,
+          "lastWallMs": 548.5,
+          "lastMaxSliceMs": 6.1000001430511475,
+          "chains": 4000
+        },
+        "lastEditMs": 1.0999999046325684
+      },
+      {
+        "label": "ABBA-1",
+        "size": [
+          512,
+          320
+        ],
+        "enabled": true,
+        "seed": 20260914,
+        "version": "legacy",
+        "candidateVersion": "dn1-candidate-1",
+        "day": 0,
+        "frames": 122,
+        "updateP95": 3.299999952316284,
+        "submitP95": 1.2000000476837158,
+        "rafP95": 39.099999999998545,
+        "over50": 0,
+        "draws": 61,
+        "triangles": 803462,
+        "memory": {
+          "geometries": 29,
+          "textures": 9
+        },
+        "river": {
+          "quads": 5632,
+          "triangles": 11322,
+          "rebuilds": 2,
+          "sampledCells": 326018
+        },
+        "mist": {
+          "instances": 6,
+          "capacity": 24,
+          "rebuilds": 5,
+          "soulInfluences": 0
+        },
+        "scenery": {
+          "records": 24,
+          "visible": 24,
+          "yielded": 0,
+          "regionHidden": 0,
+          "relayouts": 4,
+          "kinds": {
+            "remnant": 4,
+            "pillar": 5,
+            "tombs": 1,
+            "lamp": 1,
+            "deadtree": 12,
+            "ruin": 1
+          }
+        },
+        "lines": {
+          "builds": 2,
+          "segments": 61988,
+          "lastBuildMs": 70.10000157356262,
+          "lastWallMs": 897.1000001430511,
+          "lastMaxSliceMs": 6.400000095367432,
+          "chains": 4659
+        },
+        "lastEditMs": 1.0999999046325684
+      },
+      {
+        "label": "ABBA-2",
+        "size": [
+          512,
+          320
+        ],
+        "enabled": true,
+        "seed": 20260914,
+        "version": "legacy",
+        "candidateVersion": "dn1-candidate-1",
+        "day": 0,
+        "frames": 122,
+        "updateP95": 3.299999952316284,
+        "submitP95": 1.5999999046325684,
+        "rafP95": 39,
+        "over50": 1,
+        "draws": 61,
+        "triangles": 803462,
+        "memory": {
+          "geometries": 29,
+          "textures": 9
+        },
+        "river": {
+          "quads": 5632,
+          "triangles": 11322,
+          "rebuilds": 2,
+          "sampledCells": 326018
+        },
+        "mist": {
+          "instances": 6,
+          "capacity": 24,
+          "rebuilds": 9,
+          "soulInfluences": 0
+        },
+        "scenery": {
+          "records": 24,
+          "visible": 24,
+          "yielded": 0,
+          "regionHidden": 0,
+          "relayouts": 4,
+          "kinds": {
+            "remnant": 4,
+            "pillar": 5,
+            "tombs": 1,
+            "lamp": 1,
+            "deadtree": 12,
+            "ruin": 1
+          }
+        },
+        "lines": {
+          "builds": 2,
+          "segments": 61988,
+          "lastBuildMs": 70.10000157356262,
+          "lastWallMs": 897.1000001430511,
+          "lastMaxSliceMs": 6.400000095367432,
+          "chains": 4659
+        },
+        "lastEditMs": 1.0999999046325684
+      },
+      {
+        "label": "ABBA-3",
+        "size": [
+          512,
+          320
+        ],
+        "enabled": false,
+        "seed": 20260914,
+        "version": "legacy",
+        "candidateVersion": "dn1-candidate-1",
+        "day": 0,
+        "frames": 128,
+        "updateP95": 3,
+        "submitP95": 1.7000000476837158,
+        "rafP95": 39,
+        "over50": 1,
+        "draws": 70,
+        "triangles": 766244,
+        "memory": {
+          "geometries": 29,
+          "textures": 9
+        },
+        "river": {
+          "quads": 5632,
+          "triangles": 11322,
+          "rebuilds": 2,
+          "sampledCells": 326018
+        },
+        "mist": {
+          "instances": 6,
+          "capacity": 24,
+          "rebuilds": 9,
+          "soulInfluences": 0
+        },
+        "scenery": {
+          "records": 43,
+          "visible": 43,
+          "yielded": 0,
+          "regionHidden": 0,
+          "relayouts": 5,
+          "kinds": {
+            "remnant": 4,
+            "pillar": 8,
+            "tombs": 5,
+            "lamp": 12,
+            "deadtree": 12,
+            "ruin": 2
+          }
+        },
+        "lines": {
+          "builds": 3,
+          "segments": 49035,
+          "lastBuildMs": 83.29999899864197,
+          "lastWallMs": 868.7999999523163,
+          "lastMaxSliceMs": 4,
+          "chains": 4000
+        },
+        "lastEditMs": 1.0999999046325684
+      }
+    ]
+  },
+  "screenshots": [
+    "legacy-full.jpg",
+    "candidate-full.jpg",
+    "candidate-river.jpg",
+    "candidate-ridge.jpg",
+    "candidate-valley.jpg",
+    "edit-before.jpg",
+    "edit-after.jpg",
+    "product-nether.jpg"
+  ],
+  "imageBytes": 1371743,
+  "limitations": [
+    "Candidate generation and editing run only in the isolated lab; no G-EDIT or product save export.",
+    "CPU render submission is not GPU execution time.",
+    "No new multi-device, 800-year, or 600/6000 GPU soak.",
+    "No real historical player-save sample; legacy schema and existing save-equivalence gates were exercised."
+  ]
+}
