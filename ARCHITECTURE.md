@@ -1,5 +1,8 @@
 # ARCHITECTURE · 工作区与模块地图
 
+> **RG2 提醒（2026-10-28）**：以下“Current Truth · 2026-10-08”及 M2-C2E、G2.5 等段落是保留的阶段性结构说明，不是当前产品状态。正式 main 已包含 WT-I1、G8 与 E2-Lite。最新候选状态见 [RG2 当前状态](./docs/development/RG2_CURRENT_STATE.md)，新玩法按 [扩展接入约定](./docs/development/FEATURE_EXTENSION_CONTRACT.md) 优先复用 `sim/advance.js`、`io/save.js`、`ui/` 与现有观察接口，不增第二套事实源。
+
+
 2026-10-18 产品状态以 [ROADMAP](./ROADMAP.md) 与 [HANDOFF](./HANDOFF.md) 顶部为准：main 已合并 G1、G2-R1、A1、G2.4-C，当前开发转入 G2.5，G2 性能及 G3 成本研究仍有阻塞。工作树结构以本页 §1 和实际 Git 树为准；历史报告固定于 [治理前 Git 快照](https://github.com/sjh20016/inkbox/tree/e1e55039bb56efda7a307513ede07a9fab3bf534)。下方阶段性状态均为历史快照；模块职责和契约结合当前源码阅读。
 
 

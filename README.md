@@ -10,7 +10,7 @@ R1「山海入世」在 G5/P1 主线上接入 Opus V1→V1.3 原始美术历史�
 
 ## 正式产品状态（按 main 最新提交核对）
 
-**E2-Lite「观井有痕」玩家观察闭环（来源 PR [#54](https://github.com/sjh20016/inkbox/pull/54)）**：右栏「手札」串起焚林、降灾、赐灵根与原抽水回声；可从真实人物/聚落卡立下两种只读行愿，并随 v11 存档回访。具体合流状态以 PR #54 为准，操作和验收见 [E2-Lite 交付说明](./docs/development/E2_LITE_DELIVERY.md)。
+**E2-Lite「观井有痕」玩家观察闭环（来源 PR [#54](https://github.com/sjh20016/inkbox/pull/54)）**：右栏「手札」串起焚林、降灾、赐灵根与原抽水回声；可从真实人物/聚落卡立下两种只读行愿，并随 v11 存档回访。**已随 PR #54 正式合入 main**，操作和验收见 [E2-Lite 交付说明](./docs/development/E2_LITE_DELIVERY.md)。
 
 **G8-M1「岁序归一」已完成正式合流**：PR #52 以合并提交 `06043766d937ac42e8f4a04305e256cf5b9a43ce` 接纳运行期 RNG 与时钟续跑、人口生态及跨界法宝修复。新档可恢复已保存的游标；旧档无法倒推出历史游标，地形仍为 16 位有损量化。固定种子 800 年终局 1400 生灵是单次样本，长期平衡及真实成熟世界性能仍待研究。见 [G8 合流记录](./docs/development/G8_M1_MERGE_REPORT.md) 与 [成熟世界基线](./docs/development/G8_MATURE_WORLD_BASELINE.md)。
 
@@ -25,6 +25,8 @@ G7 v1.1 按依赖顺序接纳 **E0 #34 → C1 #35 → 立体观世 P0 #36**：�
 G2/G5 功能接纳不代表性能预算封板。PR #26～#28 已进入主线；PR #12、#4～17 等旧候选只作来源与研究索引，不重复合并已迁入主线的功能。G3 cost 仍为 **BLOCKED**，独立 B 线与产品线没有共同祖先。
 
 导航：[`HANDOFF.md`](./HANDOFF.md) · [`ROADMAP.md`](./ROADMAP.md) · [`BACKLOG.md`](./BACKLOG.md) · [`tests/README.md`](./tests/README.md) · [`docs/development/REPOSITORY_WORKFLOW.md`](./docs/development/REPOSITORY_WORKFLOW.md)。
+
+**RG2 开发入口**：最新候选与旧研究 PR 的分类见 [当前仓库状态](./docs/development/RG2_CURRENT_STATE.md)；网页端并行原型与 Codex 合流先遵循 [玩法扩展接入约定](./docs/development/FEATURE_EXTENSION_CONTRACT.md)。这两份文档不授权自动合并候选、删除分支或更改游戏机制。
 
 **T0 来源 #40**：真实运粮与修士远行由WT-I1完整收纳；普通游戏书架可派遣，`inkbox.html?scenario=t0` 保留明确标注的受控初始场景。规则与边界见 [T0交付记录](./docs/development/T0_TRANSIT_DELIVERY.md)。
 
