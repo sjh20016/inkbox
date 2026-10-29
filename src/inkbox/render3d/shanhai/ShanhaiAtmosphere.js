@@ -15,7 +15,16 @@ import { CloudBillboardBatch } from './CloudBillboardBatch.js';
 const rand = seed => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
 const noRaycast = object => { object.raycast = () => {}; object.userData.presentationOnly = true; object.userData.decorative = 'shanhai'; return object; };
 
-function paintBackdrop(plane, seed = 7) {
+function paintInkGradient(){
+  const canvas=makeCanvas(32,512),g=canvas.getContext('2d'),wash=g.createLinearGradient(0,0,0,512);
+  wash.addColorStop(0,'#050607');wash.addColorStop(.36,'#282b2d');
+  wash.addColorStop(.70,'#65696a');wash.addColorStop(1,'#a5a7a5');
+  g.fillStyle=wash;g.fillRect(0,0,32,512);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+  texture.generateMipmaps=false;texture.minFilter=texture.magFilter=THREE.LinearFilter;
+  texture.name='NetherInkGradient';return texture;
+}
+function paintBackdrop(plane, seed = 7, inkArt = false) {
   const s = shanhaiSceneFor(plane), W = 1536, H = 960, r = rand(seed * 31 + plane.length * 977);
   const canvas = makeCanvas(W, H);
   const g = canvas.getContext('2d');
@@ -23,7 +32,7 @@ function paintBackdrop(plane, seed = 7) {
   sky.addColorStop(0, s.sky.top); sky.addColorStop(0.55, s.sky.horizon); sky.addColorStop(1, s.sky.bottom);
   g.fillStyle = sky; g.fillRect(0, 0, W, H);
   // Sun / moon: a pale pigment disc, never a light source.
-  g.globalAlpha = s.sun.alpha; g.fillStyle = s.sun.color;
+  g.globalAlpha = s.sun.alpha*(inkArt?.65:1); g.fillStyle = s.sun.color;
   g.beginPath(); g.arc(s.sun.x * W, s.sun.y * H, s.sun.r * W, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
   // Layered distant ranges: far = pale, near = deeper; each fades into a mist band.
   const layers = s.hills.length;
@@ -38,11 +47,20 @@ function paintBackdrop(plane, seed = 7) {
       y = Math.sign(y) * Math.abs(y) ** (plane === 'upper' ? 0.7 : 0.9) * jag;
       ridge.push([x, base - y * amp * 0.55 - amp * 0.35]);
     }
+    if(inkArt){
+      ridge.length=0;
+      for(let x=-80;x<W+120;){
+        const span=200+r()*250,top=base-amp*(.65+r()*1.25),low=base-amp*.12+r()*amp*.25;
+        ridge.push([x,low],[x+span*.22,top+amp*.28],[x+span*.38,top],
+          [x+span*.49,top+amp*.20],[x+span*.58,top+amp*.15],[x+span*.74,low-amp*.18],[x+span,low]);
+        x+=span;
+      }
+    }
     const grad = g.createLinearGradient(0, base - amp * 1.3, 0, base + amp * 0.9);
     grad.addColorStop(0, s.hills[li]); grad.addColorStop(0.62, s.hills[li]); grad.addColorStop(1, s.mistBand);
     g.fillStyle = grad; g.beginPath(); g.moveTo(0, H);
     for (const [x, y] of ridge) g.lineTo(x, y);
-    g.lineTo(W, H); g.closePath(); g.globalAlpha = 0.55 + li * 0.15; g.fill(); g.globalAlpha = 1;
+    g.lineTo(W, H); g.closePath(); g.globalAlpha = inkArt?.16+li*.10:0.55+li*.15; g.fill(); g.globalAlpha = 1;
     if (plane === 'nether' && s.terrain.brush) {
       // Cached painted scenery outside the playable world: dry fibres fade
       // down the same ridge silhouette, rather than a flat vector cutout.
@@ -60,7 +78,7 @@ function paintBackdrop(plane, seed = 7) {
     g.strokeStyle = s.hillInk; g.lineCap = 'round';
     for (let i = 1; i < ridge.length; i++) {
       if (r() < 0.35) continue;
-      g.globalAlpha = (0.10 + li * 0.10) * (0.5 + r() * 0.5); g.lineWidth = 0.6 + li * 0.8 + r();
+      g.globalAlpha = (0.10 + li * 0.10) * (0.5 + r() * 0.5)*(inkArt?.35:1); g.lineWidth = 0.6 + li * 0.8 + r();
       g.beginPath(); g.moveTo(...ridge[i - 1]); g.lineTo(...ridge[i]); g.stroke();
     }
     // Cun: short downward strokes from the ridge on nearer layers.
@@ -171,7 +189,9 @@ export class ShanhaiAtmosphere {
   setContext({ enabled, plane = 'mortal' }) {
     this.captureLights();
     const brush = plane === 'nether' && !!shanhaiSceneFor(plane).terrain.brush;
-    const key = `${!!enabled}|${plane}|${brush}|${this.worldKey()}`;
+    const candidate=plane==='nether'?this.netherCandidatePresentation:null,inkArt=!!candidate?.inkArt;
+    const backdrop=candidate?.backdrop||'paper',voidBackdrop=backdrop!=='paper';
+    const key = `${!!enabled}|${plane}|${brush}|${inkArt}|${backdrop}|${candidate?.background!==false}|${candidate?.floating!==false}|${this.worldKey()}`;
     if (key === this.key) return; this.key = key;
     this.enabled = !!enabled; this.plane = plane;
     const { hemiLight: hemi, sunLight: sun, scene } = this.host;
@@ -190,15 +210,27 @@ export class ShanhaiAtmosphere {
       this.backdrops.clear();
       this.backdropWorldKey = backdropWorldKey;
     }
-    const backdropKey = brush ? 'nether:brush' : plane;
-    if (!this.backdrops.has(backdropKey)) this.backdrops.set(backdropKey, paintBackdrop(plane, (this.host.world?.seed >>> 0) % 997));
-    scene.background = this.backdrops.get(backdropKey); this.stats.backdrop = plane;
+    const backdropKey = inkArt?'nether:ink-art':brush?'nether:brush':plane;
+    if(!voidBackdrop&&!this.backdrops.has(backdropKey))this.backdrops.set(backdropKey,paintBackdrop(plane,(this.host.world?.seed>>>0)%997,inkArt));
+    if(backdrop==='gradient'&&!this.backdrops.has('nether:gradient'))this.backdrops.set('nether:gradient',paintInkGradient());
+    scene.background=backdrop==='gradient'?this.backdrops.get('nether:gradient'):backdrop==='black'?new THREE.Color('#000000'):candidate?.background===false?new THREE.Color(s.sky.bottom):this.backdrops.get(backdropKey);
+    this.stats.backdrop=voidBackdrop?'nether:'+backdrop:inkArt?backdropKey:plane;
     if (hemi && sun) {
       hemi.color.set(s.light.sky); hemi.groundColor.set(s.light.ground); hemi.intensity = s.light.hemi;
       sun.color.set(s.light.sun); sun.intensity = s.light.sunIntensity; sun.position.set(...s.light.sunDir);
     }
-    this.buildBase(plane);
-    this.root.visible = true;
+    if(voidBackdrop){
+      this.clearBase();
+      if(candidate?.floating!==false)this.buildFloaters(plane,this.host.world,rand((this.host.world.seed>>>0)+plane.length*7919));
+      this.stats.puffs=0;this.stats.floaters=this.floaters.length;
+    }else this.buildBase(plane);
+    this.root.visible = candidate?.background!==false;
+    for(const f of this.floaters)f.visible=candidate?.floating!==false;
+  }
+  /** Explicit, nether-gallery-only presentation; other realms retain context. */
+  setNetherCandidatePresentation(options={}){
+    this.netherCandidatePresentation={inkArt:!!options.inkArt,backdrop:['gradient','black'].includes(options.backdrop)?options.backdrop:'paper',background:options.background!==false,floating:options.floating!==false};
+    this.setContext({enabled:this.enabled,plane:this.plane||'mortal'});
   }
   worldKey() { const w = this.host.world; return w ? `${w.w}x${w.h}:${w.seed}` : 'none'; }
   clearBase() {

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { deriveInkflameField, normalizeInkflame, INKFLAME_GLSL } from './NetherInkflame.js';
+import { deriveInkflameField, normalizeInkflame, inkArtParameters, INKFLAME_GLSL } from './NetherInkflame.js';
 import { decorationFootprintOwned } from '../environment/RealmDecorationLayer.js';
 
 export const SOULFIRE_CAPACITY=24;
@@ -34,18 +34,22 @@ export class NetherSoulfireLayer {
     this.anchors=[];const spacing=Math.max(9,Math.min(w,h)*.075);
     for(const c of candidates){
       if(this.anchors.some(a=>Math.hypot(a.x-c.x,a.y-c.y)<spacing))continue;
-      this.anchors.push({...c,width:10+(c.x*13+c.y*7)%9,height:4+(c.x+c.y)%5,depth:10,rotationY:0});
+      const width=10+(c.x*13+c.y*7)%9;
+      this.anchors.push({...c,width,height:4+(c.x+c.y)%5,depth:width,rotationY:0});
       if(this.anchors.length===SOULFIRE_CAPACITY/2)break;
     }
     if(this.anchors.length){const a=this.anchors[0];this.field.foot={kind:'foot',x:a.x,y:a.y,label:'崖脚阴焰'};}
     this.writeInstances();
   }
   ensurePlumes() {
-    if(this.mesh)return;
-    this.geometry=new THREE.PlaneGeometry(1,1);
+    const art=!!this.options.art;
+    if(this.mesh&&this.plumeArt===art)return;
+    if(this.mesh)this.releasePlumes();
+    this.plumeArt=art;
+    this.geometry=art?new THREE.PlaneGeometry(1,1,3,4):new THREE.PlaneGeometry(1,1);
     this.material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,forceSinglePass:true,
-      uniforms:{nfClock:{value:this.time},nfOptions:{value:new THREE.Vector4()},nfMapSize:{value:new THREE.Vector2(this.world.w,this.world.h)},nfField:{value:this.texture},nfBand:{value:new THREE.Vector2(...this.field.band)}},
-      vertexShader:`varying vec2 vUv;varying vec3 vWorld;void main(){vUv=uv;vec4 p=modelMatrix*instanceMatrix*vec4(position,1.);vWorld=p.xyz;gl_Position=projectionMatrix*viewMatrix*p;}`,
+      uniforms:{nfClock:{value:this.time},nfOptions:{value:new THREE.Vector4()},nfArt:{value:new THREE.Vector4()},nfMapSize:{value:new THREE.Vector2(this.world.w,this.world.h)},nfField:{value:this.texture},nfBand:{value:new THREE.Vector2(...this.field.band)}},
+      vertexShader:`uniform vec4 nfArt;varying vec2 vUv;varying vec3 vWorld;void main(){vUv=uv;vec3 q=position;if(nfArt.x>.5)q.z+=sin(uv.y*3.14159)*.14;vec4 p=modelMatrix*instanceMatrix*vec4(q,1.);vWorld=p.xyz;gl_Position=projectionMatrix*viewMatrix*p;}`,
       fragmentShader:`varying vec2 vUv;varying vec3 vWorld;${INKFLAME_GLSL}
       void main(){vec4 m=nfMasks(vWorld);float t=nfOptions.z>1.5?nfClock*.035:0.;
       float n=nfNoise(vec2(vWorld.x*.20+vWorld.z*.13,vWorld.y*.24-t));
@@ -54,6 +58,11 @@ export class NetherSoulfireLayer {
       float rise=1.-smoothstep(tongue-.18,tongue+.12,vUv.y);
       float base=smoothstep(0.,.16,vUv.y);
       float a=edge*rise*base*(.065+.09*n)*m.b;
+      if(nfArt.x>.5){float bend=(nfNoise(vec2(vWorld.x*.13+vWorld.z*.09,vUv.y*.9-t*.18))-.5)*.30*vUv.y;
+        float width=mix(.44,.025,smoothstep(.12,.92,vUv.y));
+        float silhouette=1.-smoothstep(width*.35,width,abs(vUv.x-.5-bend));
+        float torn=.4+.6*smoothstep(.26,.67,nfArtFlame(vWorld));
+        a=silhouette*(1.-smoothstep(.58,.98,vUv.y))*base*torn*m.b*.30*nfArt.y*(nfArt.x>2.5?1.35:1.);}
       if(a<.004)discard;gl_FragColor=vec4(.94,.965,.96,a);
       #include <tonemapping_fragment>
       #include <colorspace_fragment>
@@ -67,11 +76,12 @@ export class NetherSoulfireLayer {
   setOptions(options) {
     this.options=normalizeInkflame(options);
     if(this.options.soulfire!=='off')this.ensurePlumes();
-    else if(this.mesh){
-      this.mesh.removeFromParent();this.mesh.dispose();this.geometry.dispose();this.material.dispose();
-      this.mesh=this.geometry=this.material=null;this.stats.instances=0;this.stats.triangles=0;
-    }
-    if(this.mesh)this.material.uniforms.nfOptions.value.set(0,0,this.options.soulfire==='flow'?2:1,0);
+    else if(this.mesh)this.releasePlumes();
+    if(this.mesh){this.material.uniforms.nfOptions.value.set(0,0,this.options.soulfire==='flow'?2:1,0);this.material.uniforms.nfArt.value.set(...inkArtParameters(this.options));}
+  }
+  releasePlumes(){
+    this.mesh.removeFromParent();this.mesh.dispose();this.geometry.dispose();this.material.dispose();
+    this.mesh=this.geometry=this.material=null;this.stats.instances=0;this.stats.triangles=0;
   }
   setRegionGeometry(region,inside=true) {
     if(this.region===region&&this.inside===!!inside)return;
@@ -83,16 +93,18 @@ export class NetherSoulfireLayer {
     for(const a of this.anchors){
       if(!decorationFootprintOwned(this.world,this.region,this.inside,a))continue;
       const p=this.coordinates.cellToRender(a.x,a.y);
-      for(const angle of [Math.PI*.25,Math.PI*.75]){
+      const yaw=this.plumeArt?(a.x*.73+a.y*.31)%Math.PI:Math.PI*.25;
+      for(const angle of [yaw,yaw+Math.PI*.5]){
         transform.position.set(p.x,this.elevation.at(a.x,a.y)+a.height*.5+.08,p.z);
-        transform.rotation.set(0,angle,0);transform.scale.set(a.width,a.height,1);transform.updateMatrix();
+        transform.rotation.set(0,angle,0);transform.scale.set(a.width*(this.plumeArt?.68:1),a.height,1);transform.updateMatrix();
         this.mesh.setMatrixAt(count++,transform.matrix);
       }
     }
     this.mesh.count=count;this.mesh.instanceMatrix.needsUpdate=true;
-    this.stats.instances=count;this.stats.triangles=count*2;this.stats.instanceWrites++;
+    this.stats.instances=count;this.stats.triangles=count*this.geometry.index.count/3;this.stats.instanceWrites++;
   }
   setTime(time) {
+    if(this.options.soulfire!=='flow')return;
     this.time=Number.isFinite(time)?time:0;
     if(this.material)this.material.uniforms.nfClock.value=this.time;
   }

@@ -18,7 +18,7 @@ const sources=['src/inkbox/render3d/nether/NetherInkflame.js','src/inkbox/render
 report.source=Object.fromEntries(sources.map(f=>[f,createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex')]));
 let browser,server;
 const page=code=>browser.js(`return (async()=>{${code}})();`,{timeoutMs:60000});
-async function click(selector){const p=await page(`const e=document.querySelector(${JSON.stringify(selector)});e.scrollIntoView({block:'nearest'});await new Promise(requestAnimationFrame);const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};`);await browser.click(p.x,p.y);}
+async function click(selector){const p=await page(`const e=document.querySelector(${JSON.stringify(selector)});const d=e.closest('details');if(d)d.open=true;e.scrollIntoView({block:'nearest'});await new Promise(requestAnimationFrame);const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};`);await browser.click(p.x,p.y);}
 async function ready(n=40){assert(await browser.waitFor(`const l=window.netherStrataLab;return !!l?.state.host&&l.state.frames.length>=${n}&&!l.state.host.stages.get('nether').terrainLines?.buildTask&&!l.state.host.cameraRig.focus;`,{timeoutMs:60000}));}
 async function shot(name){const file=path.join(out,name+'.jpg');const r=await browser.cdp.send('Page.captureScreenshot',{format:'jpeg',quality:88,captureBeyondViewport:false},60000);fs.writeFileSync(file,Buffer.from(r.data,'base64'));report.screenshots.push(file);console.log('Screenshot '+name);}
 async function check(name,fn){const evidence=await fn();report.checks.push({name,pass:true,evidence});console.log('PASS '+name);}
@@ -28,7 +28,7 @@ async function sample(mode,size){await look(mode);await page('netherStrataLab.vi
 try{
   fs.mkdirSync(out,{recursive:true});
   if(!process.env.INKBOX_URL){server=spawn(process.execPath,['scripts/inkbox-server.mjs','--port',String(port)],{cwd:root,stdio:'ignore',windowsHide:true});let ok=false;for(let i=0;i<80;i++){try{if((await fetch(base+'/research/nether-strata/index.html')).ok){ok=true;break;}}catch{}await sleep(150);}assert(ok);}
-  browser=await launch({browser:findEdge(),url:base+'/research/nether-strata/index.html',width:1440,height:900,gpu:true});await ready();
+  browser=await launch({browser:findEdge(),url:base+'/research/nether-strata/index.html?version=strata&look=inkflame',width:1440,height:900,gpu:true});await ready();
   await check('identity, content, WebGL and compiled scene',async()=>{const r=await page(`const g=netherStrataLab.state.host.gpu.getContext(),e=g.getExtension('WEBGL_debug_renderer_info');return {url:location.href,title:document.title,content:document.body.innerText.length,controls:document.querySelectorAll('[data-look]').length,notice:document.body.innerText.includes('不写正式存档'),overlay:!!document.querySelector('vite-error-overlay'),gpu:e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER),viewport:[innerWidth,innerHeight],metrics:netherStrataLab.metrics()};`);assert.match(r.title,/墨焰洗狱/);assert(r.controls===4&&r.notice&&!r.overlay);assert(r.metrics.soulfire.field.lower>0);report.environment=r;return r;});
   await check('same camera four presets and exact world preservation',async()=>{
     await page('window.__heights=netherStrataLab.state.world.height.slice();window.__camera=netherStrataLab.metrics().camera;');

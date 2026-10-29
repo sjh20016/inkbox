@@ -470,9 +470,12 @@ void main() {
       strataColor = mix(strataColor, realmInkColor, pooled*(0.66+0.16*face));
       color = mix(color, strataColor, land);
     }
-    if(nfOptions.x+nfOptions.y+nfOptions.z>0.0){
+    if(nfOptions.x+nfOptions.y+nfOptions.z+nfArt.x>0.0){
       vec3 bone=mix(paperColor,shPeak,.30);
-      color=mix(color,nfTerrain(color,vWorld,smoothstep(.45,1.7,bSlope),shadowSide,bone,realmInkColor),land);
+      color=mix(color,nfTerrain(color,vWorld,smoothstep(.45,1.7,bSlope),shadowSide,bone,realmInkColor,broadN,max(ridge,valley),detail),land);
+      // The candidate owns dry-land pigment, including flat ground. Retaining
+      // the old sparse wash alpha exposed the pale base through every dark mark.
+      if(nfArt.x>.5)coverage=max(coverage,land*.98);
     }
     float far=dot(vWorld.xz-shTarget,shViewXZ)/max(shSpan*0.5,1.0);
     color=mix(color,shMist,smoothstep(0.05,1.1,far)*shAir);

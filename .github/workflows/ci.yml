@@ -110,6 +110,9 @@ jobs:
       - name: D-N2A.1 墨焰分层、只读遮罩与资源回退
         run: npm run test:dn2a1
 
+      - name: D-N2A.2 墨骨归形、黄泉坡肩与阴焰生命周期
+        run: npm run test:dn2a2
+
       - name: S0 静态水域、环境事件、存档及云雾植被批次
         run: npm run test:s0
 

@@ -24,7 +24,7 @@ import { NetherRiverLayer } from '../nether/NetherRiverLayer.js';
 import { NetherEcologyLayer } from '../nether/NetherEcologyLayer.js';
 import { NetherCliffLayer } from '../nether/NetherCliffLayer.js';
 import { NetherSoulfireLayer } from '../nether/NetherSoulfireLayer.js';
-import { normalizeInkflame, inkflameEnabled } from '../nether/NetherInkflame.js';
+import { normalizeInkflame, inkflameEnabled, inkArtParameters } from '../nether/NetherInkflame.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
@@ -136,6 +136,7 @@ export class PlaneStage {
   setNetherInkflame(options = {}) {
     if(this.plane!=='nether')return;
     this.inkflameOptions=normalizeInkflame(options);
+    this.scenery?.setNetherInkArt?.(!!this.inkflameOptions.art);
     if(inkflameEnabled(this.inkflameOptions)){
       if(!this.netherInkflame){
         this.netherInkflame=new NetherSoulfireLayer(this.world,this.coordinates,this.elevation);
@@ -155,11 +156,12 @@ export class PlaneStage {
       if(this.netherInkflame)m.uniforms.nfBand.value.set(...this.netherInkflame.field.band);
       m.uniforms.nfOptions.value.set(o.tone==='inkflame'?1:0,o.lowMist?1:0,
         o.soulfire==='flow'?2:o.soulfire==='static'?1:0,o.cliffInk==='full'?2:o.cliffInk==='light'?1:0);
+      m.uniforms.nfArt.value.set(...inkArtParameters(o));
     }
   }
   setNetherInkflameTime(time) {
     // The lab passes the Host's existing presentation time, never World.day.
-    if(!this.netherInkflame)return;
+    if(!this.netherInkflame||this.inkflameOptions.soulfire!=='flow')return;
     const value=Number.isFinite(time)?time:0;
     this.netherInkflame.setTime(value);
     for(const m of this.inkflameMaterials||[])m.uniforms.nfClock.value=value;

@@ -2,38 +2,44 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>墨焰洗狱 · 叠狱成形 D-N2A.1</title>
+  <title>墨骨归形 · 阴焰化境 D-N2A.2 · 墨焰洗狱 / 叠狱成形</title>
   <link rel="icon" href="data:,"><link rel="stylesheet" href="./preview.css">
   <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 </head>
 <body>
   <aside>
     <a class="back" href="/research/nether-landscape/index.html">← D-N1 幽冥造境</a>
-    <p class="eyebrow">D-N2A.1 / 十八重墨骨地脉</p>
-    <h1>墨焰洗狱</h1><p class="poem">上墨压境，下焰归虚。</p>
+    <p class="eyebrow">D-N2A.2 / 墨骨归形 · 阴焰化境</p>
+    <h1>墨骨归形</h1><p class="poem">层崖藏墨，阴焰化境。</p>
     <p class="notice">仅为候选地貌，不写正式存档。<br>此卷只读观境，世界时间不推进。</p>
     <form id="generate">
       <label for="version">地貌候选</label>
-      <select id="version"><option value="strata">D-N2A · 叠狱地脉</option><option value="dn1">D-N1 · 墨骨山河</option></select>
+      <select id="version"><option value="ink-art">D-N2A.2 · 墨骨山河</option><option value="strata">D-N2A · 叠狱地脉</option><option value="dn1">D-N1 · 墨骨山河</option></select>
       <div class="row">
         <label>画幅<select id="size"><option value="small">小景</option><option value="medium" selected>中堂</option><option value="large">长卷</option><option value="expanse">广境</option></select></label>
         <label>整数种子<input id="seed" type="number" min="0" max="4294967295" step="1" value="20260914" required></label>
       </div>
       <button class="primary" type="submit">展开地脉</button>
     </form>
-    <h2>墨焰对照</h2>
+    <h2>一卷三境</h2><input id="artStyle" type="hidden" value="cangmo">
+    <div class="views" role="group" aria-label="美术候选"><button data-art="charcoal">A · 焦墨绝壁</button><button data-art="cangmo">B · 苍墨山水</button><button data-art="white">C · 白狱魂焰</button><button data-art="legacy">D-N2A.1 原版</button></div>
+    <label>阴焰<select id="soulfire"><option value="off">无焰 · 看山骨</option><option value="static">静焰 · 负形留白</option><option value="flow" selected>缓流 · 阴焰上涌</option></select></label>
+    <div class="switches"><label><input id="blocks" type="checkbox"> 纯大块墨色 · 无动态、细笔与景物</label><label><input id="detailsInk" type="checkbox" checked> 主笔与枯笔细节</label></div>
+    <details class="legacy-controls"><summary>D-N2A.1 分层对照</summary>
     <div class="views looks" role="group" aria-label="墨焰模式"><button data-look="legacy">D-N2A 原版</button><button data-look="tone">仅三段分层</button><button data-look="static">分层与静焰</button><button data-look="inkflame">完整墨焰</button></div>
+    </details>
     <details class="effect-controls"><summary>墨焰细调</summary>
       <label>Tone · 层次<select id="tone"><option value="legacy">legacy · 原版</option><option value="inkflame" selected>inkflame · 上浓下虚</option></select></label>
-      <label>Soulfire · 魂火<select id="soulfire"><option value="off">off · 关闭</option><option value="static">static · 静焰</option><option value="flow" selected>flow · 缓慢上涌</option></select></label>
+      <label>魂焰强度<select id="flameLevel"><option value="pale">淡焰 · 克制</option><option value="roam">游焰 · 可辨流形</option><option value="inferno">狱焰 · 特殊深渊</option></select></label>
       <label>Cliff ink · 崖壁精修<select id="cliffInk"><option value="off">off · 原版笔触</option><option value="light">light · 轻墨</option><option value="full" selected>full · 积墨破笔</option></select></label>
       <label><input id="lowMist" type="checkbox" checked> Low mist · 低层虚白基底</label>
     </details>
     <h2>观其层叠</h2>
-    <div class="views"><button data-view="whole">全卷</button><button data-view="plateau">断狱台地</button><button data-view="cliff">墨骨绝壁</button><button data-view="abyss">无间深渊</button><button data-view="foot">崖脚阴焰</button></div>
+    <div class="views"><button data-view="whole">全卷</button><button data-view="plateau">断狱台地</button><button data-view="cliff">墨骨绝壁</button><button data-view="abyss">无间深渊</button><button data-view="foot">崖脚阴焰</button><button data-view="riverbank">黄泉坡肩</button><button data-view="needle">薄脊修形</button><button id="shareView">留存此境机位</button></div>
     <div class="distances" role="group" aria-label="镜头距离"><button data-distance="whole" aria-pressed="true">远观</button><button data-distance="middle" aria-pressed="false">中景</button><button data-distance="close" aria-pressed="false">近察</button></div>
-    <label>笔墨<select id="inkStyle"><option value="strata">叠狱 · 骨白积墨</option><option value="brush">D-N1 · 枯笔皴擦</option><option value="line-a">简洁线稿</option></select></label>
-    <div class="switches"><label><input id="cliffs" type="checkbox" checked> 墨骨崖壁几何</label><label><input id="ecology" type="checkbox" checked> 阴雾与画中景</label></div>
+    <label>笔墨<select id="inkStyle"><option value="ink-art">归形 · 主骨破墨</option><option value="strata">叠狱 · 骨白积墨</option><option value="brush">D-N1 · 枯笔皴擦</option><option value="line-a">简洁线稿</option></select></label>
+    <label>画境底色<select id="backdrop"><option value="gradient">墨灰渐境 · 上黑下浅</option><option value="black">玄黑背景</option><option value="paper">旧版纸境</option></select></label>
+    <div class="switches"><label><input id="cliffs" type="checkbox" checked> 墨骨崖壁几何</label><label><input id="ecology" type="checkbox" checked> 阴雾与画中景</label><label><input id="background" type="checkbox" checked> 画外景物</label><label><input id="floating" type="checkbox"> 画外悬浮构件</label></div>
     <p id="status" role="status">正在展开地脉…</p>
     <details><summary>绘制与资源读数</summary><pre id="stats"></pre><p>CPU 提交耗时与 RAF 间隔分别记录，均不等同 GPU 执行时间。</p></details>
     <p class="footnote">上浓下虚，骨尽焰生。</p>

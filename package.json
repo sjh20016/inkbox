@@ -7,6 +7,8 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:dn2a2": "node scripts/inkbox-dn2a2.mjs",
+    "test:dn2a2:browser": "node scripts/inkbox-dn2a2-browser.mjs",
     "test:dn2a1": "node scripts/inkbox-dn2a1-render.mjs",
     "test:dn2a1:browser": "node scripts/inkbox-dn2a1-browser.mjs",
     "test:dn2a": "node scripts/inkbox-dn2a-geography.mjs && node scripts/inkbox-dn2a-render.mjs",

@@ -102,6 +102,10 @@ const LINE_BASE = { ...SHANHAI_SCENE.nether.terrain, low: '#D8D2C5', mid: '#CFC9
   shadow: '#3A3732', mist: '#EDE8DE', shade: 0.30, cun: 0.0, ridge: 0.0, line: 0.0, wash: 0.10, inkMode: 'none', inkAmt: 0,
   mistAmt: 0.22, air: 0.24, lineFill: 1 };
 export const NETHER_VARIANTS = deepFreeze({
+  'ink-art': { scene: merge(SHANHAI_SCENE.nether, { ...NETHER_BW_SCENE, terrain: { ...LINE_BASE,
+    strata: 0,brush:0,lineTone:.38,mist:'#929696',mistAmt:.04,air:.22,
+    lines:{brush:0,contour:null,ridge:.38,valley:.12,cliff:.70,hatch:0,minLen:16,gate:.60,width:2.1,
+      kindWidth:[.8,.5,1.15,0],dry:.75,color:'#282720',alpha:.72} } }) },
   // D-N2A is selected explicitly by the isolated lab; the product keeps brush.
   strata: { scene: merge(SHANHAI_SCENE.nether, { ...NETHER_BW_SCENE, terrain: { ...LINE_BASE,
     strata: 1, brush: 0, lineTone: 0.32, mistAmt: 0.20, air: 0.26,
@@ -142,7 +146,8 @@ for (const [key, v] of Object.entries(NETHER_VARIANTS)) netherVariantStyle[key] 
   pigment: { density: 0.70, saturation: 0.10 },
   ink: { structure: 0.70, silhouette: 0.40, density: 0.40, dryBrush: 0.70, feibai: 0.40, color: '#0E0D0C' },
   contrast: 1.12, atmosphere: { color: '#ECE6DA', strength: 0.10, low: -20, high: 4 },
-  ...(key === 'brush' || key === 'strata' ? { terrain: { palette: REALM_STYLES.nether.terrain.palette.map(inkGrey), rock: '#57534C' },
+  ...(key === 'ink-art'?{boundary:{color:'#343838',floor:'#8c9090',paperMix:.05}}:{}),
+  ...(key === 'brush' || key === 'strata' || key === 'ink-art' ? { terrain: { palette: REALM_STYLES.nether.terrain.palette.map(inkGrey), rock: '#57534C' },
     vegetation: { palette: ['#36332E', '#5E5A52', '#777065'] } } : {}),
 }));
 // `?nether=v12` = V1.2 原始幽冥（焦墨 ink，无线刻），作为对照与回退。

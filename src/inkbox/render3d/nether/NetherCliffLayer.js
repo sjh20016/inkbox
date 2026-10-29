@@ -52,7 +52,17 @@ void main() {
   // budget boundary cannot cut a differently coloured triangle into a cliff.
   vec3 pigment = vInk * 0.24;
   float inkAlpha = opacity * detail * (layerInk + crackInk);
-  if(nfOptions.w>.5){
+  if(nfArt.x>.5){
+    vec3 w=vec3(vGround.x,vHeight,vGround.y);vec4 m=nfMasks(w);
+    float u=vGround.x*.64+vGround.y*.77;
+    float pressure=nfArtNoise(vec2(u*.066,vHeight*.048));
+    float bone=smoothstep(.57,.81,pressure)*(.20+.40*fracture+.30*strata);
+    float slip=nfArtNoise(vec2(u*.10+pressure*.8,vHeight*.16));
+    float bedding=smoothstep(.63,.82,slip)*smoothstep(.42,.69,pressure);
+    float dry=smoothstep(.72,.88,nfArtNoise(vec2(u*2.2,vHeight*.22)))*detail;
+    inkAlpha=opacity*nfArt.z*(bone*.28+bedding*.13*detail+dry*.045)*(1.-m.b*.5);
+    pigment=mix(vec3(.06,.055,.05),vInk*.21,.25);
+  }else if(nfOptions.w>.5){
     vec4 m=nfMasks(vec3(vGround.x,vHeight,vGround.y));
     float strength=nfOptions.w>1.5?1.0:.48;
     float wet=nfNoise(vec2(vGround.x*.19+vGround.y*.13,vHeight*.027));

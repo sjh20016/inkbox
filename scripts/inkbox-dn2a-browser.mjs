@@ -24,7 +24,7 @@ report.source = Object.fromEntries(['src/inkbox/world/netherStrataCandidate.js',
 let server, browser;
 const page = code => browser.js(`return (async()=>{${code}})();`,{timeoutMs:60000});
 async function click(selector) {
-  const p = await page(`const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing control');e.scrollIntoView({block:'nearest'});await new Promise(requestAnimationFrame);const r=e.getBoundingClientRect();if(!r.width||!r.height)throw Error('Hidden control');return {x:r.x+r.width/2,y:r.y+r.height/2};`);
+  const p = await page(`const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing control');const d=e.closest('details');if(d)d.open=true;e.scrollIntoView({block:'nearest'});await new Promise(requestAnimationFrame);const r=e.getBoundingClientRect();if(!r.width||!r.height)throw Error('Hidden control');return {x:r.x+r.width/2,y:r.y+r.height/2};`);
   await browser.click(p.x,p.y);
 }
 async function ready(frames=35) {
@@ -53,7 +53,7 @@ try {
     server=spawn(process.execPath,['scripts/inkbox-server.mjs','--port',String(port)],{cwd:root,stdio:'ignore',windowsHide:true});
     let ok=false; for(let i=0;i<80;i++){try{if((await fetch(base+'/research/nether-strata/index.html')).ok){ok=true;break;}}catch{}await sleep(150);}assert(ok,'owned server ready');
   }
-  browser=await launch({browser:findEdge(),url:base+'/research/nether-strata/index.html?look=legacy',width:1440,height:900,gpu:true});
+  browser=await launch({browser:findEdge(),url:base+'/research/nether-strata/index.html?version=strata&look=legacy',width:1440,height:900,gpu:true});
   await ready();
   await check('page identity, meaningful content, WebGL and overlay',async()=>{
     const r=await page(`const g=netherStrataLab.state.host.gpu.getContext(),e=g.getExtension('WEBGL_debug_renderer_info');return {title:document.title,url:location.href,content:document.body.innerText.length,overlay:!!document.querySelector('vite-error-overlay'),gpu:e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER),viewport:[innerWidth,innerHeight],metrics:netherStrataLab.metrics()};`);
