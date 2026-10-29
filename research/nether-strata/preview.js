@@ -13,6 +13,12 @@ for (const [param, id] of [['seed','seed'],['size','size'],['version','version']
   if (query.has(param)) $(id).value = query.get(param);
 }
 if (query.get('cliffs') === 'off') $('cliffs').checked = false;
+const looks={
+  legacy:{tone:'legacy',soulfire:'off',cliffInk:'off',lowMist:false},
+  tone:{tone:'inkflame',soulfire:'off',cliffInk:'off',lowMist:false},
+  static:{tone:'inkflame',soulfire:'static',cliffInk:'off',lowMist:true},
+  inkflame:{tone:'inkflame',soulfire:'flow',cliffInk:'full',lowMist:true},
+};
 let last = 0, hudAt = 0, raf;
 const status = text => { $('status').textContent = text; };
 function resize() {
@@ -27,7 +33,20 @@ function applyToggles() {
   state.host.setArtProfile('shanhai-v1');
   state.host.setSceneryEnabled($('ecology').checked);
   stage.setNetherStrataEnabled($('cliffs').checked);
+  const options={tone:$('tone').value,soulfire:$('soulfire').value,cliffInk:$('cliffInk').value,lowMist:$('lowMist').checked};
+  stage.setNetherInkflame(options);
+  const foot=stage.netherInkflame?.field.foot;
+  if(foot)state.points=[...state.points.filter(p=>p.kind!=='foot'),foot];
+  state.look=Object.keys(looks).find(k=>JSON.stringify(looks[k])===JSON.stringify(options))||'custom';
+  document.querySelectorAll('[data-look]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.look===state.look)));
+  $('toneLegend').textContent=options.tone==='inkflame'?'上层浓墨 / 中层灰断 / 下层白焰':'骨白台面 / 灰墨断崖 / 深渊积墨';
   state.frames = [];
+}
+function applyLook(look) {
+  const options=looks[look];if(!options)return;
+  for(const id of ['tone','soulfire','cliffInk'])$(id).value=options[id];
+  $('lowMist').checked=options.lowMist;
+  applyToggles();
 }
 function regenerate({ preserveCamera = false } = {}) {
   const seed = Number($('seed').value), preset = WORLD_PRESETS[$('size').value];
@@ -48,7 +67,9 @@ function regenerate({ preserveCamera = false } = {}) {
   // The product delegates right-drag to its controller; this read-only lab
   // uses the existing OrbitControls pan instead of that editing controller.
   state.host.cameraRig.controls.mouseButtons.RIGHT = MOUSE.PAN;
-  state.points = state.metadata?.landmarks || baselinePoints(world);
+  state.points = [...(state.metadata?.landmarks || baselinePoints(world))];
+  const abyss=state.points.find(p=>p.kind==='abyss');
+  state.points.push({kind:'foot',x:abyss.x,y:Math.min(world.h-8,abyss.y+12),label:'崖脚阴焰'});
   resize(); applyToggles(); view('whole');
   if (camera) {
     const rig = state.host.cameraRig; rig.cancelFocus(); rig.camera.position.copy(camera.position);
@@ -112,19 +133,22 @@ function metrics() {
     rafP95: percentile(state.frames.map(f=>f.raf),.95), over50: state.frames.filter(f=>f.raf>50).length,
     draws: info.render.calls, triangles: info.render.triangles, memory: {...info.memory},
     cliffs: stage.netherCliffs?.stats || null, lines: stage.terrainLines?.stats, river: stage.netherRiver?.stats,
+    look:state.look,inkflame:stage.inkflameOptions,soulfire:stage.netherInkflame?.stats||null,
     camera: { zoom:host.cameraRig.camera.zoom, position:host.cameraRig.camera.position.toArray(), target:host.cameraRig.controls.target.toArray() } };
 }
 function frame(now) {
   if (state.disposed) return;
-  const interval = last ? now-last : 0, dt = last ? Math.min(.1,interval/1000) : .016; last = now;
+  const interval = last ? now-last : 0, dt = state.renderDtOverride ?? (last ? Math.min(.1,interval/1000) : .016); last = now;
   const host = state.host;
   if (host) {
-    const start = performance.now(); host.update(dt); const updated = performance.now(); host.render();
+    const start = performance.now(); host.update(dt);
+    host.stages.get('nether').setNetherInkflameTime(state.effectTimeOverride??host.shanhai.time);
+    const updated = performance.now(); host.render();
     state.frames.push({raf:interval,update:updated-start,submit:performance.now()-updated});
     if (state.frames.length>300) state.frames.shift();
     if (now-hudAt>500) {
       hudAt = now; const m = metrics();
-      $('stats').textContent = `${m.size.join('×')} · 第 ${m.day} 日（未推进）\n更新 CPU P95 ${m.updateP95.toFixed(2)} ms\n提交 CPU P95 ${m.submitP95.toFixed(2)} ms\nRAF P95 ${m.rafP95.toFixed(1)} ms\n${m.draws} draws / ${m.triangles} 三角形\n崖壁 ${m.cliffs?.triangles || 0} 三角形\n几何 ${m.memory.geometries} / 纹理 ${m.memory.textures}\n>50ms 间隔 ${m.over50}`;
+      $('stats').textContent = `${m.size.join('×')} · 第 ${m.day} 日（未推进）\n更新 CPU P95 ${m.updateP95.toFixed(2)} ms\n提交 CPU P95 ${m.submitP95.toFixed(2)} ms\nRAF P95 ${m.rafP95.toFixed(1)} ms\n${m.draws} draws / ${m.triangles} 三角形\n崖壁 ${m.cliffs?.triangles || 0} 三角形\n魂焰 ${m.soulfire?.instances||0} / 24 薄片\n几何 ${m.memory.geometries} / 纹理 ${m.memory.textures}\n>50ms 间隔 ${m.over50}`;
     }
   }
   raf = requestAnimationFrame(frame);
@@ -137,8 +161,11 @@ $('generate').addEventListener('submit',e=>{e.preventDefault();regenerate();});
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>view(b.dataset.view)));
 document.querySelectorAll('[data-distance]').forEach(b=>b.addEventListener('click',()=>setDistance(b.dataset.distance)));
 for (const id of ['inkStyle','cliffs','ecology']) $(id).addEventListener('change',applyToggles);
+for(const id of ['tone','soulfire','cliffInk','lowMist'])$(id).addEventListener('change',applyToggles);
+document.querySelectorAll('[data-look]').forEach(b=>b.addEventListener('click',()=>applyLook(b.dataset.look)));
 canvas.addEventListener('webglcontextlost',()=>status('绘图上下文已中断，恢复后可重新展开地脉。'));
 window.addEventListener('pagehide',dispose,{once:true});
-window.netherStrataLab = {state,regenerate,applyToggles,view,setDistance,metrics,dispose};
+window.netherStrataLab = {state,regenerate,applyToggles,applyLook,view,setDistance,metrics,dispose};
+applyLook(query.get('look')||'inkflame');
 try { regenerate(); raf = requestAnimationFrame(frame); }
 catch (error) { status(`展开失败：${error.message}`); console.error(error); }

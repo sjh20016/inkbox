@@ -1,0 +1,1506 @@
+{
+  "package": "D-N2A.1 墨焰洗狱",
+  "date": "2026-10-29",
+  "baseline": {
+    "dn2a": "baf1dbdee287c7554c52f955deccc37e0c12ddc7",
+    "dn1": "0c5c3b67f026313227d68b15a4e9762216b00af7",
+    "branch": "feature/d-n2a-nether-strata"
+  },
+  "publication": {
+    "localFollowup": true,
+    "pushed": false,
+    "priorDraft": "https://github.com/sjh20016/inkbox/pull/57",
+    "priorDraftHead": "baf1dbdee287c7554c52f955deccc37e0c12ddc7",
+    "remoteCIForThisFollowup": "not run"
+  },
+  "source": {
+    "src/inkbox/render3d/nether/NetherInkflame.js": "4cdcbe3b08bbe0dc674dce201f3a20b11cba6957f1b70528f725b3aea772b75f",
+    "src/inkbox/render3d/nether/NetherSoulfireLayer.js": "cd047130840ec9c47f68469c13770f9dac44a73d681f691c4ece665f93b0366e",
+    "src/inkbox/render3d/nether/NetherCliffLayer.js": "4e048206ff2c7e952676c62a94e9a70d9f4a2881ecd44b3284384c241d2cdc12",
+    "src/inkbox/render3d/art/PigmentTerrainMaterial.js": "00dee4ba9d726567cad46c8967d5397daeaecbb01c0bd9b2d8836f3d54cf22d3",
+    "src/inkbox/render3d/shanhai/TerrainLineArt.js": "a633d0ff273dd41183168a85735166494ead8e69fc0ddd93e963b3e739a97c5d",
+    "src/inkbox/render3d/stage/PlaneStage.js": "bc986ead5872528e243d444a283e9abaf362a2b3c8aa2d799374956968b9a49a",
+    "research/nether-strata/preview.js": "27cc1707e31c880c9160577b72bb4eb5470ffef9032e2955a5eb121ba6211407",
+    "research/nether-strata/index.html": "7816df25a83eedb98f4e307f3aae822bcfea2b2389dda11de70927b79aca264f",
+    "scripts/inkbox-dn2a1-render.mjs": "f2f9cd40c5558905c1e661b7f094c1c122893724eed5643b03a2725c4b7137cc",
+    "scripts/inkbox-dn2a1-browser.mjs": "c1d141075a235f711ecfd32a7e49b34e95c8df963f607920474ab3b731e7144f",
+    "scripts/inkbox-dn2a-browser.mjs": "fb5d1b360a5af45e736f8f6b26e3dc57fb4c2fd41e83df1401b1e48dff57797d",
+    "scripts/inkbox-package.mjs": "5df932902496a0c615e2173eb56ae8252710675e47d60a5df36c53d0e837285e",
+    "package.json": "115201247c99942106d4a91d6dd42a7125a4ff4e7023720877858e2c33985d21",
+    ".github/workflows/ci.yml": "a835f0fdfd9c015b114074f1e283fb46ba1f6a29e82585b48f36c4aa3648fc3c"
+  },
+  "boundary": {
+    "productDefault": false,
+    "worldGenerationChanged": false,
+    "saveProtocolChanged": false,
+    "simulationAdvanced": false,
+    "pickableSurfaceAdded": false,
+    "particlesAdded": false,
+    "geometryAuthority": "existing ElevationField / TerrainMesh / topology",
+    "clock": "caller-supplied Host presentation time"
+  },
+  "browser": {
+    "pass": true,
+    "rawReport": "reports/local/dn2a1/acceptance-4/acceptance.json",
+    "method": "Browser plugin not available; existing owned Edge/CDP workflow",
+    "version": "Edg/156.0.4314.50",
+    "gpu": "ANGLE (AMD, AMD Radeon(TM) 610M (0x0000164E) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "viewport": [
+      1440,
+      900
+    ],
+    "errors": [],
+    "checks": [
+      {
+        "name": "identity, content, WebGL and compiled scene",
+        "pass": true
+      },
+      {
+        "name": "same camera four presets and exact world preservation",
+        "pass": true
+      },
+      {
+        "name": "native view plateau",
+        "pass": true
+      },
+      {
+        "name": "native view cliff",
+        "pass": true
+      },
+      {
+        "name": "native view abyss",
+        "pass": true
+      },
+      {
+        "name": "native view foot",
+        "pass": true
+      },
+      {
+        "name": "same foot camera soulfire off, static and flow",
+        "pass": true
+      },
+      {
+        "name": "only flow changes pixels when the old render clocks are held",
+        "pass": true
+      },
+      {
+        "name": "flow has a visual time but no topology or world changes",
+        "pass": true
+      },
+      {
+        "name": "original DN2A rollback releases new field and overlay",
+        "pass": true
+      },
+      {
+        "name": "rendered family small/0",
+        "pass": true
+      },
+      {
+        "name": "rendered family small/1",
+        "pass": true
+      },
+      {
+        "name": "rendered family small/42",
+        "pass": true
+      },
+      {
+        "name": "rendered family medium/0",
+        "pass": true
+      },
+      {
+        "name": "rendered family medium/1",
+        "pass": true
+      },
+      {
+        "name": "rendered family medium/42",
+        "pass": true
+      },
+      {
+        "name": "rendered family large/0",
+        "pass": true
+      },
+      {
+        "name": "rendered family large/1",
+        "pass": true
+      },
+      {
+        "name": "rendered family large/42",
+        "pass": true
+      },
+      {
+        "name": "rendered family expanse/0",
+        "pass": true
+      },
+      {
+        "name": "rendered family expanse/1",
+        "pass": true
+      },
+      {
+        "name": "rendered family expanse/42",
+        "pass": true
+      },
+      {
+        "name": "narrow native controls",
+        "pass": true
+      },
+      {
+        "name": "Host disposal releases field and plume resources",
+        "pass": true
+      }
+    ],
+    "cleanup": {
+      "removed": true,
+      "attempts": 1,
+      "processesExited": true,
+      "complete": true,
+      "processEvidence": {
+        "supported": true,
+        "frozen": 10,
+        "remaining": 0,
+        "discoveryError": null,
+        "termination": {
+          "errors": [],
+          "attempted": 0
+        }
+      }
+    },
+    "familyCoverage": [
+      {
+        "preset": "small",
+        "seed": 0,
+        "day": 0,
+        "field": {
+          "nodes": 25600,
+          "bytes": 102400,
+          "upper": 6509,
+          "middle": 6622,
+          "lower": 12349,
+          "seep": 1020,
+          "mean": [
+            0.2089716605392227,
+            0.4422271752450062,
+            0.34879932598046354,
+            0.06677083333333222
+          ],
+          "band": [
+            -9.119999885559082,
+            53.64216995239258
+          ]
+        }
+      },
+      {
+        "preset": "small",
+        "seed": 1,
+        "day": 0,
+        "field": {
+          "nodes": 25600,
+          "bytes": 102400,
+          "upper": 3228,
+          "middle": 9542,
+          "lower": 12613,
+          "seep": 1510,
+          "mean": [
+            0.14944393382351331,
+            0.49099586397051326,
+            0.35954825367653315,
+            0.07587714460784119
+          ],
+          "band": [
+            -7.034341335296631,
+            54.161285400390625
+          ]
+        }
+      },
+      {
+        "preset": "small",
+        "seed": 42,
+        "day": 0,
+        "field": {
+          "nodes": 25600,
+          "bytes": 102400,
+          "upper": 5317,
+          "middle": 6638,
+          "lower": 13359,
+          "seep": 1278,
+          "mean": [
+            0.1703962928921595,
+            0.40886213235296387,
+            0.4207185968137012,
+            0.0880090379901924
+          ],
+          "band": [
+            -2.3891794681549072,
+            52.84330368041992
+          ]
+        }
+      },
+      {
+        "preset": "medium",
+        "seed": 0,
+        "day": 0,
+        "field": {
+          "nodes": 51840,
+          "bytes": 207360,
+          "upper": 13447,
+          "middle": 13066,
+          "lower": 25126,
+          "seep": 1645,
+          "mean": [
+            0.21296213083999685,
+            0.4440930616072541,
+            0.3429410251755862,
+            0.05936743524569548
+          ],
+          "band": [
+            -9.119999885559082,
+            53.695838928222656
+          ]
+        }
+      },
+      {
+        "preset": "medium",
+        "seed": 1,
+        "day": 0,
+        "field": {
+          "nodes": 51840,
+          "bytes": 207360,
+          "upper": 6894,
+          "middle": 19981,
+          "lower": 24668,
+          "seep": 2028,
+          "mean": [
+            0.16437802590170217,
+            0.5044513283708154,
+            0.33117518458008305,
+            0.06150833635923008
+          ],
+          "band": [
+            -9.119999885559082,
+            54.17597961425781
+          ]
+        }
+      },
+      {
+        "preset": "medium",
+        "seed": 42,
+        "day": 0,
+        "field": {
+          "nodes": 51840,
+          "bytes": 207360,
+          "upper": 11078,
+          "middle": 14093,
+          "lower": 26165,
+          "seep": 1889,
+          "mean": [
+            0.17484832667636968,
+            0.4157781106267644,
+            0.40935117102413776,
+            0.07470361292664436
+          ],
+          "band": [
+            -2.7694106101989746,
+            52.94160842895508
+          ]
+        }
+      },
+      {
+        "preset": "large",
+        "seed": 0,
+        "day": 0,
+        "field": {
+          "nodes": 92160,
+          "bytes": 368640,
+          "upper": 24278,
+          "middle": 22691,
+          "lower": 44952,
+          "seep": 2316,
+          "mean": [
+            0.21619881025322557,
+            0.44372012867655886,
+            0.3400767207925615,
+            0.056787215754350244
+          ],
+          "band": [
+            -9.119999885559082,
+            53.71403121948242
+          ]
+        }
+      },
+      {
+        "preset": "large",
+        "seed": 1,
+        "day": 0,
+        "field": {
+          "nodes": 92160,
+          "bytes": 368640,
+          "upper": 12456,
+          "middle": 35344,
+          "lower": 43857,
+          "seep": 2753,
+          "mean": [
+            0.16719549972769868,
+            0.5049053223719814,
+            0.32789790134808805,
+            0.0575394880174242
+          ],
+          "band": [
+            -9.119999885559082,
+            54.18484878540039
+          ]
+        }
+      },
+      {
+        "preset": "large",
+        "seed": 42,
+        "day": 0,
+        "field": {
+          "nodes": 92160,
+          "bytes": 368640,
+          "upper": 20058,
+          "middle": 25879,
+          "lower": 45350,
+          "seep": 2738,
+          "mean": [
+            0.17842018144062963,
+            0.4184080116422265,
+            0.40315253097768267,
+            0.06947912411490573
+          ],
+          "band": [
+            -2.952681303024292,
+            52.979061126708984
+          ]
+        }
+      },
+      {
+        "preset": "expanse",
+        "seed": 0,
+        "day": 0,
+        "field": {
+          "nodes": 163840,
+          "bytes": 655360,
+          "upper": 43607,
+          "middle": 39833,
+          "lower": 80026,
+          "seep": 3192,
+          "mean": [
+            0.21796518363197354,
+            0.44517276539549683,
+            0.336858891505671,
+            0.05187057195924917
+          ],
+          "band": [
+            -9.119999885559082,
+            53.7331657409668
+          ]
+        }
+      },
+      {
+        "preset": "expanse",
+        "seed": 1,
+        "day": 0,
+        "field": {
+          "nodes": 163840,
+          "bytes": 655360,
+          "upper": 22382,
+          "middle": 62769,
+          "lower": 77803,
+          "seep": 3558,
+          "mean": [
+            0.168738008386978,
+            0.5069872089461417,
+            0.3242732747395026,
+            0.05152152267156448
+          ],
+          "band": [
+            -9.119999885559082,
+            54.18809127807617
+          ]
+        }
+      },
+      {
+        "preset": "expanse",
+        "seed": 42,
+        "day": 0,
+        "field": {
+          "nodes": 163840,
+          "bytes": 655360,
+          "upper": 36281,
+          "middle": 48236,
+          "lower": 77924,
+          "seep": 3763,
+          "mean": [
+            0.18162109374995666,
+            0.4264774098116981,
+            0.39188433478815976,
+            0.061479851217847645
+          ],
+          "band": [
+            -3.641853094100952,
+            53.00589370727539
+          ]
+        }
+      }
+    ],
+    "pixelMotion": {
+      "static0": {
+        "sha256": "e709d860639f1b723d716bd73989456aaac3bb9db5492ec47285c8250be559d7",
+        "max": 0,
+        "changed": 0,
+        "significant": 0,
+        "mean": 0,
+        "pixels": 1054800
+      },
+      "static60": {
+        "sha256": "a4b7b3ea005986f2eae8a377eb26dcbc6825090856119b7fa8064178c4ab0611",
+        "max": 1,
+        "changed": 25,
+        "significant": 0,
+        "mean": 0.000008216407533813678,
+        "pixels": 1054800
+      },
+      "flow0": {
+        "sha256": "74201478c44d3f2e9f75a8027f661c2d60afdc344d14a3bc4efb84f505002a6d",
+        "max": 0,
+        "changed": 0,
+        "significant": 0,
+        "mean": 0,
+        "pixels": 1054800
+      },
+      "flow60": {
+        "sha256": "34db618f85cc2bbe94ce09c8fd6344e09479a4e402cd5dc7572c787006bb41a7",
+        "max": 25,
+        "changed": 573372,
+        "significant": 465010,
+        "mean": 2.616391733029958,
+        "pixels": 1054800
+      }
+    },
+    "staticTolerance": {
+      "maxChannelDelta": 1,
+      "maxChangedFraction": 0.001,
+      "reason": "one-byte quantization at antialiased GPU edges"
+    },
+    "flowMinimum": {
+      "pixelsAboveOneByte": 1000,
+      "meanAboveStaticFactor": 10
+    }
+  },
+  "performance": {
+    "seed": 20260914,
+    "order": [
+      "legacy",
+      "tone",
+      "static",
+      "inkflame",
+      "inkflame",
+      "static",
+      "tone",
+      "legacy"
+    ],
+    "warmupFrames": 120,
+    "sampleFrames": 120,
+    "measure": "CPU update / CPU submission / RAF interval; no GPU execution timer",
+    "oldContent": "same strata style, cliff overlay, scenery, river, line geometry and camera retained",
+    "windows": [
+      {
+        "preset": "medium",
+        "mode": "legacy",
+        "frames": 131,
+        "updateP95": 0.9,
+        "submitP95": 0.9,
+        "rafP95": 22.3,
+        "over50": 0,
+        "draws": 62,
+        "triangles": 136676,
+        "memory": {
+          "geometries": 27,
+          "textures": 7
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "medium",
+        "mode": "tone",
+        "frames": 130,
+        "updateP95": 0.9,
+        "submitP95": 0.9,
+        "rafP95": 27.8,
+        "over50": 0,
+        "draws": 62,
+        "triangles": 136676,
+        "memory": {
+          "geometries": 27,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "medium",
+        "mode": "static",
+        "frames": 125,
+        "updateP95": 0.8,
+        "submitP95": 0.8,
+        "rafP95": 27.8,
+        "over50": 0,
+        "draws": 63,
+        "triangles": 136720,
+        "memory": {
+          "geometries": 28,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "medium",
+        "mode": "inkflame",
+        "frames": 128,
+        "updateP95": 1,
+        "submitP95": 0.9,
+        "rafP95": 22.5,
+        "over50": 1,
+        "draws": 63,
+        "triangles": 136720,
+        "memory": {
+          "geometries": 28,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "medium",
+        "mode": "inkflame",
+        "frames": 133,
+        "updateP95": 0.8,
+        "submitP95": 0.8,
+        "rafP95": 22.3,
+        "over50": 0,
+        "draws": 63,
+        "triangles": 136720,
+        "memory": {
+          "geometries": 28,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "medium",
+        "mode": "static",
+        "frames": 132,
+        "updateP95": 0.9,
+        "submitP95": 0.9,
+        "rafP95": 22.4,
+        "over50": 0,
+        "draws": 63,
+        "triangles": 136720,
+        "memory": {
+          "geometries": 28,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "medium",
+        "mode": "tone",
+        "frames": 124,
+        "updateP95": 1.1,
+        "submitP95": 0.9,
+        "rafP95": 27.8,
+        "over50": 0,
+        "draws": 62,
+        "triangles": 136676,
+        "memory": {
+          "geometries": 27,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "medium",
+        "mode": "legacy",
+        "frames": 134,
+        "updateP95": 1,
+        "submitP95": 0.9,
+        "rafP95": 22.2,
+        "over50": 0,
+        "draws": 62,
+        "triangles": 136676,
+        "memory": {
+          "geometries": 27,
+          "textures": 7
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "expanse",
+        "mode": "legacy",
+        "frames": 126,
+        "updateP95": 2,
+        "submitP95": 0.8,
+        "rafP95": 27.8,
+        "over50": 0,
+        "draws": 56,
+        "triangles": 378714,
+        "memory": {
+          "geometries": 25,
+          "textures": 7
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "expanse",
+        "mode": "tone",
+        "frames": 123,
+        "updateP95": 1.8,
+        "submitP95": 0.9,
+        "rafP95": 33.3,
+        "over50": 0,
+        "draws": 56,
+        "triangles": 378714,
+        "memory": {
+          "geometries": 25,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "expanse",
+        "mode": "static",
+        "frames": 122,
+        "updateP95": 2.3,
+        "submitP95": 1,
+        "rafP95": 33.4,
+        "over50": 0,
+        "draws": 57,
+        "triangles": 378762,
+        "memory": {
+          "geometries": 26,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "expanse",
+        "mode": "inkflame",
+        "frames": 131,
+        "updateP95": 1.9,
+        "submitP95": 1,
+        "rafP95": 33.4,
+        "over50": 0,
+        "draws": 57,
+        "triangles": 378762,
+        "memory": {
+          "geometries": 26,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "expanse",
+        "mode": "inkflame",
+        "frames": 125,
+        "updateP95": 1.9,
+        "submitP95": 0.7,
+        "rafP95": 27.9,
+        "over50": 0,
+        "draws": 57,
+        "triangles": 378762,
+        "memory": {
+          "geometries": 26,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "expanse",
+        "mode": "static",
+        "frames": 120,
+        "updateP95": 2.4,
+        "submitP95": 1.1,
+        "rafP95": 33.4,
+        "over50": 0,
+        "draws": 57,
+        "triangles": 378762,
+        "memory": {
+          "geometries": 26,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "expanse",
+        "mode": "tone",
+        "frames": 123,
+        "updateP95": 2.1,
+        "submitP95": 0.9,
+        "rafP95": 33.2,
+        "over50": 0,
+        "draws": 56,
+        "triangles": 378714,
+        "memory": {
+          "geometries": 25,
+          "textures": 8
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      },
+      {
+        "preset": "expanse",
+        "mode": "legacy",
+        "frames": 128,
+        "updateP95": 3.5,
+        "submitP95": 1.3,
+        "rafP95": 27.9,
+        "over50": 0,
+        "draws": 56,
+        "triangles": 378714,
+        "memory": {
+          "geometries": 25,
+          "textures": 7
+        },
+        "camera": {
+          "zoom": 1.18,
+          "position": [
+            195.87622700305252,
+            213.617798326228,
+            261.1683026707367
+          ],
+          "target": [
+            0,
+            4,
+            0
+          ]
+        },
+        "style": "strata",
+        "cliffsEnabled": true
+      }
+    ],
+    "ranges": [
+      {
+        "preset": "medium",
+        "mode": "legacy",
+        "updateP95": [
+          0.9,
+          1
+        ],
+        "submitP95": [
+          0.9,
+          0.9
+        ],
+        "rafP95": [
+          22.2,
+          22.3
+        ],
+        "over50": 0,
+        "draws": 62,
+        "triangles": 136676,
+        "memory": {
+          "geometries": 27,
+          "textures": 7
+        },
+        "deltaVsLegacy": {
+          "draws": 0,
+          "triangles": 0,
+          "geometries": 0,
+          "textures": 0,
+          "pairedP95": [
+            {
+              "updateP95": 0,
+              "submitP95": 0,
+              "rafP95": 0
+            },
+            {
+              "updateP95": 0,
+              "submitP95": 0,
+              "rafP95": 0
+            }
+          ]
+        }
+      },
+      {
+        "preset": "medium",
+        "mode": "tone",
+        "updateP95": [
+          0.9,
+          1.1
+        ],
+        "submitP95": [
+          0.9,
+          0.9
+        ],
+        "rafP95": [
+          27.8,
+          27.8
+        ],
+        "over50": 0,
+        "draws": 62,
+        "triangles": 136676,
+        "memory": {
+          "geometries": 27,
+          "textures": 8
+        },
+        "deltaVsLegacy": {
+          "draws": 0,
+          "triangles": 0,
+          "geometries": 0,
+          "textures": 1,
+          "pairedP95": [
+            {
+              "updateP95": 0,
+              "submitP95": 0,
+              "rafP95": 5.5
+            },
+            {
+              "updateP95": 0.1,
+              "submitP95": 0,
+              "rafP95": 5.6
+            }
+          ]
+        }
+      },
+      {
+        "preset": "medium",
+        "mode": "static",
+        "updateP95": [
+          0.8,
+          0.9
+        ],
+        "submitP95": [
+          0.8,
+          0.9
+        ],
+        "rafP95": [
+          22.4,
+          27.8
+        ],
+        "over50": 0,
+        "draws": 63,
+        "triangles": 136720,
+        "memory": {
+          "geometries": 28,
+          "textures": 8
+        },
+        "deltaVsLegacy": {
+          "draws": 1,
+          "triangles": 44,
+          "geometries": 1,
+          "textures": 1,
+          "pairedP95": [
+            {
+              "updateP95": -0.1,
+              "submitP95": -0.1,
+              "rafP95": 5.5
+            },
+            {
+              "updateP95": -0.1,
+              "submitP95": 0,
+              "rafP95": 0.2
+            }
+          ]
+        }
+      },
+      {
+        "preset": "medium",
+        "mode": "inkflame",
+        "updateP95": [
+          0.8,
+          1
+        ],
+        "submitP95": [
+          0.8,
+          0.9
+        ],
+        "rafP95": [
+          22.3,
+          22.5
+        ],
+        "over50": 1,
+        "draws": 63,
+        "triangles": 136720,
+        "memory": {
+          "geometries": 28,
+          "textures": 8
+        },
+        "deltaVsLegacy": {
+          "draws": 1,
+          "triangles": 44,
+          "geometries": 1,
+          "textures": 1,
+          "pairedP95": [
+            {
+              "updateP95": 0.1,
+              "submitP95": 0,
+              "rafP95": 0.2
+            },
+            {
+              "updateP95": -0.2,
+              "submitP95": -0.1,
+              "rafP95": 0.1
+            }
+          ]
+        }
+      },
+      {
+        "preset": "expanse",
+        "mode": "legacy",
+        "updateP95": [
+          2,
+          3.5
+        ],
+        "submitP95": [
+          0.8,
+          1.3
+        ],
+        "rafP95": [
+          27.8,
+          27.9
+        ],
+        "over50": 0,
+        "draws": 56,
+        "triangles": 378714,
+        "memory": {
+          "geometries": 25,
+          "textures": 7
+        },
+        "deltaVsLegacy": {
+          "draws": 0,
+          "triangles": 0,
+          "geometries": 0,
+          "textures": 0,
+          "pairedP95": [
+            {
+              "updateP95": 0,
+              "submitP95": 0,
+              "rafP95": 0
+            },
+            {
+              "updateP95": 0,
+              "submitP95": 0,
+              "rafP95": 0
+            }
+          ]
+        }
+      },
+      {
+        "preset": "expanse",
+        "mode": "tone",
+        "updateP95": [
+          1.8,
+          2.1
+        ],
+        "submitP95": [
+          0.9,
+          0.9
+        ],
+        "rafP95": [
+          33.2,
+          33.3
+        ],
+        "over50": 0,
+        "draws": 56,
+        "triangles": 378714,
+        "memory": {
+          "geometries": 25,
+          "textures": 8
+        },
+        "deltaVsLegacy": {
+          "draws": 0,
+          "triangles": 0,
+          "geometries": 0,
+          "textures": 1,
+          "pairedP95": [
+            {
+              "updateP95": -0.2,
+              "submitP95": 0.1,
+              "rafP95": 5.5
+            },
+            {
+              "updateP95": -1.4,
+              "submitP95": -0.4,
+              "rafP95": 5.3
+            }
+          ]
+        }
+      },
+      {
+        "preset": "expanse",
+        "mode": "static",
+        "updateP95": [
+          2.3,
+          2.4
+        ],
+        "submitP95": [
+          1,
+          1.1
+        ],
+        "rafP95": [
+          33.4,
+          33.4
+        ],
+        "over50": 0,
+        "draws": 57,
+        "triangles": 378762,
+        "memory": {
+          "geometries": 26,
+          "textures": 8
+        },
+        "deltaVsLegacy": {
+          "draws": 1,
+          "triangles": 48,
+          "geometries": 1,
+          "textures": 1,
+          "pairedP95": [
+            {
+              "updateP95": 0.3,
+              "submitP95": 0.2,
+              "rafP95": 5.6
+            },
+            {
+              "updateP95": -1.1,
+              "submitP95": -0.2,
+              "rafP95": 5.5
+            }
+          ]
+        }
+      },
+      {
+        "preset": "expanse",
+        "mode": "inkflame",
+        "updateP95": [
+          1.9,
+          1.9
+        ],
+        "submitP95": [
+          0.7,
+          1
+        ],
+        "rafP95": [
+          27.9,
+          33.4
+        ],
+        "over50": 0,
+        "draws": 57,
+        "triangles": 378762,
+        "memory": {
+          "geometries": 26,
+          "textures": 8
+        },
+        "deltaVsLegacy": {
+          "draws": 1,
+          "triangles": 48,
+          "geometries": 1,
+          "textures": 1,
+          "pairedP95": [
+            {
+              "updateP95": -0.1,
+              "submitP95": 0.2,
+              "rafP95": 5.6
+            },
+            {
+              "updateP95": -1.6,
+              "submitP95": -0.6,
+              "rafP95": 0
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "resources": {
+    "classification": {
+      "format": "RGBA8 upper/middle/lower/seep",
+      "textures": 1,
+      "bytes": {
+        "small": 102400,
+        "medium": 207360,
+        "large": 368640,
+        "expanse": 655360
+      }
+    },
+    "plumes": {
+      "draws": 1,
+      "geometries": 1,
+      "textures": 0,
+      "capacity": 24,
+      "maxTriangles": 48,
+      "anchors": "at most 12 real dry low/seep locations; two fixed crossed planes each",
+      "pickable": false,
+      "region": "whole decoration footprint ownership"
+    },
+    "idle": {
+      "fieldRebuilds": 0,
+      "instanceWrites": 0,
+      "textureUploads": 0
+    }
+  },
+  "localChecks": [
+    {
+      "command": "npm run test:dn2a1",
+      "exitCode": 0,
+      "log": "reports/local/dn2a1/checks/test-dn2a1.log"
+    },
+    {
+      "command": "npm run test:core",
+      "exitCode": 0,
+      "log": "reports/local/dn2a1/checks/test-core.log"
+    },
+    {
+      "command": "npm run test:render3d",
+      "exitCode": 0,
+      "log": "reports/local/dn2a1/checks/test-render3d.log"
+    },
+    {
+      "command": "npm run test:r1",
+      "exitCode": 0,
+      "log": "reports/local/dn2a1/checks/test-r1.log"
+    },
+    {
+      "command": "npm run test:dn2a",
+      "exitCode": 0,
+      "log": "reports/local/dn2a1/checks/test-dn2a.log"
+    },
+    {
+      "command": "npm run test:dn1",
+      "exitCode": 0,
+      "log": "reports/local/dn2a1/checks/test-dn1.log"
+    },
+    {
+      "command": "npm run check:ui",
+      "exitCode": 0,
+      "log": "reports/local/dn2a1/checks/check-ui.log"
+    },
+    {
+      "command": "node scripts/inkbox-dn2a1-browser.mjs",
+      "exitCode": 0,
+      "log": "reports/local/dn2a1/acceptance-4/acceptance.json"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "log": "reports/local/dn2a1/checks/build.log"
+    },
+    {
+      "command": "npm run test:package",
+      "exitCode": 0,
+      "log": "reports/local/dn2a1/checks/test-package.log"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "whole-legacy.jpg",
+      "sha256": "721c6624313fda17d29e48eeade71606b53395485fcc603e35e7bc42dedae467",
+      "bytes": 106365,
+      "native": true
+    },
+    {
+      "file": "whole-tone.jpg",
+      "sha256": "8f37fae6e393a1a8f411049a431636ca5447df51c7180d0801c6909e07071c07",
+      "bytes": 105337,
+      "native": true
+    },
+    {
+      "file": "whole-static.jpg",
+      "sha256": "a9f52a2d344c2f56c5604b793ca5527576a21bfcbaa2b221ac5c96f678704ba4",
+      "bytes": 106886,
+      "native": true
+    },
+    {
+      "file": "whole-inkflame.jpg",
+      "sha256": "cebaed658df8c7070b0499c751b629b80a61279b6e2391ebb72e137671436bdb",
+      "bytes": 106147,
+      "native": true
+    },
+    {
+      "file": "inkflame-plateau.jpg",
+      "sha256": "39e200080b5244a8bd4fa318cfc56bd4e49c62e171e9098f72c0d9f44e21a8f4",
+      "bytes": 116306,
+      "native": true
+    },
+    {
+      "file": "inkflame-cliff.jpg",
+      "sha256": "10b4da905b823bad336dd06ae413fccdc7bd563ce38d1c45ca6e09d083940eef",
+      "bytes": 100313,
+      "native": true
+    },
+    {
+      "file": "inkflame-abyss.jpg",
+      "sha256": "095fb93259bbf96b731f6d59cdb0ddd2790a9f3ecd9410cb9e69eb292eb7f9b1",
+      "bytes": 121173,
+      "native": true
+    },
+    {
+      "file": "foot-soulfire-off.jpg",
+      "sha256": "d8a4a0f4cb65cb8eb6ce700c8902e9c04b2e3696a14b0c223b8c6d826d800eaf",
+      "bytes": 110435,
+      "native": true
+    },
+    {
+      "file": "foot-soulfire-static.jpg",
+      "sha256": "31a5319534c360fd810c22a4e05461ecfd07050c28d35452c435479684730fdb",
+      "bytes": 113717,
+      "native": true
+    },
+    {
+      "file": "foot-soulfire-flow.jpg",
+      "sha256": "9b8b6db27368e6de875e2143c0b450fe3704b6a18564389d41d8a1a7b1370704",
+      "bytes": 114012,
+      "native": true
+    }
+  ],
+  "intermediateRuns": [
+    {
+      "run": "visual-1",
+      "outcome": "failed harness content-length threshold; replaced with required controls, notice and overlay assertions; no product gate removed"
+    },
+    {
+      "run": "visual-3",
+      "outcome": "functional smoke passed; automatic CIM cleanup timed out",
+      "recovery": {
+        "profile": "C:\\Users\\10267\\AppData\\Local\\Temp\\cdp-B9swTD",
+        "port": 64202,
+        "matchingLiveBrowserProcesses": 0,
+        "removed": true,
+        "checkedAt": "2026-10-29T11:56:35.0261455Z"
+      }
+    },
+    {
+      "run": "acceptance-1",
+      "outcome": "static exact-PNG hash assertion failed; measured only 98 pixels with one-byte channel difference; added decoded pixel quantization test"
+    },
+    {
+      "run": "acceptance-2",
+      "outcome": "24 functional checks passed; GPU cost had tails; automatic cleanup left one process unconfirmed",
+      "recovery": {
+        "profile": "C:\\Users\\10267\\AppData\\Local\\Temp\\cdp-S4bFYQ",
+        "port": 59824,
+        "matchingLiveBrowserProcesses": 0,
+        "removed": true,
+        "checkedAt": "2026-10-29T11:49:41.3717867Z"
+      }
+    },
+    {
+      "run": "acceptance-3",
+      "outcome": "ERR_INSUFFICIENT_RESOURCES before scene readiness; no performance accepted; owned cleanup completed"
+    },
+    {
+      "run": "acceptance-4",
+      "outcome": "final current-source run passed all 24 checks, 16 performance windows, zero runtime errors and owned cleanup"
+    }
+  ],
+  "limitations": [
+    "Limited read-only gallery sample on one integrated GPU; no stable-60-FPS or product performance closure claim.",
+    "One >50ms RAF interval in the first medium/full window; no >50ms intervals in final expanse windows.",
+    "Flames intentionally quiet, best observed near the foot; not a fire simulation.",
+    "Existing grid cliff facets, thin intersecting ridges and aliased structural strokes remain.",
+    "No gameplay, formal traversal, save migration, long simulation or multi-device benchmark."
+  ]
+}

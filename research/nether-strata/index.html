@@ -2,15 +2,15 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>叠狱成形 · 坐天观井 D-N2A</title>
+  <title>墨焰洗狱 · 叠狱成形 D-N2A.1</title>
   <link rel="icon" href="data:,"><link rel="stylesheet" href="./preview.css">
   <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 </head>
 <body>
   <aside>
     <a class="back" href="/research/nether-landscape/index.html">← D-N1 幽冥造境</a>
-    <p class="eyebrow">D-N2A / 十八重墨骨地脉</p>
-    <h1>叠狱成形</h1><p class="poem">墨骨断层，黄泉入渊。</p>
+    <p class="eyebrow">D-N2A.1 / 十八重墨骨地脉</p>
+    <h1>墨焰洗狱</h1><p class="poem">上墨压境，下焰归虚。</p>
     <p class="notice">仅为候选地貌，不写正式存档。<br>此卷只读观境，世界时间不推进。</p>
     <form id="generate">
       <label for="version">地貌候选</label>
@@ -21,19 +21,27 @@
       </div>
       <button class="primary" type="submit">展开地脉</button>
     </form>
+    <h2>墨焰对照</h2>
+    <div class="views looks" role="group" aria-label="墨焰模式"><button data-look="legacy">D-N2A 原版</button><button data-look="tone">仅三段分层</button><button data-look="static">分层与静焰</button><button data-look="inkflame">完整墨焰</button></div>
+    <details class="effect-controls"><summary>墨焰细调</summary>
+      <label>Tone · 层次<select id="tone"><option value="legacy">legacy · 原版</option><option value="inkflame" selected>inkflame · 上浓下虚</option></select></label>
+      <label>Soulfire · 魂火<select id="soulfire"><option value="off">off · 关闭</option><option value="static">static · 静焰</option><option value="flow" selected>flow · 缓慢上涌</option></select></label>
+      <label>Cliff ink · 崖壁精修<select id="cliffInk"><option value="off">off · 原版笔触</option><option value="light">light · 轻墨</option><option value="full" selected>full · 积墨破笔</option></select></label>
+      <label><input id="lowMist" type="checkbox" checked> Low mist · 低层虚白基底</label>
+    </details>
     <h2>观其层叠</h2>
-    <div class="views"><button data-view="whole">全卷</button><button data-view="plateau">断狱台地</button><button data-view="cliff">墨骨绝壁</button><button data-view="abyss">无间深渊</button></div>
+    <div class="views"><button data-view="whole">全卷</button><button data-view="plateau">断狱台地</button><button data-view="cliff">墨骨绝壁</button><button data-view="abyss">无间深渊</button><button data-view="foot">崖脚阴焰</button></div>
     <div class="distances" role="group" aria-label="镜头距离"><button data-distance="whole" aria-pressed="true">远观</button><button data-distance="middle" aria-pressed="false">中景</button><button data-distance="close" aria-pressed="false">近察</button></div>
     <label>笔墨<select id="inkStyle"><option value="strata">叠狱 · 骨白积墨</option><option value="brush">D-N1 · 枯笔皴擦</option><option value="line-a">简洁线稿</option></select></label>
     <div class="switches"><label><input id="cliffs" type="checkbox" checked> 墨骨崖壁几何</label><label><input id="ecology" type="checkbox" checked> 阴雾与画中景</label></div>
     <p id="status" role="status">正在展开地脉…</p>
     <details><summary>绘制与资源读数</summary><pre id="stats"></pre><p>CPU 提交耗时与 RAF 间隔分别记录，均不等同 GPU 执行时间。</p></details>
-    <p class="footnote">脚下所见只是一重地狱。</p>
+    <p class="footnote">上浓下虚，骨尽焰生。</p>
   </aside>
   <main>
     <canvas id="scene" aria-label="叠狱地貌真实 Three.js 预览"></canvas>
     <div class="scene-title"><span id="sceneLabel">墨骨地脉</span><small id="composition"></small></div>
-    <div class="legend"><span>骨白台面 / 灰墨断崖 / 深渊积墨</span><small>滚轮缩放 · 中键旋转 · 右键平移</small></div>
+    <div class="legend"><span id="toneLegend">上层浓墨 / 中层灰断 / 下层白焰</span><small>滚轮缩放 · 中键旋转 · 右键平移</small></div>
   </main>
   <script type="module" src="./preview.js"></script>
 </body>

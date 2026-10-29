@@ -23,6 +23,8 @@ import { SurfaceVisualFieldTexture } from '../art/SurfaceVisualFieldTexture.js';
 import { NetherRiverLayer } from '../nether/NetherRiverLayer.js';
 import { NetherEcologyLayer } from '../nether/NetherEcologyLayer.js';
 import { NetherCliffLayer } from '../nether/NetherCliffLayer.js';
+import { NetherSoulfireLayer } from '../nether/NetherSoulfireLayer.js';
+import { normalizeInkflame, inkflameEnabled } from '../nether/NetherInkflame.js';
 
 /** One world's read-only 3D content. Scene, camera and renderer belong to the host. */
 export class PlaneStage {
@@ -88,7 +90,8 @@ export class PlaneStage {
     // V1 · 山海入画：纯装饰景观（亭 / 塔 / 牌坊 / 桥 / 舟；悬殿 / 天门 / 阵纹；断柱 / 碑林 / 魂灯 / 枯木）。
     this.scenery = new ShanhaiSceneryLayer(world, this.coordinates, this.elevation);
     this.root.add(this.scenery.group);
-    this.netherRiver = null; this.netherEcology = null; this.netherCliffs = null;
+    this.netherRiver = null; this.netherEcology = null; this.netherCliffs = null; this.netherInkflame = null;
+    this.inkflameOptions = normalizeInkflame();
     this.markers = p.markers ? new WorldMarkerLayer(world, this.coordinates, this.elevation) : null;
     if (this.markers) this.root.add(this.markers.group);
     this.markers?.setGeographyFeatures?.(this.geographyFeatures);
@@ -122,11 +125,44 @@ export class PlaneStage {
   setNetherStrataEnabled(enabled) {
     if (this.plane !== 'nether') return;
     if (enabled && !this.netherCliffs) {
-      this.netherCliffs = new NetherCliffLayer(this.world, this.coordinates, this.elevation);
+      this.netherCliffs = new NetherCliffLayer(this.world, this.coordinates, this.elevation,this.terrain?.artData?.typeTexture);
       this.root.add(this.netherCliffs.group);
       this.netherCliffs.setRegionGeometry(this.contentGeometry, this.contentInside ?? true);
     }
     this.netherCliffs?.setEnabled(enabled);
+    this.syncNetherInkflameBindings();
+  }
+  /** D-N2A.1 lab opt-in. Only visual fields; no saved World property or clock. */
+  setNetherInkflame(options = {}) {
+    if(this.plane!=='nether')return;
+    this.inkflameOptions=normalizeInkflame(options);
+    if(inkflameEnabled(this.inkflameOptions)){
+      if(!this.netherInkflame){
+        this.netherInkflame=new NetherSoulfireLayer(this.world,this.coordinates,this.elevation);
+        this.root.add(this.netherInkflame.group);
+        this.netherInkflame.setRegionGeometry(this.contentGeometry,this.contentInside??true);
+      }
+      this.netherInkflame.setOptions(this.inkflameOptions);
+    }else if(this.netherInkflame){this.netherInkflame.dispose();this.netherInkflame=null;}
+    this.syncNetherInkflameBindings();
+  }
+  syncNetherInkflameBindings() {
+    const o=this.inkflameOptions;if(!o)return;
+    this.inkflameMaterials=[this.terrain?.inkMaterial,this.netherCliffs?.material,
+      this.terrainLines?.hullMaterial,this.terrainLines?.strokeMaterial].filter(m=>m?.uniforms.nfOptions);
+    for(const m of this.inkflameMaterials){
+      m.uniforms.nfField.value=this.netherInkflame?.texture||this.terrain?.artData?.typeTexture||null;
+      if(this.netherInkflame)m.uniforms.nfBand.value.set(...this.netherInkflame.field.band);
+      m.uniforms.nfOptions.value.set(o.tone==='inkflame'?1:0,o.lowMist?1:0,
+        o.soulfire==='flow'?2:o.soulfire==='static'?1:0,o.cliffInk==='full'?2:o.cliffInk==='light'?1:0);
+    }
+  }
+  setNetherInkflameTime(time) {
+    // The lab passes the Host's existing presentation time, never World.day.
+    if(!this.netherInkflame)return;
+    const value=Number.isFinite(time)?time:0;
+    this.netherInkflame.setTime(value);
+    for(const m of this.inkflameMaterials||[])m.uniforms.nfClock.value=value;
   }
   setNetherLandscapeStyle(active, ecology = this.netherEcologyEnabled ?? true) {
     this.netherLandscapeStyle = !!active;
@@ -227,6 +263,8 @@ export class PlaneStage {
     this.netherRiver?.update(region);
     this.netherEcology?.update(0, true);
     this.netherCliffs?.rebuild();
+    this.netherInkflame?.rebuild();
+    if(this.netherInkflame)this.syncNetherInkflameBindings();
     this.terrainSides?.update();
     if (this.entities) { this.entities.lastDerived = null; this.entities.clock = Infinity; }
     if (this.settlements) { this.settlements.lastDerived = null; this.settlements.clock = Infinity; }
@@ -280,7 +318,7 @@ export class PlaneStage {
       this.contentGeometry = content.geometry; this.contentInside = content.inside;
     }
     for (const layer of [this.terrain, this.water, this.terrainSides, this.vegetation, this.settlements,
-      this.markers, this.entities, this.decorations, this.realmArtifacts, this.scenery, this.netherRiver, this.netherEcology, this.netherCliffs]) {
+      this.markers, this.entities, this.decorations, this.realmArtifacts, this.scenery, this.netherRiver, this.netherEcology, this.netherCliffs, this.netherInkflame]) {
       layer?.setRegionGeometry(this.contentGeometry, this.contentInside);
     }
     this.terrainLines?.setRegionGeometry(this.contentGeometry, this.contentInside);
@@ -349,6 +387,7 @@ export class PlaneStage {
     this.decorations?.update({layoutChanged:heightChanged||!!typeRegion});
     this.realmArtifacts?.update(dt,{heightChanged});
     const netherTerrainChanged = this.plane === 'nether' && !!(heightChanged || typeRegion || waterRegion || dirty?.veg);
+    if(netherTerrainChanged&&this.netherInkflame){this.netherInkflame.rebuild();this.syncNetherInkflameBindings();}
     this.scenery?.update(dt, { heightChanged: heightChanged || netherTerrainChanged });
     this.netherEcology?.update(dt, netherTerrainChanged);
     if (this.scenery && this.vegetation && this.scenery.zonesVersion !== this._sceneryZonesVersion) {
@@ -367,6 +406,7 @@ export class PlaneStage {
   }
 
   releaseLayers() {
+    this.netherInkflame?.dispose();this.netherInkflame=null;this.inkflameMaterials=[];
     this.bridge?.dispose?.();
     this.terrainSides?.dispose();this.terrainSides=null;
     this.terrainLines?.dispose(); this.terrainLines = null;

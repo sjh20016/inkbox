@@ -107,6 +107,9 @@ jobs:
       - name: D-N2A 叠狱候选、确定性与崖壁生命周期
         run: npm run test:dn2a
 
+      - name: D-N2A.1 墨焰分层、只读遮罩与资源回退
+        run: npm run test:dn2a1
+
       - name: S0 静态水域、环境事件、存档及云雾植被批次
         run: npm run test:s0
 
