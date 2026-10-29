@@ -1,5 +1,7 @@
 # 坐天观井 · Inkbox 1.0.0
 
+D-N2A.2「墨骨归形 · 阴焰化境」候选：[展厅](./research/nether-strata/index.html) 继续修形与河岸衔接，提供焦墨 / 苍墨 / 白狱三候选、灰色渐境、枯笔与局部阴焰、纯大块对照及可复用机位。继承本地 D-N2A.1，正式产品默认不切换。原生截图、统一时间动画、性能和边界见 [D-N2A.2 交付](./docs/development/DN2A2_DELIVERY.md)。
+
 D-N2A.1「墨焰洗狱」候选：[墨焰展厅](./research/nether-strata/index.html) 增加上浓 / 中灰 / 下虚、崖壁积墨破笔和克制的白焰缓流；四个预设与五处巡境可直接对照，[原版模式](./research/nether-strata/index.html?look=legacy) 可回退 D-N2A。只读表现层，正式产品默认关闭。原生截图、成本和边界见 [D-N2A.1 交付](./docs/development/DN2A1_DELIVERY.md)。
 
 D-N2A「叠狱成形」独立候选：[叠狱展厅](./research/nether-strata/index.html) 比较 D-N1 与断层台地、墨骨绝壁和无间深渊，支持三档笔墨、崖壁开关与近中远观察。只读试卷，不推进模拟或导出正式档；依赖尚未合流的 D-N1。实现、实测与回退见 [D-N2A 交付记录](./docs/development/DN2A_DELIVERY.md)。
