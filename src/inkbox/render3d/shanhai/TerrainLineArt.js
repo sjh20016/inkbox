@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { heightSampling } from '../art/PigmentTerrainMaterial.js';
 import { RENDER_ORDER } from '../shared/RenderOrder.js';
 import { adaptiveTopology } from '../terrain/topology.js';
+import { INKFLAME_GLSL, inkflameUniforms } from '../nether/NetherInkflame.js';
 
 /**
  * V1.3 · 墨骨成山 —— 三维线刻（Freestyle / Line Art 思路的实时高度场版本）。
@@ -54,6 +55,7 @@ void main(){
   gl_Position=clip;
 }`;
 const hullFragment = `
+${INKFLAME_GLSL}
 uniform vec3 lineColor; uniform float lineAlpha, facingMax, breakup, brushMode;
 uniform vec2 shViewXZ, shTarget; uniform float shSpan, shAir; uniform vec3 shMist;
 varying vec3 vWorld; varying vec3 vN; varying float vVar;
@@ -67,7 +69,7 @@ void main(){
   if(breakup>0.0){ float n=lnoise(vWorld.xz*0.55+vec2(vWorld.y*0.21,0.0)); a*=mix(1.0,smoothstep(0.28,0.52,n),breakup); }
   if(brushMode>0.5) a*=mix(0.65,1.0,lnoise(vWorld.xz*3.2+vec2(vWorld.y*0.35)));
   float m=farMist(vWorld);
-  a*=1.0-m*0.55;
+  a*=(1.0-m*0.55)*nfLineAlpha(vWorld);
   if(a<0.02) discard;
   gl_FragColor=vec4(mix(lineColor,shMist,m*0.8),a);
 }`;
@@ -117,6 +119,7 @@ void main(){
   gl_Position=cA;
 }`;
 const strokeFragment = `
+${INKFLAME_GLSL}
 uniform vec3 lineColor; uniform float lineAlpha, gate, dry, pixelsPerUnit, brushMode;
 uniform vec4 kindAlpha;
 uniform vec2 shViewXZ, shTarget; uniform float shSpan, shAir; uniform vec3 shMist;
@@ -150,7 +153,7 @@ void main(){
     a*=1.0-dryPaper*0.72;
   }
   float m=farMist(vWorld);
-  a*=1.0-m*0.65;
+  a*=(1.0-m*0.65)*nfLineAlpha(vWorld);
   if(a<0.02) discard;
   gl_FragColor=vec4(mix(lineColor,shMist,m*0.8),a);
 }`;
@@ -459,6 +462,7 @@ export class TerrainLineArt {
     if (this.hull || !t.artData || !t.inkMaterial) return !!this.hull;
     const tu = t.inkMaterial.uniforms;
     const shared = { heightTexture: tu.heightTexture, mapSize: tu.mapSize, gpuDisplacement: tu.gpuDisplacement,
+      ...inkflameUniforms(t.artData.typeTexture,t.world),
       shViewXZ: tu.shViewXZ, shTarget: tu.shTarget, shSpan: tu.shSpan, shAir: tu.shAir, shMist: tu.shMist };
     this.resolution = { value: new THREE.Vector2(1440, 900) };
     this.hullMaterial = new THREE.ShaderMaterial({ vertexShader: hullVertex, fragmentShader: hullFragment, side: THREE.BackSide,

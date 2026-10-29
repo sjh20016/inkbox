@@ -45,7 +45,7 @@ function roof(w, h, flare = 0.35) {
   g.computeVertexNormals(); return g;
 }
 
-function buildKind(kind, pal) {
+function buildKind(kind, pal, inkArt=false) {
   const L = [];
   switch (kind) {
     case 'pavilion': { // 亭
@@ -130,6 +130,10 @@ function buildKind(kind, pal) {
     case 'deadtree': { // 枯木
       part(L, cyl(0.06, 0.16, 2.6, 5), pal.wood, { y: 1.3, rz: 0.08 });
       for (const [h, a, l] of [[1.6, 0.7, 1.1], [2.0, -0.8, 0.9], [2.4, 0.5, 0.7], [1.2, -0.4, 0.8]]) part(L, cyl(0.025, 0.06, l, 4), pal.wood, { y: h + l * 0.3, x: Math.sin(a) * l * 0.4, rz: -a, ry: h * 2 });
+      if(inkArt)for(const [x,y,z,a]of [[.45,2.05,.10,-1.0],[-.40,2.38,-.10,.8],[.25,2.75,.12,-.55],[-.17,1.8,.30,1.1]]){
+        part(L,cyl(.008,.026,.62,3),pal.wood,{x,y,z,rz:a,ry:y});
+        part(L,cyl(.004,.012,.34,3),pal.wood,{x:x+(a>0?-.13:.13),y:y+.24,z:z+.06,rz:a*.45,ry:y+.6});
+      }
       break; }
     case 'ruin': { // 残殿
       for (const [x, h] of [[-1.3, 2.2], [1.3, 1.1], [-1.3, 1.6], [1.3, 2.4]]) part(L, box(0.28, h, 0.28), pal.wood, { x, y: h / 2, z: x * (h > 2 ? 0.5 : -0.5) });
@@ -220,7 +224,7 @@ export function sceneryCandidates(world) {
   return out;
 }
 
-export function deriveScenery(world, candidates = sceneryCandidates(world), { netherRegional = false } = {}) {
+export function deriveScenery(world, candidates = sceneryCandidates(world), { netherRegional = false, inkArt = false } = {}) {
   const kinds = KINDS[world?.plane]; if (!kinds) return [];
   const { w, h } = world, H = world.height, T = world.type, out = [], taken = [];
   const waterAt = i => !!TERRAIN_INFO[T[i]]?.water;
@@ -277,10 +281,18 @@ export function deriveScenery(world, candidates = sceneryCandidates(world), { ne
       if (!Number.isFinite(H[i]) || !accept[kind](i, c.cx, c.cy)) return false;
       if (netherRegional && world.plane === 'nether') {
         const g = sampleNetherGeography(world, c.cx, c.cy), rule = NETHER_REGIONS[g.kind];
-        if (g.water > .0015 || !rule.sceneryKinds.includes(kind) || (c.hash % 100) / 100 > rule.density) return false;
+        if (g.water > .0015) return false;
+        if(!(inkArt&&kind==='deadtree')&&(!rule.sceneryKinds.includes(kind)||(c.hash%100)/100>rule.density))return false;
       }
       return !(world.plane === 'mortal' && kind !== 'boat' && structAt(c.cx, c.cy, 3));
-    }).sort((p, q) => p.hash - q.hash);
+    }).sort((p, q) => {
+      if(inkArt&&world.plane==='nether'&&['stele','deadtree','lamp','remnant'].includes(kind)){
+        const edge=c=>{const x=c.cx,y=c.cy,v=H[y*w+x],r=5;
+          return Math.max(0,v-Math.min(H[y*w+Math.max(0,x-r)],H[y*w+Math.min(w-1,x+r)],H[Math.max(0,y-r)*w+x],H[Math.min(h-1,y+r)*w+x]));};
+        const d=edge(q)-edge(p);if(Math.abs(d)>.02)return d;
+      }
+      return p.hash-q.hash;
+    });
     let n = 0;
     for (const c of cands) {
       if (n >= quota) break; if (!free(c.x, c.y, r + 4)) continue;
@@ -327,7 +339,7 @@ export class ShanhaiSceneryLayer {
   get layout() { const out = []; for (const e of this.meshes.values()) for (const r of e.slots) if (r) out.push(r); return out; }
   /** Re-evaluate candidates against the *current* terrain; surviving records keep their slot (no jumping). */
   relayout() {
-    const next = deriveScenery(this.world, this.candidates, { netherRegional: this.netherRegional }), byKind = new Map();
+    const next = deriveScenery(this.world, this.candidates, { netherRegional: this.netherRegional, inkArt:this.inkArt }), byKind = new Map();
     for (const r of next) { if (!r.key) r.key = `${r.kind}:${Math.round(r.x * 2)},${Math.round(r.y * 2)}`; if (!byKind.has(r.kind)) byKind.set(r.kind, []); byKind.get(r.kind).push(r); }
     const counts = {};
     for (const [kind, e] of this.meshes) {
@@ -343,6 +355,11 @@ export class ShanhaiSceneryLayer {
   }
   setEnabled(enabled) { this.enabled = !!enabled; this.group.visible = this.enabled; if (this.enabled) this.dirty = true; else if (this.zones?.length) { this.zones = []; this._zoneSig = ''; this.zonesVersion = (this.zonesVersion || 0) + 1; } }
   setNetherRegional(enabled) { if (this.netherRegional === !!enabled) return; this.netherRegional = !!enabled; this.relayout(); }
+  setNetherInkArt(enabled) {
+    const value=this.world.plane==='nether'&&!!enabled;if(this.inkArt===value)return;this.inkArt=value;
+    const e=this.meshes.get('deadtree');if(e){const g=buildKind('deadtree',PALETTES.nether,value);e.geometry.dispose();e.geometry=g;e.mesh.geometry=e.ink.geometry=g;}
+    this.relayout();
+  }
   setRegionGeometry(geometry, inside = true) { if (this.regionGeometry !== geometry || this.regionInside !== !!inside) { this.regionGeometry = geometry; this.regionInside = !!inside; this.dirty = true; } }
   invalidateGround() { this.dirty = true; this.relayoutAt = this.time + 0.4; }
   /** Yield to real settlements: a village grown onto a pavilion site wins, always. */

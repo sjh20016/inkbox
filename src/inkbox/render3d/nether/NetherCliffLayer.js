@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { quadIndices } from '../terrain/topology.js';
+import { INKFLAME_GLSL, inkflameUniforms } from './NetherInkflame.js';
 
 // A thin ink wash laid on the existing triangles. It never supplies a second
 // surface to the picker; every vertex comes from the authoritative heightfield.
@@ -21,6 +22,7 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }`;
 const FRAGMENT = `
+${INKFLAME_GLSL}
 varying vec3 vInk;
 varying float vHeight;
 varying vec2 vGround;
@@ -50,6 +52,31 @@ void main() {
   // budget boundary cannot cut a differently coloured triangle into a cliff.
   vec3 pigment = vInk * 0.24;
   float inkAlpha = opacity * detail * (layerInk + crackInk);
+  if(nfArt.x>.5){
+    vec3 w=vec3(vGround.x,vHeight,vGround.y);vec4 m=nfMasks(w);
+    float u=vGround.x*.64+vGround.y*.77;
+    float pressure=nfArtNoise(vec2(u*.066,vHeight*.048));
+    float bone=smoothstep(.57,.81,pressure)*(.20+.40*fracture+.30*strata);
+    float slip=nfArtNoise(vec2(u*.10+pressure*.8,vHeight*.16));
+    float bedding=smoothstep(.63,.82,slip)*smoothstep(.42,.69,pressure);
+    float dry=smoothstep(.72,.88,nfArtNoise(vec2(u*2.2,vHeight*.22)))*detail;
+    inkAlpha=opacity*nfArt.z*(bone*.28+bedding*.13*detail+dry*.045)*(1.-m.b*.5);
+    pigment=mix(vec3(.06,.055,.05),vInk*.21,.25);
+  }else if(nfOptions.w>.5){
+    vec4 m=nfMasks(vec3(vGround.x,vHeight,vGround.y));
+    float strength=nfOptions.w>1.5?1.0:.48;
+    float wet=nfNoise(vec2(vGround.x*.19+vGround.y*.13,vHeight*.027));
+    float drag=smoothstep(.72,.88,wet)*(.25+.75*m.r);
+    float primaryPhase=vHeight*.12+nfNoise(vGround*.06)*.55;
+    float aa=max(fwidth(primaryPhase),.025);
+    float bed=1.-smoothstep(.025,.025+aa,abs(fract(primaryPhase)-.5));
+    float brokenBed=bed*smoothstep(.38,.68,nfNoise(vGround*.13));
+    float rubbed=smoothstep(.69,.88,nfNoise(vec2(vGround.x*.28+vGround.y*.16,vHeight*.085)));
+    float authored=brokenBed*(.16+.16*strata)+drag*.22+crackInk*.5;
+    authored*=1.-rubbed*.55;
+    inkAlpha=mix(inkAlpha,opacity*detail*authored,strength);
+    inkAlpha*=1.-m.b*.86;
+  }
   if (inkAlpha < 0.003) discard;
   gl_FragColor = vec4(pigment, inkAlpha);
   #include <tonemapping_fragment>
@@ -57,7 +84,7 @@ void main() {
 }`;
 
 export class NetherCliffLayer {
-  constructor(world, coordinates, elevation) {
+  constructor(world, coordinates, elevation, fallbackTexture = null) {
     this.world = world;
     this.coordinates = coordinates;
     this.elevation = elevation;
@@ -70,7 +97,8 @@ export class NetherCliffLayer {
     this.group.name = 'NetherCliffLayer';
     this.material = new THREE.ShaderMaterial({ vertexShader: VERTEX, fragmentShader: FRAGMENT,
       side: THREE.DoubleSide, transparent: true, depthWrite: false,
-      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+      uniforms: inkflameUniforms(fallbackTexture,world) });
     this.material.name = 'NetherCliffInk';
     this.geometry = new THREE.BufferGeometry();
     this.mesh = new THREE.Mesh(this.geometry, this.material);

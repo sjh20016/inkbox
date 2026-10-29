@@ -23,8 +23,8 @@ export class TerrainSideLayer {
     if(this.sideStyle===style && this.sideStyled)return;
     this.sideStyle=style;this.sideStyled=true;
     const paper=new THREE.Color(style?.paper?.color || '#ECE4D2');
-    const top=new THREE.Color(style?.boundary?.color || '#A59C89').lerp(paper,.32);
-    const bottom=paper.clone();
+    const top=new THREE.Color(style?.boundary?.color || '#A59C89').lerp(paper,style?.boundary?.paperMix??.32);
+    const bottom=style?.boundary?.floor?new THREE.Color(style.boundary.floor):paper.clone();
     const attr=this.geometry.attributes.color;
     this.edges.forEach((_,i)=>{
       for(let k=0;k<6;k++){const c=k===0||k===1||k===3?top:bottom;attr.array.set([c.r,c.g,c.b],i*18+k*3);}

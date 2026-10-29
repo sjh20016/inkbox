@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { TERRAIN_INFO } from '../../core/config.js';
 import { realmStyleFor } from './RealmStyleProfile.js';
+import { INKFLAME_GLSL, inkflameUniforms } from '../nether/NetherInkflame.js';
 
 // Shared exact and visual sampling. The fragment keeps exact cell reads for
 // Structure; Mass samples this continuous field once per existing grid vertex.
@@ -108,6 +109,7 @@ float noise(vec2 p) {
 }
 ${heightSampling}
 float typeAt(vec2 p) { return floor(texture2D(typeTexture,uvAt(p)).r*255.0+0.5); }
+${INKFLAME_GLSL}
 float fieldAt(vec2 p) { return texture2D(fieldTexture,(clamp(p,vec2(0),mapSize-1.0)+0.5)/mapSize).r; }
 float surfaceDepthAt(vec2 p) {
   return texture2D(surfaceTexture,(clamp(p,vec2(0.0),mapSize-1.0)+0.5)/mapSize).r*surfaceDepthRef;
@@ -468,6 +470,13 @@ void main() {
       strataColor = mix(strataColor, realmInkColor, pooled*(0.66+0.16*face));
       color = mix(color, strataColor, land);
     }
+    if(nfOptions.x+nfOptions.y+nfOptions.z+nfArt.x>0.0){
+      vec3 bone=mix(paperColor,shPeak,.30);
+      color=mix(color,nfTerrain(color,vWorld,smoothstep(.45,1.7,bSlope),shadowSide,bone,realmInkColor,broadN,max(ridge,valley),detail),land);
+      // The candidate owns dry-land pigment, including flat ground. Retaining
+      // the old sparse wash alpha exposed the pale base through every dark mark.
+      if(nfArt.x>.5)coverage=max(coverage,land*.98);
+    }
     float far=dot(vWorld.xz-shTarget,shViewXZ)/max(shSpan*0.5,1.0);
     color=mix(color,shMist,smoothstep(0.05,1.1,far)*shAir);
   }
@@ -492,6 +501,7 @@ export class PigmentTerrainMaterial extends THREE.ShaderMaterial {
   constructor(data, profile) {
     const basePalette = TERRAIN_INFO.map(t => new THREE.Color(`rgb(${t.color.join(',')})`));
     super({ vertexShader, fragmentShader, side: THREE.DoubleSide, defines: { INKBOX_ART_DEBUG: 0 }, uniforms: {
+      ...inkflameUniforms(data.typeTexture,data.world),
       heightTexture: { value: data.heightTexture }, typeTexture: { value: data.typeTexture },
       fieldTexture: { value: data.typeTexture },fieldMode:{value:0},
       artDebugMode: { value: 0 }, gpuDisplacement: { value: 0 },

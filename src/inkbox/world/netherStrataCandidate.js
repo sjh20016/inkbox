@@ -4,6 +4,7 @@ import { classify, recomputeQi } from './terrain.js';
 // The preview owns this candidate. Product world generation and save reconstruction
 // continue to use worldgenNether unchanged.
 export const NETHER_STRATA_VERSION = 'dn2a-strata-1';
+export const NETHER_INK_ART_VERSION = 'dn2a2-ink-art-1';
 const metadata = new WeakMap();
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
@@ -43,10 +44,32 @@ function signedPolygonDistance(x, y, points) {
   return inside ? distance : -distance;
 }
 export function getNetherStrataMetadata(world) { return metadata.get(world) ?? null; }
+export function generateNetherInkArtCandidate(options = {}, seedArg) {
+  const opts = options.w ? {preset:options,seed:seedArg} : options;
+  return generateNetherStrataCandidate({...opts,art:'ink-art'});
+}
+// Remove only unsupported narrow high remnants left by intersecting cuts.
+// An ordinary cliff has high support on one side and is not smoothed.
+export function repairThinNetherRidges(height,w,h) {
+  let repaired=0,point=null,biggest=0;
+  for(let pass=0;pass<2;pass++){
+    const src=height.slice();
+    for(let y=3;y<h-3;y++)for(let x=3;x<w-3;x++){
+      const i=y*w+x,v=src[i];if(v<.68)continue;
+      const support=Math.min(Math.max(src[i-3],src[i+3]),Math.max(src[i-w*3],src[i+w*3]));
+      if(v-support<.26)continue;
+      const cap=support+.16;if(cap>=v)continue;
+      height[i]=cap;repaired++;
+      if(v-cap>biggest){biggest=v-cap;point={kind:'needle',x,y,label:'薄脊修形'};}
+    }
+  }
+  return {repaired,point};
+}
 export function generateNetherStrataCandidate(options = {}, seedArg) {
   const opts = options.w ? { preset: options, seed: seedArg } : options;
   const world = generateNetherWorld(opts);
   const { w, h } = world, seed = world.seed >>> 0;
+  const inkArt=opts.art==='ink-art';
   const inputSeed = Math.trunc(Number(opts.seed ?? seed) || 0);
   const familyIndex = (Math.abs(inputSeed) % 3 + ((inputSeed >>> 4) % 3)) % 3;
   const family = ['断崖横列', '裂谷纵贯', '台地错落'][familyIndex];
@@ -73,10 +96,22 @@ export function generateNetherStrataCandidate(options = {}, seedArg) {
     const wx = noise(seed ^ 0x75128, nx * 4.1, ny * 4.1) * 0.025;
     const wy = noise(seed ^ 0x172b3, nx * 4.1, ny * 4.1) * 0.023;
     const grain = noise(seed ^ 0x321dc, nx * 12, ny * 12);
-    const base = 0.355 + grain * 0.017 + noise(seed ^ 0x4a627, nx * 3.1, ny * 3.1) * 0.021;
+    const base = 0.355 + grain * 0.017 + noise(seed ^ 0x4a627, nx * 3.1, ny * 3.1) * (inkArt?.065:.021);
     let uplift = 0;
-    for (const p of plates) uplift = Math.max(uplift,
-      p.lift * smooth(-edge, edge, signedPolygonDistance(nx + wx, ny + wy, p.outline)));
+    for (let k=0;k<plates.length;k++){
+      const p=plates[k];let d=signedPolygonDistance(nx+wx,ny+wy,p.outline);
+      if(!inkArt){uplift=Math.max(uplift,p.lift*smooth(-edge,edge,d));continue;}
+      // A few broad bites break complete rims; a main rib and offset shoulder
+      // give each raised mass a direction, rather than tessellating a tabletop.
+      for(const j of [1,4,7]){const q=p.outline[j%p.outline.length];d=Math.min(d,Math.hypot(nx+wx-q[0],ny+wy-q[1])-(.024+.017*hash(seed,k,j)));}
+      const dx=nx-p.x,dy=ny-p.y,c=Math.cos(p.angle),s=Math.sin(p.angle);
+      const u=dx*c+dy*s,v=-dx*s+dy*c;
+      const rib=Math.exp(-(((v+.025*noise(seed^0x911,u*9,k))/.065)**2));
+      const variation=.28+.82*rib+.15*noise(seed^0x3d17,u*8+k,v*7);
+      const shoulder=smooth(-edge*3.6,edge*.1,d)*(.18+.06*noise(seed^0x531,nx*9,ny*9));
+      const main=smooth(-edge*.80,edge*1.05,d)*.78;
+      uplift=Math.max(uplift,p.lift*(shoulder+main*variation));
+    }
     // Wide oriented scarp; one side drops into a low apron. The narrow transition
     // is still the single authoritative height surface sampled by TerrainMesh.
     const fault = familyIndex === 1 ? nx + wx - (faultX + 0.09 * (ny - 0.5))
@@ -85,18 +120,21 @@ export function generateNetherStrataCandidate(options = {}, seedArg) {
       smooth(0.10, 0.18, nx) * (1 - smooth(0.83, 0.92, nx));
     const ravineD = segmentDistance(nx + wx, ny + wy, ...ravine);
     const canyon = 0.32 * (1 - smooth(0.013, 0.037, ravineD));
-    const abyssFace = smooth(-edge * 1.2, edge * 1.2,
-      signedPolygonDistance(nx + wx, ny + wy, abyssOutline));
+    const abyssD=signedPolygonDistance(nx+wx,ny+wy,abyssOutline);
+    const abyssFace = smooth(-edge * 1.2, edge * 1.2,abyssD);
     const openSeam = segmentDistance(nx + wx, ny + wy, abyssX + 0.035, abyssY + 0.015,
       abyssX + 0.17, Math.max(abyssY + 0.16, 0.54));
     const seamCut = 0.82 * (1 - smooth(0.012, 0.041, openSeam));
-    const abyss = Math.max(1.16 * abyssFace, seamCut);
+    const shelf=inkArt?smooth(.0,.017,abyssD)*(1-smooth(.036,.055,abyssD))*
+      smooth(-.1,.45,noise(seed^0x73bd,(nx-abyssX)*12,(ny-abyssY)*10)):0;
+    const abyss = Math.max(1.16 * abyssFace*(1-shelf*.47), seamCut);
     const riverY = 0.53 + 0.055 * noise(seed ^ 0x165ab, nx * 3.0, 0.4)
       + 0.020 * Math.sin(nx * 9 + riverPhase);
     const riverD = Math.abs(ny - riverY) * h;
-    const bank = smooth(1.5, 6.5, riverD);
+    const bankOuter=inkArt?Math.max(6.5,Math.min(w,h)*.033):6.5;
+    const bank = smooth(1.5,bankOuter,riverD);
     const landHeight = clamp(base + uplift + apron - canyon - abyss, 0.06, 1.24);
-    world.height[i] = riverD < 2.8 ? mix(0.267, landHeight, bank) : landHeight;
+    world.height[i] = riverD < (inkArt?bankOuter:2.8) ? mix(0.267, landHeight, bank) : landHeight;
     world.water[i] = riverD < 2.8 ? 0.038 * (1 - smooth(1.3, 2.8, riverD)) + 0.002 : 0;
     world.riverBase[i] = world.water[i] > 0 ? Math.min(0.05, world.water[i] * 0.8) : 0;
     const nearRiver = Math.exp(-riverD / 9);
@@ -105,6 +143,8 @@ export function generateNetherStrataCandidate(options = {}, seedArg) {
     world.temp[i] = clamp(0.26 - (world.height[i] - 0.3) * 0.32 + nearRiver * 0.04, 0.07, 0.5);
     world.over[i] = 0;
   }
+  const repair=inkArt?repairThinNetherRidges(world.height,w,h):null;
+  if(inkArt)for(let i=0;i<world.size;i++)world.temp[i]=clamp(.26-(world.height[i]-.3)*.32+world.water[i]*.6,.07,.5);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const i = y * w + x; world.type[i] = classify(world, x, y, i);
   }
@@ -121,7 +161,9 @@ export function generateNetherStrataCandidate(options = {}, seedArg) {
     if (top - low > cliffDrop) { cliffDrop = top - low; cliffX = nx; cliffY = ny; }
   }
   const landmark = (kind, nx, ny, label) => Object.freeze({ kind, x: Math.round(nx * (w - 1)), y: Math.round(ny * (h - 1)), label });
-  metadata.set(world, Object.freeze({ version: NETHER_STRATA_VERSION, family,
+  metadata.set(world, Object.freeze({ version: inkArt?NETHER_INK_ART_VERSION:NETHER_STRATA_VERSION, family,
+    ...(inkArt?{repair: Object.freeze(repair),bankOuter:Math.max(6.5,Math.min(w,h)*.033),
+      diagnostics:Object.freeze([repair.point,landmark('riverbank',.57,.53+.055*noise(seed^0x165ab,.57*3,.4)+.020*Math.sin(.57*9+riverPhase),'黄泉坡肩')].filter(Boolean))}:{}),
     landmarks: Object.freeze([
       landmark('plateau', plates[0].x, plates[0].y, '断狱台地'),
       landmark('cliff', cliffX, cliffY, '墨骨绝壁'),
