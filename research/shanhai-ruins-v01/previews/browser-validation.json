@@ -1,0 +1,276 @@
+{
+  "status": "pass",
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+    "webgl": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+    "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+    "renderer": "WebKit WebGL",
+    "vendor": "WebKit",
+    "threeRevision": "186",
+    "canvas": "420x300",
+    "hardwareRenderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "checks": [
+    {
+      "name": "WebGL context available",
+      "status": "pass",
+      "detail": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+        "webgl": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "shadingLanguage": "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)",
+        "renderer": "WebKit WebGL",
+        "vendor": "WebKit",
+        "threeRevision": "186",
+        "canvas": "420x300",
+        "hardwareRenderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      }
+    },
+    {
+      "name": "Compile and render every asset/state/LOD/realm/style/light combination",
+      "status": "pass",
+      "detail": {
+        "rendered": 648,
+        "drawCallsForOne": 2,
+        "triangleAccountingSample": {
+          "count": 1,
+          "calls": 2,
+          "triangles": 192,
+          "expectedTriangles": 192
+        }
+      }
+    },
+    {
+      "name": "Instance batching: 1 / 32 / 128 and triangle accounting",
+      "status": "pass",
+      "detail": [
+        {
+          "count": 1,
+          "calls": 2,
+          "triangles": 192,
+          "lines": 191,
+          "expectedTriangles": 192,
+          "expectedLines": 191,
+          "buffers": {
+            "geometries": 18,
+            "materials": 37,
+            "textures": 0,
+            "geometryBytes": 196504,
+            "cacheGeometryBytes": 191856,
+            "batchGeometryBytes": 4584,
+            "instanceMatrixBytes": 64,
+            "batches": 1,
+            "disposed": false
+          }
+        },
+        {
+          "count": 32,
+          "calls": 2,
+          "triangles": 6144,
+          "lines": 6112,
+          "expectedTriangles": 6144,
+          "expectedLines": 6112,
+          "buffers": {
+            "geometries": 18,
+            "materials": 37,
+            "textures": 0,
+            "geometryBytes": 340592,
+            "cacheGeometryBytes": 191856,
+            "batchGeometryBytes": 146688,
+            "instanceMatrixBytes": 2048,
+            "batches": 1,
+            "disposed": false
+          }
+        },
+        {
+          "count": 128,
+          "calls": 2,
+          "triangles": 24576,
+          "lines": 24448,
+          "expectedTriangles": 24576,
+          "expectedLines": 24448,
+          "buffers": {
+            "geometries": 18,
+            "materials": 37,
+            "textures": 0,
+            "geometryBytes": 786800,
+            "cacheGeometryBytes": 191856,
+            "batchGeometryBytes": 586752,
+            "instanceMatrixBytes": 8192,
+            "batches": 1,
+            "disposed": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Repeated batch create / dispose returns renderer memory to warm baseline",
+      "status": "pass",
+      "detail": {
+        "baseline": {
+          "geometries": 18,
+          "textures": 0
+        },
+        "repetitions": 6
+      }
+    },
+    {
+      "name": "Batch disposal preserves borrowed library geometry and materials",
+      "status": "pass",
+      "detail": {
+        "borrowedGeometrySurvived": true,
+        "borrowedMaterialSurvived": true
+      }
+    },
+    {
+      "name": "Final library release clears all owned resources",
+      "status": "pass",
+      "detail": {
+        "library": {
+          "geometries": 0,
+          "materials": 0,
+          "textures": 0,
+          "geometryBytes": 0,
+          "cacheGeometryBytes": 0,
+          "batchGeometryBytes": 0,
+          "instanceMatrixBytes": 0,
+          "batches": 0,
+          "disposed": true
+        },
+        "rendererMemory": {
+          "geometries": 0,
+          "textures": 0
+        }
+      }
+    },
+    {
+      "name": "Viewer automatic LOD is stable; load/unload and destroy release resources",
+      "status": "pass",
+      "detail": {
+        "stableSamples": [
+          {
+            "variant": "dormant",
+            "zoom": 0.15,
+            "lod": 1
+          },
+          {
+            "variant": "dormant",
+            "zoom": 0.3,
+            "lod": 1
+          },
+          {
+            "variant": "dormant",
+            "zoom": 0.5,
+            "lod": 1
+          },
+          {
+            "variant": "dormant",
+            "zoom": 1,
+            "lod": 0
+          },
+          {
+            "variant": "dormant",
+            "zoom": 2,
+            "lod": 0
+          },
+          {
+            "variant": "dormant",
+            "zoom": 4,
+            "lod": 0
+          },
+          {
+            "variant": "depleted",
+            "zoom": 0.15,
+            "lod": 1
+          },
+          {
+            "variant": "depleted",
+            "zoom": 0.3,
+            "lod": 1
+          },
+          {
+            "variant": "depleted",
+            "zoom": 0.5,
+            "lod": 1
+          },
+          {
+            "variant": "depleted",
+            "zoom": 1,
+            "lod": 0
+          },
+          {
+            "variant": "depleted",
+            "zoom": 2,
+            "lod": 0
+          },
+          {
+            "variant": "depleted",
+            "zoom": 4,
+            "lod": 0
+          }
+        ],
+        "loadUnloadCycles": 6,
+        "finalMemory": {
+          "geometries": 0,
+          "textures": 0
+        }
+      }
+    }
+  ],
+  "failures": [],
+  "coverage": {
+    "expectedRenderCombos": 648,
+    "renderedCombos": 648,
+    "assets": [
+      {
+        "id": "shanhai.sect.gate",
+        "states": [
+          "weathered"
+        ]
+      },
+      {
+        "id": "shanhai.settlement.ruin",
+        "states": [
+          "broken",
+          "abandoned"
+        ]
+      },
+      {
+        "id": "shanhai.leyline.altar",
+        "states": [
+          "dormant",
+          "depleted"
+        ]
+      },
+      {
+        "id": "shanhai.nether.remnant",
+        "states": [
+          "silent"
+        ]
+      }
+    ],
+    "realms": [
+      "mortal",
+      "upper",
+      "nether"
+    ],
+    "styles": [
+      "flat",
+      "toon",
+      "solid",
+      "ink"
+    ],
+    "lods": [
+      0,
+      1,
+      2
+    ],
+    "lights": [
+      0,
+      1,
+      2
+    ]
+  },
+  "limits": [
+    "Serial low-resolution representative WebGL renders; not a full game simulation, FPS benchmark, or multi-device compatibility test."
+  ]
+}

@@ -1,0 +1,453 @@
+{
+  "schema": "shanhai-ruins-research-v1",
+  "source": "authored procedural Three.js geometry",
+  "units": "world units; gallery reference person height 1.7",
+  "axis": "Y-up",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "forward": "+Z",
+  "instantiable": true,
+  "mergedMeshesPerAsset": 1,
+  "material": {
+    "semanticSlots": [
+      "paper",
+      "paperDeep",
+      "paperShade",
+      "mist",
+      "ink",
+      "inkMid",
+      "inkLight",
+      "stone",
+      "stoneDark",
+      "wood",
+      "woodDark",
+      "clay",
+      "cinnabar",
+      "rouge",
+      "gold",
+      "azurite",
+      "indigo",
+      "malachite",
+      "pineGreen",
+      "orchid",
+      "upperA",
+      "upperB",
+      "upperC",
+      "upperD",
+      "nether",
+      "netherMid",
+      "soulFlame",
+      "snow"
+    ],
+    "uv": "8x8 cell centers, slots 0..27",
+    "textureBytes": 0,
+    "sharedBy": "realm/style/light",
+    "styles": [
+      "flat",
+      "toon",
+      "solid",
+      "ink"
+    ]
+  },
+  "outline": {
+    "method": "merged edge line segments",
+    "drawCallsPerBatch": 1,
+    "buffers": "batch-owned; edge source library-owned"
+  },
+  "lifecycle": "dispose batches before library, or library.dispose() disposes all live batches; both idempotent",
+  "assets": [
+    {
+      "id": "shanhai.sect.gate",
+      "name": "云阙山门",
+      "subtitle": "仙门 · 悬瓦剑碑",
+      "description": "窄高石门托起悬挑青瓦，孤立剑碑立于侧。推荐未来绑定真实宗门入口；当前只作视觉样例。",
+      "states": [
+        {
+          "id": "weathered",
+          "label": "经年",
+          "lods": [
+            {
+              "lod": 0,
+              "triangles": 192,
+              "bounds": {
+                "min": [
+                  -1.75,
+                  0,
+                  -0.756857693195343
+                ],
+                "max": [
+                  1.75,
+                  3.7200000286102295,
+                  1.1299999952316284
+                ]
+              },
+              "geometryBytes": 18432
+            },
+            {
+              "lod": 1,
+              "triangles": 64,
+              "bounds": {
+                "min": [
+                  -1.75,
+                  0,
+                  -0.550000011920929
+                ],
+                "max": [
+                  1.75,
+                  3.7200000286102295,
+                  0.550000011920929
+                ]
+              },
+              "geometryBytes": 6144
+            },
+            {
+              "lod": 2,
+              "triangles": 16,
+              "bounds": {
+                "min": [
+                  -1.649999976158142,
+                  0,
+                  -0.42500001192092896
+                ],
+                "max": [
+                  1.649999976158142,
+                  3.6500000953674316,
+                  0.42500001192092896
+                ]
+              },
+              "geometryBytes": 1536
+            }
+          ]
+        }
+      ],
+      "defaultRealm": "mortal",
+      "decorativeOnly": true,
+      "worldFacts": false,
+      "futureBinding": "real sect entrance, future adapter required"
+    },
+    {
+      "id": "shanhai.settlement.ruin",
+      "name": "故里断垣",
+      "subtitle": "聚落 · 残梁旧基",
+      "description": "缺失的屋顶、断壁与倾倒木梁留下曾经的房屋形制。未来损毁程度须读取真实建筑事实。",
+      "states": [
+        {
+          "id": "broken",
+          "label": "残破",
+          "lods": [
+            {
+              "lod": 0,
+              "triangles": 180,
+              "bounds": {
+                "min": [
+                  -1.625,
+                  0,
+                  -1.149999976158142
+                ],
+                "max": [
+                  1.625,
+                  2.4700000286102295,
+                  1.2024468183517456
+                ]
+              },
+              "geometryBytes": 17280
+            },
+            {
+              "lod": 1,
+              "triangles": 76,
+              "bounds": {
+                "min": [
+                  -1.625,
+                  0,
+                  -1.149999976158142
+                ],
+                "max": [
+                  1.625,
+                  2.4700000286102295,
+                  1.149999976158142
+                ]
+              },
+              "geometryBytes": 7296
+            },
+            {
+              "lod": 2,
+              "triangles": 20,
+              "bounds": {
+                "min": [
+                  -1.399999976158142,
+                  0,
+                  -0.7300000190734863
+                ],
+                "max": [
+                  1.399999976158142,
+                  1.850000023841858,
+                  -0.5699999928474426
+                ]
+              },
+              "geometryBytes": 1920
+            }
+          ]
+        },
+        {
+          "id": "abandoned",
+          "label": "荒废",
+          "lods": [
+            {
+              "lod": 0,
+              "triangles": 164,
+              "bounds": {
+                "min": [
+                  -1.625,
+                  0,
+                  -1.149999976158142
+                ],
+                "max": [
+                  1.625,
+                  2.049999952316284,
+                  1.2024468183517456
+                ]
+              },
+              "geometryBytes": 15744
+            },
+            {
+              "lod": 1,
+              "triangles": 72,
+              "bounds": {
+                "min": [
+                  -1.625,
+                  0,
+                  -1.149999976158142
+                ],
+                "max": [
+                  1.625,
+                  2.049999952316284,
+                  1.149999976158142
+                ]
+              },
+              "geometryBytes": 6912
+            },
+            {
+              "lod": 2,
+              "triangles": 20,
+              "bounds": {
+                "min": [
+                  -1.399999976158142,
+                  0,
+                  -0.7300000190734863
+                ],
+                "max": [
+                  1.399999976158142,
+                  0.9599999785423279,
+                  -0.5699999928474426
+                ]
+              },
+              "geometryBytes": 1920
+            }
+          ]
+        }
+      ],
+      "defaultRealm": "mortal",
+      "decorativeOnly": true,
+      "worldFacts": false,
+      "futureBinding": "real settlement/building damage, future adapter required"
+    },
+    {
+      "id": "shanhai.leyline.altar",
+      "name": "九隙古坛",
+      "subtitle": "地脉 · 断环放射",
+      "description": "缺环石阵围拢低矮中台，放射刻痕指向空缺。装饰候选，不声明灵脉、增益或阵法事实。",
+      "states": [
+        {
+          "id": "dormant",
+          "label": "遗存",
+          "lods": [
+            {
+              "lod": 0,
+              "triangles": 188,
+              "bounds": {
+                "min": [
+                  -1.5463345050811768,
+                  0,
+                  -1.539188265800476
+                ],
+                "max": [
+                  1.531517505645752,
+                  1.600000023841858,
+                  1.5313016176223755
+                ]
+              },
+              "geometryBytes": 18048
+            },
+            {
+              "lod": 1,
+              "triangles": 84,
+              "bounds": {
+                "min": [
+                  -1.5463345050811768,
+                  0,
+                  -1.502707839012146
+                ],
+                "max": [
+                  1.531517505645752,
+                  1.600000023841858,
+                  1.5313016176223755
+                ]
+              },
+              "geometryBytes": 8064
+            },
+            {
+              "lod": 2,
+              "triangles": 16,
+              "bounds": {
+                "min": [
+                  -1.3886884450912476,
+                  0,
+                  -1.5424318313598633
+                ],
+                "max": [
+                  1.275830626487732,
+                  1.600000023841858,
+                  1.0238460302352905
+                ]
+              },
+              "geometryBytes": 1536
+            }
+          ]
+        },
+        {
+          "id": "depleted",
+          "label": "枯竭",
+          "lods": [
+            {
+              "lod": 0,
+              "triangles": 188,
+              "bounds": {
+                "min": [
+                  -1.5463345050811768,
+                  0,
+                  -1.539188265800476
+                ],
+                "max": [
+                  1.531517505645752,
+                  0.7300000190734863,
+                  1.5313016176223755
+                ]
+              },
+              "geometryBytes": 18048
+            },
+            {
+              "lod": 1,
+              "triangles": 84,
+              "bounds": {
+                "min": [
+                  -1.5463345050811768,
+                  0,
+                  -1.502707839012146
+                ],
+                "max": [
+                  1.531517505645752,
+                  0.7300000190734863,
+                  1.5313016176223755
+                ]
+              },
+              "geometryBytes": 8064
+            },
+            {
+              "lod": 2,
+              "triangles": 16,
+              "bounds": {
+                "min": [
+                  -1.3886884450912476,
+                  0,
+                  -1.5424318313598633
+                ],
+                "max": [
+                  1.275830626487732,
+                  0.7300000190734863,
+                  1.0238460302352905
+                ]
+              },
+              "geometryBytes": 1536
+            }
+          ]
+        }
+      ],
+      "defaultRealm": "upper",
+      "decorativeOnly": true,
+      "worldFacts": false,
+      "futureBinding": "explicit real site/formation or decoration; never implies a leyline or buff"
+    },
+    {
+      "id": "shanhai.nether.remnant",
+      "name": "无归之隙",
+      "subtitle": "幽冥 · 错断虚门",
+      "description": "高低错断的石柱与悬缺横石围出虚空，少量浅色实体线刻记录无言年代。幽冥装饰候选。",
+      "states": [
+        {
+          "id": "silent",
+          "label": "无言",
+          "lods": [
+            {
+              "lod": 0,
+              "triangles": 148,
+              "bounds": {
+                "min": [
+                  -1.6307138204574585,
+                  0,
+                  -0.75
+                ],
+                "max": [
+                  1.5,
+                  3.819999933242798,
+                  0.75
+                ]
+              },
+              "geometryBytes": 14208
+            },
+            {
+              "lod": 1,
+              "triangles": 52,
+              "bounds": {
+                "min": [
+                  -1.2000000476837158,
+                  0,
+                  -0.24500000476837158
+                ],
+                "max": [
+                  1.5,
+                  3.819999933242798,
+                  0.24500000476837158
+                ]
+              },
+              "geometryBytes": 4992
+            },
+            {
+              "lod": 2,
+              "triangles": 16,
+              "bounds": {
+                "min": [
+                  -1.2899999618530273,
+                  0,
+                  -0.32499998807907104
+                ],
+                "max": [
+                  1.024999976158142,
+                  3.700000047683716,
+                  0.32499998807907104
+                ]
+              },
+              "geometryBytes": 1536
+            }
+          ]
+        }
+      ],
+      "defaultRealm": "nether",
+      "decorativeOnly": true,
+      "worldFacts": false,
+      "futureBinding": "Nether decoration or explicit future site identity"
+    }
+  ]
+}
