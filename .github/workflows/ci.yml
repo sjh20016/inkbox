@@ -122,6 +122,9 @@ jobs:
       - name: G8 运行时检查点、随机流续接与凡间生息
         run: npm run test:g8
 
+      - name: Wanxiang V0.2 Alpha contracts
+        run: npm run test:wanxiang
+
       - name: E2-Lite 落笔回执、只读行愿与事务存档
         run: npm run test:e2-lite
 

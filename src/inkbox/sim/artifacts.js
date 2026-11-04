@@ -35,6 +35,8 @@ import {
   ARTIFACT_NAMES, ARTIFACT_SPIRITS, NETHER_TECHNIQUES, narrate, pickFrom,
 } from '../core/lore.js';
 import { clamp } from '../core/noise.js';
+import { artifactRestriction } from '../wanxiang/legend.js';
+import { learnPractice, techniqueId } from '../wanxiang/practice.js';
 
 // ── 标定 ─────────────────────────────────────────────────
 
@@ -395,7 +397,6 @@ export function claimGroundArtifact(world, entity, artifactId, rng, kind = 'foun
     const a = ground[i];
     if (a.id !== artifactId) continue;
     if (!giveTo(world, entity, a, rng, kind)) return null;
-    ground.splice(i, 1);
     metric(world, 'found');
     return a;
   }
@@ -403,12 +404,15 @@ export function claimGroundArtifact(world, entity, artifactId, rng, kind = 'foun
 }
 
 /** 把一件法宝放回地上（无主） */export function toGround(world, a, x, y) {
+  const owner = a.ownerId && world.entities.find(entity => entity.id === a.ownerId);
+  // Replace the array so callers dropping a whole inventory can finish iterating it.
+  if (owner?.artifacts?.includes(a)) owner.artifacts = owner.artifacts.filter(item => item !== a);
   a.ownerId = 0;
   a.ownerName = null;
   a.lostDay = world.day;
   a.x = x;
   a.y = y;
-  world.artifacts.push(a);
+  if (!world.artifacts.includes(a)) world.artifacts.push(a);
   // 地上满了就朽掉「躺得最久」的那件
   while (world.artifacts.length > GROUND_CAP) {
     let oldest = 0;
@@ -432,15 +436,15 @@ export function claimGroundArtifact(world, entity, artifactId, rng, kind = 'foun
  * ⚠️ 上限与 `divine.js` / `sites.js` 的 `< 3` 同源（`TECHNIQUE_CAP`）；已会的不重复推。
  * @returns {boolean} 是否真的习得（已会 / 满了 / 名字不认识 ⇒ false）
  */
-function grantTechnique(entity, techName) {
+function grantTechnique(entity, techName, world) {
   if (!techName) return false;
   const entry = NETHER_TECHNIQUE_BY_NAME.get(techName);
   if (!entry) return false;                        // 名字不在池子里（老档 / 手改档）
   const list = entity.techniques || (entity.techniques = []);
   if (list.length >= TECHNIQUE_CAP) return false;  // 功法栏满了
   if (list.some((t) => t && t.name === entry.name)) return false;   // 已会
-  list.push(entry);
-  return true;
+  if (!world.wanxiang?.enabled) { list.push(entry); return true; }
+  return learnPractice(entity, techniqueId(entry), {acquired:true,day:world.day}).ok;
 }
 
 /**
@@ -448,14 +452,19 @@ function grantTechnique(entity, techName) {
  * @returns {boolean} 是否真的收下了（手上那件更好时会拒绝）
  */
 /** Read-only preflight for paid activities, using the same capacity/replacement rule. */
-export function canReceiveArtifact(entity, artifact) {
+export function canReceiveArtifact(entity, artifact, world = null) {
   if (!canHold(entity) || !artifact) return false;
+  if (artifactRestriction(world, artifact)) return false;
+  if ((entity.artifacts || []).some(a => a === artifact || a.id === artifact.id)) return false;
+  if (world?.entities?.some(e => e !== entity && e.hp > 0 && e.artifacts?.some(a => a === artifact || a.id === artifact.id))) return false;
   const held = entity.artifacts || [];
   return held.length < ARTIFACT_CAP || held.some(a => artifactPower(a) < artifactPower(artifact));
 }
 
 export function giveTo(world, entity, a, rng, kind = 'gained') {
-  if (!canReceiveArtifact(entity, a)) return false;
+  if (!canReceiveArtifact(entity, a, world)) return false;
+  // Acquisition moves a unique world object; it cannot clone another living owner's item.
+  if (a.ownerId && a.ownerId !== entity.id && world.entities?.some(e => e.id === a.ownerId && e.hp > 0 && e.artifacts?.includes(a))) return false;
   entity.artifacts = entity.artifacts || [];
   if (entity.artifacts.length >= ARTIFACT_CAP) {
     // 挑出最弱的那件比一比。新的更弱就干脆不捡——「这把不如我手上的」
@@ -468,6 +477,8 @@ export function giveTo(world, entity, a, rng, kind = 'gained') {
     entity.artifacts.splice(worst, 1);
     toGround(world, dropped, entity.x, entity.y);
   }
+  // Canonical acquisition removes every ground reference before assigning ownership.
+  for (let i=(world.artifacts?.length||0)-1;i>=0;i--) if(world.artifacts[i]===a || world.artifacts[i].id===a.id) world.artifacts.splice(i,1);
   a.ownerId = entity.id;
   a.ownerName = entity.name || null;
   a.heldSince = world.day;
@@ -476,7 +487,7 @@ export function giveTo(world, entity, a, rng, kind = 'gained') {
   entity.artifacts.push(a);
   // 幽冥法宝携带的功法：新主人当场习得（凡间法宝没有 `technique`，恒为 no-op）。
   // ⚠️ 放在**收下之后**：被拒（`return false`）时不该白送一门功法。
-  if (a.technique) grantTechnique(entity, a.technique.name);
+  if (a.technique) grantTechnique(entity, a.technique.name, world);
   return true;
 }
 
@@ -498,6 +509,9 @@ export function giveTo(world, entity, a, rng, kind = 'gained') {
 export function dropArtifacts(world, entity, rng) {
   const list = entity.artifacts;
   if (!list || !list.length) return [];
+  // Death has committed even when old age leaves hp positive. Release the
+  // deceased owner's inventory before canonical acquisition checks ownership.
+  entity.artifacts = [];
   const moved = [];
   for (let i = 0; i < list.length; i += 1) {
     const a = list[i];
@@ -510,7 +524,6 @@ export function dropArtifacts(world, entity, rng) {
       moved.push({ artifact: a, heir: null });
     }
   }
-  entity.artifacts = [];
   return moved;
 }
 

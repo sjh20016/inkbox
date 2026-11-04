@@ -8,6 +8,10 @@ import { compileBiography, importantRelations } from '../sim/biography.js';
 import { compileDeadBiography } from '../sim/necrology.js';
 import { HEAVEN_EDICTS, checkHeavenEdict, executeHeavenEdict } from '../sim/heavenEdicts.js';
 import { characterKey, parseCharacterKey, resolveCharacter, createSelectionToken } from './characterIdentity.js';
+import { readProfile } from '../wanxiang/profile.js';
+import { CATALOG } from '../wanxiang/catalog.js';
+import { previewChangeSet, commitChangeSet } from '../wanxiang/changes.js';
+import { enableWanxiang } from '../wanxiang/runtime.js';
 export { characterKey, parseCharacterKey, resolveCharacter, createSelectionToken };
 
 function freeze(value) {
@@ -93,6 +97,7 @@ export function buildCharacterViewModel(world,keyOrToken) {
   const rootLabel = root ? `${root.rootName || '灵根'}${Number.isInteger(root.quality) && QUALITIES[root.quality] ? ` · ${QUALITIES[root.quality]}` : ''}` : e.rootName || '不可考';
   return freeze({
     schemaVersion:1, permissions, health,
+    mingpu:{profile:readProfile(e),catalog:CATALOG,enabled:world.wanxiang?.enabled===true,day:world.day,fortune:e.fortune??null,mind:e.mind??null,legacyRoot:rootLabel,techniques:(e.techniques||[]).map(t=>({id:t.id??t.name,name:t.name,description:t.description})),artifacts:(e.artifacts||[]).map(a=>({id:a.id,name:a.name,grade:a.grade,description:a.description}))},
     identity:{key:r.key,id:r.id,plane:r.plane,currentPlane:r.currentPlane || r.plane,status:r.status,name:e.name || '不可考',canFocus:r.accessible},
     header:{realm:realmText(e),ageText:life?.ageText || (Number.isFinite(e.age) ? `${Math.floor(e.age / 360)} 岁` : '年龄不可考'),lifespanText:life?.lifespanText || '',affiliation,stateText:e.sp === 'ghost' && r.status === 'alive' ? '鬼魂存续' : r.status === 'ascended' && !r.arrival ? '已飞升 · 去向不可定位' : STATUS[r.status]},
     cultivation:{exp,required,percent:exp !== null && required !== null ? exp / required * 100 : null,rate,rateText:rate === null ? '修炼速度不可考' : `每日修为 ${rate.toFixed(3)}`,stateText:required === null || exp === null ? '修为不可考' : exp >= required ? '等待模拟突破' : '积累修为'},
@@ -127,6 +132,8 @@ export function summarizeCharacterObservation(world,keyOrToken,sinceDay = 0) {
 export function createCharacterController({getWorld,onChange = () => {},presenter} = {}) {
   if (typeof getWorld !== 'function') throw new TypeError('getWorld must be a function');
   let token = null, vm = null, destroyed = false;
+  let draftSequence = 0;
+  const drafts = new Map();
   function publish(next) { vm = next; if (!destroyed) { onChange(vm); if (vm) presenter?.render(vm); } return vm; }
   function refresh() {
     if (destroyed || !token) return null;
@@ -134,13 +141,33 @@ export function createCharacterController({getWorld,onChange = () => {},presente
     if (!next) token = null;
     return publish(next);
   }
-  function close() { token = null; publish(null); return {ok:true,viewModel:null}; }
+  function close() { drafts.clear(); token = null; publish(null); return {ok:true,viewModel:null}; }
+  function handleMingpu(action) {
+    if (destroyed || !token || action?.targetKey !== token.key) return {ok:false,reason:'stale-target'};
+    const world=getWorld(), resolved=resolveCharacter(world,token.key,{token});
+    if(!resolved.ok || resolved.status!=='alive' || !resolved.accessible) return {ok:false,reason:'target-unavailable'};
+    if(action.type==='enable') { enableWanxiang(world);refresh();return {ok:true,message:'万象塑命 Alpha 已启用'}; }
+    if(!world.wanxiang?.enabled) return {ok:false,reason:'alpha-disabled'};
+    if(action.type==='begin') {
+      drafts.clear();const profile=readProfile(resolved.entity);
+      const draft={id:`mingpu-${world.day}-${++draftSequence}`,key:token.key,expectedRevision:profile.revision,profile,day:world.day};
+      drafts.set(draft.id,{entity:resolved.entity,world,token,day:world.day,revision:profile.revision});
+      return {ok:true,draft,profile,catalog:CATALOG};
+    }
+    const draft=action.draft,proof=drafts.get(draft?.id);
+    if(!proof || proof.entity!==resolved.entity || proof.world!==world || draft.key!==token.key) return {ok:false,reason:'stale-draft'};
+    if(proof.revision!==readProfile(resolved.entity).revision) return {ok:false,reason:'人物已变化，请刷新草稿'};
+    const command={id:draft.id,key:token.key,expectedRevision:proof.revision,mode:'player',source:'玩家改命',operations:action.operations?.map(op=>{if(!op.value||!['states','bonds'].includes(op.field)||op.value.durationDays==null)return op;const {durationDays,...value}=op.value;return {...op,value:{...value,expiresDay:world.day+Number(durationDays)}};})};
+    if(action.type==='preview') return previewChangeSet(world,command,{token:proof.token});
+    if(action.type==='commit') {const result=commitChangeSet(world,command,{token:proof.token});if(result.ok){drafts.delete(draft.id);refresh();}return result;}
+    return {ok:false,reason:'invalid-action'};
+  }
   function select(input) {
     if (destroyed) return {ok:false,reason:'destroyed',message:characterReason('destroyed'),viewModel:null};
     const key = typeof input === 'string' ? input : characterKey(input?.plane,input?.entityId ?? input?.id);
     const next = createSelectionToken(getWorld(),key);
     if (!next) return {ok:false,reason:'invalid-or-inaccessible-target',message:characterReason('invalid-or-inaccessible-target'),viewModel:vm};
-    token = next; refresh(); return {ok:true,viewModel:vm,token};
+    drafts.clear(); token = next; refresh(); return {ok:true,viewModel:vm,token};
   }
   function handleAction(action) {
     if (destroyed) return {ok:false,reason:'destroyed',message:characterReason('destroyed'),viewModel:null};
@@ -162,5 +189,5 @@ export function createCharacterController({getWorld,onChange = () => {},presente
     } else result = {ok:false,reason:'invalid-action'};
     return {...result,message:result.message || (result.reason ? characterReason(result.reason) : ''),viewModel:refresh()};
   }
-  return {select,open:select,current:() => vm,viewModel:() => vm,refresh,handleAction,close,reset:close,destroy(){if (destroyed) return; close();destroyed = true;presenter?.destroy();}};
+  return {select,open:select,current:() => vm,viewModel:() => vm,refresh,handleAction,handleMingpu,close,reset:close,destroy(){if (destroyed) return; drafts.clear();close();destroyed = true;presenter?.destroy();}};
 }

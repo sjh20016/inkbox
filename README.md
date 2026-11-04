@@ -1,5 +1,7 @@
 # 坐天观井 · Inkbox 1.0.0
 
+本分支提供隔离的**万象塑命 V0.2 Alpha**：启动开发服务后访问 `inkbox.html?wanxiang=1`，正式创世、选择人物、展开命簿，可在五页中查看人物并经草稿→预览→提交改命；Three 入口加 `renderer=3d`。封剑传奇及借页道种需额外 `wxExperiments=1`，默认关闭。该候选尚未合入 main，部分特殊机制仍仅有定义；请先看 [可玩范围、验证与回退](./docs/development/WANXIANG_SUMING_V02_DELIVERY.md) 和 [逐项覆盖矩阵](./docs/development/WANXIANG_SUMING_V02_ALPHA_MATRIX.md)。
+
 R1「山海入世」在 G5/P1 主线上接入 Opus V1→V1.3 原始美术历史：Three 默认使用低饱和三界、浮岛云层、幽冥立体线刻与自然雕刻。界面依照本地 Opus《玄门秘卷》原型，以印令、符箓、纸卷书架和摊开的命簿呈现正式游戏；创世菜单、稳定人物肖像和执伞卜算子插画接入现有处理器。启动后先显示山河菜单，可继续、创世或选择真实存档；菜单开启时暂停模拟。操作见 [玩家指引](./PLAYER_GUIDE.md)，来源、验收与保留边界见 [R1 集成记录](./docs/development/R1_ART_UI_INTEGRATION.md)。
 
 截至 2026-10-19 的 P0 合流中，G2.5 PR #26、G2.6 PR #27、G5 PR #28 已按依赖顺序通过 Merge Commit 接纳。对应合流提交为 `59cd08d`、`9ec8ec7`、`3dabf8c`，保留 main → G2.5 → G2.6 → G5 的 Git 祖先关系。

@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+`npm run test:wanxiang` 验证隔离万象塑命 V0.2 Alpha 的目录、Profile、改命、三界存档、DNA、真实功法与技能、经历、原生付费疗伤、遗物继承和 UI 命令。加入 Fast，原 Fast/Heavy 保持不变。`npm run test:wanxiang:browser` 使用仓库隔离 Edge/CDP 和自有服务验证桌面/窄屏 Canvas 与实际 Three、五页命簿、预览提交和存读档；软件光栅结果不代表 GPU 性能。`npm run profile:wanxiang` 执行两种子自然30年样本，原生推进不注入奖励，不作为长期平衡结论。范围和未接线机制见 [Alpha 交付记录](../docs/development/WANXIANG_SUMING_V02_DELIVERY.md) 与 [逐项矩阵](../docs/development/WANXIANG_SUMING_V02_ALPHA_MATRIX.md)。
+
 > RG2（2026-10-28）：新增玩法原型的定向检查与集成边界见 [玩法扩展接入约定](../docs/development/FEATURE_EXTENSION_CONTRACT.md)。`scripts/` 中仍有大量核心、手动浏览器、GPU、开发和历史可复现实验；文件数量不构成删除依据。本次治理**未减少任何测试断言或 CI 门禁**，也未调整打包脚本清单。
 
 

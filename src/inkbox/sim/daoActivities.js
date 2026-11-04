@@ -1,3 +1,7 @@
+import { emitCommittedFact } from '../wanxiang/experiences.js';
+import { readEffects } from '../wanxiang/effects.js';
+import { legendOwnsMovement } from '../wanxiang/legend.js';
+import { encounterFor } from '../wanxiang/encounters.js';
 import { DAO_BY_KEY } from '../core/cultivation.js';
 import { addWanlingEffect, liveWanling, wanlingById, wanlingEvent, wanlingState } from '../world/wanlingState.js';
 import { ensureWraithLog } from './wraiths.js';
@@ -62,7 +66,7 @@ function targetFor(world,e,path,life) {
   if(path==='talisman'||path==='blood') return nearby(world.villages,e,36,v=>v.hp>0&&v.food>0);
   if(path==='formation') return nearby(world.sites,e,42,s=>s.kind==='formation'
     && (world.villages||[]).some(v=>v.hp>0&&Math.hypot(v.x-s.x,v.y-s.y)<=5));
-  if(path==='artifact') return nearby(world.artifacts,e,35,a=>a.ownerId===0&&Number.isFinite(a.durability)&&a.durability>0&&Array.isArray(a.history)&&canReceiveArtifact(e,a));
+  if(path==='artifact') return nearby(world.artifacts,e,35,a=>a.ownerId===0&&Number.isFinite(a.durability)&&a.durability>0&&Array.isArray(a.history)&&canReceiveArtifact(e,a,world));
   if(path==='sword') return nearby(people,e,32,x=>x.sp==='cultivator'&&x.level>0&&e.level>0&&x.hp>=x.maxHp*.9&&x.dao?.path?.key==='sword');
   if(path==='body') {
     const enemy=life?.findEnemy?.(e,12);
@@ -84,7 +88,10 @@ function act(world,life,e,j,target) {
   const key=j.path;
   if(key==='alchemy') {
     if(!alive(target)||target.hp>=target.maxHp*.92||!spendPower(world,e,.2,.01)) return false;
-    const amount=Math.min(target.maxHp*.12,target.maxHp-target.hp); target.hp+=amount;
+    const healing=readEffects(e,{day:world.day,world,target}).healing;
+    const received=readEffects(target,{day:world.day,world,healer:e}).healingReceived;
+    const amount=Math.min(target.maxHp*.12*healing*received,target.maxHp-target.hp); target.hp+=amount;
+    if(amount>0)emitCommittedFact(world,target,{id:`healed:${world.plane||'mortal'}:${e.id}:${target.id}:${j.startedDay}`,type:'healed',amount,paid:true,helperKey:`${world.plane||'mortal'}:${e.id}`});
     finish(world,e,j,`以灵丹术为${target.name||'伤者'}疗伤，恢复${amount.toFixed(1)}气血`); return true;
   }
   if(key==='talisman') {
@@ -100,7 +107,7 @@ function act(world,life,e,j,target) {
     finish(world,e,j,`巡检并稳固${target.name||'古阵'}阵眼，为附近村落护持阵法`); return true;
   }
   if(key==='artifact') {
-    if(!target||target.ownerId!==0||!world.artifacts.includes(target)||!canReceiveArtifact(e,target)||!spendPower(world,e,.35,.015)) return false;
+    if(!target||target.ownerId!==0||!world.artifacts.includes(target)||!canReceiveArtifact(e,target,world)||!spendPower(world,e,.35,.015)) return false;
     const claimed=claimGroundArtifact(world,e,target.id,()=>0.5,'found');
     if(!claimed) return false;
     finish(world,e,j,`以灵力收取遗物「${claimed.name||'无名法宝'}」，履历记为拾得`); return true;
@@ -180,7 +187,7 @@ export function stepDaoActivities(world,life) {
   }
   const jobs=jobList(world); let assigned=0;
   for(const e of world.entities||[]) {
-    const key=pathOf(e); if(!key||!alive(e)||activeJourneyForEntity(world,e.id)||getJob(world,e.id)) continue;
+    const key=pathOf(e); if(!key||!alive(e)||encounterFor(world,e.id)||legendOwnsMovement(world,e.id)||activeJourneyForEntity(world,e.id)||getJob(world,e.id)) continue;
     const prior=getJob(world,e.id,false);
     if(prior&&world.day<prior.nextDay) continue;
     const target=targetFor(world,e,key,life); if(!target) continue;
@@ -194,6 +201,7 @@ export function stepDaoActivities(world,life) {
 export function stepDaoTravel(world,life,e,dtDays) {
   if(!world?.wanling || world.wanling.enabled===false) return false;
   if(activeJourneyForEntity(world,e?.id)) {yieldDaoActivityToTransit(world,e.id);return false;}
+  if(encounterFor(world,e?.id)) return false;
   const j=getJob(world,e?.id); if(!j||j.stage==='done') return false;
   if(!alive(e)||!world.entities?.includes(e)||pathOf(e)!==j.path) {
     j.stage='done'; j.completedDay=world.day; j.nextDay=world.day;
