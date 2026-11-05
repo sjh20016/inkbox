@@ -7,6 +7,9 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:wanxiang": "node scripts/inkbox-wx-content.mjs && node scripts/inkbox-wx-core.mjs && node scripts/inkbox-wx-practice.mjs && node scripts/inkbox-wx-damage.mjs && node scripts/inkbox-wx-experiences.mjs && node scripts/inkbox-wx-healing.mjs && node scripts/inkbox-wx-artifacts.mjs && node scripts/inkbox-wx-integration.mjs && node scripts/inkbox-wx-ui.mjs",
+    "profile:wanxiang": "node scripts/inkbox-wx-profile.mjs",
+    "test:wanxiang:browser": "node scripts/inkbox-wx-browser.mjs",
     "test:e2-lite": "node scripts/inkbox-e2-lite.mjs && node scripts/inkbox-e2-lite-input.mjs",
     "test:e2-lite:browser": "node scripts/inkbox-e2-lite-browser.mjs",
     "test:wti1": "node scripts/inkbox-wti1-selection.mjs && node scripts/inkbox-wti1-activities.mjs && node scripts/inkbox-wti1-integration.mjs",
@@ -150,7 +153,10 @@
     "test:p1": "node scripts/inkbox-p1-navigation.mjs",
     "test:p1:browser": "node scripts/inkbox-p1-browser.mjs && node scripts/inkbox-p1-loop-browser.mjs",
     "test:p1:loop:browser": "node scripts/inkbox-p1-loop-browser.mjs",
-    "test:browser-tools": "node scripts/inkbox-cdp-ownership-test.mjs && node scripts/inkbox-owned-server-check.mjs"
+    "test:browser-tools": "node scripts/inkbox-cdp-ownership-test.mjs && node scripts/inkbox-owned-server-check.mjs",
+    "test:wanxiang:b": "node scripts/inkbox-wx-b-core.mjs && node scripts/inkbox-wx-b-lifecycle.mjs && node scripts/inkbox-wx-b-transit.mjs && node scripts/inkbox-wx-b-encounters.mjs && node scripts/inkbox-wx-b-seeds.mjs && node scripts/inkbox-wx-b-blood.mjs && node scripts/inkbox-wx-b-hex.mjs && node scripts/inkbox-wx-b-paths.mjs",
+    "profile:wanxiang:b": "node scripts/inkbox-wx-b-profile.mjs",
+    "test:wanxiang:b:browser": "node scripts/inkbox-wx-b-browser.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

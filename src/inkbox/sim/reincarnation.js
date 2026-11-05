@@ -1,3 +1,4 @@
+import {soulSnapshot,attachSoulProfile} from '../wanxiang/soul.js';
 // 水墨沙盒 · 转世
 //
 // 原作（reincarnationSystem.js / pastLifeMemorySystem.js / descendantSystem.js /
@@ -498,6 +499,7 @@ export function enterNether(world, entity, rng) {
     // 它们与「有没有幽冥 world」无关）。
     if (world.nether && Array.isArray(world.nether.entities) && route !== SOUL_ROUTES.GONE) {
       spawnNetherGhost(world.nether, {
+        wanxiangSoul: soulSnapshot(world,entity),
         kind: route === SOUL_ROUTES.GHOST ? 'ghostCultivator' : 'ghost',
         ghostOf: ghostSnapshot(world, entity, route),
         soulId: null,
@@ -521,6 +523,7 @@ export function enterNether(world, entity, rng) {
     : 40 + rng() * 120;
 
   const soul = {
+    ...(entity.wanxiang?{wanxiangSoul:soulSnapshot(world,entity)}:{}),
     id: world.nextSoulId,
     ofName: entity.name,
     ofLevel: level,
@@ -588,6 +591,8 @@ export function enterNether(world, entity, rng) {
     && world.souls.indexOf(soul) >= 0) {
     spawnNetherGhost(world.nether, {
       kind: 'ghost',
+      // This bound shadow is an observation proxy; the queued soul remains the
+      // sole owner of wanxiangSoul. Do not duplicate executable seed receipts.
       ghostOf: ghostSnapshot(world, entity, route),
       soulId: soul.id,
       x: entity.x,
@@ -635,6 +640,7 @@ export function attachSoul(world, entity, soul, rng) {
   entity.exp = 0;
   entity.incarnation = (soul.incarnation || 1) + 1;
   entity.soulId = soul.id;
+  attachSoulProfile(world,entity,soul.wanxiangSoul,'转世');
   // 前世灵根：境界够高的会把它带过来，并且资质再抬一档
   if (soul.ofLevel >= 20 && soul.ofRoot) {
     entity.root = { ...soul.ofRoot, elements: [...(soul.ofRoot.elements || [])] };

@@ -1,3 +1,4 @@
+import { grantBloodResource } from '../wanxiang/bloodPhysique.js';
 // 水墨沙盒 · 地图上的地点
 //
 // 秘境、洞府、上古阵法、灵脉——这些东西让地图本身有「值得去的地方」，
@@ -13,6 +14,11 @@ import { SECRET_REALMS, CAVE_TYPES, CAVE_SITES, FORMATIONS, MANUALS, narrate, pi
 import { claimGroundArtifact, ownerLine } from './artifacts.js';
 import { clamp } from '../core/noise.js';
 import { canAccess } from '../core/mapAccess.js';
+
+import { emitCommittedFact } from '../wanxiang/experiences.js';
+import { learnPractice, techniqueId } from '../wanxiang/practice.js';
+import { initializeProfile } from '../wanxiang/profile.js';
+import { stepEncounters } from '../wanxiang/encounters.js';
 
 const THEMED_REWARD = 'theme-v1';
 const CAVE_MANUAL_KINDS = ['sword', 'alchemy', 'formation', 'talisman', null];
@@ -37,6 +43,12 @@ export const SITE_LIFESPAN_YEARS = Object.freeze({
 
 /** 一名修士进入秘境后的结算 */
 export function enterSite(world, entity, site, rng) {
+  if (site.encounterMode && ((site.inheritanceExhausted&&!(site.dragonBoneCharges>0)) || Math.hypot(entity.x-site.x,entity.y-site.y)>1.5)) return null;
+  if(site.encounterMode && !world.wanxiang?.encounters?.some(s=>s.siteId===site.id&&s.stage==='open'&&s.participants.some(p=>p.actorId===entity.id&&p.stage==='arrived'&&!p.settled)))return null;
+  const arrival=site.encounterMode===true;
+  const participant=arrival?world.wanxiang.encounters.find(s=>s.siteId===site.id&&s.stage==='open').participants.find(p=>p.actorId===entity.id):null;
+  if(participant)participant.settled=true;
+  const factId = `site:${site.id}:${entity.id}:${site.visits}:${world.day}`;
   const level = entity.level || 0;
   if (level < 3) return null;
 
@@ -46,6 +58,13 @@ export function enterSite(world, entity, site, rng) {
   const successChance = clamp(0.28 + level * 0.022 + (fortune - 50) / 260, 0.1, 0.92);
 
   if (roll < successChance) {
+    let learnedInheritance=false;
+    if(arrival&&site.inheritanceManual&&!site.inheritanceExhausted&&!entity.techniques.some(t=>t.name===site.inheritanceManual)){
+      const manual=MANUALS.find(m=>m.name===site.inheritanceManual);
+      if(manual){if(participant.lastStudyDay===world.day)return {ok:false,studying:true};participant.lastStudyDay=world.day;
+        const learned=learnPractice(entity,techniqueId(manual),{acquired:true,day:world.day,studyDays:1,world});
+        if(!learned.ok){participant.settled=false;return {ok:false,studying:learned.reason==='studying'};}learnedInheritance=true;}
+    }
     let gain = site.reward || '感悟';
     const baseExp = (entity.level || 1) * 12 + rng() * 40;
     const isAlchemy = site.kind === 'secret' && site.rewardMode === THEMED_REWARD && site.sub === 'alchemy';
@@ -63,9 +82,9 @@ export function enterSite(world, entity, site, rng) {
     if (site.kind === 'cave' && Object.hasOwn(site, 'inheritanceManual')) {
       const manual = MANUALS.find((item) => item.name === site.inheritanceManual);
       gain = '修为感悟';
-      if (!site.inheritanceExhausted && !site.inheritanceClaimedBy && manual && entity.techniques.length < 3
-        && !entity.techniques.some((item) => item.name === manual.name)) {
-        entity.techniques.push(manual);
+      if (!site.inheritanceExhausted && !site.inheritanceClaimedBy && manual && (learnedInheritance || entity.techniques.length < 3
+        && !entity.techniques.some((item) => item.name === manual.name))) {
+        if(!learnedInheritance)entity.techniques.push(manual);
         site.inheritanceClaimedBy = entity.id;
         site.inheritanceExhausted = true;
         site.reward = '传承已被取走';
@@ -107,6 +126,10 @@ export function enterSite(world, entity, site, rng) {
       site.artifactId = 0;
     }
     world.record(`【${entity.name}】入${site.name}，得${gain}。`, 'site', entity, siteLocation(world, site));
+    if(arrival)resolveDragonBone(world,entity,site);
+    if(world.wanxiang?.enabled && site.godFragmentCharges>0 && grantBloodResource(world,entity,'god-fragment',site.id)) site.godFragmentCharges--;
+    if(world.wanxiang?.enabled && site.phoenixFeatherCharges>0 && grantBloodResource(world,entity,'phoenix-feather',site.id)) site.phoenixFeatherCharges--;
+    if(arrival)emitCommittedFact(world,entity,{id:factId,type:'site-success',siteId:site.id,arrived:true});
     return { ok: true, gain };
   }
 
@@ -117,6 +140,7 @@ export function enterSite(world, entity, site, rng) {
   entity.mind = clamp(entity.mind - 6, 0, 100);
   entity.heartDemon = clamp(entity.heartDemon + 4, 0, 100);
   world.record(`【${entity.name}】入${site.name}，重伤而出。`, 'site', entity, siteLocation(world, site));
+  if(arrival)emitCommittedFact(world,entity,{id:factId,type:'site-failure',siteId:site.id,arrived:true});
   return { ok: false };
 }
 
@@ -163,6 +187,7 @@ export function spawnCave(world, rng, near = null) {
     name: `${siteName}·${cave.name}`,
     reward: `《${inheritanceManual}》`,
     element: cave.element,
+    ...(world.wanxiang?.enabled===true&&caveIndex===3?{dragonBoneCharges:1,phoenixFeatherCharges:1,godFragmentCharges:1}:{}),
     inheritanceManual,
     inheritanceClaimedBy: null,
     inheritanceExhausted: false,
@@ -233,6 +258,7 @@ function findSiteSpot(world, rng, near, minQi = 0.3) {
  *   2. 地点随年岁淡去
  */
 export function stepSites(world, dtDays, rng) {
+  stepEncounters(world);
   const sites = world.sites;
   if (!sites.length) return;
 
@@ -244,7 +270,7 @@ export function stepSites(world, dtDays, rng) {
     // 频率压得比较低：地点多起来之后，哪怕每年 0.35 次也足以让
     // 「入某遗蜕，重伤而出」占掉编年史的一半。
     const yearFrac = dtDays / 360;
-    if (rng() < yearFrac * 0.12) {
+    if (!site.encounterMode && rng() < yearFrac * 0.12) {
       const visitor = findVisitor(world, site, rng);
       if (visitor) {
         site.visits += 1;
@@ -314,4 +340,17 @@ export function plantSite(world, rng, kind, x, y, theme = 'random') {
   if (kind === 'cave') return spawnCave(world, rng, { x, y, radius: 3, accessibleOnly: true });
   if (kind === 'formation') return spawnFormation(world, rng, { x, y, radius: 3, accessibleOnly: true });
   return null;
+}
+
+/** Finite cave resource; acquisition and stabilization each consume one real charge. */
+export function resolveDragonBone(world,e,site){
+ if(world.wanxiang?.enabled!==true||!world.entities.includes(e)||!world.sites.includes(site)||e.hp<=e.maxHp*.5||e.level<3||Math.hypot(e.x-site.x,e.y-site.y)>1.5||!(site.dragonBoneCharges>0))return false;
+ const p=initializeProfile(e),b=p.bloodlines.find(b=>b.id==='true_dragon');
+ if(b?.stable&&b.inheritable)return false;
+ if(!b&&(p.bloodlines.length>=3||p.bloodlines.some(b=>!b.latent)))return false;
+ if(b&&world.day-(b.source?.day??world.day)<180)return false;
+ site.dragonBoneCharges--;e.hp-=e.maxHp*.15;
+ if(b){b.stable=true;b.inheritable=true;b.source={...b.source,stabilizedDay:world.day};}
+ else p.bloodlines.push({id:'true_dragon',grade:1,purity:20,latent:false,stable:false,inheritable:false,source:{kind:'dragon-bone',siteId:site.id,day:world.day}});
+ p.revision++;return true;
 }

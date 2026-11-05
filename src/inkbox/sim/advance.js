@@ -1,3 +1,7 @@
+import { updateWorldEpoch } from '../wanxiang/runtime.js';
+import { stepDaoSeeds } from '../wanxiang/daoSeeds.js';
+import { stepLegend } from '../wanxiang/legend.js';
+import { claimGroundArtifact } from './artifacts.js';
 // 水墨沙盒 · 世界推进的**唯一入口**（全部「游戏日驱动的时钟」）
 //
 // ───────────────────────────────────────────────────────────────────────
@@ -122,8 +126,10 @@ export function advanceWorld(world, days, deps = {}) {
 
   const fired = { upper: false, nether: false, rift: false, wraith: false, nature: false };
 
+  const previousDay = world.day;
   world.day += days;
   world.year = Math.floor(world.day / TIME.daysPerYear);
+  if (world.wanxiang?.enabled) { updateWorldEpoch(world); if(Math.floor(previousDay/30)!==Math.floor(world.day/30)) { stepDaoSeeds(world); stepLegend(world,claimGroundArtifact); } }
   if (world.plane === 'mortal') fired.wanling = !!stepWanling(world,days,{life:deps.life});
 
   // ── 凡间主循环（每拍都跑，不节流）────────────────────────────

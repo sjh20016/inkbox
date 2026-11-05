@@ -1,3 +1,12 @@
+import { tryPhoenix, noteBodyWound, stepBody, invokeCalamity } from '../wanxiang/bloodPhysique.js';
+import { emitCommittedFact } from '../wanxiang/experiences.js';
+import { reduceIncomingDamage, postCombatHit } from '../wanxiang/damage.js';
+import { stepLegendTravel } from '../wanxiang/legend.js';
+import { initializeBornProfile } from '../wanxiang/runtime.js';
+import { readEffects } from '../wanxiang/effects.js';
+import { stepEncounterTravel } from '../wanxiang/encounters.js';
+import { enterSite } from './sites.js';
+import { chooseSkillAction, stepSkillResources } from '../wanxiang/skills.js';
 import { recordCombatAttempt, emitCombatHit } from './presentation.js';
 import { tryCombatIgnition } from './combatEnvironment.js';
 // 水墨沙盒 · 生灵、聚落与宗门
@@ -29,7 +38,7 @@ import { OVER, recomputeRect, markDirty, flushDirty } from '../world/terrain.js'
 import { fireExposure, floodExposure } from './nature.js';
 import { generateNameParts, generateName, generateVillageName, narrate, fillTemplate } from '../core/lore.js';
 import {
-  initEntity, stepEntity as stepCultivation, combatPower, recordDeath, addKarma, MAX_SITES, placeName,
+  initEntity, maxHpFor, stepEntity as stepCultivation, combatPower, recordDeath, addKarma, MAX_SITES, placeName,
 } from './cultivation.js';
 import { stepSects, foundSect } from './sects.js';
 import { affiliateSectResident } from './sectEconomy.js';
@@ -491,7 +500,6 @@ export class Life {
       // ⚠️ 必须排在 initEntity **之后**：附魂要读 level 与 maxHp，
       // 也要在「已经觉醒」的基础上覆盖寿元。顺序反了，转世者会变成
       // 一个寿元只有凡人长短、且永远想不起前世的修士。
-      if (soul) attachSoul(world, entity, soul, this.rng);
       // 家世（见 sim/family.js）：双亲、世家、世代、天资快照。
       // 排在最后，是因为「家学」只发给已经觉醒的人，而转世者降生即是修士。
       // 没有双亲也照样生——把出生卡在「有父母」上会直接改掉人口曲线，
@@ -499,6 +507,8 @@ export class Life {
       if (parents && (parents[0] || parents[1])) {
         registerBirth(world, entity, parents);
       }
+      initializeBornProfile(world,entity,parents);
+      if (soul) attachSoul(world, entity, soul, this.rng);
       this.countVillageResident(entity);
       created += 1;
     }
@@ -639,6 +649,7 @@ export class Life {
     for (let i = 0; i < list.length; i += 1) {
       const e = list[i];
       if (e._ascended) continue;                    // 已登仙，无需再算生死
+      if (e.hp <= 0 && e.diedOf==='fire') tryPhoenix(world,e,'fire');
       if (e.hp <= 0 || e.age >= e.lifespan) {
         this.onDeath(e);
         continue;
@@ -757,6 +768,8 @@ export class Life {
     // 加了这一句之后，`hp <= 0` 才真正等于「本 tick 必死」：
     // 它不再行动、不再回血，随后由死亡清扫正常走 `onDeath`。
     if (e.hp <= 0) return false;
+    if (e.wanxiang) stepSkillResources(e,dtDays);
+    stepBody(world,e);
     const info = isMortalHuman(e) ? SPECIES_INFO.human : SPECIES_INFO[e.sp] || SPECIES_INFO.human;
     e.anim += dtDays * 2.4;
 
@@ -794,7 +807,7 @@ export class Life {
     const fert = world.fertility(here);
     if (fert > 0.2 && world.fire[here] < 0.2) {
       const eat = Math.min(1, fert * dtDays * 0.05);
-      e.hp = Math.min(e.maxHp, e.hp + e.maxHp * eat * 0.35);
+      e.hp = Math.min(e.maxHp, e.hp + e.maxHp * eat * 0.35 * readEffects(e,{day:world.day,world}).healingReceived);
       e.carried = Math.min(1, e.carried + eat * (info.diet > 0 ? 0.5 : 0));
     } else {
       // 死因标记：站在无肥力的地上挨饿 ⇒ `deathOther`（不是寿终）。
@@ -900,6 +913,12 @@ export class Life {
     // 状态机
     e.timer -= dtDays;
     const enemy = this.findEnemy(e, 9);
+    const retreatEffects=readEffects(e,{day:world.day,world,target:enemy});
+    const retreatFraction=WOUNDED_HP_FRACTION+retreatEffects.retreat+retreatEffects.escape;
+    if(!enemy&&e.state==='flee'){
+      const wound=e.wanxiang?.experienceLedger?.records?.findLast(r=>r.type==='combat-wound'&&world.day-r.day<=180);
+      if(wound)emitCommittedFact(world,e,{id:`escaped:${wound.id}`,type:'escaped',hostile:true});
+    }
     if (enemy) {
       // 凡人不会空手去和灵兽或修士拼命——掉头就跑。
       // 这条规则是人口稳定的关键：凡人速度 1.0、逃逸时 ×1.35，
@@ -932,7 +951,7 @@ export class Life {
       const secluding = isSecluding(e);
       const canFight = !secluding
         && (e.level || 0) >= 1
-        && e.hp >= e.maxHp * WOUNDED_HP_FRACTION;
+        && e.hp >= e.maxHp * retreatFraction;
       if (canFight) {
         e.state = 'fight';
         e.tx = enemy.x;
@@ -948,7 +967,7 @@ export class Life {
           e.timer = 5 + this.rng() * 6;
         }
       }
-    } else if (e.hp < e.maxHp * WOUNDED_HP_FRACTION) {
+    } else if (e.hp < e.maxHp * retreatFraction) {
       e.state = 'flee';
       if (e.timer <= 0) {
         const away = this.pickFleeTarget(e, null);
@@ -956,6 +975,10 @@ export class Life {
         e.ty = away[1];
         e.timer = 6 + this.rng() * 6;
       }
+    } else if (stepLegendTravel(world,this,e,dtDays)) {
+      return false;
+    } else if (stepEncounterTravel(world,this,e,dtDays,enterSite)) {
+      return false;
     } else if (stepDaoTravel(world,this,e,dtDays)) {
       return false;
     } else if (e.timer <= 0) {
@@ -1070,7 +1093,7 @@ export class Life {
     const terrainSpeed = TERRAIN_SPEED[world.type[here]] ?? 1;
     // 高境界的修士御剑而行，走得更快
     const realmBoost = 1 + Math.min(1.4, (e.level || 0) * 0.026);
-    const speed = BASE_TILES_PER_DAY * info.speed * terrainSpeed * realmBoost * (e.state === 'flee' ? 1.35 : 1);
+    const speed = BASE_TILES_PER_DAY * info.speed * terrainSpeed * realmBoost * (e.state === 'flee' ? 1.35 : 1) * readEffects(e,{day:world.day,world}).travel;
     const stepLen = speed * dtDays;
     if (stepLen <= 0) return;
 
@@ -1149,6 +1172,8 @@ export class Life {
   }
 
   findEnemy(e, radius) {
+    const perception=readEffects(e,{day:this.world.day,world:this.world});
+    radius = radius*perception.perception+(perception.detectRadius||0);
     // ── 养伤：不出战，也不逃 ──────────────────────────────
     // 「败退」的兑现方式。**必须放在本函数内部、而不是调用点**：
     // 调用点将来可能增加，闸门放在函数里就不会漏。
@@ -1220,19 +1245,26 @@ export class Life {
   }
 
   attack(e, target, dtDays, { sparring = false } = {}) {
+    if(!sparring)invokeCalamity(this.world,e,target);
     recordCombatAttempt(this.world);
     const dist = Math.hypot(target.x - e.x, target.y - e.y);
     if (dist > 1.6) return;
-    const power = combatPower(e);
-    const defense = combatPower(target);
+    const power = combatPower(e,this.world.day,this.world,target);
+    const defense = combatPower(target,this.world.day,this.world,e);
+    const skill = !sparring && e.wanxiang && this.world.wanxiang?.enabled ? chooseSkillAction(e,target,this.world.day,{power,defense}) : null;
+    if (skill && ['wait','heal'].includes(skill.kind)) return;
     const roll = sparring ? stableWanlingHash(this.world.seed,e.id,`spar:${target.id}:${Math.floor(this.world.day)}`)/0x100000000 : this.rng();
     const damage = power * 3.4 * dtDays * (0.6 + roll * 0.8);
     // ⚠️ 减伤后的伤害**只算一次**存进 `hit`。原代码在下面的致死判定里
     //    **重算了一遍**同一个表达式——两处一旦分叉，击杀记账会静默算错。
-    const normalHit = damage * (10 / (10 + defense * 0.35));
+    const normalHit = reduceIncomingDamage(e,target,skill ? skill.damage : damage * (10 / (10 + defense * 0.35)), skill?.kind || "physical", this.world,{element:skill?.element,skill:skill?.skill});
     const hit = sparring ? Math.min(normalHit,Math.max(0,target.hp-1),target.maxHp*.08) : normalHit;
     const hpBefore = target.hp;
     target.hp -= hit;
+    noteBodyWound(this.world,e,target,hpBefore,sparring);
+    if(!sparring && target.hp<=0) tryPhoenix(this.world,target,'combat');
+    if(!sparring && target.hp>0 && hpBefore>=target.maxHp*.5 && target.hp<=target.maxHp*.2 && e.level>=target.level) emitCommittedFact(this.world,target,{id:`wound:${e.id}:${target.id}:${this.world.day}`,type:'combat-wound',sourceId:e.id,amount:hit,hostile:true});
+    postCombatHit(this.world,e,target,{amount:hit,hpBefore,kind:skill?.kind||"physical",element:skill?.element,sparring});
     const ignition = sparring ? null : tryCombatIgnition(this.world, e, target, hit, hpBefore);
     emitCombatHit(this.world, e, target, hit, hpBefore, ignition);
 
@@ -1284,6 +1316,7 @@ export class Life {
       // ⚠️ 本字段在同一 `step()` 内被 `onDeath` 消费掉，跨不过 tick，
       //    因此不进存档（已在 `io/save.js` 的 `VOLATILE` 登记并写明理由）。
       target.killedBy = { id: e.id, name: e.name };
+      emitCommittedFact(this.world,e,{id:`victory:${target.id}:${this.world.day}`,type:'combat-victory',hostile:true,targetLevel:target.level,sourceId:target.id});
       // ── 凶手自己那本传记也要留下这一架（只进个人日志，理由见
       //    `DUEL_KILL_LINES` 上方）──────────────────────────────────
       // 受害者那一侧由 `recordDeath` 写（编年史 + 逝者日志），但**凶手这一侧
