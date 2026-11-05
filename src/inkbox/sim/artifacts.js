@@ -37,6 +37,7 @@ import {
 import { clamp } from '../core/noise.js';
 import { artifactRestriction } from '../wanxiang/legend.js';
 import { learnPractice, techniqueId } from '../wanxiang/practice.js';
+import {emitCommittedFact} from '../wanxiang/experiences.js';
 
 // ── 标定 ─────────────────────────────────────────────────
 
@@ -444,7 +445,7 @@ function grantTechnique(entity, techName, world) {
   if (list.length >= TECHNIQUE_CAP) return false;  // 功法栏满了
   if (list.some((t) => t && t.name === entry.name)) return false;   // 已会
   if (!world.wanxiang?.enabled) { list.push(entry); return true; }
-  return learnPractice(entity, techniqueId(entry), {acquired:true,day:world.day}).ok;
+  return learnPractice(entity, techniqueId(entry), {acquired:true,day:world.day,world}).ok;
 }
 
 /**
@@ -488,6 +489,7 @@ export function giveTo(world, entity, a, rng, kind = 'gained') {
   // 幽冥法宝携带的功法：新主人当场习得（凡间法宝没有 `technique`，恒为 no-op）。
   // ⚠️ 放在**收下之后**：被拒（`return false`）时不该白送一门功法。
   if (a.technique) grantTechnique(entity, a.technique.name, world);
+  if (kind === 'found') emitCommittedFact(world,entity,{id:`artifact-found:${a.id}:${entity.id}:${world.day}`,type:'artifact-found',artifactId:a.id});
   return true;
 }
 

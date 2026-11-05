@@ -1,3 +1,4 @@
+import { recordLegendHealing } from '../wanxiang/legend.js';
 import { emitCommittedFact } from '../wanxiang/experiences.js';
 import { readEffects } from '../wanxiang/effects.js';
 import { legendOwnsMovement } from '../wanxiang/legend.js';
@@ -5,7 +6,7 @@ import { encounterFor } from '../wanxiang/encounters.js';
 import { DAO_BY_KEY } from '../core/cultivation.js';
 import { addWanlingEffect, liveWanling, wanlingById, wanlingEvent, wanlingState } from '../world/wanlingState.js';
 import { ensureWraithLog } from './wraiths.js';
-import { claimGroundArtifact, canReceiveArtifact } from './artifacts.js';
+import { claimGroundArtifact, canReceiveArtifact, artifactPower } from './artifacts.js';
 import { addKarma } from './cultivation.js';
 import { addRelation, RELATION_TYPES } from './relations.js';
 import { activeJourneyForEntity } from '../world/transitState.js';
@@ -62,11 +63,21 @@ function setJob(world,e,path,targetKind,target,summary) {
 function targetFor(world,e,path,life) {
   const people=(world.entities||[]).filter(x=>alive(x)&&x.id!==e.id);
   const units=liveWanling(world).filter(x=>x.id!==e.id);
-  if(path==='alchemy') return nearby(people,e,32,x=>x.hp<x.maxHp*.92);
+  if(path==='alchemy') {
+    const candidates=people.filter(x=>x.hp<x.maxHp*.92&&dist(e,x)<32);
+    const score=x=>dist(e,x)/(1+(e.wanxiang?.bonds||[]).some(b=>!b.dormant&&b.id.startsWith('gratitude:')&&b.targetKey===`${world.plane||'mortal'}:${x.id}`&&b.expiresDay>world.day)*.25);
+    return candidates.sort((a,b)=>score(a)-score(b)||a.id-b.id)[0]||null;
+  }
   if(path==='talisman'||path==='blood') return nearby(world.villages,e,36,v=>v.hp>0&&v.food>0);
   if(path==='formation') return nearby(world.sites,e,42,s=>s.kind==='formation'
     && (world.villages||[]).some(v=>v.hp>0&&Math.hypot(v.x-s.x,v.y-s.y)<=5));
-  if(path==='artifact') return nearby(world.artifacts,e,35,a=>a.ownerId===0&&Number.isFinite(a.durability)&&a.durability>0&&Array.isArray(a.history)&&canReceiveArtifact(e,a,world));
+  if(path==='artifact') {
+    const candidates=(world.artifacts||[]).filter(a=>a.ownerId===0&&dist(e,a)<35&&Number.isFinite(a.durability)&&a.durability>0&&Array.isArray(a.history)&&canReceiveArtifact(e,a,world));
+    const obsession=e.wanxiang?.traits.some(row=>row.id==='artifact_obsession');
+    const bestPower=Math.max(0,...(e.artifacts||[]).map(artifactPower));
+    const score=a=>dist(e,a)/(1+(obsession&&artifactPower(a)>bestPower?.2:0));
+    return candidates.sort((a,b)=>score(a)-score(b)||a.id-b.id)[0]||null;
+  }
   if(path==='sword') return nearby(people,e,32,x=>x.sp==='cultivator'&&x.level>0&&e.level>0&&x.hp>=x.maxHp*.9&&x.dao?.path?.key==='sword');
   if(path==='body') {
     const enemy=life?.findEnemy?.(e,12);
@@ -88,9 +99,11 @@ function act(world,life,e,j,target) {
   const key=j.path;
   if(key==='alchemy') {
     if(!alive(target)||target.hp>=target.maxHp*.92||!spendPower(world,e,.2,.01)) return false;
-    const healing=readEffects(e,{day:world.day,world,target}).healing;
+    const healing=readEffects(e,{day:world.day,world,target,paidAid:true}).healing;
     const received=readEffects(target,{day:world.day,world,healer:e}).healingReceived;
+    if(world.wanxiang?.enabled&&target.level>0&&target.exp>0)emitCommittedFact(world,target,{id:`guard:${e.id}:${target.id}:${j.startedDay}`,type:'gate-aid',paid:true,helperKey:`${world.plane||'mortal'}:${e.id}`});
     const amount=Math.min(target.maxHp*.12*healing*received,target.maxHp-target.hp); target.hp+=amount;
+    if(amount>0)recordLegendHealing(world,target,amount,true);
     if(amount>0)emitCommittedFact(world,target,{id:`healed:${world.plane||'mortal'}:${e.id}:${target.id}:${j.startedDay}`,type:'healed',amount,paid:true,helperKey:`${world.plane||'mortal'}:${e.id}`});
     finish(world,e,j,`以灵丹术为${target.name||'伤者'}疗伤，恢复${amount.toFixed(1)}气血`); return true;
   }

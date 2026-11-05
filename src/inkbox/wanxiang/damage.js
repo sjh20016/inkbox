@@ -1,4 +1,5 @@
-// Typed combat adjustments. This module neither removes entities nor revives them.
+import {activeBlood} from './bloodPhysique.js';
+// Typed combat adjustments use committed world objects and learned skill types.
 const active = (e,id) => e?.wanxiang?.physique?.id===id&&!e.wanxiang.physique.dormant;
 const enabled = world => world?.wanxiang?.enabled===true;
 export function manaCapacity(e) { return active(e,'devour')?18:30; }
@@ -16,6 +17,10 @@ export function reduceIncomingDamage(e,target,amount,kind,world,{element=null,sk
  let factor=1;
  if(active(target,'spell_ward')) {if(kind==='spell')factor-=.25;else if(kind==='physical')factor+=.15;}
  if(active(target,'earth'))factor-=.15;
+ const dragon=activeBlood(target,'true_dragon');
+ if(dragon && e.sp==='beast' && (e.level||0)<=(target.level||0) && Math.hypot(e.x-target.x,e.y-target.y)<=6)factor-=.08;
+ const god=e.wanxiang?.bodyLedger?.godArtifact;
+ if(kind==='spell' && activeBlood(e,'god_king') && god && e.artifacts?.some(a=>a.id===god&&a.ownerId===e.id&&a.durability>0))factor+=.08;
  // Element labels must come from an actually equipped, learned skill, not the caster's physique.
  const learned=(e.techniques||[]).some(t=>t.kind===(skill==='yang'?'dual':skill==='thunder'?'thunder':null));
  const legal=kind==='spell'&&e.wanxiang?.cultivation?.skills?.includes(skill)&&learned;
@@ -46,6 +51,7 @@ export function postCombatHit(world,e,target,{amount,hpBefore,kind,element=null,
   if(world.day-b.windowStart>=360){b.windowStart=world.day;b.grants=0;b.seen=[];}
   if(b.grants<3&&!b.seen.includes(key)) {
    b.seen.push(key);b.grants++;b.bonus=Math.min(.06,.02*b.grants);b.untilDay=world.day+30;asura=true;
+   e.pollution=Math.min(100,(e.pollution||0)+.5);
   }
  }
  return {drained,asura};

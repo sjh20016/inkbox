@@ -1,8 +1,9 @@
+import { bodyHpMultiplier, bodyCombatMultiplier } from '../wanxiang/bloodPhysique.js';
 import { ROOT_TIERS } from '../wanxiang/catalog.js';
 import { rootQuality } from '../wanxiang/profile.js';
 import { readEffects } from '../wanxiang/effects.js';
 import { practiceCultivationMultiplier } from '../wanxiang/practice.js';
-import { emitCommittedFact } from '../wanxiang/experiences.js';
+import { emitCommittedFact, consumeGateAid } from '../wanxiang/experiences.js';
 import { daoSeedCultivation } from '../wanxiang/daoSeeds.js';
 // 水墨沙盒 · 修士的一生
 //
@@ -130,7 +131,7 @@ export const THUNDER_DEATH_CHANCE = 0.3;
 export const THUNDER_HEART_DEMON_PENALTY = 10;
 
 /** 修士的基础数值随境界成长 */
-export function combatPower(entity, day = 0, world = null) {
+export function combatPower(entity, day = 0, world = null, target = null) {
   const level = entity.level || 0;
   if (level <= 0) return 1;
   const realm = realmFor(level);
@@ -143,14 +144,14 @@ export function combatPower(entity, day = 0, world = null) {
   // 这一列以前**没有任何读者**，见 core/lore.js 里 BLOODLINES 的注释。
   const bloodBonus = 1 + bloodlineProfile(entity.bloodline, 'combat');
   return (1 + level * level * 0.045) * daoBonus * equipBonus * bloodBonus
-    * (1 + realmIndexFor(level) * 0.35) * readEffects(entity,{day,world}).combat;
+    * (1 + realmIndexFor(level) * 0.35) * readEffects(entity,{day,world,target}).combat * bodyCombatMultiplier(entity,day);
 }
 
 export function maxHpFor(entity, day = 0, world = null) {
   const level = entity.level || 0;
   // 先有真实修为、后有体质：awaken 在转换 sp 前已经写入 level=1。
   const base = isPracticingHuman(entity) ? 220 : 100;
-  return Math.round(base * (1 + level * 0.55) * readEffects(entity,{day,world}).hp);
+  return Math.round(base * (1 + level * 0.55) * readEffects(entity,{day,world}).hp * bodyHpMultiplier(entity));
 }
 
 /**
@@ -564,6 +565,7 @@ export function attemptBreakthrough(world, entity, rng) {
     profileBonus: readEffects(entity,{day:world.day,world,targetLevel:entity.level+1}).breakthrough,
   });
 
+  consumeGateAid(entity,world.day);
   if (rng() < chance) {
     entity.level = targetLevel;
     entity.exp = 0;
@@ -704,6 +706,7 @@ export function stepThunderAscend(world, entity, rng) {
     profileBonus: readEffects(entity,{day:world.day,world,targetLevel:entity.level+1}).breakthrough,
   }) - THUNDER_CHANCE_PENALTY;
 
+  consumeGateAid(entity,world.day);
   if (rng() < Math.max(0.05, chance)) {
     // 通过 → 跨界进上界。走既有 `ascend()`（去处标签 / 编年史 / 逝者名录 /
     // 法宝留下 / 遗泽洞府 / 进上界），**不自己写一份**。

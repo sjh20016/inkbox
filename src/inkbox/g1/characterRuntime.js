@@ -9,10 +9,45 @@ import { compileDeadBiography } from '../sim/necrology.js';
 import { HEAVEN_EDICTS, checkHeavenEdict, executeHeavenEdict } from '../sim/heavenEdicts.js';
 import { characterKey, parseCharacterKey, resolveCharacter, createSelectionToken } from './characterIdentity.js';
 import { readProfile } from '../wanxiang/profile.js';
-import { CATALOG } from '../wanxiang/catalog.js';
+import { CATALOG, getCatalogEntry } from '../wanxiang/catalog.js';
+import { deriveConditions } from '../wanxiang/conditions.js';
+import { readEffects, EFFECT_DEFAULTS } from '../wanxiang/effects.js';
 import { previewChangeSet, commitChangeSet } from '../wanxiang/changes.js';
 import { enableWanxiang } from '../wanxiang/runtime.js';
 export { characterKey, parseCharacterKey, resolveCharacter, createSelectionToken };
+
+/** Read-only explanations from current facts. Unknown conditions remain unproven. */
+export function explainMingpu(entity, world) {
+  const profile = readProfile(entity);
+  const conditions = deriveConditions(entity, {world, day:world.day});
+
+  const fields = ['physique','hexagram','bloodlines','traits','states','bonds','daoSeed'];
+  const mechanisms = fields.flatMap(field => {
+    const values = Array.isArray(profile[field]) ? profile[field] : profile[field] ? [profile[field]] : [];
+    return values.map(value => {
+      const definition = getCatalogEntry(value.id);
+      // These axes have native consumers. Other definition axes await their
+      // action context and must not appear active merely because they exist.
+      const consumed = new Set(['cultivation','hp','combat','learning','healing','perception','breakthrough','detect_radius','healing_received','escape']);
+      const numeric = row => Object.keys(row.effects||{}).some(axis=>consumed.has(axis));
+      const rows = [{condition:'always',effects:definition?.effects},...(definition?.conditionalEffects || [])];
+      const checks = rows.filter(row=>row.condition!=='always').map(row => ({condition:row.condition,proven:conditions[row.condition] === true,consumer:numeric(row)}));
+      const expired = value.expiresDay != null && value.expiresDay <= world.day;
+      const wired = rows.some(numeric);
+      const active = rows.some(row=>numeric(row)&&conditions[row.condition]===true);
+      return {field,id:value.id,name:definition?.name || value.name || value.id,
+        status:expired?'已失效':value.latent?'潜隐':value.dormant?'休眠':!wired?'行动时判定':!active?'数值条件未证实':'数值条件已证实',
+        checks,description:definition?.effectText || definition?.description || '',
+        source:value.source || '来源未保留',stage:value.stage??null,limit:definition?.limit || null,
+        inheritable:value.inheritable===true,stable:value.stable===true,
+        expiresDay:value.expiresDay??null,remaining:value.expiresDay==null?null:Math.max(0,Math.ceil(value.expiresDay-world.day))};
+    });
+  });
+  const effects = readEffects(entity,{world,day:world.day});
+  const effectLabels = {cultivation:'修炼',hp:'气血',combat:'战力',learning:'学习',pollution:'污染',healing:'施疗',healingReceived:'受疗',perception:'感知',travel:'行旅',breakthrough:'突破',action:'行动',retreat:'退避',escape:'脱战',detectRadius:'侦察距离'};
+  return {mechanisms,effects:Object.entries(effects).filter(([axis,value])=>value!==EFFECT_DEFAULTS[axis]).map(([axis,value])=>({axis,label:effectLabels[axis]||axis,value})),
+    records:(profile.experienceLedger?.records||[]).slice(-24),parents:profile.dna?.parents||[],bloodSources:profile.dna?.bloodSources||[]};
+}
 
 function freeze(value) {
   if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); }
@@ -97,7 +132,7 @@ export function buildCharacterViewModel(world,keyOrToken) {
   const rootLabel = root ? `${root.rootName || '灵根'}${Number.isInteger(root.quality) && QUALITIES[root.quality] ? ` · ${QUALITIES[root.quality]}` : ''}` : e.rootName || '不可考';
   return freeze({
     schemaVersion:1, permissions, health,
-    mingpu:{profile:readProfile(e),catalog:CATALOG,enabled:world.wanxiang?.enabled===true,day:world.day,fortune:e.fortune??null,mind:e.mind??null,legacyRoot:rootLabel,techniques:(e.techniques||[]).map(t=>({id:t.id??t.name,name:t.name,description:t.description})),artifacts:(e.artifacts||[]).map(a=>({id:a.id,name:a.name,grade:a.grade,description:a.description}))},
+    mingpu:{profile:readProfile(e),observation:explainMingpu(e,r.sourceWorld||world),catalog:CATALOG,enabled:world.wanxiang?.enabled===true,day:world.day,fortune:e.fortune??null,mind:e.mind??null,legacyRoot:rootLabel,techniques:(e.techniques||[]).map(t=>({id:t.id??t.name,name:t.name,description:t.description})),artifacts:(e.artifacts||[]).map(a=>({id:a.id,name:a.name,grade:a.grade,description:a.description}))},
     identity:{key:r.key,id:r.id,plane:r.plane,currentPlane:r.currentPlane || r.plane,status:r.status,name:e.name || '不可考',canFocus:r.accessible},
     header:{realm:realmText(e),ageText:life?.ageText || (Number.isFinite(e.age) ? `${Math.floor(e.age / 360)} 岁` : '年龄不可考'),lifespanText:life?.lifespanText || '',affiliation,stateText:e.sp === 'ghost' && r.status === 'alive' ? '鬼魂存续' : r.status === 'ascended' && !r.arrival ? '已飞升 · 去向不可定位' : STATUS[r.status]},
     cultivation:{exp,required,percent:exp !== null && required !== null ? exp / required * 100 : null,rate,rateText:rate === null ? '修炼速度不可考' : `每日修为 ${rate.toFixed(3)}`,stateText:required === null || exp === null ? '修为不可考' : exp >= required ? '等待模拟突破' : '积累修为'},
@@ -150,7 +185,7 @@ export function createCharacterController({getWorld,onChange = () => {},presente
     if(!world.wanxiang?.enabled) return {ok:false,reason:'alpha-disabled'};
     if(action.type==='begin') {
       drafts.clear();const profile=readProfile(resolved.entity);
-      const draft={id:`mingpu-${world.day}-${++draftSequence}`,key:token.key,expectedRevision:profile.revision,profile,day:world.day};
+      const draft={id:`mingpu-${world.day}-r${profile.revision}-${++draftSequence}`,key:token.key,expectedRevision:profile.revision,profile,day:world.day};
       drafts.set(draft.id,{entity:resolved.entity,world,token,day:world.day,revision:profile.revision});
       return {ok:true,draft,profile,catalog:CATALOG};
     }

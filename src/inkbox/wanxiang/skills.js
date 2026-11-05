@@ -9,8 +9,11 @@ export const SKILLS=Object.freeze([
  {id:'spell',name:'御法',cost:10,cooldown:5,range:1.6,kind:'spell',scale:1.4},
 ]);
 export function skillSlotCount(e) { return 3+((e.level||0)>=10?1:0)+((e.level||0)>=20&&knownPractices(e).length>=3?1:0); }
+function canUseSkill(e, skill) {
+ return !!skill && e.level > 0 && (!skill.manualKind || knownPractices(e).some(t => !t.missing && t.kind === skill.manualKind));
+}
 export function equipSkills(e,ids) {
- if(!Array.isArray(ids)||ids.length>skillSlotCount(e)||new Set(ids).size!==ids.length||ids.some(id=>!SKILLS.some(s=>s.id===id&&(!s.manualKind||(e.techniques||[]).some(t=>t.kind===s.manualKind))))) return false;
+ if(!Array.isArray(ids)||ids.length>skillSlotCount(e)||new Set(ids).size!==ids.length||ids.some(id=>!canUseSkill(e, SKILLS.find(s=>s.id===id)))) return false;
  combatState(e);practiceState(e).skills=ids.slice();return true;
 }
 export function combatState(e) {
@@ -26,7 +29,7 @@ export function chooseSkillAction(e,target,day,{power=1,defense=0}={}) {
  const c=practiceState(e), state=combatState(e);
  if(day-state.lastActionDay<1) return {kind:'wait',damage:0};
  for(const id of c.skills.slice(0,skillSlotCount(e))) {
-  const s=SKILLS.find(x=>x.id===id);if(!s||s.manualKind&&!(e.techniques||[]).some(t=>t.kind===s.manualKind)) continue;
+  const s=SKILLS.find(x=>x.id===id);if(!canUseSkill(e,s)) continue;
   if(state.mana<s.cost || (state.cooldowns[id] ?? -1)>day) continue;
   if(s.kind==='heal' ? e.hp>=e.maxHp*.4 : Math.hypot(e.x-target.x,e.y-target.y)>s.range) continue;
   state.mana-=s.cost;state.cooldowns[id]=day+s.cooldown;state.lastActionDay=day;

@@ -46,7 +46,7 @@ const traveler={id:11,hp:100,maxHp:100,wanxiang:emptyProfile()};
 traveler.wanxiang.experienceLedger={seen:[],cooldowns:{},siteFailures:{},permanentGrants:0,records:[],lastSequence:900};
 migrateProfile(traveler,'mortal:11','upper:11');assert.equal(traveler.wanxiang.experienceLedger.lastSequence,undefined);
 const upper={day:1,seed:42,plane:'upper',entities:[traveler],wanxiang:{version:1,enabled:true,factSequence:0}},realms={entities:[],wanxiang:{version:1,enabled:true,factSequence:900},upper};
-assert.equal(emitCommittedFact(upper,traveler,{id:'upper-first',type:'combat-wound'}),true);assert.equal(traveler.wanxiang.experienceLedger.lastSequence,1);
+assert.equal(emitCommittedFact(upper,traveler,{id:'upper-first',type:'page-return'}),true);assert.equal(traveler.wanxiang.experienceLedger.lastSequence,1);
 const savedPlanes=serializeWanxiang(realms);assert.equal(savedPlanes.planeStates.upper.factSequence,1);
 const resumed={entities:[],upper:{day:400,seed:42,plane:'upper',entities:[{id:11,hp:100,maxHp:100}]}};
 restoreWanxiang(resumed,savedPlanes);assert.equal(emitCommittedFact(resumed.upper,resumed.upper.entities[0],{id:'upper-second',type:'combat-victory'}),true);assert.equal(resumed.upper.wanxiang.factSequence,2);

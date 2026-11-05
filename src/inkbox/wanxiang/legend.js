@@ -9,6 +9,7 @@ export function bindLegend(world,artifact,site,actor){
 }
 /** Experimental state machine: actual arrival and work only. Claim callback uses the canonical artifact transfer. */
 export function stepLegend(world,claim){
+ stepLegendConsequences(world);
  if(world.wanxiang?.enabled===true&&world.wanxiang?.experiments?.legend&&!world.wanxiang.legend){
  for(const a of world.artifacts||[]){if(a.ownerId||a.durability<=0||a.kind!=='weapon')continue;const s=world.sites.find(s=>Math.hypot(a.x-s.x,a.y-s.y)<=3);const e=s&&world.entities.find(e=>e.hp>0&&e.level>=10&&!e.target&&!(world.wanxiang.encounters||[]).some(c=>c.stage==='open'&&c.participants.some(p=>p.actorId===e.id&&p.stage==='travel'))&&!(world.wanling?.jobs||[]).some(j=>j.actorId===e.id&&j.stage!=='done')&&!activeJourneyForEntity(world,e.id)&&Math.hypot(e.x-s.x,e.y-s.y)<=24);if(e&&bindLegend(world,a,s,e))break;}
  }
@@ -27,7 +28,7 @@ export function stepLegend(world,claim){
  const profile=initializeProfile(e);if(profile.traits.length>=6||profile.traits.filter(t=>t.special).length>=2||profile.states.length>=32){l.stage='left';return;}
  const success=experienceRng(world)()<Math.max(.1,Math.min(.85,.4+.003*((e.mind||50)-50)-.003*(e.pollution||0)));
  if(!success){const p=initializeProfile(e);addExperienceState(p,{id:'sword_blight',source:`legend:${a.id}`,artifactId:a.id,startDay:world.day});p.revision++;e.hp-=e.maxHp*.25;e.diedOf='legend';l.stage='failed';return;}
- if(l.stage==='seal-work'){if(!Number.isFinite(e.lifespan)||e.lifespan-e.age<2){l.stage='left';return;}const p=initializeProfile(e);p.costs||={lifespan:0};p.costs.lifespan+=2;p.revision++;e.lifespan-=2;p.traits.push({id:'seal_vow',special:true,source:`legend:${a.id}`,siteId:s.id,anchorX:s.x,anchorY:s.y,startDay:world.day});l.stage='sealed';}
+ if(l.stage==='seal-work'){if(!Number.isFinite(e.lifespan)||e.lifespan-e.age<720){l.stage='left';return;}const p=initializeProfile(e);p.costs||={lifespan:0};p.costs.lifespan+=720;p.revision++;e.lifespan-=720;p.traits.push({id:'seal_vow',special:true,source:`legend:${a.id}`,siteId:s.id,anchorX:s.x,anchorY:s.y,startDay:world.day});l.stage='sealed';}
  else {l.stage='drawn';if(!claim?.(world,e,a.id,experienceRng(world),'found'))l.stage='failed';else {const p=initializeProfile(e);p.traits.push({id:'demon_sword_resonance',special:true,artifactId:a.id,source:`legend:${a.id}`,startDay:world.day});p.revision++;}}
 }
 export function chooseLegend(world,actorId,choice){const l=world.wanxiang?.legend;if(world.wanxiang?.enabled!==true||!world.wanxiang?.experiments?.legend||!l||l.actorId!==actorId||l.stage!=='choice'||!['seal','draw','leave'].includes(choice))return false;const e=world.entities.find(e=>e.id===actorId);if(!e||e.hp<=0)return false;const p=initializeProfile(e);if(choice!=='leave'&&(p.traits.length>=6||p.traits.filter(t=>t.special).length>=2||p.states.length>=32)){l.stage='left';return false;}l.stage=choice==='leave'?'left':choice+'-work';l.progress=0;l.lastDay=world.day;return true;}
@@ -40,3 +41,39 @@ export function stepLegendTravel(world,life,e,dtDays){
 }
 
 export function legendOwnsMovement(world,id){const l=world.wanxiang?.legend;return world.wanxiang?.enabled===true&&world.wanxiang.experiments?.legend===true&&l?.actorId===id&&['bound','travel','choice','seal-work','draw-work'].includes(l.stage);}
+
+/** Paid, actual healing only. Treatment and distance are separate durable requirements. */
+export function recordLegendHealing(world, e, amount, paid) {
+  const blight = e.wanxiang?.states.find(s => s.id === 'sword_blight');
+  if (!blight || !paid || amount < e.maxHp * .08 || world.day - (blight.lastTreatmentDay ?? -1e9) < 30) return false;
+  blight.treatments = Math.min(3, (blight.treatments || 0) + 1);
+  blight.lastTreatmentDay = world.day;
+  e.wanxiang.revision++;
+  return true;
+}
+export function stepLegendConsequences(world) {
+  if (!world.wanxiang?.enabled) return;
+  for (const e of world.entities || []) {
+    const p = e.wanxiang;
+    if (!p || e.hp <= 0) continue;
+    const resonance = p.traits.find(t => t.id === 'demon_sword_resonance');
+    const blight = p.states.find(s => s.id === 'sword_blight');
+    if (!resonance && !blight) continue;
+    const marker = blight || resonance;
+    const elapsed = Math.min(30, Math.max(0, world.day - (marker.lastConsequenceDay ?? world.day)));
+    marker.lastConsequenceDay = world.day;
+    const held = resonance && (e.artifacts || []).some(a => a.id === resonance.artifactId);
+    e.pollution = Math.min(100, Math.max(0, e.pollution || 0) + elapsed * ((held ? .0015 : 0) + (blight ? .001 : 0)));
+    if (blight) {
+      const a = [...(world.artifacts || []), ...(e.artifacts || [])].find(a => a.id === blight.artifactId);
+      const site = world.sites.find(s => s.id === world.wanxiang.legend?.siteId);
+      const near = a ? a.ownerId === e.id || Math.hypot(e.x-a.x,e.y-a.y) <= 6 : site && Math.hypot(e.x-site.x,e.y-site.y) <= 6;
+      if (near) blight.awaySinceDay = null;
+      else blight.awaySinceDay ??= world.day;
+      if (blight.treatments >= 3 && blight.awaySinceDay != null && world.day - blight.awaySinceDay >= 90) {
+        p.states = p.states.filter(s => s !== blight);
+        p.revision++;
+      }
+    }
+  }
+}

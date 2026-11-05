@@ -1,6 +1,7 @@
 import { MANUALS, FORBIDDEN_TECHNIQUES, NETHER_TECHNIQUES } from '../core/lore.js';
 import { initializeProfile } from './profile.js';
 import { readEffects } from './effects.js';
+import { emitCommittedFact } from './experiences.js';
 import { battleBonus } from './damage.js';
 
 export const techniqueId = t => `manual:${Array.from(typeof t === 'string' ? t : t.name).map(c => c.codePointAt(0).toString(16)).join('-')}`;
@@ -38,7 +39,9 @@ export function learnPractice(e,id,context={}) {
  const amount=Math.min(1,(progress[t.id]||0)+Math.min(1,studyDays)*eligibility.rate);
  if(amount<1) {progress[t.id]=amount;return {...eligibility,ok:false,reason:'studying',progress:amount};}
  delete progress[t.id];
- (e.techniques ||= []).push(t.manual);practiceState(e);return {...eligibility,progress:1};
+ (e.techniques ||= []).push(t.manual);practiceState(e);
+ if(context.world)emitCommittedFact(context.world,e,{id:`learn:${e.incarnation||0}:${t.id}`,type:'manual-learned',manualId:t.id});
+ return {...eligibility,progress:1};
 }
 export function practiceCultivationMultiplier(e,day=0) {
  // Pure observation: never initialize or reconcile persistent state here.

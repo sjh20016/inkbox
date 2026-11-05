@@ -2,11 +2,14 @@ import { ensureProfile, inheritBirthProfile } from './inheritance.js';
 import { worldStream } from '../sim/worldStreams.js';
 
 // Explicit Alpha opt-in; old worlds retain their original formulas and RNG.
-export function enableWanxiang(world, {experimental = false, fresh = false} = {}) {
+export function enableWanxiang(world, {experimental, fresh = false} = {}) {
   world.wanxiang ||= {version:1, enabled:true, experimental:false};
   world.wanxiang.enabled = true;
-  world.wanxiang.experimental = experimental;
-  world.wanxiang.experiments = {legend:experimental,daoSeeds:experimental};
+  if (experimental !== undefined || !world.wanxiang.experiments) {
+    const enabled = experimental === true;
+    world.wanxiang.experimental = enabled;
+    world.wanxiang.experiments = {legend:enabled,daoSeeds:enabled};
+  }
   const rng = worldStream(world, 'wanxiangBirth', 0x57425832);
   for (const e of world.entities || []) if (['human','cultivator'].includes(e.sp) && e.hp > 0) ensureProfile(e,{rng,fresh});
   for (const plane of [world.upper,world.nether]) if(plane) plane.wanxiang ||= {version:1,enabled:true};

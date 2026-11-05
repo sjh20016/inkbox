@@ -1,4 +1,5 @@
 import {validateProfile,clone} from './profile.js';
+import {validateSoulSnapshot} from './soul.js';
 const WORLD_FIELDS=['factSequence','version','encounterHistory','enabled','experiments','lastEncounterDay','experimental','encounters','legend','legends','epoch','epochHexagram','epochIndex','revision','nextEncounterId','daoSeeds'];
 function validateWorld(value) {
  if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(k=>!WORLD_FIELDS.includes(k)))throw Error('invalid-wanxiang-world');
@@ -16,12 +17,14 @@ function validateWorld(value) {
 }
 function population(world) {return ['mortal','upper','nether'].flatMap(plane=>{const w=plane==='mortal'?world:world[plane];return (w?.entities||[]).map(e=>({key:`${plane}:${e.id}`,entity:e}));});}
 export function serializeWanxiang(world) {
+ for(const soul of world.souls||[])if(soul.wanxiangSoul)validateSoulSnapshot(soul.wanxiangSoul);
  const profiles=population(world).filter(x=>x.entity.wanxiang).map(x=>({key:x.key,profile:clone(validateProfile(x.entity.wanxiang))}));
  if(!world.wanxiang&&!profiles.length)return undefined;
  const planeStates={};for(const name of ['upper','nether'])if(world[name]?.wanxiang)planeStates[name]=clone(validateWorld(world[name].wanxiang));
  return {version:1,world:clone(validateWorld(world.wanxiang||{enabled:false})),profiles,...(Object.keys(planeStates).length?{planeStates}:{})};
 }
 export function restoreWanxiang(world,block) {
+ for(const soul of world.souls||[])if(soul.wanxiangSoul)validateSoulSnapshot(soul.wanxiangSoul);
  if(block==null)return;
  if(block.version!==1||!Array.isArray(block.profiles)||block.profiles.length>100000||Object.keys(block).some(k=>!['version','world','profiles','planeStates'].includes(k)))throw Error('invalid-wanxiang-block');
  const state=clone(validateWorld(block.world)),entities=new Map(population(world).map(x=>[x.key,x.entity])),seen=new Set(),pending=[];

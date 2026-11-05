@@ -16,6 +16,7 @@ export function previewChangeSet(world,command,{token}={}) {
    if(command.mode==='player'&&op.field==='root'&&op.value?.heavenly)throw Error('heavenly-root-natural-only');
    if(command.mode==='player'&&op.field==='traits'){const values=Array.isArray(op.value)?op.value:[op.value];if(values.some(v=>getCatalogEntry(v?.id)?.category==='special'))throw Error('bound-source-required');}
    if(op.value?.loan||op.value?.pageLoan||op.value?.combat)throw Error('runtime-state-not-editable');
+   if(op.field==='daoSeed'&&op.value&&Object.keys(op.value).some(k=>!['id','stage','source'].includes(k)))throw Error('runtime-state-not-editable');
    if(!permissions[command.mode].includes(op.field)) throw Error('permission-denied');
    if(op.op==='set'&&op.field==='cultivation') {
     const v=op.value;if(!v||Object.keys(v).some(k=>!['primary','skills','auxiliary'].includes(k)))throw Error('runtime-state-not-editable');
@@ -31,8 +32,11 @@ export function previewChangeSet(world,command,{token}={}) {
   p.revision++;
   const diff=command.operations.map(x=>({field:x.field,before:clone(before[x.field]),after:clone(p[x.field])}));
   p.history.push({day:world.day,commandId:command.id,mode:command.mode,source:String(command.source||command.mode).slice(0,160),diff});p.history=p.history.slice(-128);
-  // Command receipts are never evicted: at the bounded ledger limit reject new edits.
-  if(p.commands.length>=128)throw Error('command-ledger-full');p.commands.push(command.id);
+  // Older copies still carry their original expectedRevision, so they cannot commit
+  // after eviction. The recent window supplies a positive receipt for retries.
+  p.commands.push(command.id);
+  p.commands=p.commands.slice(-128);
+  while (p.history.length > 1 && JSON.stringify(p.history).length > 24576) p.history.shift();
   validateProfile(p);
   const result={ok:true,profile:p,diff,revision:p.revision};previews.set(result,{world,entity:r.entity,revision:before.revision,key:command.key,token});return result;
  }catch(e){return {ok:false,reason:e.message};}

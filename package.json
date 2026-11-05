@@ -153,7 +153,10 @@
     "test:p1": "node scripts/inkbox-p1-navigation.mjs",
     "test:p1:browser": "node scripts/inkbox-p1-browser.mjs && node scripts/inkbox-p1-loop-browser.mjs",
     "test:p1:loop:browser": "node scripts/inkbox-p1-loop-browser.mjs",
-    "test:browser-tools": "node scripts/inkbox-cdp-ownership-test.mjs && node scripts/inkbox-owned-server-check.mjs"
+    "test:browser-tools": "node scripts/inkbox-cdp-ownership-test.mjs && node scripts/inkbox-owned-server-check.mjs",
+    "test:wanxiang:b": "node scripts/inkbox-wx-b-core.mjs && node scripts/inkbox-wx-b-lifecycle.mjs && node scripts/inkbox-wx-b-transit.mjs && node scripts/inkbox-wx-b-encounters.mjs && node scripts/inkbox-wx-b-seeds.mjs && node scripts/inkbox-wx-b-blood.mjs && node scripts/inkbox-wx-b-hex.mjs && node scripts/inkbox-wx-b-paths.mjs",
+    "profile:wanxiang:b": "node scripts/inkbox-wx-b-profile.mjs",
+    "test:wanxiang:b:browser": "node scripts/inkbox-wx-b-browser.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

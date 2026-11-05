@@ -1,3 +1,4 @@
+import { grantBloodResource } from '../wanxiang/bloodPhysique.js';
 // 水墨沙盒 · 地图上的地点
 //
 // 秘境、洞府、上古阵法、灵脉——这些东西让地图本身有「值得去的地方」，
@@ -61,7 +62,7 @@ export function enterSite(world, entity, site, rng) {
     if(arrival&&site.inheritanceManual&&!site.inheritanceExhausted&&!entity.techniques.some(t=>t.name===site.inheritanceManual)){
       const manual=MANUALS.find(m=>m.name===site.inheritanceManual);
       if(manual){if(participant.lastStudyDay===world.day)return {ok:false,studying:true};participant.lastStudyDay=world.day;
-        const learned=learnPractice(entity,techniqueId(manual),{acquired:true,day:world.day,studyDays:1});
+        const learned=learnPractice(entity,techniqueId(manual),{acquired:true,day:world.day,studyDays:1,world});
         if(!learned.ok){participant.settled=false;return {ok:false,studying:learned.reason==='studying'};}learnedInheritance=true;}
     }
     let gain = site.reward || '感悟';
@@ -126,6 +127,8 @@ export function enterSite(world, entity, site, rng) {
     }
     world.record(`【${entity.name}】入${site.name}，得${gain}。`, 'site', entity, siteLocation(world, site));
     if(arrival)resolveDragonBone(world,entity,site);
+    if(world.wanxiang?.enabled && site.godFragmentCharges>0 && grantBloodResource(world,entity,'god-fragment',site.id)) site.godFragmentCharges--;
+    if(world.wanxiang?.enabled && site.phoenixFeatherCharges>0 && grantBloodResource(world,entity,'phoenix-feather',site.id)) site.phoenixFeatherCharges--;
     if(arrival)emitCommittedFact(world,entity,{id:factId,type:'site-success',siteId:site.id,arrived:true});
     return { ok: true, gain };
   }
@@ -184,7 +187,7 @@ export function spawnCave(world, rng, near = null) {
     name: `${siteName}·${cave.name}`,
     reward: `《${inheritanceManual}》`,
     element: cave.element,
-    ...(world.wanxiang?.enabled===true&&caveIndex===3?{dragonBoneCharges:1}:{}),
+    ...(world.wanxiang?.enabled===true&&caveIndex===3?{dragonBoneCharges:1,phoenixFeatherCharges:1,godFragmentCharges:1}:{}),
     inheritanceManual,
     inheritanceClaimedBy: null,
     inheritanceExhausted: false,

@@ -24,11 +24,29 @@ export function createMingpuView(root, { request } = {}) {
  block(pages.fate,'五项属性',[['根骨',p.attributes?.bone],['悟性',p.attributes?.comprehension],['神识',p.attributes?.perception],['气运',m.fortune],['道心',m.mind]]);
  block(pages.fate,'六维禀赋',[['灵根',p.root||m.legacyRoot],['体质',p.physique],['血脉',p.bloodlines],['本命卦',p.hexagram],['性格',p.personality],['杂趣',p.hobbies]]);
  block(pages.fate,'当前状态与道种',[['状态',p.states],['道种',p.daoSeed],['经历特质',p.traits]]);
+ const observation=m.observation||{};
+ block(pages.fate,'当前数值修正',(observation.effects||[]).map(effect=>[effect.label,Number(effect.value).toFixed(3)]));
+ pages.fate.append(el('p','以下条件根据此刻人物事实判断。技能、物件或目标限定仍以实际行动为准。'));
+ for(const mechanism of observation.mechanisms||[]){
+   const article=el('article',undefined,'g1-mingpu__mechanism');
+   article.append(el('h3',`${mechanism.name} · ${mechanism.status}`),el('p',mechanism.description));
+   pairs(article,[['来源',mechanism.source],['阶段',mechanism.stage],['传承',mechanism.inheritable?(mechanism.stable?'可遗传且已稳定':'标记可传承，稳定资格待满足'):'未取得遗传资格'],['约束',mechanism.limit],['剩余',mechanism.remaining==null?'无定时期限':`${mechanism.remaining} 日`]]);
+   for(const check of mechanism.checks)article.append(el('small',`${check.condition} · ${check.proven?'当前已证实':'当前未证实'}${check.consumer?'':' · 对应效果尚待行动核验'}`));
+   pages.fate.append(article);
+ }
  block(pages.practice,'真实功法',m.techniques?.map((x,i)=>[i===0?'主修':'辅修',x]));
  block(pages.practice,'技能与调度',p.cultivation?.skills?.map((x,i)=>[`招式 ${i+1}`,x]));
  block(pages.practice,'三件携带法宝',Array.from({length:3},(_,i)=>[`携带 ${i+1}`,m.artifacts?.[i]||'空位']));
  block(pages.practice,'修炼现况',vm.cultivationRows?.map(x=>[x.label,x.value]));
  block(pages.bonds,'人间牵系',vm.relations?.map(x=>[x.label,x.value]));block(pages.bonds,'债誓与遗传来源',[['债誓',p.bonds],['双亲遗传',p.dna]]);
+ block(pages.bonds,'双亲身份引用',(observation.parents||[]).map((key,index)=>[`双亲 ${index+1}`,key]));
+ block(pages.bonds,'血脉来源',(observation.bloodSources||[]).map(source=>[source.id,source.parent||source.source]));
+ for(const record of [...(observation.records||[])].reverse()){
+   const article=el('article',undefined,'g1-mingpu__milestone');
+   article.append(el('h3',`第 ${Math.floor(record.day)} 日 · ${record.type}`));
+   pairs(article,[['事实引用',record.id],['地点',record.siteId],['人物变化',record.changed?'已产生变化':'保留事实，未新增特质'],['参与者',record.helperKey||record.targetKey],['付出/所得',record.cost||record.amount]]);
+   pages.history.append(article);
+ }
  pages.history.append(el('p',vm.historyCoverage?.description||'仅显示实际保留记录'));
  for(const event of [...(p.history||[])].reverse()){const a=el('article');a.append(el('h3',`第 ${event.day} 日 · ${event.source||event.mode}`));for(const d of event.diff||[])pairs(a,[[d.field,`${describe(d.before)} → ${describe(d.after)}`]]);pages.history.append(a);}
  for(const e of [...(vm.history||[])].reverse())pages.history.append(el('p',`第 ${e.day??'未载'} 日 · ${e.text}`));

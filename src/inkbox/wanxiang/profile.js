@@ -1,6 +1,7 @@
 import { MANUALS,FORBIDDEN_TECHNIQUES,NETHER_TECHNIQUES } from '../core/lore.js';
 const manualIds=new Set([...MANUALS,...FORBIDDEN_TECHNIQUES,...NETHER_TECHNIQUES].map(t=>'manual:'+Array.from(t.name).map(c=>c.codePointAt(0).toString(16)).join('-')));
 import {getCatalogEntry} from './catalog.js';
+import {validateBodyLedger} from './bloodPhysique.js';
 export const PROFILE_VERSION = 1;
 export const ARRAY_LIMITS = Object.freeze({bloodlines:3, personality:3,hobbies:4,traits:6,states:32,bonds:32});
 export const clone = value => structuredClone(value);
@@ -12,7 +13,13 @@ export function initializeProfile(entity) { if (!entity.wanxiang) entity.wanxian
 export function effectiveAttribute(entity,name) { const p=entity?.wanxiang || emptyProfile(); return Math.max(0,Math.min(100,p.attributes[name]+p.permanent[name])); }
 export function validateProfile(p) {
  if (!p || p.version!==1 || !Number.isSafeInteger(p.revision) || p.revision<0) throw Error('invalid-profile-version');
- const allowed=[...Object.keys(emptyProfile()),"experienceLedger","pageLoan","costs"]; if(Object.keys(p).some(k=>!allowed.includes(k))) throw Error('unknown-profile-field');
+ const allowed=[...Object.keys(emptyProfile()),"experienceLedger","pageLoan","costs","bodyLedger","seedLedger"]; if(Object.keys(p).some(k=>!allowed.includes(k))) throw Error('unknown-profile-field');
+ if(p.seedLedger) {
+  const l=p.seedLedger;
+  if(!Number.isFinite(l.borrowUntil)||l.borrowUntil<0||!Array.isArray(l.spent)||l.spent.length>2||new Set(l.spent).size!==l.spent.length||l.spent.some(id=>!['dao_seed_bian_ji','dao_seed_ming_wang'].includes(id)))throw Error('invalid-seed-ledger');
+ }
+ if(p.bodyLedger!==undefined)validateBodyLedger(p.bodyLedger);
+ if(p.experienceLedger?.lastCausalChoiceDay!=null&&(!Number.isFinite(p.experienceLedger.lastCausalChoiceDay)||p.experienceLedger.lastCausalChoiceDay<0))throw Error('invalid-causal-choice-day');
  for (const field of ['attributes','permanent']) for (const key of ['bone','comprehension','perception']) if(!Number.isFinite(p[field]?.[key]) || Math.abs(p[field][key])>100 || (field==='attributes' && p[field][key]<0)) throw Error('invalid-attribute');
  for(const [field,limit] of Object.entries(ARRAY_LIMITS)) { const a=p[field]; if(!Array.isArray(a)||a.length>limit||a.some(x=>!x||typeof x.id!=='string'||x.id.length>100)||new Set(a.map(x=>x.id)).size!==a.length) throw Error('invalid-'+field); }
  if(p.traits.filter(x=>x.special).length>2 || p.bloodlines.filter(x=>!x.latent).length>1 || p.bloodlines.filter(x=>x.latent).length>2) throw Error('invalid-capacity');
