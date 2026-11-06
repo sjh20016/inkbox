@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {stepEncounters,stepEncounterTravel,finishEncounter} from '../src/inkbox/wanxiang/encounters.js';
 import {recordLegendHealing,stepLegendConsequences} from '../src/inkbox/wanxiang/legend.js';
 import {initializeProfile} from '../src/inkbox/wanxiang/profile.js';
-const entity=()=>({id:1,hp:100,maxHp:100,level:5,x:1,y:1,techniques:[]});
+const entity=()=>({id:1,sp:'cultivator',hp:100,maxHp:100,level:5,x:1,y:1,techniques:[]});
 const scene=()=>({day:30,sites:[{id:1,kind:'cave',x:1,y:1,inheritanceManual:'卷'}],entities:[entity()],wanxiang:{enabled:true}});
 for(const cause of ['death','timeout','withdrawal','removed','arrived','claimed']) {
  const w=scene();stepEncounters(w);const s=w.wanxiang.encounters[0];assert(s);

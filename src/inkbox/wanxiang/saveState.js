@@ -1,9 +1,17 @@
 import {validateProfile,clone} from './profile.js';
 import {validateSoulSnapshot} from './soul.js';
-const WORLD_FIELDS=['factSequence','version','encounterHistory','enabled','experiments','lastEncounterDay','experimental','encounters','legend','legends','epoch','epochHexagram','epochIndex','revision','nextEncounterId','daoSeeds'];
+const WORLD_FIELDS=['factSequence','version','encounterHistory','enabled','experiments','lastEncounterDay','experimental','encounters','legend','legends','epoch','epochHexagram','epochIndex','revision','nextEncounterId','daoSeeds','wxCEnabled','opportunities'];
+const OPPORTUNITY_COUNTERS=['supplyChecks','generated','stocked','eligible','reachable','willing','started','arrived','success','failure','withdrawn','timeout','claimed','experience','behavior','aid','guard','reciprocity'];
 function validateWorld(value) {
  if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(k=>!WORLD_FIELDS.includes(k)))throw Error('invalid-wanxiang-world');
  if(typeof value.enabled!=='boolean')throw Error('invalid-wanxiang-enabled');
+ if(value.wxCEnabled!=null&&typeof value.wxCEnabled!=='boolean')throw Error('invalid-wxc-enabled');
+ if(value.opportunities!=null){
+  const o=value.opportunities;
+  if(!o||typeof o!=='object'||Array.isArray(o)||o.version!==1||Object.keys(o).some(k=>!['version','lastSupplyDay','counters'].includes(k))
+    ||!Number.isFinite(o.lastSupplyDay)||o.lastSupplyDay<0||!o.counters||typeof o.counters!=='object'||Array.isArray(o.counters)
+    ||Object.entries(o.counters).some(([key,n])=>!OPPORTUNITY_COUNTERS.includes(key)||!Number.isSafeInteger(n)||n<0))throw Error('invalid-opportunities');
+ }
  const s=JSON.stringify(value,(k,v)=>{if(['__proto__','constructor','prototype'].includes(k)||typeof v==='number'&&!Number.isFinite(v))throw Error('invalid-wanxiang-data');return v;});
  if(s.length>131072)throw Error('wanxiang-world-too-large');
  if(value.encounters && (!Array.isArray(value.encounters)||value.encounters.length>24||value.encounters.filter(x=>x.stage==="open").length>3))throw Error('invalid-encounters');

@@ -7,7 +7,7 @@ import {bindLegend,stepLegend,chooseLegend,artifactRestriction,LEGEND_STATES,ste
 import {captureWorldStreams,restoreWorldStreams} from '../src/inkbox/sim/worldStreams.js';
 import {resolveDragonBone,enterSite} from '../src/inkbox/sim/sites.js';
 import {MANUALS} from '../src/inkbox/core/lore.js';
-const actor=id=>({id,name:'客'+id,hp:100,maxHp:100,level:10,x:id,y:1,exp:100,fortune:50,mind:50,heartDemon:0,techniques:[],dao:{path:{key:'sword'}},artifacts:[],age:10,lifespan:100});
+const actor=id=>({id,sp:'cultivator',name:'客'+id,hp:100,maxHp:100,level:10,x:id,y:1,exp:100,fortune:50,mind:50,heartDemon:0,techniques:[],dao:{path:{key:'sword'}},artifacts:[],age:10,lifespan:100});
 const make=()=>({day:1,seed:42,wanxiang:{enabled:true},entities:[actor(1),actor(2),actor(3),actor(4)],sites:[],artifacts:[],record(){}});
 {
  const w=make(),e=w.entities[0];w.wanxiang.enabled=false;assert.equal(processExperienceFact(w,e,{id:'off',type:'site-success'}),false);assert.equal(e.wanxiang,undefined);w.wanxiang.enabled=true;

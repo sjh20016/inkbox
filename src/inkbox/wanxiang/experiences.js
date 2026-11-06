@@ -1,4 +1,4 @@
-import { initializeProfile } from './profile.js';
+import { initializeProfile, ARRAY_LIMITS } from './profile.js';
 import { worldStream } from '../sim/worldStreams.js';
 
 // Reconstructed from the supplied V0.1 specification; no missing content pack is implied.
@@ -31,7 +31,22 @@ export function addExperienceState(p,value) {
  if(p.states.length>=32){if(!NEGATIVE_STATES.has(value.id))return false;const positive=p.states.findIndex(x=>!NEGATIVE_STATES.has(x.id));if(positive<0)return false;p.states.splice(positive,1);}
  p.states.push(value);return true;
 }
-function add(p,field,value) { if(field==='states')return addExperienceState(p,value);if(p[field].some(x=>x.id===value.id))return false; if(p[field].length>=(field==='traits'?6:4))return false; p[field].push(value);return true; }
+export function bondKey(row) { return JSON.stringify([row.id,row.targetKey||'',row.sourceScope||'']); }
+// Maintenance occurs at committed changes, never while rendering a character.
+export function maintainExperienceRelations(p,day=0) {
+ const l=ledger(p);const expired=p.bonds.filter(row=>row.expiresDay!=null&&row.expiresDay<=day&&!row.permanent);
+ if(expired.length){l.bondHistory=[...(l.bondHistory||[]),...expired.map(row=>({...row,endedDay:day}))].slice(-32);p.bonds=p.bonds.filter(row=>!expired.includes(row));}
+ return expired.length;
+}
+function add(p,field,value) {
+ if(field==='states')return addExperienceState(p,value);
+ if(field==='bonds'){
+  const prior=p.bonds.find(row=>bondKey(row)===bondKey(value));
+  if(prior){if(value.expiresDay>prior.expiresDay){prior.expiresDay=value.expiresDay;return true;}return false;}
+ } else if(p[field].some(x=>x.id===value.id))return false;
+ if(p[field].length>=ARRAY_LIMITS[field])return false;
+ p[field].push(value);return true;
+}
 /** Called only AFTER the native rule commits a structured fact. No log parsing. */
 export function emitCommittedFact(world,e,fact) {
  if(world.wanxiang?.enabled!==true)return false;
@@ -41,6 +56,8 @@ export function emitCommittedFact(world,e,fact) {
 export function processExperienceFact(world,e,fact) {
  if(world.wanxiang?.enabled!==true||!e||e.hp<=0||!fact?.id||!fact.type||!EXPERIENCE_CONTENT.some(row=>row.id===fact.type))return false;
  const p=structuredClone(initializeProfile(e)),l=ledger(p),day=world.day||0;
+ const beforeStage=p.physique?.stage||0,beforeFear=p.traits.some(row=>row.id==='risk_fear');
+ const hadGratitude=p.bonds.some(row=>row.id==='gratitude:'+fact.helperKey);
  if(l.seen.includes(fact.id)|| (fact.sequence!=null ? !Number.isSafeInteger(fact.sequence)||fact.sequence<1||fact.sequence<=(l.lastSequence||0) : l.seen.length>=128))return false;
  if(fact.type.startsWith('site-') && (fact.arrived!==true || fact.siteId==null))return false;
  if(fact.type==='combat-wound'&&(!(fact.amount>=e.maxHp*.2)||e.hp/e.maxHp>.3||fact.hostile!==true||fact.sourceId===e.id||!world.entities?.some(other=>other.id===fact.sourceId&&other.hp>0)))return false;
@@ -56,17 +73,21 @@ export function processExperienceFact(world,e,fact) {
  l.seen.push(fact.id);if(l.seen.length>128)l.seen.shift();
  for(const [k,v] of Object.entries(l.cooldowns))if(v<=day)delete l.cooldowns[k];
  p.states=p.states.filter(s=>s.expiresDay==null||s.expiresDay>day);
+ maintainExperienceRelations(p,day);
+ for(const [site,failedDay] of Object.entries(l.siteFailures))if(day-failedDay>720)delete l.siteFailures[site];
  const key=fact.type.startsWith('site-')?`${fact.type}:${fact.siteId}`:fact.type==='breakthrough-failure'?`${fact.type}:${fact.fromLevel}`:fact.type==='healed'?`healed:${fact.helperKey}`:fact.type;
- if(l.cooldowns[key]>day||Object.keys(l.cooldowns).length>=32){p.revision++;e.wanxiang=p;return false;}
+ const rewardEligible=!(l.cooldowns[key]>day)&&Object.keys(l.cooldowns).length<32;
+ l.recentFacts||={};l.recentFacts[fact.type]=day;
+ if(fact.type==='site-failure'){if(Object.keys(l.siteFailures).length<32||l.siteFailures[fact.siteId]!=null)l.siteFailures[fact.siteId]=day;}
  let changed=false;
  const grant=(field,id,extra={})=>{const value={id,name:EXPERIENCE_TRAITS.find(x=>x.id===id)?.name||id,source:fact.id,startDay:day,...extra};const ok=add(p,field,value);changed ||=ok;return ok;};
  const permanent=(id)=>{if(l.permanentGrants>=6||day-l.lastPermanentDay<1800)return false;if(grant('traits',id)){l.permanentGrants++;l.lastPermanentDay=day;return true;}return false;};
  if(fact.type==='healed'&&fact.amount>0){const physique=p.physique;if(['yin_block','yang_block'].includes(physique?.id)&&!(physique.stage>0)&&(physique.lastTreatmentDay==null||day-physique.lastTreatmentDay>=30)){physique.treatments=(physique.treatments||0)+1;physique.lastTreatmentDay=day;if(physique.treatments>=2)physique.stage=1;changed=true;}const damage=p.states.find(s=>s.id==='meridian_damage');if(damage&&fact.paid===true&&(damage.lastTreatmentDay==null||day-damage.lastTreatmentDay>=30)){damage.treatments=(damage.treatments||0)+1;damage.lastTreatmentDay=day;if(damage.treatments>=2)p.states=p.states.filter(s=>s.id!=='meridian_damage');changed=true;}if(fact.helperKey)grant('bonds','gratitude:'+fact.helperKey,{name:'受恩未忘',targetKey:fact.helperKey,expiresDay:day+3600});}
  if(fact.type==='healed'&&fact.helperKey)grant('bonds','shared_insight',{targetKey:fact.helperKey,expiresDay:day+720});
  if(fact.type==='gate-aid'&&fact.paid===true&&fact.helperKey)grant('states','alchemy_guard',{expiresDay:day+180,targetKey:fact.helperKey});
- if(fact.type==='site-success'&&fact.siteId!=null){const failed=l.siteFailures[fact.siteId];if(failed!=null&&day-failed<=720){const t=p.traits.find(t=>t.id==='risk_fear');if(t){t.id='risk_resolve';t.name='险中有定';t.source=fact.id;changed=true;}delete l.siteFailures[fact.siteId];}}
+ if(fact.type==='site-success'&&fact.siteId!=null){const failed=l.siteFailures[fact.siteId];if(failed!=null&&day-failed<=720){const t=p.traits.find(t=>t.id==='risk_fear');if(t){const resolved=p.traits.find(row=>row.id==='risk_resolve');if(resolved){p.traits=p.traits.filter(row=>row!==t);}else{t.id='risk_resolve';t.name='险中有定';t.source=fact.id;}changed=true;}delete l.siteFailures[fact.siteId];}}
 
- if(!(l.cooldowns[key]>day)&&Object.keys(l.cooldowns).length<32){
+ if(rewardEligible){
   l.cooldowns[key]=day+(fact.type.startsWith('site-')?720:fact.type==='healed'?1080:360);
   const rng=experienceRng(world),roll=rng(),choice=rng();
   // One rarity roll gates the whole family. Weight only chooses within that tier.
@@ -91,7 +112,12 @@ export function processExperienceFact(world,e,fact) {
   if(fact.type==='breakthrough-failure'&&roll>=.7&&roll<.95)grant('states','meridian_damage',{expiresDay:day+720});
   if(fact.type==='site-failure'){if(Object.keys(l.siteFailures).length<32||l.siteFailures[fact.siteId]!=null)l.siteFailures[fact.siteId]=day;if(roll>=.8&&roll<.98)grant('states','site_wound',{expiresDay:day+180});else if(roll>=.98)permanent('risk_fear');}
  }
- l.records.push({id:fact.id,type:fact.type,day,siteId:fact.siteId??null,targetLevel:fact.targetLevel??null,helperKey:fact.helperKey??null,changed});if(l.records.length>24)l.records.shift();
+ // Only material, committed transformations become durable life milestones.
+ const milestone=(type,result,targetKey=null)=>{p.history.push({kind:'natural',type,day,actorKey:`${world.plane||'mortal'}:${e.id}`,source:fact.id,location:{x:e.x,y:e.y,plane:world.plane||'mortal'},targetKey,cost:fact.paid===true?{paid:true,helperKey:fact.helperKey||null}:null,result});p.history=p.history.slice(-128);};
+ if(fact.type==='healed'&&beforeStage===0&&p.physique?.stage===1)milestone('meridian-open',{physiqueId:p.physique.id,stage:1,treatments:p.physique.treatments},fact.helperKey);
+ if(beforeFear&&!p.traits.some(row=>row.id==='risk_fear')&&p.traits.some(row=>row.id==='risk_resolve'))milestone('risk-resolved',{siteId:fact.siteId,traitId:'risk_resolve'});
+ if(fact.type==='healed'&&!hadGratitude&&p.bonds.some(row=>row.id==='gratitude:'+fact.helperKey))milestone('aid-bond',{bondId:'gratitude:'+fact.helperKey,healed:fact.amount},fact.helperKey);
+ l.records.push({id:fact.id,type:fact.type,day,siteId:fact.siteId??null,targetLevel:fact.targetLevel??null,helperKey:fact.helperKey??null,rewardEligible,rewardDrawn:rewardEligible,changed});if(l.records.length>24)l.records.shift();
  p.revision++;e.wanxiang=p;return true;
 }
 export function consumeGateAid(e,day=0) {
@@ -102,8 +128,8 @@ export function consumeGateAid(e,day=0) {
 }
 export function experienceEffects(e,day=0,world=null) {
  const p=e?.wanxiang;const active=id=>[...(p?.traits||[]),...(p?.states||[])].some(t=>t.id===id&&(t.expiresDay==null||t.expiresDay>day));
- const shared=p?.bonds?.find(row=>row.id==='shared_insight'&&!row.dormant&&row.expiresDay>day);
- const helper=shared&&world?.entities?.find(other=>shared.targetKey===`${world.plane||'mortal'}:${other.id}`&&other.hp>0&&Math.hypot(e.x-other.x,e.y-other.y)<=8);
+ const shared=(p?.bonds||[]).filter(row=>row.id==='shared_insight'&&!row.dormant&&row.expiresDay>day);
+ const helper=shared.length&&world?.entities?.find(other=>other.hp>0&&Math.hypot(e.x-other.x,e.y-other.y)<=8&&shared.some(row=>row.targetKey===`${world.plane||'mortal'}:${other.id}`));
  const vow=p?.traits?.find(t=>t.id==='seal_vow'),resonance=p?.traits?.find(t=>t.id==='demon_sword_resonance');const nearVow=vow&&Math.hypot(e.x-vow.anchorX,e.y-vow.anchorY)<=6;const held=resonance&&(e.artifacts||[]).some(a=>(typeof a==='object'?a.id:a)===resonance.artifactId);
  return {cultivation:(helper?.04:0)+(active('breakthrough_echo')? .05:0)-(active('meridian_damage')?.08:0),hp:(active('tempered_bones')?.06:0)-(active('wounded_insight')?.05:0)+(nearVow?.08:0)-(active('sword_blight')?.12:0)-(active('meridian_damage')?.10:0)-(active('site_wound')?.06:0),power:(active('wounded_insight')?.04:0)+(active('sword_review')&&(e.dao?.path?.key||e.dao)==='sword'?.04:0)+(held?.12:0)+(active('sword_heart')&&(e.dao?.path?.key||e.dao)==='sword'?.06:0),pollution:active('pollution_restraint')?-.15:0,breakthrough:(active('alchemy_guard')?.02:0)-(active('dusty_mind')?.015:0)+(vow?.01:0)+(active('sword_heart')&&(e.dao?.path?.key||e.dao)==='sword'?.01:0),risk:active('risk_fear')?-.2:active('risk_resolve')?.15:0,retreat:active('risk_fear')?.05:0};
 }

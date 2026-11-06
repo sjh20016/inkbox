@@ -156,7 +156,12 @@
     "test:browser-tools": "node scripts/inkbox-cdp-ownership-test.mjs && node scripts/inkbox-owned-server-check.mjs",
     "test:wanxiang:b": "node scripts/inkbox-wx-b-core.mjs && node scripts/inkbox-wx-b-lifecycle.mjs && node scripts/inkbox-wx-b-transit.mjs && node scripts/inkbox-wx-b-encounters.mjs && node scripts/inkbox-wx-b-seeds.mjs && node scripts/inkbox-wx-b-blood.mjs && node scripts/inkbox-wx-b-hex.mjs && node scripts/inkbox-wx-b-paths.mjs",
     "profile:wanxiang:b": "node scripts/inkbox-wx-b-profile.mjs",
-    "test:wanxiang:b:browser": "node scripts/inkbox-wx-b-browser.mjs"
+    "test:wanxiang:b:browser": "node scripts/inkbox-wx-b-browser.mjs",
+    "test:wanxiang:c": "node scripts/inkbox-wx-c-authority.mjs && node scripts/inkbox-wx-c-ledger.mjs && node scripts/inkbox-wx-c-opportunities.mjs && node scripts/inkbox-wx-c-effects.mjs && node scripts/inkbox-wx-c-ui.mjs && node scripts/inkbox-wx-c-save.mjs",
+    "profile:wanxiang:c": "node scripts/inkbox-wx-c-profile.mjs",
+    "profile:wanxiang:effects": "node scripts/inkbox-wx-c-effects-profile.mjs",
+    "test:wanxiang:c:browser": "node scripts/inkbox-wx-c-browser.mjs",
+    "coverage:wanxiang:c": "node scripts/inkbox-wx-c-coverage.mjs"
   },
   "dependencies": {
     "three": "0.186.1"
