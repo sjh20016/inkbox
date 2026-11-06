@@ -161,7 +161,11 @@
     "profile:wanxiang:c": "node scripts/inkbox-wx-c-profile.mjs",
     "profile:wanxiang:effects": "node scripts/inkbox-wx-c-effects-profile.mjs",
     "test:wanxiang:c:browser": "node scripts/inkbox-wx-c-browser.mjs",
-    "coverage:wanxiang:c": "node scripts/inkbox-wx-c-coverage.mjs"
+    "coverage:wanxiang:c": "node scripts/inkbox-wx-c-coverage.mjs",
+    "test:wanxiang:d": "node scripts/inkbox-wx-d-geography.mjs && node scripts/inkbox-wx-d-social.mjs && node scripts/inkbox-wx-d-destiny.mjs && node scripts/inkbox-wx-d-integration.mjs && node scripts/inkbox-wx-d-ui.mjs",
+    "profile:wanxiang:d": "node scripts/inkbox-wx-d-profile.mjs",
+    "profile:wanxiang:d:perf": "node scripts/inkbox-wx-d-perf.mjs",
+    "test:wanxiang:d:browser": "node scripts/inkbox-wx-d-browser.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

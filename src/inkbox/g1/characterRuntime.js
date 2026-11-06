@@ -130,9 +130,12 @@ export function buildCharacterViewModel(world,keyOrToken) {
   const root = e.root;
   const life = personLifeFacts(e);
   const rootLabel = root ? `${root.rootName || '灵根'}${Number.isInteger(root.quality) && QUALITIES[root.quality] ? ` · ${QUALITIES[root.quality]}` : ''}` : e.rootName || '不可考';
+  const profile = readProfile(e);
+  const keys = new Set([...profile.bonds, ...(profile.experienceLedger?.bondHistory || []), ...profile.history].flatMap(row => [row.targetKey, row.actorKey, row.from, row.to]).filter(key => typeof key === 'string' && /^(mortal|upper|nether):/.test(key)));
+  const people = Object.fromEntries([...keys].map(key => { const person = resolveCharacter(world,key); return [key, person.ok ? person.entity?.name || '不可考' : '不可考']; }));
   return freeze({
     schemaVersion:1, permissions, health,
-    mingpu:{profile:readProfile(e),observation:explainMingpu(e,r.sourceWorld||world),catalog:CATALOG,enabled:world.wanxiang?.enabled===true,day:world.day,fortune:e.fortune??null,mind:e.mind??null,legacyRoot:rootLabel,techniques:(e.techniques||[]).map(t=>({id:t.id??t.name,name:t.name,description:t.description})),artifacts:(e.artifacts||[]).map(a=>({id:a.id,name:a.name,grade:a.grade,description:a.description}))},
+    mingpu:{profile,people,observation:explainMingpu(e,r.sourceWorld||world),catalog:CATALOG,enabled:world.wanxiang?.enabled===true,day:world.day,fortune:e.fortune??null,mind:e.mind??null,legacyRoot:rootLabel,techniques:(e.techniques||[]).map(t=>({id:t.id??t.name,name:t.name,description:t.description})),artifacts:(e.artifacts||[]).map(a=>({id:a.id,name:a.name,grade:a.grade,description:a.description}))},
     identity:{key:r.key,id:r.id,plane:r.plane,currentPlane:r.currentPlane || r.plane,status:r.status,name:e.name || '不可考',canFocus:r.accessible},
     header:{realm:realmText(e),ageText:life?.ageText || (Number.isFinite(e.age) ? `${Math.floor(e.age / 360)} 岁` : '年龄不可考'),lifespanText:life?.lifespanText || '',affiliation,stateText:e.sp === 'ghost' && r.status === 'alive' ? '鬼魂存续' : r.status === 'ascended' && !r.arrival ? '已飞升 · 去向不可定位' : STATUS[r.status]},
     cultivation:{exp,required,percent:exp !== null && required !== null ? exp / required * 100 : null,rate,rateText:rate === null ? '修炼速度不可考' : `每日修为 ${rate.toFixed(3)}`,stateText:required === null || exp === null ? '修为不可考' : exp >= required ? '等待模拟突破' : '积累修为'},

@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+WX-D 新增 `npm run test:wanxiang:d`：有界陆路供给、真实绕障赴事、剩余特殊资源与沉寂旧址、付费疗伤与护关、宗门照护、命卦选择、v11 任务恢复及三界短期推进。保留 Alpha/B/C 与完整 Fast/Heavy。`profile:wanxiang:d` 从三个正式小景种子运行100年，恢复各自v11存档续30年，首种子续至200/400年；`profile:wanxiang:d:perf` 从该400年真实存档重复30日原生推进并核对确定性，不代表GPU或跨版本提速。`test:wanxiang:d:browser` 复用隔离Edge/CDP检查三视口、五页、改命敕改、因缘回执、旧址和存读档；自然与受控样本分别标识。结果见 [WX-D交付](../docs/development/WX_D_DELIVERY.md)。
+
 V0.2-B 新增 `npm run test:wanxiang:b`：生命周期、交通、洞府、道种、血脉、卦象与连续命途。`profile:wanxiang:b` 生成自然及成熟续跑画像；`test:wanxiang:b:browser` 检查三视口、改命、存读档及回访。详见 [B 交付](../docs/development/WX_B_DELIVERY.md)。
 
 `npm run test:wanxiang` 验证隔离万象塑命 V0.2 Alpha 的目录、Profile、改命、三界存档、DNA、真实功法与技能、经历、原生付费疗伤、遗物继承和 UI 命令。加入 Fast，原 Fast/Heavy 保持不变。`npm run test:wanxiang:browser` 使用仓库隔离 Edge/CDP 和自有服务验证桌面/窄屏 Canvas 与实际 Three、五页命簿、预览提交和存读档；软件光栅结果不代表 GPU 性能。`npm run profile:wanxiang` 执行两种子自然30年样本，原生推进不注入奖励，不作为长期平衡结论。范围和未接线机制见 [Alpha 交付记录](../docs/development/WANXIANG_SUMING_V02_DELIVERY.md) 与 [逐项矩阵](../docs/development/WANXIANG_SUMING_V02_ALPHA_MATRIX.md)。
