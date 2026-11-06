@@ -104,7 +104,7 @@ function observe(c, span, label) {
     if(isPracticingHuman(e)&&!seenCultivators.has(e.id)){seenCultivators.add(e.id);if(!initial){const key=e.birthOrigin?.kind||'legacy';cultivatorOrigins[key]=(cultivatorOrigins[key]||0)+1;}}
     const ledger=e.wanxiang?.experienceLedger?.records||[],history=e.wanxiang?.history||[],previous=observedTails.get(e);
     if(!previous||previous.fact!==ledger.at(-1))for(const f of ledger){const key=`${e.id}:${f.id}`;if(seenFacts.has(key))continue;seenFacts.add(key);if(!initial)facts[f.type]=(facts[f.type]||0)+1;}
-    if(!previous||previous.history!==history.at(-1))for(const f of history){const key=`${e.id}:${JSON.stringify(f)}`;if(seenMilestones.has(key))continue;seenMilestones.add(key);if(!initial){const type=f.type||f.kind||f.source||'other',name=typeof type==='object'?type.kind||'other':type;milestones[name]=(milestones[name]||0)+1;for(const reason of f.reasons||[])choiceReasons[reason]=(choiceReasons[reason]||0)+1;}}
+    if(!previous||previous.history!==history.at(-1))for(const f of history){if(f.pastLife)continue;const key=`${f.actorKey||e.id}:${JSON.stringify(f)}`;if(seenMilestones.has(key))continue;seenMilestones.add(key);if(!initial){const type=f.type||f.kind||f.source||'other',name=typeof type==='object'?type.kind||'other':type;milestones[name]=(milestones[name]||0)+1;for(const reason of f.reasons||[])choiceReasons[reason]=(choiceReasons[reason]||0)+1;}}
     observedTails.set(e,{fact:ledger.at(-1),history:history.at(-1)});
   }
   for(const e of c.world.entities)records(e,true);

@@ -6,7 +6,7 @@
 
 赴事筛选复用 `planTransitRoute(..., {mode:'land'})` 的可达结果。赴事移动仍由 Life 的陆路移动消费者执行，参与者保存有限转向点；路线超过 96 格或 128 个转向点时不发起任务。水路和御空没有对应的赴事任务消费者，本轮不把它们算作可赴洞府的通道。旧存档中缺少转向点的行程在移动时重新规划。地形编辑后，正式 transit 缓存由原有失效机制处理。
 
-`siteContentState(site)` 返回 `inheritance`、`dragonBone`、`phoenixFeather`、`godFragment`、`artifact` 五项布尔值。`siteHasContent(site)` 为它们的析取。传承耗尽后其他库存仍可开启遭遇和领取；所有库存耗尽的洞府仍保留历史地点，但不再抽取普通访客；`lastLifecycleDay` 使其只在每年结算年龄及自然消亡。原物仍走正式所有权领取，血脉资源仅在正式资格和实际授予成功时扣减库存。
+`siteContentState(site, world)` 返回 `inheritance`、`dragonBone`、`phoenixFeather`、`godFragment`、`artifact` 五项布尔值。`siteHasContent(site, world)` 为它们的析取。传承耗尽后其他库存仍可开启遭遇和领取；所有库存耗尽的洞府仍保留历史地点，但不再抽取普通访客；`lastLifecycleDay` 使其只在每年结算年龄及自然消亡。原物仍走正式所有权领取，血脉资源仅在正式资格和实际授予成功时扣减库存。
 
 ## 统计和成本
 
