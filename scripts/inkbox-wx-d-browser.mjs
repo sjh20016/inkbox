@@ -21,7 +21,7 @@ try {
   b=await launch({browser:findEdge(),url:server.url+'/inkbox.html'+(renderer==='3d'?'?renderer=3d':''),width:w,height:h,gpu:false});
   await b.waitFor('return !!window.inkbox?.creationMenu',{timeoutMs:45000});
   const snap=await page(`return {title:document.title,view:[innerWidth,innerHeight],body:document.body.innerText.slice(0,2000),buttons:[...document.querySelectorAll('button')].map(x=>[x.id,x.innerText]).filter(x=>x[1]).slice(0,60),canvases:[...document.querySelectorAll('canvas')].map(x=>({id:x.id,rect:(()=>{let r=x.getBoundingClientRect();return [r.x,r.y,r.width,r.height]})()}))};`);
-  report.viewportRuns.push({label,snapshot:snap});
+  report.viewportRuns.push({label,snapshot:snap,browser:b.meta});
   await b.screenshot(path.join(out,label+'-initial.png'));
   await click('[data-action="open-create"]');
   await page(`const frame=document.querySelector('.g2-creation');const seed=frame?.querySelector('input[aria-label="世界种子"]');const preset=frame?.querySelector('select');if(!seed||!preset)throw Error('Creation form controls missing');seed.value='20261029';preset.value='small';`);
@@ -117,7 +117,7 @@ try {
   await click('#inkBtnLoad');
   if(!await b.waitFor(`return inkbox.world.seed===${mature.seed}&&inkbox.world.day>=${mature.day}`,{timeoutMs:15000}))throw Error('Natural mature checkpoint did not load');
   await page(`inkbox.setSpeed(0);return true;`);
-  const dEvidence=await page(`const w=inkbox.world;const actor=w.entities.find(e=>e.wanxiang?.history?.some(h=>h.kind==='natural-choice'&&h.targetKey&&h.cost!=null&&h.result));const event=actor?.wanxiang.history.findLast(h=>h.kind==='natural-choice'&&h.targetKey&&h.cost!=null&&h.result);const {siteHasContent}=await import('./src/inkbox/sim/sites.js');const dormant=w.sites.find(s=>s.kind==='cave'&&!siteHasContent(s,w));return {actor:actor&&{id:actor.id,event},dormant:dormant&&{id:dormant.id}};`);
+  const dEvidence=await page(`const w=inkbox.world,paid=h=>h.kind==='natural-choice'&&h.targetKey&&h.cost!=null&&h.result;const actor=w.entities.find(e=>e.wanxiang?.history?.findLast(paid)?.type==='报偿恩义')||w.entities.find(e=>e.wanxiang?.history?.some(paid));const event=actor?.wanxiang.history.findLast(paid);const {siteHasContent}=await import('./src/inkbox/sim/sites.js');const dormant=w.sites.find(s=>s.kind==='cave'&&!siteHasContent(s,w));return {actor:actor&&{id:actor.id,event},dormant:dormant&&{id:dormant.id}};`);
   if(dEvidence.actor){
    const social=await page(`const r=inkbox.g1.open('mortal:${dEvidence.actor.id}');return {ok:r.ok,profile:r.viewModel?.mingpu?.profile};`);
    await click('#inkPersonDetail [data-g1-action="expand"]');await clickText('因缘');

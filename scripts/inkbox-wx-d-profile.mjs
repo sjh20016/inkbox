@@ -67,7 +67,7 @@ function snapshot(c) {
     cultivatorOrigins: distribution(living.filter(isPracticingHuman).map(e => e.birthOrigin?.kind || 'legacy')),
     realms: distribution(living.filter(isPracticingHuman).map(e => e.level)), villages: w.villages.filter(v => v.hp > 0).length,
     abandonedVillages: w.villages.filter(v => !(v.hp > 0)).length, sects: w.factions.length,
-    sectSupply: w.factions.map(f => ({ id: f.id, resources: f.resources, ...f.economy })),
+    sectSupply: w.factions.map(f => ({ id: f.id, resources: structuredClone(f.resources), ...f.economy })),
     sites: { total: w.sites.length, caves: caves.length, active: caves.filter(s=>hasContent(s,w)).length, dormant: caves.filter(s => !hasContent(s,w)).length,
       remaining: Object.fromEntries(Object.keys(content({})).map(k => [k, caves.filter(s => content(s,w)[k]).length])),
       resourceCharges: { dragonBone: caves.reduce((n,s)=>n+(s.dragonBoneCharges||0),0),
