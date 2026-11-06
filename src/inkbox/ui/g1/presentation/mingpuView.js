@@ -1,4 +1,4 @@
-import { mechanismState, factTitle, provenance, worldDay, catalogValue, operationTitle, fieldTitle } from './mingpuFacts.js';
+import { mechanismState, factTitle, provenance, worldDay, catalogValue, operationTitle, fieldTitle, interactionCost } from './mingpuFacts.js';
 // Presentation only: all drafts and commands go through the identity-aware controller.
 const TABS = [['fate','命格'],['practice','修持'],['bonds','因缘'],['history','经历'],['edit','改命']];
 const FIELDS = [['physique','体质','physiques'],['hexagram','本命卦','hexagrams'],['personality','性格','personalities'],['hobbies','杂趣','hobbies']];
@@ -44,7 +44,7 @@ export function createMingpuView(root, { request } = {}) {
  for(const row of p.bonds||[]){const a=el('article');a.append(el('h3',row.name||row.id));pairs(a,[['对象',person(row.targetKey)],['来源',row.source||row.sourceScope],['状态',row.dormant?`休眠 · ${row.dormantReason||'原因未载'}`:row.expiresDay!=null&&row.expiresDay<=m.day?'已到期':'活跃'],['期限',row.expiresDay==null?'未载':`第 ${worldDay(row.expiresDay)} 日`]]);pages.bonds.append(a);}
  block(pages.bonds,'已过期关系留痕',(p.experienceLedger?.bondHistory||[]).slice(-12).map(row=>[`${row.name||row.id} · 至第 ${worldDay(row.endedDay??row.expiresDay)} 日`,`${person(row.targetKey)} · ${row.dormantReason||row.sourceScope||'历史留痕'}`]));
  const latest=[...(p.history||[])].reverse().find(event=>event.kind==='natural-choice'&&event.targetKey&&event.cost!=null);
- if(latest)block(pages.bonds,'最近一次有代价互动',[['对象',person(latest.targetKey)],['原因',latest.reasons],['付出',latest.cost],['结果',latest.result]]);
+ if(latest)block(pages.bonds,'最近一次有代价互动',[['对象',person(latest.targetKey)],['原因',latest.reasons],['付出',interactionCost(latest.cost)],['结果',latest.result]]);
  block(pages.bonds,'双亲身份引用',(observation.parents||[]).map((key,index)=>[`双亲 ${index+1}`,key]));
  block(pages.bonds,'血脉来源',(observation.bloodSources||[]).map(source=>[source.id,source.parent||source.source]));
  for(const record of [...(observation.records||[])].reverse()){
@@ -54,7 +54,7 @@ export function createMingpuView(root, { request } = {}) {
    pages.history.append(article);
  }
  pages.history.append(el('p',vm.historyCoverage?.description||'仅显示实际保留记录'));
- for(const event of [...(p.history||[])].reverse()){const a=el('article');a.append(el('h3',`第 ${worldDay(event.day)} 日 · ${event.type?factTitle(event.type)+' · ':''}${provenance(event)}`));pairs(a,[['人物',person(event.actorKey||event.key||vm.identity.key)],['来源',provenance(event)],['行动原因',event.reasons],['事实引用',event.source],['地点',event.location],['参与者',person(event.targetKey)],['付出',event.cost],['结果与后果',event.result],['迁出',event.from ? person(event.from) : null],['迁入',event.to ? person(event.to) : null],['传承资格涉及',event.inheritanceAffected?'是':'否'],['进行中事务涉及',event.inFlightAffected?'是':'否']]);for(const d of event.diff||[])pairs(a,[[fieldTitle(d.field),`${catalogValue(d.before,m.catalog)} → ${catalogValue(d.after,m.catalog)}`]]);pages.history.append(a);}
+ for(const event of [...(p.history||[])].reverse()){const a=el('article');a.append(el('h3',`第 ${worldDay(event.day)} 日 · ${event.type?factTitle(event.type)+' · ':''}${provenance(event)}`));pairs(a,[['人物',person(event.actorKey||event.key||vm.identity.key)],['来源',provenance(event)],['行动原因',event.reasons],['事实引用',event.source],['地点',event.location],['参与者',person(event.targetKey)],['付出',interactionCost(event.cost)],['结果与后果',event.result],['迁出',event.from ? person(event.from) : null],['迁入',event.to ? person(event.to) : null],['传承资格涉及',event.inheritanceAffected?'是':'否'],['进行中事务涉及',event.inFlightAffected?'是':'否']]);for(const d of event.diff||[])pairs(a,[[fieldTitle(d.field),`${catalogValue(d.before,m.catalog)} → ${catalogValue(d.after,m.catalog)}`]]);pages.history.append(a);}
  for(const e of [...(vm.history||[])].reverse())pages.history.append(el('p',`第 ${worldDay(e.day)} 日 · ${e.text}`));
  }
  function paintEdit(){const page=pages.edit;page.replaceChildren();const m=vm?.mingpu||{};

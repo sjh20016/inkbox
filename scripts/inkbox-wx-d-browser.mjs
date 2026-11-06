@@ -123,8 +123,11 @@ try {
    await click('#inkPersonDetail [data-g1-action="expand"]');await clickText('因缘');
    const text=await page(`return document.querySelector('.g1-mingpu__body [aria-label="因缘"]').innerText;`);
    report.checks.push({name:label+' committed paid social receipt',pass:social.ok&&text.includes('最近一次有代价互动')&&text.includes(dEvidence.actor.event.result),evidence:{event:dEvidence.actor.event,text}});
+   await page(`const h=[...document.querySelectorAll('.g1-mingpu__body h3')].find(e=>e.innerText==='最近一次有代价互动');h?.scrollIntoView({block:'center'});return true;`);
    await b.screenshot(path.join(out,label+'-d-natural-bonds.png'));
-   await clickText('经历');await b.screenshot(path.join(out,label+'-d-natural-history.png'));
+   await clickText('经历');
+   await page(`const h=[...document.querySelectorAll('.g1-mingpu__body [aria-label="经历"] article')].find(e=>e.innerText.includes(${JSON.stringify(dEvidence.actor.event.result)}));h?.scrollIntoView({block:'center'});return true;`);
+   await b.screenshot(path.join(out,label+'-d-natural-history.png'));
    await click('.g1-mingpu header button');await click('#inkPersonDetail [data-g1-action="close"]');
   }else report.checks.push({name:label+' committed paid social receipt',pass:false,skipped:'No committed paid social event in this world'});
   if(dEvidence.dormant){
