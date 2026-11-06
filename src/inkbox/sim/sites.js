@@ -290,10 +290,11 @@ export function stepSites(world, dtDays, rng) {
 
   for (let si = sites.length - 1; si >= 0; si -= 1) {
     const site = sites[si];
+    const lifespan = (SITE_LIFESPAN_YEARS[site.kind] || 200) * 360;
     if (site.kind === 'cave' && !siteHasContent(site, world)) {
       if (!Number.isFinite(site.lastLifecycleDay)) site.lastLifecycleDay = world.day;
-      if (world.day - site.lastLifecycleDay < 360) continue;
-      site.age += world.day - site.lastLifecycleDay;
+      if (world.day - site.lastLifecycleDay < 360 && site.age + dtDays <= lifespan) continue;
+      site.age += Math.max(dtDays, world.day - site.lastLifecycleDay);
       site.lastLifecycleDay = world.day;
     } else site.age += dtDays;
 
@@ -320,7 +321,6 @@ export function stepSites(world, dtDays, rng) {
       }
     }
 
-    const lifespan = (SITE_LIFESPAN_YEARS[site.kind] || 200) * 360;
     if (site.age > lifespan) {
       // 地点自行尘封 / 异象散去，无当事人
       if (site.kind === 'cave') world.record(`${site.name} 尘封，再无人至。`, 'site', null, siteLocation(world, site));
