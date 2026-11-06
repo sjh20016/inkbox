@@ -1,5 +1,5 @@
-import { MANUALS,FORBIDDEN_TECHNIQUES,NETHER_TECHNIQUES } from '../core/lore.js';
-const manualIds=new Set([...MANUALS,...FORBIDDEN_TECHNIQUES,...NETHER_TECHNIQUES].map(t=>'manual:'+Array.from(t.name).map(c=>c.codePointAt(0).toString(16)).join('-')));
+import {MANUAL_INDEX} from './manualIds.js';
+const manualIds=new Set(MANUAL_INDEX.keys());
 import {getCatalogEntry} from './catalog.js';
 import {validateBodyLedger} from './bloodPhysique.js';
 export const PROFILE_VERSION = 1;
@@ -19,9 +19,11 @@ export function validateProfile(p) {
   if(!Number.isFinite(l.borrowUntil)||l.borrowUntil<0||!Array.isArray(l.spent)||l.spent.length>2||new Set(l.spent).size!==l.spent.length||l.spent.some(id=>!['dao_seed_bian_ji','dao_seed_ming_wang'].includes(id)))throw Error('invalid-seed-ledger');
  }
  if(p.bodyLedger!==undefined)validateBodyLedger(p.bodyLedger);
+ if(p.experienceLedger?.bondHistory!==undefined&&(!Array.isArray(p.experienceLedger.bondHistory)||p.experienceLedger.bondHistory.length>32))throw Error('invalid-bond-history');
+ if(p.experienceLedger?.recentFacts!==undefined){const f=p.experienceLedger.recentFacts;if(!f||typeof f!=='object'||Array.isArray(f)||Object.keys(f).length>32||Object.values(f).some(d=>!Number.isFinite(d)||d<0))throw Error('invalid-recent-facts');}
  if(p.experienceLedger?.lastCausalChoiceDay!=null&&(!Number.isFinite(p.experienceLedger.lastCausalChoiceDay)||p.experienceLedger.lastCausalChoiceDay<0))throw Error('invalid-causal-choice-day');
  for (const field of ['attributes','permanent']) for (const key of ['bone','comprehension','perception']) if(!Number.isFinite(p[field]?.[key]) || Math.abs(p[field][key])>100 || (field==='attributes' && p[field][key]<0)) throw Error('invalid-attribute');
- for(const [field,limit] of Object.entries(ARRAY_LIMITS)) { const a=p[field]; if(!Array.isArray(a)||a.length>limit||a.some(x=>!x||typeof x.id!=='string'||x.id.length>100)||new Set(a.map(x=>x.id)).size!==a.length) throw Error('invalid-'+field); }
+ for(const [field,limit] of Object.entries(ARRAY_LIMITS)) { const a=p[field]; if(!Array.isArray(a)||a.length>limit||a.some(x=>!x||typeof x.id!=='string'||x.id.length>100)||new Set(a.map(x=>field==='bonds'?JSON.stringify([x.id,x.targetKey||'',x.sourceScope||'']):x.id)).size!==a.length) throw Error('invalid-'+field); }
  if(p.traits.filter(x=>x.special).length>2 || p.bloodlines.filter(x=>!x.latent).length>1 || p.bloodlines.filter(x=>x.latent).length>2) throw Error('invalid-capacity');
  for(const b of p.bloodlines) if(!Number.isInteger(b.grade)||b.grade<1||b.grade>9||!Number.isFinite(b.purity)||b.purity<0||b.purity>100) throw Error('invalid-bloodline');
  if(p.root) { const r=p.root;if(['natural','heavenly'].some(k=>r[k]!=null&&typeof r[k]!=='boolean')||!Array.isArray(r.elements)||!r.elements.length||r.elements.length>5||new Set(r.elements.map(e=>({金:'metal',木:'wood',水:'water',火:'fire',土:'earth'})[e]||e)).size!==r.elements.length||r.elements.some(e=>!['metal','wood','water','fire','earth','金','木','水','火','土'].includes(e))||!Number.isFinite(r.purity)||r.purity<0||r.purity>100|| (r.heavenly && (r.elements.length!==1||r.purity<95||!r.natural))) throw Error('invalid-root'); }

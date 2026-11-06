@@ -4,7 +4,8 @@ import { readEffects } from './effects.js';
 import { emitCommittedFact } from './experiences.js';
 import { battleBonus } from './damage.js';
 
-export const techniqueId = t => `manual:${Array.from(typeof t === 'string' ? t : t.name).map(c => c.codePointAt(0).toString(16)).join('-')}`;
+import {techniqueId} from './manualIds.js';
+export {techniqueId} from './manualIds.js';
 // Affinities affect study speed, never grant possession or erase legacy learning.
 const AFFINITIES={sword:['metal'],life:['water','wood'],alchemy:['fire','wood'],body:['earth'],thunder:['metal','fire'],formation:['earth'],escape:['wood','water'],dual:['water','fire']};
 const ELEMENTS={金:'metal',木:'wood',水:'water',火:'fire',土:'earth'};

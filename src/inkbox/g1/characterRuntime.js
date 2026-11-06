@@ -12,7 +12,7 @@ import { readProfile } from '../wanxiang/profile.js';
 import { CATALOG, getCatalogEntry } from '../wanxiang/catalog.js';
 import { deriveConditions } from '../wanxiang/conditions.js';
 import { readEffects, EFFECT_DEFAULTS } from '../wanxiang/effects.js';
-import { previewChangeSet, commitChangeSet } from '../wanxiang/changes.js';
+import { createChangeDraft, previewChangeSet, commitChangeSet } from '../wanxiang/changes.js';
 import { enableWanxiang } from '../wanxiang/runtime.js';
 export { characterKey, parseCharacterKey, resolveCharacter, createSelectionToken };
 
@@ -186,15 +186,15 @@ export function createCharacterController({getWorld,onChange = () => {},presente
     if(action.type==='begin') {
       drafts.clear();const profile=readProfile(resolved.entity);
       const draft={id:`mingpu-${world.day}-r${profile.revision}-${++draftSequence}`,key:token.key,expectedRevision:profile.revision,profile,day:world.day};
-      drafts.set(draft.id,{entity:resolved.entity,world,token,day:world.day,revision:profile.revision});
+      drafts.set(draft.id,{entity:resolved.entity,world,token,day:world.day,revision:profile.revision,changeProof:createChangeDraft(world,token.key,token)});
       return {ok:true,draft,profile,catalog:CATALOG};
     }
     const draft=action.draft,proof=drafts.get(draft?.id);
     if(!proof || proof.entity!==resolved.entity || proof.world!==world || draft.key!==token.key) return {ok:false,reason:'stale-draft'};
-    if(proof.revision!==readProfile(resolved.entity).revision) return {ok:false,reason:'人物已变化，请刷新草稿'};
-    const command={id:draft.id,key:token.key,expectedRevision:proof.revision,mode:'player',source:'玩家改命',operations:action.operations?.map(op=>{if(!op.value||!['states','bonds'].includes(op.field)||op.value.durationDays==null)return op;const {durationDays,...value}=op.value;return {...op,value:{...value,expiresDay:world.day+Number(durationDays)}};})};
-    if(action.type==='preview') return previewChangeSet(world,command,{token:proof.token});
-    if(action.type==='commit') {const result=commitChangeSet(world,command,{token:proof.token});if(result.ok){drafts.delete(draft.id);refresh();}return result;}
+
+    const command={id:draft.id,key:token.key,expectedRevision:proof.revision,mode:action.authority==='decree'?'decree':'player',source:action.authority==='decree'?'天道敕改':'玩家改命',operations:action.operations?.map(op=>{if(!op.value||!['states','bonds'].includes(op.field)||op.value.durationDays==null)return op;const {durationDays,...value}=op.value;return {...op,value:{...value,expiresDay:world.day+Number(durationDays)}};})};
+    if(action.type==='preview') return previewChangeSet(world,command,{token:proof.token,draftProof:proof.changeProof});
+    if(action.type==='commit') {const result=commitChangeSet(world,command,{token:proof.token,draftProof:proof.changeProof});if(result.ok){drafts.delete(draft.id);refresh();}return result;}
     return {ok:false,reason:'invalid-action'};
   }
   function select(input) {

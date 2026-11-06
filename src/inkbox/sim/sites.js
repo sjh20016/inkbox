@@ -1,3 +1,5 @@
+import { opportunityCounter } from '../wanxiang/opportunities.js';
+import { worldStream } from './worldStreams.js';
 import { grantBloodResource } from '../wanxiang/bloodPhysique.js';
 // 水墨沙盒 · 地图上的地点
 //
@@ -85,6 +87,7 @@ export function enterSite(world, entity, site, rng) {
       if (!site.inheritanceExhausted && !site.inheritanceClaimedBy && manual && (learnedInheritance || entity.techniques.length < 3
         && !entity.techniques.some((item) => item.name === manual.name))) {
         if(!learnedInheritance)entity.techniques.push(manual);
+        opportunityCounter(world,'claimed');
         site.inheritanceClaimedBy = entity.id;
         site.inheritanceExhausted = true;
         site.reward = '传承已被取走';
@@ -129,7 +132,7 @@ export function enterSite(world, entity, site, rng) {
     if(arrival)resolveDragonBone(world,entity,site);
     if(world.wanxiang?.enabled && site.godFragmentCharges>0 && grantBloodResource(world,entity,'god-fragment',site.id)) site.godFragmentCharges--;
     if(world.wanxiang?.enabled && site.phoenixFeatherCharges>0 && grantBloodResource(world,entity,'phoenix-feather',site.id)) site.phoenixFeatherCharges--;
-    if(arrival)emitCommittedFact(world,entity,{id:factId,type:'site-success',siteId:site.id,arrived:true});
+    if(arrival){const before=JSON.stringify([entity.wanxiang?.traits,entity.wanxiang?.states]);emitCommittedFact(world,entity,{id:factId,type:'site-success',siteId:site.id,arrived:true});if(before!==JSON.stringify([entity.wanxiang?.traits,entity.wanxiang?.states]))opportunityCounter(world,'experience');}
     return { ok: true, gain };
   }
 
@@ -140,7 +143,7 @@ export function enterSite(world, entity, site, rng) {
   entity.mind = clamp(entity.mind - 6, 0, 100);
   entity.heartDemon = clamp(entity.heartDemon + 4, 0, 100);
   world.record(`【${entity.name}】入${site.name}，重伤而出。`, 'site', entity, siteLocation(world, site));
-  if(arrival)emitCommittedFact(world,entity,{id:factId,type:'site-failure',siteId:site.id,arrived:true});
+  if(arrival){const before=JSON.stringify([entity.wanxiang?.traits,entity.wanxiang?.states]);emitCommittedFact(world,entity,{id:factId,type:'site-failure',siteId:site.id,arrived:true});if(before!==JSON.stringify([entity.wanxiang?.traits,entity.wanxiang?.states]))opportunityCounter(world,'experience');}
   return { ok: false };
 }
 
@@ -194,6 +197,7 @@ export function spawnCave(world, rng, near = null) {
     age: 0,
     visits: 0,
   });
+  if(!near||near.wxSupply)opportunityCounter(world,'generated');
   // 洞府自行开启，无当事人
   world.record(
     narrate(rng, 'caveOpen', { place: siteName, cave: cave.name, reward: `《${inheritanceManual}》` }),
@@ -258,6 +262,7 @@ function findSiteSpot(world, rng, near, minQi = 0.3) {
  *   2. 地点随年岁淡去
  */
 export function stepSites(world, dtDays, rng) {
+  stepOpportunitySupply(world);
   stepEncounters(world);
   const sites = world.sites;
   if (!sites.length) return;
@@ -353,4 +358,25 @@ export function resolveDragonBone(world,e,site){
  if(b){b.stable=true;b.inheritable=true;b.source={...b.source,stabilizedDay:world.day};}
  else p.bloodlines.push({id:'true_dragon',grade:1,purity:20,latent:false,stable:false,inheritable:false,source:{kind:'dragon-bone',siteId:site.id,day:world.day}});
  p.revision++;return true;
+}
+
+/** Annual budget exposes finite stock, never a success or a new cultivator. */
+export function stepOpportunitySupply(world) {
+ if(world.wanxiang?.enabled!==true||world.wanxiang.wxCEnabled===false||(world.plane&&world.plane!=='mortal'))return;
+ opportunityCounter(world,'supplyChecks',0);
+ const state=world.wanxiang.opportunities;
+ if(world.day-state.lastSupplyDay<360)return;
+ opportunityCounter(world,'supplyChecks');
+ state.lastSupplyDay=world.day;
+ const monks=world.entities.filter(e=>e.hp>0&&!e._ascended&&['human','cultivator'].includes(e.sp)&&e.level>=3);
+ const cap=Math.min(8,Math.ceil(monks.length/8));
+ const stock=world.sites.filter(s=>s.kind==='cave'&&!s.inheritanceExhausted);
+ if(!cap||stock.length>=cap)return;
+ const anchors=(world.villages||[]).filter(v=>v.hp>0&&v.food>0&&monks.some(e=>Math.hypot(e.x-v.x,e.y-v.y)<24));
+ const stream=worldStream(world,'wanxiang-opportunities',0x77584335);
+ for(const anchor of anchors.slice(0,8)){
+  if(stock.filter(s=>Math.hypot(s.x-anchor.x,s.y-anchor.y)<24).length>=2)continue;
+  const site=spawnCave(world,stream,{x:anchor.x,y:anchor.y,radius:20,wxSupply:true});
+  if(site)break;
+ }
 }

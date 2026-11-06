@@ -1,7 +1,8 @@
+import { experienceEffects } from './experiences.js';
+import { opportunityCounter, encounterDecision, decisionMoment } from './opportunities.js';
 import { legendOwnsMovement } from './legend.js';
 import { worldStream } from '../sim/worldStreams.js';
 import { activeJourneyForEntity } from '../world/transitState.js';
-import { experienceEffects } from './experiences.js';
 const alive = e => e && e.hp > 0 && !e._ascended;
 const available = site => site && (!site.inheritanceExhausted || site.dragonBoneCharges > 0);
 export function encounterFor(world, id) {
@@ -14,6 +15,7 @@ export function finishEncounter(world, encounter, reason) {
   encounter.stage = available(site) ? 'ended' : site ? 'claimed' : 'closed';
   encounter.endedDay = world.day;
   encounter.reason = reason;
+  if(reason==='timeout')opportunityCounter(world,'timeout');
   for (const p of encounter.participants) if (p.stage === 'travel') p.stage = 'ended';
   if (site) {
     site.encounterMode = false;
@@ -49,12 +51,9 @@ function reachableCells(world, site) {
   }
   return seen;
 }
-function score(world, e, site) {
-  const health = e.hp / e.maxHp;
-  const experience = experienceEffects(e, world.day);
-  const traits = e.wanxiang?.personality || [];
-  const bold = traits.some(t => /brave|bold/.test(t.id)) ? .15 : 0;
-  return health + Math.min(e.level, 20) / 40 + experience.risk + bold - Math.hypot(e.x - site.x, e.y - site.y) / 24;
+function baselineScore(world,e,site) {
+ const bold=(e.wanxiang?.personality||[]).some(t=>/brave|bold/.test(t.id))?.15:0;
+ return e.hp/e.maxHp+Math.min(e.level,20)/40+experienceEffects(e,world.day).risk+bold-Math.hypot(e.x-site.x,e.y-site.y)/24;
 }
 export function stepEncounters(world) {
   if (world.wanxiang?.enabled !== true) return;
@@ -69,18 +68,24 @@ export function stepEncounters(world) {
   for (const site of world.sites) {
     if (wx.encounters.filter(s => s.stage === 'open').length >= 3) break;
     if (site.kind !== 'cave' || !site.inheritanceManual || !available(site) || site.encounterMode || world.day < (site.encounterRetryDay || 0)) continue;
+    opportunityCounter(world,'stocked');
     const reachable = reachableCells(world, site);
-    const candidates = world.entities.filter(e => alive(e) && e.level >= 3 && e.hp / e.maxHp > .55
+    const candidates = world.entities.filter(e => alive(e) && (wx.wxCEnabled===false||['human','cultivator'].includes(e.sp)) && e.level >= 3 && e.hp / e.maxHp > .55
       && !activeJourneyForEntity(world, e.id) && !encounterFor(world, e.id) && !legendOwnsMovement(world, e.id)
       && !(world.wanling?.jobs || []).some(j => j.actorId === e.id && j.stage !== 'done')
       && ((site.dragonBoneCharges > 0 && (!e.wanxiang?.bloodlines?.length || e.wanxiang.bloodlines.some(b => b.id === 'true_dragon' && !b.stable)))
         || ((e.techniques || []).length < 3 && !(e.techniques || []).some(t => t.name === site.inheritanceManual)))
       && Math.hypot(e.x - site.x, e.y - site.y) < 24
-      && (!reachable || reachable.has(world.idx(Math.floor(e.x), Math.floor(e.y))))
-      && (experienceEffects(e, world.day).risk > -.2 || e.hp / e.maxHp >= .85))
-      .sort((a,b) => score(world,b,site) - score(world,a,site) || a.id - b.id).slice(0,3);
+       )
+      .filter(e=>{opportunityCounter(world,'eligible');return true;})
+      .filter(e=>!reachable||reachable.has(world.idx(Math.floor(e.x),Math.floor(e.y))))
+      .filter(e=>{opportunityCounter(world,'reachable');return true;})
+      .filter(e=>{if(wx.wxCEnabled===false)return experienceEffects(e,world.day).risk>-.2||e.hp/e.maxHp>=.85;const d=encounterDecision(world,e,site);if(d.willing)opportunityCounter(world,'willing');else if(d.reasons.length&&e.wanxiang&&!e.wanxiang.history.some(h=>h.type==='谨慎退避'&&h.siteId===site.id&&world.day-h.day<360))decisionMoment(world,e,'谨慎退避',{siteId:site.id,reasons:d.reasons,result:'暂缓赴事，伤愈后可重试'});return world.wanxiang.wxCEnabled===false||d.willing;})
+      .sort((a,b) => (wx.wxCEnabled===false?baselineScore(world,b,site)-baselineScore(world,a,site):encounterDecision(world,b,site).score - encounterDecision(world,a,site).score) || a.id - b.id).slice(0,3);
     if (!candidates.length) continue;
     site.encounterMode = true;
+    opportunityCounter(world,'started',candidates.length);
+    for(const e of candidates){const d=encounterDecision(world,e,site);if(d.reasons.length)decisionMoment(world,e,'赴事抉择',{siteId:site.id,reasons:d.reasons,result:'赴事'});}
     wx.nextEncounterId = (wx.nextEncounterId || 0) + 1;
     wx.encounters.push({id:`cave:${site.id}:${wx.nextEncounterId}`, siteId:site.id, stage:'open', startDay:world.day, untilDay:world.day+720,
       participants:candidates.map(e => ({actorId:e.id, stage:'travel'}))});
@@ -91,11 +96,13 @@ export function stepEncounterTravel(world, life, e, dtDays, resolve) {
   if (!s || world.wanxiang?.enabled !== true) return false;
   const p = s.participants.find(p => p.actorId === e.id), site = world.sites.find(x => x.id === s.siteId);
   if (!alive(e) || !available(site) || world.day >= s.untilDay || activeJourneyForEntity(world,e.id) || e.hp/e.maxHp < .35) {
-    p.stage = 'withdrawn'; e.tx=e.x; e.ty=e.y; reconcile(world,s); return false;
+    opportunityCounter(world,'withdrawn'); p.stage = 'withdrawn'; e.tx=e.x; e.ty=e.y; reconcile(world,s); return false;
   }
   if (Math.hypot(e.x-site.x,e.y-site.y) <= 1.5) {
+    if(!p.reached){opportunityCounter(world,'arrived');p.reached=true;}
     p.stage='arrived'; site.visits=(site.visits||0)+1;
     const result=resolve?.(world,e,site,worldStream(world,'wanxiang-encounters',0x77584533));
+    if(result&&!result.studying)opportunityCounter(world,result.ok?'success':'failure');
     if (result?.studying) {p.stage='travel';p.settled=false;}
     reconcile(world,s);
     return true;

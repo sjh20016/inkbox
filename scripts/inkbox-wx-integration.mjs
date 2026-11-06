@@ -1,3 +1,4 @@
+import {createSelectionToken} from '../src/inkbox/g1/characterIdentity.js';
 import { cultivationRate } from '../src/inkbox/sim/cultivation.js';
 import assert from 'node:assert/strict';
 import { createSandboxWorld } from '../src/inkbox/ui/worldCreation.js';
@@ -6,7 +7,7 @@ import { advanceWorld, createAdvanceState } from '../src/inkbox/sim/advance.js';
 import { Life } from '../src/inkbox/sim/life.js';
 import { rngStream, rngStateOf } from '../src/inkbox/core/noise.js';
 import { serializeWorld, deserializeWorld } from '../src/inkbox/io/save.js';
-import { previewChangeSet, commitChangeSet } from '../src/inkbox/wanxiang/changes.js';
+import { previewChangeSet, commitChangeSet as rawCommitChangeSet } from '../src/inkbox/wanxiang/changes.js';
 import { WORLD_PRESETS, SPECIES } from '../src/inkbox/core/config.js';
 
 const makeWorld = seed => createSandboxWorld(WORLD_PRESETS.small, seed, { terrainPreset: 'standard' });
@@ -63,6 +64,8 @@ advanceWorld(rngWorldB, 1, { life: lifeB, state: createAdvanceState() });
 assert.deepEqual(rngStateOf(lifeA.rng), rngStateOf(lifeB.rng), 'preview must not shift normal advance RNG consumption');
 
 // Commit through the public changeset API and verify it mutates the live entity.
+const binding=createSelectionToken(world,command.key);
+const commitChangeSet=(w,c)=>rawCommitChangeSet(w,c,{token:binding});
 const committed = commitChangeSet(world, command);
 assert.equal(committed.ok, true, 'valid change must commit');
 assert.deepEqual(cultivator.wanxiang.root, { elements: ['fire'], purity: 90, natural: false, heavenly: false });

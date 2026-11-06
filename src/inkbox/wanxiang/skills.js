@@ -1,3 +1,4 @@
+import {readEffects} from './effects.js';
 import { practiceState, knownPractices } from './practice.js';
 import { manaCapacity } from './damage.js';
 
@@ -30,11 +31,12 @@ export function chooseSkillAction(e,target,day,{power=1,defense=0}={}) {
  if(day-state.lastActionDay<1) return {kind:'wait',damage:0};
  for(const id of c.skills.slice(0,skillSlotCount(e))) {
   const s=SKILLS.find(x=>x.id===id);if(!canUseSkill(e,s)) continue;
-  if(state.mana<s.cost || (state.cooldowns[id] ?? -1)>day) continue;
+  const effect=readEffects(e,{day,target,skillId:id}),cost=s.cost*effect.spell_cost;
+  if(state.mana<cost || (state.cooldowns[id] ?? -1)>day) continue;
   if(s.kind==='heal' ? e.hp>=e.maxHp*.4 : Math.hypot(e.x-target.x,e.y-target.y)>s.range) continue;
-  state.mana-=s.cost;state.cooldowns[id]=day+s.cooldown;state.lastActionDay=day;
+  state.mana-=cost;state.cooldowns[id]=day+s.cooldown;state.lastActionDay=day;
   if(s.kind==='heal') {const healing=Math.min(e.maxHp-e.hp,e.maxHp*s.scale);e.hp+=healing;return {kind:'heal',skill:id,damage:0,healing};}
-  return {kind:s.kind,skill:id,element:s.element||null,damage:Math.max(0,power*3.4*s.scale*(10/(10+Math.max(0,defense)*(s.kind==='spell'?.2:.35))))};
+  return {kind:s.kind,skill:id,element:s.element||null,damage:Math.max(0,power*3.4*s.scale*(s.kind==='physical'?effect.physical_power:1)*(10/(10+Math.max(0,defense)*(s.kind==='spell'?.2:.35))))};
  }
  // Global action interval also covers normal fallback to prevent repeated same-day attacks.
  state.lastActionDay=day;return null;

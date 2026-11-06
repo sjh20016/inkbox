@@ -1,3 +1,4 @@
+import { opportunityCounter, aidPreference, decisionMoment } from '../wanxiang/opportunities.js';
 import { recordLegendHealing } from '../wanxiang/legend.js';
 import { emitCommittedFact } from '../wanxiang/experiences.js';
 import { readEffects } from '../wanxiang/effects.js';
@@ -65,7 +66,7 @@ function targetFor(world,e,path,life) {
   const units=liveWanling(world).filter(x=>x.id!==e.id);
   if(path==='alchemy') {
     const candidates=people.filter(x=>x.hp<x.maxHp*.92&&dist(e,x)<32);
-    const score=x=>dist(e,x)/(1+(e.wanxiang?.bonds||[]).some(b=>!b.dormant&&b.id.startsWith('gratitude:')&&b.targetKey===`${world.plane||'mortal'}:${x.id}`&&b.expiresDay>world.day)*.25);
+    const score=x=>dist(e,x)/aidPreference(world,e,x).weight;
     return candidates.sort((a,b)=>score(a)-score(b)||a.id-b.id)[0]||null;
   }
   if(path==='talisman'||path==='blood') return nearby(world.villages,e,36,v=>v.hp>0&&v.food>0);
@@ -101,8 +102,10 @@ function act(world,life,e,j,target) {
     if(!alive(target)||target.hp>=target.maxHp*.92||!spendPower(world,e,.2,.01)) return false;
     const healing=readEffects(e,{day:world.day,world,target,paidAid:true}).healing;
     const received=readEffects(target,{day:world.day,world,healer:e}).healingReceived;
-    if(world.wanxiang?.enabled&&target.level>0&&target.exp>0)emitCommittedFact(world,target,{id:`guard:${e.id}:${target.id}:${j.startedDay}`,type:'gate-aid',paid:true,helperKey:`${world.plane||'mortal'}:${e.id}`});
+    if(world.wanxiang?.enabled&&target.level>0&&target.exp>0){opportunityCounter(world,'guard');emitCommittedFact(world,target,{id:`guard:${e.id}:${target.id}:${j.startedDay}`,type:'gate-aid',paid:true,helperKey:`${world.plane||'mortal'}:${e.id}`});}
+    const preference=aidPreference(world,e,target);
     const amount=Math.min(target.maxHp*.12*healing*received,target.maxHp-target.hp); target.hp+=amount;
+    if(amount>0){opportunityCounter(world,'aid');if(preference.gratitude){opportunityCounter(world,'reciprocity');decisionMoment(world,e,'报偿恩义',{targetKey:`${world.plane||'mortal'}:${target.id}`,cost:'灵石0.2或自身气血1%',result:`疗愈${amount.toFixed(1)}气血`});}}
     if(amount>0)recordLegendHealing(world,target,amount,true);
     if(amount>0)emitCommittedFact(world,target,{id:`healed:${world.plane||'mortal'}:${e.id}:${target.id}:${j.startedDay}`,type:'healed',amount,paid:true,helperKey:`${world.plane||'mortal'}:${e.id}`});
     finish(world,e,j,`以灵丹术为${target.name||'伤者'}疗伤，恢复${amount.toFixed(1)}气血`); return true;

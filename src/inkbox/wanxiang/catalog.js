@@ -11,7 +11,7 @@ function freeze(value) {
   }
   return value;
 }
-const consumedAxes=['cultivation','hp','combat','learning','healing','perception','breakthrough','detect_radius','healing_received','escape'];
+const consumedAxes=['cultivation','hp','combat','learning','healing','perception','breakthrough','detect_radius','healing_received','escape','physical_power','spell_cost'];
 const define = (entry, category) => {
  const rows=[{condition:'always',effects:entry.effects??{}},...(entry.conditionalEffects??[])];
  const numeric=rows.some(r=>SUPPORTED_CONDITIONS.includes(r.condition)&&Object.keys(r.effects).some(k=>consumedAxes.includes(k)));

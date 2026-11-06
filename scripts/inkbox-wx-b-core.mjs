@@ -1,11 +1,14 @@
+import {createSelectionToken} from '../src/inkbox/g1/characterIdentity.js';
 import assert from 'node:assert/strict';
 import {fixture} from './inkbox-g1-fixtures.mjs';
-import {commitChangeSet} from '../src/inkbox/wanxiang/changes.js';
+import {commitChangeSet as rawCommitChangeSet} from '../src/inkbox/wanxiang/changes.js';
 import {enableWanxiang} from '../src/inkbox/wanxiang/runtime.js';
 import {migrateProfile} from '../src/inkbox/wanxiang/inheritance.js';
 import {serializeWanxiang,restoreWanxiang} from '../src/inkbox/wanxiang/saveState.js';
 const {world:w,entity:e}=fixture();
 enableWanxiang(w,{experimental:true});
+const binding=createSelectionToken(w,'mortal:'+e.id);
+const commitChangeSet=(world,command)=>rawCommitChangeSet(world,command,{token:binding});
 const commands=[];
 for(let i=0;i<300;i++){
  const command={id:'long-'+i,key:'mortal:'+e.id,expectedRevision:e.wanxiang.revision,mode:'player',operations:[{op:'set',field:'attributes',value:{bone:50+i%20,comprehension:50,perception:50}}]};

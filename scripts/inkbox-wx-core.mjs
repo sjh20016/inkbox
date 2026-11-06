@@ -1,11 +1,14 @@
+import {createSelectionToken} from '../src/inkbox/g1/characterIdentity.js';
 import {emitCommittedFact} from '../src/inkbox/wanxiang/experiences.js';
 import assert from 'node:assert/strict';
 import {emptyProfile,readProfile,validateProfile} from '../src/inkbox/wanxiang/profile.js';
-import {previewChangeSet,commitChangeSet} from '../src/inkbox/wanxiang/changes.js';
+import {previewChangeSet,commitChangeSet as rawCommitChangeSet} from '../src/inkbox/wanxiang/changes.js';
 import {readEffects} from '../src/inkbox/wanxiang/effects.js';
 import {serializeWanxiang,restoreWanxiang} from '../src/inkbox/wanxiang/saveState.js';
 import {createProfile,migrateProfile,inheritBirthProfile} from '../src/inkbox/wanxiang/inheritance.js';
 const e={id:1,hp:100,x:1,y:1,village:1};const world={entities:[e],width:16,height:16,w:16,h:16,day:1,wanxiang:{enabled:true},sites:[]};
+const binding=createSelectionToken(world,'mortal:1');
+const commitChangeSet=(w,c)=>rawCommitChangeSet(w,c,{token:binding});
 const before=JSON.stringify(e);assert.equal(readProfile(e).attributes.bone,50);assert.equal(JSON.stringify(e),before);assert.equal(readEffects(e).cultivation,1);
 const command={id:'edit-1',key:'mortal:1',mode:'player',expectedRevision:0,operations:[{op:'set',field:'attributes',value:{bone:80,comprehension:50,perception:50}}]};
 const preview=previewChangeSet(world,command);assert.equal(preview.ok,true,preview.reason);assert.equal(JSON.stringify(e),before);
