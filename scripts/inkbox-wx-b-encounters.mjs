@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import {stepEncounters,stepEncounterTravel,finishEncounter} from '../src/inkbox/wanxiang/encounters.js';
 import {recordLegendHealing,stepLegendConsequences} from '../src/inkbox/wanxiang/legend.js';
 import {initializeProfile} from '../src/inkbox/wanxiang/profile.js';
-const entity=()=>({id:1,sp:'cultivator',hp:100,maxHp:100,level:5,x:1,y:1,techniques:[]});
-const scene=()=>({day:30,sites:[{id:1,kind:'cave',x:1,y:1,inheritanceManual:'卷'}],entities:[entity()],wanxiang:{enabled:true}});
+import {World} from '../src/inkbox/world/World.js';
+const entity=()=>({id:1,sp:'cultivator',hp:100,maxHp:100,level:5,x:5,y:5,techniques:[]});
+const scene=()=>{const w=new World(20,20,812);w.type.fill(5);w.height.fill(.5);w.day=30;
+ w.sites=[{id:1,kind:'cave',x:5,y:5,inheritanceManual:'卷'}];w.entities=[entity()];w.wanxiang={enabled:true};return w;};
 for(const cause of ['death','timeout','withdrawal','removed','arrived','claimed']) {
  const w=scene();stepEncounters(w);const s=w.wanxiang.encounters[0];assert(s);
  if(cause==='death')w.entities[0].hp=0;
@@ -18,7 +20,7 @@ for(const cause of ['death','timeout','withdrawal','removed','arrived','claimed'
 }
 {
  const w=scene();stepEncounters(w);const first=w.wanxiang.encounters[0];finishEncounter(w,first,'withdrawn');
- const resumed=structuredClone(w);resumed.day+=30;stepEncounters(resumed);assert.equal(resumed.wanxiang.encounters.filter(s=>s.stage==='open').length,0);
+ const resumed=Object.assign(scene(),structuredClone({day:w.day,sites:w.sites,entities:w.entities,wanxiang:w.wanxiang}));resumed.day+=30;stepEncounters(resumed);assert.equal(resumed.wanxiang.encounters.filter(s=>s.stage==='open').length,0);
  resumed.day+=180;stepEncounters(resumed);assert.equal(resumed.wanxiang.encounters.filter(s=>s.stage==='open').length,1);assert.notEqual(resumed.wanxiang.encounters.at(-1).id,first.id);
  resumed.sites[0].inheritanceExhausted=true;stepEncounters(resumed);resumed.day+=360;stepEncounters(resumed);assert.equal(resumed.wanxiang.encounters.filter(s=>s.stage==='open').length,0);
 }

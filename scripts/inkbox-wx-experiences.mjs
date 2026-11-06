@@ -7,6 +7,7 @@ import {bindLegend,stepLegend,chooseLegend,artifactRestriction,LEGEND_STATES,ste
 import {captureWorldStreams,restoreWorldStreams} from '../src/inkbox/sim/worldStreams.js';
 import {resolveDragonBone,enterSite} from '../src/inkbox/sim/sites.js';
 import {MANUALS} from '../src/inkbox/core/lore.js';
+import {World} from '../src/inkbox/world/World.js';
 const actor=id=>({id,sp:'cultivator',name:'客'+id,hp:100,maxHp:100,level:10,x:id,y:1,exp:100,fortune:50,mind:50,heartDemon:0,techniques:[],dao:{path:{key:'sword'}},artifacts:[],age:10,lifespan:100});
 const make=()=>({day:1,seed:42,wanxiang:{enabled:true},entities:[actor(1),actor(2),actor(3),actor(4)],sites:[],artifacts:[],record(){}});
 {
@@ -18,10 +19,12 @@ const make=()=>({day:1,seed:42,wanxiang:{enabled:true},entities:[actor(1),actor(
  e.wanxiang.experienceLedger.seen=Array.from({length:128},(_,i)=>'x'+i);assert.equal(processExperienceFact(w,e,{id:'overflow',type:'site-failure'}),false);
 }
 {
- const w=make();for(let i=0;i<5;i++)w.sites.push({id:i+1,kind:'cave',x:5+i,y:1,inheritanceManual:MANUALS[0].name,visits:0});
+ const w=new World(24,16,42);w.day=1;w.wanxiang={enabled:true};w.type.fill(5);w.height.fill(.5);
+ w.entities=[actor(1),actor(2),actor(3),actor(4)];w.entities.forEach((e,i)=>{e.x=5+i;e.y=5;});
+ for(let i=0;i<5;i++)w.sites.push({id:i+1,kind:'cave',x:10+i,y:5,inheritanceManual:MANUALS[0].name,visits:0});
  stepEncounters(w);assert(w.wanxiang.encounters.length<=3);assert(w.wanxiang.encounters.every(s=>s.participants.length<=3));
  const scene=w.wanxiang.encounters[0],e=w.entities.find(e=>e.id===scene.participants[0].actorId),s=w.sites.find(s=>s.id===scene.siteId);
- e.x=0;assert.equal(enterSite(w,e,s,()=>0),null);let moves=0;const life={moveTowards(e){moves++;e.x+=.5;}};stepEncounterTravel(w,life,e,1,()=>assert.fail('remote claim'));assert.equal(moves,1);
+ e.x=3;assert.equal(enterSite(w,e,s,()=>0),null);let moves=0;const life={moveTowards(e){moves++;e.x+=.5;}};stepEncounterTravel(w,life,e,1,()=>assert.fail('remote claim'));assert.equal(moves,1);
  e.x=s.x;e.y=s.y;stepEncounterTravel(w,life,e,1,enterSite);assert(e.wanxiang.experienceLedger.records.some(r=>r.type.startsWith('site-')));if(s.inheritanceClaimedBy)assert.equal(e.techniques.length,1);assert.equal(enterSite(w,w.entities[3],s,()=>0),null);
 }
 {

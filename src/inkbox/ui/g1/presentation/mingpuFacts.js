@@ -7,9 +7,17 @@ export function mechanismState(row) {
 }
 const FACTS={'meridian-open':'经脉自然贯通','risk-resolved':'险中有定','aid-bond':'受恩未忘','healed':'真实援助与疗伤','gate-aid':'付费护关','site-success':'洞府机缘结算','site-failure':'探府失利','breakthrough-success':'修行破境','breakthrough-failure':'破境受挫','escaped':'真实脱战','combat-victory':'斗法获胜','manual-learned':'学成真实功法','artifact-found':'取得原物'};
 export const factTitle = type => FACTS[type]||type;
-export const provenance = event => event.kind==='natural'?'自然因果':event.mode==='decree'?'天道敕改':event.mode==='player'?'常规改命':event.source||'自然因果';
+export const provenance = event => (event.kind==='natural'||event.kind==='natural-choice')?'自然因果':event.mode==='decree'?'天道敕改':event.mode==='player'?'常规改命':event.source||'自然因果';
 
 export const worldDay = value => Number.isFinite(value)?String(Math.floor(value)):'未载';
+export function interactionCost(cost) {
+ if(cost==null)return '未载';
+ if(typeof cost==='string')return cost;
+ const amount=Number.isFinite(cost.amount)?String(Math.round(cost.amount*1000)/1000):'未载';
+ if(cost.kind==='sect-spirit-stone')return `宗门灵石 ${amount}`;
+ if(cost.kind==='actor-hp')return `自身气血 ${amount}`;
+ return cost.paid===true?'已支付实际代价':'代价明细未载';
+}
 const FIELD_NAMES={root:'灵根',physique:'体质',bloodlines:'血脉',hexagram:'本命卦',attributes:'基础禀赋',personality:'性格',hobbies:'杂趣',states:'状态',traits:'经历特质',bonds:'因缘',daoSeed:'道种',cultivation:'修持配置',bone:'根骨',comprehension:'悟性',perception:'神识',elements:'元素',purity:'纯度',natural:'天然',heavenly:'天赐',stage:'阶段',grade:'血阶',latent:'潜隐',stable:'稳定',inheritable:'可传承',source:'来源',startDay:'起始日',expiresDay:'到期日',treatments:'治疗次数',lastTreatmentDay:'上次治疗日',paid:'已付费'};
 export const fieldTitle = field => FIELD_NAMES[field]||'人物状态';
 export function catalogValue(value,catalog={}) {

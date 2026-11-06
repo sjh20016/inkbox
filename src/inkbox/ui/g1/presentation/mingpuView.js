@@ -1,4 +1,4 @@
-import { mechanismState, factTitle, provenance, worldDay, catalogValue, operationTitle, fieldTitle } from './mingpuFacts.js';
+import { mechanismState, factTitle, provenance, worldDay, catalogValue, operationTitle, fieldTitle, interactionCost } from './mingpuFacts.js';
 // Presentation only: all drafts and commands go through the identity-aware controller.
 const TABS = [['fate','命格'],['practice','修持'],['bonds','因缘'],['history','经历'],['edit','改命']];
 const FIELDS = [['physique','体质','physiques'],['hexagram','本命卦','hexagrams'],['personality','性格','personalities'],['hobbies','杂趣','hobbies']];
@@ -21,6 +21,7 @@ export function createMingpuView(root, { request } = {}) {
  function pairs(parent,rows){const dl=el('dl');for(const [label,value] of rows){dl.append(el('dt',label),el('dd',describe(value)));}parent.append(dl);}
  function block(parent,title,rows){parent.append(el('h3',title));if(!rows?.length)parent.append(el('p','暂无保留记录'));else pairs(parent,rows);}
  function paint(){if(!vm)return;const m=vm.mingpu||{},p=m.profile||{};title.textContent=`${vm.identity.name} · 命簿`;clock.textContent=`第 ${Number.isFinite(m.day)?Math.floor(m.day):'未载'} 日 · 同步世界时钟 · ${m.enabled?'万象塑命 Alpha 已启用':'万象塑命 Alpha 未启用'}`;
+ const person=key=>key ? `${m.people?.[key]||'不可考'}（${key}）` : '未载';
  for(const id of ['fate','practice','bonds','history'])pages[id].replaceChildren();
  block(pages.fate,'五项属性',[['根骨',p.attributes?.bone],['悟性',p.attributes?.comprehension],['神识',p.attributes?.perception],['气运',m.fortune],['道心',m.mind]]);
  block(pages.fate,'六维禀赋',[['灵根',p.root||m.legacyRoot],['体质',p.physique],['血脉',p.bloodlines],['本命卦',p.hexagram],['性格',p.personality],['杂趣',p.hobbies]]);
@@ -39,8 +40,11 @@ export function createMingpuView(root, { request } = {}) {
  block(pages.practice,'技能与调度',p.cultivation?.skills?.map((x,i)=>[`招式 ${i+1}`,x]));
  block(pages.practice,'三件携带法宝',Array.from({length:3},(_,i)=>[`携带 ${i+1}`,m.artifacts?.[i]||'空位']));
  block(pages.practice,'修炼现况',vm.cultivationRows?.map(x=>[x.label,x.value]));
- block(pages.bonds,'人间牵系',vm.relations?.map(x=>[x.label,x.value]));block(pages.bonds,'债誓与遗传来源',[['债誓',p.bonds],['双亲遗传',p.dna]]);
- block(pages.bonds,'已过期关系留痕',(p.experienceLedger?.bondHistory||[]).slice(-12).map(row=>[`${describe(row)} · 至第 ${worldDay(row.endedDay??row.expiresDay)} 日`,row.targetKey]));
+ block(pages.bonds,'人间牵系',vm.relations?.map(x=>[x.label,x.value]));block(pages.bonds,'遗传来源',[['双亲遗传',p.dna]]);
+ for(const row of p.bonds||[]){const a=el('article');a.append(el('h3',row.name||row.id));pairs(a,[['对象',person(row.targetKey)],['来源',row.source||row.sourceScope],['状态',row.dormant?`休眠 · ${row.dormantReason||'原因未载'}`:row.expiresDay!=null&&row.expiresDay<=m.day?'已到期':'活跃'],['期限',row.expiresDay==null?'未载':`第 ${worldDay(row.expiresDay)} 日`]]);pages.bonds.append(a);}
+ block(pages.bonds,'已过期关系留痕',(p.experienceLedger?.bondHistory||[]).slice(-12).map(row=>[`${row.name||row.id} · 至第 ${worldDay(row.endedDay??row.expiresDay)} 日`,`${person(row.targetKey)} · ${row.dormantReason||row.sourceScope||'历史留痕'}`]));
+ const latest=[...(p.history||[])].reverse().find(event=>event.kind==='natural-choice'&&event.targetKey&&event.cost!=null);
+ if(latest)block(pages.bonds,'最近一次有代价互动',[['对象',person(latest.targetKey)],['原因',latest.reasons],['付出',interactionCost(latest.cost)],['结果',latest.result]]);
  block(pages.bonds,'双亲身份引用',(observation.parents||[]).map((key,index)=>[`双亲 ${index+1}`,key]));
  block(pages.bonds,'血脉来源',(observation.bloodSources||[]).map(source=>[source.id,source.parent||source.source]));
  for(const record of [...(observation.records||[])].reverse()){
@@ -50,7 +54,7 @@ export function createMingpuView(root, { request } = {}) {
    pages.history.append(article);
  }
  pages.history.append(el('p',vm.historyCoverage?.description||'仅显示实际保留记录'));
- for(const event of [...(p.history||[])].reverse()){const a=el('article');a.append(el('h3',`第 ${worldDay(event.day)} 日 · ${event.type?factTitle(event.type)+' · ':''}${provenance(event)}`));pairs(a,[['人物',event.actorKey||event.key||vm.identity.key],['来源',provenance(event)],['事实引用',event.source],['地点',event.location],['参与者',event.targetKey],['付出',event.cost],['结果',event.result],['传承资格涉及',event.inheritanceAffected?'是':'否'],['进行中事务涉及',event.inFlightAffected?'是':'否']]);for(const d of event.diff||[])pairs(a,[[fieldTitle(d.field),`${catalogValue(d.before,m.catalog)} → ${catalogValue(d.after,m.catalog)}`]]);pages.history.append(a);}
+ for(const event of [...(p.history||[])].reverse()){const a=el('article');a.append(el('h3',`第 ${worldDay(event.day)} 日 · ${event.type?factTitle(event.type)+' · ':''}${provenance(event)}`));pairs(a,[['人物',person(event.actorKey||event.key||vm.identity.key)],['来源',provenance(event)],['行动原因',event.reasons],['事实引用',event.source],['地点',event.location],['参与者',person(event.targetKey)],['付出',interactionCost(event.cost)],['结果与后果',event.result],['迁出',event.from ? person(event.from) : null],['迁入',event.to ? person(event.to) : null],['传承资格涉及',event.inheritanceAffected?'是':'否'],['进行中事务涉及',event.inFlightAffected?'是':'否']]);for(const d of event.diff||[])pairs(a,[[fieldTitle(d.field),`${catalogValue(d.before,m.catalog)} → ${catalogValue(d.after,m.catalog)}`]]);pages.history.append(a);}
  for(const e of [...(vm.history||[])].reverse())pages.history.append(el('p',`第 ${worldDay(e.day)} 日 · ${e.text}`));
  }
  function paintEdit(){const page=pages.edit;page.replaceChildren();const m=vm?.mingpu||{};

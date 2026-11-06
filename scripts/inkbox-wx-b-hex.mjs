@@ -7,9 +7,10 @@ import {emitCommittedFact,consumeGateAid,experienceEffects,chooseExperienceCandi
 import {emptyProfile} from '../src/inkbox/wanxiang/profile.js';
 import {serializeWorld,deserializeWorld} from '../src/inkbox/io/save.js';
 import {Life} from '../src/inkbox/sim/life.js';
-import {DAO_BY_KEY} from '../src/inkbox/core/cultivation.js';
+import {DAO_BY_KEY,expToNext} from '../src/inkbox/core/cultivation.js';
 import {stepDaoActivities,stepDaoTravel,daoActivityFor} from '../src/inkbox/sim/daoActivities.js';
 const w=new World(40,32,712);w.day=30;w.wanxiang={enabled:true};
+w.type.fill(5);w.water.fill(0);w.height.fill(.5);
 const add=(name,x=10)=>w.addEntity({sp:'cultivator',name,x,y:10,hp:40,maxHp:100,age:8000,lifespan:40000,level:8,exp:50,artifacts:[],techniques:[],dao:{path:DAO_BY_KEY.alchemy,stage:0,progress:0}});
 const healer=add('helper');healer.hp=100;
 const e=add('patient',10.2);const p=initializeProfile(e);
@@ -21,6 +22,14 @@ assert.equal(daoActivityFor(w,healer.id).targetId,e.id,'gratitude can choose the
 stepDaoTravel(w,life,healer,1);
 assert(p!==e.wanxiang,'committed event replaces versioned profile');
 assert(e.wanxiang.bonds.some(b=>b.id==='shared_insight'));
+// Guard now requires a separate, paid social visit near a real breakthrough.
+w.day=400;e.hp=100;e.exp=expToNext(e.level)*.8;other.hp=100;
+w.wanling.jobs=[]; // Isolate the second lawful transaction from the first job's repeat cooldown.
+assert(stepDaoActivities(w,life));
+assert.equal(daoActivityFor(w,healer.id).intent,'guard');
+const guardCostHp=healer.hp;
+assert(stepDaoTravel(w,life,healer,1));
+assert(healer.hp<guardCostHp);
 assert(e.wanxiang.states.some(s=>s.id==='alchemy_guard'));
 assert(experienceEffects(e,w.day,w).cultivation>=.04);
 assert(readEffects(e,{world:w,day:w.day,targetLevel:9}).breakthrough>=.02);

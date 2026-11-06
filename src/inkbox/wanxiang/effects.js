@@ -2,7 +2,7 @@ import {deriveConditions} from './conditions.js';
 import { effectiveAttribute } from './profile.js';
 import {experienceEffects} from './experiences.js';
 import { getCatalogEntry } from './catalog.js';
-export const EFFECT_DEFAULTS=Object.freeze({cultivation:1,hp:1,combat:1,learning:1,pollution:1,healing:1,perception:1,travel:1,physical_power:1,spell_cost:1,breakthrough:0,action:0,retreat:0,escape:0,detectRadius:0,healingReceived:1});
+export const EFFECT_DEFAULTS=Object.freeze({cultivation:1,hp:1,combat:1,learning:1,pollution:1,healing:1,perception:1,travel:1,physical_power:1,spell_cost:1,breakthrough:0,action:0,retreat:0,escape:0,detectRadius:0,healingReceived:1,aidIntent:1});
 const compiled=new Map();
 let metrics=null;
 export function measureEffects(enabled=true){metrics=enabled?{calls:0,staticMs:0,dynamicMs:0,cacheHits:0,cacheMisses:0}:null;return metrics;}

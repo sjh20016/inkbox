@@ -133,3 +133,14 @@ export function experienceEffects(e,day=0,world=null) {
  const vow=p?.traits?.find(t=>t.id==='seal_vow'),resonance=p?.traits?.find(t=>t.id==='demon_sword_resonance');const nearVow=vow&&Math.hypot(e.x-vow.anchorX,e.y-vow.anchorY)<=6;const held=resonance&&(e.artifacts||[]).some(a=>(typeof a==='object'?a.id:a)===resonance.artifactId);
  return {cultivation:(helper?.04:0)+(active('breakthrough_echo')? .05:0)-(active('meridian_damage')?.08:0),hp:(active('tempered_bones')?.06:0)-(active('wounded_insight')?.05:0)+(nearVow?.08:0)-(active('sword_blight')?.12:0)-(active('meridian_damage')?.10:0)-(active('site_wound')?.06:0),power:(active('wounded_insight')?.04:0)+(active('sword_review')&&(e.dao?.path?.key||e.dao)==='sword'?.04:0)+(held?.12:0)+(active('sword_heart')&&(e.dao?.path?.key||e.dao)==='sword'?.06:0),pollution:active('pollution_restraint')?-.15:0,breakthrough:(active('alchemy_guard')?.02:0)-(active('dusty_mind')?.015:0)+(vow?.01:0)+(active('sword_heart')&&(e.dao?.path?.key||e.dao)==='sword'?.01:0),risk:active('risk_fear')?-.2:active('risk_resolve')?.15:0,retreat:active('risk_fear')?.05:0};
 }
+
+// A bounded preference only: callers retain all eligibility, reachability and payment checks.
+export function socialAidWeight(e,target,world,kind='heal') {
+ if(!e?.wanxiang||!target||!world||world.wanxiang?.enabled!==true||world.wanxiang.wxCEnabled===false)return 1;
+ const day=world.day||0,p=e.wanxiang,key=`${world.plane||'mortal'}:${target.id}`;
+ const bond=(p.bonds||[]).some(b=>b.id===`gratitude:${key}`&&b.targetKey===key&&!b.dormant&&(b.expiresDay==null||b.expiresDay>day));
+ const relation=e.relations?.get?.(target.id)?.type;
+ const romantic=(p.personality||[]).some(t=>t.id==='personality_romantic'&&!t.dormant&&(t.expiresDay==null||t.expiresDay>day));
+ const fear=(p.traits||[]).some(t=>t.id==='risk_fear'&&!t.dormant&&(t.expiresDay==null||t.expiresDay>day));
+ return 1+(bond?.25:0)+(romantic&&['lover','kin'].includes(relation)?.15:0)+(kind==='guard'&&fear?-.1:0);
+}

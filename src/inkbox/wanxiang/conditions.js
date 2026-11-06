@@ -1,7 +1,7 @@
 import {MANUAL_INDEX, techniqueId as id} from './manualIds.js';
 
 
-export const SUPPORTED_CONDITIONS=Object.freeze(['using_equipped_skill','always','hp_below_30','hp_above_80','mind_above_70','pollution_above_40','first_manual','manual_progress_below_half','manual_progress_above_half','at_home_village','away_from_home','sword_path','fire_path','yin_path','sword_manual','alchemy_manual','meridians_blocked','yin_meridians_open','yang_meridians_open','legal_journey','land_journey','heal_ally','heal_junior','heal_true_kin','aid_without_repayment','mentor_near','different_path_mentor','same_sect_ally_near','three_allies_near','enemy_stronger','enemy_hp_below_30','same_path_manual','paid_resource_study','after_major_success_360d','after_escape_180d','fed_and_resting','exploration','at_ruin','prior_failure_same_gate']);
+export const SUPPORTED_CONDITIONS=Object.freeze(['social_sect_aid','social_mentor_aid','social_junior_aid','using_equipped_skill','always','hp_below_30','hp_above_80','mind_above_70','pollution_above_40','first_manual','manual_progress_below_half','manual_progress_above_half','at_home_village','away_from_home','sword_path','fire_path','yin_path','sword_manual','alchemy_manual','meridians_blocked','yin_meridians_open','yang_meridians_open','legal_journey','land_journey','heal_ally','heal_junior','heal_true_kin','aid_without_repayment','mentor_near','different_path_mentor','same_sect_ally_near','three_allies_near','enemy_stronger','enemy_hp_below_30','same_path_manual','paid_resource_study','after_major_success_360d','after_escape_180d','fed_and_resting','exploration','at_ruin','prior_failure_same_gate']);
 // Only current state or bounded committed records can prove a condition.
 export function deriveConditions(e,context={}) {
  const p=e?.wanxiang,c=p?.cultivation||{},world=context.world,day=context.day??world?.day??0;
@@ -22,6 +22,9 @@ export function deriveConditions(e,context={}) {
  const recent=(type,days)=>{const stamp=p?.experienceLedger?.recentFacts?.[type];if(Number.isFinite(stamp)&&day>=stamp&&day-stamp<days)return true;return (p?.experienceLedger?.records||[]).some(row=>row.type===type&&day>=row.day&&day-row.day<days);};
  const blocked=['yin_block','yang_block'].includes(p?.physique?.id)&&!(p.physique.stage>0);
  return {
+ social_sect_aid:context.paidAid===true&&!!patient&&!!e.faction&&e.faction===patient.faction,
+ social_mentor_aid:context.paidAid===true&&!!patient&&['mentor','disciple'].some(type=>relation(patient,type)),
+ social_junior_aid:context.paidAid===true&&!!patient&&patient.level<e.level,
  using_equipped_skill:!!context.skillId&&c.skills?.includes(context.skillId)===true,
  heal_ally:!!patient&&['comrade','lover','kin','disciple','mentor'].some(type=>relation(patient,type)),
  heal_junior:!!patient&&patient.level<e.level,

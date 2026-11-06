@@ -1,7 +1,7 @@
 import {validateProfile,clone} from './profile.js';
 import {validateSoulSnapshot} from './soul.js';
 const WORLD_FIELDS=['factSequence','version','encounterHistory','enabled','experiments','lastEncounterDay','experimental','encounters','legend','legends','epoch','epochHexagram','epochIndex','revision','nextEncounterId','daoSeeds','wxCEnabled','opportunities'];
-const OPPORTUNITY_COUNTERS=['supplyChecks','generated','stocked','eligible','reachable','willing','started','arrived','success','failure','withdrawn','timeout','claimed','experience','behavior','aid','guard','reciprocity'];
+const OPPORTUNITY_COUNTERS=['supplyChecks','generated','stocked','eligible','reachable','willing','started','arrived','success','failure','withdrawn','timeout','claimed','experience','behavior','aid','guard','reciprocity','candidate','invalidGeography','noRoute','budgetBlocked','qualified','region0','region1','region2','region3'];
 function validateWorld(value) {
  if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(k=>!WORLD_FIELDS.includes(k)))throw Error('invalid-wanxiang-world');
  if(typeof value.enabled!=='boolean')throw Error('invalid-wanxiang-enabled');
@@ -20,6 +20,11 @@ function validateWorld(value) {
  if(value.experiments && (Object.keys(value.experiments).some(k=>!['legend','daoSeeds'].includes(k))||Object.values(value.experiments).some(v=>typeof v!=='boolean')))throw Error('invalid-experiments');
  const id=v=>Number.isSafeInteger(v)&&v>0, finite=v=>Number.isFinite(v)&&v>=0;
  for(const row of value.encounters||[])if(typeof row.id!=='string'||!id(row.siteId)||!['open','claimed','ended','completed','expired','closed'].includes(row.stage)||!finite(row.startDay)||!finite(row.untilDay)||!Array.isArray(row.participants)||row.participants.length>3||row.participants.some(p=>!id(p.actorId)||!['travel','ended','withdrawn','arrived'].includes(p.stage)))throw Error('invalid-encounter');
+ for(const row of value.encounters||[])for(const actor of row.participants) {
+  if(actor.corners!=null&&(!Array.isArray(actor.corners)||actor.corners.length>128
+    ||actor.corners.some(p=>!p||!Number.isInteger(p.x)||!Number.isInteger(p.y)||p.x<0||p.y<0)))throw Error('invalid-encounter-route');
+  if(actor.corner!=null&&(!Number.isSafeInteger(actor.corner)||actor.corner<0||!actor.corners||actor.corner>=Math.max(1,actor.corners.length)))throw Error('invalid-encounter-route');
+ }
  if(value.legend){const l=value.legend;if(!id(l.artifactId)||!id(l.siteId)||!id(l.actorId)||!['bound','travel','choice','seal-work','draw-work','sealed','drawn','failed','left','interrupted'].includes(l.stage)||!finite(l.startDay)||!finite(l.progress)||!finite(l.lastDay))throw Error('invalid-legend');}
  return value;
 }
@@ -36,12 +41,15 @@ export function restoreWanxiang(world,block) {
  if(block==null)return;
  if(block.version!==1||!Array.isArray(block.profiles)||block.profiles.length>100000||Object.keys(block).some(k=>!['version','world','profiles','planeStates'].includes(k)))throw Error('invalid-wanxiang-block');
  const state=clone(validateWorld(block.world)),entities=new Map(population(world).map(x=>[x.key,x.entity])),seen=new Set(),pending=[];
+ const validateRoutes=(w,s)=>{for(const scene of s.encounters||[])for(const actor of scene.participants)if(actor.corners?.some(p=>p.x>=w.w||p.y>=w.h))throw Error('invalid-encounter-route');};
+ validateRoutes(world,state);
  for(const row of block.profiles) {if(!row||!entities.has(row.key)||seen.has(row.key))throw Error('invalid-wanxiang-identity');seen.add(row.key);pending.push([entities.get(row.key),clone(validateProfile(row.profile))]);}
  const planes=block.planeStates;
  if(planes!=null&&(!planes||typeof planes!=='object'||Array.isArray(planes)||Object.keys(planes).some(k=>!['upper','nether'].includes(k)||!world[k])))throw Error('invalid-plane-states');
  const restoredPlanes={};
  for(const name of ['upper','nether'])if(world[name]) {
   const saved=planes?.[name],next=clone(saved?validateWorld(saved):{version:1,enabled:state.enabled});
+  validateRoutes(world[name],next);
   const watermark=block.profiles.filter(r=>r.key.startsWith(name+':')).reduce((max,r)=>Math.max(max,r.profile.experienceLedger?.lastSequence||0),0);
   // V1 saves omitted per-plane clocks; resume above the largest persisted receipt.
   if(saved?.factSequence==null)next.factSequence=Math.max(next.factSequence||0,watermark);

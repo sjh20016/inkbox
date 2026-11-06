@@ -18,7 +18,7 @@ p.bonds=[{id:'gratitude:mortal:2',targetKey:'mortal:2',expiresDay:w.day+360}];as
 e.hp=100;w.sites=[{id:9,kind:'cave',x:20,y:20,inheritanceManual:'test'}];p.traits=[];p.personality=[];stepEncounters(w);assert(w.wanxiang.encounters.some(s=>s.stage==='open'));let calls=0;stepEncounterTravel(w,{},e,1,()=>{calls++;return {ok:true};});stepEncounterTravel(w,{},e,1,()=>{calls++;return {ok:true};});assert.equal(calls,1);assert.equal(opportunitySnapshot(w).counters.arrived,1);assert.equal(opportunitySnapshot(w).counters.success,1);
 console.log('WX-C controlled production entries: annual finite supply, rollback, personality/fear choices, bounded arrivals, dormant gratitude passed');
 import { stepDaoActivities,stepDaoTravel,daoActivityFor } from '../src/inkbox/sim/daoActivities.js';
-import { DAO_BY_KEY } from '../src/inkbox/core/cultivation.js';
+import { DAO_BY_KEY, expToNext } from '../src/inkbox/core/cultivation.js';
 e.dao={path:DAO_BY_KEY.alchemy};e.hp=100;e.x=20;e.y=20;
 p.bonds=[{id:'gratitude:mortal:2',targetKey:'mortal:2',expiresDay:w.day+360}];
 const benefactor={id:2,name:'恩人',hp:30,maxHp:100,level:0,x:24,y:20};
@@ -59,15 +59,20 @@ assert(seeker.wanxiang.history.at(-1).location.plane==='mortal');assert(opportun
 // A real paid aid/guard transaction then survives the same official save.
 scene.day+=90;scene.wanxiang.encounters=[];scene.wanling.jobs=[];scene.wanling.lastPathDay=-1e6;
 doctor.dao={path:DAO_BY_KEY.alchemy};doctor.x=seeker.x;doctor.y=seeker.y;seeker.hp=30;seeker.exp=1;cautious.hp=100;
-initializeProfile(doctor).bonds=[{id:`gratitude:mortal:${seeker.id}`,targetKey:`mortal:${seeker.id}`,expiresDay:scene.day+360}];
+initializeProfile(doctor).bonds=[{id:`gratitude:mortal:${seeker.id}`,targetKey:`mortal:${seeker.id}`,expiresDay:scene.day+1800}];
 assert(stepDaoActivities(scene,life));assert(stepDaoTravel(scene,life,doctor,1));
+// Guard is now a separate paid action, granted only to a real near-gate target.
+scene.day+=720;scene.wanling.lastPathDay=-1e6;seeker.hp=100;seeker.exp=expToNext(seeker.level)*.8;
+assert(stepDaoActivities(scene,life));assert.equal(daoActivityFor(scene,doctor.id).intent,'guard');
+assert(stepDaoTravel(scene,life,doctor,1));assert(seeker.wanxiang.states.some(s=>s.id==='alchemy_guard'));
 for(const counter of ['aid','guard','claimed','reciprocity'])assert(opportunitySnapshot(scene).counters[counter]>0,counter);
 const loaded=deserializeWorld(serializeWorld(scene));assert.deepEqual(loaded.wanxiang.opportunities,scene.wanxiang.opportunities);
 assert.equal(loaded.sites.find(s=>s.id===cave.id).inheritanceClaimedBy,seeker.id);assert.equal(loaded.entities.find(e=>e.id===seeker.id).techniques.length,1);
 // Disabled WX-C uses B's fear health gate and writes no new choices.
-const legacy={day:30,wanxiang:{enabled:true,wxCEnabled:false},sites:[{id:1,kind:'cave',x:1,y:1,inheritanceManual:'test'}],entities:[]};
-const legacyActor={id:1,hp:80,maxHp:100,level:5,x:1,y:1,techniques:[]};initializeProfile(legacyActor).traits=[{id:'risk_fear'}];legacy.entities=[legacyActor];stepEncounters(legacy);assert.equal(legacy.wanxiang.encounters.length,0);assert.equal(legacyActor.wanxiang.history.length,0);
+const legacy=new World(16,16,73102);legacy.day=30;legacy.wanxiang={enabled:true,wxCEnabled:false};legacy.type.fill(5);legacy.height.fill(.5);
+legacy.sites=[{id:1,kind:'cave',x:5,y:5,inheritanceManual:'test'}];
+const legacyActor={id:1,hp:80,maxHp:100,level:5,x:5,y:5,techniques:[]};initializeProfile(legacyActor).traits=[{id:'risk_fear'}];legacy.entities=[legacyActor];stepEncounters(legacy);assert.equal(legacy.wanxiang.encounters.length,0);assert.equal(legacyActor.wanxiang.history.length,0);
 legacyActor.hp=100;legacy.day+=30;stepEncounters(legacy);assert.equal(legacy.wanxiang.encounters.length,1);assert.equal(legacyActor.wanxiang.history.length,0);
 // Animals cannot enter the new cultivator opportunity funnel.
-const animal={...legacyActor,id:2,sp:'beast',wanxiang:undefined};const animals={day:30,wanxiang:{enabled:true},sites:[{id:1,kind:'cave',x:1,y:1,inheritanceManual:'test'}],entities:[animal]};stepEncounters(animals);assert.equal(animals.wanxiang.encounters.length,0);
+const animal={...legacyActor,id:2,sp:'beast',wanxiang:undefined};const animals=new World(16,16,73103);animals.day=30;animals.wanxiang={enabled:true};animals.type.fill(5);animals.height.fill(.5);animals.sites=[{id:1,kind:'cave',x:5,y:5,inheritanceManual:'test'}];animals.entities=[animal];stepEncounters(animals);assert.equal(animals.wanxiang.encounters.length,0);
 console.log('WX-C controlled path E: dispatch divergence, real movement/study/claim, paid aid+guard, official v11 restore, rollback and species gates passed');

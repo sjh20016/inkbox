@@ -11,7 +11,7 @@ function freeze(value) {
   }
   return value;
 }
-const consumedAxes=['cultivation','hp','combat','learning','healing','perception','breakthrough','detect_radius','healing_received','escape','physical_power','spell_cost'];
+const consumedAxes=['cultivation','hp','combat','learning','healing','perception','breakthrough','detect_radius','healing_received','escape','physical_power','spell_cost','aidIntent'];
 const define = (entry, category) => {
  const rows=[{condition:'always',effects:entry.effects??{}},...(entry.conditionalEffects??[])];
  const numeric=rows.some(r=>SUPPORTED_CONDITIONS.includes(r.condition)&&Object.keys(r.effects).some(k=>consumedAxes.includes(k)));
@@ -38,7 +38,10 @@ export const BLOOD_GRADES = freeze(design.bloodGrades.map((name,index) => ({id:`
 export const HEXAGRAMS = freeze(design.hexagrams.map(entry => {
   const axis = entry.effect.axis === 'maxHp' ? 'hp' : entry.effect.axis;
   const effects = {[axis]:entry.effect.value};
-  return define({...entry,effects:entry.effect.condition==='always'?effects:{},conditionalEffects:entry.effect.condition==='always'?[]:[{condition:entry.effect.condition,effects}],consumerAxis:entry.effect.axis},'hexagram');
+  const social={hex_07:'social_sect_aid',hex_13:'social_mentor_aid',hex_19:'social_junior_aid'}[entry.id];
+  const conditionalEffects=entry.effect.condition==='always'?[]:[{condition:entry.effect.condition,effects}];
+  if(social)conditionalEffects.push({condition:social,effects:{aidIntent:.12}});
+  return define({...entry,effects:entry.effect.condition==='always'?effects:{},conditionalEffects,consumerAxis:entry.effect.axis},'hexagram');
 }));
 export const EXPERIENCE_TRAITS = freeze(experienceTraits.map(entry => ({...define(entry,entry.category),...(entry.category==='special'?{editable:false,reason:'必须由真实原剑或锚点经历授予'}:{})})));
 export const DAO_SEEDS = freeze(daoSeeds.map(entry => define(entry,'daoSeed')));

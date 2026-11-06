@@ -31,5 +31,19 @@ export function aidPreference(world,e,target) {
  const active=world.wanxiang?.enabled===true&&world.wanxiang.wxCEnabled!==false;
  const gratitude=active&&(e.wanxiang?.bonds||[]).some(b=>!b.dormant&&b.id.startsWith('gratitude:')&&b.targetKey===`${world.plane||'mortal'}:${target.id}`&&b.expiresDay>world.day);
  const romantic=active&&(e.wanxiang?.personality||[]).some(t=>t.id==='personality_romantic')&&e.relations?.get?.(target.id)?.type==='lover';
- return {weight:1+(gratitude?.25:0)+(romantic?.2:0),gratitude,romantic};
+ const sectAid=active&&!!e.faction&&e.faction===target.faction&&e.id!==target.id&&
+   (world.factions||[]).some(s=>s.id===e.faction&&s.resources?.spiritStone>=.2);
+ return {weight:1+(gratitude?.25:0)+(romantic?.2:0)+(sectAid?.15:0),gratitude,romantic,sectAid};
+}
+
+/** A live debt belongs to this incarnation and plane, never to a namesake. */
+export function liveSocialTie(world, actor, target) {
+ if(!actor?.wanxiang||!target||actor.id===target.id||actor.hp<=0||target.hp<=0||world.wanxiang?.enabled!==true||world.wanxiang.wxCEnabled===false)return null;
+ const key=`${world.plane||'mortal'}:${target.id}`;
+ const bond=(actor.wanxiang.bonds||[]).find(b=>b.id===`gratitude:${key}`&&b.targetKey===key&&!b.dormant&&(b.expiresDay==null||b.expiresDay>world.day));
+ if(bond)return {kind:'gratitude',reason:'昔日受恩，回助恩人'};
+ const relation=actor.relations?.get?.(target.id);
+ if(relation?.type==='disciple')return {kind:'mentor',reason:'师尊护持弟子'};
+ if(relation?.type==='mentor')return {kind:'disciple',reason:'弟子回助师尊'};
+ return null;
 }
