@@ -1,5 +1,7 @@
 # 坐天观井 · Inkbox 1.0.0
 
+本候选叠加 **WX-S1 · 命途拾章 Alpha**：人物「展开命簿 → 经历 → 因果拾章 · 读取 / 刷新」，地点或原物检视中的「因果拾章 · 旧闻」，可查看四类有来源的短篇摘录、节点和正式回执。读取与关注不改变模拟；缺少本世身份或后续来源时保留失考。候选尚未合入 main，玩法与验证范围见 [WX-S1 交付](./docs/development/WX_S1_DELIVERY.md)。
+
 本候选已扩展至 **WX-D · 因缘成局**：机缘供给验证真实可执行陆路，耗尽洞府沉寂留史；恩义、师承与同宗照护进入有代价的疗伤和护关，三卦影响实际帮助目标。沿用 Alpha 开关与五页命簿，候选依赖 WX-C #61，保持 Draft；实际机制与验收边界见 [WX-D 交付](./docs/development/WX_D_DELIVERY.md)。
 
 本分支提供隔离的**万象塑命 V0.2 Alpha**：启动开发服务后访问 `inkbox.html?wanxiang=1`，正式创世、选择人物、展开命簿，可在五页中查看人物并经草稿→预览→提交改命；Three 入口加 `renderer=3d`。封剑传奇及借页道种需额外 `wxExperiments=1`，默认关闭。该候选尚未合入 main，部分特殊机制仍仅有定义；请先看 [可玩范围、验证与回退](./docs/development/WANXIANG_SUMING_V02_DELIVERY.md) 和 [逐项覆盖矩阵](./docs/development/WANXIANG_SUMING_V02_ALPHA_MATRIX.md)。
