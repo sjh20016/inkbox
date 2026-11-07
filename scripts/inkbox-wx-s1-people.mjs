@@ -30,7 +30,7 @@ w.entities[0].possessedBy={day:40};
 assert.equal(read(w,ref).cards[0].status,'resolved','later possession does not revoke a completed earlier return');
 w.entities[0].possessedBy={day:20};
 assert.equal(read(w,ref).cards[0].outcome,'target-identity-unproven','helping an original helper body after possession cannot prove personal reciprocity');
-assert.equal(read(w,ref).cards[0].related[0].label,'mortal:1','unproven historical identity does not borrow a current name');
+assert.equal(read(w,ref).cards[0].related[0].label,'旧日施助者（本世身份未可考）','unproven historical identity does not borrow a current name');
 delete w.entities[0].possessedBy;
 patient.wanxiang.history.at(-1).cost.amount=0;assert.equal(read(w,ref).cards[0].status,'watching');
 patient.wanxiang.history.at(-1).cost.amount=1;patient.wanxiang.history.at(-1).targetKey='mortal:3';assert.equal(read(w,ref).cards[0].status,'watching');

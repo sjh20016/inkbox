@@ -131,6 +131,9 @@ jobs:
       - name: WX-S1 真实拾章、身份、观察纯度与有界展示
         run: npm run test:wanxiang:s1
 
+      - name: WX-S1.1 尾声、最新付费回助与证据措辞
+        run: npm run test:wanxiang:s11
+
       - name: W0.1 真实物种、山林生态、道途活动与存档
         run: npm run test:w01
       - name: T0 地理通达、真实行程、货物守恒与存档

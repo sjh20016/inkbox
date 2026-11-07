@@ -144,9 +144,11 @@
 .ink-story-card ol{padding-left:22px}.ink-story-card li{margin:6px 0}
 .ink-story-card__reason{color:#716455}.ink-story-card__links{display:flex;flex-wrap:wrap;gap:6px}
 .ink-story-card button{max-width:100%;min-height:40px;white-space:normal;overflow-wrap:anywhere;border:1px solid #c4b79c;background:#faf7ee;color:#292e2a;padding:6px 10px;cursor:pointer}
-.ink-story-card button:disabled{opacity:.55;cursor:default}.ink-story-card button:focus-visible,.ink-story-card summary:focus-visible{outline:2px solid #537d73;outline-offset:2px}
+.ink-story-card button:disabled{opacity:1;color:#716455;background:#eee8db;border-style:dashed;cursor:default}.ink-story-card button:focus-visible,.ink-story-card summary:focus-visible{outline:2px solid #537d73;outline-offset:2px}
 .ink-story-card details{margin-top:10px;font-size:12px}.ink-story-card summary{cursor:pointer;color:#8d483c;min-height:32px}
 .ink-story-card code,.ink-story-card details span{display:block;overflow-wrap:anywhere;white-space:normal}
+.ink-story-card__folded{font-size:12px;color:#716455}
+.ink-story-card__links small{flex-basis:100%;color:#716455;line-height:1.5}
 .g1-mingpu__stories{margin:16px 0}.g1-mingpu__stories>p{font-size:12px;color:#77766b}
 .g1-mingpu { position:fixed;z-index:90;left:50%;top:50%;transform:translate(-50%,-50%);width:min(960px,94vw);max-height:92dvh;display:flex;flex-direction:column;background:#f3eedf;color:#292e2a;border:1px solid #b7ab93;border-radius:8px;box-shadow:0 18px 60px #191d1760;font:15px/1.6 "Noto Serif SC","Songti SC",serif;overflow:hidden;box-sizing:border-box; }
 .g1-mingpu[hidden],.g1-mingpu [hidden]{display:none!important}

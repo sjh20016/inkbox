@@ -167,6 +167,8 @@
     "profile:wanxiang:d:perf": "node scripts/inkbox-wx-d-perf.mjs",
     "test:wanxiang:d:browser": "node scripts/inkbox-wx-d-browser.mjs",
     "test:wanxiang:s1": "node scripts/inkbox-wx-s1-people.mjs && node scripts/inkbox-wx-s1-world.mjs && node scripts/inkbox-wx-s1-integration.mjs && node scripts/inkbox-wx-s1-ui.mjs",
+    "test:wanxiang:s11": "node scripts/inkbox-wx-s11-proofreading.mjs",
+    "test:wanxiang:s11:browser": "node scripts/inkbox-wx-s1-browser.mjs --proofreading",
     "test:wanxiang:s1:browser": "node scripts/inkbox-wx-s1-browser.mjs",
     "profile:wanxiang:s1": "node scripts/inkbox-wx-s1-profile.mjs",
     "profile:wanxiang:s1:perf": "node --expose-gc scripts/inkbox-wx-s1-perf.mjs"
