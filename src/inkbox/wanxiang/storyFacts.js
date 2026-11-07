@@ -9,6 +9,47 @@ const text = value => String(value ?? '').slice(0, 480);
 const positive = n => Number.isSafeInteger(n) && n > 0;
 export const personIdentitySince = entity => validStoryDay(entity?.possessedBy?.day) ? entity.possessedBy.day : null;
 
+// sourceOrder is a read-side position in an official ordered history, never a
+// fabricated cross-source timestamp. Keys break ties without implying causality.
+export const compareStoryEvidence = (a,b) => a.day-b.day
+  || String(a.source || '').localeCompare(String(b.source || ''),'en')
+  || (a.sourceOrder ?? Infinity)-(b.sourceOrder ?? Infinity)
+  || a.key.localeCompare(b.key,'en');
+const decisiveTypes = new Set(['site-success','site-failure','risk-resolved',
+  'paid-reciprocity','recovered','abandoned','gained','inherited','found','lost']);
+const crisisTypes = new Set(['site-failure','disaster','abandoned','lost']);
+const decisive = row => ['A','B'].includes(row.grade) && decisiveTypes.has(row.type);
+function selectRows(rows, limit, originKey = rows[0]?.key) {
+  if (rows.length <= limit) return rows;
+  if (limit === 1) return rows.slice(-1);
+  if (limit === 2) return rows.filter(row=>row.key===originKey || row===rows.at(-1));
+  const keep = new Set([originKey, rows.at(-1)?.key,
+    rows.findLast(decisive)?.key].filter(Boolean));
+  if (limit > 3) {
+    const firstCrisis = rows.find(row=>['A','B'].includes(row.grade) && crisisTypes.has(row.type));
+    if (firstCrisis) keep.add(firstCrisis.key);
+  }
+  for (let i=rows.length-1; i>=0 && keep.size<limit; i--) keep.add(rows[i].key);
+  return rows.filter(row=>keep.has(row.key));
+}
+
+/** Only retained, matching evidence may appear as a node. No World access. */
+export function selectVisibleStoryNodes(card, limit = 12) {
+  const budget = Math.max(1,Math.min(12,Number.isFinite(limit)?Math.floor(limit):12));
+  const proofs = new Map((card?.evidence || []).slice(0,STORY_LIMITS.evidence).map(e=>[e.key,e]));
+  const unique = new Map();
+  for (const node of (card?.nodes || []).slice(0,STORY_LIMITS.evidence)) {
+    const proof = proofs.get(node.evidenceKey);
+    if (!proof || !validStoryDay(node.day) || node.day !== proof.day || unique.has(proof.key)) continue;
+    unique.set(proof.key,{...proof,node});
+  }
+  const rows = [...unique.values()].sort(compareStoryEvidence);
+  const selected = selectRows(rows,budget);
+  const sameDayOrderUnproven = selected.some((row,i)=>selected.some((other,j)=>j<i && row.day===other.day
+    && (row.source!==other.source || !Number.isInteger(row.sourceOrder) || !Number.isInteger(other.sourceOrder))));
+  return {nodes:selected.map(row=>row.node),foldedCount:rows.length-selected.length,sameDayOrderUnproven};
+}
+
 export function personRef(plane, entity) {
   if (!entity || !characterKey(plane, entity.id)) return null;
   return { kind: 'person', plane, id: entity.id,
@@ -55,13 +96,15 @@ export function evidence(source, key, day, type, description, grade = 'B', detai
 export function createStory(templateId, subjectRef, origin, fields = {}) {
   const identity = storyRefKey(subjectRef);
   if (!identity || !origin || !['A','B'].includes(origin.grade)) return null;
-  const sources = [...new Map([origin, ...(fields.evidence || [])].filter(Boolean)
+  const sources = selectRows([...new Map([origin, ...(fields.evidence || [])].filter(Boolean)
     .filter(e => validStoryDay(e.day) && typeof e.key === 'string')
-    .map(e => [e.key, e])).values()].sort((a,b) => a.day-b.day || a.key.localeCompare(b.key)).slice(0, STORY_LIMITS.evidence);
+    .map(e => [e.key, e])).values()].sort(compareStoryEvidence),STORY_LIMITS.evidence,origin.key);
   const keys = new Set(sources.map(e => e.key));
   const nodes = (fields.nodes || sources.map(e => ({day:e.day,text:e.text,evidenceKey:e.key})))
-    .filter(n => keys.has(n.evidenceKey) && validStoryDay(n.day))
-    .sort((a,b) => a.day-b.day || a.evidenceKey.localeCompare(b.evidenceKey)).slice(0, STORY_LIMITS.evidence);
+    .filter(n => keys.has(n.evidenceKey) && validStoryDay(n.day));
+  const proofByKey = new Map(sources.map(e=>[e.key,e]));
+  const retainedNodes = [...new Map(nodes.filter(n=>n.day===proofByKey.get(n.evidenceKey).day)
+    .map(n=>[n.evidenceKey,n])).values()].sort((a,b)=>compareStoryEvidence(proofByKey.get(a.evidenceKey),proofByKey.get(b.evidenceKey)));
   return { key: `${templateId}:${identity}:${encodeURIComponent(origin.key)}`,
     templateId, subjectRef: { ...subjectRef }, title: text(fields.title || templateId),
     mode: fields.mode === 'watch_hook' ? 'watch_hook' : 'retelling',
@@ -70,7 +113,7 @@ export function createStory(templateId, subjectRef, origin, fields = {}) {
     originDay: origin.day, lastEvidenceDay: Math.max(origin.day, ...sources.map(e => e.day)),
     actorRef: fields.actorRef || (subjectRef.kind === 'person' ? { ...subjectRef } : null),
     related: (fields.related || []).filter(Boolean).slice(0, STORY_LIMITS.related),
-    evidence: sources, nodes, importance: Number.isFinite(fields.importance) ? fields.importance : 0,
+    evidence: sources, nodes:retainedNodes, importance: Number.isFinite(fields.importance) ? fields.importance : 0,
     relevance: Number.isFinite(fields.relevance) ? fields.relevance : 0,
     presentationVersion: 1 };
 }

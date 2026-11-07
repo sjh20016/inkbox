@@ -24,7 +24,7 @@ function resolvedTarget(world,key) {
   const parsed=parseCharacterKey(key);if(!parsed)return null;
   const found=resolveCharacter(world,key);
   return {...parsed,kind:'person',incarnation:null,
-    label:key,available:false,identityChangedDay:personIdentitySince(found.entity),
+    label:'旧日施助者（本世身份未可考）',available:false,identityChangedDay:personIdentitySince(found.entity),
     status:found.status,reason:found.status==='alive'?'历史未保留对方本世身份，不能授权定位':found.status==='dead'?'已离世':found.status==='ascended'?'已飞升':'身份去向未能续考'};
 }
 function terminal(story,status,siteGone=false) {
@@ -97,15 +97,17 @@ export function personStoryCandidates(world,actorRef) {
   for(const group of [...helpers.values()].slice(0,24)) {
     const origin=group[0];
     const target=resolvedTarget(world,origin.helperKey);if(!target||origin.helperKey===key)continue;
-    const initial=proof(origin.source,origin.key,origin.day,'healed',`正式记录：受到 ${origin.helperKey} 的治疗${origin.bondProven?'，正式留有结恩记录':'；不据治疗本身推定结恩'}`);
+    const initial={...proof(origin.source,origin.key,origin.day,'healed',`当年受助：旧日施助者给予治疗${origin.bondProven?'，正式留有结恩记录':'；不据治疗本身推定结恩'}`),identityKey:origin.helperKey};
     const story=card('grateful-return',ref,initial,{summary:'曾受援手；关系尚存只能说明有恩，回助须有真实支付与事务回执。',related:[target]});
-    for(const additional of group.slice(1,5))append(story,proof(additional.source,additional.key,additional.day,'healed',`后续正式治疗记录：${additional.helperKey}${additional.bondProven?'，正式留有结恩记录':'；未推定新增恩义'}`));
+    for(const additional of group.slice(1,5))append(story,{...proof(additional.source,additional.key,additional.day,'healed',`后来又获旧日施助者治疗${additional.bondProven?'，正式留有结恩记录':'；未推定新增恩义'}`),identityKey:additional.helperKey});
     const targetChanged=target.identityChangedDay!=null&&origin.day<=target.identityChangedDay;
-    const returns=history.filter(h=>h.kind==='natural-choice'&&h.status==='committed'&&h.type==='报偿恩义'&&h.targetKey===origin.helperKey&&h.day>origin.day&&(!targetChanged||h.day<target.identityChangedDay)&&h.cost&&['actor-hp','sect-spirit-stone'].includes(h.cost.kind)&&Number.isFinite(h.cost.amount)&&h.cost.amount>0&&typeof h.result==='string');
+    const returns=[...new Map(history.filter(h=>h.kind==='natural-choice'&&h.status==='committed'&&h.type==='报偿恩义'&&h.targetKey===origin.helperKey&&h.day>origin.day&&(!targetChanged||h.day<target.identityChangedDay)&&h.cost&&['actor-hp','sect-spirit-stone'].includes(h.cost.kind)&&Number.isFinite(h.cost.amount)&&h.cost.amount>0&&typeof h.result==='string'&&h.result.trim())
+      .map(h=>{const row=proof('wanxiang-history',`repayment:${key}:${h.day}:${h.targetKey}:${stable(h.cost)}:${h.result}`,h.day,'paid-reciprocity',`${h.result}；付出${h.cost.kind==='actor-hp'?'气血':'宗门灵石'} ${h.cost.amount}`,'A');return [row.key,row];})).values()].sort(order);
     // The official post-commit receipt is itself sufficient; its text is quoted,
     // never parsed into an invented healing / breakthrough completion.
-    for(const h of returns.slice(0,4))append(story,proof('wanxiang-history',`repayment:${key}:${h.day}:${h.targetKey}:${stable(h.cost)}:${h.result}`,h.day,'paid-reciprocity',`实际回助：${h.result}；付出${h.cost.kind==='actor-hp'?'气血':'宗门灵石'} ${h.cost.amount}`,'A'));
-    if(returns.length){story.mode='retelling';story.status='resolved';story.outcome='paid-reciprocity';story.reason='正式完成后的有代价回助回执；护关不等于目标突破成功';}
+    const selectedReturns=returns.length>4?[returns[0],...returns.slice(-3)]:returns;
+    for(const row of selectedReturns)append(story,{...row,text:`${row===returns[0]?'首次有证回助':'后来仍有回助'}：${row.text}`});
+    if(returns.length){story.mode='retelling';story.status='resolved';story.outcome='paid-reciprocity';story.reason=`正式完成后的有代价回助回执；护关不等于目标突破成功。${returns.length>4?`当前保留来源中至少有 ${returns.length} 次正式回助；此处展示首次和最近三次。`:''}当时受助与已经完成的回助仍有记录；旧施助者本世身份不足以授权当前定位。`;}
     terminal(story,r.status);
     if(story.status!=='resolved'&&target.status!=='alive'){story.status='interrupted';story.reason=`恩人${target.reason||'去向未能续考'}；未据关系延续推定报偿`;}
     if(targetChanged&&!returns.length){story.status='interrupted';story.reason='对方身体已有换主记录；旧来源未保存其本世身份，不能把后来对同一身体的帮助认作报答原施助者';story.outcome='target-identity-unproven';}

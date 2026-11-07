@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {performance} from 'node:perf_hooks';
+import {pathToFileURL} from 'node:url';
 import {deserializeWorld,serializeWorld} from '../src/inkbox/io/save.js';
 import {Life} from '../src/inkbox/sim/life.js';
 import {rngStream} from '../src/inkbox/core/noise.js';
@@ -18,10 +19,13 @@ const option=(name,fallback)=>process.argv.find(a=>a.startsWith(`--${name}=`))?.
 const dir=path.resolve(option('data','reports/local/wx-s1/natural'));
 const out=path.resolve(option('out','reports/local/wx-s1/perf'));fs.mkdirSync(out,{recursive:true});
 const years=option('years','100,400').split(',').map(Number);
+const baselineRoot=option('baseline','');
+const baselineRead=baselineRoot ? (await import(pathToFileURL(path.resolve(baselineRoot,'src/inkbox/wanxiang/storyReading.js')).href)).readPersonStories : null;
 const sha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 const sourceFiles=['wanxiang/storyFacts.js','wanxiang/storyPeople.js','wanxiang/storyWorld.js','wanxiang/storySelection.js','wanxiang/storyReading.js','sim/life.js','sim/advance.js'];
 const digest=value=>createHash('sha256').update(typeof value==='string'?value:JSON.stringify(value)).digest('hex');
 const sourceHashes=Object.fromEntries(sourceFiles.map(f=>[f,digest(fs.readFileSync(`src/inkbox/${f}`,'utf8'))]));
+const baselineSourceHashes=baselineRoot?Object.fromEntries(sourceFiles.map(f=>[f,digest(fs.readFileSync(path.resolve(baselineRoot,'src/inkbox',f),'utf8'))])):null;
 function restore(saved) {
   // Native restore retains some cold-history arrays by reference. Each trial
   // must own its input, exactly as the existing WX-D mature replay harness.
@@ -37,7 +41,7 @@ const worlds=[];
 for(const year of years) {
   const filename=path.join(dir,`20260914-${year}y-save.json`);
   if(!fs.existsSync(filename))throw Error(`Missing actual mature checkpoint: ${filename}`);
-  const saved=JSON.parse(fs.readFileSync(filename,'utf8')),c=restore(saved);
+  const saved=JSON.parse(fs.readFileSync(filename,'utf8')),inputDigest=digest(saved),c=restore(saved);
   const actor=c.world.entities.filter(e=>e.hp>0&&e.wanxiang).sort((a,b)=>(b.wanxiang.history?.length||0)-(a.wanxiang.history?.length||0)||a.id-b.id)[0];
   assert(actor,'mature checkpoint has a real Profile actor');const ref=personRef('mortal',actor);
   // Warm imports and projection without advancing or changing official state.
@@ -48,6 +52,15 @@ for(const year of years) {
   queries.length=0;global.gc?.();const heapAfter=process.memoryUsage().heapUsed;
   const after=JSON.stringify(save(c));assert.equal(after,before,'100 person queries preserve complete world/resources/Profile/runtime RNG');
   const projected=readWorldStories(c.world);assert.equal(JSON.stringify(save(c)),before,'world research query is also pure');
+  const pairedQueries=[];
+  if(baselineRead)for(const implementation of ['baseline','current','current','baseline']) {
+    const trial=restore(saved),read=implementation==='baseline'?baselineRead:readPersonStories;
+    for(let i=0;i<20;i++)read(trial.world,ref);
+    const trialBefore=JSON.stringify(save(trial)),times=[];
+    for(let i=0;i<100;i++){const t=performance.now();read(trial.world,ref);times.push(performance.now()-t);}
+    assert.equal(JSON.stringify(save(trial)),trialBefore,'paired baseline/current reads preserve complete world and RNG');
+    pairedQueries.push({implementation,count:100,medianMs:percentile(times,.5),p95Ms:percentile(times,.95),maxMs:Math.max(...times)});
+  }
   const runs=[];
   // Each run starts from the same restored checkpoint. A performs no reads;
   // B reads one real person's book after each native 3-day advance.
@@ -61,21 +74,25 @@ for(const year of years) {
       if(observe){const q=performance.now();readPersonStories(trial.world,ref);readMs+=performance.now()-q;queryCount++;}
     }
     const wallMs=performance.now()-t,complete=save(trial);
-    runs.push({observe,wallMs,lifeMs,lifeCalls,readMs,queryCount,worldAndRngSha256:digest(complete),runtimeSha256:digest(complete.runtime)});
+    const rt=complete.runtime;
+    const rngStates={life:rt.life?.rng,war:rt.life?.warRng,upper:rt.upperLife,player:rt.player,registered:rt.streams};
+    runs.push({observe,wallMs,lifeMs,lifeCalls,readMs,queryCount,worldAndRngSha256:digest(complete),runtimeSha256:digest(rt),rngStates});
   }
   assert.equal(new Set(runs.map(r=>r.worldAndRngSha256)).size,1,'same native script on/off leaves bitwise-identical facts and RNG');
+  assert.equal(new Set(runs.map(r=>r.runtimeSha256)).size,1,'all registered RNG streams and runtime clocks match');
+  assert.equal(digest(saved),inputDigest,'queries and independently restored trials cannot mutate the reusable checkpoint');
   const mean=(mode,field)=>runs.filter(r=>r.observe===mode).reduce((n,r)=>n+r[field],0)/2;
   worlds.push({year,day:c.world.day,checkpoint:filename,checkpointSha256:digest(fs.readFileSync(filename,'utf8')),
     actor:{id:actor.id,name:actor.name,incarnation:actor.incarnation??1},population:c.world.entities.length,
     sourceSaveBytes:Buffer.byteLength(JSON.stringify(saved)),storySaveNetBytes:Buffer.byteLength(after)-Buffer.byteLength(before),
     query:{count:100,medianMs:percentile(latencies,.5),p95Ms:percentile(latencies,.95),maxMs:Math.max(...latencies),heapRetainedDeltaBytes:heapAfter-heapBefore,gc:typeof global.gc==='function'},
-    selection:projected.stats,readsPreserveFullSnapshot:before===after,runs,
+    selection:projected.stats,readsPreserveFullSnapshot:before===after,inputPreserved:digest(saved)===inputDigest,pairedQueries,runs,
     means:{unobservedLifeMs:mean(false,'lifeMs'),observedLifeMs:mean(true,'lifeMs'),lifeRelativePercent:(mean(true,'lifeMs')/mean(false,'lifeMs')-1)*100,explicitReadMs:mean(true,'readMs')},
     hotPath:{storyChecksPerNativeStep:0,storyCandidatesPerNativeStep:0,storySelectionsPerNativeStep:0,storyCallsPerRenderFrame:0,addedEventHandlerMs:0,addedEventAllocations:0},
     note:'Life timing jitter is not causally attributable to stories: story queries run after Life. No story event handlers or render hooks exist. Heap delta is retained heap after GC, not a precise allocation count.'});
   console.log(`${year}y: person P95 ${worlds.at(-1).query.p95Ms.toFixed(3)} ms; all four world/RNG hashes identical`);
 }
 const report={sha,dirty:!!execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim(),node:process.version,cpu:os.cpus()[0]?.model,
-  generatedAt:new Date().toISOString(),sourceHashes,method:'Identical true mature checkpoint; warmed 100 explicit single-person queries; four independently restored 30-day native runs in ABBA order; full serialized world plus captureRuntimeState hash.',worlds};
+  generatedAt:new Date().toISOString(),sourceHashes,baselineRoot,baselineSourceHashes,method:'Identical true mature checkpoint; warmed 100 explicit single-person queries; optional baseline/current ABBA queries each on an independent restore; four independently restored 30-day native runs in ABBA order; full serialized world plus captureRuntimeState hash.',worlds};
 fs.writeFileSync(path.join(out,'acceptance.json'),JSON.stringify(report,null,2));
 console.log(`WX-S1 performance/save evidence written to ${out}`);

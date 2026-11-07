@@ -4,11 +4,13 @@ import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {launch,findEdge,sleep} from './cdp.mjs';
 import {launchOwnedServer} from './inkbox-owned-server.mjs';
-const out=process.env.INKBOX_REPORT_DIR||'reports/local/wx-s1/browser';fs.mkdirSync(out,{recursive:true});
+const proofreading=process.argv.includes('--proofreading');
+const out=process.env.INKBOX_REPORT_DIR||(proofreading?'reports/local/wx-s11/browser':'reports/local/wx-s1/browser');fs.mkdirSync(out,{recursive:true});
 const matureRelative='reports/local/wx-s1/natural/20260914-100y-save.json';
 const matureUrl='/'+matureRelative;
-const report={pass:false,checks:[],viewportRuns:[],backend:'isolated repository Edge/CDP; Tabbit stable launcher missing (invalid installation)',scope:'software WebGL function QA, not GPU performance',source:{head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),dirty:execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim()}};
+const report={pass:false,checks:[],viewportRuns:[],backend:'Browser plugin not available; Tabbit stable launcher missing; explicitly requested repository Edge/CDP workflow',scope:'software WebGL function QA, not GPU performance',source:{head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),dirty:execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim()}};
 report.source.scriptSha256=createHash('sha256').update(fs.readFileSync(new URL(import.meta.url))).digest('hex');
+report.source.hashes=Object.fromEntries(['src/inkbox/wanxiang/storyFacts.js','src/inkbox/wanxiang/storyPeople.js','src/inkbox/wanxiang/storyWorld.js','src/inkbox/ui/storyCardsView.js','src/inkbox/ui/g1/presentation/characterCard.css',matureRelative].map(file=>[file,createHash('sha256').update(fs.readFileSync(file)).digest('hex')]));
 let b,server;
 const page=code=>b.js(`return (async()=>{${code}})();`,{timeoutMs:90000});
 const check=(name,pass,evidence)=>{report.checks.push({name,pass,evidence});if(!pass)throw Error(name);};
@@ -22,6 +24,8 @@ try{
   b=await launch({browser:findEdge(),url:server.url+'/inkbox.html'+(renderer==='3d'?'?renderer=3d':''),width,height,gpu:false});
   await b.waitFor('return !!window.inkbox?.creationMenu',{timeoutMs:45000});
   const run={label,browser:b.meta};report.viewportRuns.push(run);
+  const identity=await page(`return {url:location.href,title:document.title,content:document.body.innerText.length};`);
+  check(label+' page identity and nonblank',identity.url.includes('/inkbox.html')&&identity.title.length>0&&identity.content>20,identity);
   await click('[data-action="open-create"]');
   await page(`const form=document.querySelector('.g2-creation');form.querySelector('input[aria-label="世界种子"]').value='20260914';form.querySelector('select').value='small';return true;`);
   await click('.g2-creation__page:not([hidden]) button[type="submit"]');await sleep(800);await page(`inkbox.setSpeed(0);return true;`);
@@ -39,7 +43,12 @@ try{
   check(label+' natural source found',!!targets.actor,targets);run.targets=targets;
   const first=await readPerson(targets.actor.id);check(label+' readable cards',first.keys.length>0&&first.text.includes('核对事实来源'),first);check(label+' horizontal fit',first.width<=first.viewport,first);
   check(label+' natural multi-year paid return',targets.actor.id===40&&['23229','23478','25548','142.6'].every(text=>first.text.includes(text)),{actor:targets.actor.id,sourceDays:[23229,23478,25548]});
-  await click('.g1-mingpu__stories details summary');
+  if(proofreading){
+   const reading=await page(`const {readPersonStories}=await import('./src/inkbox/wanxiang/storyReading.js');const c=readPersonStories(inkbox.world,'mortal:40').cards.find(c=>c.templateId==='grateful-return'&&c.originDay===23229);const main=[...document.querySelectorAll('.g1-mingpu__stories .ink-story-card')].find(e=>e.dataset.storyKey===c.key);main.dataset.s11ProofTarget='1';const body=[...main.children].filter(e=>e.tagName!=='DETAILS').map(e=>e.innerText).join(' ');const paid=c.evidence.filter(e=>e.type==='paid-reciprocity');return {body,keys:[...main.querySelectorAll('li')].map(e=>e.dataset.evidenceKey),latest:paid.at(-1),disabled:[...main.querySelectorAll('button')].every(e=>e.disabled)};`);
+   check(label+' latest natural paid evidence and historical title',reading.latest.day===25965&&reading.keys.includes(reading.latest.key)&&reading.body.includes('旧日施助者')&&!/mortal:\\d|\\{"amount"/.test(reading.body)&&reading.disabled,reading);
+  }
+  await click(proofreading?'.g1-mingpu__stories [data-s11-proof-target="1"] details summary':'.g1-mingpu__stories details summary');
+  if(proofreading){const layout=await page(`const p=document.querySelector('.g1-mingpu__stories [data-s11-proof-target="1"]');return {fit:p.scrollWidth<=p.clientWidth,keys:[...p.querySelectorAll('code')].map(e=>e.innerText),summaryReachable:p.querySelector('summary').tabIndex===0};`);check(label+' expanded evidence wraps and retains keys',layout.fit&&layout.summaryReachable&&layout.keys.includes('mortal:201'),layout);}
   await page(`const card=[...document.querySelectorAll('.g1-mingpu__stories [data-story-key]')].find(e=>e.innerText.includes('23229'));card?.scrollIntoView({block:'start'});return !!card;`);
   await b.screenshot(path.join(out,label+'-natural-story.png'));
   const purity=await page(`const {serializeWorld}=await import('./src/inkbox/io/save.js');const {readPersonStories,resolveStoryRef}=await import('./src/inkbox/wanxiang/storyReading.js');const before=JSON.stringify(serializeWorld(inkbox.world));const profiles=JSON.stringify(inkbox.world.entities.map(e=>e.wanxiang));for(let i=0;i<100;i++)readPersonStories(inkbox.world,'mortal:'+${targets.actor.id});const missing=resolveStoryRef(inkbox.world,{kind:'person',plane:'mortal',id:999999999,incarnation:1});return {worldUnchanged:before===JSON.stringify(serializeWorld(inkbox.world)),profilesUnchanged:profiles===JSON.stringify(inkbox.world.entities.map(e=>e.wanxiang)),missingUnavailable:!missing.available};`);check(label+' 100 read purity and missing identity',Object.values(purity).every(Boolean),purity);
@@ -50,6 +59,23 @@ try{
   await page(`document.querySelector('#inkSlotSelect').value='slot3';inkbox.refreshSlots();return true;`);await click('#inkBtnSave');await sleep(900);await click('#inkBtnLoad');await sleep(900);await page(`inkbox.setSpeed(0);return true;`);
   const revisited=await readPerson(targets.actor.id);check(label+' save/load story identity',JSON.stringify(first.keys)===JSON.stringify(revisited.keys)&&first.text===revisited.text,{before:first,after:revisited});await closePerson();
   for(const object of targets.objects){const ref=object.ref;const picked=ref.kind==='artifact'?{kind:'artifact',artifactId:ref.id}:ref.kind==='settlement'?{kind:'settlement',settlementId:ref.id}:null;if(!picked)continue;await page(`inkbox.inspectPlaneSubject('mortal',${JSON.stringify(picked)});return true;`);await clickText('因果拾章 · 旧闻');const evidence=await page(`return {keys:[...document.querySelectorAll('#inkInspect [data-story-key]')].map(e=>e.dataset.storyKey),text:document.querySelector('#inkInspect').innerText};`);check(label+' natural '+ref.kind+' old news',evidence.keys.length>0,evidence);const hud=await page(`const before=document.querySelector('#inkInspect .ink-story-reader')?.innerText;inkbox.updateHud();return {before,after:document.querySelector('#inkInspect .ink-story-reader')?.innerText};`);check(label+' '+ref.kind+' reader survives HUD',hud.before===hud.after,hud);await b.screenshot(path.join(out,label+'-'+ref.kind+'-old-news.png'));await click('#inkInspectClose');}
+  if(proofreading){
+   // Clearly separate from the natural save above: a temporary 16-row fixture
+   // goes through the actual settlement inspector, then its history is restored.
+   const fixture=await page(`const v=inkbox.world.villages.find(v=>v.hp>0);if(!v)throw Error('No settlement fixture target');window.__s11Fixture={v,history:v.history};v.history=Array.from({length:16},(_,i)=>({day:inkbox.world.day-16+i,settlementId:v.id,type:i===15?'recovered':'disaster',text:i===15?'受控尾声：正式恢复（非自然样本）':'受控灾损：中文长文本，仅验证已有记录的选择与换行。'.repeat(3),factionId:0}));inkbox.inspectPlaneSubject('mortal',{kind:'settlement',settlementId:v.id});return {controlled:true,id:v.id,originDay:v.history[0].day,endDay:v.history.at(-1).day};`);
+   await clickText('因果拾章 · 旧闻');
+   const tail=await page(`const {readObjectStories}=await import('./src/inkbox/wanxiang/storyReading.js');const card=readObjectStories(inkbox.world,{kind:'settlement',plane:'mortal',id:${fixture.id}}).cards[0];const p=document.querySelector('#inkInspect .ink-story-card');const keys=[...p.querySelectorAll('li')].map(e=>e.dataset.evidenceKey);const first=card.evidence[0],end=card.evidence.at(-1);p.querySelector('li:last-child').scrollIntoView({block:'center'});return {keys,first,end,folded:p.querySelector('.ink-story-card__folded')?.innerText,fit:p.scrollWidth<=p.clientWidth&&document.documentElement.scrollWidth<=innerWidth};`);
+   check(label+' controlled 16-row ending and origin',tail.keys.length===12&&tail.keys.includes(tail.first.key)&&tail.keys.includes(tail.end.key)&&tail.end.day===fixture.endDay&&tail.end.type==='recovered'&&tail.end.grade==='B'&&tail.folded.includes('4')&&tail.fit,{fixture,...tail});
+   await b.screenshot(path.join(out,label+'-controlled-tail.png'));
+   await click('#inkInspect .ink-story-card details summary');
+   await page(`document.querySelector('#inkInspect .ink-story-card__links button').focus();return true;`);await b.key('tab');
+   const focus=await page(`const s=document.querySelector('#inkInspect .ink-story-card summary');return {focused:document.activeElement===s,open:s.parentElement.open,speed:inkbox.speedIndex};`);await b.key('space');
+   check(label+' keyboard evidence toggle',focus.focused&&await page(`return document.querySelector('#inkInspect .ink-story-card details').open!==${focus.open}&&inkbox.speedIndex===${JSON.stringify(focus.speed)};`),focus);
+   const stale=await page(`const old=inkbox.world;let calls=0;const original=inkbox.inspectPlaneSubject;inkbox.inspectPlaneSubject=()=>{calls++;return {}};inkbox.world={...old};try{document.querySelector('#inkInspect .ink-story-card__links button').click();}finally{inkbox.world=old;inkbox.inspectPlaneSubject=original;}const other=old.entities.find(e=>e.hp>0&&e.id!==40);inkbox.g1.open('mortal:'+other.id);return {navigationCalls:calls,otherId:other.id,oldCardsCleared:!document.querySelector('.g1-mingpu__stories [data-story-key]')};`);
+   check(label+' replacement world rejects stale button and identity clears',stale.navigationCalls===0&&stale.oldCardsCleared,stale);
+   await page(`const {v,history}=window.__s11Fixture;v.history=history;delete window.__s11Fixture;return true;`);
+   await click('#inkPersonDetail [data-g1-action="close"]');await click('#inkInspectClose');
+  }
   // A separate controlled original exercises the ground-object entry where
   // this natural checkpoint has only carried originals. It is never counted
   // as a natural sample and is added only after natural save/load validation.
@@ -63,4 +89,4 @@ try{
  }
  report.pass=report.checks.every(c=>c.pass);
 }catch(error){report.error=error.stack;process.exitCode=1;if(b){report.failureText=await page(`return document.body.innerText.slice(-12000)`).catch(()=>null);await b.screenshot(path.join(out,'failure.png')).catch(()=>{});}}
-finally{if(b)await b.close();if(server?.child&&server.child.exitCode===null)server.child.kill();report.finishedAt=new Date().toISOString();fs.writeFileSync(path.join(out,'acceptance.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({pass:report.pass,checks:report.checks.length,error:report.error,output:out}));}
+finally{if(b)await b.close();if(server?.child&&server.child.exitCode===null){const child=server.child;const exited=new Promise(resolve=>child.once('exit',resolve));child.kill();await exited;}report.serverCleanup={pid:server?.child?.pid,exited:!server?.child||server.child.exitCode!==null||server.child.signalCode!==null};report.finishedAt=new Date().toISOString();fs.writeFileSync(path.join(out,'acceptance.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({pass:report.pass,checks:report.checks.length,error:report.error,output:out}));}
