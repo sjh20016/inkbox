@@ -50,6 +50,14 @@ assert(els.some(e=>e.tagName==='code'&&e.textContent==='mortal:201'),'evidence d
 const personWorld=()=>({day:500,entities:[{id:1,name:'同名修士',hp:100,incarnation:1,wanxiang:emptyProfile()},{id:2,name:'受助者',hp:100,incarnation:1,wanxiang:emptyProfile()}],dead:[],sites:[],arrivedLog:[],wanxiang:{enabled:true}});
 const actorRef={kind:'person',plane:'mortal',id:2,incarnation:1};
 {
+  const w=personWorld();w.entities[0].hp=0;w.entities[0].name='当前同号亡者姓名';
+  w.entities[1].wanxiang.experienceLedger={records:[{id:'historical-help',day:10,type:'healed',helperKey:'mortal:1'}]};
+  const card=personStoryCandidates(w,actorRef).cards[0];
+  assert.doesNotMatch(card.reason,/恩人已离世|恩人已飞升|当前同号亡者姓名/,'an unproven incarnation cannot inherit the current same-ID record status or name');
+  assert.match(card.related[0].reason,/不能.*断定旧人去向/);
+  assert.equal(card.related[0].available,false);
+}
+{
   const w=personWorld(),actor=w.entities[1];
   actor.wanxiang.experienceLedger={records:[{id:'retained-help',day:10,type:'healed',helperKey:'mortal:1'}]};
   actor.wanxiang.history=Array.from({length:140},(_,i)=>({kind:'natural-choice',type:'报偿恩义',actorKey:'mortal:2',targetKey:'mortal:1',day:20+i,status:'committed',cost:{kind:'actor-hp',amount:1},result:'正式回助'}));

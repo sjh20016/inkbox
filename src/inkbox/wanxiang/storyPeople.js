@@ -25,7 +25,7 @@ function resolvedTarget(world,key) {
   const found=resolveCharacter(world,key);
   return {...parsed,kind:'person',incarnation:null,
     label:'旧日施助者（本世身份未可考）',available:false,identityChangedDay:personIdentitySince(found.entity),
-    status:found.status,reason:found.status==='alive'?'历史未保留对方本世身份，不能授权定位':found.status==='dead'?'已离世':found.status==='ascended'?'已飞升':'身份去向未能续考'};
+    status:found.status,reason:'历史未保留对方本世身份，不能授权定位或据当前同号名录断定旧人去向'};
 }
 function terminal(story,status,siteGone=false) {
   if(story.status==='resolved')return;
@@ -109,7 +109,7 @@ export function personStoryCandidates(world,actorRef) {
     for(const row of selectedReturns)append(story,{...row,text:`${row===returns[0]?'首次有证回助':'后来仍有回助'}：${row.text}`});
     if(returns.length){story.mode='retelling';story.status='resolved';story.outcome='paid-reciprocity';story.reason=`正式完成后的有代价回助回执；护关不等于目标突破成功。${returns.length>4?`当前保留来源中至少有 ${returns.length} 次正式回助；此处展示首次和最近三次。`:''}当时受助与已经完成的回助仍有记录；旧施助者本世身份不足以授权当前定位。`;}
     terminal(story,r.status);
-    if(story.status!=='resolved'&&target.status!=='alive'){story.status='interrupted';story.reason=`恩人${target.reason||'去向未能续考'}；未据关系延续推定报偿`;}
+    if(story.status!=='resolved'&&target.status!=='alive'){story.status='interrupted';story.reason='旧施助者本世身份不足，后续身份去向未能续考；未据当前同号名录或关系延续推定报偿';}
     if(targetChanged&&!returns.length){story.status='interrupted';story.reason='对方身体已有换主记录；旧来源未保存其本世身份，不能把后来对同一身体的帮助认作报答原施助者';story.outcome='target-identity-unproven';}
     cards.push(story);
   }
