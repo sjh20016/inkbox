@@ -48,6 +48,7 @@ export function appendObjectStoryReader(sb, panel, ref) {
       if (sb.world !== world || !section.isConnected) return {ok:false,reason:'世界或检视已切换'};
       return navigateStoryRef(sb,target);
     }});
+    content.scrollIntoView?.({block:'start',behavior:'instant'});
   });
   section.append(read,content);panel.append(section);
   objectReaders.set(panel,{world,key,section});

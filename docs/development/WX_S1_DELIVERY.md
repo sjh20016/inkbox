@@ -1,6 +1,6 @@
 # WX-S1 命途拾章 Alpha · 交付
 
-基于 WX-D Draft [#62](https://github.com/sjh20016/inkbox/pull/62) 的 `c4b169d707704b614344345dfb1cac8fe96d50a9`，隔离分支 `feature/wx-s1-mingtu-shizhang`。开工重新核实 main `bd62ade`，#60 → #61 → #62 均未合并；本包以 `feature/wx-d-yinyuan-chengju` 为 PR 目标，不合并 main、不强推、不清理其他分支。准确最终 HEAD、源码哈希、Draft PR、CI 和证据清单以 `reports/local/wx-s1/acceptance.json` 及 PR 为准，避免文档自引用 SHA。
+基于 WX-D Draft [#62](https://github.com/sjh20016/inkbox/pull/62) 的 `c4b169d707704b614344345dfb1cac8fe96d50a9`，远端隔离分支 `feature/wx-s1-mingtu-shizhang`，独立 [Draft PR #63](https://github.com/sjh20016/inkbox/pull/63)。开工重新核实 main `bd62ade`，#60 → #61 → #62 均未合并；本包以 `feature/wx-d-yinyuan-chengju` 为 PR 目标，不合并 main、不强推、不清理其他分支。准确最终 HEAD、源码哈希、CI 和证据清单以 `reports/local/wx-s1/acceptance.json` 及 PR 为准，避免文档自引用 SHA。命令行凭据失效后经 GitHub connector 发布；本地原施工提交保留，`review/wx-s1-mingtu-shizhang` 用于准确远端 SHA 验收，没有重写历史。
 
 ## 可玩路径与边界
 

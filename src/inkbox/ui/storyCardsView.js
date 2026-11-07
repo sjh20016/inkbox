@@ -1,6 +1,6 @@
 const STATUS = {watching:'尚待后续',resolved:'已有回响',interrupted:'已中止',unresolved:'后续未可考'};
-const SOURCE = {'committed-fact':'正式事实','profile-history':'人物经历','experience-ledger':'正式经历账本','wanxiang-history':'命途正式经历','artifact-history':'原物履历','settlement-history':'地方沿革','current-artifact':'原物当前实况'};
-const TYPE = {'site-failure':'探府失利','site-success':'探府有得','paid-reciprocity':'真实付费回助',healed:'正式治疗',disaster:'遭灾',aid:'获援',abandoned:'荒废',recovered:'恢复',forged:'炼成',gained:'所得',found:'拾得',inherited:'传承',lost:'遗落','current-location':'当前去向'};
+const SOURCE = {'committed-fact':'正式事实','profile-history':'人物经历','experience-ledger':'正式经历账本','wanxiang-history':'命途正式经历','artifact-history':'原物履历','settlement-history':'地方沿革','current-artifact':'原物当前实况','current-profile':'人物当前状态'};
+const TYPE = {'site-failure':'探府失利','site-success':'探府有得','paid-reciprocity':'真实付费回助',healed:'正式治疗',disaster:'遭灾',aid:'获援',abandoned:'荒废',recovered:'恢复',forged:'炼成',gained:'所得',found:'拾得',inherited:'传承',lost:'遗落','current-location':'当前去向','risk-resolved':'畏险转化',risk_fear:'畏险现况'};
 const date = value => Number.isFinite(value) ? `第 ${Math.floor(value)} 日` : '日期未载';
 
 /** A bounded, text-only reader shared by both renderers. Never reads a World. */

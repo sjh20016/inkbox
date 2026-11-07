@@ -51,7 +51,7 @@ export function resolveStoryRef(world, ref) {
 
 function present(world, candidates, options = {}) {
   const result = selectStories(candidates.cards || [],{day:world?.day || 0,...options});
-  const cards = result.cards.map(card => ({ ...copy(card), related:(card.related || []).map(ref => {
+  const cards = result.cards.map(card => ({ ...copy(card), related:(card.related || []).slice(0,STORY_LIMITS.related).map(ref => {
     const r = resolveStoryRef(world,ref);
     return { ...copy(ref), label:r.label, available:r.available === true && ref.available !== false, reason:ref.available === false ? ref.reason || r.reason || '' : r.reason || '' };
   }) }));

@@ -26,6 +26,12 @@ patient.wanxiang.history=[{kind:'natural',type:'aid-bond',actorKey:'mortal:2',ta
 assert.equal(read(w,ref).cards[0].status,'watching');
 patient.wanxiang.history.push({kind:'natural-choice',type:'报偿恩义',actorKey:'mortal:2',targetKey:'mortal:1',day:30,status:'committed',cost:{kind:'actor-hp',amount:1},result:'付费护关，下一次正式突破可获助益'});
 assert.equal(read(w,ref).cards[0].status,'resolved');assert.match(read(w,ref).cards[0].reason,/不等于目标突破成功/);
+w.entities[0].possessedBy={day:40};
+assert.equal(read(w,ref).cards[0].status,'resolved','later possession does not revoke a completed earlier return');
+w.entities[0].possessedBy={day:20};
+assert.equal(read(w,ref).cards[0].outcome,'target-identity-unproven','helping an original helper body after possession cannot prove personal reciprocity');
+assert.equal(read(w,ref).cards[0].related[0].label,'mortal:1','unproven historical identity does not borrow a current name');
+delete w.entities[0].possessedBy;
 patient.wanxiang.history.at(-1).cost.amount=0;assert.equal(read(w,ref).cards[0].status,'watching');
 patient.wanxiang.history.at(-1).cost.amount=1;patient.wanxiang.history.at(-1).targetKey='mortal:3';assert.equal(read(w,ref).cards[0].status,'watching');
 patient.wanxiang.history[0].pastLife=true;assert.equal(read(w,ref).cards.length,0);
@@ -41,6 +47,10 @@ delete w.entities[1].wanxiang;assert.equal(read(w,ref).cards.length,0);
 // A second failure is a later node, never another overlapping equivalent story.
 w=fixture();facts(w);w.entities[1].wanxiang.experienceLedger.records.push({id:'loss-2',day:20,type:'site-failure',siteId:8},{id:'win-2',day:30,type:'site-success',siteId:8});
 assert.equal(read(w,ref).cards.length,1);assert.equal(read(w,ref).cards[0].status,'resolved');
+assert.equal(read(w,ref).cards[0].outcome,'success','later success updates a chapter after the repeated failure');
+assert.equal(read(w,ref).cards[0].nodes.length,3,'both the repeated failure and actual later success remain visible');
+w.entities[1].wanxiang.history.push({kind:'natural',type:'risk-resolved',actorKey:'mortal:2',day:30,source:'win-2',result:{siteId:8,traitId:'risk_resolve'}});
+assert(read(w,ref).cards[0].evidence.some(p=>p.type==='risk-resolved'),'only a formal transformation proves fear recovery');
 let before=read(w,ref);w.entities[1].wanxiang.experienceLedger.records.reverse();assert.deepEqual(read(w,ref),before);
 // Death after a recorded result cannot undo that result.
 let old=w.entities.pop();old.hp=0;old.died=90;w.dead=[old];assert.equal(read(w,ref).cards[0].status,'resolved');
