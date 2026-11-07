@@ -108,6 +108,7 @@ import { getRealmViewState } from './ui/realmViewState.js';
 // 视界的**穿透检视**（D8-F）：点开窗里的东西看它是什么。**只读**——本模块只产出
 // 字符串行，不暴露任何改状态的接口（「D8 仍然是观察」是结构性的，见其头注释）。
 import { pickRealmSubject, realmInspectRows, resolvePlaneSubject, planeSubjectInspectRows } from './ui/realmInspector.js';
+import { appendObjectStoryReader } from './ui/storyNavigation.js';
 import { settlementRuinMarkerId, visibleSettlementRuins } from './world/settlementIdentity.js';
 import { createObserveEchoPanel } from './ui/observeEchoPanel.js';
 import { createJournalPanel } from './ui/journalPanel.js';
@@ -1992,6 +1993,8 @@ class Sandbox {
     panel.classList.add('on');
     if (card?.settlementId != null) this.observeEcho?.appendCardActions(panel, card.settlementId);
     if (card?.settlementId != null) this.journal?.appendSettlementActions(panel, card.settlementId, planeId);
+    if (picked?.subject?.id && ['artifact','site','settlement','settlement-ruin'].includes(picked.kind))
+      appendObjectStoryReader(this,panel,{kind:picked.kind,plane:planeId,id:picked.subject.id});
     panel.scrollTop = scrollTop;
     for (const button of panel.querySelectorAll('[data-inspect-faction]')) button.addEventListener('click', () => {
       const faction = this.world.factions.find(item => String(item.id) === button.dataset.inspectFaction);

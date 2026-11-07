@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+WX-S1 增加 `npm run test:wanxiang:s1`：四家族正式来源、回助/关系区分、跨界与夺舍、本世导航、稳定有界选择、v11/旧档、100 次只读及原生推进世界/RNG 等价；加入 Fast，原门禁保留。`test:wanxiang:s1:browser` 使用隔离 Edge/CDP 验证自然秦少舒命途、Canvas 桌面/窄屏与实际 Three；`profile:wanxiang:s1` 从已有三个百年自然检查点提取，`--extend=400` 才显式续跑一条成熟世界；`profile:wanxiang:s1:perf` 对真实 100/400 年检查点做人物查询和完整世界/RNG ABBA。检查点默认 `reports/local/wx-s1/natural`，生成命令与局限见 [交付](../docs/development/WX_S1_DELIVERY.md)。
+
 WX-D 新增 `npm run test:wanxiang:d`：有界陆路供给、真实绕障赴事、剩余特殊资源与沉寂旧址、付费疗伤与护关、宗门照护、命卦选择、v11 任务恢复及三界短期推进。保留 Alpha/B/C 与完整 Fast/Heavy。`profile:wanxiang:d` 从三个正式小景种子运行100年，恢复各自v11存档续30年，首种子续至200/400年；`profile:wanxiang:d:perf` 从该400年真实存档重复30日原生推进并核对确定性，不代表GPU或跨版本提速。`test:wanxiang:d:browser` 复用隔离Edge/CDP检查三视口、五页、改命敕改、因缘回执、旧址和存读档；自然与受控样本分别标识。结果见 [WX-D交付](../docs/development/WX_D_DELIVERY.md)。
 
 V0.2-B 新增 `npm run test:wanxiang:b`：生命周期、交通、洞府、道种、血脉、卦象与连续命途。`profile:wanxiang:b` 生成自然及成熟续跑画像；`test:wanxiang:b:browser` 检查三视口、改命、存读档及回访。详见 [B 交付](../docs/development/WX_B_DELIVERY.md)。

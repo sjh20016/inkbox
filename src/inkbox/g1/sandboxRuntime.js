@@ -2,6 +2,7 @@ import { createCharacterController, resolveCharacter, summarizeCharacterObservat
 import { canAccess } from '../core/mapAccess.js';
 import { UnitsLayer } from '../render/unitsLayer.js';
 import { spawnFocusPulse } from '../render/overlayLayer.js';
+import { navigateStoryRef } from '../ui/storyNavigation.js';
 
 // Candidates retain source references: delayed choices cannot target a replacement.
 export function canvasCharacterCandidates(sb, sx, sy, plane = 'mortal', radius = 19) {
@@ -41,6 +42,7 @@ export function createSandboxCharacterRuntime(sb, views = {}) {
       onMingpu: action => {
         if(expectedToken!==token || expectedRevision!==revision)return {ok:false,reason:'stale-selection'};
         const result=controller.handleMingpu(action);
+        if (result.ok && result.effect?.type === 'story-navigate') return navigateStoryRef(sb,result.effect.ref);
         if(result.ok && ['enable','commit'].includes(action.type)) sb.qol?.markDirty('intervention');
         refresh();return result;
       } });
