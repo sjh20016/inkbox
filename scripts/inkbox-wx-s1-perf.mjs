@@ -23,10 +23,12 @@ const sourceFiles=['wanxiang/storyFacts.js','wanxiang/storyPeople.js','wanxiang/
 const digest=value=>createHash('sha256').update(typeof value==='string'?value:JSON.stringify(value)).digest('hex');
 const sourceHashes=Object.fromEntries(sourceFiles.map(f=>[f,digest(fs.readFileSync(`src/inkbox/${f}`,'utf8'))]));
 function restore(saved) {
-  const world=deserializeWorld(saved);
-  if (!saved.runtime?.upperLife) {delete world.upper;delete world.nether;}
+  // Native restore retains some cold-history arrays by reference. Each trial
+  // must own its input, exactly as the existing WX-D mature replay harness.
+  const input=structuredClone(saved),world=deserializeWorld(input);
+  if (!input.runtime?.upperLife) {delete world.upper;delete world.nether;}
   const life=new Life(world,rngStream(world.seed^0xa5a5a5a5)),state=createAdvanceState(),playerRng=rngStream(world.seed^0x504c4159);
-  restoreRuntimeState(saved.runtime,{world,life,advanceState:state,playerRng});
+  restoreRuntimeState(input.runtime,{world,life,advanceState:state,playerRng});
   return {world,life,state,playerRng};
 }
 const save=c=>serializeWorld(c.world,{}, {runtime:captureRuntimeState({world:c.world,life:c.life,advanceState:c.state,playerRng:c.playerRng})});

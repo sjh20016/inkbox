@@ -45,16 +45,18 @@ const old=structuredClone(snapshot);delete old.wanxiang;const legacy=deserialize
 assert.doesNotThrow(()=>readWorldStories(legacy),'old no-Profile saves degrade safely');
 
 function resume(snapshot) {
-  const w=deserializeWorld(snapshot);delete w.upper;delete w.nether;
+  const input=structuredClone(snapshot),w=deserializeWorld(input);delete w.upper;delete w.nether;
   const l=new Life(w,rngStream(w.seed^0xa5a5a5a5)),s=createAdvanceState(),p=rngStream(w.seed^0x504c4159);
-  restoreRuntimeState(snapshot.runtime,{world:w,life:l,advanceState:s,playerRng:p});return {world:w,life:l,state:s,playerRng:p};
+  restoreRuntimeState(input.runtime,{world:w,life:l,advanceState:s,playerRng:p});return {world:w,life:l,state:s,playerRng:p};
 }
+const checkpointBefore=JSON.stringify(snapshot);
 const off=resume(snapshot),on=resume(snapshot);
 for(let i=0;i<20;i++) {
   advanceWorld(off.world,3,off);advanceWorld(on.world,3,on);
   readPersonStories(on.world,ref);readWorldStories(on.world);
 }
 assert.deepEqual(saved(off.world,off.life,off.state,off.playerRng),saved(on.world,on.life,on.state,on.playerRng),'observed/unobserved native advance is bitwise identical');
+assert.equal(JSON.stringify(snapshot),checkpointBefore,'independent trials never mutate the reusable input checkpoint');
 const actor={kind:'person',plane:'mortal',id:1,incarnation:1};
 const make=(id,status='watching',day=100,subject={...actor,id})=>createStory('budget',subject,evidence('test',`source-${id}-${day}`,day,'site-failure','正式测试来源'),{status,importance:status==='resolved'?3:2});
 const rows=Array.from({length:80},(_,i)=>make(i+1));rows.push(rows[0]);
