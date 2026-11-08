@@ -1,6 +1,13 @@
 import {readEffects} from './effects.js';
 import { practiceState, knownPractices } from './practice.js';
 import { manaCapacity } from './damage.js';
+import { countWorkMetric, startWorkMetric, endWorkMetric } from '../sim/workMetrics.js';
+import { isMortalHuman } from '../core/demographics.js';
+
+function measuredCapacity(e,world) {
+ if(world)countWorkMetric(world,'skills.manaCapacity');
+ return manaCapacity(e);
+}
 
 export const SKILLS=Object.freeze([
  {id:'renew',name:'回元',cost:8,cooldown:4,range:0,kind:'heal',scale:.08},
@@ -17,11 +24,11 @@ export function equipSkills(e,ids) {
  if(!Array.isArray(ids)||ids.length>skillSlotCount(e)||new Set(ids).size!==ids.length||ids.some(id=>!canUseSkill(e, SKILLS.find(s=>s.id===id)))) return false;
  combatState(e);practiceState(e).skills=ids.slice();return true;
 }
-export function combatState(e) {
+export function combatState(e,world=null) {
  const c=practiceState(e);
  if(!c.combat && c.skills.length===0) c.skills=['renew','strike','spell'];
- const state=c.combat ||= {mana:manaCapacity(e),lastActionDay:-1,cooldowns:{}};
- state.mana=Math.min(manaCapacity(e),state.mana);return state;
+ const state=c.combat ||= {mana:measuredCapacity(e,world),lastActionDay:-1,cooldowns:{}};
+ state.mana=Math.min(measuredCapacity(e,world),state.mana);return state;
 }
 // One bounded scan, one action. Caller applies returned damage through its existing death path.
 // null is ordinary-attack fallback; wait consumes this attempt without another attack.
@@ -41,7 +48,14 @@ export function chooseSkillAction(e,target,day,{power=1,defense=0}={}) {
  // Global action interval also covers normal fallback to prevent repeated same-day attacks.
  state.lastActionDay=day;return null;
 }
-export function stepSkillResources(e,dtDays) {
+export function stepSkillResources(e,dtDays,world=null) {
  if(!Number.isFinite(dtDays)||dtDays<=0) return;
- const state=combatState(e);state.mana=Math.min(manaCapacity(e),Math.max(0,state.mana)+dtDays*2);
+ const started=world?startWorkMetric(world):null;
+ if(world){
+   countWorkMetric(world,'skills.calls');
+   countWorkMetric(world,isMortalHuman(e)?'skills.mortal.calls':e.level>0?'skills.level-positive.calls':'skills.other-unleveled.calls');
+   countWorkMetric(world,e.wanxiang?.cultivation?.combat?'skills.preallocated':'skills.unallocated');
+ }
+ const state=combatState(e,world);state.mana=Math.min(measuredCapacity(e,world),Math.max(0,state.mana)+dtDays*2);
+ if(world)endWorkMetric(world,'skills.resources',started);
 }

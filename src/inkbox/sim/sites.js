@@ -22,7 +22,7 @@ import { learnPractice, techniqueId } from '../wanxiang/practice.js';
 import { initializeProfile } from '../wanxiang/profile.js';
 import { stepEncounters } from '../wanxiang/encounters.js';
 import { canReachOpportunity } from '../wanxiang/opportunityGeography.js';
-import { startWorkMetric, endWorkMetric } from './workMetrics.js';
+import { startWorkMetric, endWorkMetric, workMetricsEnabled, countWorkMetric } from './workMetrics.js';
 
 export function siteContentState(site, world = null) {
   return { inheritance: !!site?.inheritanceManual && !site.inheritanceExhausted && !site.inheritanceClaimedBy,
@@ -62,6 +62,8 @@ export function enterSite(world, entity, site, rng) {
   const factId = `site:${site.id}:${entity.id}:${site.visits}:${world.day}`;
   const level = entity.level || 0;
   if (level < 3) return null;
+  const measuring=workMetricsEnabled(world);
+  if(measuring){countWorkMetric(world,'sites.attempts');if(arrival)countWorkMetric(world,'sites.arrival-attempts');}
   if(participant)participant.settled=true;
 
   const fortune = entity.fortune || 50;
@@ -100,6 +102,7 @@ export function enterSite(world, entity, site, rng) {
         opportunityCounter(world,'claimed');
         site.inheritanceClaimedBy = entity.id;
         site.inheritanceExhausted = true;
+        if(measuring)countWorkMetric(world,'sites.inheritances');
         site.reward = '传承已被取走';
         gain = `修为感悟及《${manual.name}》传承`;
         world.record(`【${entity.name}】自${site.name}取走前人传承《${manual.name}》。`, 'site', entity, siteLocation(world, site));
@@ -127,6 +130,7 @@ export function enterSite(world, entity, site, rng) {
     if (site.artifactId) {
       const got = claimGroundArtifact(world, entity, site.artifactId, rng, 'found');
       if (got) {
+        if(measuring)countWorkMetric(world,'sites.artifacts-claimed');
         world.record(
           `【${entity.name}】入${site.name}，取走了那件${got.name}。${ownerLine(got).text}`,
           'artifact',
@@ -143,6 +147,7 @@ export function enterSite(world, entity, site, rng) {
     if(world.wanxiang?.enabled && site.godFragmentCharges>0 && grantBloodResource(world,entity,'god-fragment',site.id)) site.godFragmentCharges--;
     if(world.wanxiang?.enabled && site.phoenixFeatherCharges>0 && grantBloodResource(world,entity,'phoenix-feather',site.id)) site.phoenixFeatherCharges--;
     if(arrival){const before=JSON.stringify([entity.wanxiang?.traits,entity.wanxiang?.states]);emitCommittedFact(world,entity,{id:factId,type:'site-success',siteId:site.id,arrived:true});if(before!==JSON.stringify([entity.wanxiang?.traits,entity.wanxiang?.states]))opportunityCounter(world,'experience');}
+    if(measuring){countWorkMetric(world,'sites.success');countWorkMetric(world,'sites.reward-events');}
     return { ok: true, gain };
   }
 
@@ -154,6 +159,7 @@ export function enterSite(world, entity, site, rng) {
   entity.heartDemon = clamp(entity.heartDemon + 4, 0, 100);
   world.record(`【${entity.name}】入${site.name}，重伤而出。`, 'site', entity, siteLocation(world, site));
   if(arrival){const before=JSON.stringify([entity.wanxiang?.traits,entity.wanxiang?.states]);emitCommittedFact(world,entity,{id:factId,type:'site-failure',siteId:site.id,arrived:true});if(before!==JSON.stringify([entity.wanxiang?.traits,entity.wanxiang?.states]))opportunityCounter(world,'experience');}
+  if(measuring)countWorkMetric(world,'sites.failure');
   return { ok: false };
 }
 
@@ -282,16 +288,19 @@ function findSiteSpot(world, rng, near, minQi = 0.3) {
  */
 export function stepSites(world, dtDays, rng) {
   const started = startWorkMetric(world);
+  const measuring=workMetricsEnabled(world);
   try {
   stepOpportunitySupply(world);
   stepEncounters(world);
   const sites = world.sites;
+  if(measuring)countWorkMetric(world,'sites.lifecycle-examined',sites.length);
   if (!sites.length) return;
 
   for (let si = sites.length - 1; si >= 0; si -= 1) {
     const site = sites[si];
     const lifespan = (SITE_LIFESPAN_YEARS[site.kind] || 200) * 360;
     if (site.kind === 'cave' && !siteHasContent(site, world)) {
+      if(measuring)countWorkMetric(world,'sites.dormant-evaluations');
       if (!Number.isFinite(site.lastLifecycleDay)) site.lastLifecycleDay = world.day;
       if (world.day - site.lastLifecycleDay < 360 && site.age + dtDays <= lifespan) continue;
       site.age += Math.max(dtDays, world.day - site.lastLifecycleDay);
@@ -322,6 +331,7 @@ export function stepSites(world, dtDays, rng) {
     }
 
     if (site.age > lifespan) {
+      if(measuring)countWorkMetric(world,'sites.naturally-expired');
       // 地点自行尘封 / 异象散去，无当事人
       if (site.kind === 'cave') world.record(`${site.name} 尘封，再无人至。`, 'site', null, siteLocation(world, site));
       else if (site.kind === 'secret') world.record(`${site.name} 的异象散了。`, 'site', null, siteLocation(world, site));

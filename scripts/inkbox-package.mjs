@@ -21,6 +21,8 @@ const FILES = [
   'docs/development/SIMULATION_COST_CONTRACT.md',
   'docs/development/SIMULATION_COST_REGISTRY.json',
   'scripts/inkbox-wx-e0-cost-contract.mjs',
+  'scripts/inkbox-wx-e0-metrics.mjs',
+  'scripts/inkbox-wx-e0-replay.mjs',
   'docs/development/WX_D_DELIVERY.md',
   'docs/development/WX_D_OPPORTUNITY_GEOGRAPHY.md',
   'docs/development/WX_D_SOCIAL_BEHAVIOR.md',
