@@ -9,6 +9,14 @@ function measuredCapacity(e,world) {
  return manaCapacity(e);
 }
 
+// B-class: no automatic mana/default-skill allocation for a life with neither
+// formal skill eligibility nor retained combat/equipment. Existing state keeps
+// its previous maintenance policy, including a cultivator who loses levels.
+export function needsSkillResources(e) {
+ const c=e?.wanxiang?.cultivation;
+ return e?.level>0 || !!c?.combat || Array.isArray(c?.skills)&&c.skills.length>0;
+}
+
 export const SKILLS=Object.freeze([
  {id:'renew',name:'回元',cost:8,cooldown:4,range:0,kind:'heal',scale:.08},
  {id:'strike',name:'凝气击',cost:5,cooldown:2,range:1.6,kind:'physical',scale:1.15},
@@ -56,6 +64,7 @@ export function chooseSkillAction(e,target,day,{power=1,defense=0}={}) {
 }
 export function stepSkillResources(e,dtDays,world=null) {
  if(!Number.isFinite(dtDays)||dtDays<=0) return;
+ if(!needsSkillResources(e)){if(world)countWorkMetric(world,'skills.direct-rejected');return;}
  const started=world?startWorkMetric(world):null;
  if(world){
    countWorkMetric(world,'skills.calls');

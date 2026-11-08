@@ -35,4 +35,4 @@ for(const enabled of [false,true,true,false]){
 }
 assert.equal(new Set(hashes).size,1,'30-day metrics on/off preserves complete serialized world and all registered RNG');
 assert.equal(digest(saved),input,'native input is immutable across independent restores');
-console.log(`WX-E0 metrics: default-off, bounded dt buckets, inclusive/exclusive phases, 30-day full world/RNG equality; ${measured['skills.calls']} measured skill calls`);
+console.log(`WX-E0 metrics: default-off, bounded dt buckets, inclusive/exclusive phases, 30-day full world/RNG equality; ${measured['skills.calls']||0} measured skill calls`);

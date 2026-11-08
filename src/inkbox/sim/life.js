@@ -7,7 +7,7 @@ import { readEffects } from '../wanxiang/effects.js';
 import { stepEncounterTravel } from '../wanxiang/encounters.js';
 import { enterSite, siteHasContent } from './sites.js';
 import { workMetricsEnabled, startWorkMetric, endWorkMetric, countWorkMetric, recordWorkDt } from './workMetrics.js';
-import { chooseSkillAction, stepSkillResources } from '../wanxiang/skills.js';
+import { chooseSkillAction, stepSkillResources, needsSkillResources } from '../wanxiang/skills.js';
 import { recordCombatAttempt, emitCombatHit } from './presentation.js';
 import { tryCombatIgnition } from './combatEnvironment.js';
 // 水墨沙盒 · 生灵、聚落与宗门
@@ -781,7 +781,8 @@ export class Life {
     if (e.hp <= 0) return false;
     if (e.wanxiang) {
       if(measuring)countWorkMetric(world,'skills.profile-attempts');
-      stepSkillResources(e,dtDays,measuring?world:null);
+      if(needsSkillResources(e))stepSkillResources(e,dtDays,measuring?world:null);
+      else if(measuring)countWorkMetric(world,'skills.rejected');
     }
     stepBody(world,e);
     const info = isMortalHuman(e) ? SPECIES_INFO.human : SPECIES_INFO[e.sp] || SPECIES_INFO.human;
