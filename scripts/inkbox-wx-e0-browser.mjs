@@ -4,7 +4,9 @@ import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {launch,findEdge,sleep} from './cdp.mjs';
 import {launchOwnedServer} from './inkbox-owned-server.mjs';
-const out='reports/local/wx-e0/browser'; fs.mkdirSync(out,{recursive:true});
+const viewportOnly=process.env.INKBOX_WX_E0_VIEWPORT_ONLY==='1';
+const out=process.env.INKBOX_WX_E0_REPORT_DIR|| (viewportOnly?'reports/local/wx-e0/browser/viewport-only':'reports/local/wx-e0/browser');
+fs.mkdirSync(out,{recursive:true});
 const hash=f=>createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 const inputs=['reports/local/wx-e0/checkpoints/20260914-100y-save.json','reports/local/wx-e0/checkpoints/20260914-400y-save.json'];
 const tracked=execFileSync('git',['ls-files','src/inkbox'],{encoding:'utf8'}).trim().split(/\r?\n/).filter(f=>f&&fs.existsSync(f));
@@ -13,9 +15,14 @@ let server,b,browserRun;
 report.browsers=[];
 report.viewportChecks=[];
 const durationMs=process.env.INKBOX_WX_E0_SELF_CHECK==='1'?5000:60000;
-report.mode=durationMs===5000?'self-check only; not acceptance':'acceptance';
+report.mode=viewportOnly?'viewport-only; not performance acceptance':durationMs===5000?'self-check only; not acceptance':'acceptance';
 const page=code=>b.js(`return (async()=>{${code}})();`,{timeoutMs:120000});
 async function click(sel){const p=await page(`const e=document.querySelector(${JSON.stringify(sel)});if(!e||e.disabled)throw Error('Missing '+${JSON.stringify(sel)});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};`);await b.click(p.x,p.y);}
+async function waitForPauseActionable(){
+ await page(`window.__pauseStable=null;return true;`);
+ const ready=await b.waitFor(`const e=document.querySelector('#inkBtnPause');if(!e||e.disabled)return false;const r=e.getBoundingClientRect(),s=getComputedStyle(e),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);const rect=[r.x,r.y,r.width,r.height];const stable=window.__pauseStable;const transitioning=document.getAnimations().some(a=>a instanceof CSSTransition&&a.playState==='running');const ok=r.width>0&&r.height>0&&s.visibility==='visible'&&s.pointerEvents!=='none'&&(hit===e||e.contains(hit))&&!transitioning;if(!ok){window.__pauseStable=null;return false;}if(!stable||rect.some((v,i)=>Math.abs(v-stable.rect[i])>0.25)){window.__pauseStable={rect,since:performance.now()};return false;}return performance.now()-stable.since>=300;`,{timeoutMs:10000,intervalMs:100});
+ if(!ready)throw Error('Pause button never became stable and actionable after resize');
+}
 async function formalLoad(slot){
  await page(`inkbox.setSpeed(0);window.__oldWorld=inkbox.world;document.querySelector('#inkSlotSelect').value=${JSON.stringify(slot)};inkbox.refreshSlots();return true;`);
  await click('#inkBtnLoad');
@@ -33,6 +40,7 @@ try{
   if(!await b.waitFor('return !!window.inkbox?.creationMenu',{timeoutMs:45000}))throw Error('Entry unavailable');
   await click('[data-action="open-create"]');await page(`const f=document.querySelector('.g2-creation');f.querySelector('input[aria-label="世界种子"]').value='20260914';f.querySelector('select').value='small';return true;`);await click('.g2-creation__page:not([hidden]) button[type="submit"]');if(!await b.waitFor('return !!inkbox.world',{timeoutMs:60000}))throw Error('Creation failed');
   if(renderer==='3d'&&!await b.waitFor('return !!inkbox.render3d?.active',{timeoutMs:60000}))throw Error('Three unavailable');
+  if(viewportOnly)await page(`window.__viewportEvents=[];for(const type of ['pointerdown','pointerup','click'])document.addEventListener(type,e=>window.__viewportEvents.push({type,target:{tag:e.target.tagName,id:e.target.id},speed:inkbox.speedIndex,viewport:[innerWidth,innerHeight]}),true);return true;`);
   const speeds=await page(`const {TIME}=await import('./src/inkbox/core/config.js');return {speeds:TIME.speeds,defaultIndex:inkbox.speedIndex};`);const indices=[speeds.speeds.findIndex(s=>s.mult===1),speeds.defaultIndex,speeds.speeds.length-1];if(indices.some(i=>i<1))throw Error('Invalid speed indices');
   for(const [width,height] of [[1440,900],[1024,768],[390,844]]){
    const check={renderer,width,height,status:'failed',visualReview:'pending screenshot inspection'};
@@ -40,7 +48,8 @@ try{
    try{
     await b.cdp.send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<500});
     await page(`inkbox.setSpeed(0);return true;`);
-    await click('#inkBtnPause');const unpaused=await page(`return inkbox.speedIndex!==0;`);
+    await waitForPauseActionable();
+    await click('#inkBtnPause');const unpaused=await page(`return inkbox.speedIndex===2;`);
     await click('#inkBtnPause');const paused=await page(`return inkbox.speedIndex===0;`);
     const person=await page(`const {isHumanPerson}=await import('./src/inkbox/core/demographics.js');const e=inkbox.world.entities.find(e=>isHumanPerson(e)&&e.hp>0);if(!e)throw Error('No living person');const result=inkbox.g1.open('mortal:'+e.id);return {ok:result.ok,id:e.id,close:!!document.querySelector('#inkPersonDetail [data-g1-action="close"]')};`);
     check.screenshot=path.join(out,`viewport-${renderer}-${width}x${height}.png`);
@@ -50,6 +59,7 @@ try{
     Object.assign(check,{person,paused,unpaused,closed,status:person.ok&&person.close&&paused&&unpaused&&closed?'observed':'failed'});
    }catch(e){check.error=String(e);}
   }
+  if(viewportOnly){browserRun.events=await page(`return window.__viewportEvents;`);browserRun.errors=b.errors();if(browserRun.errors.length)for(const c of report.viewportChecks.filter(c=>c.renderer===renderer)){c.status='failed';c.consoleErrors=browserRun.errors;}browserRun.cleanup=await b.close();b=null;continue;}
   await b.cdp.send('Emulation.setDeviceMetricsOverride',{width:1366,height:768,deviceScaleFactor:1,mobile:false});
   for(const [world,file] of (durationMs===5000?[['new',null]]:[['new',null],['100y',inputs[0]],['400y',inputs[1]]])){
    if(file&&!fs.existsSync(file)){for(const index of indices)report.cases.push({renderer,world,index,status:'blocked',reason:'checkpoint missing'});continue;}
@@ -74,6 +84,7 @@ try{
  }
 }catch(e){report.fatal=String(e)}finally{if(b){browserRun.errors=b.errors();browserRun.cleanup=await b.close();}if(server){const child=server.child;if(child.exitCode===null&&child.signalCode===null){child.kill();await Promise.race([new Promise(resolve=>child.once('exit',resolve)),sleep(5000)]);}report.serverCleanup={exited:child.exitCode!==null||child.signalCode!==null,exitCode:child.exitCode,signal:child.signalCode};}fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));}
 if(report.fatal||report.viewportChecks.some(c=>c.status!=='observed')||report.cases.some(c=>!['observed','self-check'].includes(c.status)))process.exitCode=1;
+
 
 
 

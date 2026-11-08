@@ -96,11 +96,26 @@ Life包含entity-loop/post-entity，stepEntity包含技能及选址，post-entit
 
 本地忽略目录 `reports/local/wx-e0/` 是本机证据，不是 GitHub 下载链接。主报告为 `perf/native-100y.json`、`perf/native-400y.json`；早期3日 `preflight-100y.json` 和5秒浏览器自检不能替代正式验收。
 
+浏览器实际18项各60秒采样（毫秒；各列依次为1×/默认2×/最高20×的frame P95）：
+
+| 世界 | Canvas | Three |
+|---|---|---|
+| 新世界 | 5.7 / 5.7 / 5.7 | 11.2 / 11.2 / 11.2 |
+| 100年 | 33.4 / 33.4 / 38.9 | 27.8 / 22.8 / 38.9 |
+| 400年 | 139.2 / 144.8 / 189.3 | 144.7 / 155.8 / 150.3 |
+
+Edge156、1366×768、headless，页面报告visible/focused、未暂停。GL自报AMD Radeon610M，原文在报告。每项都保存update/advanceDays/render/Life的P50/P95/P99、次数和累计wall，RAF另列；render调用墙钟不等于GPU完成耗时。400年Life P95约119.6–163.8ms（Canvas）/134.1–142.9ms（Three），持续长帧，不能宣称实时性能封板，也没有浏览器改前后配对提速结论。
+
+实际压缩槽字符数：新世界518,779–518,787；100年879,259–879,695；400年2,097,003–2,097,115，全部`INKGZ1:`，不能把原始10MB JSON称为localStorage消耗。点击到观测完成的保存约280–502ms，载入约390–545ms；自然100/400年档导入首次可交互约403–547ms，均包含CDP点击/轮询开销。每个速度从同一槽快照重载，slotHash/startDay在报告；UI暂停交互会在采样前产生少量正式时间推进，不将其伪称原始档日的静止画面。
+
+首次完整命令exit1源于Canvas窄屏resize后点击命中变化；18性能项及6存读档项均有观测，视口为5/6。验收工具仅增加可点击性等待，另以viewport-only复测6/6；原失败保留，详见交付记录。后续只改了视口可点击性等待/断言及报告模式，采样段未变，不把复测当作第二套60秒性能数据。
+
 ```powershell
 npm run profile:wx-e0 -- --save=reports/local/wx-e0/checkpoints/20260914-100y-save.json --out=reports/local/wx-e0/perf/native-100y.json
 npm run profile:wx-e0 -- --save=reports/local/wx-e0/checkpoints/20260914-400y-save.json --out=reports/local/wx-e0/perf/native-400y.json
 node scripts/inkbox-wx-e0-replay.mjs --source=reports/local/wx-e0/s-capacity-source --compare-source=reports/local/wx-e0/baseline-source --days=90
 npm run test:wx-e0:browser
+node --input-type=module -e 'process.env.INKBOX_WX_E0_VIEWPORT_ONLY="1"; process.env.INKBOX_WX_E0_REPORT_DIR="reports/local/wx-e0/browser/viewport-repeat"; await import("./scripts/inkbox-wx-e0-browser.mjs");'
 ```
 
 性能脚本默认需要上述四个固定源码目录。可从对应commit执行 `git archive --format=zip <commit> src scripts vendor tests package.json package-lock.json --output=<snapshot>.zip`，用 `Expand-Archive` 解到指定目录。每目录的 `WX_E0_SOURCE.json` 必须含 `{head,tree,hashes}`，`hashes` 为 `inkbox-wx-e0-replay.mjs` 导出的 `SOURCE_FILES` 中存在文件的**实际字节**SHA256；先用 `git show <head>:src/inkbox/<file>` 按LF规范化逐项核对导出内容，再写manifest，不可将当前树冒充历史SHA。可用 `--original/--metrics/--capacity/--eligibility/--candidate` 显式指定目录；缺少或修改快照会失败。
