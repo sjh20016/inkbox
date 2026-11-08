@@ -24,12 +24,18 @@ export function equipSkills(e,ids) {
  if(!Array.isArray(ids)||ids.length>skillSlotCount(e)||new Set(ids).size!==ids.length||ids.some(id=>!canUseSkill(e, SKILLS.find(s=>s.id===id)))) return false;
  combatState(e);practiceState(e).skills=ids.slice();return true;
 }
-export function combatState(e,world=null) {
+function updateCombatResources(e,days,world) {
  const c=practiceState(e);
  if(!c.combat && c.skills.length===0) c.skills=['renew','strike','spell'];
- const state=c.combat ||= {mana:measuredCapacity(e,world),lastActionDay:-1,cooldowns:{}};
- state.mana=Math.min(measuredCapacity(e,world),state.mana);return state;
+ // Capacity depends only on the already-initialized physique. No relevant
+ // state changes between the old initialization, clamp and regeneration reads.
+ const capacity=measuredCapacity(e,world);
+ const state=c.combat ||= {mana:capacity,lastActionDay:-1,cooldowns:{}};
+ state.mana=Math.min(capacity,state.mana);
+ if(days>0)state.mana=Math.min(capacity,Math.max(0,state.mana)+days*2);
+ return state;
 }
+export function combatState(e,world=null) {return updateCombatResources(e,0,world);}
 // One bounded scan, one action. Caller applies returned damage through its existing death path.
 // null is ordinary-attack fallback; wait consumes this attempt without another attack.
 export function chooseSkillAction(e,target,day,{power=1,defense=0}={}) {
@@ -56,6 +62,6 @@ export function stepSkillResources(e,dtDays,world=null) {
    countWorkMetric(world,isMortalHuman(e)?'skills.mortal.calls':e.level>0?'skills.level-positive.calls':'skills.other-unleveled.calls');
    countWorkMetric(world,e.wanxiang?.cultivation?.combat?'skills.preallocated':'skills.unallocated');
  }
- const state=combatState(e,world);state.mana=Math.min(measuredCapacity(e,world),Math.max(0,state.mana)+dtDays*2);
+ updateCombatResources(e,dtDays,world);
  if(world)endWorkMetric(world,'skills.resources',started);
 }

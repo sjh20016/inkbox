@@ -22,7 +22,7 @@ for(const enabled of [false,true,true,false]){
     assert.equal(measured['life.dtDays'].buckets['<=3'],10);
     assert(measured['life.stepEntity'].calls>0);
     assert((measured['skills.calls']||0)+(measured['skills.rejected']||0)===measured['skills.profile-attempts']);
-    assert(measured['skills.manaCapacity']>=measured['skills.calls']);
+    assert.equal(measured['skills.manaCapacity']||0,measured['skills.calls']||0,'one capacity evaluation per accepted resource maintenance');
     assert(effectCounts.calls>0&&effectCounts.staticMs>=0&&effectCounts.dynamicMs>=0);
     api.effects.measureEffects(false);
     const snapshotBefore=JSON.stringify(api.capture(c));
