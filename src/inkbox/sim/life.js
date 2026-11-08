@@ -5,7 +5,8 @@ import { stepLegendTravel } from '../wanxiang/legend.js';
 import { initializeBornProfile } from '../wanxiang/runtime.js';
 import { readEffects } from '../wanxiang/effects.js';
 import { stepEncounterTravel } from '../wanxiang/encounters.js';
-import { enterSite, siteHasContent } from './sites.js';
+import { enterSite } from './sites.js';
+import { nearestSeekSite } from './siteSearch.js';
 import { workMetricsEnabled, startWorkMetric, endWorkMetric, countWorkMetric, recordWorkDt } from './workMetrics.js';
 import { chooseSkillAction, stepSkillResources, needsSkillResources } from '../wanxiang/skills.js';
 import { recordCombatAttempt, emitCombatHit } from './presentation.js';
@@ -1026,20 +1027,8 @@ export class Life {
       const roll = r();
       if (roll < 0.42) {
         // 去最近的秘境 / 洞府碰机缘
-        const queryStarted=measuring?startWorkMetric(world):null;
-        const sites = world.sitesNear(e.x, e.y, 30);
-        if(measuring){
-          countWorkMetric(world,'seek.queries');countWorkMetric(world,'seek.checked',world.sites.length);
-          countWorkMetric(world,'seek.in-radius',sites.length);
-          if(sites[0]){
-            const nearest=sites[0].site;countWorkMetric(world,'seek.nearest-distance',sites[0].dist);
-            if(nearest.kind==='formation')countWorkMetric(world,'seek.nearest-formation');
-            if(nearest.kind==='cave'&&!siteHasContent(nearest,world))countWorkMetric(world,'seek.nearest-dormant');
-          }
-          endWorkMetric(world,'seek.query',queryStarted);
-        }
-        if (sites.length && sites[0].site.kind !== 'formation') {
-          const s = sites[0].site;
+        const s = nearestSeekSite(world,e.x,e.y,30,measuring);
+        if (s) {
           return { x: s.x + 0.5, y: s.y + 0.5, state: 'seek', duration: 20 + r() * 20 };
         }
       }

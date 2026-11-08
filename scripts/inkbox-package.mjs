@@ -23,6 +23,7 @@ const FILES = [
   'scripts/inkbox-wx-e0-cost-contract.mjs',
   'scripts/inkbox-wx-e0-metrics.mjs',
   'scripts/inkbox-wx-e0-skills.mjs',
+  'scripts/inkbox-wx-e0-sites.mjs',
   'scripts/inkbox-wx-e0-replay.mjs',
   'docs/development/WX_D_DELIVERY.md',
   'docs/development/WX_D_OPPORTUNITY_GEOGRAPHY.md',
