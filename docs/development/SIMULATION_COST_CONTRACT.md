@@ -25,7 +25,7 @@ The registry pins SHA-256 hashes for the small set of sensitive files listed the
 
 Hashes are human-review anchors: they detect unreviewed content changes, but do not understand code or prove that a reviewed change is efficient. They must never be refreshed automatically by the checker. An approved update records the reviewed source hash and a concise review note.
 
-The initial hashes describe baseline `c4b169d`; they do not claim that historical costs have already been optimized or measured. `src/inkbox/sim/siteSearch.js` is a planned protected entry and remains absent at baseline; its cost card is provisional until implementation is reviewed and its hash is explicitly registered.
+The registry's baseline inventory describes `c4b169d`; it does not claim that historical costs have already been optimized or measured. The protected hashes describe the reviewed candidate content. `src/inkbox/sim/siteSearch.js` was absent at baseline and is now registered with its implemented selector cost card and reviewed hash.
 
 ## Exceptions
 

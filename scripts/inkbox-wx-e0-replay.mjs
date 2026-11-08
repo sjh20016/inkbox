@@ -46,19 +46,24 @@ export async function nativeApi(root=path.resolve(fileURLToPath(new URL('..',imp
     }
   };return api;
 }
-export function contextSummary(api,world) {
+export function contextSummary(api,world,{sinceDay=world.day}={}) {
   const d=api.demographics;
   const perPlane=Object.fromEntries(['mortal','upper','nether'].map(plane=>{
     const w=plane==='mortal'?world:world[plane];if(!w)return [plane,null];
     const alive=(w.entities||[]).filter(e=>e.hp>0);
-    const resources=(w.factions||[]).map(f=>({id:f.id,provisions:f.resources?.provisions??null,spiritStone:f.resources?.spiritStone??null}));
+    const resources=(w.factions||[]).map(f=>({id:f.id,provisions:f.resources?.provisions??null,spiritStone:f.resources?.spiritStone??null,
+      economy:structuredClone(f.economy||{})}));
     return [plane,{entities:alive.length,humans:alive.filter(d.isHumanPerson).length,mortals:alive.filter(d.isMortalHuman).length,
       cultivators:alive.filter(e=>d.isHumanPerson(e)&&e.level>0).length,profiles:alive.filter(e=>e.wanxiang).length,
       combatAllocated:alive.filter(e=>e.wanxiang?.cultivation?.combat).length,villages:w.villages?.length||0,factions:w.factions?.length||0,
       artifacts:(w.artifacts?.length||0)+alive.reduce((n,e)=>n+(e.artifacts?.length||0),0),sites:w.sites?.length||0,
       activeCaves:(w.sites||[]).filter(s=>s.kind==='cave'&&api.sites.siteHasContent(s,w)).length,
       dormantCaves:(w.sites||[]).filter(s=>s.kind==='cave'&&!api.sites.siteHasContent(s,w)).length,
-      popLog:structuredClone(w.popLog||{}),resources}];
+      // Living cohorts are not a cumulative birth ledger: children who died in
+      // this window are absent. Preserve the real mortality ledger separately.
+      retainedVillageBirthsSinceStart:alive.filter(e=>e.birthOrigin?.kind==='village'&&e.birthOrigin.day>sinceDay).length,
+      birthOrigins:Object.fromEntries(['village','genesis','placed','fixture'].map(kind=>[kind,alive.filter(e=>e.birthOrigin?.kind===kind).length])),
+      deadLog:structuredClone(w.deadLog||{}),retainedDead:w.dead?.length||0,resources}];
   }));return {day:world.day,perPlane};
 }
 export function assertNativeInvariants(api,c) {

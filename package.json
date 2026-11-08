@@ -164,6 +164,8 @@
     "coverage:wanxiang:c": "node scripts/inkbox-wx-c-coverage.mjs",
     "test:wanxiang:d": "node scripts/inkbox-wx-d-geography.mjs && node scripts/inkbox-wx-d-social.mjs && node scripts/inkbox-wx-d-destiny.mjs && node scripts/inkbox-wx-d-integration.mjs && node scripts/inkbox-wx-d-ui.mjs",
     "test:wx-e0": "node scripts/inkbox-wx-e0-cost-contract.mjs && node scripts/inkbox-wx-e0-metrics.mjs && node scripts/inkbox-wx-e0-skills.mjs && node scripts/inkbox-wx-e0-sites.mjs",
+    "profile:wx-e0": "node scripts/inkbox-wx-e0-perf.mjs",
+    "test:wx-e0:browser": "node scripts/inkbox-wx-e0-browser.mjs",
     "profile:wanxiang:d": "node scripts/inkbox-wx-d-profile.mjs",
     "profile:wanxiang:d:perf": "node scripts/inkbox-wx-d-perf.mjs",
     "test:wanxiang:d:browser": "node scripts/inkbox-wx-d-browser.mjs"
