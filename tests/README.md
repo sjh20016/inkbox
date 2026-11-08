@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+WX-E0 增加 `npm run test:wx-e0` 并进入 Fast：成本卡/受审哈希/新增模块门禁、计量开关的完整世界与 RNG 等价、人物技能资格、原物与地点生命周期。保留原 Fast/Heavy。`profile:wx-e0` 使用固定源码快照和真实检查点做关闭诊断的交错对照，另做阶段计量及 S/B 重放；`test:wx-e0:browser` 使用隔离 Edge/CDP 验证新世界/100年/400年、Canvas/Three、三速度各60秒，另做三视口 UI 检查。`INKBOX_WX_E0_SELF_CHECK=1` 仅为5秒脚本自检；`INKBOX_WX_E0_VIEWPORT_ONLY=1` 只运行两渲染器六组真实视口交互，不代替性能验收；`INKBOX_WX_E0_REPORT_DIR` 可把复测保存到独立目录。规则见 [模拟成本准入合同](../docs/development/SIMULATION_COST_CONTRACT.md)，大检查点和性能JSON仍放忽略目录。
+
 WX-D 新增 `npm run test:wanxiang:d`：有界陆路供给、真实绕障赴事、剩余特殊资源与沉寂旧址、付费疗伤与护关、宗门照护、命卦选择、v11 任务恢复及三界短期推进。保留 Alpha/B/C 与完整 Fast/Heavy。`profile:wanxiang:d` 从三个正式小景种子运行100年，恢复各自v11存档续30年，首种子续至200/400年；`profile:wanxiang:d:perf` 从该400年真实存档重复30日原生推进并核对确定性，不代表GPU或跨版本提速。`test:wanxiang:d:browser` 复用隔离Edge/CDP检查三视口、五页、改命敕改、因缘回执、旧址和存读档；自然与受控样本分别标识。结果见 [WX-D交付](../docs/development/WX_D_DELIVERY.md)。
 
 V0.2-B 新增 `npm run test:wanxiang:b`：生命周期、交通、洞府、道种、血脉、卦象与连续命途。`profile:wanxiang:b` 生成自然及成熟续跑画像；`test:wanxiang:b:browser` 检查三视口、改命、存读档及回访。详见 [B 交付](../docs/development/WX_B_DELIVERY.md)。

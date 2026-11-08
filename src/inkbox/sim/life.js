@@ -6,7 +6,9 @@ import { initializeBornProfile } from '../wanxiang/runtime.js';
 import { readEffects } from '../wanxiang/effects.js';
 import { stepEncounterTravel } from '../wanxiang/encounters.js';
 import { enterSite } from './sites.js';
-import { chooseSkillAction, stepSkillResources } from '../wanxiang/skills.js';
+import { nearestSeekSite } from './siteSearch.js';
+import { workMetricsEnabled, startWorkMetric, endWorkMetric, countWorkMetric, recordWorkDt } from './workMetrics.js';
+import { chooseSkillAction, stepSkillResources, needsSkillResources } from '../wanxiang/skills.js';
 import { recordCombatAttempt, emitCombatHit } from './presentation.js';
 import { tryCombatIgnition } from './combatEnvironment.js';
 // 水墨沙盒 · 生灵、聚落与宗门
@@ -631,16 +633,25 @@ export class Life {
   // ── 主循环 ──────────────────────────────────────────────
   step(dtDays) {
     const world = this.world;
+    const measuring=workMetricsEnabled(world);
+    let phaseStarted=measuring?startWorkMetric(world):null;
+    if(measuring)recordWorkDt(world,dtDays);
     this.processPendingSpawns();
     this.rebuildGrid();
 
     const list = world.entities;
     let dirtyTerrain = false;
 
+    if(measuring){endWorkMetric(world,'life.prepare',phaseStarted);phaseStarted=startWorkMetric(world);}
+
     for (let i = 0; i < list.length; i += 1) {
       const e = list[i];
-      if (this.stepEntity(e, dtDays)) dirtyTerrain = true;
+      const entityStarted=measuring?startWorkMetric(world):null;
+      if (this.stepEntity(e, dtDays, measuring)) dirtyTerrain = true;
+      if(measuring)endWorkMetric(world,'life.stepEntity',entityStarted);
     }
+
+    if(measuring){endWorkMetric(world,'life.entity-loop',phaseStarted);phaseStarted=startWorkMetric(world);}
 
     // 清除死者与飞升者。
     // 用「就地压缩」而不是「与末尾交换后 pop」：后者在倒序遍历时会跳过被换到
@@ -695,6 +706,7 @@ export class Life {
       world.year = Math.floor(world.day / TIME.daysPerYear);
     }
     if (dirtyTerrain) world.touch();
+    if(measuring)endWorkMetric(world,'life.post-entity',phaseStarted);
   }
 
   /**
@@ -733,7 +745,7 @@ export class Life {
   }
 
   /** 返回 true 表示改动了地形（需要重算类型） */
-  stepEntity(e, dtDays) {
+  stepEntity(e, dtDays, measuring=workMetricsEnabled(this.world)) {
     const world = this.world;
     // ── 本 tick 的寿元快照（**临时字段，不进存档**）──────────────────
     // `diedOfOldAge` 用它把「寿终正寝」与「寿元被砸到 age 以下而死」分开：
@@ -768,7 +780,11 @@ export class Life {
     // 加了这一句之后，`hp <= 0` 才真正等于「本 tick 必死」：
     // 它不再行动、不再回血，随后由死亡清扫正常走 `onDeath`。
     if (e.hp <= 0) return false;
-    if (e.wanxiang) stepSkillResources(e,dtDays);
+    if (e.wanxiang) {
+      if(measuring)countWorkMetric(world,'skills.profile-attempts');
+      if(needsSkillResources(e))stepSkillResources(e,dtDays,measuring?world:null);
+      else if(measuring)countWorkMetric(world,'skills.rejected');
+    }
     stepBody(world,e);
     const info = isMortalHuman(e) ? SPECIES_INFO.human : SPECIES_INFO[e.sp] || SPECIES_INFO.human;
     e.anim += dtDays * 2.4;
@@ -995,6 +1011,7 @@ export class Life {
 
   planNext(e, info) {
     const world = this.world;
+    const measuring=workMetricsEnabled(world);
     const village = e.village ? world.villageById(e.village) : null;
     const r = this.rng;
 
@@ -1010,9 +1027,8 @@ export class Life {
       const roll = r();
       if (roll < 0.42) {
         // 去最近的秘境 / 洞府碰机缘
-        const sites = world.sitesNear(e.x, e.y, 30);
-        if (sites.length && sites[0].site.kind !== 'formation') {
-          const s = sites[0].site;
+        const s = nearestSeekSite(world,e.x,e.y,30,measuring);
+        if (s) {
           return { x: s.x + 0.5, y: s.y + 0.5, state: 'seek', duration: 20 + r() * 20 };
         }
       }

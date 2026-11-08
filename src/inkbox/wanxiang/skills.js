@@ -1,6 +1,21 @@
 import {readEffects} from './effects.js';
 import { practiceState, knownPractices } from './practice.js';
 import { manaCapacity } from './damage.js';
+import { countWorkMetric, startWorkMetric, endWorkMetric } from '../sim/workMetrics.js';
+import { isMortalHuman } from '../core/demographics.js';
+
+function measuredCapacity(e,world) {
+ if(world)countWorkMetric(world,'skills.manaCapacity');
+ return manaCapacity(e);
+}
+
+// B-class: no automatic mana/default-skill allocation for a life with neither
+// formal skill eligibility nor retained combat/equipment. Existing state keeps
+// its previous maintenance policy, including a cultivator who loses levels.
+export function needsSkillResources(e) {
+ const c=e?.wanxiang?.cultivation;
+ return e?.level>0 || !!c?.combat || Array.isArray(c?.skills)&&c.skills.length>0;
+}
 
 export const SKILLS=Object.freeze([
  {id:'renew',name:'回元',cost:8,cooldown:4,range:0,kind:'heal',scale:.08},
@@ -17,12 +32,18 @@ export function equipSkills(e,ids) {
  if(!Array.isArray(ids)||ids.length>skillSlotCount(e)||new Set(ids).size!==ids.length||ids.some(id=>!canUseSkill(e, SKILLS.find(s=>s.id===id)))) return false;
  combatState(e);practiceState(e).skills=ids.slice();return true;
 }
-export function combatState(e) {
+function updateCombatResources(e,days,world) {
  const c=practiceState(e);
  if(!c.combat && c.skills.length===0) c.skills=['renew','strike','spell'];
- const state=c.combat ||= {mana:manaCapacity(e),lastActionDay:-1,cooldowns:{}};
- state.mana=Math.min(manaCapacity(e),state.mana);return state;
+ // Capacity depends only on the already-initialized physique. No relevant
+ // state changes between the old initialization, clamp and regeneration reads.
+ const capacity=measuredCapacity(e,world);
+ const state=c.combat ||= {mana:capacity,lastActionDay:-1,cooldowns:{}};
+ state.mana=Math.min(capacity,state.mana);
+ if(days>0)state.mana=Math.min(capacity,Math.max(0,state.mana)+days*2);
+ return state;
 }
+export function combatState(e,world=null) {return updateCombatResources(e,0,world);}
 // One bounded scan, one action. Caller applies returned damage through its existing death path.
 // null is ordinary-attack fallback; wait consumes this attempt without another attack.
 export function chooseSkillAction(e,target,day,{power=1,defense=0}={}) {
@@ -41,7 +62,15 @@ export function chooseSkillAction(e,target,day,{power=1,defense=0}={}) {
  // Global action interval also covers normal fallback to prevent repeated same-day attacks.
  state.lastActionDay=day;return null;
 }
-export function stepSkillResources(e,dtDays) {
+export function stepSkillResources(e,dtDays,world=null) {
  if(!Number.isFinite(dtDays)||dtDays<=0) return;
- const state=combatState(e);state.mana=Math.min(manaCapacity(e),Math.max(0,state.mana)+dtDays*2);
+ if(!needsSkillResources(e)){if(world)countWorkMetric(world,'skills.direct-rejected');return;}
+ const started=world?startWorkMetric(world):null;
+ if(world){
+   countWorkMetric(world,'skills.calls');
+   countWorkMetric(world,isMortalHuman(e)?'skills.mortal.calls':e.level>0?'skills.level-positive.calls':'skills.other-unleveled.calls');
+   countWorkMetric(world,e.wanxiang?.cultivation?.combat?'skills.preallocated':'skills.unallocated');
+ }
+ updateCombatResources(e,dtDays,world);
+ if(world)endWorkMetric(world,'skills.resources',started);
 }

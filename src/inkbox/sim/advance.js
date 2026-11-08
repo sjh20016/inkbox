@@ -52,7 +52,7 @@ import { stepWanling } from './wanling.js';
 import { stepDaoActivities } from './daoActivities.js';
 import { stepTransit } from './transit.js';
 import { settleVows } from './journal.js';
-import { startWorkMetric, endWorkMetric } from './workMetrics.js';
+import { startWorkMetric, endWorkMetric, workMetricsEnabled } from './workMetrics.js';
 
 /**
  * 各低频时钟的节拍（游戏日）。
@@ -135,9 +135,10 @@ export function advanceWorld(world, days, deps = {}) {
 
   // ── 凡间主循环（每拍都跑，不节流）────────────────────────────
   if (deps.life) {
-    const started = startWorkMetric(world);
+    const measuring=workMetricsEnabled(world);
+    const started = measuring ? startWorkMetric(world) : null;
     deps.life.step(days);
-    endWorkMetric(world, 'life', started);
+    if(measuring)endWorkMetric(world, 'life', started);
   }
   if (deps.life && world.plane === 'mortal') stepDaoActivities(world,deps.life);
 
