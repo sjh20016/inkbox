@@ -2,7 +2,7 @@
 
 ## 交付与边界
 
-候选分支 `perf/wx-e0-raincoat-first`，基于 WX-D #62 `c4b169d707704b614344345dfb1cac8fe96d50a9`，Draft PR base 为 `feature/wx-d-yinyuan-chengju`。与#63/#64平行，不合并main、不关闭或改基原有PR。开工核查的依赖与准确CI见 [M0](WX_E0_BASELINE.md)，后续安全合流与提交分组见 [集成计划](WX_E0_INTEGRATION_PLAN.md)。
+候选分支 `perf/wx-e0-raincoat-first`，基于 WX-D #62 `c4b169d707704b614344345dfb1cac8fe96d50a9`，[Draft PR #65](https://github.com/sjh20016/inkbox/pull/65) base 为 `feature/wx-d-yinyuan-chengju`。与#63/#64平行，不合并main、不关闭或改基原有PR。开工核查的依赖与准确CI见 [M0](WX_E0_BASELINE.md)，后续安全合流与提交分组见 [集成计划](WX_E0_INTEGRATION_PLAN.md)。
 
 | 工作 | 类别 | 实际变化 |
 |---|---|---|
@@ -22,11 +22,13 @@ B1保守保留旧档凡人的combat/装备维护，不删除历史状态；这�
 
 同一世界线的容量调用从30,324→15,160（100年）及81,723→40,858（400年）。B1额外跳过50/124次无资格维护。关闭诊断的最终候选wall中位数约+2.0%/+4.8%，没有稳定提速证据；本轮交付可核实的少做工作、资格修正和防退化合同，不宣传固定提速百分比。
 
-本地 `npm ci`、core、G8、Alpha、WX-B/C/D、C1、G1、three-realms、save-equivalence、E0专项、build及test:package均已退出0；发布包644文件，报告/自然大档未混入。最终CI结果随候选收束记录；尚未完成的检查不会提前写成成功。
+本地 `npm ci`、core、G8、Alpha、WX-B/C/D、C1、G1、three-realms、save-equivalence、E0专项、build及test:package均已退出0；发布包644文件，报告/自然大档未混入。原有Fast/Heavy完整保留，E0进入Fast。准确交付HEAD的远程结论和job链接以 [PR #65 检查](https://github.com/sjh20016/inkbox/pull/65/checks)、PR说明及本地 `acceptance.json` 为准；不把历史提交成功当最终成功。完整手动Browser Smoke仅workflow_dispatch运行，普通push/PR不会执行它。
 
 ## 浏览器与最终状态
 
-5秒Canvas新世界自检已通过实际推进、人物检视、暂停、压缩存读档与自有进程清理；只用于脚本调试。正式矩阵为Canvas/Three × 新世界/100年/400年 × 1×/默认/最高，每项60秒，固定1366×768；另做1440×900、1024×768、390×844三视口截图与人物/暂停检查。正式结果尚待记录，不能把自检称为验收。
+5秒Canvas新世界自检已通过实际推进、人物检视、暂停、压缩存读档与自有进程清理；只用于脚本调试。正式矩阵为Canvas/Three × 新世界/100年/400年 × 1×/默认2×/最高20×，每项60秒，固定1366×768；另做1440×900、1024×768、390×844三视口截图与人物/暂停检查。正式运行保留每项实际调用次数、推进时间、frame P50/P95/P99/长帧、update/advance/render/Life累计归因、压缩槽字符数、UI保存/载入耗时、headless/焦点/可见性以及GL自报设备。只有正式mode、真实推进及非空采样才计验收；不能把自检称为验收。
+
+完整逐项观测、失败/阻塞、控制位面标记及自有浏览器/profile/服务器清理在 `browser/report.json` 和最终 `acceptance.json`，收束结论同步 [PR说明](https://github.com/sjh20016/inkbox/pull/65)。截图另由主代理实际查看，不用DOM成功冒充视觉通过。headless RAF并非物理显示器帧率；即使GL自报硬件，也不将此环境数据当作前台硬件GPU封板。原生阶段性能与浏览器采样不并跑。
 
 最终交付HEAD/tree/清洁状态、PR URL、对应Fast/Heavy job链接、每项准确退出码与报告/源码/脚本SHA在本地 `reports/local/wx-e0/acceptance.json`；该目录忽略、不进入发布包，不能当作远程artifact。本文收束后只报告已观察结果，最终CI以PR对应准确SHA为准。
 
