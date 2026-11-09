@@ -1,7 +1,7 @@
 import fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';
 import {launch,findEdge,sleep} from '../../scripts/cdp.mjs';import {launchOwnedServer} from '../../scripts/inkbox-owned-server.mjs';
 const root=process.cwd(),out=path.join(root,'reports/local/wx-e2p/browser');fs.mkdirSync(out,{recursive:true});
-const report={head:'cda97516d4a20e258af103cd395ddff67644b793',node:process.version,platform:process.platform,inputs:{},cases:[],browser:'Edge headless',durationMs:Number(process.env.WXE2P_DURATION_MS||10000)};
+const report={kind:'scheduler-only demo; renderer labels are scenarios, NOT actual Canvas/Three',head:'cda97516d4a20e258af103cd395ddff67644b793',node:process.version,platform:process.platform,inputs:{},cases:[],browser:'Edge headless',durationMs:Number(process.env.WXE2P_DURATION_MS||10000)};
 for(const y of [100,400]){const p=`reports/local/wx-e2p/checkpoints/20260914-${y}y-save.json`;report.inputs[y]={file:p,sha256:createHash('sha256').update(fs.readFileSync(p)).digest('hex')};}
 let server,b;try{server=await launchOwnedServer({root,port:0});b=await launch({browser:findEdge(),url:server.url+'/research/wx-e2p/demo.html',width:1366,height:768,gpu:false,headless:true});
  if(!await b.waitFor('return !!window.wxE2P',{timeoutMs:30000}))throw Error('demo unavailable');

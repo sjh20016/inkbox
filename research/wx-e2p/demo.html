@@ -9,7 +9,7 @@ let saved=null,engine=null,worker=null,session=0,seq=0,worldId='',paused=false;c
 const show=x=>el.textContent=JSON.stringify(x,null,2);document.querySelector('#file').onchange=async e=>{saved=JSON.parse(await e.target.files[0].text());show({loadedDay:saved.day});};
 const stop=()=>{worker?.terminate();worker=null;engine=null;session++;paused=false;acc=0;};
 document.querySelector('#p1').onclick=()=>{if(!saved)return;stop();engine=createEngine(saved,api);show(engine.status());};
-document.querySelector('#p2').onclick=()=>{if(!saved)return;stop();worldId=`${saved.seed}:${saved.day}`;worker=new Worker('./worker.mjs',{type:'module'});worker.onmessage=e=>{show(e.data);if(e.data.type==='save')download(e.data.saved);};worker.postMessage({type:'init',sessionId:session,seq:++seq,worldId,saved});};
+document.querySelector('#p2').onclick=()=>{if(!saved)return;stop();worldId=`${saved.seed}:${saved.day}`;const activeSession=session,activeWorld=worldId,activeWorker=new Worker('./worker.mjs',{type:'module'});worker=activeWorker;activeWorker.onmessage=e=>{if(worker!==activeWorker||session!==activeSession||worldId!==activeWorld||e.data.sessionId!==activeSession||e.data.worldId!==activeWorld)return;show(e.data);if(e.data.type==='save')download(e.data.saved);};activeWorker.postMessage({type:'init',sessionId:session,seq:++seq,worldId,saved});};
 const send=(type,extra={})=>{if(worker)worker.postMessage({type,sessionId:session,seq:++seq,worldId,...extra});};
 document.querySelector('#pause').onclick=()=>{paused=true;if(engine)show(engine.pause());else send('pause');};document.querySelector('#resume').onclick=()=>{paused=false;if(engine)show(engine.resume());else send('resume');};
 document.querySelector('#cancel').onclick=()=>{stop();show({cancelled:true,session});};
