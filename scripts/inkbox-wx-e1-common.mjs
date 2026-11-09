@@ -22,8 +22,11 @@ export function exportReference(){
  if(!fs.existsSync(path.join(dir,'package.json'))){fs.mkdirSync(dir,{recursive:true});const archive=path.join(dir,'source.tar');execFileSync('git',['archive','--format=tar','--output='+archive,BASE,'src','package.json'],{cwd:ROOT});execFileSync('tar',['-xf',archive,'-C',dir]);fs.unlinkSync(archive);}
  // Every export file is checked against the pinned Git blob on every invocation.
  const files=git(ROOT,['ls-tree','-r','--name-only',BASE,'src']).split(/\r?\n/);
- const hashes={};for(const f of files){const actual=fs.readFileSync(path.join(dir,f));const expected=execFileSync('git',['show',BASE+':'+f],{cwd:ROOT,maxBuffer:32*1024*1024});if(digest(actual)!==digest(expected))throw Error('Modified reference '+f);hashes[f]=digest(actual);}
- return {root:dir,head:BASE,tree:git(ROOT,['rev-parse',BASE+'^{tree}']),dirty:false,hashes,pinnedExport:true};
+ const hashes={},gitHashes={};for(const f of files){const actual=fs.readFileSync(path.join(dir,f));const expected=execFileSync('git',['show',BASE+':'+f],{cwd:ROOT,maxBuffer:32*1024*1024});
+  const normalize=bytes=>/\.(js|json|css|html|md|txt|csv|svg)$/.test(f)?Buffer.from(bytes.toString('utf8').replace(/\r\n?/g,'\n')):bytes;
+  if(digest(normalize(actual))!==digest(normalize(expected)))throw Error('Modified reference '+f);hashes[f]=digest(actual);gitHashes[f]=digest(expected);
+ }
+ return {root:dir,head:BASE,tree:git(ROOT,['rev-parse',BASE+'^{tree}']),dirty:false,hashes,gitHashes,normalization:'git archive honors Windows CRLF attributes; text compared as LF, binary bytes exact',pinnedExport:true};
 }
 export const checkpoint=age=>path.resolve(option('checkpoint-root',path.join(ROOT,'../inkbox-wxe0/reports/local/wx-e0/checkpoints')),`20260914-${age}y-save.json`);
 export function readCheckpoint(age){const file=checkpoint(age),bytes=fs.readFileSync(file),saved=JSON.parse(bytes);if(!saved.runtime)throw Error('Missing native runtime');return {file,bytes:bytes.length,sha256:digest(bytes),saved};}

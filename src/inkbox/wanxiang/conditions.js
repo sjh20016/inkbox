@@ -19,9 +19,18 @@ export function deriveConditions(e,context={}) {
  const peerConditions=['mentor_near','different_path_mentor','same_sect_ally_near','three_allies_near'];
  const measuring=workMetricsEnabled(world),peerEligible=peerConditions.some(needs);
  if(measuring){countWorkMetric(world,'conditions.calls');if(peerEligible){countWorkMetric(world,'conditions.peer.calls');maxWorkMetric(world,'conditions.peer.maxScan',world?.entities?.length||0);}}
- const peers=peerEligible?(world?.entities||[]).filter(other=>{if(measuring)countWorkMetric(world,'conditions.peer.entitiesVisited');return other!==e&&near(other);}):[];
- const mentor=peers.find(other=>relation(other,'mentor'));
- if(measuring){if(mentor)countWorkMetric(world,'conditions.peer.mentorHits');countWorkMetric(world,'conditions.peer.nearHits',peers.length);}
+ let mentor,nearCount=0,allies=0;
+ // Preserve Array.filter's original world order and sparse-array behavior. All
+ // returned peer fields remain computed, even when needed requests only one.
+ if(peerEligible){const list=world?.entities||[];for(let i=0;i<list.length;i++){
+  if(!(i in list))continue;
+  const other=list[i];if(measuring)countWorkMetric(world,'conditions.peer.entitiesVisited');
+  if(other===e||!near(other))continue;
+  nearCount++;
+  if(!mentor&&relation(other,'mentor'))mentor=other;
+  if(e.faction&&other.faction===e.faction&&['fight','attack','mad'].includes(other.state))allies++;
+ }}
+ if(measuring){if(mentor)countWorkMetric(world,'conditions.peer.mentorHits');countWorkMetric(world,'conditions.peer.nearHits',nearCount);}
  const patient=context.target;
  const recent=(type,days)=>{const stamp=p?.experienceLedger?.recentFacts?.[type];if(Number.isFinite(stamp)&&day>=stamp&&day-stamp<days)return true;return (p?.experienceLedger?.records||[]).some(row=>row.type===type&&day>=row.day&&day-row.day<days);};
  const blocked=['yin_block','yang_block'].includes(p?.physique?.id)&&!(p.physique.stage>0);
@@ -35,8 +44,8 @@ export function deriveConditions(e,context={}) {
  heal_true_kin:!!patient&&relation(patient,'kin'),
  aid_without_repayment:!!patient&&context.paidAid===true&&!p?.bonds?.some(b=>b.targetKey===`${world?.plane||'mortal'}:${patient.id}`),
  mentor_near:!!mentor,different_path_mentor:!!mentor&&mentor.dao?.path?.key!==path,
- same_sect_ally_near:!!e.faction&&peers.some(other=>other.faction===e.faction&&['fight','attack','mad'].includes(other.state)),
- three_allies_near:!!e.faction&&peers.filter(other=>other.faction===e.faction&&['fight','attack','mad'].includes(other.state)).length>=3,
+ same_sect_ally_near:!!e.faction&&allies>0,
+ three_allies_near:!!e.faction&&allies>=3,
  enemy_stronger:context.target?.hp>0&&context.target.level>e.level,
  enemy_hp_below_30:context.target?.maxHp>0&&context.target.hp/context.target.maxHp<.3,
  same_path_manual:!!target&&target.kind===path,
