@@ -129,7 +129,16 @@ export function consumeGateAid(e,day=0) {
 }
 export function experienceEffects(e,day=0,world=null) {
  const measuring=workMetricsEnabled(world);
- const p=e?.wanxiang;const active=id=>{if(measuring){countWorkMetric(world,'experience.active.queries');countWorkMetric(world,'experience.active.arrays');countWorkMetric(world,'experience.active.copied',(p?.traits?.length||0)+(p?.states?.length||0));}return [...(p?.traits||[]),...(p?.states||[])].some(t=>{if(measuring)countWorkMetric(world,'experience.active.visited');return t.id===id&&(t.expiresDay==null||t.expiresDay>day);});};
+ const p=e?.wanxiang,activeIds=new Set();
+ // One invocation-local pass. Deliberately do NOT filter dormant: the original
+ // active(id) checks only id/expiry, unlike the catalog-entry effect filter.
+ const collect=list=>{if(list)for(const t of list){
+  if(measuring)countWorkMetric(world,'experience.active.visited');
+  if(t.expiresDay==null||t.expiresDay>day)activeIds.add(t.id);
+ }};
+ collect(p?.traits);collect(p?.states);
+ if(measuring)countWorkMetric(world,'experience.active.sets');
+ const active=id=>{if(measuring)countWorkMetric(world,'experience.active.queries');return activeIds.has(id);};
  const shared=(p?.bonds||[]).filter(row=>row.id==='shared_insight'&&!row.dormant&&row.expiresDay>day);
  if(measuring){countWorkMetric(world,'experience.calls');countWorkMetric(world,'experience.shared.bonds',shared.length);if(shared.length&&world?.entities)countWorkMetric(world,'experience.shared.calls');}
  const helper=shared.length&&world?.entities?.find(other=>{if(measuring)countWorkMetric(world,'experience.shared.entitiesVisited');return other.hp>0&&Math.hypot(e.x-other.x,e.y-other.y)<=8&&shared.some(row=>row.targetKey===`${world.plane||'mortal'}:${other.id}`);});
