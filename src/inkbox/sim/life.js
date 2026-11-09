@@ -635,7 +635,7 @@ export class Life {
     const world = this.world;
     const measuring=workMetricsEnabled(world);
     let phaseStarted=measuring?startWorkMetric(world):null;
-    if(measuring)recordWorkDt(world,dtDays);
+    if(measuring){recordWorkDt(world,dtDays);countWorkMetric(world,'life.step.calls');}
     this.processPendingSpawns();
     this.rebuildGrid();
 
@@ -647,6 +647,7 @@ export class Life {
     for (let i = 0; i < list.length; i += 1) {
       const e = list[i];
       const entityStarted=measuring?startWorkMetric(world):null;
+      if(measuring)countWorkMetric(world,'life.stepEntity.calls');
       if (this.stepEntity(e, dtDays, measuring)) dirtyTerrain = true;
       if(measuring)endWorkMetric(world,'life.stepEntity',entityStarted);
     }
@@ -670,11 +671,14 @@ export class Life {
     }
     list.length = w;
 
+    let subsystemStarted=measuring?startWorkMetric(world):null;
     this.syncVillagePops();
     this.stepVillages(dtDays);
     this.stepFounding(dtDays);
     this.stepWildlife(dtDays);
+    if(measuring){endWorkMetric(world,'life.villages',subsystemStarted);subsystemStarted=startWorkMetric(world);}
     stepSects(world, this, dtDays, this.rng);
+    if(measuring)endWorkMetric(world,'life.sects',subsystemStarted);
     // 宗门本月收入与归属已更新，再真实支出援助；最后才判长期荒废。
     for (const village of world.villages) aidSettlement(world, village, dtDays);
     this.resolveVillageAbandonments();
@@ -684,7 +688,9 @@ export class Life {
     // `stepSects → stepTerritory` 每 30 日重算出来的推导量。
     // 用的是独立的 `warRng`，理由见构造函数里那段注释。
     stepWar(world, this.warRng, dtDays);
+    if(measuring)subsystemStarted=startWorkMetric(world);
     stepRelations(world, this, dtDays, this.rng);
+    if(measuring)endWorkMetric(world,'life.relations',subsystemStarted);
     // 世家：立族 / 声望 / 兴衰 / 断绝。每 360 日普查一次（见 sim/family.js），
     // 全部走哈希与确定性排序，**不抽签**——主随机流一点都不动，
     // 世界轨迹才与上一轮可比。
@@ -823,7 +829,7 @@ export class Life {
     const fert = world.fertility(here);
     if (fert > 0.2 && world.fire[here] < 0.2) {
       const eat = Math.min(1, fert * dtDays * 0.05);
-      e.hp = Math.min(e.maxHp, e.hp + e.maxHp * eat * 0.35 * readEffects(e,{day:world.day,world}).healingReceived);
+      e.hp = Math.min(e.maxHp, e.hp + e.maxHp * eat * 0.35 * readEffects(e,{day:world.day,world},'eating').healingReceived);
       e.carried = Math.min(1, e.carried + eat * (info.diet > 0 ? 0.5 : 0));
     } else {
       // 死因标记：站在无肥力的地上挨饿 ⇒ `deathOther`（不是寿终）。
@@ -929,7 +935,7 @@ export class Life {
     // 状态机
     e.timer -= dtDays;
     const enemy = this.findEnemy(e, 9);
-    const retreatEffects=readEffects(e,{day:world.day,world,target:enemy});
+    const retreatEffects=readEffects(e,{day:world.day,world,target:enemy},'retreat');
     const retreatFraction=WOUNDED_HP_FRACTION+retreatEffects.retreat+retreatEffects.escape;
     if(!enemy&&e.state==='flee'){
       const wound=e.wanxiang?.experienceLedger?.records?.findLast(r=>r.type==='combat-wound'&&world.day-r.day<=180);
@@ -1109,7 +1115,7 @@ export class Life {
     const terrainSpeed = TERRAIN_SPEED[world.type[here]] ?? 1;
     // 高境界的修士御剑而行，走得更快
     const realmBoost = 1 + Math.min(1.4, (e.level || 0) * 0.026);
-    const speed = BASE_TILES_PER_DAY * info.speed * terrainSpeed * realmBoost * (e.state === 'flee' ? 1.35 : 1) * readEffects(e,{day:world.day,world}).travel;
+    const speed = BASE_TILES_PER_DAY * info.speed * terrainSpeed * realmBoost * (e.state === 'flee' ? 1.35 : 1) * readEffects(e,{day:world.day,world},'movement').travel;
     const stepLen = speed * dtDays;
     if (stepLen <= 0) return;
 
@@ -1141,6 +1147,7 @@ export class Life {
     const seg = stepLen / n;
 
     for (let k = 0; k < n; k += 1) {
+      if(workMetricsEnabled(world))countWorkMetric(world,'movement.substeps');
       // 每段都重算朝向：目标可能在本段内被走到，也可能被地形逼着绕行
       const dxk = e.tx - e.x;
       const dyk = e.ty - e.y;
@@ -1188,7 +1195,7 @@ export class Life {
   }
 
   findEnemy(e, radius) {
-    const perception=readEffects(e,{day:this.world.day,world:this.world});
+    const perception=readEffects(e,{day:this.world.day,world:this.world},'perception');
     radius = radius*perception.perception+(perception.detectRadius||0);
     // ── 养伤：不出战，也不逃 ──────────────────────────────
     // 「败退」的兑现方式。**必须放在本函数内部、而不是调用点**：

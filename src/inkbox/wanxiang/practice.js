@@ -28,7 +28,7 @@ export function learningEligibility(e,id,{acquired=false,day=0,...context}={}) {
  if(e.hp<=0 || (e.level || 0)<t.minLevel) return {ok:false,reason:'realm'};
  const p=e.wanxiang, roots=p?.root?.elements?.map(x=>ELEMENTS[x]||x);
  const affinity=!roots||!t.elements.length||p?.physique?.id==='chaos'||t.elements.some(x=>roots.includes(x)) ? 1 : .75;
- const learning=readEffects(e,{...context,day,first_manual:!(e.techniques||[]).length,manualId:t.id,sword_manual:t.kind==='sword',alchemy_manual:t.kind==='alchemy'}).learning;
+ const learning=readEffects(e,{...context,day,first_manual:!(e.techniques||[]).length,manualId:t.id,sword_manual:t.kind==='sword',alchemy_manual:t.kind==='alchemy'},'learning').learning;
  return {ok:true,reason:null,rate:Math.max(.1,Math.min(3,learning*affinity)),affinity};
 }
 // Only a genuine acquisition/study activity may call this mutation. Progress is bounded by catalog.

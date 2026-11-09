@@ -144,14 +144,14 @@ export function combatPower(entity, day = 0, world = null, target = null) {
   // 这一列以前**没有任何读者**，见 core/lore.js 里 BLOODLINES 的注释。
   const bloodBonus = 1 + bloodlineProfile(entity.bloodline, 'combat');
   return (1 + level * level * 0.045) * daoBonus * equipBonus * bloodBonus
-    * (1 + realmIndexFor(level) * 0.35) * readEffects(entity,{day,world,target}).combat * bodyCombatMultiplier(entity,day);
+    * (1 + realmIndexFor(level) * 0.35) * readEffects(entity,{day,world,target},'combat').combat * bodyCombatMultiplier(entity,day);
 }
 
 export function maxHpFor(entity, day = 0, world = null) {
   const level = entity.level || 0;
   // 先有真实修为、后有体质：awaken 在转换 sp 前已经写入 level=1。
   const base = isPracticingHuman(entity) ? 220 : 100;
-  return Math.round(base * (1 + level * 0.55) * readEffects(entity,{day,world}).hp * bodyHpMultiplier(entity));
+  return Math.round(base * (1 + level * 0.55) * readEffects(entity,{day,world},'hp-limit').hp * bodyHpMultiplier(entity));
 }
 
 /**
@@ -353,7 +353,7 @@ export function cultivationRate(world, entity) {
     * pollutionFactor
     * madFactor
     * equipFactor
-    * bloodFactor * readEffects(entity,{day:world.day,world}).cultivation
+    * bloodFactor * readEffects(entity,{day:world.day,world},'cultivation').cultivation
     * (entity.wanxiang ? practiceCultivationMultiplier(entity,world.day) : 1) * (1 + daoSeedCultivation(entity,world));
 }
 
@@ -433,7 +433,7 @@ export function stepEntity(world, entity, dtDays, rng) {
   entity.heartDemon = clamp(entity.heartDemon - HEART_DEMON_DECAY_PER_DAY * dtDays, 0, 100);
   // 污染缓慢累积（邪修更快）
   const polluteRate = entity.dao && entity.dao.path.evil ? 0.0022 : 0.0004;
-  entity.pollution = clamp(entity.pollution + polluteRate * dtDays * readEffects(entity,{day:world.day,world}).pollution, 0, 100);
+  entity.pollution = clamp(entity.pollution + polluteRate * dtDays * readEffects(entity,{day:world.day,world},'pollution').pollution, 0, 100);
 
   // 突破
   const need = expToNext(entity.level);
@@ -562,7 +562,7 @@ export function attemptBreakthrough(world, entity, rng) {
     pollution: entity.pollution,
     // 法宝的「渡劫」轴：原作里这一轴就是装备对渡劫生还的影响
     equipBonus: equipBonusOf(entity).tribulation,
-    profileBonus: readEffects(entity,{day:world.day,world,targetLevel:entity.level+1}).breakthrough,
+    profileBonus: readEffects(entity,{day:world.day,world,targetLevel:entity.level+1},'breakthrough').breakthrough,
   });
 
   consumeGateAid(entity,world.day);
@@ -703,7 +703,7 @@ export function stepThunderAscend(world, entity, rng) {
     omenBonus: omen.bonus,
     pollution: entity.pollution,
     equipBonus: equipBonusOf(entity).tribulation,
-    profileBonus: readEffects(entity,{day:world.day,world,targetLevel:entity.level+1}).breakthrough,
+    profileBonus: readEffects(entity,{day:world.day,world,targetLevel:entity.level+1},'breakthrough').breakthrough,
   }) - THUNDER_CHANCE_PENALTY;
 
   consumeGateAid(entity,world.day);
