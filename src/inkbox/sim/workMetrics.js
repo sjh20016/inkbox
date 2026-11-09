@@ -19,7 +19,7 @@ export function recordWorkDt(world, days) {
 
 export function enableWorkMetrics(world, enabled = true, {timing = true} = {}) {
   if (enabled) {
-    sessions.set(world, Object.create(null));actors.set(world, new Set());
+    sessions.set(world, Object.create(null));actors.set(world, new WeakSet());
     if(timing)timingSessions.add(world);else timingSessions.delete(world);
   } else {sessions.delete(world);timingSessions.delete(world);actors.delete(world);}
 }
@@ -45,7 +45,7 @@ export function endWorkMetric(world, key, started) {
 
 export function recordWorkActor(world, entity) {
   const seen=actors.get(world);
-  if(seen&&!seen.has(entity)){seen.add(entity);countWorkMetric(world,'effects.actors');}
+  if(seen&&entity!==null&&(typeof entity==='object'||typeof entity==='function')&&!seen.has(entity)){seen.add(entity);countWorkMetric(world,'effects.actors');}
 }
 
 export function maxWorkMetric(world, key, value) {

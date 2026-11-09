@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "frozenBeforeRun": true,
+  "purpose": "Pre-registered W6 L1/L2 ecological screening thresholds; not a claim that any experiment passed.",
+  "years": 200,
+  "seeds": [20260914, 73101, 61003],
+  "dtDays": 3,
+  "comparison": "paired old/new source runs for each seed; compare per-seed endpoint metrics, not pooled totals alone",
+  "thresholds": {
+    "livingPopulation": {"maxRelativeDelta": 0.1},
+    "livingCultivatorPopulation": {"maxRelativeDelta": 0.15},
+    "survivingBirthOrigins": {"maxRelativeDelta": 0.2},
+    "deadTotal": {"maxRelativeDelta": 0.15},
+    "retainedDeathCauseCounts": {"maxRelativeDelta": 0.25, "caveat": "bounded retained dead list, not cumulative cause ledger"},
+    "sectVillageCounts": {"maxRelativeDelta": 0.2},
+    "sectResources": {"maxRelativeDelta": 0.15},
+    "breakthroughOutcomes": {"maxRelativeDelta": 0.25, "caveat": "censored to retained profile experience ledgers"},
+    "siteOutcomes": {"maxRelativeDelta": 0.25, "caveat": "censored to retained profile experience ledgers"},
+    "artifactUniqueOwners": {"maxRelativeDelta": 0.1},
+    "soulRouteDistribution": {"maxTotalVariation": 0.05}
+  },
+  "unavailableMetrics": [
+    "cumulative natural births and cumulative cultivator-origin counts: no authoritative retained cumulative ledger",
+    "cumulative mortality split by natural lifespan versus violent cause: deadLog retains total/ascended/evicted, while per-record causes are bounded and evicted cause totals are not retained",
+    "complete breakthrough/site history: profile experience records are capped and can be evicted"
+  ]
+}

@@ -28,7 +28,7 @@ export function exportReference(){
  }
  return {root:dir,head:BASE,tree:git(ROOT,['rev-parse',BASE+'^{tree}']),dirty:false,hashes,gitHashes,normalization:'git archive honors Windows CRLF attributes; text compared as LF, binary bytes exact',pinnedExport:true};
 }
-export const checkpoint=age=>path.resolve(option('checkpoint-root',path.join(ROOT,'../inkbox-wxe0/reports/local/wx-e0/checkpoints')),`20260914-${age}y-save.json`);
+export const checkpoint=age=>path.resolve(option('checkpoint-root',path.join(ROOT,'../inkbox-wxe0/reports/local/wx-e0/checkpoints')),`${option('seed','20260914')}-${age}y-save.json`);
 export function readCheckpoint(age){const file=checkpoint(age),bytes=fs.readFileSync(file),saved=JSON.parse(bytes);if(!saved.runtime)throw Error('Missing native runtime');return {file,bytes:bytes.length,sha256:digest(bytes),saved};}
 export const quantile=(a,p)=>{const s=[...a].sort((a,b)=>a-b);return s[Math.max(0,Math.ceil(s.length*p)-1)]??null;};
 export const distribution=a=>({n:a.length,p50:quantile(a,.5),p95:quantile(a,.95),p99:quantile(a,.99),max:a.length?Math.max(...a):null});

@@ -18,7 +18,7 @@ function definition(id){
 // Cache only immutable catalog compilation. Entity health, expiry, relations,
 // payment, targets and even in-place profile edits are evaluated on every call.
 export function readEffects(entity,context={},source='other') {
- const world=context.world,measuring=workMetricsEnabled(world);
+ const world=context?.world,measuring=workMetricsEnabled(world);
  if(measuring){countWorkMetric(world,'effects.calls');countWorkMetric(world,`effects.source.${source}`);if(entity)recordWorkActor(world,entity);}
  if(metrics){metrics.sources ||= {};metrics.sources[source]=(metrics.sources[source]||0)+1;}
  const out={...EFFECT_DEFAULTS};if(!entity?.wanxiang)return out;
