@@ -40,9 +40,15 @@ Default natural archives are read from the sibling `inkbox-wxe0/reports/local/wx
 
 Raw reports, actual process logs, input archives and profiles stay under ignored reports/local/wx-e1, outside the distributable package. Initial export failed because git archive honored Windows CRLF; the retry verifies normalized text and records both raw and Git hashes. An initial launcher rejected multiple positional New-Item paths before Node started; its stale shell exit values are explicitly invalidated in final/launch-failure.json. Neither failure was relabeled a passing experiment.
 
+The committed [acceptance data](WX_E1_ACCEPTANCE.json) contains complete runtime/RNG objects and world digests at the tested boundaries, exact native work snapshots, all four official-page browser results, and source/input/report hashes. On 2026-11-11 every production source byte was rechecked against the successful native proof; it is unchanged. #60–#66 heads/dependencies and CI were rechecked before resuming. Earlier native measurements keep their original source/time stamps.
+
 ## Performance and browser verdict
 
-The separate measured report is added after diagnostics-OFF ABBAABBA and real official-page browser runs finish. Fixed dt3 and dt0.1 are distinct workloads; stage timing is nested and never added as exclusive CPU totals. E2P fixed-step renderer-bridge profiles include full display-snapshot publication costs and are not a direct production E0/E1 FPS comparison.
+The [measured report](WX_E1_PERFORMANCE.md) records the completed diagnostics-OFF ABBAABBA results: overall benefit is mixed; 400-year dt0.1 30-day wall P50 is 43.06s → 43.54s, so mature fractional-step acceleration is not established. Fixed dt3 and dt0.1 are distinct workloads; stage timing is nested and never added as exclusive CPU totals. E2P fixed-step renderer-bridge profiles include full display-snapshot publication costs and are not a direct production E0/E1 FPS comparison.
+
+The official E0/E1 browser processes both exited 0 on 2026-11-11: all four 30-second 400-year Canvas/Three cases completed character inspection and real UI save/load, with owned cleanup complete. Frames remain slow; candidate Canvas/Three P95 is 161.4/122.3ms. Final local build, package audit and diff checks exited 0; all original Fast/Heavy commands are retained. CI status for the published final commit is authoritative in the PR, rather than inferred from a previous SHA.
+
+Independent [E2P Draft #67](https://github.com/sjh20016/inkbox/pull/67) delivers both prototypes and continuous three-step world/RNG comparisons, with no production source edits. Its actual renderer experiment rejects both routes for formal rollout: full-copy costs, growing backlog and Worker inspect starvation remain blockers. The first E2P sandbox launch cleanup is unverified; later owned cleanup records do not certify that early failure.
 
 ## Rollback and outstanding boundaries
 

@@ -32,6 +32,8 @@ const FILES = [
   'docs/development/WX_E1_BASELINE.md',
   'docs/development/WX_E1_PROFILE_AND_TARGETS.md',
   'docs/development/WX_E1_DELIVERY.md',
+  'docs/development/WX_E1_PERFORMANCE.md',
+  'docs/development/WX_E1_ACCEPTANCE.json',
   'docs/development/WX_E1_COST_GUARD.md',
   'docs/development/WX_E1_RULE_EXPERIMENTS.md',
   'docs/development/WX_E1_ECOLOGY_THRESHOLDS.json',

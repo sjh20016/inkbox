@@ -34,3 +34,15 @@ Native CPU profiles: `w1/cpu/dt3.cpuprofile` (1,981 samples, 2.531 s process spa
 5. W5 counts, source anchors and all original Fast/Heavy remain mandatory. Long ecology runner is supplied for W6; no L1/L2 is promoted under L0 evidence.
 
 The evidence supports bounded allocation work and removal of redundant peer buffers first. Population-dependent query work remains a documented debt. Frame decoupling is separately tested in E2P, with actual committed days and backlog visible.
+
+## W1 evidence map (same frozen data, 400y / 30d / dt3)
+
+| Hot path | Inclusive wall / frequency | Population or allocation work | Growth supported by evidence | Source | Semantic risk |
+|---|---|---|---|---|---|
+| deriveConditions | 470.7ms / 57,947 calls | 5,274,575 peer entity visits | O(N) per qualified scan; aggregate depends on qualifying queries | natural OFF/ON plus fixed-N experiment | first mentor/world order and live position must be preserved |
+| experienceEffects | 203.5ms / 59,694 world-aware calls | 1,014,414 active arrays; 968,358 helper visits | bounded state-list allocation plus qualified O(N) helper scan | explicit logical counters and controlled scale | dormant/expiry, plane keys, current helper health/position |
+| clamp | 38.7ms / 59,694 calls | fixed effect axes | constant per returned axis count | separate timer in effects | floating accumulation/clamp order |
+| static effects | 72.1ms total legacy static timer | entry/definition/application subphases reported separately | bounded declared profile lists; immutable catalog compilation only | W1 profile JSON | do not cache dynamic state from catalog revision |
+| Life | 1,597.1ms / 10 steps | entity loop plus other subsystems | no universal quadratic claim; dt0.1 repeats per-step work far more often per day | native dt3/dt0.1 and CPU profiles | mortality, resources, clocks and RNG order |
+
+Wall times overlap by containment. Logical allocation counts measure operations and copied elements, not exclusive heap-allocation milliseconds. The W1 Node results establish the selected W2 targets; later browser measurements are reported separately and do not retroactively change these targets.
