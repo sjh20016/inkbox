@@ -25,6 +25,7 @@ import { REALMS, realmIndexFor } from '../../core/cultivation.js';
 import { characterAppearanceOf } from '../characters/characterAppearance.js';
 import { creatureFormOf, WANLING_BY_KEY } from '../../core/wanlingCatalog.js';
 import { readBiyiPairs } from '../../world/wanlingRelations.js';
+import { renderFrame } from '../../presentation/readView/index.js';
 
 /**
  * 视觉类别。前四个来自 `world.entities`，`wraith` 来自 `world.wraiths`（凡间鬼影）。
@@ -102,7 +103,7 @@ function deriveFromWorld(world, includeWraiths) {
   const factions = Array.isArray(world.factions) ? world.factions : [];
   for (const f of factions) if (f && Number.isFinite(f.id)) factionColorById.set(f.id, f.color);
 
-  const entities = Array.isArray(world.entities) ? world.entities : [];
+  const entities = renderFrame(world, world.plane || 'mortal', { refresh: true }).entities;
   for (const e of entities) {
     if (!e || !Number.isFinite(e.x) || !Number.isFinite(e.y)) continue;
     const level = Number.isFinite(e.level) ? e.level : 0;

@@ -8,8 +8,9 @@ export class CommandBridge {
     const world = this.getWorld();
     if (!world || command?.worldGeneration !== worldGeneration(world))
       return Object.freeze({ ok: false, reason: 'stale-world' });
-    const value = execute();
-    invalidateReadView(world);
+    let value;
+    try { value = execute(); }
+    finally { invalidateReadView(world); }
     return Object.freeze({ ok: true, value });
   }
 }

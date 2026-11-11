@@ -131,6 +131,9 @@ jobs:
       - name: WX-E1 deterministic simulation cost budgets
         run: npm run test:wx-e1
 
+      - name: WX-E2R-a synchronous read projection contract
+        run: npm run test:wx-e2ra
+
       - name: E2-Lite 落笔回执、只读行愿与事务存档
         run: npm run test:e2-lite
 
