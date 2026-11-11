@@ -13,6 +13,8 @@ const METRIC_KEYS=new Set([
   'experience.calls','experience.active.queries','experience.active.sets','experience.active.arrays','experience.active.copied','experience.active.visited',
   'experience.shared.bonds','experience.shared.calls','experience.shared.entitiesVisited','experience.shared.hits',
   'life.step.calls','life.stepEntity.calls','life.dtDays','movement.substeps',
+  'entityIndex.passes','entityIndex.builds','entityIndex.buildEntitiesVisited','entityIndex.invalidations','entityIndex.invalidBuilds','entityIndex.mapLookups',
+  'shared.lookupCalls','shared.lookupHits','shared.lookupMisses','shared.lookupFallbacks','shared.fallbackEntitiesVisited','shared.candidateEntitiesVisited',
 ]);
 const positive=(n,label)=>{assert(Number.isFinite(n)&&n>=0,`${label} must be a non-negative finite number`);};
 

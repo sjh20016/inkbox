@@ -169,7 +169,8 @@
     "profile:wanxiang:d": "node scripts/inkbox-wx-d-profile.mjs",
     "profile:wanxiang:d:perf": "node scripts/inkbox-wx-d-perf.mjs",
     "test:wanxiang:d:browser": "node scripts/inkbox-wx-d-browser.mjs",
-    "test:wx-e1": "node scripts/inkbox-wx-e1-verify.mjs && node scripts/inkbox-wx-e1-cost-guard.mjs"
+    "test:wx-e1": "node scripts/inkbox-wx-e1-verify.mjs && node scripts/inkbox-wx-e1-cost-guard.mjs",
+    "test:wx-e1c": "node scripts/inkbox-wx-e1c-verify.mjs && node scripts/inkbox-wx-e1c-cost.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

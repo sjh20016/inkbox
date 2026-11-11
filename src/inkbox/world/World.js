@@ -10,6 +10,7 @@
 // 生灵与聚落是轻量对象数组，数量有上限。
 
 import { noteAllTerrain } from './terrainChanges.js';
+import {invalidateEntityReadView} from '../sim/entityReadView.js';
 import { SEA_LEVEL, LIMITS, TERRAIN_INFO, reliefScaleFor } from '../core/config.js';
 import { realmIndexFor, REALMS } from '../core/cultivation.js';
 import { recordLifeEvent } from '../sim/biography.js';
@@ -392,6 +393,7 @@ export class World {
     if (entity.fromSect === undefined) entity.fromSect = null;
     if (entity.birthOrigin === undefined) entity.birthOrigin = null;
     this.entities.push(entity);
+    invalidateEntityReadView(this);
     return entity;
   }
 
@@ -401,6 +403,7 @@ export class World {
       if (list[i] === entity) {
         list[i] = list[list.length - 1];
         list.pop();
+        invalidateEntityReadView(this);
         return true;
       }
     }
