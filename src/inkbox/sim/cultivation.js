@@ -1,3 +1,10 @@
+import { bodyHpMultiplier, bodyCombatMultiplier } from '../wanxiang/bloodPhysique.js';
+import { ROOT_TIERS } from '../wanxiang/catalog.js';
+import { rootQuality } from '../wanxiang/profile.js';
+import { readEffects } from '../wanxiang/effects.js';
+import { practiceCultivationMultiplier } from '../wanxiang/practice.js';
+import { emitCommittedFact, consumeGateAid } from '../wanxiang/experiences.js';
+import { daoSeedCultivation } from '../wanxiang/daoSeeds.js';
 // 水墨沙盒 · 修士的一生
 //
 // 一个生灵从凡人开始：在某块灵气够厚的地上觉醒灵根，踏入修行；
@@ -124,7 +131,7 @@ export const THUNDER_DEATH_CHANCE = 0.3;
 export const THUNDER_HEART_DEMON_PENALTY = 10;
 
 /** 修士的基础数值随境界成长 */
-export function combatPower(entity) {
+export function combatPower(entity, day = 0, world = null, target = null) {
   const level = entity.level || 0;
   if (level <= 0) return 1;
   const realm = realmFor(level);
@@ -137,14 +144,14 @@ export function combatPower(entity) {
   // 这一列以前**没有任何读者**，见 core/lore.js 里 BLOODLINES 的注释。
   const bloodBonus = 1 + bloodlineProfile(entity.bloodline, 'combat');
   return (1 + level * level * 0.045) * daoBonus * equipBonus * bloodBonus
-    * (1 + realmIndexFor(level) * 0.35);
+    * (1 + realmIndexFor(level) * 0.35) * readEffects(entity,{day,world,target},'combat').combat * bodyCombatMultiplier(entity,day);
 }
 
-export function maxHpFor(entity) {
+export function maxHpFor(entity, day = 0, world = null) {
   const level = entity.level || 0;
   // 先有真实修为、后有体质：awaken 在转换 sp 前已经写入 level=1。
   const base = isPracticingHuman(entity) ? 220 : 100;
-  return Math.round(base * (1 + level * 0.55));
+  return Math.round(base * (1 + level * 0.55) * readEffects(entity,{day,world},'hp-limit').hp * bodyHpMultiplier(entity));
 }
 
 /**
@@ -158,7 +165,7 @@ export function maxHpFor(entity) {
 export function lifespanForEntity(entity, level) {
   // 灵根 / 修士身份 / 血脉本身不能替尚未入门的婴儿取得长寿。
   const bloodBonus = level > 0 ? bloodlineProfile(entity.bloodline, 'lifespan') : 0;
-  return Math.round(lifespanFor(level) * 360 * (1 + bloodBonus));
+  return Math.max(1, Math.round(lifespanFor(level) * 360 * (1 + bloodBonus)) - (entity.wanxiang?.costs?.lifespan || 0));
 }
 
 /** 给一个新生成的实体补齐修炼字段 */
@@ -340,13 +347,14 @@ export function cultivationRate(world, entity) {
   const bloodFactor = 1 + bloodlineProfile(entity.bloodline, 'cultivation');
   return BASE_EXP_PER_DAY
     * (0.35 + qi * 1.35)
-    * (1 + rootBonus + quality * 0.06)
+    * (entity.wanxiang?.root ? ROOT_TIERS[entity.wanxiang.root.heavenly ? 5 : 5-entity.wanxiang.root.elements.length].multiplier : (1 + rootBonus + quality * 0.06))
     * daoBonus
     * mindFactor
     * pollutionFactor
     * madFactor
     * equipFactor
-    * bloodFactor;
+    * bloodFactor * readEffects(entity,{day:world.day,world},'cultivation').cultivation
+    * (entity.wanxiang ? practiceCultivationMultiplier(entity,world.day) : 1) * (1 + daoSeedCultivation(entity,world));
 }
 
 /**
@@ -354,6 +362,7 @@ export function cultivationRate(world, entity) {
  * @returns {'alive'|'dead'|'ascended'}
  */
 export function stepEntity(world, entity, dtDays, rng) {
+  if(entity.wanxiang && entity.hp>0) { entity.maxHp=maxHpFor(entity,world.day,world); entity.hp=Math.min(entity.hp,entity.maxHp); }
   entity.age += dtDays;
 
   // 走火入魔：期间不修行，见谁打谁
@@ -424,7 +433,7 @@ export function stepEntity(world, entity, dtDays, rng) {
   entity.heartDemon = clamp(entity.heartDemon - HEART_DEMON_DECAY_PER_DAY * dtDays, 0, 100);
   // 污染缓慢累积（邪修更快）
   const polluteRate = entity.dao && entity.dao.path.evil ? 0.0022 : 0.0004;
-  entity.pollution = clamp(entity.pollution + polluteRate * dtDays, 0, 100);
+  entity.pollution = clamp(entity.pollution + polluteRate * dtDays * readEffects(entity,{day:world.day,world},'pollution').pollution, 0, 100);
 
   // 突破
   const need = expToNext(entity.level);
@@ -545,7 +554,7 @@ export function attemptBreakthrough(world, entity, rng) {
 
   const chance = breakthroughChance({
     level: entity.level,
-    quality: entity.root ? entity.root.quality : 0,
+    quality: rootQuality(entity),
     karma: entity.karma,
     fortune: entity.fortune,
     heartDemon: entity.heartDemon,
@@ -553,12 +562,14 @@ export function attemptBreakthrough(world, entity, rng) {
     pollution: entity.pollution,
     // 法宝的「渡劫」轴：原作里这一轴就是装备对渡劫生还的影响
     equipBonus: equipBonusOf(entity).tribulation,
+    profileBonus: readEffects(entity,{day:world.day,world,targetLevel:entity.level+1},'breakthrough').breakthrough,
   });
 
+  consumeGateAid(entity,world.day);
   if (rng() < chance) {
     entity.level = targetLevel;
     entity.exp = 0;
-    entity.maxHp = maxHpFor(entity);
+    entity.maxHp = maxHpFor(entity,world.day,world);
     entity.hp = entity.maxHp;
     const before = realmIndexFor(entity.level - 1);
     const after = realmIndexFor(entity.level);
@@ -602,6 +613,7 @@ export function attemptBreakthrough(world, entity, rng) {
       if (rng() < forgeChance(entity)) forgeArtifact(world, entity, rng);
     }
     emitBreakthroughResult(world, entity, 'success', bottleneck, fromLevel);
+    emitCommittedFact(world,entity,{id:`breakthrough:${entity.incarnation}:${targetLevel}`,type:'breakthrough-success',fromLevel,targetLevel});
     return 'alive';
   }
 
@@ -615,6 +627,7 @@ export function attemptBreakthrough(world, entity, rng) {
     );
   }
   emitBreakthroughResult(world, entity, 'failure', bottleneck, fromLevel);
+  emitCommittedFact(world,entity,{id:`failure:${entity.incarnation}:${fromLevel}:${world.day}`,type:'breakthrough-failure',fromLevel,targetLevel:fromLevel+1});
   return 'alive';
 }
 
@@ -683,15 +696,17 @@ export function stepThunderAscend(world, entity, rng) {
   // 只加一个天雷专属的惩罚项。理由见 `THUNDER_CHANCE_PENALTY` 的注释。
   const chance = breakthroughChance({
     level: entity.level,
-    quality: entity.root ? entity.root.quality : 0,
+    quality: rootQuality(entity),
     karma: entity.karma,
     fortune: entity.fortune,
     heartDemon: entity.heartDemon,
     omenBonus: omen.bonus,
     pollution: entity.pollution,
     equipBonus: equipBonusOf(entity).tribulation,
+    profileBonus: readEffects(entity,{day:world.day,world,targetLevel:entity.level+1},'breakthrough').breakthrough,
   }) - THUNDER_CHANCE_PENALTY;
 
+  consumeGateAid(entity,world.day);
   if (rng() < Math.max(0.05, chance)) {
     // 通过 → 跨界进上界。走既有 `ascend()`（去处标签 / 编年史 / 逝者名录 /
     // 法宝留下 / 遗泽洞府 / 进上界），**不自己写一份**。

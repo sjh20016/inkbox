@@ -9,6 +9,7 @@ import { REALMS, realmLabel, pollutionLabel, POLLUTION_ASCEND_LIMIT } from './co
 import { rngStream } from './core/noise.js';
 import { captureRuntimeState, restoreRuntimeState } from './sim/runtimeState.js';
 import { generateWorld } from './world/worldgen.js';
+import { enableWanxiang } from './wanxiang/runtime.js';
 import { createSandboxWorld, creationOptions, parseSeed, syncCreationControls, syncMapProgress, expandSandboxMap } from './ui/worldCreation.js';
 import { accessBounds, canAccess } from './world/mapProgress.js';
 import { createSandboxCombatObservation } from './g2/combatObservationRuntime.js';
@@ -477,6 +478,7 @@ class Sandbox {
     // 幽冥：与凡间同尺寸的第三张图，但没有 TerrainLayer、没有 Life（见 attachNether）。
     // 与上界并列，同样放在 terrain 之后。
     this.attachNether(this.world);
+    if (new URLSearchParams(location.search).get('wanxiang') === '1') enableWanxiang(this.world,{fresh:true,experimental:new URLSearchParams(location.search).get('wxExperiments') === '1'});
     // Product-owned Worlds opt into the journal only after full generation/load.
     if (typeof activateTerrainChanges === 'function') {
       for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);

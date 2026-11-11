@@ -36,6 +36,7 @@ import { personLifeRows } from './personLifeFacts.js';
 import { wanlingById } from '../world/wanlingState.js';
 import { wanlingInspectCard } from './wanlingFacts.js';
 import { readBiyiPairs } from '../world/wanlingRelations.js';
+import { siteHasContent } from '../sim/sites.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
 export const REALM_INSPECT_RADIUS = 4;
@@ -191,6 +192,10 @@ export function planeSubjectInspectRows(picked, ctx = {}) {
     if(Number.isFinite(s.x)&&Number.isFinite(s.y)) rows.push(['落点', `（${s.x}，${s.y}）`]);
     if(Number.isFinite(s.age)) rows.push(['存续', `${Math.floor(s.age/360)} 年`]);
     if(Number.isFinite(s.visits)) rows.push(['访问', String(s.visits)]);
+    if (s.kind === 'cave') {
+      rows.push(['近况', !siteHasContent(s, picked.world) ? '资源已尽，旧址沉寂'
+        : s.inheritanceExhausted && s.visits > 0 ? '传承已尽，仍有可探索遗泽' : '仍可探索，尚有机缘']);
+    }
     for(const [field,label] of [['sub','形态'],['omen','异象'],['element','五行'],['reward','机缘'],['note','记述']])
       if(s[field] != null && s[field] !== '') rows.push([label, field==='sub'
         ? SECRET_REALMS.find(kind=>kind.key===s.sub)?.name || String(s.sub)

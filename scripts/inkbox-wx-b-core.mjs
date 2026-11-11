@@ -1,0 +1,36 @@
+import {createSelectionToken} from '../src/inkbox/g1/characterIdentity.js';
+import assert from 'node:assert/strict';
+import {fixture} from './inkbox-g1-fixtures.mjs';
+import {commitChangeSet as rawCommitChangeSet} from '../src/inkbox/wanxiang/changes.js';
+import {enableWanxiang} from '../src/inkbox/wanxiang/runtime.js';
+import {migrateProfile} from '../src/inkbox/wanxiang/inheritance.js';
+import {serializeWanxiang,restoreWanxiang} from '../src/inkbox/wanxiang/saveState.js';
+const {world:w,entity:e}=fixture();
+enableWanxiang(w,{experimental:true});
+const binding=createSelectionToken(w,'mortal:'+e.id);
+const commitChangeSet=(world,command)=>rawCommitChangeSet(world,command,{token:binding});
+const commands=[];
+for(let i=0;i<300;i++){
+ const command={id:'long-'+i,key:'mortal:'+e.id,expectedRevision:e.wanxiang.revision,mode:'player',operations:[{op:'set',field:'attributes',value:{bone:50+i%20,comprehension:50,perception:50}}]};
+ commands.push(command);
+ const result=commitChangeSet(w,command);
+ assert(result.ok,result.reason);
+}
+assert.equal(e.wanxiang.commands.length,128);
+const saved=serializeWanxiang(w);
+restoreWanxiang(w,saved);
+const before=JSON.stringify(e.wanxiang);
+assert.equal(commitChangeSet(w,commands[0]).reason,'revision-conflict');
+assert.equal(commitChangeSet(w,commands.at(-1)).duplicate,true);
+assert.equal(JSON.stringify(e.wanxiang),before);
+enableWanxiang(w);
+assert.equal(w.wanxiang.experiments.legend,true,'implicit enable preserves saved experiments');
+enableWanxiang(w,{experimental:false});
+assert.equal(w.wanxiang.experiments.legend,false,'explicit disable works');
+e.wanxiang.bonds=[{id:'gratitude:mortal:77',targetKey:'mortal:77',expiresDay:99999}];
+migrateProfile(e,'mortal:'+e.id,'upper:'+e.id);
+assert.equal(e.wanxiang.bonds[0].targetKey,'mortal:77');
+assert.equal(e.wanxiang.bonds[0].dormant,true);
+migrateProfile(e,'upper:'+e.id,'mortal:'+e.id);
+assert.equal(e.wanxiang.bonds[0].dormant,undefined);
+console.log('WX-B long command window, persisted replay refusal, explicit experiment state and cross-plane bonds passed');

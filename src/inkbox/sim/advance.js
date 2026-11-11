@@ -1,3 +1,7 @@
+import { updateWorldEpoch } from '../wanxiang/runtime.js';
+import { stepDaoSeeds } from '../wanxiang/daoSeeds.js';
+import { stepLegend } from '../wanxiang/legend.js';
+import { claimGroundArtifact } from './artifacts.js';
 // 水墨沙盒 · 世界推进的**唯一入口**（全部「游戏日驱动的时钟」）
 //
 // ───────────────────────────────────────────────────────────────────────
@@ -48,6 +52,7 @@ import { stepWanling } from './wanling.js';
 import { stepDaoActivities } from './daoActivities.js';
 import { stepTransit } from './transit.js';
 import { settleVows } from './journal.js';
+import { startWorkMetric, endWorkMetric, workMetricsEnabled } from './workMetrics.js';
 
 /**
  * 各低频时钟的节拍（游戏日）。
@@ -122,12 +127,19 @@ export function advanceWorld(world, days, deps = {}) {
 
   const fired = { upper: false, nether: false, rift: false, wraith: false, nature: false };
 
+  const previousDay = world.day;
   world.day += days;
   world.year = Math.floor(world.day / TIME.daysPerYear);
+  if (world.wanxiang?.enabled) { updateWorldEpoch(world); if(Math.floor(previousDay/30)!==Math.floor(world.day/30)) { stepDaoSeeds(world); stepLegend(world,claimGroundArtifact); } }
   if (world.plane === 'mortal') fired.wanling = !!stepWanling(world,days,{life:deps.life});
 
   // ── 凡间主循环（每拍都跑，不节流）────────────────────────────
-  if (deps.life) deps.life.step(days);
+  if (deps.life) {
+    const measuring=workMetricsEnabled(world);
+    const started = measuring ? startWorkMetric(world) : null;
+    deps.life.step(days);
+    if(measuring)endWorkMetric(world, 'life', started);
+  }
   if (deps.life && world.plane === 'mortal') stepDaoActivities(world,deps.life);
 
   // ── 上界：与凡间共享同一条时间轴，但**更新频率低**（每 10 日）──

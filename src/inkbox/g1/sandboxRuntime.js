@@ -37,7 +37,13 @@ export function createSandboxCharacterRuntime(sb, views = {}) {
     if (!force && text === rendered) return;
     rendered = text;
     const expectedToken = token, expectedRevision = revision;
-    views.render?.(sb, model, action => dispatch(action, expectedToken, expectedRevision), { revision: expectedRevision });
+    views.render?.(sb, model, action => dispatch(action, expectedToken, expectedRevision), { revision: expectedRevision,
+      onMingpu: action => {
+        if(expectedToken!==token || expectedRevision!==revision)return {ok:false,reason:'stale-selection'};
+        const result=controller.handleMingpu(action);
+        if(result.ok && ['enable','commit'].includes(action.type)) sb.qol?.markDirty('intervention');
+        refresh();return result;
+      } });
   }
   function open(keyOrPick, { focus = false, sinceDay = null } = {}) {
     const result = controller.select(keyOrPick);

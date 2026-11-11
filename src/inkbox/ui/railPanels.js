@@ -590,7 +590,7 @@ export function refreshNotablesPanel(sb) {
 
 // ── 人物一生（Q9 / Q12 / Q13 / Q36 / Q37）───────────────────────────
 // Official card consumes frozen snapshots; selection changes destroy all old DOM actions.
-export function showPersonCardPanel(sb, model, onAction, { revision } = {}) {
+export function showPersonCardPanel(sb, model, onAction, { revision, onMingpu } = {}) {
   const panel = $('inkPersonDetail');
   if (!panel || !model) return;
   let state = characterViews.get(sb);
@@ -599,10 +599,11 @@ export function showPersonCardPanel(sb, model, onAction, { revision } = {}) {
   }
   if (!state) {
     state = { panel, key: model.identity.key, revision, action: onAction, view: null };
-    state.view = createCharacterCardView(panel, { onAction: action => state.action?.(action) });
+    state.view = createCharacterCardView(panel, { onAction: action => state.action?.(action), onMingpu: action => state.mingpu?.(action) });
     characterViews.set(sb, state);
   }
   state.action = onAction;
+  state.mingpu = onMingpu;
   panel.dataset.plane = model.identity.currentPlane || model.identity.plane;
   panel.dataset.characterKey = model.identity.key;
   state.view.render(model);

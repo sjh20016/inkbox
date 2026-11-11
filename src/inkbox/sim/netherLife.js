@@ -1,3 +1,4 @@
+import {attachSoulProfile} from '../wanxiang/soul.js';
 // 水墨沙盒 · 幽冥界的鬼魂与鬼修（模拟侧）
 //
 // 契约：`reports/d5/BATCH2-DESIGN.md`（**冻结**：字段名与语义不得自行改）。
@@ -666,6 +667,7 @@ export function spawnNetherGhost(nether, spec = {}) {
 
   const added = nether.addEntity(entity);   // 赋 id（NETHER_ID_BASE 段）+ 入列
   if (!added) return null;                  // 撞 `LIMITS.maxEntities` 硬顶：不记账
+  attachSoulProfile(nether,added,spec.wanxiangSoul,'幽冥');
 
   const log = ensureNetherPopLog(nether);
   log.ghostBorn += 1;
