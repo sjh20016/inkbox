@@ -26,3 +26,11 @@ Independent reviewer accepted the shared-only source and explicitly identified t
 Ordered mentor and live ally lookup, final ABBAABBA, browser comparison and final-head CI are not yet claimed by this shared increment. Each subsequent increment needs its own proof and reviewed pins.
 
 The shared increment also passed local npm ci, core/G8/C1, Wanxiang A/B/C/D, original E0/E1, new E1C, save-equivalence, three-realms, build and package. [WX_E1C_SHARED_GATE.json](WX_E1C_SHARED_GATE.json) records every real exit code and tested source hash. This is separate from the required final pushed HEAD's Fast/Heavy CI.
+
+## Ordered mentor increment
+
+After shared commit `fdfdae0`, mentor candidates are resolved from the current relation Map and the minimum current world-array index is chosen. The old peer loop remains for nearCount/allies, so this step adds O(R) relation traversal and does not yet remove its O(N) population term. Independent source review preceded the two deliberately updated pins.
+
+41 controlled cases pass. Native proof compares every actual complete conditions map as well as every effect axis: 1919858 queries / 56316876 Object.is axes, zero mismatch. All four natural age/dt windows retain exactly the same complete world/runtime/RNG/sourceTags/fork hashes as the shared stage. [WX_E1C_MENTOR_ACCEPTANCE.json](WX_E1C_MENTOR_ACCEPTANCE.json) contains the actual tested source, counters and full runtime states. Unsupported custom relation getters, invalid keys, duplicate identities, live deaths and reordered mentors retain correct fallback/order behavior.
+
+This mentor increment independently passed the full local npm ci + commissioned base sequence, new E1C, save-equivalence, three-realms, build and package. [WX_E1C_MENTOR_GATE.json](WX_E1C_MENTOR_GATE.json) records the tested source and exit codes.

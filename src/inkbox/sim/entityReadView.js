@@ -63,3 +63,21 @@ export function sharedInsightLookup(world,actor,bonds){
  count(world,helper?'shared.lookupHits':'shared.lookupMisses');
  return {helper};
 }
+
+/** Resolve relation candidates, then choose the first in CURRENT array order. */
+export function mentorLookup(world,actor){
+ count(world,'mentor.lookupCalls');
+ const pass=current(world);if(!pass)return null;
+ const relations=actor.relations;
+ if(relations!=null&&(!(relations instanceof Map)||relations.get!==Map.prototype.get||relations[Symbol.iterator]!==Map.prototype[Symbol.iterator]))return null;
+ let mentor,index=Infinity;
+ for(const [id,relation]of relations||[]){
+  count(world,'mentor.relationsVisited');if(relation?.type!=='mentor')continue;
+  if(!Number.isSafeInteger(id)||id<=0)return null;
+  const result=resolve(world,pass,id);if(!result.valid)return null;
+  const row=result.row;if(!row)continue;const other=row.entity;
+  count(world,'mentor.candidateEntitiesVisited');
+  if(other!==actor&&other.hp>0&&Math.hypot(actor.x-other.x,actor.y-other.y)<=8&&row.index<index){mentor=other;index=row.index;}
+ }
+ count(world,mentor?'mentor.lookupHits':'mentor.lookupMisses');return {mentor};
+}

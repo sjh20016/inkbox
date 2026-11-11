@@ -32,6 +32,8 @@ const FILES = [
   'docs/development/WX_E1C_L0_PROOF.md',
   'docs/development/WX_E1C_L0_ACCEPTANCE.json',
   'docs/development/WX_E1C_SHARED_GATE.json',
+  'docs/development/WX_E1C_MENTOR_ACCEPTANCE.json',
+  'docs/development/WX_E1C_MENTOR_GATE.json',
   'scripts/inkbox-wx-e1-common.mjs',
   'scripts/inkbox-wx-e1-profile.mjs',
   'scripts/inkbox-wx-e1-verify.mjs',
