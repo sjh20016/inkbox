@@ -1,6 +1,6 @@
 # WX-E2P · 岁序分流隔离原型比较
 
-基线：`#65 cda97516d4a20e258af103cd395ddff67644b793`。本分支只增加 `research/wx-e2p/` 与本报告；正式 `main.js`、`Life.step`、`advanceWorld`、默认时间规则和 v11 存档格式未改。生成的源码镜像放在忽略目录 `reports/local/wx-e2p/mirror/`，由 `build.mjs` 审核原始 `sim/life.js` SHA-256 `27b0974d922043163a7f59133e733e14b138521687e2ed091126c230e2874d8c`、`sim/advance.js` SHA-256 `09191e3b5e2340fad35014f88033d469d98b88fd8cbed04eab94d6a4f6d719b1` 后生成。实验以同一固定 `dt=0.1` 比较执行方式；固定步长相对正式浏览器变步长属于 L2，未在此证明可正式启用。
+基线：`#65 cda97516d4a20e258af103cd395ddff67644b793`。本分支只增加 `research/wx-e2p/` 与本报告；正式 `main.js`、`Life.step`、`advanceWorld`、默认时间规则和 v11 存档格式未改。生成的源码镜像放在忽略目录 `reports/local/wx-e2p/mirror/`。`build.mjs` 以 #65 Git blob 的 LF 规范形态审核 `sim/life.js` SHA-256 `0d285f62b4a7d670085f6526970181fac3f4225bd6a7a84c5b55010f5048e4da`、`sim/advance.js` SHA-256 `1335246407f3bc829522800a25cd3beaa8f88c3b9d405565b518e7f9ecc2b2d0`；仅校验前把 CRLF/CR 归一为 LF，生成镜像仍使用检出的原始字节。当前 Windows 原始 SHA-256 分别为 `27b0974d922043163a7f59133e733e14b138521687e2ed091126c230e2874d8c` 和 `09191e3b5e2340fad35014f88033d469d98b88fd8cbed04eab94d6a4f6d719b1`，两种哈希都写入忽略的 `source-hashes.json`。受控纯 LF #65 副本通过构建，追加一行注释后明确拒绝；本机重建后的镜像 `life.js`/`advance.js` SHA-256 仍为 `633dfd81b6c499d5a3dab2723ec6408eab0b01f37562b4605693944071c1ba66` / `7e10b4ff6e502acd5e04bc9029a992a5280e63a530c5dfd00f709b5ee8d44b32`，与修复前逐字节相同。因此先前世界/浏览器测量的运行代码未变。实验以同一固定 `dt=0.1` 比较执行方式；固定步长相对正式浏览器变步长属于 L2，未在此证明可正式启用。
 
 ## 可复现命令
 

@@ -10,11 +10,12 @@ fs.mkdirSync(path.dirname(target),{recursive:true});
 function copyTree(from,to){fs.mkdirSync(to,{recursive:true});for(const entry of fs.readdirSync(from,{withFileTypes:true})){const src=path.join(from,entry.name),dst=path.join(to,entry.name);if(entry.isDirectory())copyTree(src,dst);else if(entry.isFile())fs.copyFileSync(src,dst);}}
 copyTree(source,target);
 const hash=x=>createHash('sha256').update(x).digest('hex');
-const hashes={};
-const expected={'sim/life.js':'27b0974d922043163a7f59133e733e14b138521687e2ed091126c230e2874d8c','sim/advance.js':'09191e3b5e2340fad35014f88033d469d98b88fd8cbed04eab94d6a4f6d719b1'};
+const rawHashes={},normalizedHashes={};
+// Canonical Git blobs at #65 use LF. Check semantics independent of checkout EOL.
+const expectedNormalizedHashes={'sim/life.js':'0d285f62b4a7d670085f6526970181fac3f4225bd6a7a84c5b55010f5048e4da','sim/advance.js':'1335246407f3bc829522800a25cd3beaa8f88c3b9d405565b518e7f9ecc2b2d0'};
 for(const name of ['sim/life.js','sim/advance.js']){
- const p=path.join(target,name),body=fs.readFileSync(p,'utf8');hashes[name]=hash(body);
- if(hashes[name]!==expected[name])throw Error(`Audited source changed: ${name} ${hashes[name]}`);
+ const p=path.join(target,name),raw=fs.readFileSync(p),body=raw.toString('utf8');rawHashes[name]=hash(raw);normalizedHashes[name]=hash(body.replace(/\r\n?/g,'\n'));
+ if(normalizedHashes[name]!==expectedNormalizedHashes[name])throw Error(`Audited source changed: ${name} raw=${rawHashes[name]} normalized=${normalizedHashes[name]}`);
  if(name==='sim/life.js'){
   const start=body.indexOf('  step(dtDays) {');
   const end=body.indexOf('\n  /**',start);
@@ -35,5 +36,5 @@ for(const name of ['sim/life.js','sim/advance.js']){
   fs.writeFileSync(p,body+'\n'+slice);
  }
 }
-fs.writeFileSync(path.join(root,'reports/local/wx-e2p/source-hashes.json'),JSON.stringify({sourceHead:'cda97516d4a20e258af103cd395ddff67644b793',hashes},null,2));
-console.log('Generated isolated source mirror',target,hashes);
+fs.writeFileSync(path.join(root,'reports/local/wx-e2p/source-hashes.json'),JSON.stringify({sourceHead:'cda97516d4a20e258af103cd395ddff67644b793',rawHashes,normalizedHashes,expectedNormalizedHashes},null,2));
+console.log('Generated isolated source mirror',target,{rawHashes,normalizedHashes});
