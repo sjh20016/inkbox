@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import {World} from '../src/inkbox/world/World.js';
+import {Life} from '../src/inkbox/sim/life.js';
+import {initializeProfile,validateProfile} from '../src/inkbox/wanxiang/profile.js';
+import {grantBloodResource,tryPhoenix,stepBody,noteBodyWound,bodyHpMultiplier} from '../src/inkbox/wanxiang/bloodPhysique.js';
+import {reduceIncomingDamage} from '../src/inkbox/wanxiang/damage.js';
+import {serializeWorld,deserializeWorld} from '../src/inkbox/io/save.js';
+const world=new World(32,32,744);world.wanxiang={enabled:true};world.day=30;
+const person=(extra={})=>world.addEntity({sp:'cultivator',x:10,y:10,hp:100,maxHp:100,level:8,age:100,lifespan:100000,artifacts:[],...extra});
+const e=person(),attacker=person({level:50});const p=initializeProfile(e);p.bloodlines=[{id:'heaven_phoenix',grade:1,purity:50}];
+assert(grantBloodResource(world,e,'phoenix-feather',1));assert(!grantBloodResource(world,e,'phoenix-feather',1));
+const life=new Life(world,()=>.5);life.attack(attacker,e,100);
+assert(e.hp>0,'native lethal attack intercepted before kill/drop bookkeeping');assert.equal(attacker.kills||0,0);assert.equal(p.bodyLedger.phoenixUses,1);assert.equal(p.bodyLedger.feathers,0);assert(!e._deathRecorded);
+assert(grantBloodResource(world,e,'phoenix-feather',2));e.hp=0;assert(!tryPhoenix(world,e,'combat'),'cooldown enforced');world.day+=18000;e.age=e.lifespan;assert(!tryPhoenix(world,e,'combat'),'old age never intercepted');e.age=100;assert(!tryPhoenix(world,e,'erase'),'erase not reversible');assert(tryPhoenix(world,e,'fire'),'real fire damage is eligible');
+const u=person(),strong=person({level:10});initializeProfile(u).physique={id:'undying'};u.hp=10;noteBodyWound(world,strong,u,100,false);assert(u.wanxiang.bodyLedger.pendingTrauma);u.hp=100;world.day++;stepBody(world,u);assert.equal(bodyHpMultiplier(u),1.02);u.hp=10;noteBodyWound(world,strong,u,100,false);assert(!u.wanxiang.bodyLedger.pendingTrauma,'same threat yearly cooldown');
+const god=person();initializeProfile(god).bloodlines=[{id:'god_king',grade:1,purity:50}];god.artifacts=[{id:900,ownerId:god.id,tier:4,durability:100}];stepBody(world,god);assert(!god.wanxiang.bodyLedger?.godArtifact,'blood alone grants no awakening');assert(grantBloodResource(world,god,'god-fragment',3));stepBody(world,god);assert.equal(god.artifacts[0].durability,80);stepBody(world,god);assert.equal(god.artifacts[0].durability,80);assert.equal(reduceIncomingDamage(god,u,100,'spell',world),108);
+for(const entity of [e,u,god])validateProfile(entity.wanxiang);
+console.log('WX-B bodies: native combat phoenix, fire eligibility, source/cooldown/lifespan guards, paid god binding, real trauma recovery and body persistence data passed');
+
+// Lifetime consequences survive physique replacement and finite world saves.
+const {bodyCurseResistance,invokeCalamity}=await import('../src/inkbox/wanxiang/bloodPhysique.js');
+const embryo=person();initializeProfile(embryo).physique={id:'dao_embryo'};stepBody(world,embryo);stepBody(world,embryo);assert.equal(embryo.wanxiang.permanent.comprehension,10);
+embryo.wanxiang.physique={id:'wood'};stepBody(world,embryo);embryo.wanxiang.physique={id:'dao_embryo'};stepBody(world,embryo);assert.equal(embryo.wanxiang.permanent.comprehension,10);
+const hidden=person();initializeProfile(hidden).physique={id:'mortal'};
+assert.equal(bodyCurseResistance(hidden),0);
+hidden.wanxiang.experienceLedger={records:[{type:'site-success',siteId:3},{type:'site-success',siteId:4}]};stepBody(world,hidden);assert.equal(bodyCurseResistance(hidden),.12);
+hidden.wanxiang.physique=null;assert.equal(bodyCurseResistance(hidden),0);
+const eater=person();const ep=initializeProfile(eater);ep.physique={id:'fire_eater'};ep.cultivation.combat={mana:10};
+const tile=world.idx(10,10);world.fire[tile]=.5;stepBody(world,eater);assert.ok(Math.abs(world.fire[tile]-.4)<1e-6);assert.equal(ep.cultivation.combat.mana,11);assert.equal(eater.hp,99);stepBody(world,eater);assert.equal(ep.cultivation.combat.mana,11);
+const caster=person({exp:100,root:{quality:1,elements:['火']}});initializeProfile(caster).physique={id:'calamity'};
+world.height.fill(.5);world.water.fill(0);world.type.fill((await import('../src/inkbox/core/config.js')).TERRAIN.GRASS);
+const foe=person({level:20,root:{quality:1,elements:['水']}});
+assert(invokeCalamity(world,caster,foe));assert(caster.exp<=80);assert(caster.hp<=caster.maxHp*.8);assert(!invokeCalamity(world,caster,foe));
+assert.equal(caster.wanxiang.bodyLedger.calamityUntil,world.day+360);
+console.log('WX-B bodies: one-time embryo, conditional hidden soul resistance, conserved fire consumption and paid yearly native tribulation passed');

@@ -122,6 +122,15 @@ jobs:
       - name: G8 运行时检查点、随机流续接与凡间生息
         run: npm run test:g8
 
+      - name: Wanxiang V0.2 Alpha contracts
+        run: npm run test:wanxiang && npm run test:wanxiang:b && npm run test:wanxiang:c && npm run test:wanxiang:d
+
+      - name: WX-E0 simulation cost admission and regression contracts
+        run: npm run test:wx-e0
+
+      - name: WX-E1 deterministic simulation cost budgets
+        run: npm run test:wx-e1
+
       - name: E2-Lite 落笔回执、只读行愿与事务存档
         run: npm run test:e2-lite
 

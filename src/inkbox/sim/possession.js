@@ -1,3 +1,5 @@
+import {bodyCurseResistance} from '../wanxiang/bloodPhysique.js';
+import {soulSnapshot,attachSoulProfile} from '../wanxiang/soul.js';
 // 水墨沙盒 · 夺舍
 //
 // 修士死了，元神不一定散。境界够高的人，元神能抢一具还活着的、境界更低的肉身
@@ -303,7 +305,7 @@ export function tryPossession(world, dead, rng) {
   const rate = possessionChance(
     dead.level || 0, dead.mind || 0, target.level || 0, target.mind || 0,
   );
-  if (rng() > rate) {
+  if (rng() > rate * (1-bodyCurseResistance(target))) {
     // 失败：容器毫发无伤，夺舍者元神消散。
     // ⚠️ 主线**没有**任何反噬 / 魂飞魄散 / 被吞的结算（§8.12）——不要凭空发明。
     world.record(pickText(rng, POSSESSION_FAILED, {
@@ -338,6 +340,7 @@ export function tryPossession(world, dead, rng) {
   //    改的话会凭空造命：一个凡人被夺舍后当场得到金丹的寿元与气血。
   const inheritedLevel = Math.floor((dead.level || 0) * (INHERIT_MIN + rng() * INHERIT_SPAN));
   target.level = Math.max(target.level || 0, inheritedLevel);
+  attachSoulProfile(world,target,soulSnapshot(world,dead),'夺舍');
 
   world.milestone(pickText(rng, POSSESSION_SUCCESS, {
     original: dead.name,
@@ -738,7 +741,7 @@ function possessMortal(world, nether, ghost, target) {
   );
   const boost = (isObsessed(ghost) ? OBSESSION_BOOST : 1)
     * (isHollowSoul(target) ? HOLLOW_SOUL_BOOST : 1);
-  const finalRate = clamp(rate * boost, 0.05, 0.95);
+  const finalRate = clamp(rate * boost, 0.05, 0.95) * (1-bodyCurseResistance(target));
 
   // 成不成：**确定性哈希**（零 rng）。
   if (hashRoll(`possess-try:${ghost.id}:${day}`) >= finalRate) {
@@ -783,6 +786,7 @@ function possessMortal(world, nether, ghost, target) {
   const roll = hashRoll(`possess-inherit:${ghost.id}:${target.id}`);
   const inherited = Math.floor((ghost.level || 0) * (INHERIT_MIN + roll * INHERIT_SPAN));
   target.level = Math.max(target.level || 0, inherited);
+  attachSoulProfile(world,target,soulSnapshot(nether,ghost),'幽冥夺舍');
 
   // **先落成（上面全做完）→ 再从幽冥移除**
   // D8-E：离开端坐标先捕获（鬼修随后被 `splice` 出幽冥实体表）。
@@ -830,7 +834,7 @@ function hauntMortal(world, ghost, target) {
   const rate = crossPlanePossessionChance(
     ghost.level || 0, ghost.ghostRancor || 0, target.level || 0, target.mind || 0,
   );
-  const finalRate = clamp(rate, 0.05, 0.95);
+  const finalRate = clamp(rate, 0.05, 0.95) * (1-bodyCurseResistance(target));
   if (hashRoll(`haunt-try:${ghost.id}:${day}`) >= finalRate) return false;
 
   // 已经带着一个更晚到期的印记 ⇒ 不覆盖（同养伤锁不覆盖更长的既有锁）。

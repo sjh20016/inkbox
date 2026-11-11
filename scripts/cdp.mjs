@@ -112,7 +112,7 @@ $unattributed = $env:INKBOX_CDP_LAUNCHER_PENDING -eq 'true' -and $byId.ContainsK
 @{ supported=$true; processes=@($rows); error=$(if($unattributed){'Live launcher ownership could not be proven'}else{$null}) } | ConvertTo-Json -Depth 5 -Compress`;
   try {
     return JSON.parse(execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
-      encoding: 'utf8', timeout: 8000, windowsHide: true,
+      encoding: 'utf8', timeout: 30000, windowsHide: true,
       env: { ...process.env, INKBOX_CDP_PROFILE: target, INKBOX_CDP_EXECUTABLE: executable,
         INKBOX_CDP_PRIOR_IDENTITIES: JSON.stringify(frozen), INKBOX_CDP_LAUNCHER_PID: String(child.pid || 0),
         INKBOX_CDP_LAUNCHER_PENDING: String(child.exitCode === null && child.signalCode === null) },
@@ -139,7 +139,7 @@ foreach ($f in @($frozen | Sort-Object depth -Descending)) {
 @{ attempted=$attempted; errors=@($problems) } | ConvertTo-Json -Depth 4 -Compress`;
   try {
     return JSON.parse(execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
-      encoding: 'utf8', timeout: 8000, windowsHide: true,
+      encoding: 'utf8', timeout: 30000, windowsHide: true,
       env: { ...process.env, INKBOX_CDP_FROZEN: JSON.stringify(snapshot.processes) },
     }).trim());
   } catch (error) { return { attempted: 0, errors: [error.message] }; }

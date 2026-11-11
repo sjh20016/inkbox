@@ -58,9 +58,15 @@ export function restoreWanling(world,data) {
     || !Number.isFinite(e.x) || !Number.isFinite(e.y) || !Number.isFinite(e.radius) || e.radius < 0 || e.radius > 32 || !Number.isFinite(e.value)) fail();
   const workingActors=new Set();
   for(const j of data.jobs) {
-    if(!Number.isSafeInteger(j.actorId)||j.actorId<=0||!DAO_BY_KEY[j.path]||!['travel','done'].includes(j.stage)
+    if(!Number.isSafeInteger(j.actorId)||j.actorId<=0||(!DAO_BY_KEY[j.path]&&j.path!=='social')||!['travel','done'].includes(j.stage)
       || !Number.isFinite(j.startedDay)||!Number.isFinite(j.nextDay)||!Number.isFinite(j.x)||!Number.isFinite(j.y)
       || j.x<0||j.y<0||j.x>=world.w||j.y>=world.h||typeof j.summary!=='string') fail();
+    if(j.path==='social'&&(!['heal','guard'].includes(j.intent)||j.targetKind!=='entity'
+      ||!Number.isSafeInteger(j.targetId)||j.targetId<=0||j.targetId===j.actorId
+      ||!Number.isSafeInteger(j.targetIncarnation)||j.targetIncarnation<1
+      ||!['gratitude','mentor','disciple'].includes(j.relation)
+      ||!Array.isArray(j.corners)||j.corners.length>64
+      ||j.corners.some(p=>!Number.isInteger(p.x)||!Number.isInteger(p.y)||p.x<0||p.y<0||p.x>=world.w||p.y>=world.h)))fail();
     if(j.stage!=='done'){if(workingActors.has(j.actorId))fail();workingActors.add(j.actorId);}
   }
   // Only JSON data: no accidental World references, non-finite cooldowns or unbounded strings.
