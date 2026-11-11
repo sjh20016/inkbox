@@ -12,7 +12,7 @@ export const git=(root,args)=>execFileSync('git',['-c','safe.directory='+root,'-
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 export const writeJson=(file,data)=>{fs.mkdirSync(path.dirname(path.resolve(file)),{recursive:true});fs.writeFileSync(file,JSON.stringify(data,null,2));};
 export function source(root=ROOT){
- const files=git(root,['ls-files','--cached','--others','--exclude-standard','src/inkbox','scripts/inkbox-wx-e1c*','tests/fixtures/wx-e1c-reference']).split(/\r?\n/).filter(f=>f&&fs.existsSync(path.join(root,f)));
+ const files=git(root,['ls-files','--cached','--others','--exclude-standard','src/inkbox','scripts/inkbox-wx-e1c*','tests/fixtures/wx-e1c-reference','package.json','.github/workflows/ci.yml','scripts/inkbox-package.mjs','docs/development/SIMULATION_COST_CONTRACT.md','docs/development/SIMULATION_COST_REGISTRY.json','docs/development/WX_E1C_COST_BUDGETS.json']).split(/\r?\n/).filter(f=>f&&fs.existsSync(path.join(root,f)));
  return {root,head:git(root,['rev-parse','HEAD']),tree:git(root,['rev-parse','HEAD^{tree}']),dirty:git(root,['status','--porcelain']),hashes:Object.fromEntries([...new Set(files)].sort().map(f=>[f,hash(fs.readFileSync(path.join(root,f)))]))};
 }
 export const environment=()=>({node:process.version,v8:process.versions.v8,platform:process.platform,release:os.release(),cpu:os.cpus()[0]?.model,logicalCpus:os.cpus().length,createdAt:new Date().toISOString(),command:process.argv});
@@ -28,3 +28,5 @@ export function exportReference(){
  }
  return {root,head:BASE,tree:git(ROOT,['rev-parse',BASE+'^{tree}']),dirty:false,hashes,gitBlobs,pinnedExport:true,normalization:'LF-normalized text Git blob identity; exact binary bytes'};
 }
+
+export const distribution=values=>{const s=[...values].sort((a,b)=>a-b),q=p=>s[Math.max(0,Math.ceil(s.length*p)-1)]??null;return {n:s.length,p50:q(.5),p95:q(.95),p99:q(.99),max:s.length?s.at(-1):null};};

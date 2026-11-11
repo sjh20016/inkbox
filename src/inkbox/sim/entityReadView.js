@@ -81,3 +81,55 @@ export function mentorLookup(world,actor){
  }
  count(world,mentor?'mentor.lookupHits':'mentor.lookupMisses');return {mentor};
 }
+
+const CELL_SIZE=4;
+const cellKey=(x,y)=>Math.floor(x/CELL_SIZE)+','+Math.floor(y/CELL_SIZE);
+// Keep integer cell loops well inside exact Number increments. Malformed but
+// finite astronomical coordinates retain the terminating legacy scan.
+const safePosition=e=>Number.isFinite(e.x)&&Number.isFinite(e.y)&&Math.abs(e.x)<=Number.MAX_SAFE_INTEGER/4&&Math.abs(e.y)<=Number.MAX_SAFE_INTEGER/4;
+function spatialView(world,pass){
+ if(pass.spatialInvalid)return null;
+ if(!pass.spatial){
+  const cells=new Map();count(world,'spatial.builds');
+  for(const row of pass.byId.values()){
+   count(world,'spatial.buildEntitiesVisited');const e=row.entity;
+   if(!safePosition(e)){pass.spatialInvalid=true;count(world,'spatial.invalidBuilds');return null;}
+   const key=cellKey(e.x,e.y);let bucket=cells.get(key);
+   if(!bucket){bucket=new Set();cells.set(key,bucket);count(world,'spatial.bucketsBuilt');}
+   bucket.add(e);row.cell=key;
+  }
+  pass.spatial=cells;
+ }
+ return pass.spatial;
+}
+
+// Called after each audited native displacement, before another effect query.
+// It NEVER changes the existing combat Life.grid or any authoritative position.
+export function syncEntityReadPosition(world,entity){
+ const active=passes.get(world);if(!active?.valid||!active.spatial)return;
+ const pass=current(world);if(!pass)return;count(world,'spatial.positionChecks');
+ const row=pass.byId.get(entity.id);count(world,'entityIndex.mapLookups');
+ if(row?.entity!==entity||pass.list[row.index]!==entity||!safePosition(entity)){invalidateEntityReadView(world);return;}
+ const key=cellKey(entity.x,entity.y);if(key===row.cell)return;
+ const old=pass.spatial.get(row.cell);if(!old?.delete(entity)){invalidateEntityReadView(world);return;}
+ if(!old.size)pass.spatial.delete(row.cell);
+ let bucket=pass.spatial.get(key);if(!bucket){bucket=new Set();pass.spatial.set(key,bucket);count(world,'spatial.bucketsBuilt');}
+ bucket.add(entity);row.cell=key;count(world,'spatial.cellMoves');
+}
+
+/** Candidate order is irrelevant ONLY after ordered mentor resolution succeeds. */
+export function visitNearPeers(world,actor,visit){
+ count(world,'spatial.lookupCalls');const pass=current(world);
+ if(!pass||!safePosition(actor))return null;
+ const cells=spatialView(world,pass);if(!cells)return null;
+ let visited=0;
+ for(let y=Math.floor((actor.y-8)/CELL_SIZE);y<=Math.floor((actor.y+8)/CELL_SIZE);y++)for(let x=Math.floor((actor.x-8)/CELL_SIZE);x<=Math.floor((actor.x+8)/CELL_SIZE);x++){
+  count(world,'spatial.cellQueries');const bucket=cells.get(x+','+y);if(!bucket)continue;
+  for(const other of bucket){
+   visited++;count(world,'spatial.cellCandidateVisits');count(world,'conditions.peer.entitiesVisited');
+   const found=resolve(world,pass,other.id);if(!found.valid||found.row?.entity!==other){invalidateEntityReadView(world);return {complete:false,visited};}
+   visit(other);if(!pass.valid)return {complete:false,visited};
+  }
+ }
+ count(world,'spatial.lookupHits');return {complete:true,visited};
+}

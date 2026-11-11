@@ -34,3 +34,24 @@ After shared commit `fdfdae0`, mentor candidates are resolved from the current r
 41 controlled cases pass. Native proof compares every actual complete conditions map as well as every effect axis: 1919858 queries / 56316876 Object.is axes, zero mismatch. All four natural age/dt windows retain exactly the same complete world/runtime/RNG/sourceTags/fork hashes as the shared stage. [WX_E1C_MENTOR_ACCEPTANCE.json](WX_E1C_MENTOR_ACCEPTANCE.json) contains the actual tested source, counters and full runtime states. Unsupported custom relation getters, invalid keys, duplicate identities, live deaths and reordered mentors retain correct fallback/order behavior.
 
 This mentor increment independently passed the full local npm ci + commissioned base sequence, new E1C, save-equivalence, three-realms, build and package. [WX_E1C_MENTOR_GATE.json](WX_E1C_MENTOR_GATE.json) records the tested source and exit codes.
+
+## Live local peer increment
+
+The separate4-cell Map/Set view is active only in the same audited synchronous native Life loop. It never modifies Life.grid. The two in-loop movement sites notify it: ground-escape after both coordinate writes, and moveTowards finally (including early exits). Bucket membership changes on displacement; hp/faction/state/relations are read live. Only unordered ally/near counts use cell iteration; mentor remains selected by original world-array index. Any failed/partial local query clears and recomputes ALL peer fields with the original ordered scan. Invalid and astronomical coordinates fall back safely.
+
+45 controlled cases, including Proxy-traced actual other-actor native movement, cell/negative/radius boundaries, long movement, live death/revival/state/faction/relation changes, formal structural invalidation and unowned mutation. Native final proof: 1919921 queries / 56318262 Object.is axes, zero mismatch. All four full world/runtime/RNG/sourceTag and v11 fork results match the previous increments. [WX_E1C_SPATIAL_ACCEPTANCE.json](WX_E1C_SPATIAL_ACCEPTANCE.json) records the actual final production bytes and complete runtime states.
+
+| Age / window / dt | Legacy peer+helper entries | Local peer candidates | Shared targets | ID build | Spatial build | Position checks / cell moves | Relation entries |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 100y / 90d / 3 | 2398460 | 155755 | 916 | 16233 | 16233 | 16135 / 4480 | 3654 |
+| 100y / 3d / 0.1 | 2340620 | 134334 | 908 | 16215 | 16215 | 16133 / 217 | 3844 |
+| 400y / 90d / 3 | 18518214 | 750317 | 2144 | 41986 | 41986 | 41048 / 10532 | 2016 |
+| 400y / 3d / 0.1 | 18582888 | 775864 | 2060 | 41942 | 41942 | 41344 / 618 | 2020 |
+
+At400y90d, peer+shared candidates plus BOTH full construction passes total836,433 versus18,518,214 baseline scan entries (95.48% lower in these specified categories). The table separately exposes41,048 position checks,10,532 cell moves and2,016 relation entries; Map lookups and bucket allocations are in the raw counters. This is not a complete CPU-operation/heap-byte comparison or a wall-time/FPS speedup. Both views build30 times, once per queried pass; there is no in-pass rebuild, invalidation instead uses fallback. Natural proof windows had no fallback. Dense controlled populations honestly visit N candidates; far unrelated population leaves2 candidates/query fixed.
+
+Independent review accepted the final three production hashes and the complete fallback follow-up before pinning. The natural cost ratchet also received independent review: explicit relation, empty-cell, map, construction, position, candidate and query-frequency caps; exact sourceTags and input hashes; current production byte binding. Red examples execute real extra-relation and extra-cell-probe work, as well as real fallback and unregistered counted work. No wall-clock assertions are added to CI.
+
+Compact complete end-world snapshots (including all G8 runtime/RNG) are materialized under `reports/local/wx-e1c/evidence/worlds/<completeSHA>.json`, with a content-addressed manifest `WORLD_SNAPSHOTS.json`; each file byte SHA is the already-proved full-world hash. The final evidence archive includes these files. Natural child-realm histories are unavailable in these archives; the original three-realm gates remain separate genuine control coverage. No aged three-realm history or200-year W6 result is claimed.
+
+The spatial production bytes passed the full local npm ci/base/E0/E1/E1C/save-equivalence/three-realms/build/package sequence; [WX_E1C_SPATIAL_GATE.json](WX_E1C_SPATIAL_GATE.json) preserves actual exits. The added natural budget/configuration then passed focused independent review and its actual native-report gate. Final fast/build/package checks cover the subsequently added harness/manifest files; final pushed HEAD must still pass full Fast/Heavy. Mutation paths and explicit unsupported boundaries are tabulated in [WX_E1C_MUTATION_AUDIT.md](WX_E1C_MUTATION_AUDIT.md).

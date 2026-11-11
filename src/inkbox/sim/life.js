@@ -8,7 +8,7 @@ import { stepEncounterTravel } from '../wanxiang/encounters.js';
 import { enterSite } from './sites.js';
 import { nearestSeekSite } from './siteSearch.js';
 import { workMetricsEnabled, startWorkMetric, endWorkMetric, countWorkMetric, recordWorkDt } from './workMetrics.js';
-import { beginEntityReadPass, endEntityReadPass } from './entityReadView.js';
+import { beginEntityReadPass, endEntityReadPass, syncEntityReadPosition } from './entityReadView.js';
 import { chooseSkillAction, stepSkillResources, needsSkillResources } from '../wanxiang/skills.js';
 import { recordCombatAttempt, emitCombatHit } from './presentation.js';
 import { tryCombatIgnition } from './combatEnvironment.js';
@@ -815,6 +815,7 @@ export class Life {
       if (escape) {
         e.x = escape[0] + 0.5;
         e.y = escape[1] + 0.5;
+        syncEntityReadPosition(world,e);
       } else {
         // 死因标记：脚下的地没了（被水淹 / 被抬高成山）⇒ `deathOther`。
         // 标记会被本 tick 后面更晚的致死点覆盖，只有真死那次会被清扫读到。
@@ -1108,6 +1109,7 @@ export class Life {
   moveTowards(e, dtDays, info) {
     if (isMortalHuman(e)) info = SPECIES_INFO.human;
     const world = this.world;
+    try {
     const dx = e.tx - e.x;
     const dy = e.ty - e.y;
     const dist = Math.hypot(dx, dy);
@@ -1185,6 +1187,7 @@ export class Life {
       e.timer = 0;
       return;
     }
+    } finally { syncEntityReadPosition(world,e); }
   }
 
   canStep(x, y) {

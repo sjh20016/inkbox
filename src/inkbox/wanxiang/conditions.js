@@ -1,6 +1,6 @@
 import {MANUAL_INDEX, techniqueId as id} from './manualIds.js';
 import {workMetricsEnabled,countWorkMetric,maxWorkMetric} from '../sim/workMetrics.js';
-import {mentorLookup} from '../sim/entityReadView.js';
+import {mentorLookup,visitNearPeers} from '../sim/entityReadView.js';
 
 let observer=null;
 // Opt-in pure diagnostic comparison of the COMPLETE returned map.
@@ -23,20 +23,27 @@ export function deriveConditions(e,context={}) {
  const relation=(other,type)=>e.relations?.get?.(other?.id)?.type===type;
  const peerConditions=['mentor_near','different_path_mentor','same_sect_ally_near','three_allies_near'];
  const measuring=workMetricsEnabled(world),peerEligible=peerConditions.some(needs);
- if(measuring){countWorkMetric(world,'conditions.calls');if(peerEligible){countWorkMetric(world,'conditions.peer.calls');maxWorkMetric(world,'conditions.peer.maxScan',world?.entities?.length||0);}}
+ if(measuring){countWorkMetric(world,'conditions.calls');if(peerEligible)countWorkMetric(world,'conditions.peer.calls');}
  const indexedMentor=peerEligible?mentorLookup(world,e):null;
+ let useIndexedMentor=!!indexedMentor;
  if(measuring&&peerEligible&&!indexedMentor)countWorkMetric(world,'mentor.lookupFallbacks');
  let mentor=indexedMentor?.mentor,nearCount=0,allies=0;
  // Preserve Array.filter's original world order and sparse-array behavior. All
  // returned peer fields remain computed, even when needed requests only one.
- if(peerEligible){const list=world?.entities||[];for(let i=0;i<list.length;i++){
-  if(!(i in list))continue;
-  const other=list[i];if(measuring)countWorkMetric(world,'conditions.peer.entitiesVisited');
-  if(other===e||!near(other))continue;
+ const consider=other=>{
+  if(other===e||!near(other))return;
   nearCount++;
-  if(!indexedMentor&&!mentor&&relation(other,'mentor'))mentor=other;
+  if(!useIndexedMentor&&!mentor&&relation(other,'mentor'))mentor=other;
   if(e.faction&&other.faction===e.faction&&['fight','attack','mad'].includes(other.state))allies++;
- }}
+ };
+ if(peerEligible){
+  const local=indexedMentor?visitNearPeers(world,e,consider):null;
+  if(local?.complete){if(measuring)maxWorkMetric(world,'conditions.peer.maxScan',local.visited);}
+  else {nearCount=0;allies=0;mentor=undefined;useIndexedMentor=false;
+   const list=world?.entities||[];if(measuring){countWorkMetric(world,'spatial.lookupFallbacks');maxWorkMetric(world,'conditions.peer.maxScan',list.length+(local?.visited||0));}
+   for(let i=0;i<list.length;i++){if(!(i in list))continue;if(measuring){countWorkMetric(world,'conditions.peer.entitiesVisited');countWorkMetric(world,'spatial.fallbackEntitiesVisited');}consider(list[i]);}
+  }
+ }
  if(measuring){if(mentor)countWorkMetric(world,'conditions.peer.mentorHits');countWorkMetric(world,'conditions.peer.nearHits',nearCount);}
  const patient=context.target;
  const recent=(type,days)=>{const stamp=p?.experienceLedger?.recentFacts?.[type];if(Number.isFinite(stamp)&&day>=stamp&&day-stamp<days)return true;return (p?.experienceLedger?.records||[]).some(row=>row.type===type&&day>=row.day&&day-row.day<days);};
