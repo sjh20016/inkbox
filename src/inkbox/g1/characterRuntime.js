@@ -14,6 +14,8 @@ import { deriveConditions } from '../wanxiang/conditions.js';
 import { readEffects, EFFECT_DEFAULTS } from '../wanxiang/effects.js';
 import { createChangeDraft, previewChangeSet, commitChangeSet } from '../wanxiang/changes.js';
 import { enableWanxiang } from '../wanxiang/runtime.js';
+import { readPersonStories, resolveStoryRef } from '../wanxiang/storyReading.js';
+import { storyRefKey, personIdentitySince } from '../wanxiang/storyFacts.js';
 export { characterKey, parseCharacterKey, resolveCharacter, createSelectionToken };
 
 /** Read-only explanations from current facts. Unknown conditions remain unproven. */
@@ -136,7 +138,7 @@ export function buildCharacterViewModel(world,keyOrToken) {
   return freeze({
     schemaVersion:1, permissions, health,
     mingpu:{profile,people,observation:explainMingpu(e,r.sourceWorld||world),catalog:CATALOG,enabled:world.wanxiang?.enabled===true,day:world.day,fortune:e.fortune??null,mind:e.mind??null,legacyRoot:rootLabel,techniques:(e.techniques||[]).map(t=>({id:t.id??t.name,name:t.name,description:t.description})),artifacts:(e.artifacts||[]).map(a=>({id:a.id,name:a.name,grade:a.grade,description:a.description}))},
-    identity:{key:r.key,id:r.id,plane:r.plane,currentPlane:r.currentPlane || r.plane,status:r.status,name:e.name || '不可考',canFocus:r.accessible},
+    identity:{key:r.key,id:r.id,plane:r.plane,incarnation:e.incarnation ?? null,identitySince:personIdentitySince(e),currentPlane:r.currentPlane || r.plane,status:r.status,name:e.name || '不可考',canFocus:r.accessible},
     header:{realm:realmText(e),ageText:life?.ageText || (Number.isFinite(e.age) ? `${Math.floor(e.age / 360)} 岁` : '年龄不可考'),lifespanText:life?.lifespanText || '',affiliation,stateText:e.sp === 'ghost' && r.status === 'alive' ? '鬼魂存续' : r.status === 'ascended' && !r.arrival ? '已飞升 · 去向不可定位' : STATUS[r.status]},
     cultivation:{exp,required,percent:exp !== null && required !== null ? exp / required * 100 : null,rate,rateText:rate === null ? '修炼速度不可考' : `每日修为 ${rate.toFixed(3)}`,stateText:required === null || exp === null ? '修为不可考' : exp >= required ? '等待模拟突破' : '积累修为'},
     overview:[{label:'气血',value:health.hpText},{label:'养伤',value:health.restText},...(life ? [{label:'成年',value:life.adulthood},{label:'出生来历',value:personBirthOriginText(e)},...(life.identity ? [{label:'身份',value:life.identity}] : [])] : []),{label:'灵根',value:rootLabel},{label:'位置',value:r.accessible ? `${planeText(r.currentPlane || r.plane)} (${e.x}, ${e.y})` : '当前不可定位'}],
@@ -170,6 +172,8 @@ export function summarizeCharacterObservation(world,keyOrToken,sinceDay = 0) {
 export function createCharacterController({getWorld,onChange = () => {},presenter} = {}) {
   if (typeof getWorld !== 'function') throw new TypeError('getWorld must be a function');
   let token = null, vm = null, destroyed = false;
+  let storyRefs = new Map();
+  let storySource = null;
   let draftSequence = 0;
   const drafts = new Map();
   function publish(next) { vm = next; if (!destroyed) { onChange(vm); if (vm) presenter?.render(vm); } return vm; }
@@ -179,10 +183,26 @@ export function createCharacterController({getWorld,onChange = () => {},presente
     if (!next) token = null;
     return publish(next);
   }
-  function close() { drafts.clear(); token = null; publish(null); return {ok:true,viewModel:null}; }
+  function close() { drafts.clear(); storyRefs.clear(); storySource = null; token = null; publish(null); return {ok:true,viewModel:null}; }
   function handleMingpu(action) {
     if (destroyed || !token || action?.targetKey !== token.key) return {ok:false,reason:'stale-target'};
     const world=getWorld(), resolved=resolveCharacter(world,token.key,{token});
+    if (action.type === 'stories') {
+      if (!resolved.ok || !resolved.entity || (resolved.status === 'alive' && !resolved.accessible)) return {ok:false,reason:'target-unavailable'};
+      const stories = readPersonStories(world,{kind:'person',plane:resolved.plane,id:resolved.id,incarnation:resolved.entity.incarnation ?? 1,identitySince:personIdentitySince(resolved.entity)});
+      storyRefs = new Map(stories.cards.flatMap(card => card.related).filter(ref => ref.available === true).map(ref => [storyRefKey(ref),ref]));
+      storySource = [resolved.entity.incarnation ?? 1,personIdentitySince(resolved.entity)];
+      return {ok:true,stories};
+    }
+    if (action.type === 'story-navigate') {
+      const ref = storyRefs.get(storyRefKey(action.ref));
+      if (!resolved.ok || !ref || !resolved.entity || !storySource
+        || storySource[0] !== (resolved.entity.incarnation ?? 1) || storySource[1] !== personIdentitySince(resolved.entity))
+        return {ok:false,reason:'此引用不在当前本世拾章的可追溯对象中'};
+      const fresh = resolveStoryRef(world,ref);
+      if (!fresh.available) return {ok:false,reason:fresh.reason || '对象当前不可追'};
+      return {ok:true,effect:{type:'story-navigate',ref}};
+    }
     if(!resolved.ok || resolved.status!=='alive' || !resolved.accessible) return {ok:false,reason:'target-unavailable'};
     if(action.type==='enable') { enableWanxiang(world);refresh();return {ok:true,message:'万象塑命 Alpha 已启用'}; }
     if(!world.wanxiang?.enabled) return {ok:false,reason:'alpha-disabled'};
@@ -205,7 +225,7 @@ export function createCharacterController({getWorld,onChange = () => {},presente
     const key = typeof input === 'string' ? input : characterKey(input?.plane,input?.entityId ?? input?.id);
     const next = createSelectionToken(getWorld(),key);
     if (!next) return {ok:false,reason:'invalid-or-inaccessible-target',message:characterReason('invalid-or-inaccessible-target'),viewModel:vm};
-    drafts.clear(); token = next; refresh(); return {ok:true,viewModel:vm,token};
+    drafts.clear(); storyRefs.clear(); storySource = null; token = next; refresh(); return {ok:true,viewModel:vm,token};
   }
   function handleAction(action) {
     if (destroyed) return {ok:false,reason:'destroyed',message:characterReason('destroyed'),viewModel:null};
