@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>WX-E2P isolated time lane</title>
+<style>body{font:16px system-ui;background:#eee9db;color:#28251d;padding:2rem}button{margin:.3rem;padding:.6rem}pre{white-space:pre-wrap}</style>
+<h1>WX-E2P 岁序分流实验</h1><p>隔离原型；固定 dt=0.1。展示只读已提交摘要。</p>
+<input id="file" type="file" accept="application/json"><button id="p1">P1 主线程分片</button><button id="p2">P2 Worker</button><button id="pause">暂停</button><button id="resume">继续</button><button id="save">导出已提交存档</button><button id="cancel">取消</button>
+<pre id="status">请选择正式 checkpoint JSON</pre>
+<script type="module">
+import {api} from './browser-api.mjs';import {createEngine} from './engine.mjs';
+let saved=null,engine=null,worker=null,session=0,seq=0,worldId='',paused=false;const el=document.querySelector('#status');
+const show=x=>el.textContent=JSON.stringify(x,null,2);document.querySelector('#file').onchange=async e=>{saved=JSON.parse(await e.target.files[0].text());show({loadedDay:saved.day});};
+const stop=()=>{worker?.terminate();worker=null;engine=null;session++;paused=false;acc=0;};
+document.querySelector('#p1').onclick=()=>{if(!saved)return;stop();engine=createEngine(saved,api);show(engine.status());};
+document.querySelector('#p2').onclick=()=>{if(!saved)return;stop();worldId=`${saved.seed}:${saved.day}`;const activeSession=session,activeWorld=worldId,activeWorker=new Worker('./worker.mjs',{type:'module'});worker=activeWorker;activeWorker.onmessage=e=>{if(worker!==activeWorker||session!==activeSession||worldId!==activeWorld||e.data.sessionId!==activeSession||e.data.worldId!==activeWorld)return;show(e.data);if(e.data.type==='save')download(e.data.saved);};activeWorker.postMessage({type:'init',sessionId:session,seq:++seq,worldId,saved});};
+const send=(type,extra={})=>{if(worker)worker.postMessage({type,sessionId:session,seq:++seq,worldId,...extra});};
+document.querySelector('#pause').onclick=()=>{paused=true;if(engine)show(engine.pause());else send('pause');};document.querySelector('#resume').onclick=()=>{paused=false;if(engine)show(engine.resume());else send('resume');};
+document.querySelector('#cancel').onclick=()=>{stop();show({cancelled:true,session});};
+document.querySelector('#save').onclick=()=>{if(engine)download(engine.snapshot());else send('save');};
+function download(x){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(x)],{type:'application/json'}));a.download='wx-e2p-committed.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+let last=performance.now(),acc=0,speed=2;function frame(t){const dt=(t-last)/1000;last=t;if((engine||worker)&&!paused)acc+=3*speed*dt;let n=0;while(acc>=.1&&n++<100){if(engine)engine.advance(.1);else if(worker)send('advance',{days:.1});acc-=.1;}if(engine)show({...engine.pump(7),unsentDays:acc});requestAnimationFrame(frame);}requestAnimationFrame(frame);
+window.wxE2P={get engine(){return engine},get worker(){return worker},get session(){return session},setSpeed(v){speed=v},send,stop};
+</script>

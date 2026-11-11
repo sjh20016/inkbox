@@ -1,0 +1,21 @@
+import fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';
+import {launch,findEdge,sleep} from '../../scripts/cdp.mjs';import {launchOwnedServer} from '../../scripts/inkbox-owned-server.mjs';
+const root=process.cwd(),out=path.join(root,'reports/local/wx-e2p/browser');fs.mkdirSync(out,{recursive:true});
+const report={kind:'scheduler-only demo; renderer labels are scenarios, NOT actual Canvas/Three',head:'cda97516d4a20e258af103cd395ddff67644b793',node:process.version,platform:process.platform,inputs:{},cases:[],browser:'Edge headless',durationMs:Number(process.env.WXE2P_DURATION_MS||10000)};
+for(const y of [100,400]){const p=`reports/local/wx-e2p/checkpoints/20260914-${y}y-save.json`;report.inputs[y]={file:p,sha256:createHash('sha256').update(fs.readFileSync(p)).digest('hex')};}
+let server,b;try{server=await launchOwnedServer({root,port:0});b=await launch({browser:findEdge(),url:server.url+'/research/wx-e2p/demo.html',width:1366,height:768,gpu:false,headless:true});
+ if(!await b.waitFor('return !!window.wxE2P',{timeoutMs:30000}))throw Error('demo unavailable');
+ for(const renderer of ['canvas','three'])for(const speed of [2,20])for(const mode of ['sync','p1','worker']){
+  const entry={renderer,speed,mode,world:'400y'};report.cases.push(entry);try{
+   await b.js(`return (async()=>{const saved=await (await fetch('/reports/local/wx-e2p/checkpoints/20260914-400y-save.json')).json();const {api}=await import('./browser-api.mjs');const {createEngine}=await import('./engine.mjs');window.__case={saved,api,createEngine};return {day:saved.day,bytes:JSON.stringify(saved).length};})();`);
+   await b.js(`return (async()=>{const x=window.__case;x.mode=${JSON.stringify(mode)};x.speed=${speed};x.frames=[];x.events=[];x.started=performance.now();x.startDay=x.saved.day;x.submitted=0;x.completed=0;x.seq=0;x.session=Date.now();x.worldId=x.saved.seed+':'+x.saved.day;x.lastFrame=null;x.running=true;x.errors=[];
+    if(x.mode==='p1')x.engine=x.createEngine(x.saved,x.api);if(x.mode==='sync')x.context=x.api.restore(x.saved);
+    if(x.mode==='worker'){x.worker=new Worker('./worker.mjs',{type:'module'});x.worker.onerror=e=>x.errors.push(String(e.message));x.worker.onmessage=e=>{x.events.push({...e.data,receivedAt:performance.now()});if(e.data.type==='committed')x.completed=e.data.completedDays;};x.worker.postMessage({type:'init',sessionId:x.session,worldId:x.worldId,seq:++x.seq,saved:x.saved});}
+    function frame(t){if(!x.running)return;if(x.lastFrame!==null)x.frames.push(t-x.lastFrame);x.lastFrame=t;requestAnimationFrame(frame);}requestAnimationFrame(frame);
+    x.timer=setInterval(()=>{if(!x.running)return;const days=.1;if(x.mode==='sync'){x.api.advance(x.context,days);x.submitted+=days;x.completed+=days;}else if(x.mode==='p1'){x.engine.advance(days);x.submitted+=days;x.engine.pump(7);x.completed=x.engine.status().completedDays;}else{x.worker.postMessage({type:'advance',sessionId:x.session,worldId:x.worldId,seq:++x.seq,days});x.submitted+=days;}},1000/(3*x.speed/.1));return true;})();`);
+   await sleep(report.durationMs);
+   Object.assign(entry,await b.js(`const x=window.__case;x.running=false;clearInterval(x.timer);const actual=x.mode==='p1'?x.engine.status().completedDays:x.completed;const s=x.frames.sort((a,b)=>a-b),q=p=>s.length?s[Math.floor((s.length-1)*p)]:null;const result={elapsedMs:performance.now()-x.started,startDay:x.startDay,submittedDays:x.submitted,completedDays:actual,backlogDays:x.submitted-actual,actualDaysPerSecond:actual/((performance.now()-x.started)/1000),targetDaysPerSecond:3*x.speed,frameP50:q(.5),frameP95:q(.95),frameP99:q(.99),framesOver50:s.filter(v=>v>50).length,errors:x.errors,workerMessages:x.events.length,messageBytes:JSON.stringify(x.events).length};x.worker?.terminate();return result;`));entry.status=entry.errors.length?'failed':'observed';console.log(mode,renderer,speed,entry.completedDays,entry.frameP95);
+  }catch(e){entry.status='failed';entry.error=String(e);console.error(entry.error);}
+ }
+ report.browserErrors=b.errors();
+}finally{if(b)report.cleanup=await b.close();if(server?.child){server.child.kill();}fs.writeFileSync(path.join(out,'matrix.json'),JSON.stringify(report,null,2));console.log('report',path.join(out,'matrix.json'));}
