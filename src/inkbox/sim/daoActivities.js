@@ -58,7 +58,7 @@ function socialTarget(world,e,byId,jobs) {
     const needsGuard=target.level>0&&target.exp>=expToNext(target.level)*.7&&!(target.wanxiang?.states||[]).some(s=>s.id==='alchemy_guard'&&s.expiresDay>world.day);
     if(!needsHeal&&!needsGuard)continue;
     const intent=needsHeal?'heal':'guard';
-    const score=socialAidWeight(e,target,world,intent)*readEffects(e,{day:world.day,world,target,intent,paidAid:true}).aidIntent/(1+dist(e,target)/12)+(tie.kind==='gratitude'?.2:0);
+    const score=socialAidWeight(e,target,world,intent)*readEffects(e,{day:world.day,world,target,intent,paidAid:true},'aid-intent').aidIntent/(1+dist(e,target)/12)+(tie.kind==='gratitude'?.2:0);
     choices.push({target,tie,intent,score});
   }
   choices.sort((a,b)=>b.score-a.score||a.target.id-b.target.id);
@@ -145,8 +145,8 @@ function act(world,life,e,j,target) {
     if(!tie||j.targetIncarnation!==(target.incarnation??1)||!alive(target)||dist(e,target)>1.8)return false;
     if(j.intent==='heal') {
       if(!(target.hp<target.maxHp*.82))return false;
-      const healing=readEffects(e,{day:world.day,world,target,paidAid:true}).healing;
-      const received=readEffects(target,{day:world.day,world,healer:e}).healingReceived;
+      const healing=readEffects(e,{day:world.day,world,target,paidAid:true},'healing').healing;
+      const received=readEffects(target,{day:world.day,world,healer:e},'healing-received').healingReceived;
       const amount=Math.min(target.maxHp*.12*healing*received,target.maxHp-target.hp);
       if(!(amount>0))return false;
       const cost=socialPayment(world,e,.2,.01);if(!cost)return false;
@@ -175,8 +175,8 @@ function act(world,life,e,j,target) {
   }
   if(key==='alchemy') {
     if(!alive(target)||target.hp>=target.maxHp*.92) return false;
-    const healing=readEffects(e,{day:world.day,world,target,paidAid:true}).healing;
-    const received=readEffects(target,{day:world.day,world,healer:e}).healingReceived;
+    const healing=readEffects(e,{day:world.day,world,target,paidAid:true},'healing').healing;
+    const received=readEffects(target,{day:world.day,world,healer:e},'healing-received').healingReceived;
     const preference=aidPreference(world,e,target);
     const amount=Math.min(target.maxHp*.12*healing*received,target.maxHp-target.hp);
     if(!(amount>0))return false;

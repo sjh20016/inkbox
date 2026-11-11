@@ -23,6 +23,8 @@ Use `not-applicable` with a short reason only where a dimension truly does not a
 
 The registry pins SHA-256 hashes for the small set of sensitive files listed there, together with a complete cost card for each. Hashes normalize CRLF and CR line endings to LF before calculation, so checkout platform does not change the anchor. A content change fails until a reviewer examines the diff and updates the hash and card deliberately. A new hot path must be added to the registry before it can pass. The checker also accepts changed-file lists so CI can reject unregistered simulation consumers.
 
+WX-E1 extends the protected transitive readEffects set to conditions, experiences, cultivation, practice, and daoActivities. The `read-effects` card records O(readEffects calls * N) where peer/shared lookups scan the population; do not describe this as a one-entity bound. Pending entries intentionally fail the E0 checker until an independent source diff review approves and pins their hashes. The additive deterministic counter gate is documented in `WX_E1_COST_GUARD.md`.
+
 Hashes are human-review anchors: they detect unreviewed content changes, but do not understand code or prove that a reviewed change is efficient. They must never be refreshed automatically by the checker. An approved update records the reviewed source hash and a concise review note.
 
 The registry's baseline inventory describes `c4b169d`; it does not claim that historical costs have already been optimized or measured. The protected hashes describe the reviewed candidate content. `src/inkbox/sim/siteSearch.js` was absent at baseline and is now registered with its implemented selector cost card and reviewed hash.

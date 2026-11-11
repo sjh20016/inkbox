@@ -52,7 +52,7 @@ export function chooseSkillAction(e,target,day,{power=1,defense=0}={}) {
  if(day-state.lastActionDay<1) return {kind:'wait',damage:0};
  for(const id of c.skills.slice(0,skillSlotCount(e))) {
   const s=SKILLS.find(x=>x.id===id);if(!canUseSkill(e,s)) continue;
-  const effect=readEffects(e,{day,target,skillId:id}),cost=s.cost*effect.spell_cost;
+  const effect=readEffects(e,{day,target,skillId:id},'skill'),cost=s.cost*effect.spell_cost;
   if(state.mana<cost || (state.cooldowns[id] ?? -1)>day) continue;
   if(s.kind==='heal' ? e.hp>=e.maxHp*.4 : Math.hypot(e.x-target.x,e.y-target.y)>s.range) continue;
   state.mana-=cost;state.cooldowns[id]=day+s.cooldown;state.lastActionDay=day;
