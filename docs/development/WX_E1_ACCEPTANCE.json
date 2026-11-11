@@ -370,8 +370,6 @@
         "tree": "0d04b87071756848ab3d1f59c4cdc41aede96200",
         "dirty": ""
       },
-      "queries": 492515,
-      "axesCompared": 8373070,
       "checkpoint": {
         "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-wxe0\\reports\\local\\wx-e0\\checkpoints\\20260914-100y-save.json",
         "bytes": 2826671,
@@ -547,8 +545,6 @@
         "tree": "0d04b87071756848ab3d1f59c4cdc41aede96200",
         "dirty": ""
       },
-      "queries": 492515,
-      "axesCompared": 8373070,
       "checkpoint": {
         "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-wxe0\\reports\\local\\wx-e0\\checkpoints\\20260914-400y-save.json",
         "bytes": 10073655,
@@ -864,8 +860,6 @@
         "tree": "0d04b87071756848ab3d1f59c4cdc41aede96200",
         "dirty": ""
       },
-      "queries": 89517,
-      "axesCompared": 1522104,
       "checkpoint": {
         "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-wxs11\\reports\\local\\wx-s1\\natural\\73101-100y-save.json",
         "bytes": 2008188,
@@ -1043,8 +1037,6 @@
         "tree": "0d04b87071756848ab3d1f59c4cdc41aede96200",
         "dirty": ""
       },
-      "queries": 102825,
-      "axesCompared": 1748340,
       "checkpoint": {
         "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-wxs11\\reports\\local\\wx-s1\\natural\\61003-100y-save.json",
         "bytes": 2236422,
@@ -7396,5 +7388,30 @@
     "Same-dt L0 does not mean dt3 and dt0.1 world lines are equal.",
     "Browser variable-dt runs are single diagnostic samples with generated control upper/nether; not natural three-realm histories.",
     "Raw natural input archives, stdout logs and profiles are in the separate ignored evidence package."
-  ]
+  ],
+  "oracleReports": [
+    {
+      "file": "reports/local/wx-e1/final/native.json",
+      "sha256": "793d418b952c7f6305fb3ea9b7b49feab6500c822c5959f6bba8535198fce24f",
+      "queries": 492515,
+      "axesCompared": 8373070
+    },
+    {
+      "file": "reports/local/wx-e1/final/seed-73101.json",
+      "sha256": "963d938c4d941594480ab60590436af48463d9f404120c96383cc69cbea2f20f",
+      "queries": 89517,
+      "axesCompared": 1522104
+    },
+    {
+      "file": "reports/local/wx-e1/final/seed-61003.json",
+      "sha256": "e4239f26b506f769e698e4e121020af9122e4105bff0e30b49c2683908e73158",
+      "queries": 102825,
+      "axesCompared": 1748340
+    }
+  ],
+  "oracleTotals": {
+    "queries": 684857,
+    "axesCompared": 11643514,
+    "scope": "Totals include controlled fixtures and native per-call comparisons; each raw report counted once."
+  }
 }
