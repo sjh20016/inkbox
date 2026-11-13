@@ -1,0 +1,987 @@
+{
+  "scope": "Opt-in Node production projection audit on genuine natural worlds. Maps/Sets/typed arrays are treated as leaf containers; whole-world before/after hashes catch authoritative mutation. This does not trace every main/Camera/Three/G1 reader.",
+  "rows": [
+    {
+      "age": 100,
+      "consumer": "RenderFrame",
+      "checkpointSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+      "reads": [
+        {
+          "field": "world.plane",
+          "count": 2
+        },
+        {
+          "field": "world.entities",
+          "count": 1
+        },
+        {
+          "field": "world.entities.Symbol(Symbol.iterator)",
+          "count": 1
+        },
+        {
+          "field": "world.entities.length",
+          "count": 541
+        },
+        {
+          "field": "world.entities[]",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].dao",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].id",
+          "count": 1080
+        },
+        {
+          "field": "world.entities[].x",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].y",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].tx",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].ty",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].sp",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].state",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].level",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].hp",
+          "count": 1080
+        },
+        {
+          "field": "world.entities[].maxHp",
+          "count": 1620
+        },
+        {
+          "field": "world.entities[].faction",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].face",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].soulKind",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].form",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].dao.path",
+          "count": 17
+        },
+        {
+          "field": "world.entities[].dao.path.key",
+          "count": 17
+        },
+        {
+          "field": "world.day",
+          "count": 1
+        },
+        {
+          "field": "world.revision",
+          "count": 1
+        }
+      ],
+      "writes": [],
+      "resultBytes": 143949
+    },
+    {
+      "age": 100,
+      "consumer": "HUD seed Query",
+      "checkpointSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+      "reads": [
+        {
+          "field": "world.plane",
+          "count": 1
+        },
+        {
+          "field": "world.day",
+          "count": 1
+        },
+        {
+          "field": "world.seed",
+          "count": 1
+        },
+        {
+          "field": "world.entities",
+          "count": 1
+        },
+        {
+          "field": "world.entities.length",
+          "count": 1
+        }
+      ],
+      "writes": [],
+      "resultBytes": 110
+    },
+    {
+      "age": 100,
+      "consumer": "settlement inspection Query",
+      "checkpointSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+      "reads": [
+        {
+          "field": "world.villages",
+          "count": 4
+        },
+        {
+          "field": "world.villages.length",
+          "count": 3
+        },
+        {
+          "field": "world.villages[]",
+          "count": 23
+        },
+        {
+          "field": "world.villages[].id",
+          "count": 29
+        },
+        {
+          "field": "world.plane",
+          "count": 1
+        },
+        {
+          "field": "world.villages.find",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].faction",
+          "count": 1
+        },
+        {
+          "field": "world.factions",
+          "count": 1
+        },
+        {
+          "field": "world.factions.find",
+          "count": 1
+        },
+        {
+          "field": "world.factions.length",
+          "count": 1
+        },
+        {
+          "field": "world.factions[]",
+          "count": 3
+        },
+        {
+          "field": "world.factions[].id",
+          "count": 4
+        },
+        {
+          "field": "world.factions[].name",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].history",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].history.filter",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].history.length",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].history.constructor",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].history[]",
+          "count": 16
+        },
+        {
+          "field": "world.villages[].history[].text",
+          "count": 22
+        },
+        {
+          "field": "world.villages[].destroyedDay",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].houses",
+          "count": 2
+        },
+        {
+          "field": "world.villages[].houses.reduce",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].houses.length",
+          "count": 2
+        },
+        {
+          "field": "world.villages[].houses[]",
+          "count": 19
+        },
+        {
+          "field": "world.villages[].houses[].floodRuined",
+          "count": 19
+        },
+        {
+          "field": "world.villages[].houses[].ruinedBySettlement",
+          "count": 19
+        },
+        {
+          "field": "world.villages[].houses[].x",
+          "count": 38
+        },
+        {
+          "field": "world.villages[].houses[].y",
+          "count": 38
+        },
+        {
+          "field": "world.inside",
+          "count": 20
+        },
+        {
+          "field": "world.w",
+          "count": 47
+        },
+        {
+          "field": "world.h",
+          "count": 22
+        },
+        {
+          "field": "world.struct",
+          "count": 82
+        },
+        {
+          "field": "world.idx",
+          "count": 21
+        },
+        {
+          "field": "world.worldEventState",
+          "count": 1
+        },
+        {
+          "field": "world.worldEventState.activeCrises",
+          "count": 1
+        },
+        {
+          "field": "world.worldEventState.activeCrises.filter",
+          "count": 1
+        },
+        {
+          "field": "world.worldEventState.activeCrises.length",
+          "count": 1
+        },
+        {
+          "field": "world.worldEventState.activeCrises.constructor",
+          "count": 1
+        },
+        {
+          "field": "world.worldEventState.activeCrises[]",
+          "count": 2
+        },
+        {
+          "field": "world.worldEventState.activeCrises[].villageId",
+          "count": 2
+        },
+        {
+          "field": "world.villages[].x",
+          "count": 5
+        },
+        {
+          "field": "world.villages[].y",
+          "count": 5
+        },
+        {
+          "field": "world.size",
+          "count": 65
+        },
+        {
+          "field": "world.isWalkable",
+          "count": 2
+        },
+        {
+          "field": "world.infoOf",
+          "count": 2
+        },
+        {
+          "field": "world.type",
+          "count": 2
+        },
+        {
+          "field": "world.fire",
+          "count": 4
+        },
+        {
+          "field": "world.water",
+          "count": 65
+        },
+        {
+          "field": "world.height",
+          "count": 10
+        },
+        {
+          "field": "world.villages[].pop",
+          "count": 3
+        },
+        {
+          "field": "world.villages[].food",
+          "count": 5
+        },
+        {
+          "field": "world.villages[].hp",
+          "count": 8
+        },
+        {
+          "field": "world.villages[].lastAidDay",
+          "count": 3
+        },
+        {
+          "field": "world.villages[].aidSpentProvisions",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].aidSpentSpiritStone",
+          "count": 1
+        },
+        {
+          "field": "world.entities",
+          "count": 2
+        },
+        {
+          "field": "world.villages.map",
+          "count": 1
+        },
+        {
+          "field": "world.villages.constructor",
+          "count": 1
+        },
+        {
+          "field": "world.entities.Symbol(Symbol.iterator)",
+          "count": 1
+        },
+        {
+          "field": "world.entities.length",
+          "count": 541
+        },
+        {
+          "field": "world.entities[]",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].village",
+          "count": 540
+        },
+        {
+          "field": "world.entities[].sp",
+          "count": 1162
+        },
+        {
+          "field": "world.entities[].hp",
+          "count": 505
+        },
+        {
+          "field": "world.entities[].lifespan",
+          "count": 1010
+        },
+        {
+          "field": "world.entities[].age",
+          "count": 2635
+        },
+        {
+          "field": "world.entities[]._ascended",
+          "count": 505
+        },
+        {
+          "field": "world.entities[].level",
+          "count": 543
+        },
+        {
+          "field": "world.villages[].fieldTiles",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].fieldTiles.Symbol(Symbol.iterator)",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].fieldTiles.length",
+          "count": 64
+        },
+        {
+          "field": "world.villages[].fieldTiles[]",
+          "count": 63
+        },
+        {
+          "field": "world.over",
+          "count": 63
+        },
+        {
+          "field": "world.villages[].history[].day",
+          "count": 6
+        },
+        {
+          "field": "world.villages[].lastAidFactionName",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].level",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].foundedDay",
+          "count": 1
+        },
+        {
+          "field": "world.settlementRuins",
+          "count": 1
+        },
+        {
+          "field": "world.settlementRuins.filter",
+          "count": 1
+        },
+        {
+          "field": "world.settlementRuins.length",
+          "count": 1
+        },
+        {
+          "field": "world.settlementRuins.constructor",
+          "count": 1
+        },
+        {
+          "field": "world.settlementRuins[]",
+          "count": 2
+        },
+        {
+          "field": "world.settlementRuins[].id",
+          "count": 2
+        },
+        {
+          "field": "world.settlementRuins[].x",
+          "count": 2
+        },
+        {
+          "field": "world.settlementRuins[].y",
+          "count": 2
+        },
+        {
+          "field": "world.villages[].name",
+          "count": 1
+        },
+        {
+          "field": "world.day",
+          "count": 1
+        }
+      ],
+      "writes": [],
+      "resultBytes": 1129
+    },
+    {
+      "age": 400,
+      "consumer": "RenderFrame",
+      "checkpointSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+      "reads": [
+        {
+          "field": "world.plane",
+          "count": 2
+        },
+        {
+          "field": "world.entities",
+          "count": 1
+        },
+        {
+          "field": "world.entities.Symbol(Symbol.iterator)",
+          "count": 1
+        },
+        {
+          "field": "world.entities.length",
+          "count": 1400
+        },
+        {
+          "field": "world.entities[]",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].dao",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].dao.path",
+          "count": 71
+        },
+        {
+          "field": "world.entities[].dao.path.key",
+          "count": 71
+        },
+        {
+          "field": "world.entities[].id",
+          "count": 2798
+        },
+        {
+          "field": "world.entities[].x",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].y",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].tx",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].ty",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].sp",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].state",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].level",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].hp",
+          "count": 2798
+        },
+        {
+          "field": "world.entities[].maxHp",
+          "count": 4197
+        },
+        {
+          "field": "world.entities[].faction",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].face",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].soulKind",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].form",
+          "count": 1399
+        },
+        {
+          "field": "world.day",
+          "count": 1
+        },
+        {
+          "field": "world.revision",
+          "count": 1
+        }
+      ],
+      "writes": [],
+      "resultBytes": 371850
+    },
+    {
+      "age": 400,
+      "consumer": "HUD seed Query",
+      "checkpointSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+      "reads": [
+        {
+          "field": "world.plane",
+          "count": 1
+        },
+        {
+          "field": "world.day",
+          "count": 1
+        },
+        {
+          "field": "world.seed",
+          "count": 1
+        },
+        {
+          "field": "world.entities",
+          "count": 1
+        },
+        {
+          "field": "world.entities.length",
+          "count": 1
+        }
+      ],
+      "writes": [],
+      "resultBytes": 112
+    },
+    {
+      "age": 400,
+      "consumer": "settlement inspection Query",
+      "checkpointSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+      "reads": [
+        {
+          "field": "world.villages",
+          "count": 4
+        },
+        {
+          "field": "world.villages.length",
+          "count": 3
+        },
+        {
+          "field": "world.villages[]",
+          "count": 46
+        },
+        {
+          "field": "world.villages[].id",
+          "count": 110
+        },
+        {
+          "field": "world.plane",
+          "count": 1
+        },
+        {
+          "field": "world.villages.find",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].faction",
+          "count": 1
+        },
+        {
+          "field": "world.factions",
+          "count": 1
+        },
+        {
+          "field": "world.factions.find",
+          "count": 1
+        },
+        {
+          "field": "world.factions.length",
+          "count": 1
+        },
+        {
+          "field": "world.factions[]",
+          "count": 3
+        },
+        {
+          "field": "world.factions[].id",
+          "count": 4
+        },
+        {
+          "field": "world.factions[].name",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].history",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].history.filter",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].history.length",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].history.constructor",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].history[]",
+          "count": 16
+        },
+        {
+          "field": "world.villages[].history[].text",
+          "count": 22
+        },
+        {
+          "field": "world.villages[].destroyedDay",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].houses",
+          "count": 2
+        },
+        {
+          "field": "world.villages[].houses.reduce",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].houses.length",
+          "count": 2
+        },
+        {
+          "field": "world.villages[].houses[]",
+          "count": 19
+        },
+        {
+          "field": "world.villages[].houses[].floodRuined",
+          "count": 19
+        },
+        {
+          "field": "world.villages[].houses[].ruinedBySettlement",
+          "count": 19
+        },
+        {
+          "field": "world.villages[].houses[].x",
+          "count": 38
+        },
+        {
+          "field": "world.villages[].houses[].y",
+          "count": 38
+        },
+        {
+          "field": "world.inside",
+          "count": 20
+        },
+        {
+          "field": "world.w",
+          "count": 47
+        },
+        {
+          "field": "world.h",
+          "count": 22
+        },
+        {
+          "field": "world.struct",
+          "count": 82
+        },
+        {
+          "field": "world.idx",
+          "count": 21
+        },
+        {
+          "field": "world.worldEventState",
+          "count": 1
+        },
+        {
+          "field": "world.worldEventState.activeCrises",
+          "count": 1
+        },
+        {
+          "field": "world.worldEventState.activeCrises.filter",
+          "count": 1
+        },
+        {
+          "field": "world.worldEventState.activeCrises.length",
+          "count": 1
+        },
+        {
+          "field": "world.worldEventState.activeCrises.constructor",
+          "count": 1
+        },
+        {
+          "field": "world.worldEventState.activeCrises[]",
+          "count": 2
+        },
+        {
+          "field": "world.worldEventState.activeCrises[].villageId",
+          "count": 2
+        },
+        {
+          "field": "world.villages[].x",
+          "count": 63
+        },
+        {
+          "field": "world.villages[].y",
+          "count": 63
+        },
+        {
+          "field": "world.size",
+          "count": 65
+        },
+        {
+          "field": "world.isWalkable",
+          "count": 2
+        },
+        {
+          "field": "world.infoOf",
+          "count": 2
+        },
+        {
+          "field": "world.type",
+          "count": 2
+        },
+        {
+          "field": "world.fire",
+          "count": 4
+        },
+        {
+          "field": "world.water",
+          "count": 65
+        },
+        {
+          "field": "world.height",
+          "count": 10
+        },
+        {
+          "field": "world.villages[].pop",
+          "count": 3
+        },
+        {
+          "field": "world.villages[].food",
+          "count": 5
+        },
+        {
+          "field": "world.villages[].hp",
+          "count": 8
+        },
+        {
+          "field": "world.villages[].lastAidDay",
+          "count": 3
+        },
+        {
+          "field": "world.villages[].aidSpentProvisions",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].aidSpentSpiritStone",
+          "count": 1
+        },
+        {
+          "field": "world.entities",
+          "count": 2
+        },
+        {
+          "field": "world.villages.map",
+          "count": 1
+        },
+        {
+          "field": "world.villages.constructor",
+          "count": 1
+        },
+        {
+          "field": "world.entities.Symbol(Symbol.iterator)",
+          "count": 1
+        },
+        {
+          "field": "world.entities.length",
+          "count": 1400
+        },
+        {
+          "field": "world.entities[]",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].village",
+          "count": 1399
+        },
+        {
+          "field": "world.entities[].sp",
+          "count": 3364
+        },
+        {
+          "field": "world.entities[].hp",
+          "count": 1361
+        },
+        {
+          "field": "world.entities[].lifespan",
+          "count": 2722
+        },
+        {
+          "field": "world.entities[].age",
+          "count": 7044
+        },
+        {
+          "field": "world.entities[]._ascended",
+          "count": 1361
+        },
+        {
+          "field": "world.entities[].level",
+          "count": 1499
+        },
+        {
+          "field": "world.villages[].fieldTiles",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].fieldTiles.Symbol(Symbol.iterator)",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].fieldTiles.length",
+          "count": 64
+        },
+        {
+          "field": "world.villages[].fieldTiles[]",
+          "count": 63
+        },
+        {
+          "field": "world.over",
+          "count": 63
+        },
+        {
+          "field": "world.villages[].history[].day",
+          "count": 6
+        },
+        {
+          "field": "world.villages[].lastAidFactionName",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].level",
+          "count": 1
+        },
+        {
+          "field": "world.villages[].foundedDay",
+          "count": 1
+        },
+        {
+          "field": "world.settlementRuins",
+          "count": 1
+        },
+        {
+          "field": "world.settlementRuins.filter",
+          "count": 1
+        },
+        {
+          "field": "world.settlementRuins.length",
+          "count": 1
+        },
+        {
+          "field": "world.settlementRuins.constructor",
+          "count": 1
+        },
+        {
+          "field": "world.settlementRuins[]",
+          "count": 60
+        },
+        {
+          "field": "world.settlementRuins[].id",
+          "count": 60
+        },
+        {
+          "field": "world.settlementRuins[].x",
+          "count": 60
+        },
+        {
+          "field": "world.settlementRuins[].y",
+          "count": 60
+        },
+        {
+          "field": "world.villages[].name",
+          "count": 1
+        },
+        {
+          "field": "world.day",
+          "count": 1
+        }
+      ],
+      "writes": [],
+      "resultBytes": 1054
+    }
+  ]
+}

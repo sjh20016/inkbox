@@ -69,6 +69,8 @@ import { History, withWaterEditBatch } from './sim/powers.js';
 import { greetOnBoot, reactToTool } from './sim/busanzi.js';
 import { TerrainLayer } from './render/terrainLayer.js';
 import { UnitsLayer } from './render/unitsLayer.js';
+import { renderFrame, worldGeneration } from './presentation/readView/index.js';
+import { CommandBridge } from './presentation/readView/commandBridge.js';
 import { Camera } from './render/camera.js';
 // 表现叠层（D7-C）：落点墨环。**纯表现**——不写世界、不抽 RNG、不进存档，
 // 删掉这一层模拟结果逐字不变。镜头滑过去之后浮出一个收缩墨环，
@@ -249,6 +251,7 @@ class Sandbox {
     this.showGrid = false;
 
     this.world = null;
+    this.commandBridge = new CommandBridge(() => this.world);
     this.life = null;
     this.terrain = null;
     // 玩家工具随机流（G8：可快照；每次换世界重置，读档恢复存档时刻的游标）。
@@ -936,6 +939,7 @@ class Sandbox {
       this.clickSaid = '';
       this.pointer.strokePoints = null;
       this.pointer.paintWorld = null;
+      this.pointer.commandWorldGeneration = null;
       this.pointer.actionKind = null;
       this.pointer.down = false;
       this.pointer.painting = false;
@@ -970,6 +974,7 @@ class Sandbox {
       }
       this.pointer.down = true;
       this.pointer.paintWorld = this.world;
+      this.pointer.commandWorldGeneration = worldGeneration(this.world);
       const tool = this.tool;
       if (tool.mode === 'select') {
         // 划选是**一次成型**的动作：按下只是起个头，抬起才提交。
@@ -1003,7 +1008,7 @@ class Sandbox {
         // deaths, or other effects that History does not own.
         this.pointer.actionKind = 'click';
         this.pointer.painting = true;
-        this.applyTool(true);
+        this.commandBridge.dispatch({ worldGeneration: worldGeneration(this.world) }, () => this.applyTool(true));
         endPointer();
       } else {
         // Dragging is a preview only until release. This keeps cancellation
@@ -1079,7 +1084,8 @@ class Sandbox {
           for (let i = 0; i < this.pointer.strokePoints.length; i += 1) {
             const point = this.pointer.strokePoints[i];
             for (let repeat = 0; repeat < point.count; repeat += 1)
-              this.applyTool(i === 0 && repeat === 0, { point, radius: this.brushRadius });
+              this.commandBridge.dispatch({ worldGeneration: this.pointer.commandWorldGeneration },
+                () => this.applyTool(i === 0 && repeat === 0, { point, radius: this.brushRadius }));
           }
         };
         if (this.tool.id === 'water' || this.tool.id === 'drain')
@@ -1127,6 +1133,7 @@ class Sandbox {
       this.pointer.panning = false;
       this.pointer.strokePoints = null;
       this.pointer.paintWorld = null;
+      this.pointer.commandWorldGeneration = null;
       this.pointer.actionKind = null;
       this.updateCursor();
     };
@@ -2522,7 +2529,7 @@ class Sandbox {
     this.units.drawStructures(ctx, this.camera, world);
     this.units.drawSects(ctx, this.camera, world);
     this.units.drawSites(ctx, this.camera, world, now);
-    this.units.drawEntities(ctx, this.camera, world, now);
+    this.units.drawEntities(ctx, this.camera, world, now, renderFrame(world, 'mortal'));
     drawWanling(ctx,this.camera,world,now);
     // 凡间鬼影（D6-3 工程包 B）。**必须单独调**：这批实体不在 `world.entities`
     // 里（理由见 `sim/wraiths.js` 头注释），`drawEntities` 一行都画不到它们。

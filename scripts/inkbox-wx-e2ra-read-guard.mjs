@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const root=new URL('../',import.meta.url),contract=JSON.parse(fs.readFileSync(new URL('docs/development/WX_E2RA_READ_CONTRACT.json',root)));
+const text=p=>fs.readFileSync(new URL(p,root),'utf8');
+const code=s=>s.replace(/\/\*[\s\S]*?\*\//g,'').replace(/^\s*\/\/.*$/gm,'');
+export function unregisteredFields(source,allowed){const errors=[];const clean=code(source);for(const match of clean.matchAll(/\bworld(?:\?\.|\.)([A-Za-z_$][\w$]*)/g))if(!allowed.includes(match[1]))errors.push('unregistered World read '+match[1]);for(const match of clean.matchAll(/\bworld\[\s*(['"])(\w+)\1\s*\]/g))if(!allowed.includes(match[2]))errors.push('unregistered bracket World read '+match[2]);return errors;}
+for(const [file,allowed]of Object.entries(contract.worldFields))assert.deepEqual(unregisteredFields(text(file),allowed),[],file);
+const derive=text('src/inkbox/render3d/entities/deriveEntities.js');
+const directCanonical=s=>/\bworld(?:\?\.|\.)entities\b/.test(code(s));
+assert.equal(directCanonical(derive),false,'migrated Three canonical entity list has no direct World read');
+assert.equal(directCanonical(derive+'\nconst hidden = world.entities;'),true,'real injected direct-list source violates the migrated boundary');
+const source=text('src/inkbox/presentation/readView/index.js');
+assert(unregisteredFields(source+'\nconst hidden = world.unregisteredPopulationScan;',contract.worldFields['src/inkbox/presentation/readView/index.js']).length>0,'actual new unknown source field fails registration');
+assert(unregisteredFields(source+'\nconst hidden = world["secretList"];',contract.worldFields['src/inkbox/presentation/readView/index.js']).length>0,'literal bracket bypass also fails');
+const units=code(text('src/inkbox/render/unitsLayer.js')),start=units.indexOf('  drawEntities('),stop=units.indexOf('  drawWraiths(',start),body=units.slice(start,stop);
+assert.equal((body.match(/\bworld\.entities\b/g)||[]).length,1,'only registered legacy optional-frame fallback may read canonical list');
+assert(/const\s+list\s*=\s*frame\s*\?\s*frame\.entities\s*:\s*world\.entities/.test(body),'Canvas primary list is Frame');
+const qol=text('src/inkbox/ui/qol.js'),hud=qol.slice(qol.indexOf('    syncWorldInfo(rendererName)'),qol.indexOf('    async copySeed()'));
+assert(!/\bw\.seed\b/.test(code(hud))&&hud.includes('getWorldStatus'),'migrated seed HUD facts go through Query');
+console.log('E2R-a migrated read guards: registered boundaries pass; actual direct-list, unknown-field and bracket-source red examples rejected');
