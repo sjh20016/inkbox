@@ -1,6 +1,7 @@
 import { initializeProfile, ARRAY_LIMITS } from './profile.js';
 import { worldStream } from '../sim/worldStreams.js';
 import {workMetricsEnabled,countWorkMetric} from '../sim/workMetrics.js';
+import {sharedInsightLookup} from '../sim/entityReadView.js';
 
 // Reconstructed from the supplied V0.1 specification; no missing content pack is implied.
 import EXPERIENCE_TRAITS from './content/experienceTraits.js';
@@ -141,7 +142,9 @@ export function experienceEffects(e,day=0,world=null) {
  const active=id=>{if(measuring)countWorkMetric(world,'experience.active.queries');return activeIds.has(id);};
  const shared=(p?.bonds||[]).filter(row=>row.id==='shared_insight'&&!row.dormant&&row.expiresDay>day);
  if(measuring){countWorkMetric(world,'experience.calls');countWorkMetric(world,'experience.shared.bonds',shared.length);if(shared.length&&world?.entities)countWorkMetric(world,'experience.shared.calls');}
- const helper=shared.length&&world?.entities?.find(other=>{if(measuring)countWorkMetric(world,'experience.shared.entitiesVisited');return other.hp>0&&Math.hypot(e.x-other.x,e.y-other.y)<=8&&shared.some(row=>row.targetKey===`${world.plane||'mortal'}:${other.id}`);});
+ const lookup=shared.length&&world?.entities?sharedInsightLookup(world,e,shared):null;
+ if(measuring&&shared.length&&world?.entities&&!lookup)countWorkMetric(world,'shared.lookupFallbacks');
+ const helper=lookup?lookup.helper:shared.length&&world?.entities?.find(other=>{if(measuring){countWorkMetric(world,'experience.shared.entitiesVisited');countWorkMetric(world,'shared.fallbackEntitiesVisited');}return other.hp>0&&Math.hypot(e.x-other.x,e.y-other.y)<=8&&shared.some(row=>row.targetKey===`${world.plane||'mortal'}:${other.id}`);});
  if(measuring&&helper)countWorkMetric(world,'experience.shared.hits');
  const vow=p?.traits?.find(t=>t.id==='seal_vow'),resonance=p?.traits?.find(t=>t.id==='demon_sword_resonance');const nearVow=vow&&Math.hypot(e.x-vow.anchorX,e.y-vow.anchorY)<=6;const held=resonance&&(e.artifacts||[]).some(a=>(typeof a==='object'?a.id:a)===resonance.artifactId);
  return {cultivation:(helper?.04:0)+(active('breakthrough_echo')? .05:0)-(active('meridian_damage')?.08:0),hp:(active('tempered_bones')?.06:0)-(active('wounded_insight')?.05:0)+(nearVow?.08:0)-(active('sword_blight')?.12:0)-(active('meridian_damage')?.10:0)-(active('site_wound')?.06:0),power:(active('wounded_insight')?.04:0)+(active('sword_review')&&(e.dao?.path?.key||e.dao)==='sword'?.04:0)+(held?.12:0)+(active('sword_heart')&&(e.dao?.path?.key||e.dao)==='sword'?.06:0),pollution:active('pollution_restraint')?-.15:0,breakthrough:(active('alchemy_guard')?.02:0)-(active('dusty_mind')?.015:0)+(vow?.01:0)+(active('sword_heart')&&(e.dao?.path?.key||e.dao)==='sword'?.01:0),risk:active('risk_fear')?-.2:active('risk_resolve')?.15:0,retreat:active('risk_fear')?.05:0};
