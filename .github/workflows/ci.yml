@@ -131,6 +131,18 @@ jobs:
       - name: WX-E1 deterministic simulation cost budgets
         run: npm run test:wx-e1
 
+      - name: WX-E1C current identity and indexed cost ratchet
+        run: npm run test:wx-e1c
+
+      - name: WX-E2R-a synchronous read projection contract
+        run: npm run test:wx-e2ra
+
+      - name: WX-S1 真实拾章、身份、观察纯度与有界展示
+        run: npm run test:wanxiang:s1
+
+      - name: WX-S1.1 尾声、最新付费回助与证据措辞
+        run: npm run test:wanxiang:s11
+
       - name: E2-Lite 落笔回执、只读行愿与事务存档
         run: npm run test:e2-lite
 

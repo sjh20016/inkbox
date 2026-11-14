@@ -45,3 +45,9 @@ The path inventory is historical evidence only; it does not mean every old modul
 ## Mechanical gate behavior
 
 Run `node scripts/inkbox-wx-e0-cost-contract.mjs`. It validates this contract's required field vocabulary, every registry card, registered file existence/hash, pinned baseline source-path digest, and optional changed paths supplied through `WX_E0_CHANGED_FILES` (newline-separated repo-relative paths). It enumerates the checked-in JS tree directly, so this gate works in shallow clones without environment setup or git history access. A mismatch reports the path and reason. Controlled fixtures exercise red for a new arbitrary module without a review card, red for registry inventory pollution, and green for the same event consumer once its complete card/hash are registered; fixture source is never loaded by the game.
+
+## E1C temporary identity reads
+
+A derived ID/order view is admitted only during the audited stock synchronous Life entity loop. It is lazy and deleted in finally before compaction; World append/swap-pop invalidates it. Malformed/duplicate identity, noncanonical keys, unowned/manual/other-plane reads and invalidated intervals retain the original scan. Same-length external changes between intervals rebuild; arbitrary uninstrumented changes inside an owned interval are not inferred safe from length. New mutation paths require review and an invalidation or fallback.
+
+Every build entry, target lookup/candidate and fallback entry is counted. `test:wx-e1c` adds a fixed-work ratchet with actual indexed calls and real fallback/unknown-work red paths; old E1 N-scan fixtures describe legacy unowned fallback and do not impose an exact-N obligation on indexed queries. Read-only identity data is not a saved field or a replacement gameplay population list. See WX_E1C_L0_PROOF.md for complete source/world/RNG/fork evidence.

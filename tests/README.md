@@ -1,6 +1,9 @@
 # Inkbox 测试入口与脚本分层
 
 WX-E0 增加 `npm run test:wx-e0` 并进入 Fast：成本卡/受审哈希/新增模块门禁、计量开关的完整世界与 RNG 等价、人物技能资格、原物与地点生命周期。保留原 Fast/Heavy。`profile:wx-e0` 使用固定源码快照和真实检查点做关闭诊断的交错对照，另做阶段计量及 S/B 重放；`test:wx-e0:browser` 使用隔离 Edge/CDP 验证新世界/100年/400年、Canvas/Three、三速度各60秒，另做三视口 UI 检查。`INKBOX_WX_E0_SELF_CHECK=1` 仅为5秒脚本自检；`INKBOX_WX_E0_VIEWPORT_ONLY=1` 只运行两渲染器六组真实视口交互，不代替性能验收；`INKBOX_WX_E0_REPORT_DIR` 可把复测保存到独立目录。规则见 [模拟成本准入合同](../docs/development/SIMULATION_COST_CONTRACT.md)，大检查点和性能JSON仍放忽略目录。
+WX-S1.1 增加 `npm run test:wanxiang:s11`（已加入Fast）：12/13/16/24节点、首因／最新关键证据、5/7/12次付费回助、来历与寻回区分、历史身份称谓、24/128来源上界、同日顺序与只读反例。`npm run test:wanxiang:s11:browser` 在原三视口脚本上增加自然最新回助、受控16节点尾声、Tab/Space来源开合与旧世界按钮拒跳。自然档与原性能脚本继续复用，见 [S1.1交付](../docs/development/WX_S11_DELIVERY.md)；巨大检查点、截图和本地报告不入包。
+
+WX-S1 增加 `npm run test:wanxiang:s1`：四家族正式来源、回助/关系区分、跨界与夺舍、本世导航、稳定有界选择、v11/旧档、100 次只读及原生推进世界/RNG 等价；加入 Fast，原门禁保留。`test:wanxiang:s1:browser` 使用隔离 Edge/CDP 验证自然秦少舒命途、Canvas 桌面/窄屏与实际 Three；`profile:wanxiang:s1` 从已有三个百年自然检查点提取，`--extend=400` 才显式续跑一条成熟世界；`profile:wanxiang:s1:perf` 对真实 100/400 年检查点做人物查询和完整世界/RNG ABBA。检查点默认 `reports/local/wx-s1/natural`，生成命令与局限见 [交付](../docs/development/WX_S1_DELIVERY.md)。
 
 WX-D 新增 `npm run test:wanxiang:d`：有界陆路供给、真实绕障赴事、剩余特殊资源与沉寂旧址、付费疗伤与护关、宗门照护、命卦选择、v11 任务恢复及三界短期推进。保留 Alpha/B/C 与完整 Fast/Heavy。`profile:wanxiang:d` 从三个正式小景种子运行100年，恢复各自v11存档续30年，首种子续至200/400年；`profile:wanxiang:d:perf` 从该400年真实存档重复30日原生推进并核对确定性，不代表GPU或跨版本提速。`test:wanxiang:d:browser` 复用隔离Edge/CDP检查三视口、五页、改命敕改、因缘回执、旧址和存读档；自然与受控样本分别标识。结果见 [WX-D交付](../docs/development/WX_D_DELIVERY.md)。
 

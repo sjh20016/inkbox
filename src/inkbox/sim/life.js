@@ -8,6 +8,7 @@ import { stepEncounterTravel } from '../wanxiang/encounters.js';
 import { enterSite } from './sites.js';
 import { nearestSeekSite } from './siteSearch.js';
 import { workMetricsEnabled, startWorkMetric, endWorkMetric, countWorkMetric, recordWorkDt } from './workMetrics.js';
+import { beginEntityReadPass, endEntityReadPass, syncEntityReadPosition } from './entityReadView.js';
 import { chooseSkillAction, stepSkillResources, needsSkillResources } from '../wanxiang/skills.js';
 import { recordCombatAttempt, emitCombatHit } from './presentation.js';
 import { tryCombatIgnition } from './combatEnvironment.js';
@@ -644,13 +645,14 @@ export class Life {
 
     if(measuring){endWorkMetric(world,'life.prepare',phaseStarted);phaseStarted=startWorkMetric(world);}
 
-    for (let i = 0; i < list.length; i += 1) {
+    beginEntityReadPass(world, AUDITED_LIFE_METHODS.every(([key,fn])=>this[key]===fn));
+    try { for (let i = 0; i < list.length; i += 1) {
       const e = list[i];
       const entityStarted=measuring?startWorkMetric(world):null;
       if(measuring)countWorkMetric(world,'life.stepEntity.calls');
       if (this.stepEntity(e, dtDays, measuring)) dirtyTerrain = true;
       if(measuring)endWorkMetric(world,'life.stepEntity',entityStarted);
-    }
+    }} finally { endEntityReadPass(world); }
 
     if(measuring){endWorkMetric(world,'life.entity-loop',phaseStarted);phaseStarted=startWorkMetric(world);}
 
@@ -813,6 +815,7 @@ export class Life {
       if (escape) {
         e.x = escape[0] + 0.5;
         e.y = escape[1] + 0.5;
+        syncEntityReadPosition(world,e);
       } else {
         // 死因标记：脚下的地没了（被水淹 / 被抬高成山）⇒ `deathOther`。
         // 标记会被本 tick 后面更晚的致死点覆盖，只有真死那次会被清扫读到。
@@ -1106,6 +1109,7 @@ export class Life {
   moveTowards(e, dtDays, info) {
     if (isMortalHuman(e)) info = SPECIES_INFO.human;
     const world = this.world;
+    try {
     const dx = e.tx - e.x;
     const dy = e.ty - e.y;
     const dist = Math.hypot(dx, dy);
@@ -1183,6 +1187,7 @@ export class Life {
       e.timer = 0;
       return;
     }
+    } finally { syncEntityReadPosition(world,e); }
   }
 
   canStep(x, y) {
@@ -2015,3 +2020,8 @@ export class Life {
 }
 
 export { SEA_LEVEL };
+// Runtime overrides are outside the audited mutation interval. Their reads
+// retain the original scans, including arbitrary same-length array changes.
+const AUDITED_LIFE_METHODS=Object.entries(Object.getOwnPropertyDescriptors(Life.prototype))
+  .filter(([key,d])=>key!=='constructor'&&typeof d.value==='function')
+  .map(([key,d])=>[key,d.value]);

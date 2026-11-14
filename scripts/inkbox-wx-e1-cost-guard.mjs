@@ -12,7 +12,11 @@ const METRIC_KEYS=new Set([
   'conditions.peer.entitiesVisited','conditions.peer.maxScan','conditions.peer.nearHits','conditions.peer.mentorHits',
   'experience.calls','experience.active.queries','experience.active.sets','experience.active.arrays','experience.active.copied','experience.active.visited',
   'experience.shared.bonds','experience.shared.calls','experience.shared.entitiesVisited','experience.shared.hits',
+  "spatial.builds","spatial.buildEntitiesVisited","spatial.invalidBuilds","spatial.bucketsBuilt","spatial.positionChecks","spatial.cellMoves","spatial.lookupCalls","spatial.cellQueries","spatial.cellCandidateVisits","spatial.lookupHits","spatial.lookupFallbacks","spatial.fallbackEntitiesVisited",
   'life.step.calls','life.stepEntity.calls','life.dtDays','movement.substeps',
+  'entityIndex.passes','entityIndex.builds','entityIndex.buildEntitiesVisited','entityIndex.invalidations','entityIndex.invalidBuilds','entityIndex.mapLookups',
+  'shared.lookupCalls','shared.lookupHits','shared.lookupMisses','shared.lookupFallbacks','shared.fallbackEntitiesVisited','shared.candidateEntitiesVisited',
+  'mentor.lookupCalls','mentor.lookupHits','mentor.lookupMisses','mentor.lookupFallbacks','mentor.relationsVisited','mentor.candidateEntitiesVisited',
 ]);
 const positive=(n,label)=>{assert(Number.isFinite(n)&&n>=0,`${label} must be a non-negative finite number`);};
 

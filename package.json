@@ -169,7 +169,19 @@
     "profile:wanxiang:d": "node scripts/inkbox-wx-d-profile.mjs",
     "profile:wanxiang:d:perf": "node scripts/inkbox-wx-d-perf.mjs",
     "test:wanxiang:d:browser": "node scripts/inkbox-wx-d-browser.mjs",
-    "test:wx-e1": "node scripts/inkbox-wx-e1-verify.mjs && node scripts/inkbox-wx-e1-cost-guard.mjs"
+    "test:wx-e1": "node scripts/inkbox-wx-e1-verify.mjs && node scripts/inkbox-wx-e1-cost-guard.mjs",
+    "test:wx-e1c": "node scripts/inkbox-wx-e1c-verify.mjs && node scripts/inkbox-wx-e1c-cost.mjs",
+    "profile:wx-e1c": "node scripts/inkbox-wx-e1c-perf.mjs",
+    "profile:wx-e1c:top25": "node scripts/inkbox-wx-e1c-profile.mjs",
+    "test:wx-e1c:browser": "node scripts/inkbox-wx-e1c-browser.mjs",
+    "test:wx-e2ra": "node scripts/inkbox-wx-e2ra-check.mjs && node scripts/inkbox-wx-e2ra-read-guard.mjs",
+    "test:wx-e2ra:browser": "node scripts/inkbox-wx-e2ra-browser.mjs",
+    "test:wanxiang:s1": "node scripts/inkbox-wx-s1-people.mjs && node scripts/inkbox-wx-s1-world.mjs && node scripts/inkbox-wx-s1-integration.mjs && node scripts/inkbox-wx-s1-ui.mjs",
+    "test:wanxiang:s11": "node scripts/inkbox-wx-s11-proofreading.mjs",
+    "test:wanxiang:s11:browser": "node scripts/inkbox-wx-s1-browser.mjs --proofreading",
+    "test:wanxiang:s1:browser": "node scripts/inkbox-wx-s1-browser.mjs",
+    "profile:wanxiang:s1": "node scripts/inkbox-wx-s1-profile.mjs",
+    "profile:wanxiang:s1:perf": "node --expose-gc scripts/inkbox-wx-s1-perf.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

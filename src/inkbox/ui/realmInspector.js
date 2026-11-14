@@ -30,7 +30,7 @@ import { STRUCT } from '../core/config.js';
 import { EQUIP_TIERS,EQUIP_QUALITIES,SECRET_REALMS } from '../core/lore.js';
 import { visibleRift } from '../render3d/readers/riftViewModel.js';
 import { settlementRuinForMarker } from '../world/settlementIdentity.js';
-import { settlementInspectCard } from './settlementInspector.js';
+import { getSettlementInspection } from '../presentation/readView/query.js';
 import { liveSettlementHouseType } from '../world/settlementState.js';
 import { personLifeRows } from './personLifeFacts.js';
 import { wanlingById } from '../world/wanlingState.js';
@@ -170,11 +170,12 @@ export function planeSubjectInspectRows(picked, ctx = {}) {
     ['条件','双方存活、互为道侣，且相距不超过3格；分离即消失']]};
   if(picked.subject?.sp==='beast' && picked.subject.form) return wanlingInspectCard(picked.world,picked.subject);
   if (picked.kind === 'settlement' || picked.kind === 'settlement-ruin')
-    return settlementInspectCard(picked.world, picked.subject, picked.kind === 'settlement-ruin');
+    return getSettlementInspection(picked.world, picked.plane, picked.subject.id, picked.kind === 'settlement-ruin');
   if (picked.kind === 'house') {
-    const card = settlementInspectCard(picked.world, picked.village);
-    card.rows.unshift(['建筑', picked.structType === STRUCT.HALL ? '宗祠' : '屋舍'], ['屋舍格', `${picked.x}, ${picked.y}`]);
-    return card;
+    const card = getSettlementInspection(picked.world, picked.plane, picked.village.id);
+    return card && { ...card, rows: [
+      ['建筑', picked.structType === STRUCT.HALL ? '宗祠' : '屋舍'],
+      ['屋舍格', `${picked.x}, ${picked.y}`], ...card.rows] };
   }
   if (!['site','leyline','rift'].includes(picked.kind) && picked.plane !== 'mortal' && (picked.kind !== 'artifact' || picked.plane === 'nether'))
     return realmInspectRows(picked, ctx);
