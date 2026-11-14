@@ -7,6 +7,10 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:wx-em2": "node scripts/inkbox-e-m2-metrics-check.mjs",
+    "test:wx-em2:native": "node scripts/inkbox-e-m2-native.mjs",
+    "profile:wx-em2": "node scripts/inkbox-e-m2-profile.mjs",
+    "profile:wx-em2:browser": "node scripts/inkbox-e-m2-browser.mjs",
     "test:wanxiang": "node scripts/inkbox-wx-content.mjs && node scripts/inkbox-wx-core.mjs && node scripts/inkbox-wx-practice.mjs && node scripts/inkbox-wx-damage.mjs && node scripts/inkbox-wx-experiences.mjs && node scripts/inkbox-wx-healing.mjs && node scripts/inkbox-wx-artifacts.mjs && node scripts/inkbox-wx-integration.mjs && node scripts/inkbox-wx-ui.mjs",
     "profile:wanxiang": "node scripts/inkbox-wx-profile.mjs",
     "test:wanxiang:browser": "node scripts/inkbox-wx-browser.mjs",
@@ -181,7 +185,8 @@
     "test:wanxiang:s11:browser": "node scripts/inkbox-wx-s1-browser.mjs --proofreading",
     "test:wanxiang:s1:browser": "node scripts/inkbox-wx-s1-browser.mjs",
     "profile:wanxiang:s1": "node scripts/inkbox-wx-s1-profile.mjs",
-    "profile:wanxiang:s1:perf": "node --expose-gc scripts/inkbox-wx-s1-perf.mjs"
+    "profile:wanxiang:s1:perf": "node --expose-gc scripts/inkbox-wx-s1-perf.mjs",
+    "audit:wx-em2:data": "node scripts/inkbox-e-m2-summarize.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

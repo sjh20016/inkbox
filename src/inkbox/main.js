@@ -70,6 +70,7 @@ import { greetOnBoot, reactToTool } from './sim/busanzi.js';
 import { TerrainLayer } from './render/terrainLayer.js';
 import { UnitsLayer } from './render/unitsLayer.js';
 import { renderFrame, worldGeneration } from './presentation/readView/index.js';
+import { beginBreakdown, endBreakdown, markBreakdown, frameBreakdownEnabled } from './dev/frameBreakdown.js';
 import { CommandBridge } from './presentation/readView/commandBridge.js';
 import { Camera } from './render/camera.js';
 // 表现叠层（D7-C）：落点墨环。**纯表现**——不写世界、不抽 RNG、不进存档，
@@ -2281,6 +2282,11 @@ class Sandbox {
 
   // ── 主循环 ──────────────────────────────────────────────
   frame(timestamp) {
+    const rawDtSeconds = this.lastTime ? timestamp / 1000 - this.lastTime : 0;
+    const frameSpan = beginBreakdown('frame', frameBreakdownEnabled() ? { rafTimestampMs: timestamp, rawDtSeconds,
+      cappedDtSeconds: Math.min(rawDtSeconds, 0.12), startDay: this.world?.day, speedIndex: this.speedIndex,
+      realmWindowOpen: !!this.selection, realmTool: this.toolId } : undefined);
+    try {
     const now = timestamp / 1000;
     let dt = this.lastTime ? now - this.lastTime : 0;
     this.lastTime = now;
@@ -2296,8 +2302,11 @@ class Sandbox {
 
     this.update(dt);
     this.render(now);
+    const echoSpan = beginBreakdown('observeEcho.project');
     this.observeEcho?.project();
+    endBreakdown(echoSpan);
     requestAnimationFrame((ts) => this.frame(ts));
+    } finally { endBreakdown(frameSpan, frameSpan ? { endDay: this.world?.day, entityCount: this.world?.entities?.length } : undefined); }
   }
 
   /**
@@ -2404,6 +2413,8 @@ class Sandbox {
   }
 
   update(dt) {
+    const updateSpan = beginBreakdown('update');
+    try {
     // A brush transaction sees a stable world. Keep the chosen speed; do not accrue catch-up time.
     this.render3d?.flushStroke?.();
     const editingTerrain = !!this.render3d?.stroke;
@@ -2415,12 +2426,14 @@ class Sandbox {
     // 拉到「飞」速镜头动画的真实时长不变，暂停世界时墨环也照常播完。
     // ⚠️ 必须放在下面 `paused` 判断**之前**——它们不是模拟的一部分，
     //    放进去会变成「暂停时镜头卡在半路」。
+    const cameraSpan = beginBreakdown('update.cameraFocus');
     this.camera.update(dt);
     updateFocusPulses(this.focusPulses, dt);
     // 追迹墨环（D8-G）同款真实时间：暂停世界也照常播完。
     updateFocusPulses(this.tracePulses, dt);
     // 真实时间秒：战争线的「呼吸 / 断裂」相位吃它（同相机补间一样与游戏倍速无关）。
     this.clock += Number.isFinite(dt) ? dt : 0;
+    endBreakdown(cameraSpan);
 
     // ── 表现事件 → FX（D7-D / D8-C 多位面）──────────────────
     // 每帧把**三界**本帧积累的 transient 事件抽干、转成短命特效。
@@ -2428,19 +2441,26 @@ class Sandbox {
     //    （`stage.update` 与 `paused` 无关）。事件只描述「发生了什么」，不参与模拟。
     // ⚠️ 收队列这一步收进 `PresentationStage`——本文件**不**写三遍
     //    `drainRuntimeEvents(world / world.upper / world.nether)`（那是「加一界改 N 处」）。
+    const stageSpan = beginBreakdown('update.stage');
     this.stage.ingestWorlds(world).update(dt);
+    endBreakdown(stageSpan);
+    const combatSpan = beginBreakdown('update.combatObservation');
     this.combatObservation?.refresh({ ingestedWorld: world, readyOnly: true });
+    endBreakdown(combatSpan);
 
     const speed = TIME.speeds[this.speedIndex].mult;
     const paused = this.speedIndex === 0 || editingTerrain;
     const days = paused ? 0 : TIME.baseDaysPerSecond * speed * dt;
+    if (frameBreakdownEnabled()) markBreakdown('update.clock', { targetGameDays: days, paused, speedIndex: this.speedIndex, riftActive: this.riftViewOpen() });
     if (days > 0) {
       // ── 世界推进：**全部游戏日驱动的时钟**都在 `advanceDays()` 里 ────
       // ⚠️ 原先散在这里的低频时钟注释**已随逻辑
       //    搬进 `sim/advance.js`**。要读「为什么周期是 30」「为什么关窗时既不
       //    累加也不清零」「为什么裂缝不置 dirty」，去那边看——
       //    **别在这里重新长出一份副本**，那正是 BACKLOG #13 的成因。
+      const advanceSpan = beginBreakdown('update.advanceDays');
       this.advanceDays(days);
+      endBreakdown(advanceSpan);
     }
 
     if (this.pointer.down && this.pointer.actionKind === 'drag' && this.pointer.inside) {
@@ -2465,13 +2485,16 @@ class Sandbox {
     this.uiAccum += dt;
     if (this.uiAccum >= 0.25) {
       this.uiAccum = 0;
+      const hudSpan = beginBreakdown('update.hud');
       this.updateHud();
+      endBreakdown(hudSpan);
     }
 
     if (this.toastTimer > 0) {
       this.toastTimer -= dt;
       if (this.toastTimer <= 0) this.notify(this.defaultHint(), 1e9);
     }
+    } finally { endBreakdown(updateSpan); }
   }
 
   defaultHint() {
@@ -2480,13 +2503,19 @@ class Sandbox {
   }
 
   render(now) {
+    const renderSpan = beginBreakdown('render');
+    let canvasSpan = null;
+    try {
     const world = this.world;
     if (!world) return;
     // Q8：视界窗口与「关闭视界」按钮同帧同步（判据都是 `this.selection`）。
     this.syncCloseViewBtn();
+    const threeSpan = beginBreakdown('render.three');
     const rendered3d = this.render3d?.render(now);
+    endBreakdown(threeSpan, { rendered: !!rendered3d });
     this.transitPanel?.frame(now);
     if (rendered3d) return;
+    canvasSpan = beginBreakdown('render.canvas');
     const ctx = this.ctx;
     const { width, height } = this.canvasSize();
 
@@ -2498,7 +2527,9 @@ class Sandbox {
     ctx.fillRect(0, 0, width, height);
 
     if (this.terrain.needsRender(now, this.dirty)) {
+      const terrainSpan = beginBreakdown('render.canvas.terrain');
       this.terrain.render(now, true);
+      endBreakdown(terrainSpan);
       this.dirty = false;
     }
 
@@ -2619,6 +2650,7 @@ class Sandbox {
     }
     // 拖拽中的框只有虚线（还没成型），画在已开的视界之上，免得被盖住看不见。
     if (this.selectPath) drawSelectHint(ctx, this.camera, this.selectPath);
+    } finally { endBreakdown(canvasSpan); endBreakdown(renderSpan); }
   }
 
   canvasSize() {
@@ -2670,7 +2702,9 @@ class Sandbox {
     this.g1.refresh();
     this.combatObservation?.refresh();
     this.environmentObservation?.refresh();
+    const statsSpan = beginBreakdown('hud.worldStats');
     const stats = world.stats();
+    endBreakdown(statsSpan);
     const day = Math.floor(world.day);
     const year = Math.floor(day / TIME.daysPerYear) + 1;
     const dayOfYear = (day % TIME.daysPerYear) + 1;

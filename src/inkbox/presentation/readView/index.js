@@ -1,4 +1,5 @@
 // Synchronous, transient facts. No simulation objects cross this boundary.
+import { beginBreakdown, endBreakdown, markBreakdown, frameBreakdownEnabled } from '../../dev/frameBreakdown.js';
 const states = new WeakMap();
 let nextWorldGeneration = 1;
 const primitive = value => value == null || ['string', 'number', 'boolean'].includes(typeof value) ? value : null;
@@ -17,9 +18,14 @@ export function invalidateReadView(world) {
   if (world) { const s = state(world); s.dirty = true; s.frame = null; }
 }
 export function renderFrame(world, plane = world?.plane || 'mortal', { refresh = false } = {}) {
+  const frameSpan = beginBreakdown('readView.renderFrame');
+  try {
   if (!world || plane !== (world.plane || 'mortal')) return null;
   const s = state(world);
-  if (!refresh && !s.dirty && s.frame && s.frame.committedDay === world.day && s.frame.plane === plane && s.revision === world.revision) return s.frame;
+  if (!refresh && !s.dirty && s.frame && s.frame.committedDay === world.day && s.frame.plane === plane && s.revision === world.revision) {
+    if (frameBreakdownEnabled()) markBreakdown('readView.cache', { cacheHit: true, copiedEntities: 0, frameGeneration: s.frame.frameGeneration, plane });
+    return s.frame;
+  }
   const entities = [];
   for (const e of world.entities || []) {
     if (!e) continue;
@@ -37,7 +43,9 @@ export function renderFrame(world, plane = world?.plane || 'mortal', { refresh =
     plane, committedDay: world.day, frameGeneration: ++s.frameGeneration,
     entityCount: entities.length, entities: Object.freeze(entities) });
   s.frame = frame; s.revision = world.revision; s.dirty = false;
+  if (frameBreakdownEnabled()) markBreakdown('readView.cache', { cacheHit: false, copiedEntities: entities.length, frameGeneration: frame.frameGeneration, plane });
   return frame;
+  } finally { endBreakdown(frameSpan); }
 }
 export function getWorldStatus(world, plane = world?.plane || 'mortal') {
   if (!world) return null;

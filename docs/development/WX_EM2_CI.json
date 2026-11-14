@@ -1,0 +1,21 @@
+{
+  "head": "388dc611875d7b75ec749074d621d6f72020ee3c",
+  "runId": 43557192035,
+  "url": "https://github.com/sjh20016/inkbox/actions/runs/43557192035",
+  "status": "completed",
+  "conclusion": "success",
+  "ciCheckoutMerge": "fe1ac04ee1128f528de540b4a5ec3f1500147ea2",
+  "ciCheckoutTree": "5641067c354fbc43c00b4fce4f6ab0c8050ac8c9",
+  "localPublishedTree": "5641067c354fbc43c00b4fce4f6ab0c8050ac8c9",
+  "treeIdentityVerified": true,
+  "localFullCommands": 70,
+  "localInitialPass": 69,
+  "initialFailure": "m2c2e creation extracted update missing actual metric dependencies",
+  "targetedRetry": {
+    "command": "npm run test:render3d:m2c2e",
+    "exitCode": 0,
+    "log": "reports/local/wx-em2/m2c2e-fixed.log"
+  },
+  "browserSmoke": "skipped; independent local Edge coverage exists",
+  "followup": "Startup transport fix tested separately. Final evidence-only/cdp recovery publication receives a new CI run; do not reuse this run as a different commit's status."
+}

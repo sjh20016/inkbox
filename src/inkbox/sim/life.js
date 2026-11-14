@@ -9,6 +9,7 @@ import { enterSite } from './sites.js';
 import { nearestSeekSite } from './siteSearch.js';
 import { workMetricsEnabled, startWorkMetric, endWorkMetric, countWorkMetric, recordWorkDt } from './workMetrics.js';
 import { beginEntityReadPass, endEntityReadPass, syncEntityReadPosition } from './entityReadView.js';
+import { beginBreakdown, endBreakdown } from '../dev/frameBreakdown.js';
 import { chooseSkillAction, stepSkillResources, needsSkillResources } from '../wanxiang/skills.js';
 import { recordCombatAttempt, emitCombatHit } from './presentation.js';
 import { tryCombatIgnition } from './combatEnvironment.js';
@@ -633,6 +634,9 @@ export class Life {
 
   // ── 主循环 ──────────────────────────────────────────────
   step(dtDays) {
+    const lifeSpan = beginBreakdown('life');
+    let phaseSpan = beginBreakdown('life.prepare');
+    try {
     const world = this.world;
     const measuring=workMetricsEnabled(world);
     let phaseStarted=measuring?startWorkMetric(world):null;
@@ -642,6 +646,8 @@ export class Life {
 
     const list = world.entities;
     let dirtyTerrain = false;
+    endBreakdown(phaseSpan);
+    phaseSpan = beginBreakdown('life.entity-loop');
 
     if(measuring){endWorkMetric(world,'life.prepare',phaseStarted);phaseStarted=startWorkMetric(world);}
 
@@ -653,6 +659,8 @@ export class Life {
       if (this.stepEntity(e, dtDays, measuring)) dirtyTerrain = true;
       if(measuring)endWorkMetric(world,'life.stepEntity',entityStarted);
     }} finally { endEntityReadPass(world); }
+    endBreakdown(phaseSpan);
+    phaseSpan = beginBreakdown('life.post');
 
     if(measuring){endWorkMetric(world,'life.entity-loop',phaseStarted);phaseStarted=startWorkMetric(world);}
 
@@ -674,12 +682,16 @@ export class Life {
     list.length = w;
 
     let subsystemStarted=measuring?startWorkMetric(world):null;
+    const villageSpan = beginBreakdown('life.villages');
     this.syncVillagePops();
     this.stepVillages(dtDays);
     this.stepFounding(dtDays);
     this.stepWildlife(dtDays);
+    endBreakdown(villageSpan);
     if(measuring){endWorkMetric(world,'life.villages',subsystemStarted);subsystemStarted=startWorkMetric(world);}
+    const sectSpan = beginBreakdown('life.sects');
     stepSects(world, this, dtDays, this.rng);
+    endBreakdown(sectSpan, sectSpan ? { crossedCalendarMonth: Math.floor(world.day / 30) !== Math.floor((world.day - dtDays) / 30) } : undefined);
     if(measuring)endWorkMetric(world,'life.sects',subsystemStarted);
     // 宗门本月收入与归属已更新，再真实支出援助；最后才判长期荒废。
     for (const village of world.villages) aidSettlement(world, village, dtDays);
@@ -689,17 +701,25 @@ export class Life {
     // （`world._terrBorder` / `_terrBorderAt` / `_terrContested`）是
     // `stepSects → stepTerritory` 每 30 日重算出来的推导量。
     // 用的是独立的 `warRng`，理由见构造函数里那段注释。
+    const warSpan = beginBreakdown('life.war');
     stepWar(world, this.warRng, dtDays);
+    endBreakdown(warSpan);
     if(measuring)subsystemStarted=startWorkMetric(world);
+    const relationsSpan = beginBreakdown('life.relations');
     stepRelations(world, this, dtDays, this.rng);
+    endBreakdown(relationsSpan);
     if(measuring)endWorkMetric(world,'life.relations',subsystemStarted);
     // 世家：立族 / 声望 / 兴衰 / 断绝。每 360 日普查一次（见 sim/family.js），
     // 全部走哈希与确定性排序，**不抽签**——主随机流一点都不动，
     // 世界轨迹才与上一轮可比。
+    const familySpan = beginBreakdown('life.family');
     stepFamily(world, this, dtDays);
+    endBreakdown(familySpan);
     // 转世者想起前世。放在生死清理**之后**：本 tick 刚死的人不该同一 tick 就觉醒。
     stepReincarnation(world, dtDays, this.rng);
+    const sitesSpan = beginBreakdown('life.sites');
     stepSites(world, dtDays, this.rng);
+    endBreakdown(sitesSpan);
     // 法宝的时钟：器灵初生 / 地上朽坏 / 路人拾取（每 90 日一趟，见 artifacts.js）
     stepArtifacts(world, dtDays, this.rng);
     this.events.step(dtDays);
@@ -715,6 +735,7 @@ export class Life {
     }
     if (dirtyTerrain) world.touch();
     if(measuring)endWorkMetric(world,'life.post-entity',phaseStarted);
+    } finally { endBreakdown(phaseSpan); endBreakdown(lifeSpan); }
   }
 
   /**
