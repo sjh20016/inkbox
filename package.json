@@ -185,7 +185,8 @@
     "test:wanxiang:s11:browser": "node scripts/inkbox-wx-s1-browser.mjs --proofreading",
     "test:wanxiang:s1:browser": "node scripts/inkbox-wx-s1-browser.mjs",
     "profile:wanxiang:s1": "node scripts/inkbox-wx-s1-profile.mjs",
-    "profile:wanxiang:s1:perf": "node --expose-gc scripts/inkbox-wx-s1-perf.mjs"
+    "profile:wanxiang:s1:perf": "node --expose-gc scripts/inkbox-wx-s1-perf.mjs",
+    "audit:wx-em2:data": "node scripts/inkbox-e-m2-summarize.mjs"
   },
   "dependencies": {
     "three": "0.186.1"

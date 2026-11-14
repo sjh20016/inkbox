@@ -24,6 +24,7 @@ const FILES = [
   'scripts/inkbox-e-m2-profile.mjs',
   'scripts/inkbox-e-m2-browser.mjs',
   'scripts/inkbox-e-m2-inputs.mjs',
+  'scripts/inkbox-e-m2-summarize.mjs',
   'docs/development/WX_EM2_BASELINE.md',
   'docs/development/WX_EM2_FROZEN_REFS.json',
   'docs/development/WX_EM2_PIN_REVIEW.json',

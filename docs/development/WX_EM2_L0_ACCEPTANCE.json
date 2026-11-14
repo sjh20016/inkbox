@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "same-tree-natural-and-controlled-node-L0-pass; browser-matrix-in-progress",
+  "status": "PASS - same combined feature set and same dt/commands only",
   "baseline": "9668e392e53a9ddf6159efe0c67d900802c98a7f",
   "reference": {
     "root": "E:\\world4\\坐天观井第二纪元\\wx-e3s-evidence\\reference-9668e3",
@@ -4357,5 +4357,427 @@
     "natural upper/nether centuries",
     "full future observation isolation",
     "fixed-dt production approval"
-  ]
+  ],
+  "browser": {
+    "baseline8": {
+      "pass": true,
+      "report": "reports/local/wx-em2/baseline-browser/report.json",
+      "sha256": "2315639071a255e6f744b157be8a4902a69034b96564d27f5c246b93c739e7c5"
+    },
+    "formal72": {
+      "pass": true,
+      "report": "reports/local/wx-em2/final-matrix.json",
+      "sha256": "79779ee5034ae19cd1f952c753a21628a734af436907778d10c880d72184a53d",
+      "coverage": {
+        "configurations": 24,
+        "formalTrials": 72,
+        "allParentGraphsClosed": true,
+        "exclusiveConservation": true,
+        "noDroppedSamples": true,
+        "allCompletedDaysAccounted": true,
+        "allOwnedCleanupComplete": true
+      }
+    },
+    "story58": {
+      "pass": true,
+      "report": "reports/local/wx-em2/story-browser/acceptance.json",
+      "sha256": "ae55881fdd1787e5c6278d489da7c84e4c90311c2b0331f4e4bb12d32cebb351",
+      "checks": 58
+    },
+    "cpuAndInputs": {
+      "pass": true,
+      "report": "reports/local/wx-em2/browser-cpu-input/report.json",
+      "sha256": "f8fde90801357491ad2529acc603a1e33d539f90ae85dd99c705d3f96c7eaf12",
+      "profiles": [
+        {
+          "renderer": "canvas",
+          "profileSha256": "dabd73af15531f52ab84a6712a3de18ad07564daa765d4d13844623d7008566a",
+          "input": {
+            "method": "Native Edge/CDP mouse and touchCancel; node-issued Date.now to next browser rAF after real preview/terrain change. Includes transport and paint scheduling, not isolated handler CPU.",
+            "receipts": [
+              {
+                "deliveredAt": 1794635558238,
+                "eventTimestamp": 43000.099999997765,
+                "localFeedbackAt": 1794635558378,
+                "previewPending": true,
+                "pointerDown": true,
+                "tool": "raise",
+                "upDeliveredAt": 1794635558380,
+                "authorityVisibleAt": 1794635558502,
+                "changed": 137,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635558109,
+                "upIssuedAt": 1794635558356,
+                "localFeedbackMs": 269,
+                "gestureToAuthorityMs": 393,
+                "releaseToAuthorityMs": 146
+              },
+              {
+                "deliveredAt": 1794635558705,
+                "eventTimestamp": 43529,
+                "localFeedbackAt": 1794635558846,
+                "previewPending": true,
+                "pointerDown": true,
+                "tool": "raise",
+                "upDeliveredAt": 1794635558849,
+                "authorityVisibleAt": 1794635558943,
+                "changed": 137,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635558637,
+                "upIssuedAt": 1794635558824,
+                "localFeedbackMs": 209,
+                "gestureToAuthorityMs": 306,
+                "releaseToAuthorityMs": 119
+              },
+              {
+                "deliveredAt": 1794635559221,
+                "eventTimestamp": 44045.39999999851,
+                "localFeedbackAt": 1794635559385,
+                "previewPending": true,
+                "pointerDown": true,
+                "tool": "raise",
+                "upDeliveredAt": 1794635559386,
+                "authorityVisibleAt": 1794635559500,
+                "changed": 137,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635559154,
+                "upIssuedAt": 1794635559339,
+                "localFeedbackMs": 231,
+                "gestureToAuthorityMs": 346,
+                "releaseToAuthorityMs": 161
+              },
+              {
+                "deliveredAt": 1794635559788,
+                "eventTimestamp": 44604.89999999851,
+                "localFeedbackAt": 1794635559935,
+                "previewPending": true,
+                "pointerDown": true,
+                "tool": "raise",
+                "upDeliveredAt": 1794635559938,
+                "authorityVisibleAt": 1794635560035,
+                "changed": 137,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635559714,
+                "upIssuedAt": 1794635559902,
+                "localFeedbackMs": 221,
+                "gestureToAuthorityMs": 321,
+                "releaseToAuthorityMs": 133
+              },
+              {
+                "deliveredAt": 1794635560303,
+                "eventTimestamp": 45138.199999999255,
+                "localFeedbackAt": 1794635560467,
+                "previewPending": true,
+                "pointerDown": true,
+                "tool": "raise",
+                "upDeliveredAt": 1794635560469,
+                "authorityVisibleAt": 1794635560577,
+                "changed": 137,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635560247,
+                "upIssuedAt": 1794635560418,
+                "localFeedbackMs": 220,
+                "gestureToAuthorityMs": 330,
+                "releaseToAuthorityMs": 159
+              },
+              {
+                "deliveredAt": 1794635560823,
+                "eventTimestamp": 45683.599999997765,
+                "localFeedbackAt": 1794635560907,
+                "previewPending": true,
+                "pointerDown": true,
+                "tool": "raise",
+                "upDeliveredAt": 1794635560995,
+                "authorityVisibleAt": 1794635561094,
+                "changed": 137,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635560792,
+                "upIssuedAt": 1794635560947,
+                "localFeedbackMs": 115,
+                "gestureToAuthorityMs": 302,
+                "releaseToAuthorityMs": 147
+              },
+              {
+                "deliveredAt": 1794635561363,
+                "eventTimestamp": 46199,
+                "localFeedbackAt": 1794635561517,
+                "previewPending": true,
+                "pointerDown": true,
+                "tool": "raise",
+                "upDeliveredAt": 1794635561519,
+                "authorityVisibleAt": 1794635561616,
+                "changed": 137,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635561308,
+                "upIssuedAt": 1794635561479,
+                "localFeedbackMs": 209,
+                "gestureToAuthorityMs": 308,
+                "releaseToAuthorityMs": 137
+              },
+              {
+                "deliveredAt": 1794635561894,
+                "eventTimestamp": 46741.699999999255,
+                "localFeedbackAt": 1794635562039,
+                "previewPending": true,
+                "pointerDown": true,
+                "tool": "raise",
+                "upDeliveredAt": 1794635562044,
+                "authorityVisibleAt": 1794635562134,
+                "changed": 137,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635561850,
+                "upIssuedAt": 1794635562007,
+                "localFeedbackMs": 189,
+                "gestureToAuthorityMs": 284,
+                "releaseToAuthorityMs": 127
+              }
+            ],
+            "cancelMethod": "Native CDP touchCancel -> pointercancel",
+            "cancelBefore": {
+              "pending": true,
+              "strokeOpen": false,
+              "points": 1,
+              "pointerId": 2
+            },
+            "previewScreenshot": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-em2\\reports\\local\\wx-em2\\browser-cpu-input\\400-canvas-detail-s2-r0-0-B-input-preview.png",
+            "cancel": {
+              "layerChanges": {
+                "height": 0,
+                "water": 0,
+                "type": 0,
+                "veg": 0,
+                "fire": 0
+              },
+              "strokeOpen": false,
+              "pointerDown": false,
+              "lostPointerCaptureTrusted": true
+            },
+            "localFeedbackMs": {
+              "calls": 8,
+              "p50": 209,
+              "p95": 269,
+              "p99": 269,
+              "max": 269,
+              "total": 1663
+            },
+            "gestureToAuthorityMs": {
+              "calls": 8,
+              "p50": 308,
+              "p95": 393,
+              "p99": 393,
+              "max": 393,
+              "total": 2590
+            },
+            "releaseToAuthorityMs": {
+              "calls": 8,
+              "p50": 137,
+              "p95": 161,
+              "p99": 161,
+              "max": 161,
+              "total": 1129
+            },
+            "target": {
+              "x": 99,
+              "y": 63
+            },
+            "renderer": "canvas"
+          }
+        },
+        {
+          "renderer": "3d",
+          "profileSha256": "93ee67fdd4f47e95aca8b0ab582a569775b592817c4544d7e0d70925830d4ce7",
+          "input": {
+            "method": "Native Edge/CDP mouse and touchCancel; node-issued Date.now to next browser rAF after real preview/terrain change. Includes transport and paint scheduling, not isolated handler CPU.",
+            "receipts": [
+              {
+                "deliveredAt": 1794635615222,
+                "eventTimestamp": 47073.39999999851,
+                "localFeedbackAt": 1794635615256,
+                "previewPending": true,
+                "pointerDown": false,
+                "tool": "raise",
+                "upDeliveredAt": 1794635615352,
+                "authorityVisibleAt": 1794635615441,
+                "changed": 6,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635615142,
+                "upIssuedAt": 1794635615342,
+                "localFeedbackMs": 114,
+                "gestureToAuthorityMs": 299,
+                "releaseToAuthorityMs": 99
+              },
+              {
+                "deliveredAt": 1794635615528,
+                "eventTimestamp": 47426.699999999255,
+                "localFeedbackAt": 1794635615542,
+                "previewPending": true,
+                "pointerDown": false,
+                "tool": "raise",
+                "upDeliveredAt": 1794635615655,
+                "authorityVisibleAt": 1794635615751,
+                "changed": 6,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635615496,
+                "upIssuedAt": 1794635615653,
+                "localFeedbackMs": 46,
+                "gestureToAuthorityMs": 255,
+                "releaseToAuthorityMs": 98
+              },
+              {
+                "deliveredAt": 1794635616381,
+                "eventTimestamp": 48281.800000000745,
+                "localFeedbackAt": 1794635616393,
+                "previewPending": true,
+                "pointerDown": false,
+                "tool": "raise",
+                "upDeliveredAt": 1794635616514,
+                "authorityVisibleAt": 1794635616607,
+                "changed": 6,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635616351,
+                "upIssuedAt": 1794635616508,
+                "localFeedbackMs": 42,
+                "gestureToAuthorityMs": 256,
+                "releaseToAuthorityMs": 99
+              },
+              {
+                "deliveredAt": 1794635617032,
+                "eventTimestamp": 48906,
+                "localFeedbackAt": 1794635617054,
+                "previewPending": true,
+                "pointerDown": false,
+                "tool": "raise",
+                "upDeliveredAt": 1794635617146,
+                "authorityVisibleAt": 1794635617236,
+                "changed": 6,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635616974,
+                "upIssuedAt": 1794635617145,
+                "localFeedbackMs": 80,
+                "gestureToAuthorityMs": 262,
+                "releaseToAuthorityMs": 91
+              },
+              {
+                "deliveredAt": 1794635617390,
+                "eventTimestamp": 49296.300000000745,
+                "localFeedbackAt": 1794635617402,
+                "previewPending": true,
+                "pointerDown": false,
+                "tool": "raise",
+                "upDeliveredAt": 1794635617506,
+                "authorityVisibleAt": 1794635617593,
+                "changed": 6,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635617365,
+                "upIssuedAt": 1794635617505,
+                "localFeedbackMs": 37,
+                "gestureToAuthorityMs": 228,
+                "releaseToAuthorityMs": 88
+              },
+              {
+                "deliveredAt": 1794635618307,
+                "eventTimestamp": 50221.199999999255,
+                "localFeedbackAt": 1794635618321,
+                "previewPending": true,
+                "pointerDown": false,
+                "tool": "raise",
+                "upDeliveredAt": 1794635618430,
+                "authorityVisibleAt": 1794635618512,
+                "changed": 6,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635618290,
+                "upIssuedAt": 1794635618428,
+                "localFeedbackMs": 31,
+                "gestureToAuthorityMs": 222,
+                "releaseToAuthorityMs": 84
+              },
+              {
+                "deliveredAt": 1794635619264,
+                "eventTimestamp": 51139.39999999851,
+                "localFeedbackAt": 1794635619278,
+                "previewPending": true,
+                "pointerDown": false,
+                "tool": "raise",
+                "upDeliveredAt": 1794635619379,
+                "authorityVisibleAt": 1794635619471,
+                "changed": 6,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635619206,
+                "upIssuedAt": 1794635619377,
+                "localFeedbackMs": 72,
+                "gestureToAuthorityMs": 265,
+                "releaseToAuthorityMs": 94
+              },
+              {
+                "deliveredAt": 1794635620029,
+                "eventTimestamp": 51918.89999999851,
+                "localFeedbackAt": 1794635620047,
+                "previewPending": true,
+                "pointerDown": false,
+                "tool": "raise",
+                "upDeliveredAt": 1794635620148,
+                "authorityVisibleAt": 1794635620252,
+                "changed": 6,
+                "historyEntries": 1,
+                "downIssuedAt": 1794635619988,
+                "upIssuedAt": 1794635620145,
+                "localFeedbackMs": 59,
+                "gestureToAuthorityMs": 264,
+                "releaseToAuthorityMs": 107
+              }
+            ],
+            "cancelMethod": "Native mouseDown, browser releasePointerCapture -> trusted lostpointercapture",
+            "cancelBefore": {
+              "pending": true,
+              "strokeOpen": true,
+              "points": 0,
+              "pointerId": 1
+            },
+            "previewScreenshot": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-em2\\reports\\local\\wx-em2\\browser-cpu-input\\400-3d-detail-s2-r0-1-B-input-preview.png",
+            "cancel": {
+              "layerChanges": {
+                "height": 0,
+                "water": 0,
+                "type": 0,
+                "veg": 0,
+                "fire": 0
+              },
+              "strokeOpen": false,
+              "pointerDown": false,
+              "lostPointerCaptureTrusted": true
+            },
+            "localFeedbackMs": {
+              "calls": 8,
+              "p50": 46,
+              "p95": 114,
+              "p99": 114,
+              "max": 114,
+              "total": 481
+            },
+            "gestureToAuthorityMs": {
+              "calls": 8,
+              "p50": 256,
+              "p95": 299,
+              "p99": 299,
+              "max": 299,
+              "total": 2051
+            },
+            "releaseToAuthorityMs": {
+              "calls": 8,
+              "p50": 94,
+              "p95": 107,
+              "p99": 107,
+              "max": 107,
+              "total": 760
+            },
+            "target": {
+              "x": 99,
+              "y": 63
+            },
+            "renderer": "3d"
+          }
+        }
+      ]
+    }
+  }
 }
