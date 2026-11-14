@@ -18,6 +18,23 @@ const STAGE = fs.mkdtempSync(path.join(DIST, '.inkbox-package-'));
 
 // Explicit runtime/developer package entry points. Historical reports live in Git history.
 const FILES = [
+  'docs/development/WX_E2RA_BROWSER_ACCEPTANCE.json',
+  'scripts/inkbox-wx-e2ra-check.mjs',
+  'scripts/inkbox-wx-e2ra-common.mjs',
+  'scripts/inkbox-wx-e2ra-native.mjs',
+  'scripts/inkbox-wx-e2ra-read-audit.mjs',
+  'scripts/inkbox-wx-e2ra-read-guard.mjs',
+  'scripts/inkbox-wx-e2ra-browser.mjs',
+  'docs/development/WX_E2RA_CONTRACT.md',
+  'docs/development/WX_E2RA_READ_CONTRACT.json',
+  'docs/development/WX_E2RA_READ_AUDIT.json',
+  'docs/development/WX_E2RA_L0_ACCEPTANCE.json',
+  'docs/development/WX_E2RA_GATE.json',
+  'docs/development/WX_E2RA_BASELINE.md',
+  'docs/development/WX_E2RA_READ_SURFACE.md',
+  'docs/development/WX_E2RA_DELIVERY.md',
+  'docs/development/WX_E2RA_BROWSER_EVIDENCE.md',
+  'docs/development/WX_E2RA_FOLLOWUP.md',
   'docs/development/WX_E_NEXT_BASELINE_AUDIT.json',
   'docs/development/WX_E_NEXT_INTEGRATION.md',
   'docs/development/WX_E1C_DELIVERY.md',

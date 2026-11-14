@@ -8,6 +8,8 @@ import { peekRuntimeEvents } from '../src/inkbox/core/runtimeEvents.js';
 import { snapshotNature } from '../src/inkbox/sim/nature.js';
 import { readObserveEcho } from '../src/inkbox/sim/observeEcho.js';
 import { CAUSAL_TOOL_IDS, createInterventionOutcome, measureChangedCells } from '../src/inkbox/sim/interventionFeedback.js';
+import { worldGeneration } from '../src/inkbox/presentation/readView/index.js';
+import { CommandBridge } from '../src/inkbox/presentation/readView/commandBridge.js';
 
 const source = fs.readFileSync(new URL('../src/inkbox/main.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const start = source.indexOf('    const rememberStrokePoint = (x, y) => {');
@@ -63,12 +65,13 @@ function setup(toolId, world) {
     },
   };
   sandbox.canvas = canvas;
+  sandbox.commandBridge = new CommandBridge(() => sandbox.world);
   const register = new Function('canvas', 'window', 'document', 'CAUSAL_TOOL_IDS', 'withWaterEditBatch',
-    'measureChangedCells', 'createInterventionOutcome', registration);
+    'measureChangedCells', 'createInterventionOutcome', 'worldGeneration', registration);
   register.call(sandbox, canvas,
     { addEventListener(type, fn) { windowHandlers.set(type, fn); } },
     { hidden: false, addEventListener(type, fn) { documentHandlers.set(type, fn); } },
-    CAUSAL_TOOL_IDS, withWaterEditBatch, measureChangedCells, createInterventionOutcome);
+    CAUSAL_TOOL_IDS, withWaterEditBatch, measureChangedCells, createInterventionOutcome, worldGeneration);
   return { sandbox, canvas, windowHandlers, documentHandlers };
 }
 

@@ -575,9 +575,9 @@ export class UnitsLayer {
     ctx.restore();
   }
 
-  drawEntities(ctx, camera, world, time) {
+  drawEntities(ctx, camera, world, time, frame = null) {
     const rect = camera.visibleRect(world);
-    const list = world.entities;
+    const list = frame ? frame.entities : world.entities;
     const baseCell = Math.max(0.22, Math.min(3.1, camera.zoom * 0.215));
     const showDetail = camera.zoom >= 2.2;
     const drawAura = camera.zoom >= 1.8;
