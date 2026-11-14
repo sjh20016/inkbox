@@ -2,6 +2,7 @@ import { updateWorldEpoch } from '../wanxiang/runtime.js';
 import { stepDaoSeeds } from '../wanxiang/daoSeeds.js';
 import { stepLegend } from '../wanxiang/legend.js';
 import { claimGroundArtifact } from './artifacts.js';
+import { beginBreakdown, endBreakdown } from '../dev/frameBreakdown.js';
 // 水墨沙盒 · 世界推进的**唯一入口**（全部「游戏日驱动的时钟」）
 //
 // ───────────────────────────────────────────────────────────────────────
@@ -102,6 +103,8 @@ export function createAdvanceState() {
  *   调用方据此置 `dirty` 位（`main.js` 就是这么用的）。
  */
 export function advanceWorld(world, days, deps = {}) {
+  const advanceSpan = beginBreakdown('advanceWorld');
+  try {
   if (!world || !Number.isFinite(days) || !(days > 0)) return null;
   const state = deps.state;
   if (!state) return null;              // 没有累加器 = 节流失效，宁可不推
@@ -131,7 +134,9 @@ export function advanceWorld(world, days, deps = {}) {
   world.day += days;
   world.year = Math.floor(world.day / TIME.daysPerYear);
   if (world.wanxiang?.enabled) { updateWorldEpoch(world); if(Math.floor(previousDay/30)!==Math.floor(world.day/30)) { stepDaoSeeds(world); stepLegend(world,claimGroundArtifact); } }
+  const wanlingSpan = beginBreakdown('advance.wanling');
   if (world.plane === 'mortal') fired.wanling = !!stepWanling(world,days,{life:deps.life});
+  endBreakdown(wanlingSpan);
 
   // ── 凡间主循环（每拍都跑，不节流）────────────────────────────
   if (deps.life) {
@@ -140,7 +145,9 @@ export function advanceWorld(world, days, deps = {}) {
     deps.life.step(days);
     if(measuring)endWorkMetric(world, 'life', started);
   }
+  const daoSpan = beginBreakdown('advance.daoActivities');
   if (deps.life && world.plane === 'mortal') stepDaoActivities(world,deps.life);
+  endBreakdown(daoSpan);
 
   // ── 上界：与凡间共享同一条时间轴，但**更新频率低**（每 10 日）──
   // ⚠️ 绝不能拿凡间的 `deps.life` 去 step 上界：`stepEntity` 会抽 `Life.rng`，
@@ -151,7 +158,9 @@ export function advanceWorld(world, days, deps = {}) {
     world.upper.year = world.year;
     state.upper += days;
     if (state.upper >= ADVANCE_PERIODS.upper) {
+      const clockSpan = beginBreakdown('advance.upper');
       deps.upperLife.step(state.upper);
+      endBreakdown(clockSpan);
       state.upper = 0;
       fired.upper = true;
     }
@@ -167,7 +176,9 @@ export function advanceWorld(world, days, deps = {}) {
     world.nether.year = world.year;
     state.nether += days;
     if (state.nether >= ADVANCE_PERIODS.nether) {
+      const clockSpan = beginBreakdown('advance.nether');
       stepNether(world, state.nether);
+      endBreakdown(clockSpan);
       state.nether = 0;
       fired.nether = true;
     }
@@ -204,7 +215,9 @@ export function advanceWorld(world, days, deps = {}) {
   if (deps.riftActive !== false) {
     state.rift += days;
     if (state.rift >= ADVANCE_PERIODS.rift) {
+      const clockSpan = beginBreakdown('advance.rift');
       stepRifts(world);
+      endBreakdown(clockSpan);
       state.rift = 0;
       fired.rift = true;
     }
@@ -230,7 +243,9 @@ export function advanceWorld(world, days, deps = {}) {
   if (world.wraiths && deps.wraith !== false) {
     state.wraith += days;
     if (state.wraith >= ADVANCE_PERIODS.wraith) {
+      const clockSpan = beginBreakdown('advance.wraith');
       stepMortalWraiths(world, state.wraith);
+      endBreakdown(clockSpan);
       state.wraith = 0;
       fired.wraith = true;
     }
@@ -238,11 +253,15 @@ export function advanceWorld(world, days, deps = {}) {
 
   // Life reads fire overlap against the just-completed interval. Expire after
   // life.step so a step crossing dueDay cannot apply full-interval fire damage.
+  const natureSpan = beginBreakdown('advance.nature');
   fired.nature = settleNature(world) > 0;
+  endBreakdown(natureSpan);
 
   // Transit consumes the same absolute game-day clock after life/deaths and
   // terrain expiry. Arrival cannot then receive a second ground-AI move.
+  const transitSpan = beginBreakdown('advance.transit');
   fired.transit = !!stepTransit(world)?.changed;
+  endBreakdown(transitSpan);
 
   // Access grows only after the simulation succeeds, independently of all streams.
   fired.mapProgress = updateMapProgress(world);
@@ -254,4 +273,5 @@ export function advanceWorld(world, days, deps = {}) {
   // three entire planes just because the calendar advanced. Legacy writers
   // that call World.touch() without a precise note retain the full fallback.
   return fired;
+  } finally { endBreakdown(advanceSpan); }
 }

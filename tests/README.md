@@ -1,5 +1,7 @@
 # Inkbox 测试入口与脚本分层
 
+WX-E-M2 adds `test:wx-em2` to Fast for default-off, nested wall attribution, exception unwinding and bounded raw samples. `test:wx-em2:native` compares the frozen combined #72 source with the current source at every complete boundary, using real 100/400-year v11 inputs (`--checkpoint-root=...`). `profile:wx-em2` records independent ABBAABBA Node trials; `profile:wx-em2:browser` uses installed Edge/owned CDP and real Canvas/WebGL. Default browser ABBA has no CPU profiler; `--cpu-profile=1 --rounds=1 --sequence=B` is a separate diagnostic run. Large raw files stay under ignored `reports/local/wx-em2`. These checks do not approve fixed dt or resumable production simulation.
+
 WX-E0 增加 `npm run test:wx-e0` 并进入 Fast：成本卡/受审哈希/新增模块门禁、计量开关的完整世界与 RNG 等价、人物技能资格、原物与地点生命周期。保留原 Fast/Heavy。`profile:wx-e0` 使用固定源码快照和真实检查点做关闭诊断的交错对照，另做阶段计量及 S/B 重放；`test:wx-e0:browser` 使用隔离 Edge/CDP 验证新世界/100年/400年、Canvas/Three、三速度各60秒，另做三视口 UI 检查。`INKBOX_WX_E0_SELF_CHECK=1` 仅为5秒脚本自检；`INKBOX_WX_E0_VIEWPORT_ONLY=1` 只运行两渲染器六组真实视口交互，不代替性能验收；`INKBOX_WX_E0_REPORT_DIR` 可把复测保存到独立目录。规则见 [模拟成本准入合同](../docs/development/SIMULATION_COST_CONTRACT.md)，大检查点和性能JSON仍放忽略目录。
 WX-S1.1 增加 `npm run test:wanxiang:s11`（已加入Fast）：12/13/16/24节点、首因／最新关键证据、5/7/12次付费回助、来历与寻回区分、历史身份称谓、24/128来源上界、同日顺序与只读反例。`npm run test:wanxiang:s11:browser` 在原三视口脚本上增加自然最新回助、受控16节点尾声、Tab/Space来源开合与旧世界按钮拒跳。自然档与原性能脚本继续复用，见 [S1.1交付](../docs/development/WX_S11_DELIVERY.md)；巨大检查点、截图和本地报告不入包。
 

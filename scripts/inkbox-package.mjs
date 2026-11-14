@@ -18,6 +18,19 @@ const STAGE = fs.mkdtempSync(path.join(DIST, '.inkbox-package-'));
 
 // Explicit runtime/developer package entry points. Historical reports live in Git history.
 const FILES = [
+  'scripts/inkbox-e-m2-common.mjs',
+  'scripts/inkbox-e-m2-metrics-check.mjs',
+  'scripts/inkbox-e-m2-native.mjs',
+  'scripts/inkbox-e-m2-profile.mjs',
+  'scripts/inkbox-e-m2-browser.mjs',
+  'scripts/inkbox-e-m2-inputs.mjs',
+  'docs/development/WX_EM2_BASELINE.md',
+  'docs/development/WX_EM2_FROZEN_REFS.json',
+  'docs/development/WX_EM2_PIN_REVIEW.json',
+  'docs/development/WX_EM2_BREAKDOWN.json',
+  'docs/development/WX_EM2_BROWSER.md',
+  'docs/development/WX_EM2_L0_ACCEPTANCE.json',
+  'docs/development/WX_EM2_DECISION.md',
   'docs/development/WX_S11_DELIVERY.md',
   'docs/development/WX_S11_EVIDENCE_AND_WORDING.md',
   'docs/development/WX_S11_NATURAL_QA.md',

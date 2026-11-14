@@ -26,6 +26,7 @@ import { characterAppearanceOf } from '../characters/characterAppearance.js';
 import { creatureFormOf, WANLING_BY_KEY } from '../../core/wanlingCatalog.js';
 import { readBiyiPairs } from '../../world/wanlingRelations.js';
 import { renderFrame } from '../../presentation/readView/index.js';
+import { beginBreakdown, endBreakdown } from '../../dev/frameBreakdown.js';
 
 /**
  * 视觉类别。前四个来自 `world.entities`，`wraith` 来自 `world.wraiths`（凡间鬼影）。
@@ -96,6 +97,8 @@ function byId(a, b) { return (a.id | 0) - (b.id | 0); }
  *   每条记录 `{ id, x, y, level, faction, lift, color }`。**纯派生，不写 world。**
  */
 function deriveFromWorld(world, includeWraiths) {
+  const deriveSpan = beginBreakdown('deriveEntities');
+  try {
   const out = { human: [], cultivator: [], beast: [], spirit: [], wraith: [], total: 0 };
   if (!world) return out;
 
@@ -160,6 +163,7 @@ function deriveFromWorld(world, includeWraiths) {
 
   for (const cls of ENTITY_CLASSES) out[cls].sort(byId);
   return out;
+  } finally { endBreakdown(deriveSpan); }
 }
 
 /** Stage ownership follows the container passed in, never an entity ID range. */

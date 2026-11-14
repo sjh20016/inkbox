@@ -1,0 +1,28 @@
+{
+  "reviewedAt": "2026-11-14",
+  "sourceReview": "Independent reviewer plus root diff inspection; not automatic repin",
+  "changedPins": [
+    {
+      "path": "src/inkbox/main.js",
+      "before": "1c10f410d88c3ce02d4171e359aaf7f65ffa21e862870d2789cb01a60ca3ea16",
+      "after": "b955f4bfef72cf6e36b66a1faf8ba936a361079822962a20cc218cb38286333b"
+    },
+    {
+      "path": "src/inkbox/sim/life.js",
+      "before": "c6c7f870aae82e0e42d543f740d26df1fa04a192477269ceb493756a3de67b31",
+      "after": "af7310f10ac73de2f47c49822184bb80c913a866d4854121455daa6f151817f5"
+    },
+    {
+      "path": "src/inkbox/sim/advance.js",
+      "before": "1335246407f3bc829522800a25cd3beaa8f88c3b9d405565b518e7f9ecc2b2d0",
+      "after": "63b9fd72985a44898bb5eff077ef2137440a98dc6e7d5103b817187049f3be76"
+    }
+  ],
+  "newEntry": {
+    "path": "src/inkbox/dev/frameBreakdown.js",
+    "sha256": "77e83c41f00e535ee7dac8ec60a3f4fcfaa5f1813953851bdcfe7259d7efd62f",
+    "cardId": "em2-wall-instrumentation",
+    "review": "Independent E-M2 review; bounded raw wall ring, no world or RNG writes; root additionally reviewed reject-on-capacity-change-without-reset fix and its red/green test."
+  },
+  "unchangedPriorPins": 18
+}

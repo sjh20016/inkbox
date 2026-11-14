@@ -137,6 +137,9 @@ jobs:
       - name: WX-E2R-a synchronous read projection contract
         run: npm run test:wx-e2ra
 
+      - name: WX-E-M2 opt-in nested wall attribution contract
+        run: npm run test:wx-em2
+
       - name: WX-S1 真实拾章、身份、观察纯度与有界展示
         run: npm run test:wanxiang:s1
 
