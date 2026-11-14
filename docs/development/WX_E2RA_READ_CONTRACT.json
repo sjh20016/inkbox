@@ -1,15 +1,32 @@
 {
   "scope": "Incremental static read guard; only migrated boundaries, not a whole-repository World ban or a complete JavaScript analyzer",
   "worldFields": {
-    "src/inkbox/presentation/readView/index.js": ["plane", "day", "revision", "entities", "seed"],
-    "src/inkbox/presentation/readView/query.js": ["plane", "day", "villages", "settlementRuins"],
-    "src/inkbox/presentation/readView/terrain.js": ["w", "h"]
+    "src/inkbox/presentation/readView/index.js": [
+      "plane",
+      "day",
+      "revision",
+      "entities",
+      "seed",
+      "factions",
+      "wanling",
+      "wraiths"
+    ],
+    "src/inkbox/presentation/readView/query.js": [
+      "plane",
+      "day",
+      "villages",
+      "settlementRuins"
+    ],
+    "src/inkbox/presentation/readView/terrain.js": [
+      "w",
+      "h"
+    ]
   },
   "compatibilityDebt": {
     "TerrainReadView": "this.world[name] is restricted by existing TERRAIN_LAYERS; initial/overflow copies and changed rectangles only. Actual Canvas/Three terrain upload retains existing World/terrainChanges facade.",
-    "Canvas drawEntities": "One optional World.entities fallback remains for legacy realm-view/API callers. Production mortal main passes RenderFrame. Terrain height, idx and faction palette calls remain legacy.",
-    "Three deriveEntities": "No direct canonical world.entities list; auxiliary wanling/biyi/wraiths, factions and terrain/appearance facades remain legacy.",
-    "Query": "settlementInspectCard remains the bounded existing projection fact reader; its transitive society/condition reads are registered debt.",
+    "Canvas drawEntities": "Managed entity drawing uses committed geometry/faction snapshots, with no canonical list fallback. Unmanaged standalone fixtures may read original geometry only.",
+    "Three deriveEntities": "All visual facts come from same-generation frame; explicit refresh only for unmanaged standalone fixtures.",
+    "Query": "Settlement card remains a legacy transitive read; rejects in-progress/fault/disposed managed Worlds.",
     "Other main/G1/Camera/Presentation/UI": "Unmigrated reads and authoritative observation/commands remain listed in READ_SURFACE; no global prohibition."
   }
 }

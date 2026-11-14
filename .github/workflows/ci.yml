@@ -139,6 +139,8 @@ jobs:
 
       - name: WX-E-M2 opt-in nested wall attribution contract
         run: npm run test:wx-em2
+      - name: WX-E2R-a.2 committed generations and real synchronous command boundaries
+        run: npm run test:wx-e2ra2
 
       - name: WX-S1 真实拾章、身份、观察纯度与有界展示
         run: npm run test:wanxiang:s1

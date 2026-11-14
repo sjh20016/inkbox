@@ -1,3 +1,4 @@
+import { committedGeometryOf } from '../presentation/readView/committedRegistry.js';
 // 水墨沙盒 · 相机
 //
 // 相机坐标用「世界格」表示。立体视图下，一格 (x, y) 的落笔位置是
@@ -95,8 +96,9 @@ export class Camera {
    *    调用方保证先 `bind`（真实游戏在 `newWorld` / 读档里都先 bind 再操作相机）。
    */
   clampPoint(x, y, zoom) {
-    if (this.accessWorld?.mapProgress?.stage < 3) {
-      const b = accessBounds(this.accessWorld);
+    const accessWorld = committedGeometryOf(this.accessWorld) || this.accessWorld;
+    if (accessWorld?.mapProgress?.stage < 3) {
+      const b = accessBounds(accessWorld);
       return { x: Math.max(b.x0, Math.min(b.x1, x)), y: Math.max(b.y0, Math.min(b.y1, y)) };
     }
     const margin = 6 / zoom;
@@ -231,6 +233,7 @@ export class Camera {
 
   bind(world) {
     this.accessWorld = world;
+    world = committedGeometryOf(world) || world;
     this.worldW = world.w;
     this.worldH = world.h;
     this.reliefScale = world.reliefScale;
@@ -238,6 +241,7 @@ export class Camera {
 
   /** 屏幕坐标 → 世界格坐标（返回 {x, y}，可能越界） */
   pick(sx, sy, world) {
+    world = committedGeometryOf(world) || world;
     const wx = this.toWorldX(sx);
     const wy = this.toWorldY(sy);
     if (!this.relief) {
@@ -270,11 +274,11 @@ export class Camera {
     return { x: cx, y: bestY };
   }
 
-  canAccess(x, y) { return !this.accessWorld || canAccess(this.accessWorld, x, y); }
+  canAccess(x, y) { return !this.accessWorld || canAccess(committedGeometryOf(this.accessWorld) || this.accessWorld, x, y); }
 
   // A paper-white reveal edge for Canvas fallback, derived from the same access rectangle.
   clipAccess(ctx) {
-    const world = this.accessWorld;
+    const world = committedGeometryOf(this.accessWorld) || this.accessWorld;
     if (!world?.mapProgress || world.mapProgress.stage >= 3) return;
     const b = accessBounds(world), points = [];
     const push = (x,y,cx,cy) => {
@@ -290,7 +294,8 @@ export class Camera {
 
   /** 可见范围（世界格，含立体抬升余量） */
   visibleRect(world) {
-    const bounds = accessBounds(this.accessWorld || world);
+    const accessWorld = committedGeometryOf(this.accessWorld) || this.accessWorld;
+    const bounds = accessBounds(accessWorld || committedGeometryOf(world) || world);
     const halfW = this.viewW / (2 * this.zoom);
     const halfH = this.viewH / (2 * this.zoom);
     return {
