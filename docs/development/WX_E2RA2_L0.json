@@ -1,0 +1,1 @@
+{"status":"local native comparison passed; integration and Edge acceptance pending","baseline":"61646341e00452417f04bc351afe8884b2ef7ddf","naturalCases":4,"completeNaturalBoundaries":268,"controlledThreeRealmSteps":30,"evidence":"reports/local/wx-e2ra2/native/acceptance.json","formalDt":"unchanged variable dt","fullProductAsyncPrerequisite":false}

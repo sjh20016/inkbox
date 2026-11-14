@@ -13,6 +13,7 @@ import { reactToTool } from '../src/inkbox/sim/busanzi.js';
 import { peekRuntimeEvents } from '../src/inkbox/core/runtimeEvents.js';
 import { rngStream } from '../src/inkbox/core/noise.js';
 import { savedRuntimeOf } from '../src/inkbox/io/save.js';
+import { getCommittedFrame, disposeCommittedWorlds, manageCommittedWorlds } from '../src/inkbox/presentation/readView/committedStore.js';
 
 const source=readFileSync(new URL('../src/inkbox/main.js',import.meta.url),'utf8');
 const previousDocument=globalThis.document;
@@ -44,15 +45,19 @@ function bindPersistence(sb,{save,load}){
   const start=source.indexOf("    $('inkBtnSave').addEventListener('click'");
   const end=source.indexOf('    // Q26：',start);
   assert(start>0&&end>start);
-  new Function('$','saveToStorage','loadFromStorage','listSlots','plainSaveTag','Life','rngStream','savedRuntimeOf',source.slice(start,end))
-    .call(sb,id=>element(id),save,load,()=>[],()=>'',Life,rngStream,savedRuntimeOf);
+  new Function('$','saveToStorage','loadFromStorage','listSlots','plainSaveTag','Life','rngStream','savedRuntimeOf',
+    'getCommittedFrame','disposeCommittedWorlds','manageCommittedWorlds',source.slice(start,end))
+    .call(sb,id=>element(id),save,load,()=>[],()=>'',Life,rngStream,savedRuntimeOf,
+      getCommittedFrame,disposeCommittedWorlds,manageCommittedWorlds);
 }
 function bindImport(sb,importer){
   const start=source.indexOf("    $('inkBtnImport').addEventListener('click'");
   const end=source.indexOf('    // Q40：',start);
   assert(start>0&&end>start);
-  new Function('$','importFile','Life','rngStream','savedRuntimeOf',source.slice(start,end))
-    .call(sb,id=>element(id),importer,Life,rngStream,savedRuntimeOf);
+  new Function('$','importFile','Life','rngStream','savedRuntimeOf',
+    'getCommittedFrame','disposeCommittedWorlds','manageCommittedWorlds',source.slice(start,end))
+    .call(sb,id=>element(id),importer,Life,rngStream,savedRuntimeOf,
+      getCommittedFrame,disposeCommittedWorlds,manageCommittedWorlds);
 }
 try{
   {

@@ -1,3 +1,10 @@
+import { assertLegacyReadAllowed } from '../presentation/readView/committedStore.js';
+function legacyPanelReady(sb) {
+  try { assertLegacyReadAllowed(sb.world); return true; } catch { return false; }
+}
+function legacyWorldReady(world) {
+  try { assertLegacyReadAllowed(world); return true; } catch { return false; }
+}
 // 水墨沙盒 · 右栏观察面板（QOL_PASS1 从 `main.js` 拔出来）
 import { busanziPortraitSvg } from './g2/busanzi/busanziPortrait.js';
 //
@@ -177,6 +184,7 @@ function planeTagOf(plane) {
  * ⚠️ 纯读：不改世界、不抽 rng、不写回实体。面板每 2.5 秒调一次也不会让世界漂。
  */
 export function notablePeople(world) {
+  if (!legacyWorldReady(world)) return [];
   const live = [];
   for (let i = 0; i < world.entities.length; i += 1) {
     const e = world.entities[i];
@@ -262,6 +270,7 @@ export function realmOrMortal(level) {
  * ⚠️ 纯读：不写世界、不抽 rng。
  */
 export function upperFateOf(upper, entry) {
+  if (!legacyWorldReady(upper)) return '';
   const alive = upper.entities.find((e) => e.id === entry.id);
   if (alive) {
     return `如今在世 · ${realmOrMortal(alive.level)} · ${Math.floor((alive.age || 0) / 360)} 岁`;
@@ -382,6 +391,7 @@ function foldState(sb, key, total, unit = '条', limit = LIST_FOLD_LIMIT) {
  *    不补——那正是「继续自动跟随」。
  */
 export function refreshChroniclePanel(sb) {
+  if (!legacyPanelReady(sb)) return;
   const list = $('inkChronicle');
   if (!list || !sb.world) return;
   const all = sb.world.chronicle.slice(-40).reverse();
@@ -415,6 +425,7 @@ function bindChronicle(box, sb) {
   if (!box || box.dataset.chronicleBound === '1') return;
   box.dataset.chronicleBound = '1';
   box.addEventListener('click', (ev) => {
+    if (!legacyPanelReady(sb)) return;
     const el = ev.target.closest('[data-goto-log]');
     if (!el) return;
     const [planeText, xy] = String(el.dataset.gotoLog).split(':');
@@ -504,6 +515,7 @@ export function visibleMilestones(all, active = []) {
 }
 
 export function refreshMilestonesPanel(sb) {
+  if (!legacyPanelReady(sb)) return;
   const box = $('inkMilestones');
   const world = sb.world;
   if (!box || !world) return;
@@ -547,6 +559,7 @@ export function refreshMilestonesPanel(sb) {
  * / Stability（纯读派生，不写世界）。
  */
 export function refreshNotablesPanel(sb) {
+  if (!legacyPanelReady(sb)) return;
   const box = $('inkNotables');
   const world = sb.world;
   if (!box || !world) return;
@@ -576,6 +589,7 @@ export function refreshNotablesPanel(sb) {
   // 逐行挂监听会被下一次刷新全部丢掉——而且不报错，只是点了没反应。
   if (!sb.notablesBound) {
     box.addEventListener('click', (ev) => {
+    if (!legacyPanelReady(sb)) return;
       const el = ev.target.closest('[data-live]');
       if (el) sb.showPersonCard(Number(el.dataset.live));
     });
@@ -591,6 +605,7 @@ export function refreshNotablesPanel(sb) {
 // ── 人物一生（Q9 / Q12 / Q13 / Q36 / Q37）───────────────────────────
 // Official card consumes frozen snapshots; selection changes destroy all old DOM actions.
 export function showPersonCardPanel(sb, model, onAction, { revision, onMingpu } = {}) {
+  if (!legacyPanelReady(sb)) return;
   const panel = $('inkPersonDetail');
   if (!panel || !model) return;
   let state = characterViews.get(sb);
@@ -611,6 +626,7 @@ export function showPersonCardPanel(sb, model, onAction, { revision, onMingpu } 
   panel.classList.add('on');
 }
 export function showCharacterChoicesPanel(sb, candidates, choose) {
+  if (!legacyPanelReady(sb)) return;
   const panel = $('inkInspect');
   if (!panel) return;
   const esc = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
@@ -624,6 +640,7 @@ export function showCharacterChoicesPanel(sb, candidates, choose) {
   panel.classList.add('on');
   $('inkInspectClose').addEventListener('click', () => panel.classList.remove('on'));
   $('inkG1OpenCandidate').addEventListener('click', () => {
+    if (!legacyPanelReady(sb)) return;
     if (choose(candidates[Number($('inkG1Candidates').value)]).ok) panel.classList.remove('on');
   });
 }
@@ -651,6 +668,7 @@ export function hidePersonCardPanel(sb) {
  * 「在世 / 故人 / 不可考」三态——**只查现成名录，不按名字猜**。
  */
 export function buildRelationSvgPanel(sb, entity) {
+  if (!legacyPanelReady(sb)) return;
   const world = sb.world;
   const neighbors = [];
   const rels = entity && entity.relations;
@@ -684,6 +702,7 @@ export function bindRelationGraphPanel(sb) {
   const panel = $('inkPersonDetail');
   if (!panel || sb.relationBound) return;
   panel.addEventListener('click', (ev) => {
+    if (!legacyPanelReady(sb)) return;
     const el = ev.target.closest('[data-goto]');
     if (!el) return;
     const nid = Number(el.dataset.goto);
@@ -712,6 +731,7 @@ export function bindRelationGraphPanel(sb) {
  * ⚠️ 纯读 + 一个只增的 `lastReadDay`：挂 2.5 秒定时器刷新，不抽 rng、不动世界。
  */
 export function refreshWatchPanel(sb) {
+  if (!legacyPanelReady(sb)) return;
   const box = $('inkWatch');
   const world = sb.world;
   if (!box || !world) return;
@@ -752,6 +772,7 @@ export function refreshWatchPanel(sb) {
   // 逐行挂监听会被下一次刷新全部丢掉——而且不报错，只是点了没反应。
   if (!sb.watchBound) {
     box.addEventListener('click', (ev) => {
+    if (!legacyPanelReady(sb)) return;
       const el = ev.target.closest('[data-watch]');
       if (!el) return;
       if (ev.target.closest('[data-watch-ghost]')) {
@@ -768,7 +789,9 @@ export function refreshWatchPanel(sb) {
     if (title) {
       title.style.cursor = 'pointer';
       title.addEventListener('click', () => {
+        if (!legacyPanelReady(sb)) return;
         markAllWatchRead(sb.world, sb.world.day);
+        sb.publishCommittedEdit?.();
         sb.refreshWatch();
       });
     }
@@ -802,6 +825,7 @@ export function watchStateLabel(resolved) {
 
 /** 点一行「记挂」：按状态导航（见 refreshWatchPanel 的几种出口）。**纯导航 + 标已读**。 */
 export function openWatchRowPanel(sb, key) {
+  if (!legacyPanelReady(sb)) return;
   const world = sb.world;
   if (!world) return;
   const entry = ensureWatch(world).find((w) => w.key === key);
@@ -809,6 +833,7 @@ export function openWatchRowPanel(sb, key) {
   const r = resolveWatch(world, entry);
   const sinceDay = Number.isFinite(entry.lastReadDay) ? entry.lastReadDay : entry.addedDay;
   markWatchRead(world, key, world.day);
+  sb.publishCommittedEdit?.();
   if (sb.g1) { sb.g1.open(key, { sinceDay }); sb.refreshWatch(); return; }   // 点开即已读（红点熄灭）
   if ((r.state === 'alive' || r.state === 'possessed') && r.entity) {
     sb.showPersonCard(r.entity.id);     // 内含 focus + 墨环 + 人物卡
@@ -822,6 +847,7 @@ export function openWatchRowPanel(sb, key) {
 // ── 三界（Q9 / Q10 / Q37）───────────────────────────────────────────
 /** 三界面板。**不新增任何后台状态**——全是现成读数。 */
 export function refreshThreeRealmsPanel(sb) {
+  if (!legacyPanelReady(sb)) return;
   const world = sb.world;
   if (!world) return;
   refreshUpperRealmPanel(sb, world);
@@ -830,6 +856,7 @@ export function refreshThreeRealmsPanel(sb) {
 
 /** 上界那一块：人口 / 飞升名册（带现状）/ 上界自己的大事 */
 export function refreshUpperRealmPanel(sb, world) {
+  if (!legacyPanelReady(sb)) return;
   const upper = world.upper || sb.upper;
   const meta = $('inkUpperMeta');
   const box = $('inkUpperLog');
@@ -877,6 +904,7 @@ export function refreshUpperRealmPanel(sb, world) {
 
 /** 幽冥那一块：魂路五路分布 / 魂池里排着谁 / 谁已经带着前世回来 */
 export function refreshNetherRealmPanel(sb, world) {
+  if (!legacyPanelReady(sb)) return;
   const meta = $('inkNetherMeta');
   const bars = $('inkSoulRoutes');
   const box = $('inkSoulPool');
@@ -966,6 +994,7 @@ export function refreshNetherRealmPanel(sb, world) {
  *    列表只渲染前 `NECRO_PANEL_LIMIT` 条：全 800 条塞进 DOM 没有意义。
  */
 export function refreshNecrologyPanel(sb) {
+  if (!legacyPanelReady(sb)) return;
   const box = $('inkNecrology');
   const world = sb.world;
   if (!box || !world) return;
@@ -994,6 +1023,7 @@ export function refreshNecrologyPanel(sb) {
   // 点开某一条：用**事件委托**。面板每 2.5 秒重建一次 innerHTML。
   if (!sb.necroBound) {
     box.addEventListener('click', (ev) => {
+    if (!legacyPanelReady(sb)) return;
       const el = ev.target.closest('[data-dead]');
       if (el) sb.showDeadBiography(Number(el.dataset.dead));
     });
@@ -1017,6 +1047,7 @@ export function setNecroSortPanel(sb, sort) {
 
 /** 点开一条名录：把那个人的完整传记正文摊出来。Q36：找不到时明确说一句。 */
 export function showDeadBiographyPanel(sb, id) {
+  if (!legacyPanelReady(sb)) return;
   const record = findDead(sb.world, id);
   const panel = $('inkNecroDetail');
   if (!panel) return;
@@ -1036,6 +1067,7 @@ export function showDeadBiographyPanel(sb, id) {
   panel.classList.add('on');
   $('inkNecroClose').addEventListener('click', () => hideDeadBiographyPanel(sb));
   $('inkBtnNecroBio').addEventListener('click', () => {
+    if (!legacyPanelReady(sb)) return;
     // 再编译一遍：正文是纯派生，不值得为它多存一份（存了就会与世界不同步）
     sb.downloadText(biographyFileName(record), compileDeadBiography(sb.world, record));
   });
@@ -1061,6 +1093,7 @@ export function downloadTextPanel(sb, name, text) {
 
 /** 史册导出（Q26：文件名走 `necrologyFileName`，本模块不另起一套命名）。 */
 export function exportNecrologyPanel(sb) {
+  if (!legacyPanelReady(sb)) return;
   const md = exportNecrology(sb.world, { sort: sb.necroSort });
   downloadTextPanel(sb, necrologyFileName(sb.world), md);
 }
@@ -1125,7 +1158,7 @@ export function bindBusanziActionsPanel(sb) {
     const button = $(id);
     if (!button || button.dataset.busanziActionBound) continue;
     button.dataset.busanziActionBound = 'true';
-    button.addEventListener('click', action);
+    button.addEventListener('click', () => { if (legacyPanelReady(sb)) action(); });
   }
 }
 
@@ -1161,6 +1194,7 @@ export function bindBusanziPortraitPanel(sb) {
   });
 }
 export function refreshBusanziPanel(sb) {
+  if (!legacyPanelReady(sb)) return;
   syncBusanziCollapsedPanel(sb);
   const box = $('inkBusanzi');
   if (!box || !sb.world) return;
@@ -1299,7 +1333,7 @@ export function setupSectionTogglesPanel(sb) {
       title.classList.add('collapsed');
     }
     title.addEventListener('click', () => {
-      const collapsed = !body.classList.contains('collapsed');
+          const collapsed = !body.classList.contains('collapsed');
       body.classList.toggle('collapsed', collapsed);
       title.classList.toggle('collapsed', collapsed);
       if (qol) qol.setSectionCollapsed(key, collapsed);
@@ -1352,6 +1386,7 @@ export function refreshRecentPanel(sb) {
   if (box.dataset.recentBound === '1') return;
   box.dataset.recentBound = '1';
   box.addEventListener('click', (ev) => {
+    if (!legacyPanelReady(sb)) return;
     const el = ev.target.closest('[data-recent]');
     if (!el) return;
     // 键的格式是 `<plane>:<id>`（见 `showPersonCardPanel` 的 `noteRecent`）。

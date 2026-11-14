@@ -215,3 +215,4 @@ const pointer = (canvas, type, x, y) => canvas.dispatch(type, { clientX: x, clie
 }
 
 console.log('G7 Canvas pointer cancellation regression passed');
+export { setup, fixture, pointer, savedState };
