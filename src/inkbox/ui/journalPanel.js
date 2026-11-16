@@ -2,12 +2,17 @@ import { readJournal, receiptRevisit, personRef, resolveJournalPerson, createVow
 import { readObserveEcho } from '../sim/observeEcho.js';
 import { watchRows } from '../sim/watch.js';
 import { canAccess } from '../core/mapAccess.js';
+import { assertLegacyReadAllowed } from '../presentation/readView/committedStore.js';
 
 const esc = v => String(v ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const when = d => Number.isFinite(d) ? `第 ${Math.floor(d / 360) + 1} 年 ${Math.floor((d % 360) / 30) + 1} 月` : '日期未知';
 const states = { active: '等待中', fulfilled: '成愿', failed: '未能如愿', lost: '失考', unresolved: '未结', abandoned: '已弃愿' };
 const labels = { burn: '焚林', root: '赐灵根', crisis: '降灾', drain: '抽水' };
 const button = (action, id, label) => `<button type="button" data-journal-action="${action}" data-id="${esc(id)}">${esc(label)}</button>`;
+function readableWorld(world) {
+  if (!world) return null;
+  try { assertLegacyReadAllowed(world); return world; } catch { return null; }
+}
 
 export function createJournalPanel(sb, doc = document) {
   const root = doc.getElementById('inkJournal'), content = doc.getElementById('inkJournalContent');
@@ -15,10 +20,11 @@ export function createJournalPanel(sb, doc = document) {
   let world = null, signature = '', last = 0;
   const opened = new Set();
   const cardActions = new WeakMap();
+  function getWorld() { const current = readableWorld(sb.world); return current === sb.world ? current : null; }
   function notify(text) { if (text) sb.notify?.(text); }
   function dirty() { sb.qol?.markDirty('terrain'); }
   function locate(target) {
-    if (!target || world !== sb.world) return;
+    if (!target || readableWorld(world) !== world || world !== sb.world) return;
     if (target.type === 'settlement') { sb.observeEcho?.locate?.(target.id ?? target.settlementId); return; }
     if (target.type === 'person') {
       const resolved = resolveJournalPerson(world, target);
@@ -33,9 +39,10 @@ export function createJournalPanel(sb, doc = document) {
     }
   }
   function refresh(force = true) {
-    if (!root.open || !sb.world) return;
-    const changed = world !== sb.world;
-    if (changed) { world = sb.world; signature = ''; opened.clear(); }
+    if (!root.open) return;
+    const current = getWorld(); if (!current) return;
+    const changed = world !== current;
+    if (changed) { world = current; signature = ''; opened.clear(); }
     const now = performance.now();
     if (!force && !changed && now - last < 2000) return;
     last = now;
@@ -73,40 +80,44 @@ export function createJournalPanel(sb, doc = document) {
     if (e.target.open && !wasOpen) { signature = ''; refresh(true); }
   }, true);
   content.addEventListener('click', e => {
-    const b = e.target.closest('[data-journal-action]'); if (!b || world !== sb.world) return;
+    const b = e.target.closest('[data-journal-action]'); if (!b || readableWorld(world) !== world || world !== sb.world) return;
     const id = b.dataset.id, data = readJournal(world), action = b.dataset.journalAction;
     if (action === 'watch') sb.openWatchRow(id);
     else if (action === 'place') sb.observeEcho?.locate?.(Number(id));
     else if (action === 'echo') { doc.getElementById('inkJournalEchoDetail').open = true; sb.observeEcho?.openMark?.(id); }
-    else if (action === 'abandon') { const result = abandonVow(world, id); notify(result.message); if (result.ok) dirty(); signature = ''; refresh(true); }
+    else if (action === 'abandon') { const result = abandonVow(world, id); notify(result.message); if (result.ok) { dirty(); sb.publishCommittedEdit?.(); } signature = ''; refresh(true); }
     else if (action === 'vow-locate') { const v = [...data.vows.active, ...data.vows.archive].find(v => String(v.id) === id); if (v) locate({ ...v.ref, type: v.kind === 'settlement' ? 'settlement' : 'person' }); }
     else if (action === 'target') { const [rid, index] = id.split(':'); const r = data.receipts.find(r => String(r.id) === rid); if (r) locate(receiptRevisit(world, r).targets[Number(index)]); }
   });
   function appendAction(panel, label, makeRef, kind, key) {
+    const current = getWorld(); if (!current) return;
     const previous = cardActions.get(panel);
-    if (previous?.world === sb.world && previous.key === key && previous.control.isConnected) return;
+    if (previous?.world === current && previous.key === key && previous.control.isConnected) return;
     panel.querySelectorAll('.journal-card-actions').forEach(node => node.remove());
-    const cardWorld = sb.world, control = doc.createElement('div'); control.className = 'journal-card-actions';
+    const cardWorld = current, control = doc.createElement('div'); control.className = 'journal-card-actions';
     cardActions.set(panel, { world: cardWorld, key, control });
     const b = doc.createElement('button'); b.type = 'button'; b.textContent = label; control.append(b);
     b.addEventListener('click', () => {
+      if (readableWorld(cardWorld) !== cardWorld) return;
       if (cardWorld !== sb.world || !control.isConnected) { notify('世界或对象卡已改变，请重新打开。'); return; }
       const ref = makeRef(); if (!ref) { notify('原身份已不可考，无法立愿。'); return; }
-      const result = createVow(cardWorld, kind, ref); notify(result.message); if (result.ok) { dirty(); signature = ''; refresh(true); }
+      const result = createVow(cardWorld, kind, ref); notify(result.message); if (result.ok) { dirty(); sb.publishCommittedEdit?.(); signature = ''; refresh(true); }
     });
     (panel.querySelector('.inspect-head') || panel.firstElementChild)?.after(control);
   }
   return { refresh, open() { root.open = true; refresh(true); },
     appendSettlementActions(panel, id, plane = 'mortal') { if (plane !== 'mortal') return; appendAction(panel, '立愿 · 守一方烟火', () => ({ id, plane }), 'settlement', `settlement:${plane}:${id}`); },
     appendPersonActions(panel, identity) {
-      const key = identity?.key, resolved = key && resolveJournalPerson(sb.world, identity), initial = resolved?.entity;
+      const current = getWorld(); if (!current) return;
+      const key = identity?.key, resolved = key && resolveJournalPerson(current, identity), initial = resolved?.entity;
       if (!key || resolved?.status !== 'alive' || !(initial?.hp > 0) || !(initial?.level > 0)) {
         panel.querySelectorAll('.journal-card-actions').forEach(node => node.remove());
         cardActions.delete(panel); return;
       }
       appendAction(panel, '立愿 · 待一人破境', () => {
-        const ref = personRef(sb.world, identity.plane, identity.id), current = ref && resolveJournalPerson(sb.world, ref);
-        return panel.dataset.characterKey === key && ref?.key === key && current?.entity === initial ? ref : null;
+        const latest = getWorld(); if (latest !== current) return null;
+        const ref = personRef(latest, identity.plane, identity.id), resolvedCurrent = ref && resolveJournalPerson(latest, ref);
+        return panel.dataset.characterKey === key && ref?.key === key && resolvedCurrent?.entity === initial ? ref : null;
       }, 'breakthrough', key);
     }
   };

@@ -1,0 +1,98 @@
+{
+  "status": "independently reviewed; deliberate explicit file list, no blanket auto-approval",
+  "baseline": "61646341e00452417f04bc351afe8884b2ef7ddf",
+  "reviewer": "em2_review read-only final review, 2026-11-14",
+  "simulationModulesChanged": false,
+  "findings": [
+    "new child topology bypass fixed and regression tested",
+    "multi-block same-layer COW accumulation fixed and red/green tested",
+    "empty Three pointerup commands refused before dispatch and regression tested"
+  ],
+  "files": [
+    {
+      "path": "src/inkbox/main.js",
+      "oldSha256": "b955f4bfef72cf6e36b66a1faf8ba936a361079822962a20cc218cb38286333b",
+      "sha256": "9dd43fab7b40567c6923ea79f75a4f051878b147a5726c4670aee3cff2779989"
+    },
+    {
+      "path": "src/inkbox/presentation/readView/committedStore.js",
+      "oldSha256": null,
+      "sha256": "73d91acc447977091ce7a4bd9c5a098cb93c4e3fa2a4e670285b9618dc92c8b0"
+    },
+    {
+      "path": "src/inkbox/presentation/readView/committedRegistry.js",
+      "oldSha256": null,
+      "sha256": "eaf641b8c9292bf67922262e5f7772eaf5f509dca5a34af95fce3b266bb3724e"
+    },
+    {
+      "path": "src/inkbox/presentation/readView/sandboxBoundary.js",
+      "oldSha256": null,
+      "sha256": "51aaa21e9a316399d989eed58d95c6e4b0cc195d101d701ea9c0b807d3e6bfa7"
+    },
+    {
+      "path": "src/inkbox/presentation/readView/commandBridge.js",
+      "oldSha256": null,
+      "sha256": "ccd4a55411b33c6bfa170c790e8129d5d99ab84952872fd60c19275ead96ebb0"
+    },
+    {
+      "path": "src/inkbox/presentation/readView/index.js",
+      "oldSha256": null,
+      "sha256": "e07beac08a5eb3ba089271e22b6bd2ae93fe6aff7ecc290842b21db6d6f8f284"
+    },
+    {
+      "path": "src/inkbox/presentation/readView/query.js",
+      "oldSha256": null,
+      "sha256": "94e10997f2ebea4bb1661bf3255d9c7f5fb18f9e174ca300d09220575496bdbf"
+    },
+    {
+      "path": "src/inkbox/presentation/readView/terrain.js",
+      "oldSha256": null,
+      "sha256": "0d87896e7ea8bbfb6b70084334ab1e990958470407ded84a31de0c19263f7704"
+    },
+    {
+      "path": "src/inkbox/render/camera.js",
+      "oldSha256": null,
+      "sha256": "6070191ae343b494ada56f73564ed0b47355b6982948857191035188d99d4449"
+    },
+    {
+      "path": "src/inkbox/render/unitsLayer.js",
+      "oldSha256": null,
+      "sha256": "6f9be788286a5e6e1505907137d302e96a5b0269850186645b217d49ae226d9e"
+    },
+    {
+      "path": "src/inkbox/render3d/entities/deriveEntities.js",
+      "oldSha256": null,
+      "sha256": "ae5bb35f3db7659146fdacd6cf504ec51d229f99fff7a7edc40cc3f5bb6e3d55"
+    },
+    {
+      "path": "src/inkbox/render3d/Render3DAdapter.js",
+      "oldSha256": null,
+      "sha256": "0767d211d0f58abcad6ef08017f72ac96df1437f8a54c33a14c07b92edb4bfa6"
+    },
+    {
+      "path": "src/inkbox/g1/sandboxRuntime.js",
+      "oldSha256": null,
+      "sha256": "817fc558fbb195f1aafa032169cdc7542a2acfd009c5e0987b62b420036f1ec1"
+    },
+    {
+      "path": "src/inkbox/ui/journalPanel.js",
+      "oldSha256": null,
+      "sha256": "768e96a0a71436d074e7cc57ee90c6f60676ecb2ac807357befe39b52d9fed80"
+    },
+    {
+      "path": "src/inkbox/ui/observeEchoPanel.js",
+      "oldSha256": null,
+      "sha256": "19395a499a221ea7ca2572831f04b4e1a7f3dbb11775c5c1353e942606ba2122"
+    },
+    {
+      "path": "src/inkbox/ui/railPanels.js",
+      "oldSha256": null,
+      "sha256": "44db1f5828d53b027fbdd66af2805c4140f886ae6f443b7a824e4ec84b27856a"
+    },
+    {
+      "path": "src/inkbox/ui/storyNavigation.js",
+      "oldSha256": null,
+      "sha256": "6c7d9eb59c13ab775631e89ec754ac46e04daae3547248ed8661d93801ea1c3e"
+    }
+  ]
+}

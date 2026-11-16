@@ -5,6 +5,7 @@ import { settlementCondition } from '../world/settlementState.js';
 import { settlementRuinMarkerId } from '../world/settlementIdentity.js';
 import { readObserveEcho, focusSettlement, clearSettlementFocus, resolveObservedSettlement,
   settlementRevisit, markRevisit } from '../sim/observeEcho.js';
+import { assertLegacyReadAllowed } from '../presentation/readView/committedStore.js';
 
 const STATES = { normal: '○ 正常', disaster: '！受灾', damaged: '！受灾', recovering: '↗ 恢复', declining: '↓ 衰弱', ruins: '◇ 遗址', ruin: '◇ 遗址' };
 const esc = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
@@ -13,6 +14,10 @@ const when = day => Number.isFinite(day) ? `第 ${Math.floor(day / 360) + 1} 年
 const state = value => STATES[value] || '状态未知';
 const signed = value => Number.isFinite(value) ? `${value > 0 ? '+' : ''}${n(value)}` : '未保留';
 const summary = s => s ? `${state(s.status)} · 人口 ${n(s.pop)} · 粮 ${n(s.food)} · 可用屋 ${n(s.houses)}` : '原身份详录未保留';
+function readableWorld(world) {
+  if (!world) return null;
+  try { assertLegacyReadAllowed(world); return world; } catch { return null; }
+}
 
 export function createObserveEchoPanel(sandbox, doc = document) {
   const shelf = doc.getElementById('inkObserveEcho');
@@ -22,11 +27,14 @@ export function createObserveEchoPanel(sandbox, doc = document) {
   let world = null, candidates = [], signature = '', selectedMark = null;
   let lastRefreshTime = -Infinity, wasVisible = false;
   const nodes = [], openDetails = new Set();
-  const visible = place => place && canAccess(sandbox.world, place.x, place.y);
+  function getWorld() { const current = readableWorld(sandbox.world); return current === sandbox.world ? current : null; }
+  const visible = place => place && canAccess(world, place.x, place.y);
   function dirty() { sandbox.qol?.markDirty('terrain'); sandbox.settlementInspectionSignature = null; }
   function locate(id) {
+    const currentWorld = readableWorld(world);
+    if (!currentWorld) return;
     if (world !== sandbox.world) { refresh(); return; }
-    const current = resolveObservedSettlement(sandbox.world, id), place = current.settlement;
+    const current = resolveObservedSettlement(currentWorld, id), place = current.settlement;
     if (!place) { sandbox.notify('原聚落身份的详录已不在当前世界。'); return; }
     if (!visible(place)) { sandbox.notify('这处旧址尚在已开放山河之外。'); return; }
     sandbox.camera.focusOn(place.x, place.y, { zoom: Math.max(sandbox.camera.zoom, 7), duration: 0.75 });
@@ -37,16 +45,22 @@ export function createObserveEchoPanel(sandbox, doc = document) {
     if (doc.getElementById('inkExperienceOpen')?.getAttribute('aria-expanded') === 'true') doc.getElementById('inkExperienceClose')?.click();
   }
   function watch(id) {
-    if (!focusSettlement(sandbox.world, id)) { sandbox.notify('未找到这座聚落的原身份。'); return; }
-    dirty(); refresh(); sandbox.notify('已记挂这处地方。岁月之后，可从「聚落 · 回声」回来。');
+    const currentWorld = readableWorld(world);
+    if (!currentWorld || currentWorld !== sandbox.world) return;
+    if (!focusSettlement(currentWorld, id)) { sandbox.notify('未找到这座聚落的原身份。'); return; }
+    dirty(); sandbox.publishCommittedEdit?.(); refresh(); sandbox.notify('已记挂这处地方。岁月之后，可从「聚落 · 回声」回来。');
   }
   function click(event) {
     const b = event.target.closest('[data-e0-action]'); if (!b) return;
+    if (!world || readableWorld(world) !== world) return;
     if (world !== sandbox.world) { refresh(); return; }
     const id = Number(b.dataset.id);
     if (b.dataset.e0Action === 'locate') locate(id);
     if (b.dataset.e0Action === 'watch') watch(id);
-    if (b.dataset.e0Action === 'clear') { clearSettlementFocus(sandbox.world); dirty(); refresh(); }
+    if (b.dataset.e0Action === 'clear') {
+      if (readObserveEcho(world).focus) { clearSettlementFocus(world); dirty(); sandbox.publishCommittedEdit?.(); }
+      refresh();
+    }
     if (b.dataset.e0Action === 'mark') { selectedMark = b.dataset.mark; signature = ''; refresh(); }
   }
   shelf.addEventListener('click', click);
@@ -58,7 +72,7 @@ export function createObserveEchoPanel(sandbox, doc = document) {
   function revisitHtml(result, baseline) {
     const now = result.current.settlement, changes = result.changes || {}, aid = result.aidDelta || {};
     const history = result.history || {};
-    const crises = now ? (sandbox.world.worldEventState?.activeCrises || []).filter(c => c.villageId === now.id && c.status === 'active').length : null;
+    const crises = now ? (world.worldEventState?.activeCrises || []).filter(c => c.villageId === now.id && c.status === 'active').length : null;
     return `<p class="e0-note">当时：${esc(summary(baseline))}</p><p>现在：${esc(summary(now))}</p>`
       + `<p>人口 ${signed(changes.pop)} · 可用屋 ${signed(changes.houses)} · 损毁屋 ${signed(changes.ruinedHouses)}</p>`
       + `<p>此后援助累计差：粮草 ${signed(aid.provisions)} · 灵石 ${signed(aid.spiritStone)}</p>`
@@ -68,14 +82,14 @@ export function createObserveEchoPanel(sandbox, doc = document) {
       + `<p class="e0-note">${esc(history.note || '地方沿革仅保留有限详录。')}${history.windowMayBeIncomplete ? ' 详录未完整保留。' : ''}</p>`;
   }
   function refresh(force = true) {
-    if (!sandbox.world) return;
-    const changedWorld = world !== sandbox.world;
+    const currentWorld = getWorld(); if (!currentWorld) return;
+    const changedWorld = world !== currentWorld;
     const showing = shelf.getClientRects().length > 0, opened = showing && !wasVisible;
     wasVisible = showing;
     const now = performance.now();
     if (!force && !changedWorld && !opened && now - lastRefreshTime < 2000) return;
     lastRefreshTime = now;
-    if (changedWorld) { world = sandbox.world; signature = ''; selectedMark = null; openDetails.clear(); }
+    if (changedWorld) { world = currentWorld; signature = ''; selectedMark = null; openDetails.clear(); }
     const data = readObserveEcho(world), focus = data.focus;
     // Only low-frequency HUD refresh enumerates settlement records, never tiles.
     const places = [...(world.villages || []).filter(visible).map(place => ({ place, status: settlementCondition(world, place).status })),
@@ -129,7 +143,7 @@ export function createObserveEchoPanel(sandbox, doc = document) {
   }
   function project() {
     // At most eight projections. No per-frame World enumeration or fact lookup.
-    if (world !== sandbox.world) { nodes.forEach(node => { node.hidden = true; }); return; }
+    if (!world || readableWorld(world) !== world || world !== sandbox.world) { nodes.forEach(node => { node.hidden = true; }); return; }
     const bounds = stage.getBoundingClientRect(), used = [];
     const obstacles = [...stage.querySelectorAll('.inspect.on,#inkBusanzi')]
       .filter(el => el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden')
@@ -157,15 +171,17 @@ export function createObserveEchoPanel(sandbox, doc = document) {
     locate(id) { refresh(); locate(id); },
     openMark(id) {
       refresh();
-      if (!readObserveEcho(sandbox.world).marks.some(mark => String(mark.id) === String(id))) return;
+      if (!world || readableWorld(world) !== world) return;
+      if (!readObserveEcho(world).marks.some(mark => String(mark.id) === String(id))) return;
       selectedMark = String(id); signature = ''; refresh();
     },
-    focusId: () => readObserveEcho(sandbox.world).focus?.settlementId,
+    focusId: () => { const current = getWorld(); return current ? readObserveEcho(current).focus?.settlementId : null; },
     appendCardActions(panel, id) {
-      const cardWorld = sandbox.world;
+      const cardWorld = getWorld(); if (!cardWorld) return;
       const controls = doc.createElement('div'); controls.className = 'e0-card-actions';
-      controls.innerHTML = button('watch', id === readObserveEcho(sandbox.world).focus?.settlementId ? '重新记下此刻' : '记挂此地', id);
+      controls.innerHTML = button('watch', id === readObserveEcho(cardWorld).focus?.settlementId ? '重新记下此刻' : '记挂此地', id);
       controls.addEventListener('click', event => {
+        if (readableWorld(cardWorld) !== cardWorld) return;
         if (cardWorld !== sandbox.world) { refresh(); return; }
         click(event);
       }); panel.querySelector('.inspect-head')?.after(controls);

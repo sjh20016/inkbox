@@ -7,6 +7,8 @@
     "node": ">=18"
   },
   "scripts": {
+    "test:wx-e2ra2": "node scripts/inkbox-wx-e2ra2-check.mjs && node scripts/inkbox-wx-e2ra2-command.mjs && node scripts/inkbox-wx-e2ra2-panels.mjs",
+    "test:wx-e2ra2:native": "node scripts/inkbox-wx-e2ra2-native.mjs",
     "test:wx-em2": "node scripts/inkbox-e-m2-metrics-check.mjs",
     "test:wx-em2:native": "node scripts/inkbox-e-m2-native.mjs",
     "profile:wx-em2": "node scripts/inkbox-e-m2-profile.mjs",

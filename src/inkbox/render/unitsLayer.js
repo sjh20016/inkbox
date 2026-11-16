@@ -1,3 +1,4 @@
+import { renderFrame } from '../presentation/readView/index.js';
 // 水墨沙盒 · 生灵与建筑图层
 //
 // 像素小人：以墨点阵画出的人形，小到不抢山水的戏，大到能一眼分清身份。
@@ -576,8 +577,11 @@ export class UnitsLayer {
   }
 
   drawEntities(ctx, camera, world, time, frame = null) {
-    const rect = camera.visibleRect(world);
-    const list = frame ? frame.entities : world.entities;
+    frame ||= renderFrame(world);
+    if (!frame) return;
+    const geometry = frame?.geometry || world;
+    const rect = camera.visibleRect(geometry);
+    const list = frame.entities;
     const baseCell = Math.max(0.22, Math.min(3.1, camera.zoom * 0.215));
     const showDetail = camera.zoom >= 2.2;
     const drawAura = camera.zoom >= 1.8;
@@ -586,15 +590,15 @@ export class UnitsLayer {
       const e = list[i];
       if (camera.canAccess && !camera.canAccess(e.x, e.y)) continue;
       if (e.x < rect.x0 || e.x > rect.x1 || e.y < rect.y0 || e.y > rect.y1) continue;
-      const idx = world.idx(Math.floor(e.x), Math.floor(e.y));
-      const height = world.height[idx];
+      const idx = frame.geometry ? Math.floor(e.y) * geometry.w + Math.floor(e.x) : world.idx(Math.floor(e.x), Math.floor(e.y));
+      const height = geometry.height[idx];
       const [sx, sy] = UnitsLayer.project(camera, e.x, e.y, height);
 
       const info = SPECIES_INFO[e.sp] || SPECIES_INFO.human;
       let bodyColor = info.color;
       let accentColor = '#d9d2bf';
       if (e.faction) {
-        const faction = world.factionById(e.faction);
+        const faction = frame.geometry ? frame.factions.find(f => f.id === e.faction) : world.factionById(e.faction);
         if (faction) {
           bodyColor = faction.color;
           accentColor = faction.accent;
@@ -611,8 +615,8 @@ export class UnitsLayer {
       const frames = framesFor(e.sp);
       // 两帧行走：只有真的在赶路时才换帧，站着不动就回到并腿那一帧
       const moving = Math.abs(e.tx - e.x) + Math.abs(e.ty - e.y) > 0.4;
-      const frame = moving ? ((Math.floor(time * 5 + (e.id || 0) * 0.37) % 2) + 2) % 2 : 0;
-      const rows = frames[frame];
+      const spriteFrame = moving ? ((Math.floor(time * 5 + (e.id || 0) * 0.37) % 2) + 2) % 2 : 0;
+      const rows = frames[spriteFrame];
 
       const cell = baseCell;
       const width = rows[0].length * cell;

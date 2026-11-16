@@ -1,7 +1,9 @@
 import { settlementInspectCard } from '../../ui/settlementInspector.js';
 import { worldGeneration } from './index.js';
+import { assertCommittedLegacyReadAllowed } from './committedRegistry.js';
 
 export function getSettlementInspection(world, plane, id, isRuin = false) {
+  assertCommittedLegacyReadAllowed(world);
   if (!world || plane !== (world.plane || 'mortal')) return null;
   const source = isRuin ? world.settlementRuins : world.villages;
   const settlement = source?.find(item => item?.id === id);

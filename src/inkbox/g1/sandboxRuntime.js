@@ -1,3 +1,8 @@
+import { assertLegacyReadAllowed } from '../presentation/readView/committedStore.js';
+function legacyReady(sb) {
+  try { assertLegacyReadAllowed(sb.world); return true; } catch { return false; }
+}
+const busyResult = () => ({ ok: false, reason: 'uncommitted-world', message: '世界尚未完成结算' });
 import { createCharacterController, resolveCharacter, summarizeCharacterObservation } from './characterRuntime.js';
 import { canAccess } from '../core/mapAccess.js';
 import { UnitsLayer } from '../render/unitsLayer.js';
@@ -6,6 +11,7 @@ import { navigateStoryRef } from '../ui/storyNavigation.js';
 
 // Candidates retain source references: delayed choices cannot target a replacement.
 export function canvasCharacterCandidates(sb, sx, sy, plane = 'mortal', radius = 19) {
+  if (!legacyReady(sb)) return [];
   if (!sb.world || !sb.camera || !Number.isFinite(sx) || !Number.isFinite(sy)) return [];
   const world = plane === 'mortal' ? sb.world : sb.world[plane];
   if (!world) return [];
@@ -26,9 +32,10 @@ export function canvasCharacterCandidates(sb, sx, sy, plane = 'mortal', radius =
 }
 
 export function createSandboxCharacterRuntime(sb, views = {}) {
-  const controller = createCharacterController({ getWorld: () => sb.world });
+  const controller = createCharacterController({ getWorld: () => legacyReady(sb) ? sb.world : null });
   let token = null, revision = 0, rendered = '', observationSince = null;
   function draw(force = false) {
+    if (!legacyReady(sb)) return;
     const current = controller.current();
     if (!current) return;
     const observation = token && observationSince !== null
@@ -40,14 +47,16 @@ export function createSandboxCharacterRuntime(sb, views = {}) {
     const expectedToken = token, expectedRevision = revision;
     views.render?.(sb, model, action => dispatch(action, expectedToken, expectedRevision), { revision: expectedRevision,
       onMingpu: action => {
+        if (!legacyReady(sb)) return busyResult();
         if(expectedToken!==token || expectedRevision!==revision)return {ok:false,reason:'stale-selection'};
         const result=controller.handleMingpu(action);
         if (result.ok && result.effect?.type === 'story-navigate') return navigateStoryRef(sb,result.effect.ref);
-        if(result.ok && ['enable','commit'].includes(action.type)) sb.qol?.markDirty('intervention');
+        if(result.ok && ['enable','commit'].includes(action.type)) { sb.publishCommittedEdit?.(); sb.qol?.markDirty('intervention'); }
         refresh();return result;
       } });
   }
   function open(keyOrPick, { focus = false, sinceDay = null } = {}) {
+    if (!legacyReady(sb)) return busyResult();
     const result = controller.select(keyOrPick);
     if (!result.ok) { close(); sb.notify?.(result.message || '此人已不在当前名录', 2600); return result; }
     token = result.token; revision += 1; rendered = '';
@@ -61,10 +70,12 @@ export function createSandboxCharacterRuntime(sb, views = {}) {
     return result;
   }
   function dispatch(action, expectedToken = token, expectedRevision = revision) {
+    if (!legacyReady(sb)) return busyResult();
     if (!expectedToken || expectedToken !== token || expectedRevision !== revision)
       return { ok: false, reason: 'stale-selection', message: '人物选择已失效' };
     const result = controller.handleAction(action);
     if (!result.ok) { sb.notify?.(result.message || '此操作当前不可用', 2600); refresh(); return result; }
+    if (['edict', 'watch'].includes(action.type)) sb.publishCommittedEdit?.();
     const effect = result.effect;
     if (effect?.type === 'focus') {
       if (sb.render3d?.active) sb.render3d.renderer.focusOn(effect.x, effect.y, { duration: 0.75 }, effect.plane);
@@ -84,6 +95,7 @@ export function createSandboxCharacterRuntime(sb, views = {}) {
     return result;
   }
   function refresh() {
+    if (!legacyReady(sb)) return null;
     const model = controller.refresh();
     if (!model) { if (token) close(); return null; }
     draw();
@@ -94,6 +106,7 @@ export function createSandboxCharacterRuntime(sb, views = {}) {
     views.hide?.(sb); sb.personOpenId = null;
   }
   function choose(candidate) {
+    if (!legacyReady(sb)) return busyResult();
     if (!candidate) return { ok: false, reason: 'invalid-candidate' };
     const now = resolveCharacter(sb.world, candidate.key);
     if (candidate.world !== sb.world || now?.entity !== candidate.entity) {
@@ -105,6 +118,7 @@ export function createSandboxCharacterRuntime(sb, views = {}) {
     return open(candidate.key);
   }
   function inspectCanvas(sx, sy, plane = 'mortal') {
+    if (!legacyReady(sb)) return false;
     const candidates = canvasCharacterCandidates(sb, sx, sy, plane);
     if (!candidates.length) return false;
     if (candidates.length === 1) choose(candidates[0]);
@@ -112,7 +126,7 @@ export function createSandboxCharacterRuntime(sb, views = {}) {
     return true;
   }
   return { open, dispatch, refresh, close, reset: close, inspectCanvas, choose,
-    current: () => controller.current(), resolve: key => resolveCharacter(sb.world, key),
-    summary: () => token && observationSince !== null ? summarizeCharacterObservation(sb.world, token, observationSince) : null,
+    current: () => legacyReady(sb) ? controller.current() : null, resolve: key => legacyReady(sb) ? resolveCharacter(sb.world, key) : null,
+    summary: () => legacyReady(sb) && token && observationSince !== null ? summarizeCharacterObservation(sb.world, token, observationSince) : null,
     destroy() { close(); controller.destroy(); } };
 }

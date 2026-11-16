@@ -6,7 +6,7 @@ export class TerrainReadView {
   constructor(world) { this.world = world; this.subscription = subscribeTerrainChanges(world); }
   initial() {
     const layers = {};
-    for (const name of TERRAIN_LAYERS) layers[name] = this.world[name].slice();
+    for (const name of TERRAIN_LAYERS) layers[name] = Object.freeze(Array.from(this.world[name]));
     return Object.freeze({ worldGeneration: worldGeneration(this.world), width: this.world.w,
       height: this.world.h, full: true, layers: Object.freeze(layers) });
   }
@@ -23,7 +23,7 @@ export class TerrainReadView {
       for (let y = region.y0; y <= region.y1; y++)
         data.set(this.world[name].subarray(y * this.world.w + region.x0, y * this.world.w + region.x1 + 1),
           (y - region.y0) * width);
-      blocks.push(Object.freeze({ layer: name, ...region, data }));
+      blocks.push(Object.freeze({ layer: name, ...region, data: Object.freeze(Array.from(data)) }));
     }
     return Object.freeze({ worldGeneration: worldGeneration(this.world), full: false, blocks: Object.freeze(blocks) });
   }

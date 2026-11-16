@@ -70,10 +70,10 @@ const source = file => fs.readFileSync(new URL(file, import.meta.url), 'utf8');
 const units = source('../src/inkbox/render/unitsLayer.js');
 const derive = source('../src/inkbox/render3d/entities/deriveEntities.js');
 const main = source('../src/inkbox/main.js');
-const wired = (u, d, m) => u.includes('const list = frame ? frame.entities : world.entities;')
-  && d.includes("const entities = renderFrame(world, world.plane || 'mortal', { refresh: true }).entities;")
+const wired = (u, d, m) => u.includes('const list = frame.entities;')
+  && d.includes('const frame = renderFrame(world, undefined, { refresh: !committedEntry(world) });') && d.includes('const entities = frame.entities;')
   && m.includes("this.units.drawEntities(ctx, this.camera, world, now, renderFrame(world, 'mortal'));");
 assert.ok(wired(units, derive, main), 'both production entity consumers use shared RenderFrame');
-assert.equal(wired(units, derive.replace('const entities = renderFrame', 'const entities = world.entities; // renderFrame'), main), false,
+assert.equal(wired(units, derive.replace('const entities = frame.entities;', 'const entities = world.entities;'), main), false,
   'guard rejects a direct Three World entity read');
 console.log('WX-E2R-a contract checks passed');

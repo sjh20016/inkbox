@@ -23,9 +23,9 @@
 import { SPECIES, SPECIES_INFO } from '../../core/config.js';
 import { REALMS, realmIndexFor } from '../../core/cultivation.js';
 import { characterAppearanceOf } from '../characters/characterAppearance.js';
-import { creatureFormOf, WANLING_BY_KEY } from '../../core/wanlingCatalog.js';
-import { readBiyiPairs } from '../../world/wanlingRelations.js';
+import { WANLING_BY_KEY } from '../../core/wanlingCatalog.js';
 import { renderFrame } from '../../presentation/readView/index.js';
+import { committedEntry } from '../../presentation/readView/committedRegistry.js';
 import { beginBreakdown, endBreakdown } from '../../dev/frameBreakdown.js';
 
 /**
@@ -102,11 +102,13 @@ function deriveFromWorld(world, includeWraiths) {
   const out = { human: [], cultivator: [], beast: [], spirit: [], wraith: [], total: 0 };
   if (!world) return out;
 
+  const frame = renderFrame(world, undefined, { refresh: !committedEntry(world) });
+  if (!frame) return out;
   const factionColorById = new Map();
-  const factions = Array.isArray(world.factions) ? world.factions : [];
+  const factions = frame.factions;
   for (const f of factions) if (f && Number.isFinite(f.id)) factionColorById.set(f.id, f.color);
 
-  const entities = renderFrame(world, world.plane || 'mortal', { refresh: true }).entities;
+  const entities = frame.entities;
   for (const e of entities) {
     if (!e || !Number.isFinite(e.x) || !Number.isFinite(e.y)) continue;
     const level = Number.isFinite(e.level) ? e.level : 0;
@@ -115,7 +117,7 @@ function deriveFromWorld(world, includeWraiths) {
     const color = entityColorOf(cls, level, faction, factionColorById);
     out[cls].push({
       id: e.id, x: e.x, y: e.y, level, faction,
-      form: cls === 'beast' ? creatureFormOf(world, e) : null,
+      form: cls === 'beast' ? e.creatureForm : null,
       identityContainer: 'entities', soulKind: e.soulKind || null,
       lift: entityLiftOf(cls, level),
       color,
@@ -125,8 +127,8 @@ function deriveFromWorld(world, includeWraiths) {
   }
 
   // 万灵拥有独立身份容器；只允许凡间 Stage 派生，绝不走 entities 的魂路。
-  if (includeWraiths && (!world.plane || world.plane === 'mortal')) {
-    for (const u of world.wanling?.units || []) {
+  if (includeWraiths && frame.plane === 'mortal') {
+    for (const u of frame.wanling.units) {
       if (!u || u.hp <= 0 || u.state === 'dissipated'
         || !Number.isFinite(u.x) || !Number.isFinite(u.y)) continue;
       const info = WANLING_BY_KEY.get(u.form);
@@ -139,14 +141,14 @@ function deriveFromWorld(world, includeWraiths) {
         color: cls === 'spirit' ? '#588a78' : '#79694e', appearance: null });
       out.total++;
     }
-    for (const pair of readBiyiPairs(world)) {
+    for (const pair of frame.biyiPairs) {
       out.beast.push({ ...pair, count: 2, level: 0, faction: 0, soulKind: null,
         lift: 0.65, color: '#887363', appearance: null });
       out.total++;
     }
   }
 
-  const wraiths = includeWraiths && Array.isArray(world.wraiths) ? world.wraiths : [];
+  const wraiths = includeWraiths && Array.isArray(frame.wraiths) ? frame.wraiths : [];
   for (const g of wraiths) {
     if (!g || !Number.isFinite(g.x) || !Number.isFinite(g.y)) continue;
     const level = Number.isFinite(g.level) ? g.level : 0;
