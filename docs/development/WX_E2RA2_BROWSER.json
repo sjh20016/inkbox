@@ -1,1 +1,4858 @@
-{"status":"pending; no acceptance claimed","browser":"Edge explicitly requested by user","planned":"actual official Canvas/WebGL Three, inherited original inputs, 400y 2x repeated measured samples plus command/QA"}
+{
+  "pass": true,
+  "method": "Four balanced cells, each A/B/A independent trials; A diagnostics off, B on. Not three ABBA cycles. Browser update forces build-stratified comparison.",
+  "source": {
+    "localCommit": "2a6c67d733425368a52e021d3ab138a75af3eb95",
+    "publishedCommit": "37e3b1a64aedc921012fadb2b92668787d0fd3ac",
+    "tree": "4eea90e4e35b9a69cf0afd3f1b6423477a98eb72",
+    "srcFilesVerified": 284
+  },
+  "balancedSamples": 12,
+  "allObservedSamples": 13,
+  "interruption": "Nov14 execution stopped after 10 samples. Same-build resume rejected updated Edge157.0.4341.60 versus157.0.4341.57. Original unfinished attempt and failed resume retained. Last Three overview cell measured fresh ABA on60; original singleA on57 retained as extra unbalanced evidence.",
+  "measurementLimits": [
+    "400y natural mortal input with fresh formal child control realms; not naturally aged three realms.",
+    "CPU span wall != GPU time; rAF interval includes scheduling. No CPU profile collected in B.",
+    "Primitive slot bytes/object counts are implementation estimates, not exact heap allocation. Heap usage separately measured after GC.",
+    "No causal speedup claim from cross-build, cross-date samples. Synchronous queued days are zero; wall target deficit is not a hidden queue.",
+    "Input time includes CDP transport, next-rAF visibility, and deliberately held gesture; release latency is separate.",
+    "100y native equivalence exists; B formal browser performance covers only400y."
+  ],
+  "cells": {
+    "Edg/157.0.4341.57/canvas/detail": {
+      "trials": [
+        "400-canvas-detail-s2-r0-0-A",
+        "400-canvas-detail-s2-r0-1-B",
+        "400-canvas-detail-s2-r0-2-A"
+      ],
+      "jsP95Range": [
+        109.39999999850988,
+        136.79999999701977
+      ],
+      "completedDaysPerSecondRange": [
+        5.508698206547786,
+        5.8029958392822385
+      ]
+    },
+    "Edg/157.0.4341.57/3d/detail": {
+      "trials": [
+        "400-3d-detail-s2-r0-3-A",
+        "400-3d-detail-s2-r0-4-B",
+        "400-3d-detail-s2-r0-5-A"
+      ],
+      "jsP95Range": [
+        87.89999999850988,
+        121.19999999925494
+      ],
+      "completedDaysPerSecondRange": [
+        5.4979661827722355,
+        5.979484046979548
+      ]
+    },
+    "Edg/157.0.4341.57/canvas/overview": {
+      "trials": [
+        "400-canvas-overview-s2-r0-6-A",
+        "400-canvas-overview-s2-r0-7-B",
+        "400-canvas-overview-s2-r0-8-A"
+      ],
+      "jsP95Range": [
+        121.29999999701977,
+        157.89999999850988
+      ],
+      "completedDaysPerSecondRange": [
+        4.318186361734842,
+        4.893814096377836
+      ]
+    },
+    "Edg/157.0.4341.60/3d/overview": {
+      "trials": [
+        "400-3d-overview-s2-r0-0-A",
+        "400-3d-overview-s2-r0-1-B",
+        "400-3d-overview-s2-r0-2-A"
+      ],
+      "jsP95Range": [
+        73.60000000149012,
+        93.5
+      ],
+      "completedDaysPerSecondRange": [
+        5.966092127618221,
+        5.994000677563829
+      ]
+    }
+  },
+  "samples": [
+    {
+      "id": "400-canvas-detail-s2-r0-0-A",
+      "origin": "browser-formal",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.57",
+      "renderer": "canvas",
+      "view": "detail",
+      "mode": "A",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal/400-canvas-detail-s2-r0-0-A.json",
+      "rawSha256": "66f4e63a2472e3fa3abc9a1f2f12d8642354e992a4a22aaa2b8c7a16e02ae85d",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30115.099999997765,
+      "frameCount": 342,
+      "jsFrameMs": {
+        "calls": 342,
+        "p50": 75,
+        "p95": 136.79999999701977,
+        "p99": 166,
+        "max": 218.10000000149012,
+        "total": 29430.099999975413
+      },
+      "rafIntervalMs": {
+        "calls": 341,
+        "p50": 83.29999999999927,
+        "p95": 149.89999999999964,
+        "p99": 166.70000000000073,
+        "max": 233.40000000000146,
+        "total": 30049.90000000001
+      },
+      "longTaskMs": {
+        "calls": 342,
+        "p50": 76,
+        "p95": 138,
+        "p99": 170,
+        "max": 220,
+        "total": 29850
+      },
+      "over50msJs": 342,
+      "over50msJsFraction": 1,
+      "completedDays": 174.75779999955557,
+      "completedDaysPerSecond": 5.8029958392822385,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 5.932800000431001,
+      "publicationMs": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "total": 0
+      },
+      "publicationCount": 0,
+      "costs": {
+        "entityCopies": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedElements": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedLayers": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedObjects": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        }
+      },
+      "heapBefore": {
+        "usedSize": 32307428,
+        "totalSize": 35016704,
+        "embedderHeapUsedSize": 5371688,
+        "backingStorageSize": 18559201
+      },
+      "heapAfter": {
+        "usedSize": 33554296,
+        "totalSize": 35540992,
+        "embedderHeapUsedSize": 5696608,
+        "backingStorageSize": 18573375
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 104,
+        "p95": 121,
+        "p99": 121,
+        "max": 121,
+        "total": 850
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 126,
+        "p95": 170,
+        "p99": 170,
+        "max": 170,
+        "total": 1076
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 282,
+        "p95": 324,
+        "p99": 324,
+        "max": 324,
+        "total": 2298
+      },
+      "rendererState": {
+        "threeActive": false,
+        "webgl": null,
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      },
+      "segments": {}
+    },
+    {
+      "id": "400-canvas-detail-s2-r0-1-B",
+      "origin": "browser-formal",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.57",
+      "renderer": "canvas",
+      "view": "detail",
+      "mode": "B",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal/400-canvas-detail-s2-r0-1-B.json",
+      "rawSha256": "56530c8079f8f6d179ea9723791874d054bffc0d0e170b815492ff7d485c94da",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30126.900000002235,
+      "frameCount": 362,
+      "jsFrameMs": {
+        "calls": 362,
+        "p50": 70.70000000298023,
+        "p95": 109.39999999850988,
+        "p99": 151,
+        "max": 175.69999999925494,
+        "total": 26828.80000001192
+      },
+      "rafIntervalMs": {
+        "calls": 361,
+        "p50": 66.79999999999927,
+        "p95": 116.70000000000073,
+        "p99": 166.59999999999854,
+        "max": 183.5,
+        "total": 27900.1
+      },
+      "longTaskMs": {
+        "calls": 315,
+        "p50": 77,
+        "p95": 114,
+        "p99": 152,
+        "max": 177,
+        "total": 25095
+      },
+      "over50msJs": 308,
+      "over50msJsFraction": 0.850828729281768,
+      "completedDays": 165.9599999988568,
+      "completedDaysPerSecond": 5.508698206547786,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 14.801400001156594,
+      "publicationMs": {
+        "count": 362,
+        "p50": 0.9000000022351742,
+        "p95": 2.800000000745058,
+        "p99": 11.900000002235174,
+        "max": 12.399999998509884,
+        "total": 496.1000000089407
+      },
+      "publicationCount": 362,
+      "costs": {
+        "entityCopies": {
+          "count": 362,
+          "p50": 2812,
+          "p95": 2824,
+          "p99": 2824,
+          "max": 2824,
+          "total": 1018228
+        },
+        "terrainCopiedElements": {
+          "count": 362,
+          "p50": 0,
+          "p95": 51200,
+          "p99": 128000,
+          "max": 128000,
+          "total": 1996800
+        },
+        "terrainCopiedLayers": {
+          "count": 362,
+          "p50": 0,
+          "p95": 2,
+          "p99": 5,
+          "max": 5,
+          "total": 78
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 362,
+          "p50": 426456,
+          "p95": 836944,
+          "p99": 1451344,
+          "max": 1451936,
+          "total": 170297584
+        },
+        "estimatedObjects": {
+          "count": 362,
+          "p50": 2953,
+          "p95": 2964,
+          "p99": 2967,
+          "max": 2969,
+          "total": 1069103
+        }
+      },
+      "heapBefore": {
+        "usedSize": 29968228,
+        "totalSize": 32628736,
+        "embedderHeapUsedSize": 4567872,
+        "backingStorageSize": 18118816
+      },
+      "heapAfter": {
+        "usedSize": 33332432,
+        "totalSize": 35016704,
+        "embedderHeapUsedSize": 5482480,
+        "backingStorageSize": 18573204
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 117,
+        "p95": 195,
+        "p99": 195,
+        "max": 195,
+        "total": 1059
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 127,
+        "p95": 145,
+        "p99": 145,
+        "max": 145,
+        "total": 1023
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 287,
+        "p95": 326,
+        "p99": 326,
+        "max": 326,
+        "total": 2349
+      },
+      "rendererState": {
+        "threeActive": false,
+        "webgl": null,
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      },
+      "segments": {
+        "update.cameraFocus": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.7000000104308128
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.7000000104308128
+          }
+        },
+        "update.stage": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.30000000074505806,
+            "max": 0.5,
+            "total": 26.10000003129244
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.30000000074505806,
+            "max": 0.5,
+            "total": 26.10000003129244
+          }
+        },
+        "update.combatObservation": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.19999999925494194,
+            "total": 2.800000000745058
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.19999999925494194,
+            "total": 2.800000000745058
+          }
+        },
+        "update.clock": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "advance.wanling": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0.19999999925494194,
+            "p95": 0.5999999977648258,
+            "p99": 2.099999997764826,
+            "max": 5.399999998509884,
+            "total": 96.69999995827675
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0.19999999925494194,
+            "p95": 0.5999999977648258,
+            "p99": 2.099999997764826,
+            "max": 5.399999998509884,
+            "total": 96.69999995827675
+          }
+        },
+        "life.prepare": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0.10000000149011612,
+            "p95": 0.30000000074505806,
+            "p99": 0.6000000014901161,
+            "max": 1,
+            "total": 48.200000029057264
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0.10000000149011612,
+            "p95": 0.30000000074505806,
+            "p99": 0.6000000014901161,
+            "max": 1,
+            "total": 48.200000029057264
+          }
+        },
+        "life.entity-loop": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 60.599999997764826,
+            "p95": 94,
+            "p99": 125.80000000074506,
+            "max": 159.20000000298023,
+            "total": 22809.79999998212
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 60.599999997764826,
+            "p95": 94,
+            "p99": 125.80000000074506,
+            "max": 159.20000000298023,
+            "total": 22809.79999998212
+          }
+        },
+        "life.villages": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0.7000000029802322,
+            "p95": 1.5,
+            "p99": 2.199999999254942,
+            "max": 3.5,
+            "total": 310.29999999701977
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0.7000000029802322,
+            "p95": 1.5,
+            "p99": 2.199999999254942,
+            "max": 3.5,
+            "total": 310.29999999701977
+          }
+        },
+        "life.sects": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0.7000000029802322,
+            "p95": 1.3999999985098839,
+            "p99": 9.599999997764826,
+            "max": 18.099999997764826,
+            "total": 356.10000002384186
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0.7000000029802322,
+            "p95": 1.3999999985098839,
+            "p99": 9.599999997764826,
+            "max": 18.099999997764826,
+            "total": 356.10000002384186
+          }
+        },
+        "life.war": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.7999999895691872
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.7999999895691872
+          }
+        },
+        "life.relations": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.30000000074505806,
+            "max": 0.5999999977648258,
+            "total": 23.599999997764826
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.30000000074505806,
+            "max": 0.5999999977648258,
+            "total": 23.599999997764826
+          }
+        },
+        "life.family": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0.10000000149011612,
+            "total": 0.30000000074505806
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0.10000000149011612,
+            "total": 0.30000000074505806
+          }
+        },
+        "life.sites": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 6.399999998509884,
+            "max": 12.5,
+            "total": 66.799999948591
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 6.399999998509884,
+            "max": 12.5,
+            "total": 66.799999948591
+          }
+        },
+        "life.post": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 1.800000000745058,
+            "p95": 4,
+            "p99": 11.5,
+            "max": 19.5,
+            "total": 832.9999999925494
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0.19999999925494194,
+            "p95": 0.5,
+            "p99": 0.7000000029802322,
+            "max": 2.800000000745058,
+            "total": 74.10000003501773
+          }
+        },
+        "life": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 62.80000000074506,
+            "p95": 96.69999999925494,
+            "p99": 131.19999999925494,
+            "max": 163.69999999925494,
+            "total": 23693.19999999553
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 2.1999999918043613
+          }
+        },
+        "advance.daoActivities": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 3.600000001490116,
+            "max": 19,
+            "total": 43.19999999925494
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 3.600000001490116,
+            "max": 19,
+            "total": 43.19999999925494
+          }
+        },
+        "advance.nature": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 1.5,
+            "total": 4.400000017136335
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 1.5,
+            "total": 4.400000017136335
+          }
+        },
+        "advance.transit": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 2.199999999254942,
+            "max": 5.900000002235174,
+            "total": 15.600000001490116
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 2.199999999254942,
+            "max": 5.900000002235174,
+            "total": 15.600000001490116
+          }
+        },
+        "advanceWorld": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 63.29999999701977,
+            "p95": 97.30000000074506,
+            "p99": 133.69999999925494,
+            "max": 164.10000000149012,
+            "total": 23876.899999994785
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.5,
+            "max": 1.4000000022351742,
+            "total": 8.8000000230968
+          }
+        },
+        "readView.cache": {
+          "inclusiveMs": {
+            "calls": 1448,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 1448,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "readView.renderFrame": {
+          "inclusiveMs": {
+            "calls": 1086,
+            "p50": 0,
+            "p95": 1.199999999254942,
+            "p99": 1.6000000014901161,
+            "max": 2.7999999970197678,
+            "total": 339.40000005438924
+          },
+          "exclusiveMs": {
+            "calls": 1086,
+            "p50": 0,
+            "p95": 1.199999999254942,
+            "p99": 1.6000000014901161,
+            "max": 2.7999999970197678,
+            "total": 339.40000005438924
+          }
+        },
+        "readView.publishCost": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "readView.publishComplete": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0.9000000022351742,
+            "p95": 2.800000000745058,
+            "p99": 11.900000002235174,
+            "max": 12.399999998509884,
+            "total": 496.1000000089407
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0.10000000149011612,
+            "p95": 1.800000000745058,
+            "p99": 10.299999997019768,
+            "max": 11.00000000372529,
+            "total": 156.69999995455146
+          }
+        },
+        "update.advanceDays": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 64.19999999925494,
+            "p95": 98.5,
+            "p99": 138.39999999850988,
+            "max": 165.90000000223517,
+            "total": 24376.599999990314
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 3.599999986588955
+          }
+        },
+        "update": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 65.79999999701977,
+            "p95": 99.79999999701977,
+            "p99": 138.60000000149012,
+            "max": 166.20000000298023,
+            "total": 24760.499999996275
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.19999999925494194,
+            "max": 0.20000000298023224,
+            "total": 6.899999976158142
+          }
+        },
+        "render.three": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.4000000059604645
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.4000000059604645
+          }
+        },
+        "render.canvas.terrain": {
+          "inclusiveMs": {
+            "calls": 187,
+            "p50": 1.4000000022351742,
+            "p95": 2.300000000745058,
+            "p99": 6.5,
+            "max": 12.399999998509884,
+            "total": 304.1000000014901
+          },
+          "exclusiveMs": {
+            "calls": 187,
+            "p50": 1.4000000022351742,
+            "p95": 2.300000000745058,
+            "p99": 6.5,
+            "max": 12.399999998509884,
+            "total": 304.1000000014901
+          }
+        },
+        "render.canvas": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 5.400000002235174,
+            "p95": 8.699999999254942,
+            "p99": 12,
+            "max": 18.100000001490116,
+            "total": 1999.1999999918044
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 4.399999998509884,
+            "p95": 7,
+            "p99": 9,
+            "max": 11.299999997019768,
+            "total": 1695.0999999903142
+          }
+        },
+        "render": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 5.5,
+            "p95": 8.800000000745058,
+            "p99": 12,
+            "max": 18.600000001490116,
+            "total": 2025.7000000104308
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.30000000074505806,
+            "p99": 0.5,
+            "max": 1.199999999254942,
+            "total": 26.100000012665987
+          }
+        },
+        "observeEcho.project": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.20000000298023224,
+            "max": 0.4000000022351742,
+            "total": 26.700000032782555
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.20000000298023224,
+            "max": 0.4000000022351742,
+            "total": 26.700000032782555
+          }
+        },
+        "frame": {
+          "inclusiveMs": {
+            "calls": 362,
+            "p50": 70.69999999925494,
+            "p95": 109.39999999850988,
+            "p99": 150.90000000223517,
+            "max": 175.60000000149012,
+            "total": 26822.200000029057
+          },
+          "exclusiveMs": {
+            "calls": 362,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.19999999925494194,
+            "max": 0.20000000298023224,
+            "total": 9.299999989569187
+          }
+        },
+        "hud.worldStats": {
+          "inclusiveMs": {
+            "calls": 97,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.9000000022351742,
+            "max": 0.9000000022351742,
+            "total": 18.700000006705523
+          },
+          "exclusiveMs": {
+            "calls": 97,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.9000000022351742,
+            "max": 0.9000000022351742,
+            "total": 18.700000006705523
+          }
+        },
+        "update.hud": {
+          "inclusiveMs": {
+            "calls": 97,
+            "p50": 3.2999999970197678,
+            "p95": 4.800000000745058,
+            "p99": 12.699999999254942,
+            "max": 12.699999999254942,
+            "total": 346.399999987334
+          },
+          "exclusiveMs": {
+            "calls": 97,
+            "p50": 3.100000001490116,
+            "p95": 4.600000001490116,
+            "p99": 12,
+            "max": 12,
+            "total": 327.6999999806285
+          }
+        },
+        "advance.upper": {
+          "inclusiveMs": {
+            "calls": 16,
+            "p50": 0.3999999985098839,
+            "p95": 2.699999999254942,
+            "p99": 2.699999999254942,
+            "max": 2.699999999254942,
+            "total": 9.799999997019768
+          },
+          "exclusiveMs": {
+            "calls": 16,
+            "p50": 0.3999999985098839,
+            "p95": 2.699999999254942,
+            "p99": 2.699999999254942,
+            "max": 2.699999999254942,
+            "total": 9.799999997019768
+          }
+        },
+        "advance.nether": {
+          "inclusiveMs": {
+            "calls": 16,
+            "p50": 0,
+            "p95": 4.100000001490116,
+            "p99": 4.100000001490116,
+            "max": 4.100000001490116,
+            "total": 5.100000005215406
+          },
+          "exclusiveMs": {
+            "calls": 16,
+            "p50": 0,
+            "p95": 4.100000001490116,
+            "p99": 4.100000001490116,
+            "max": 4.100000001490116,
+            "total": 5.100000005215406
+          }
+        },
+        "advance.wraith": {
+          "inclusiveMs": {
+            "calls": 16,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.09999999776482582,
+            "max": 0.09999999776482582,
+            "total": 0.09999999776482582
+          },
+          "exclusiveMs": {
+            "calls": 16,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.09999999776482582,
+            "max": 0.09999999776482582,
+            "total": 0.09999999776482582
+          }
+        }
+      }
+    },
+    {
+      "id": "400-canvas-detail-s2-r0-2-A",
+      "origin": "browser-formal",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.57",
+      "renderer": "canvas",
+      "view": "detail",
+      "mode": "A",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal/400-canvas-detail-s2-r0-2-A.json",
+      "rawSha256": "dfe97e6008cd510abe436a7dea6e8faf3d6f0a8113dafc283b79e850fb8eb415",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30138.5,
+      "frameCount": 339,
+      "jsFrameMs": {
+        "calls": 339,
+        "p50": 79.59999999776483,
+        "p95": 135.19999999925494,
+        "p99": 161.30000000074506,
+        "max": 223.5,
+        "total": 29252.799999944866
+      },
+      "rafIntervalMs": {
+        "calls": 338,
+        "p50": 83.30000000000291,
+        "p95": 149.89999999999964,
+        "p99": 166.70000000000073,
+        "max": 250.09999999999854,
+        "total": 30050.09999999999
+      },
+      "longTaskMs": {
+        "calls": 338,
+        "p50": 81,
+        "p95": 139,
+        "p99": 165,
+        "max": 234,
+        "total": 29754
+      },
+      "over50msJs": 338,
+      "over50msJsFraction": 0.9970501474926253,
+      "completedDays": 173.9429999993008,
+      "completedDaysPerSecond": 5.7714551155266784,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 6.888000000699208,
+      "publicationMs": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "total": 0
+      },
+      "publicationCount": 0,
+      "costs": {
+        "entityCopies": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedElements": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedLayers": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedObjects": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        }
+      },
+      "heapBefore": {
+        "usedSize": 27964476,
+        "totalSize": 30908416,
+        "embedderHeapUsedSize": 5198760,
+        "backingStorageSize": 15396085
+      },
+      "heapAfter": {
+        "usedSize": 29497780,
+        "totalSize": 30646272,
+        "embedderHeapUsedSize": 5647840,
+        "backingStorageSize": 15396534
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 142,
+        "p95": 326,
+        "p99": 326,
+        "max": 326,
+        "total": 1360
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 160,
+        "p95": 311,
+        "p99": 311,
+        "max": 311,
+        "total": 1404
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 325,
+        "p95": 518,
+        "p99": 518,
+        "max": 518,
+        "total": 2817
+      },
+      "rendererState": {
+        "threeActive": false,
+        "webgl": null,
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      },
+      "segments": {}
+    },
+    {
+      "id": "400-3d-detail-s2-r0-3-A",
+      "origin": "browser-formal",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.57",
+      "renderer": "3d",
+      "view": "detail",
+      "mode": "A",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal/400-3d-detail-s2-r0-3-A.json",
+      "rawSha256": "24908468078a8e3718adab715f0528d5f7424834144935f61c8050b43badd163",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30097.20000000298,
+      "frameCount": 433,
+      "jsFrameMs": {
+        "calls": 433,
+        "p50": 66.39999999850988,
+        "p95": 100.20000000298023,
+        "p99": 131.80000000074506,
+        "max": 170.59999999776483,
+        "total": 29644.90000005439
+      },
+      "rafIntervalMs": {
+        "calls": 432,
+        "p50": 66.69999999999709,
+        "p95": 100.09999999999854,
+        "p99": 133.40000000000146,
+        "max": 166.70000000000073,
+        "total": 30000
+      },
+      "longTaskMs": {
+        "calls": 382,
+        "p50": 69,
+        "p95": 104,
+        "p99": 133,
+        "max": 171,
+        "total": 27390
+      },
+      "over50msJs": 378,
+      "over50msJsFraction": 0.8729792147806005,
+      "completedDays": 178.96019999851706,
+      "completedDaysPerSecond": 5.946074717864098,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 1.6230000015008272,
+      "publicationMs": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "total": 0
+      },
+      "publicationCount": 0,
+      "costs": {
+        "entityCopies": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedElements": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedLayers": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedObjects": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        }
+      },
+      "heapBefore": {
+        "usedSize": 44288280,
+        "totalSize": 46796800,
+        "embedderHeapUsedSize": 6137544,
+        "backingStorageSize": 68484164
+      },
+      "heapAfter": {
+        "usedSize": 46099096,
+        "totalSize": 48369664,
+        "embedderHeapUsedSize": 6467584,
+        "backingStorageSize": 68728889
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 73,
+        "p95": 100,
+        "p99": 100,
+        "max": 100,
+        "total": 620
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 130,
+        "p95": 163,
+        "p99": 163,
+        "max": 163,
+        "total": 1046
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 307,
+        "p95": 335,
+        "p99": 335,
+        "max": 335,
+        "total": 2519
+      },
+      "rendererState": {
+        "threeActive": true,
+        "webgl": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "calls": 40
+        },
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 9,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 2
+          }
+        }
+      },
+      "segments": {}
+    },
+    {
+      "id": "400-3d-detail-s2-r0-4-B",
+      "origin": "browser-formal",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.57",
+      "renderer": "3d",
+      "view": "detail",
+      "mode": "B",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal/400-3d-detail-s2-r0-4-B.json",
+      "rawSha256": "f1a47471e5263254047dfa05cc602f2239687073ddd76f9690190e04e6c8b058",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30091.199999999255,
+      "frameCount": 348,
+      "jsFrameMs": {
+        "calls": 348,
+        "p50": 75.19999999925494,
+        "p95": 121.19999999925494,
+        "p99": 138.90000000223517,
+        "max": 149.09999999776483,
+        "total": 27420.60000000894
+      },
+      "rafIntervalMs": {
+        "calls": 347,
+        "p50": 83.29999999999563,
+        "p95": 116.70000000000437,
+        "p99": 150,
+        "max": 1600,
+        "total": 30016.699999999997
+      },
+      "longTaskMs": {
+        "calls": 341,
+        "p50": 76,
+        "p95": 123,
+        "p99": 141,
+        "max": 149,
+        "total": 27208
+      },
+      "over50msJs": 341,
+      "over50msJsFraction": 0.9798850574712644,
+      "completedDays": 165.4403999990318,
+      "completedDaysPerSecond": 5.4979661827722355,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 15.106800000963744,
+      "publicationMs": {
+        "count": 348,
+        "p50": 0.8000000007450581,
+        "p95": 1.8999999985098839,
+        "p99": 4.5,
+        "max": 14.700000002980232,
+        "total": 370.9999999925494
+      },
+      "publicationCount": 348,
+      "costs": {
+        "entityCopies": {
+          "count": 348,
+          "p50": 2812,
+          "p95": 2822,
+          "p99": 2822,
+          "max": 2822,
+          "total": 977622
+        },
+        "terrainCopiedElements": {
+          "count": 348,
+          "p50": 0,
+          "p95": 0,
+          "p99": 76800,
+          "max": 128000,
+          "total": 716800
+        },
+        "terrainCopiedLayers": {
+          "count": 348,
+          "p50": 0,
+          "p95": 0,
+          "p99": 3,
+          "max": 5,
+          "total": 28
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 348,
+          "p50": 426256,
+          "p95": 427640,
+          "p99": 1041048,
+          "max": 1450848,
+          "total": 153925016
+        },
+        "estimatedObjects": {
+          "count": 348,
+          "p50": 2953,
+          "p95": 2962,
+          "p99": 2962,
+          "max": 2964,
+          "total": 1026663
+        }
+      },
+      "heapBefore": {
+        "usedSize": 44045228,
+        "totalSize": 45596672,
+        "embedderHeapUsedSize": 6231072,
+        "backingStorageSize": 68484716
+      },
+      "heapAfter": {
+        "usedSize": 46014580,
+        "totalSize": 47693824,
+        "embedderHeapUsedSize": 6330112,
+        "backingStorageSize": 68729397
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 52,
+        "p95": 101,
+        "p99": 101,
+        "max": 101,
+        "total": 467
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 83,
+        "p95": 117,
+        "p99": 117,
+        "max": 117,
+        "total": 719
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 250,
+        "p95": 356,
+        "p99": 356,
+        "max": 356,
+        "total": 2120
+      },
+      "rendererState": {
+        "threeActive": true,
+        "webgl": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "calls": 39
+        },
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 9,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 2
+          }
+        }
+      },
+      "segments": {
+        "update.cameraFocus": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.1000000014901161
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.1000000014901161
+          }
+        },
+        "update.stage": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0.09999999776482582,
+            "p95": 0.20000000298023224,
+            "p99": 0.5,
+            "max": 0.6000000014901161,
+            "total": 27.600000016391277
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0.09999999776482582,
+            "p95": 0.20000000298023224,
+            "p99": 0.5,
+            "max": 0.6000000014901161,
+            "total": 27.600000016391277
+          }
+        },
+        "update.combatObservation": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 2.700000010430813
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 2.700000010430813
+          }
+        },
+        "update.clock": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "advance.wanling": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.20000000298023224,
+            "p99": 1.8999999985098839,
+            "max": 3,
+            "total": 26.099999997764826
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.20000000298023224,
+            "p99": 1.8999999985098839,
+            "max": 3,
+            "total": 26.099999997764826
+          }
+        },
+        "life.prepare": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0.19999999925494194,
+            "p95": 0.3999999985098839,
+            "p99": 0.8000000007450581,
+            "max": 1.300000000745058,
+            "total": 62.50000001490116
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0.19999999925494194,
+            "p95": 0.3999999985098839,
+            "p99": 0.8000000007450581,
+            "max": 1.300000000745058,
+            "total": 62.50000001490116
+          }
+        },
+        "life.entity-loop": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 65,
+            "p95": 104.29999999701977,
+            "p99": 126.10000000149012,
+            "max": 131.19999999925494,
+            "total": 23873.50000002235
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 65,
+            "p95": 104.29999999701977,
+            "p99": 126.10000000149012,
+            "max": 131.19999999925494,
+            "total": 23873.50000002235
+          }
+        },
+        "life.villages": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0.6999999992549419,
+            "p95": 1.5,
+            "p99": 2,
+            "max": 3,
+            "total": 291.0000000447035
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0.6999999992549419,
+            "p95": 1.5,
+            "p99": 2,
+            "max": 3,
+            "total": 291.0000000447035
+          }
+        },
+        "life.sects": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0.8000000007450581,
+            "p95": 1.5,
+            "p99": 9.299999997019768,
+            "max": 12.800000000745058,
+            "total": 356.0000000335276
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0.8000000007450581,
+            "p95": 1.5,
+            "p99": 9.299999997019768,
+            "max": 12.800000000745058,
+            "total": 356.0000000335276
+          }
+        },
+        "life.war": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 2.399999987334013
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 2.399999987334013
+          }
+        },
+        "life.relations": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.20000000298023224,
+            "max": 0.9000000022351742,
+            "total": 20.69999999180436
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.20000000298023224,
+            "max": 0.9000000022351742,
+            "total": 20.69999999180436
+          }
+        },
+        "life.family": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0.10000000149011612,
+            "total": 0.30000000074505806
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0.10000000149011612,
+            "total": 0.30000000074505806
+          }
+        },
+        "life.sites": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 5.199999999254942,
+            "max": 10.800000000745058,
+            "total": 62.69999999180436
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 5.199999999254942,
+            "max": 10.800000000745058,
+            "total": 62.69999999180436
+          }
+        },
+        "life.post": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 1.8999999985098839,
+            "p95": 3.699999999254942,
+            "p99": 10.399999998509884,
+            "max": 14.800000000745058,
+            "total": 798.2999999709427
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0.19999999552965164,
+            "p95": 0.5,
+            "p99": 0.7999999970197678,
+            "max": 1,
+            "total": 65.19999992102385
+          }
+        },
+        "life": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 67.5,
+            "p95": 108.19999999925494,
+            "p99": 128.90000000223517,
+            "max": 134.60000000149012,
+            "total": 24736.399999987334
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 2.0999999791383743
+          }
+        },
+        "advance.daoActivities": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0,
+            "p99": 4.100000001490116,
+            "max": 6.600000001490116,
+            "total": 26.900000002235174
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0,
+            "p99": 4.100000001490116,
+            "max": 6.600000001490116,
+            "total": 26.900000002235174
+          }
+        },
+        "advance.nature": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.20000000298023224,
+            "total": 2.100000012665987
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.20000000298023224,
+            "total": 2.100000012665987
+          }
+        },
+        "advance.transit": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.6000000014901161,
+            "max": 4.5,
+            "total": 13.300000000745058
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.6000000014901161,
+            "max": 4.5,
+            "total": 13.300000000745058
+          }
+        },
+        "advanceWorld": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 67.5,
+            "p95": 108.19999999925494,
+            "p99": 129,
+            "max": 134.60000000149012,
+            "total": 24820.99999999255
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.30000000074505806,
+            "max": 0.5,
+            "total": 7.199999995529652
+          }
+        },
+        "readView.cache": {
+          "inclusiveMs": {
+            "calls": 1337,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 1337,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "readView.renderFrame": {
+          "inclusiveMs": {
+            "calls": 1044,
+            "p50": 0,
+            "p95": 1.1000000014901161,
+            "p99": 1.5,
+            "max": 2.300000000745058,
+            "total": 293.30000000447035
+          },
+          "exclusiveMs": {
+            "calls": 1044,
+            "p50": 0,
+            "p95": 1.1000000014901161,
+            "p99": 1.5,
+            "max": 2.300000000745058,
+            "total": 293.30000000447035
+          }
+        },
+        "readView.publishCost": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "readView.publishComplete": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0.8000000007450581,
+            "p95": 1.8999999985098839,
+            "p99": 4.5,
+            "max": 14.700000002980232,
+            "total": 370.9999999925494
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0.10000000149011612,
+            "p95": 0.3999999985098839,
+            "p99": 3,
+            "max": 13.300000000745058,
+            "total": 77.69999998807907
+          }
+        },
+        "update.advanceDays": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 68.5,
+            "p95": 109.89999999850988,
+            "p99": 129.89999999850988,
+            "max": 136.69999999925494,
+            "total": 25197.099999990314
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.19999999552965164,
+            "max": 0.30000000074505806,
+            "total": 5.100000005215406
+          }
+        },
+        "hud.worldStats": {
+          "inclusiveMs": {
+            "calls": 95,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.4000000022351742,
+            "max": 0.4000000022351742,
+            "total": 18.800000000745058
+          },
+          "exclusiveMs": {
+            "calls": 95,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.4000000022351742,
+            "max": 0.4000000022351742,
+            "total": 18.800000000745058
+          }
+        },
+        "update.hud": {
+          "inclusiveMs": {
+            "calls": 95,
+            "p50": 3.600000001490116,
+            "p95": 6.399999998509884,
+            "p99": 7.5,
+            "max": 7.5,
+            "total": 364.80000000819564
+          },
+          "exclusiveMs": {
+            "calls": 95,
+            "p50": 3.399999998509884,
+            "p95": 6.199999999254942,
+            "p99": 7.100000001490116,
+            "max": 7.100000001490116,
+            "total": 346.0000000074506
+          }
+        },
+        "update": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 69.89999999850988,
+            "p95": 113.19999999925494,
+            "p99": 133.10000000149012,
+            "max": 136.89999999850988,
+            "total": 25602.500000026077
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.20000000298023224,
+            "max": 0.4000000022351742,
+            "total": 9.199999999254942
+          }
+        },
+        "deriveEntities": {
+          "inclusiveMs": {
+            "calls": 293,
+            "p50": 0.20000000298023224,
+            "p95": 0.5999999977648258,
+            "p99": 1.2999999970197678,
+            "max": 2.300000000745058,
+            "total": 85.09999997541308
+          },
+          "exclusiveMs": {
+            "calls": 293,
+            "p50": 0.20000000298023224,
+            "p95": 0.5999999977648258,
+            "p99": 1.2999999970197678,
+            "max": 2.300000000745058,
+            "total": 85.09999997541308
+          }
+        },
+        "webgl.schedule.bufferSubData": {
+          "inclusiveMs": {
+            "calls": 16366,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.5,
+            "total": 169.10000001639128
+          },
+          "exclusiveMs": {
+            "calls": 16366,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.5,
+            "total": 169.10000001639128
+          }
+        },
+        "three.gpuSubmission": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 1.800000000745058,
+            "p95": 3.600000001490116,
+            "p99": 5.800000000745058,
+            "max": 17.800000000745058,
+            "total": 717.8999999575317
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 1.3999999947845936,
+            "p95": 2.899999998509884,
+            "p99": 4.699999995529652,
+            "max": 17.100000008940697,
+            "total": 548.2999999374151
+          }
+        },
+        "render.three": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 4.399999998509884,
+            "p95": 8.5,
+            "p99": 13,
+            "max": 20,
+            "total": 1635.800000000745
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 2.199999999254942,
+            "p95": 4.699999999254942,
+            "p99": 9.100000005215406,
+            "max": 14.600000001490116,
+            "total": 832.8000000678003
+          }
+        },
+        "render": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 4.5,
+            "p95": 8.799999997019768,
+            "p99": 13,
+            "max": 20,
+            "total": 1688.9999999776483
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0.10000000149011612,
+            "p95": 0.5,
+            "p99": 0.8999999985098839,
+            "max": 1.300000000745058,
+            "total": 53.1999999769032
+          }
+        },
+        "observeEcho.project": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 0.30000000074505806,
+            "p95": 0.6000000014901161,
+            "p99": 0.8999999985098839,
+            "max": 1.5,
+            "total": 113.09999998658895
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0.30000000074505806,
+            "p95": 0.6000000014901161,
+            "p99": 0.8999999985098839,
+            "max": 1.5,
+            "total": 113.09999998658895
+          }
+        },
+        "frame": {
+          "inclusiveMs": {
+            "calls": 348,
+            "p50": 75.19999999925494,
+            "p95": 121.10000000149012,
+            "p99": 138.80000000074506,
+            "max": 148.90000000223517,
+            "total": 27414.39999999851
+          },
+          "exclusiveMs": {
+            "calls": 348,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.20000000298023224,
+            "max": 0.20000000298023224,
+            "total": 9.800000008195639
+          }
+        },
+        "webgl.schedule.bufferData": {
+          "inclusiveMs": {
+            "calls": 12,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          },
+          "exclusiveMs": {
+            "calls": 12,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          }
+        },
+        "webgl.schedule.texSubImage2D": {
+          "inclusiveMs": {
+            "calls": 8,
+            "p50": 0,
+            "p95": 0.19999999925494194,
+            "p99": 0.19999999925494194,
+            "max": 0.19999999925494194,
+            "total": 0.4000000022351742
+          },
+          "exclusiveMs": {
+            "calls": 8,
+            "p50": 0,
+            "p95": 0.19999999925494194,
+            "p99": 0.19999999925494194,
+            "max": 0.19999999925494194,
+            "total": 0.4000000022351742
+          }
+        },
+        "advance.upper": {
+          "inclusiveMs": {
+            "calls": 16,
+            "p50": 0.5,
+            "p95": 1.199999999254942,
+            "p99": 1.199999999254942,
+            "max": 1.199999999254942,
+            "total": 8.599999990314245
+          },
+          "exclusiveMs": {
+            "calls": 16,
+            "p50": 0.5,
+            "p95": 1.199999999254942,
+            "p99": 1.199999999254942,
+            "max": 1.199999999254942,
+            "total": 8.599999990314245
+          }
+        },
+        "advance.nether": {
+          "inclusiveMs": {
+            "calls": 16,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.30000000447034836
+          },
+          "exclusiveMs": {
+            "calls": 16,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.30000000447034836
+          }
+        },
+        "advance.wraith": {
+          "inclusiveMs": {
+            "calls": 16,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          },
+          "exclusiveMs": {
+            "calls": 16,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          }
+        }
+      }
+    },
+    {
+      "id": "400-3d-detail-s2-r0-5-A",
+      "origin": "browser-formal",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.57",
+      "renderer": "3d",
+      "view": "detail",
+      "mode": "A",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal/400-3d-detail-s2-r0-5-A.json",
+      "rawSha256": "a9a67f0543ab05c654fc542d0b2d429afa911971b288a71bc7f89e8983411c99",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30122.900000002235,
+      "frameCount": 451,
+      "jsFrameMs": {
+        "calls": 451,
+        "p50": 65.30000000074506,
+        "p95": 87.89999999850988,
+        "p99": 96.40000000223517,
+        "max": 118.09999999776483,
+        "total": 29709.600000035018
+      },
+      "rafIntervalMs": {
+        "calls": 450,
+        "p50": 66.69999999999709,
+        "p95": 83.40000000000146,
+        "p99": 100,
+        "max": 150,
+        "total": 30016.6
+      },
+      "longTaskMs": {
+        "calls": 432,
+        "p50": 66,
+        "p95": 89,
+        "p99": 96,
+        "max": 144,
+        "total": 28891
+      },
+      "over50msJs": 430,
+      "over50msJsFraction": 0.9534368070953437,
+      "completedDays": 180.1193999987736,
+      "completedDaysPerSecond": 5.979484046979548,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 0.6180000012398352,
+      "publicationMs": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "total": 0
+      },
+      "publicationCount": 0,
+      "costs": {
+        "entityCopies": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedElements": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedLayers": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedObjects": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        }
+      },
+      "heapBefore": {
+        "usedSize": 44349600,
+        "totalSize": 46796800,
+        "embedderHeapUsedSize": 6211152,
+        "backingStorageSize": 68731809
+      },
+      "heapAfter": {
+        "usedSize": 45873556,
+        "totalSize": 47583232,
+        "embedderHeapUsedSize": 6712880,
+        "backingStorageSize": 68732140
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 65,
+        "p95": 118,
+        "p99": 118,
+        "max": 118,
+        "total": 613
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 103,
+        "p95": 138,
+        "p99": 138,
+        "max": 138,
+        "total": 838
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 279,
+        "p95": 356,
+        "p99": 356,
+        "max": 356,
+        "total": 2301
+      },
+      "rendererState": {
+        "threeActive": true,
+        "webgl": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "calls": 74
+        },
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 9,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 1
+          }
+        }
+      },
+      "segments": {}
+    },
+    {
+      "id": "400-canvas-overview-s2-r0-6-A",
+      "origin": "browser-formal",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.57",
+      "renderer": "canvas",
+      "view": "overview",
+      "mode": "A",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal/400-canvas-overview-s2-r0-6-A.json",
+      "rawSha256": "28b94ea2f54826e3079ec819209f489bbd2f1da48adcbbde04c5cdc04084b531",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30077,
+      "frameCount": 198,
+      "jsFrameMs": {
+        "calls": 198,
+        "p50": 85.69999999925494,
+        "p95": 131.19999999925494,
+        "p99": 171,
+        "max": 214.5,
+        "total": 17685.39999995753
+      },
+      "rafIntervalMs": {
+        "calls": 197,
+        "p50": 150,
+        "p95": 183.39999999999418,
+        "p99": 216.6999999999971,
+        "max": 299.9999999999982,
+        "total": 29933.4
+      },
+      "longTaskMs": {
+        "calls": 198,
+        "p50": 88,
+        "p95": 135,
+        "p99": 176,
+        "max": 216,
+        "total": 18154
+      },
+      "over50msJs": 198,
+      "over50msJsFraction": 1,
+      "completedDays": 142.5600000002305,
+      "completedDaysPerSecond": 4.739834424983559,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 37.901999999769515,
+      "publicationMs": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "total": 0
+      },
+      "publicationCount": 0,
+      "costs": {
+        "entityCopies": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedElements": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedLayers": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedObjects": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        }
+      },
+      "heapBefore": {
+        "usedSize": 31185276,
+        "totalSize": 32960512,
+        "embedderHeapUsedSize": 4615120,
+        "backingStorageSize": 18554203
+      },
+      "heapAfter": {
+        "usedSize": 32381500,
+        "totalSize": 33443840,
+        "embedderHeapUsedSize": 4662344,
+        "backingStorageSize": 18568171
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 132,
+        "p95": 248,
+        "p99": 248,
+        "max": 248,
+        "total": 1316
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 157,
+        "p95": 298,
+        "p99": 298,
+        "max": 298,
+        "total": 1381
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 332,
+        "p95": 501,
+        "p99": 501,
+        "max": 501,
+        "total": 2768
+      },
+      "rendererState": {
+        "threeActive": false,
+        "webgl": null,
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      },
+      "segments": {}
+    },
+    {
+      "id": "400-canvas-overview-s2-r0-7-B",
+      "origin": "browser-formal",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.57",
+      "renderer": "canvas",
+      "view": "overview",
+      "mode": "B",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal/400-canvas-overview-s2-r0-7-B.json",
+      "rawSha256": "739fdce344a1a16a7a0d620cc3160178fb15d9b526075f0637a77d23b03147a5",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30013.400000002235,
+      "frameCount": 204,
+      "jsFrameMs": {
+        "calls": 204,
+        "p50": 84,
+        "p95": 121.29999999701977,
+        "p99": 152,
+        "max": 230.79999999701977,
+        "total": 18025.699999999255
+      },
+      "rafIntervalMs": {
+        "calls": 203,
+        "p50": 150,
+        "p95": 166.70000000000073,
+        "p99": 166.79999999999927,
+        "max": 316.6999999999989,
+        "total": 29800
+      },
+      "longTaskMs": {
+        "calls": 204,
+        "p50": 87,
+        "p95": 123,
+        "p99": 154,
+        "max": 233,
+        "total": 18429
+      },
+      "over50msJs": 204,
+      "over50msJsFraction": 1,
+      "completedDays": 146.8800000002375,
+      "completedDaysPerSecond": 4.893814096377836,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 33.200399999775925,
+      "publicationMs": {
+        "count": 204,
+        "p50": 0.9000000022351742,
+        "p95": 3.400000002235174,
+        "p99": 9.100000001490116,
+        "max": 12.799999997019768,
+        "total": 297.39999997988343
+      },
+      "publicationCount": 204,
+      "costs": {
+        "entityCopies": {
+          "count": 204,
+          "p50": 2818,
+          "p95": 2824,
+          "p99": 2824,
+          "max": 2824,
+          "total": 574804
+        },
+        "terrainCopiedElements": {
+          "count": 204,
+          "p50": 0,
+          "p95": 76800,
+          "p99": 128000,
+          "max": 128000,
+          "total": 1587200
+        },
+        "terrainCopiedLayers": {
+          "count": 204,
+          "p50": 0,
+          "p95": 3,
+          "p99": 5,
+          "max": 5,
+          "total": 62
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 204,
+          "p50": 427344,
+          "p95": 1040952,
+          "p99": 1450552,
+          "max": 1451240,
+          "total": 99824048
+        },
+        "estimatedObjects": {
+          "count": 204,
+          "p50": 2960,
+          "p95": 2966,
+          "p99": 2966,
+          "max": 2968,
+          "total": 603621
+        }
+      },
+      "heapBefore": {
+        "usedSize": 33163020,
+        "totalSize": 35540992,
+        "embedderHeapUsedSize": 5737704,
+        "backingStorageSize": 18555392
+      },
+      "heapAfter": {
+        "usedSize": 32625944,
+        "totalSize": 33705984,
+        "embedderHeapUsedSize": 4832920,
+        "backingStorageSize": 18568322
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 113,
+        "p95": 174,
+        "p99": 174,
+        "max": 174,
+        "total": 1011
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 146,
+        "p95": 312,
+        "p99": 312,
+        "max": 312,
+        "total": 1373
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 309,
+        "p95": 515,
+        "p99": 515,
+        "max": 515,
+        "total": 2703
+      },
+      "rendererState": {
+        "threeActive": false,
+        "webgl": null,
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      },
+      "segments": {
+        "update.cameraFocus": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.8999999985098839
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.8999999985098839
+          }
+        },
+        "update.stage": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.30000000074505806,
+            "max": 0.6999999992549419,
+            "total": 19.399999991059303
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.30000000074505806,
+            "max": 0.6999999992549419,
+            "total": 19.399999991059303
+          }
+        },
+        "update.combatObservation": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 2.1000000089406967
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 2.1000000089406967
+          }
+        },
+        "update.clock": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "advance.wanling": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0.09999999776482582,
+            "p95": 0.5,
+            "p99": 2.2999999970197678,
+            "max": 4.199999999254942,
+            "total": 37.49999999627471
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0.09999999776482582,
+            "p95": 0.5,
+            "p99": 2.2999999970197678,
+            "max": 4.199999999254942,
+            "total": 37.49999999627471
+          }
+        },
+        "life.prepare": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.4000000022351742,
+            "max": 0.6999999992549419,
+            "total": 36.39999997615814
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.4000000022351742,
+            "max": 0.6999999992549419,
+            "total": 36.39999997615814
+          }
+        },
+        "life.entity-loop": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 65.5,
+            "p95": 104.5,
+            "p99": 134,
+            "max": 180.09999999776483,
+            "total": 14904.800000045449
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 65.5,
+            "p95": 104.5,
+            "p99": 134,
+            "max": 180.09999999776483,
+            "total": 14904.800000045449
+          }
+        },
+        "life.villages": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0.7999999970197678,
+            "p95": 1.199999999254942,
+            "p99": 1.699999999254942,
+            "max": 2,
+            "total": 166.39999999850988
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0.7999999970197678,
+            "p95": 1.199999999254942,
+            "p99": 1.699999999254942,
+            "max": 2,
+            "total": 166.39999999850988
+          }
+        },
+        "life.sects": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0.7000000029802322,
+            "p95": 1.199999999254942,
+            "p99": 11,
+            "max": 15.800000000745058,
+            "total": 215.399999987334
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0.7000000029802322,
+            "p95": 1.199999999254942,
+            "p99": 11,
+            "max": 15.800000000745058,
+            "total": 215.399999987334
+          }
+        },
+        "life.war": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.9999999962747097
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.9999999962747097
+          }
+        },
+        "life.relations": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0.09999999776482582,
+            "p95": 0.20000000298023224,
+            "p99": 0.3999999985098839,
+            "max": 0.6000000014901161,
+            "total": 17.700000014156103
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0.09999999776482582,
+            "p95": 0.20000000298023224,
+            "p99": 0.3999999985098839,
+            "max": 0.6000000014901161,
+            "total": 17.700000014156103
+          }
+        },
+        "life.family": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          }
+        },
+        "life.sites": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 5.699999999254942,
+            "max": 8,
+            "total": 43.60000001266599
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 5.699999999254942,
+            "max": 8,
+            "total": 43.60000001266599
+          }
+        },
+        "life.post": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 1.8999999985098839,
+            "p95": 4.400000002235174,
+            "p99": 13.099999997764826,
+            "max": 17.199999999254942,
+            "total": 484.8999999947846
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0.19999999552965164,
+            "p95": 0.4999999962747097,
+            "p99": 0.8000000007450581,
+            "max": 2.0000000037252903,
+            "total": 40.69999998435378
+          }
+        },
+        "life": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 67.80000000074506,
+            "p95": 106.80000000074506,
+            "p99": 136.10000000149012,
+            "max": 197.5,
+            "total": 15426.800000019372
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.7000000029802322
+          }
+        },
+        "advance.daoActivities": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 3.399999998509884,
+            "max": 5.600000001490116,
+            "total": 19.299999997019768
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 3.399999998509884,
+            "max": 5.600000001490116,
+            "total": 19.299999997019768
+          }
+        },
+        "advance.nature": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.3000000044703484
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.3000000044703484
+          }
+        },
+        "advance.transit": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 1,
+            "max": 4.099999997764826,
+            "total": 9.699999999254942
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 1,
+            "max": 4.099999997764826,
+            "total": 9.699999999254942
+          }
+        },
+        "advanceWorld": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 69.69999999925494,
+            "p95": 107.19999999925494,
+            "p99": 136.19999999925494,
+            "max": 210.39999999850988,
+            "total": 15510.400000020862
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.6000000014901161,
+            "max": 0.8999999985098839,
+            "total": 5.699999999254942
+          }
+        },
+        "readView.cache": {
+          "inclusiveMs": {
+            "calls": 816,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 816,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "readView.renderFrame": {
+          "inclusiveMs": {
+            "calls": 612,
+            "p50": 0,
+            "p95": 1.199999999254942,
+            "p99": 1.5999999977648258,
+            "max": 3.199999999254942,
+            "total": 195.1000000052154
+          },
+          "exclusiveMs": {
+            "calls": 612,
+            "p50": 0,
+            "p95": 1.199999999254942,
+            "p99": 1.5999999977648258,
+            "max": 3.199999999254942,
+            "total": 195.1000000052154
+          }
+        },
+        "readView.publishCost": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "readView.publishComplete": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0.9000000022351742,
+            "p95": 3.400000002235174,
+            "p99": 9.100000001490116,
+            "max": 12.799999997019768,
+            "total": 297.39999997988343
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0.10000000149011612,
+            "p95": 2.300000000745058,
+            "p99": 8.099999997764826,
+            "max": 11.299999997019768,
+            "total": 102.29999997466803
+          }
+        },
+        "update.advanceDays": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 71.10000000149012,
+            "p95": 108.19999999925494,
+            "p99": 137.09999999776483,
+            "max": 213.90000000223517,
+            "total": 15810.899999983609
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.19999999925494194,
+            "max": 0.19999999925494194,
+            "total": 3.0999999828636646
+          }
+        },
+        "update": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 71.60000000149012,
+            "p95": 110.30000000074506,
+            "p99": 137.30000000074506,
+            "max": 217.39999999850988,
+            "total": 16080.099999997765
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.19999999925494194,
+            "max": 0.19999999925494194,
+            "total": 4.900000002235174
+          }
+        },
+        "render.three": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "render.canvas.terrain": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 1.4000000022351742,
+            "p95": 2.300000000745058,
+            "p99": 2.399999998509884,
+            "max": 2.400000002235174,
+            "total": 313.09999998658895
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 1.4000000022351742,
+            "p95": 2.300000000745058,
+            "p99": 2.399999998509884,
+            "max": 2.400000002235174,
+            "total": 313.09999998658895
+          }
+        },
+        "render.canvas": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 8.600000001490116,
+            "p95": 13.900000002235174,
+            "p99": 15.300000000745058,
+            "max": 17,
+            "total": 1905.2000000178814
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 7.100000001490116,
+            "p95": 11.900000002235174,
+            "p99": 13.899999998509884,
+            "max": 14.799999997019768,
+            "total": 1592.1000000312924
+          }
+        },
+        "render": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 8.699999999254942,
+            "p95": 14.100000001490116,
+            "p99": 15.300000000745058,
+            "max": 17.099999997764826,
+            "total": 1921.3000000193715
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.29999999701976776,
+            "p99": 0.3999999985098839,
+            "max": 0.5,
+            "total": 16.100000001490116
+          }
+        },
+        "observeEcho.project": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 0.09999999776482582,
+            "p95": 0.10000000149011612,
+            "p99": 0.19999999925494194,
+            "max": 0.30000000074505806,
+            "total": 13.19999998435378
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0.09999999776482582,
+            "p95": 0.10000000149011612,
+            "p99": 0.19999999925494194,
+            "max": 0.30000000074505806,
+            "total": 13.19999998435378
+          }
+        },
+        "frame": {
+          "inclusiveMs": {
+            "calls": 204,
+            "p50": 83.90000000223517,
+            "p95": 121.29999999701977,
+            "p99": 151.70000000298023,
+            "max": 230.79999999701977,
+            "total": 18021.599999982864
+          },
+          "exclusiveMs": {
+            "calls": 204,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.19999999925494194,
+            "max": 0.20000000298023224,
+            "total": 6.9999999813735485
+          }
+        },
+        "hud.worldStats": {
+          "inclusiveMs": {
+            "calls": 68,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.4000000022351742,
+            "max": 0.4000000022351742,
+            "total": 13.400000002235174
+          },
+          "exclusiveMs": {
+            "calls": 68,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.4000000022351742,
+            "max": 0.4000000022351742,
+            "total": 13.400000002235174
+          }
+        },
+        "update.hud": {
+          "inclusiveMs": {
+            "calls": 68,
+            "p50": 3.399999998509884,
+            "p95": 4.799999997019768,
+            "p99": 5.700000002980232,
+            "max": 5.700000002980232,
+            "total": 241.90000001341105
+          },
+          "exclusiveMs": {
+            "calls": 68,
+            "p50": 3.2000000029802322,
+            "p95": 4.49999999627471,
+            "p99": 5.50000000372529,
+            "max": 5.50000000372529,
+            "total": 228.50000001117587
+          }
+        },
+        "advance.upper": {
+          "inclusiveMs": {
+            "calls": 14,
+            "p50": 0.30000000074505806,
+            "p95": 0.9000000022351742,
+            "p99": 0.9000000022351742,
+            "max": 0.9000000022351742,
+            "total": 5.800000008195639
+          },
+          "exclusiveMs": {
+            "calls": 14,
+            "p50": 0.30000000074505806,
+            "p95": 0.9000000022351742,
+            "p99": 0.9000000022351742,
+            "max": 0.9000000022351742,
+            "total": 5.800000008195639
+          }
+        },
+        "advance.nether": {
+          "inclusiveMs": {
+            "calls": 14,
+            "p50": 0,
+            "p95": 3.300000000745058,
+            "p99": 3.300000000745058,
+            "max": 3.300000000745058,
+            "total": 4.199999995529652
+          },
+          "exclusiveMs": {
+            "calls": 14,
+            "p50": 0,
+            "p95": 3.300000000745058,
+            "p99": 3.300000000745058,
+            "max": 3.300000000745058,
+            "total": 4.199999995529652
+          }
+        },
+        "advance.wraith": {
+          "inclusiveMs": {
+            "calls": 14,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          },
+          "exclusiveMs": {
+            "calls": 14,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          }
+        }
+      }
+    },
+    {
+      "id": "400-canvas-overview-s2-r0-8-A",
+      "origin": "browser-formal",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.57",
+      "renderer": "canvas",
+      "view": "overview",
+      "mode": "A",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal/400-canvas-overview-s2-r0-8-A.json",
+      "rawSha256": "03a7b034797380a7d223dedb18be651662e133ea1ad12be6054fb9818c4c3fd0",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30012.60000000149,
+      "frameCount": 180,
+      "jsFrameMs": {
+        "calls": 180,
+        "p50": 95.60000000149012,
+        "p95": 157.89999999850988,
+        "p99": 207.59999999776483,
+        "max": 230.69999999925494,
+        "total": 17871.499999996275
+      },
+      "rafIntervalMs": {
+        "calls": 179,
+        "p50": 166.60000000000036,
+        "p95": 200.09999999999854,
+        "p99": 283.40000000000146,
+        "max": 350.1999999999989,
+        "total": 29783.300000000003
+      },
+      "longTaskMs": {
+        "calls": 180,
+        "p50": 99,
+        "p95": 164,
+        "p99": 212,
+        "max": 235,
+        "total": 18419
+      },
+      "over50msJs": 180,
+      "over50msJsFraction": 1,
+      "completedDays": 129.60000000020955,
+      "completedDaysPerSecond": 4.318186361734842,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 50.475599999799385,
+      "publicationMs": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "total": 0
+      },
+      "publicationCount": 0,
+      "costs": {
+        "entityCopies": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedElements": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedLayers": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedObjects": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        }
+      },
+      "heapBefore": {
+        "usedSize": 32280488,
+        "totalSize": 34795520,
+        "embedderHeapUsedSize": 5373616,
+        "backingStorageSize": 18554765
+      },
+      "heapAfter": {
+        "usedSize": 32620764,
+        "totalSize": 34492416,
+        "embedderHeapUsedSize": 4862296,
+        "backingStorageSize": 18568286
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 150,
+        "p95": 256,
+        "p99": 256,
+        "max": 256,
+        "total": 1349
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 162,
+        "p95": 205,
+        "p99": 205,
+        "max": 205,
+        "total": 1398
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 356,
+        "p95": 394,
+        "p99": 394,
+        "max": 394,
+        "total": 2882
+      },
+      "rendererState": {
+        "threeActive": false,
+        "webgl": null,
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      },
+      "segments": {}
+    },
+    {
+      "id": "400-3d-overview-s2-r0-9-A",
+      "origin": "browser-formal",
+      "balanced": false,
+      "browserBuild": "Edg/157.0.4341.57",
+      "renderer": "3d",
+      "view": "overview",
+      "mode": "A",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal/400-3d-overview-s2-r0-9-A.json",
+      "rawSha256": "407195c237755ee473bd054caeb6375bfded159a76dea22100d0375bb698b61a",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30125.199999999255,
+      "frameCount": 392,
+      "jsFrameMs": {
+        "calls": 392,
+        "p50": 73.69999999925494,
+        "p95": 116.30000000074506,
+        "p99": 147.30000000074506,
+        "max": 157.5,
+        "total": 29674.99999993667
+      },
+      "rafIntervalMs": {
+        "calls": 391,
+        "p50": 83.19999999999709,
+        "p95": 116.70000000000073,
+        "p99": 150,
+        "max": 166.70000000000073,
+        "total": 30033.299999999992
+      },
+      "longTaskMs": {
+        "calls": 331,
+        "p50": 77,
+        "p95": 118,
+        "p99": 147,
+        "max": 159,
+        "total": 27107
+      },
+      "over50msJs": 328,
+      "over50msJsFraction": 0.8367346938775511,
+      "completedDays": 178.6601999985578,
+      "completedDaysPerSecond": 5.930589672385984,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 2.0910000014377204,
+      "publicationMs": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "total": 0
+      },
+      "publicationCount": 0,
+      "costs": {
+        "entityCopies": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedElements": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedLayers": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedObjects": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        }
+      },
+      "heapBefore": {
+        "usedSize": 43557332,
+        "totalSize": 46383104,
+        "embedderHeapUsedSize": 6092488,
+        "backingStorageSize": 68209717
+      },
+      "heapAfter": {
+        "usedSize": 46022336,
+        "totalSize": 47169536,
+        "embedderHeapUsedSize": 6618000,
+        "backingStorageSize": 68454574
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 55,
+        "p95": 97,
+        "p99": 97,
+        "max": 97,
+        "total": 478
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 95,
+        "p95": 127,
+        "p99": 127,
+        "max": 127,
+        "total": 805
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 266,
+        "p95": 330,
+        "p99": 330,
+        "max": 330,
+        "total": 2147
+      },
+      "rendererState": {
+        "threeActive": true,
+        "webgl": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "calls": 39
+        },
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      },
+      "segments": {}
+    },
+    {
+      "id": "400-3d-overview-s2-r0-0-A",
+      "origin": "browser-formal-new-edge",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.60",
+      "renderer": "3d",
+      "view": "overview",
+      "mode": "A",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal-new-edge/400-3d-overview-s2-r0-0-A.json",
+      "rawSha256": "38af1fb6e0c5761f4e5ec59b0138b07e211f3759bb86a9f0d30ab71b382b111a",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30103.39999999851,
+      "frameCount": 559,
+      "jsFrameMs": {
+        "calls": 559,
+        "p50": 50.19999999925494,
+        "p95": 73.60000000149012,
+        "p99": 95.39999999850988,
+        "max": 139.80000000074506,
+        "total": 29687.29999995604
+      },
+      "rafIntervalMs": {
+        "calls": 558,
+        "p50": 50,
+        "p95": 83.29999999999927,
+        "p99": 100,
+        "max": 177.5,
+        "total": 30033.39999999997
+      },
+      "longTaskMs": {
+        "calls": 295,
+        "p50": 60,
+        "p95": 81,
+        "p99": 112,
+        "max": 153,
+        "total": 18218
+      },
+      "over50msJs": 281,
+      "over50msJsFraction": 0.5026833631484794,
+      "completedDays": 180.43979999696603,
+      "completedDaysPerSecond": 5.994000677563829,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 0.18060000302500612,
+      "publicationMs": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "total": 0
+      },
+      "publicationCount": 0,
+      "costs": {
+        "entityCopies": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedElements": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedLayers": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedObjects": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        }
+      },
+      "heapBefore": {
+        "usedSize": 43622728,
+        "totalSize": 46534656,
+        "embedderHeapUsedSize": 6110320,
+        "backingStorageSize": 68450306
+      },
+      "heapAfter": {
+        "usedSize": 45134016,
+        "totalSize": 47583232,
+        "embedderHeapUsedSize": 6316064,
+        "backingStorageSize": 68450627
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 31,
+        "p95": 83,
+        "p99": 83,
+        "max": 83,
+        "total": 298
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 65,
+        "p95": 103,
+        "p99": 103,
+        "max": 103,
+        "total": 577
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 204,
+        "p95": 277,
+        "p99": 277,
+        "max": 277,
+        "total": 1701
+      },
+      "rendererState": {
+        "threeActive": true,
+        "webgl": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "calls": 40
+        },
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      },
+      "segments": {}
+    },
+    {
+      "id": "400-3d-overview-s2-r0-1-B",
+      "origin": "browser-formal-new-edge",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.60",
+      "renderer": "3d",
+      "view": "overview",
+      "mode": "B",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal-new-edge/400-3d-overview-s2-r0-1-B.json",
+      "rawSha256": "558826833be15a65a3021e45bd64afb96a518577d3967a9529881bb879d664a4",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30116.89999999851,
+      "frameCount": 455,
+      "jsFrameMs": {
+        "calls": 455,
+        "p50": 62,
+        "p95": 93.5,
+        "p99": 121.39999999850988,
+        "max": 183.30000000074506,
+        "total": 29737.199999969453
+      },
+      "rafIntervalMs": {
+        "calls": 454,
+        "p50": 66.60000000000218,
+        "p95": 100,
+        "p99": 116.70000000000073,
+        "max": 200.10000000000036,
+        "total": 30033.400000000016
+      },
+      "longTaskMs": {
+        "calls": 380,
+        "p50": 64,
+        "p95": 95,
+        "p99": 125,
+        "max": 185,
+        "total": 26393
+      },
+      "over50msJs": 376,
+      "over50msJsFraction": 0.8263736263736263,
+      "completedDays": 179.68019999825628,
+      "completedDaysPerSecond": 5.966092127618221,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 1.021200001734769,
+      "publicationMs": {
+        "count": 455,
+        "p50": 0.9000000022351742,
+        "p95": 2.5,
+        "p99": 8.899999998509884,
+        "max": 10.899999998509884,
+        "total": 567.7000000365078
+      },
+      "publicationCount": 455,
+      "costs": {
+        "entityCopies": {
+          "count": 455,
+          "p50": 2786,
+          "p95": 2816,
+          "p99": 2824,
+          "max": 2824,
+          "total": 1270976
+        },
+        "terrainCopiedElements": {
+          "count": 455,
+          "p50": 0,
+          "p95": 51200,
+          "p99": 128000,
+          "max": 128000,
+          "total": 2406400
+        },
+        "terrainCopiedLayers": {
+          "count": 455,
+          "p50": 0,
+          "p95": 2,
+          "p99": 5,
+          "max": 5,
+          "total": 94
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 455,
+          "p50": 422608,
+          "p95": 834968,
+          "p99": 1446608,
+          "max": 1450848,
+          "total": 211944928
+        },
+        "estimatedObjects": {
+          "count": 455,
+          "p50": 2928,
+          "p95": 2960,
+          "p99": 2964,
+          "max": 2966,
+          "total": 1335255
+        }
+      },
+      "heapBefore": {
+        "usedSize": 44425620,
+        "totalSize": 47583232,
+        "embedderHeapUsedSize": 6266872,
+        "backingStorageSize": 68206489
+      },
+      "heapAfter": {
+        "usedSize": 45665820,
+        "totalSize": 48369664,
+        "embedderHeapUsedSize": 6459048,
+        "backingStorageSize": 68450736
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 42,
+        "p95": 87,
+        "p99": 87,
+        "max": 87,
+        "total": 387
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 83,
+        "p95": 101,
+        "p99": 101,
+        "max": 101,
+        "total": 696
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 238,
+        "p95": 289,
+        "p99": 289,
+        "max": 289,
+        "total": 1964
+      },
+      "rendererState": {
+        "threeActive": true,
+        "webgl": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "calls": 40
+        },
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      },
+      "segments": {
+        "update.cameraFocus": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.5999999940395355
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.5999999940395355
+          }
+        },
+        "update.stage": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.19999999925494194,
+            "p99": 0.19999999925494194,
+            "max": 0.3999999985098839,
+            "total": 23.80000004172325
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.19999999925494194,
+            "p99": 0.19999999925494194,
+            "max": 0.3999999985098839,
+            "total": 23.80000004172325
+          }
+        },
+        "update.combatObservation": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.20000000298023224,
+            "total": 3.1000000201165676
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.20000000298023224,
+            "total": 3.1000000201165676
+          }
+        },
+        "update.clock": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "advance.wanling": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.3999999985098839,
+            "p99": 1.8999999985098839,
+            "max": 4.699999999254942,
+            "total": 54.100000001490116
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.3999999985098839,
+            "p99": 1.8999999985098839,
+            "max": 4.699999999254942,
+            "total": 54.100000001490116
+          }
+        },
+        "life.prepare": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.4000000022351742,
+            "max": 0.6000000014901161,
+            "total": 74.60000001639128
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.4000000022351742,
+            "max": 0.6000000014901161,
+            "total": 74.60000001639128
+          }
+        },
+        "life.entity-loop": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 55,
+            "p95": 84.60000000149012,
+            "p99": 111.30000000074506,
+            "max": 148.19999999925494,
+            "total": 26235.799999967217
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 55,
+            "p95": 84.60000000149012,
+            "p99": 111.30000000074506,
+            "max": 148.19999999925494,
+            "total": 26235.799999967217
+          }
+        },
+        "life.villages": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0.6999999992549419,
+            "p95": 1.0999999977648258,
+            "p99": 1.300000000745058,
+            "max": 2,
+            "total": 319.80000003427267
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0.6999999992549419,
+            "p95": 1.0999999977648258,
+            "p99": 1.300000000745058,
+            "max": 2,
+            "total": 319.80000003427267
+          }
+        },
+        "life.sects": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0.8000000007450581,
+            "p95": 1.199999999254942,
+            "p99": 7.899999998509884,
+            "max": 13.800000000745058,
+            "total": 429.7999999932945
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0.8000000007450581,
+            "p95": 1.199999999254942,
+            "p99": 7.899999998509884,
+            "max": 13.800000000745058,
+            "total": 429.7999999932945
+          }
+        },
+        "life.war": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.4000000096857548
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.4000000096857548
+          }
+        },
+        "life.relations": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.20000000298023224,
+            "max": 0.30000000074505806,
+            "total": 33.80000000074506
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 0.20000000298023224,
+            "max": 0.30000000074505806,
+            "total": 33.80000000074506
+          }
+        },
+        "life.family": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0.19999999925494194,
+            "total": 0.5000000037252903
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0.19999999925494194,
+            "total": 0.5000000037252903
+          }
+        },
+        "life.sites": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 3.899999998509884,
+            "max": 5.699999999254942,
+            "total": 56.799999963492155
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0.09999999776482582,
+            "p95": 0.19999999925494194,
+            "p99": 3.899999998509884,
+            "max": 5.699999999254942,
+            "total": 56.799999963492155
+          }
+        },
+        "life.post": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 1.7000000029802322,
+            "p95": 2.800000000745058,
+            "p99": 9.100000001490116,
+            "max": 15.099999997764826,
+            "total": 924.3000000230968
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0.10000000149011612,
+            "p95": 0.4999999962747097,
+            "p99": 0.7000000029802322,
+            "max": 2.699999999254942,
+            "total": 82.2000000178814
+          }
+        },
+        "life": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 57.100000001490116,
+            "p95": 86.69999999925494,
+            "p99": 113.40000000223517,
+            "max": 163.69999999925494,
+            "total": 27237.30000000447
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 2.599999997764826
+          }
+        },
+        "advance.daoActivities": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 2.399999998509884,
+            "max": 6.100000001490116,
+            "total": 21.19999999552965
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 2.399999998509884,
+            "max": 6.100000001490116,
+            "total": 21.19999999552965
+          }
+        },
+        "advance.nature": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.999999988824129
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.999999988824129
+          }
+        },
+        "advance.transit": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.6000000014901161,
+            "max": 2,
+            "total": 9.899999998509884
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.6000000014901161,
+            "max": 2,
+            "total": 9.899999998509884
+          }
+        },
+        "advanceWorld": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 57.19999999925494,
+            "p95": 87,
+            "p99": 114.5,
+            "max": 171.39999999850988,
+            "total": 27342.099999967963
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.4000000022351742,
+            "max": 1.3999999985098839,
+            "total": 9.899999987334013
+          }
+        },
+        "readView.cache": {
+          "inclusiveMs": {
+            "calls": 1673,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 1673,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "readView.renderFrame": {
+          "inclusiveMs": {
+            "calls": 1365,
+            "p50": 0,
+            "p95": 1,
+            "p99": 1.5,
+            "max": 2.100000001490116,
+            "total": 405.50000005587935
+          },
+          "exclusiveMs": {
+            "calls": 1365,
+            "p50": 0,
+            "p95": 1,
+            "p99": 1.5,
+            "max": 2.100000001490116,
+            "total": 405.50000005587935
+          }
+        },
+        "readView.publishCost": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "readView.publishComplete": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0.9000000022351742,
+            "p95": 2.5,
+            "p99": 8.899999998509884,
+            "max": 10.899999998509884,
+            "total": 567.7000000365078
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0.10000000149011612,
+            "p95": 1.6000000014901161,
+            "p99": 7.899999998509884,
+            "max": 10.099999997764826,
+            "total": 162.1999999806285
+          }
+        },
+        "update.advanceDays": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 58.099999997764826,
+            "p95": 87.90000000223517,
+            "p99": 115.69999999925494,
+            "max": 174.5,
+            "total": 27914.99999999255
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 5.199999988079071
+          }
+        },
+        "update": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 59.100000001490116,
+            "p95": 89,
+            "p99": 117.5,
+            "max": 178.39999999850988,
+            "total": 28305.400000032037
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.19999999925494194,
+            "total": 7.099999967962503
+          }
+        },
+        "webgl.schedule.bufferSubData": {
+          "inclusiveMs": {
+            "calls": 13025,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.3999999985098839,
+            "total": 66.80000003427267
+          },
+          "exclusiveMs": {
+            "calls": 13025,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.3999999985098839,
+            "total": 66.80000003427267
+          }
+        },
+        "three.gpuSubmission": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0.8999999985098839,
+            "p95": 1.5,
+            "p99": 2,
+            "max": 3.100000001490116,
+            "total": 431.50000002235174
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0.7000000029802322,
+            "p95": 1.2999999970197678,
+            "p99": 1.699999999254942,
+            "max": 1.9000000022351742,
+            "total": 364.1999999843538
+          }
+        },
+        "render.three": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 2.7000000029802322,
+            "p95": 4.799999997019768,
+            "p99": 9.199999999254942,
+            "max": 13.400000002235174,
+            "total": 1283.3999999836087
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 1.6000000014901161,
+            "p95": 3.300000000745058,
+            "p99": 6.700000002980232,
+            "max": 10.00000000372529,
+            "total": 778.2999999336898
+          }
+        },
+        "render": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 2.800000000745058,
+            "p95": 5,
+            "p99": 9.199999999254942,
+            "max": 13.800000000745058,
+            "total": 1326.9999999888241
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0.09999999776482582,
+            "p95": 0.30000000074505806,
+            "p99": 0.5,
+            "max": 1.300000000745058,
+            "total": 43.600000005215406
+          }
+        },
+        "observeEcho.project": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 0.19999999925494194,
+            "p95": 0.3999999985098839,
+            "p99": 0.5,
+            "max": 0.6999999992549419,
+            "total": 87.29999993741512
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0.19999999925494194,
+            "p95": 0.3999999985098839,
+            "p99": 0.5,
+            "max": 0.6999999992549419,
+            "total": 87.29999993741512
+          }
+        },
+        "frame": {
+          "inclusiveMs": {
+            "calls": 455,
+            "p50": 62,
+            "p95": 93.39999999850988,
+            "p99": 121.39999999850988,
+            "max": 183.19999999925494,
+            "total": 29730.499999966472
+          },
+          "exclusiveMs": {
+            "calls": 455,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.19999999925494194,
+            "max": 0.20000000298023224,
+            "total": 10.800000008195639
+          }
+        },
+        "hud.worldStats": {
+          "inclusiveMs": {
+            "calls": 108,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.30000000074505806,
+            "max": 0.30000000074505806,
+            "total": 19.099999994039536
+          },
+          "exclusiveMs": {
+            "calls": 108,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "p99": 0.30000000074505806,
+            "max": 0.30000000074505806,
+            "total": 19.099999994039536
+          }
+        },
+        "update.hud": {
+          "inclusiveMs": {
+            "calls": 108,
+            "p50": 3.199999999254942,
+            "p95": 4.399999998509884,
+            "p99": 5.399999998509884,
+            "max": 8,
+            "total": 354.8000000156462
+          },
+          "exclusiveMs": {
+            "calls": 108,
+            "p50": 3,
+            "p95": 4.299999997019768,
+            "p99": 5.199999999254942,
+            "max": 7.699999999254942,
+            "total": 335.7000000216067
+          }
+        },
+        "deriveEntities": {
+          "inclusiveMs": {
+            "calls": 308,
+            "p50": 0.19999999925494194,
+            "p95": 0.4000000022351742,
+            "p99": 0.8000000007450581,
+            "max": 7.199999999254942,
+            "total": 73.60000002756715
+          },
+          "exclusiveMs": {
+            "calls": 308,
+            "p50": 0.19999999925494194,
+            "p95": 0.4000000022351742,
+            "p99": 0.8000000007450581,
+            "max": 7.199999999254942,
+            "total": 73.60000002756715
+          }
+        },
+        "advance.upper": {
+          "inclusiveMs": {
+            "calls": 18,
+            "p50": 0.30000000074505806,
+            "p95": 0.6000000014901161,
+            "p99": 0.6000000014901161,
+            "max": 0.6000000014901161,
+            "total": 6.599999990314245
+          },
+          "exclusiveMs": {
+            "calls": 18,
+            "p50": 0.30000000074505806,
+            "p95": 0.6000000014901161,
+            "p99": 0.6000000014901161,
+            "max": 0.6000000014901161,
+            "total": 6.599999990314245
+          }
+        },
+        "advance.nether": {
+          "inclusiveMs": {
+            "calls": 18,
+            "p50": 0,
+            "p95": 0.4000000022351742,
+            "p99": 0.4000000022351742,
+            "max": 0.4000000022351742,
+            "total": 1.1000000014901161
+          },
+          "exclusiveMs": {
+            "calls": 18,
+            "p50": 0,
+            "p95": 0.4000000022351742,
+            "p99": 0.4000000022351742,
+            "max": 0.4000000022351742,
+            "total": 1.1000000014901161
+          }
+        },
+        "advance.wraith": {
+          "inclusiveMs": {
+            "calls": 18,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "exclusiveMs": {
+            "calls": 18,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          }
+        },
+        "webgl.schedule.texSubImage2D": {
+          "inclusiveMs": {
+            "calls": 23,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.20000000298023224,
+            "max": 0.20000000298023224,
+            "total": 0.4000000059604645
+          },
+          "exclusiveMs": {
+            "calls": 23,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.20000000298023224,
+            "max": 0.20000000298023224,
+            "total": 0.4000000059604645
+          }
+        },
+        "webgl.schedule.bufferData": {
+          "inclusiveMs": {
+            "calls": 8,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.09999999776482582,
+            "max": 0.09999999776482582,
+            "total": 0.09999999776482582
+          },
+          "exclusiveMs": {
+            "calls": 8,
+            "p50": 0,
+            "p95": 0.09999999776482582,
+            "p99": 0.09999999776482582,
+            "max": 0.09999999776482582,
+            "total": 0.09999999776482582
+          }
+        }
+      }
+    },
+    {
+      "id": "400-3d-overview-s2-r0-2-A",
+      "origin": "browser-formal-new-edge",
+      "balanced": true,
+      "browserBuild": "Edg/157.0.4341.60",
+      "renderer": "3d",
+      "view": "overview",
+      "mode": "A",
+      "rawFile": "reports/local/wx-e2ra2/browser-formal-new-edge/400-3d-overview-s2-r0-2-A.json",
+      "rawSha256": "e0e3dda5c19652f5ccf0bad07adb07c7fcf765c0ad947fa2332d645940d1cb60",
+      "input": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "elapsedMs": 30065.199999999255,
+      "frameCount": 461,
+      "jsFrameMs": {
+        "calls": 461,
+        "p50": 64.30000000074506,
+        "p95": 87.69999999925494,
+        "p99": 116.29999999701977,
+        "max": 164.60000000149012,
+        "total": 29693.899999994785
+      },
+      "rafIntervalMs": {
+        "calls": 460,
+        "p50": 66.60000000000218,
+        "p95": 83.40000000000146,
+        "p99": 116.60000000000036,
+        "max": 200,
+        "total": 30000.100000000006
+      },
+      "longTaskMs": {
+        "calls": 394,
+        "p50": 66,
+        "p95": 89,
+        "p99": 118,
+        "max": 184,
+        "total": 26691
+      },
+      "over50msJs": 388,
+      "over50msJsFraction": 0.841648590021692,
+      "completedDays": 180.04019999847515,
+      "completedDaysPerSecond": 5.988325372805756,
+      "queuedSimulationDays": 0,
+      "unreconciledWallTargetDays": 0.35100000152039,
+      "publicationMs": {
+        "count": 0,
+        "p50": null,
+        "p95": null,
+        "p99": null,
+        "max": null,
+        "total": 0
+      },
+      "publicationCount": 0,
+      "costs": {
+        "entityCopies": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedElements": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "terrainCopiedLayers": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedPrimitiveBytes": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "estimatedObjects": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        }
+      },
+      "heapBefore": {
+        "usedSize": 43766212,
+        "totalSize": 45486080,
+        "embedderHeapUsedSize": 6184552,
+        "backingStorageSize": 68209741
+      },
+      "heapAfter": {
+        "usedSize": 45855064,
+        "totalSize": 48369664,
+        "embedderHeapUsedSize": 6622264,
+        "backingStorageSize": 68453988
+      },
+      "inputLocalFeedbackMs": {
+        "count": 8,
+        "p50": 39,
+        "p95": 103,
+        "p99": 103,
+        "max": 103,
+        "total": 440
+      },
+      "inputReleaseToAuthorityMs": {
+        "count": 8,
+        "p50": 76,
+        "p95": 161,
+        "p99": 161,
+        "max": 161,
+        "total": 745
+      },
+      "inputFullGestureToAuthorityMs": {
+        "count": 8,
+        "p50": 228,
+        "p95": 360,
+        "p99": 360,
+        "max": 360,
+        "total": 2036
+      },
+      "rendererState": {
+        "threeActive": true,
+        "webgl": {
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "renderer": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "calls": 40
+        },
+        "visibility": "visible"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      },
+      "segments": {}
+    }
+  ]
+}

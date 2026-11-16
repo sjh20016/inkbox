@@ -1,0 +1,520 @@
+{
+  "head": "37e3b1a64aedc921012fadb2b92668787d0fd3ac",
+  "localCommit": "2a6c67d733425368a52e021d3ab138a75af3eb95",
+  "tree": "4eea90e4e35b9a69cf0afd3f1b6423477a98eb72",
+  "runId": 43572088983,
+  "url": "https://github.com/sjh20016/inkbox/actions/runs/43572088983",
+  "verifiedAt": "2026-11-16T04:57:38.901Z",
+  "jobs": [
+    {
+      "id": 132378487658,
+      "name": "Heavy Gate",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 43572088983,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "安装依赖",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "干预 / 灾祸 / 存读档回归",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "三界生态不变量回归（时间 / 身份 / id 空间 / 上界 / 幽冥 / 裂隙 / 跨界）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "存读档分叉等价",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "G1 三界30年与100年观察纯度 / 敕令确定性",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        }
+      ]
+    },
+    {
+      "id": 132378487853,
+      "name": "Fast Gate",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 43572088983,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "安装依赖",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Three vendor 一致性（版本 / 许可证 / 字节）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "A1 三组资产结构与 provenance（修士 / 卜算子 / 异兽）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "核心检查（导入图 / 核心 / 启动 / 运行事件）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "视界回归（D8 视界契约）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "表现层回归（D7 FX / 记挂 / 关系图 / 战争线）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "UX/QoL 填缝包回归（QOL_PASS1 · Escape 分层 / 折叠 / 偏好白名单 / 模拟纯度门禁）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "G1 正式集成（身份 / 命簿四卷 / 权限 / 地图成长 / Web 组件）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "G2 真实命中、双 renderer 墨痕与资源生命周期",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12
+        },
+        {
+          "name": "G2.1 地形像素等价",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13
+        },
+        {
+          "name": "G2.2 气血、养伤与只读交战观察",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14
+        },
+        {
+          "name": "G2.3 真实灾迹、会话对照与恢复",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        },
+        {
+          "name": "G2.4 真实斗法点燃、生态延续与存档冷却",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "G2.5 洗髓成长、主题机缘与突破异象",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "G2.6 视角、聚落水灾、安全落点与众生表现",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "G5 GPU 地形、水面湿域与植被局部更新",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "R1 线刻资源、高度一致性与自然雕刻事务",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "S0 静态水域、环境事件、存档及云雾植被批次",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "P0 地方灾害、救援、恢复、遗址与存档",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "E0 聚落记挂、真实抽水笔录与回访存档",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "C1 绝对成年、修为寿元、真实出生与宗门供养",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24
+        },
+        {
+          "name": "P0 三维输入、有界水体与真实神力表现",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25
+        },
+        {
+          "name": "G7 取消事务、异步存读档与拒绝神力边界",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26
+        },
+        {
+          "name": "G8 运行时检查点、随机流续接与凡间生息",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27
+        },
+        {
+          "name": "Wanxiang V0.2 Alpha contracts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28
+        },
+        {
+          "name": "WX-E0 simulation cost admission and regression contracts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29
+        },
+        {
+          "name": "WX-E1 deterministic simulation cost budgets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30
+        },
+        {
+          "name": "WX-E1C current identity and indexed cost ratchet",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31
+        },
+        {
+          "name": "WX-E2R-a synchronous read projection contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 32
+        },
+        {
+          "name": "WX-E-M2 opt-in nested wall attribution contract",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 33
+        },
+        {
+          "name": "WX-E2R-a.2 committed generations and real synchronous command boundaries",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 34
+        },
+        {
+          "name": "WX-S1 真实拾章、身份、观察纯度与有界展示",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 35
+        },
+        {
+          "name": "WX-S1.1 尾声、最新付费回助与证据措辞",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 36
+        },
+        {
+          "name": "E2-Lite 落笔回执、只读行愿与事务存档",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 37
+        },
+        {
+          "name": "W0.1 真实物种、山林生态、道途活动与存档",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 38
+        },
+        {
+          "name": "T0 地理通达、真实行程、货物守恒与存档",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 39
+        },
+        {
+          "name": "WT-I1 万灵快选、复行、行程互斥与联合存档",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 40
+        },
+        {
+          "name": "G2-P0 真实生态与 Canvas 颜色缓存等价",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 41
+        },
+        {
+          "name": "P1 观察导航与浏览器工具归属",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 42
+        },
+        {
+          "name": "Render3D M0（坐标 / 高程 / 拾取 / 雕刻 / 确定性 / 渲染纯度）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 43
+        },
+        {
+          "name": "Render3D M1（实体 / 聚落 / 标记 / 只读 / 模拟不受影响）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 44
+        },
+        {
+          "name": "Render3D dirty 分类（height / water / type / veg 分层派发）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 45
+        },
+        {
+          "name": "Render3D M2-A 多位面架构不变量",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 46
+        },
+        {
+          "name": "Render3D M2-B 完整视界与界缘",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 47
+        },
+        {
+          "name": "M2-C2E 地形 / 事务 / 渐进访问 CPU 契约",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 48
+        },
+        {
+          "name": "Render3D M2-C 写意渲染与实体母版",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 49
+        },
+        {
+          "name": "Render3D M2-C2A LOD/HLOD 与密度预算",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 50
+        },
+        {
+          "name": "Render3D M2-C2A.1 聚落屋顶簇 HLOD",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 51
+        },
+        {
+          "name": "Render3D M2-C2B0 三界风格与完整模拟纯度",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 52
+        },
+        {
+          "name": "Render3D M2-C2B 单屋实际 GLB 样板门禁",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 53
+        },
+        {
+          "name": "Render3D M2-C2B 真实身份与不透明幽冥家族",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 54
+        },
+        {
+          "name": "Render3D M2-C2B 自然装饰与完整占地区域归属",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 55
+        },
+        {
+          "name": "Render3D M2-C2B 幽冥地面法宝实际资产与身份",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 56
+        },
+        {
+          "name": "Render3D M2-C2B 实际生产 GLB 九模式 600 日与 11 RNG",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 57
+        },
+        {
+          "name": "C2B.1 资产生产规范与独立分类预算",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 58
+        },
+        {
+          "name": "C2C 语义事实源与三界 Region 接线",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 59
+        },
+        {
+          "name": "C2C 四类真实 Site 与灵脉生产地貌",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 60
+        },
+        {
+          "name": "C2C 两界只读 R8 场与资源生命周期",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 61
+        },
+        {
+          "name": "C2C 真实裂隙、池化快照 FX 与身份检视",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 62
+        },
+        {
+          "name": "C2C 十一模式 600 日与全部十一条 RNG 流",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 63
+        },
+        {
+          "name": "C2D 连续表面视觉场、绘画水面、绘画法线与界缘断面契约",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 64
+        },
+        {
+          "name": "C2D.1 绘画化 shader 与诊断 CPU 契约",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 65
+        },
+        {
+          "name": "构建发布包（自包含，clone 即可跑）",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 66
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 131
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 132
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 133
+        }
+      ]
+    },
+    {
+      "id": 132378488830,
+      "name": "Browser Smoke（手动）",
+      "status": "completed",
+      "conclusion": "skipped",
+      "run_id": 43572088983,
+      "logs_url": null,
+      "steps": null
+    }
+  ],
+  "note": "Fast/Heavy succeeded on this precise published source commit; future evidence-only publication requires its own CI status, not reuse of this run."
+}

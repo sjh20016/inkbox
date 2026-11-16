@@ -1,1 +1,173 @@
-{"status":"local native comparison passed; integration and Edge acceptance pending","baseline":"61646341e00452417f04bc351afe8884b2ef7ddf","naturalCases":4,"completeNaturalBoundaries":268,"controlledThreeRealmSteps":30,"evidence":"reports/local/wx-e2ra2/native/acceptance.json","formalDt":"unchanged variable dt","fullProductAsyncPrerequisite":false}
+{
+  "pass": true,
+  "baseline": "61646341e00452417f04bc351afe8884b2ef7ddf",
+  "source": {
+    "localCommit": "2a6c67d733425368a52e021d3ab138a75af3eb95",
+    "publishedCommit": "37e3b1a64aedc921012fadb2b92668787d0fd3ac",
+    "tree": "4eea90e4e35b9a69cf0afd3f1b6423477a98eb72",
+    "srcFilesVerified": 284
+  },
+  "nativeEvidence": "reports/local/wx-e2ra2/native-frozen/acceptance.json",
+  "naturalCases": [
+    {
+      "age": 100,
+      "days": 90,
+      "dt": 3,
+      "checkpoint": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-100y-save.json",
+        "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+        "bytes": 2826671
+      },
+      "completeBoundaries": 67,
+      "worldSha256": "e7b0ec25ac9db4a4d33691e759127552dd43594b25dac8708b860202fd84e3e6",
+      "runtimeSha256": "e6b7f65827ec2a06957351a1e6193503b6b3caf8422c6853e9ce8e259755064b",
+      "forks": [
+        "919990968d1c5a4d51bc6623b8c052cd6c4c00acaf142d0348cd627cdbdb35b6",
+        "919990968d1c5a4d51bc6623b8c052cd6c4c00acaf142d0348cd627cdbdb35b6",
+        "919990968d1c5a4d51bc6623b8c052cd6c4c00acaf142d0348cd627cdbdb35b6"
+      ]
+    },
+    {
+      "age": 100,
+      "days": 3,
+      "dt": 0.1,
+      "checkpoint": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-100y-save.json",
+        "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+        "bytes": 2826671
+      },
+      "completeBoundaries": 67,
+      "worldSha256": "a96963c5d64aa7f73a77e15a961616568cf08579f8b39bcd5ec75776c7d462e6",
+      "runtimeSha256": "9093de570729ea0d133b654375a5c90a1f7ba9740bc77c6acf96c2c0107bad5c",
+      "forks": [
+        "a50d37c98b431c43a10c63cc2a5c83003a0172fc0de986b4460ca5b4140a31c5",
+        "a50d37c98b431c43a10c63cc2a5c83003a0172fc0de986b4460ca5b4140a31c5",
+        "a50d37c98b431c43a10c63cc2a5c83003a0172fc0de986b4460ca5b4140a31c5"
+      ]
+    },
+    {
+      "age": 400,
+      "days": 90,
+      "dt": 3,
+      "checkpoint": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "completeBoundaries": 67,
+      "worldSha256": "af4f82883c6d1e2629e459bd0fc7271de2467a02d3a9b5039dc01d4f58ff3b1a",
+      "runtimeSha256": "de56f92779079c5cc5c7b291e742553ab7a01b6fa97f28fe642835548b169c04",
+      "forks": [
+        "cd877870a65f1abbb9a44bc8db236c2c9131d726137460e34275b04e679868e8",
+        "cd877870a65f1abbb9a44bc8db236c2c9131d726137460e34275b04e679868e8",
+        "cd877870a65f1abbb9a44bc8db236c2c9131d726137460e34275b04e679868e8"
+      ]
+    },
+    {
+      "age": 400,
+      "days": 3,
+      "dt": 0.1,
+      "checkpoint": {
+        "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "completeBoundaries": 67,
+      "worldSha256": "aa37264f2b349b3cb715b9c238c47c584117be91a7cf694152322b5a38ae02f7",
+      "runtimeSha256": "38b236331c2f29601167a4c3b45198b6335a88611add51cfbcdbb9d5546dee53",
+      "forks": [
+        "1b8af6af2344ef06f3e5c810a4870fbc641a294a7073b3ad010d590d166f7758",
+        "1b8af6af2344ef06f3e5c810a4870fbc641a294a7073b3ad010d590d166f7758",
+        "1b8af6af2344ef06f3e5c810a4870fbc641a294a7073b3ad010d590d166f7758"
+      ]
+    }
+  ],
+  "naturalBoundaries": 268,
+  "controlledThreeRealms": {
+    "natural": false,
+    "steps": 30,
+    "completeWorldAndRngEqual": true
+  },
+  "gates": {
+    "initialTotal": 71,
+    "initialPass": 69,
+    "initialFailures": [
+      {
+        "job": "fast-gate",
+        "command": "npm run test:view",
+        "startedAt": "2026-11-14T07:21:41.9922559+00:00",
+        "endedAt": "2026-11-14T07:21:44.0023374+00:00",
+        "exitCode": 1,
+        "log": "reports\\local\\wx-e2ra2\\gates\\04-npm_run_test_view.log"
+      },
+      {
+        "job": "fast-gate",
+        "command": "npm run test:wx-e0",
+        "startedAt": "2026-11-14T07:22:41.4617690+00:00",
+        "endedAt": "2026-11-14T07:22:42.1668945+00:00",
+        "exitCode": 1,
+        "log": "reports\\local\\wx-e2ra2\\gates\\28-npm_run_test_wx-e0.log"
+      }
+    ],
+    "frozenRetry": {
+      "sha": "2a6c67d733425368a52e021d3ab138a75af3eb95",
+      "tree": "4eea90e4e35b9a69cf0afd3f1b6423477a98eb72",
+      "commands": [
+        {
+          "command": "test:view",
+          "startedAt": "2026-11-14T07:33:56.1298830+00:00",
+          "endedAt": "2026-11-14T07:33:59.1970834+00:00",
+          "exitCode": 0,
+          "log": "reports\\local\\wx-e2ra2\\gates\\frozen-retry\\test-view.log"
+        },
+        {
+          "command": "test:wx-e0",
+          "startedAt": "2026-11-14T07:33:59.2494606+00:00",
+          "endedAt": "2026-11-14T07:34:01.3434665+00:00",
+          "exitCode": 0,
+          "log": "reports\\local\\wx-e2ra2\\gates\\frozen-retry\\test-wx-e0.log"
+        },
+        {
+          "command": "test:wx-e1",
+          "startedAt": "2026-11-14T07:34:01.3489314+00:00",
+          "endedAt": "2026-11-14T07:34:02.5286927+00:00",
+          "exitCode": 0,
+          "log": "reports\\local\\wx-e2ra2\\gates\\frozen-retry\\test-wx-e1.log"
+        },
+        {
+          "command": "test:wx-e1c",
+          "startedAt": "2026-11-14T07:34:02.5308773+00:00",
+          "endedAt": "2026-11-14T07:34:03.9662308+00:00",
+          "exitCode": 0,
+          "log": "reports\\local\\wx-e2ra2\\gates\\frozen-retry\\test-wx-e1c.log"
+        },
+        {
+          "command": "test:package",
+          "startedAt": "2026-11-14T07:34:03.9679731+00:00",
+          "endedAt": "2026-11-14T07:34:04.9710626+00:00",
+          "exitCode": 0,
+          "log": "reports\\local\\wx-e2ra2\\gates\\frozen-retry\\test-package.log"
+        },
+        {
+          "command": "test:wx-e2ra2",
+          "startedAt": "2026-11-14T07:34:04.9755366+00:00",
+          "endedAt": "2026-11-14T07:34:06.5811089+00:00",
+          "exitCode": 0,
+          "log": "reports\\local\\wx-e2ra2\\gates\\frozen-retry\\test-wx-e2ra2.log"
+        }
+      ],
+      "finishedAt": "2026-11-14T07:34:06.5836031+00:00"
+    }
+  },
+  "browser": {
+    "balancedSamples": 12,
+    "allObservedSamples": 13,
+    "buildStratified": true,
+    "evidence": "WX_E2RA2_BROWSER.json"
+  },
+  "formalDt": "Original variable dt unchanged; dt3 and dt.1 used for same-sequence native acceptance.",
+  "fullProductAsyncPrerequisite": false,
+  "healCase": "No immediate player heal tool exists in baseline. Real native autonomous healing/cost remains covered by Wanxiang/WTI1; no fabricated player heal command.",
+  "previousCandidateNative": "reports/local/wx-e2ra2/native/acceptance.json",
+  "sourceFreezeEvidence": "reports/local/wx-e2ra2/native-frozen/freeze.json"
+}
