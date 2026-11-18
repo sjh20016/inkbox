@@ -634,8 +634,17 @@ export class Life {
 
   // ── 主循环 ──────────────────────────────────────────────
   step(dtDays) {
-    const lifeSpan = beginBreakdown('life');
-    let phaseSpan = beginBreakdown('life.prepare');
+    const phases = this.stepPhases(dtDays);
+    let result;
+    do { result = phases.next(); } while (!result.done);
+    return result.value;
+  }
+
+  *stepPhases(dtDays, { cooperative = false } = {}) {
+    if (cooperative) assertResumableLife(this);
+    const span = name => cooperative ? null : beginBreakdown(name);
+    const lifeSpan = span('life');
+    let phaseSpan = span('life.prepare');
     try {
     const world = this.world;
     const measuring=workMetricsEnabled(world);
@@ -647,7 +656,8 @@ export class Life {
     const list = world.entities;
     let dirtyTerrain = false;
     endBreakdown(phaseSpan);
-    phaseSpan = beginBreakdown('life.entity-loop');
+    if (cooperative) yield Object.freeze({ phase: 'life.prepare' });
+    phaseSpan = span('life.entity-loop');
 
     if(measuring){endWorkMetric(world,'life.prepare',phaseStarted);phaseStarted=startWorkMetric(world);}
 
@@ -658,9 +668,10 @@ export class Life {
       if(measuring)countWorkMetric(world,'life.stepEntity.calls');
       if (this.stepEntity(e, dtDays, measuring)) dirtyTerrain = true;
       if(measuring)endWorkMetric(world,'life.stepEntity',entityStarted);
+      if (cooperative) yield Object.freeze({ phase: 'life.entity', entityIndex: i + 1, entityCount: list.length });
     }} finally { endEntityReadPass(world); }
     endBreakdown(phaseSpan);
-    phaseSpan = beginBreakdown('life.post');
+    phaseSpan = span('life.post');
 
     if(measuring){endWorkMetric(world,'life.entity-loop',phaseStarted);phaseStarted=startWorkMetric(world);}
 
@@ -680,53 +691,65 @@ export class Life {
       w += 1;
     }
     list.length = w;
+    if (cooperative) yield Object.freeze({ phase: 'life.sweep' });
 
     let subsystemStarted=measuring?startWorkMetric(world):null;
-    const villageSpan = beginBreakdown('life.villages');
+    const villageSpan = span('life.villages');
     this.syncVillagePops();
     this.stepVillages(dtDays);
     this.stepFounding(dtDays);
     this.stepWildlife(dtDays);
     endBreakdown(villageSpan);
+    if (cooperative) yield Object.freeze({ phase: 'life.villages' });
     if(measuring){endWorkMetric(world,'life.villages',subsystemStarted);subsystemStarted=startWorkMetric(world);}
-    const sectSpan = beginBreakdown('life.sects');
+    const sectSpan = span('life.sects');
     stepSects(world, this, dtDays, this.rng);
     endBreakdown(sectSpan, sectSpan ? { crossedCalendarMonth: Math.floor(world.day / 30) !== Math.floor((world.day - dtDays) / 30) } : undefined);
     if(measuring)endWorkMetric(world,'life.sects',subsystemStarted);
+    if (cooperative) yield Object.freeze({ phase: 'life.sects' });
     // 宗门本月收入与归属已更新，再真实支出援助；最后才判长期荒废。
     for (const village of world.villages) aidSettlement(world, village, dtDays);
     this.resolveVillageAbandonments();
+    if (cooperative) yield Object.freeze({ phase: 'life.aid' });
     // 大战（L1）：跨数年、可拉盟友、有特殊结局的大规模战事。
     // ⚠️ 必须排在 `stepSects` **之后**——它读的接壤表
     // （`world._terrBorder` / `_terrBorderAt` / `_terrContested`）是
     // `stepSects → stepTerritory` 每 30 日重算出来的推导量。
     // 用的是独立的 `warRng`，理由见构造函数里那段注释。
-    const warSpan = beginBreakdown('life.war');
+    const warSpan = span('life.war');
     stepWar(world, this.warRng, dtDays);
     endBreakdown(warSpan);
+    if (cooperative) yield Object.freeze({ phase: 'life.war' });
     if(measuring)subsystemStarted=startWorkMetric(world);
-    const relationsSpan = beginBreakdown('life.relations');
+    const relationsSpan = span('life.relations');
     stepRelations(world, this, dtDays, this.rng);
     endBreakdown(relationsSpan);
     if(measuring)endWorkMetric(world,'life.relations',subsystemStarted);
+    if (cooperative) yield Object.freeze({ phase: 'life.relations' });
     // 世家：立族 / 声望 / 兴衰 / 断绝。每 360 日普查一次（见 sim/family.js），
     // 全部走哈希与确定性排序，**不抽签**——主随机流一点都不动，
     // 世界轨迹才与上一轮可比。
-    const familySpan = beginBreakdown('life.family');
+    const familySpan = span('life.family');
     stepFamily(world, this, dtDays);
     endBreakdown(familySpan);
+    if (cooperative) yield Object.freeze({ phase: 'life.family' });
     // 转世者想起前世。放在生死清理**之后**：本 tick 刚死的人不该同一 tick 就觉醒。
     stepReincarnation(world, dtDays, this.rng);
-    const sitesSpan = beginBreakdown('life.sites');
+    if (cooperative) yield Object.freeze({ phase: 'life.reincarnation' });
+    const sitesSpan = span('life.sites');
     stepSites(world, dtDays, this.rng);
     endBreakdown(sitesSpan);
+    if (cooperative) yield Object.freeze({ phase: 'life.sites' });
     // 法宝的时钟：器灵初生 / 地上朽坏 / 路人拾取（每 90 日一趟，见 artifacts.js）
     stepArtifacts(world, dtDays, this.rng);
+    if (cooperative) yield Object.freeze({ phase: 'life.artifacts' });
     this.events.step(dtDays);
+    if (cooperative) yield Object.freeze({ phase: 'life.events' });
     // 卜算子：结算里程碑与亲缘升阶。
     // 放在 sim 里而不是 main.js 里，是为了让无头长测也能跑到——
     // 不然「他到底会不会开口」这件事永远只有打开浏览器才知道。
     tickBusanzi(world, this.rng);
+    if (cooperative) yield Object.freeze({ phase: 'life.busanzi' });
 
     this.yearTickCooldown += dtDays;
     if (this.yearTickCooldown >= 360) {
@@ -735,6 +758,7 @@ export class Life {
     }
     if (dirtyTerrain) world.touch();
     if(measuring)endWorkMetric(world,'life.post-entity',phaseStarted);
+    if (cooperative) yield Object.freeze({ phase: 'life.finish' });
     } finally { endBreakdown(phaseSpan); endBreakdown(lifeSpan); }
   }
 
@@ -2046,3 +2070,12 @@ export { SEA_LEVEL };
 const AUDITED_LIFE_METHODS=Object.entries(Object.getOwnPropertyDescriptors(Life.prototype))
   .filter(([key,d])=>key!=='constructor'&&typeof d.value==='function')
   .map(([key,d])=>[key,d.value]);
+
+export function supportsResumableLife(life) {
+  return life instanceof Life && AUDITED_LIFE_METHODS.every(([key, fn]) => life[key] === fn);
+}
+export function assertResumableLife(life) {
+  if (!supportsResumableLife(life)) throw new TypeError('Cooperative Life requires unmodified audited native methods');
+  if (workMetricsEnabled(life.world) && startWorkMetric(life.world) !== null)
+    throw new TypeError('Cooperative Life requires timing:false work metrics; waiting is not CPU time');
+}

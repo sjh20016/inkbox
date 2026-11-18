@@ -6,6 +6,7 @@ import { getSettlementInspection } from '../src/inkbox/presentation/readView/que
 import { TerrainReadView } from '../src/inkbox/presentation/readView/terrain.js';
 import { activateTerrainChanges, noteTerrainCell } from '../src/inkbox/world/terrainChanges.js';
 import { UnitsLayer } from '../src/inkbox/render/unitsLayer.js';
+import { deriveCommittedEntities, deriveEntities } from '../src/inkbox/render3d/entities/deriveEntities.js';
 import { traceReads } from './inkbox-wx-e2ra-read-audit.mjs';
 
 const world = { day: 4, seed: 7, plane: 'mortal', entities: [
@@ -70,10 +71,15 @@ const source = file => fs.readFileSync(new URL(file, import.meta.url), 'utf8');
 const units = source('../src/inkbox/render/unitsLayer.js');
 const derive = source('../src/inkbox/render3d/entities/deriveEntities.js');
 const main = source('../src/inkbox/main.js');
+const threeWiring = 'return deriveCommittedEntities(world ? renderFrame(world, undefined, { refresh: !committedEntry(world) }) : null, includeWraiths);';
 const wired = (u, d, m) => u.includes('const list = frame.entities;')
-  && d.includes('const frame = renderFrame(world, undefined, { refresh: !committedEntry(world) });') && d.includes('const entities = frame.entities;')
+  && d.includes(threeWiring) && d.includes('const entities = frame.entities;')
   && m.includes("this.units.drawEntities(ctx, this.camera, world, now, renderFrame(world, 'mortal'));");
 assert.ok(wired(units, derive, main), 'both production entity consumers use shared RenderFrame');
 assert.equal(wired(units, derive.replace('const entities = frame.entities;', 'const entities = world.entities;'), main), false,
   'guard rejects a direct Three World entity read');
+assert.equal(wired(units, derive.replace(threeWiring, 'return deriveCommittedEntities(world, includeWraiths);'), main), false,
+  'guard rejects routing the authority directly into the Three projection');
+assert.deepEqual(deriveEntities(world), deriveCommittedEntities(renderFrame(world)),
+  'the production wrapper and the committed Frame entry yield the same Three rows');
 console.log('WX-E2R-a contract checks passed');

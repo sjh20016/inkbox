@@ -1,0 +1,2912 @@
+{
+  "pass": true,
+  "source": {
+    "head": "61b74f94afd4014a8023f7f8a626f34e0c36294a",
+    "tree": "1dab4285b249d010c79625cc6dc46c1ad53690dc",
+    "dirty": "",
+    "hashes": {
+      ".github/workflows/ci.yml": "69d439c0849e7cc750892613c521b560f5f09e5602b40f24e2e70a79e73beca0",
+      "package.json": "eab78052217e4461bfde8f7f364c1ac459d943f602fb10163a6a1cf6be59ef8f",
+      "research/wx-e3sp/commandPort.js": "a8cbf057d9bb1b8c9e8041218319aa9a17ef97f1cddd28523d3b1e5e3c7ee554",
+      "research/wx-e3sp/context.js": "e0ea11cd5003f08162a3b6ad9961cbb02f1c4310acb058fd239860646e04c9b2",
+      "research/wx-e3sp/demo.js": "4aa3596a1abac485f8d3f9201c770abb9b21dcab68dcdcb24c566a43cd0340dd",
+      "research/wx-e3sp/engine.js": "79ff7c38cecb21cc8e5a06b8f2f231f9805f8a63fffa6adf69b4cf8e87cbe14e",
+      "research/wx-e3sp/index.html": "56d2db791da803e231e5611d6bc375f637b47f4624276d3c7c25bf30a1f1b55f",
+      "research/wx-e3sp/presenters.js": "9cbdef26050ba56adde02ff13b1094dc09e169d3bdf1346fe5ef774d14ef5ed6",
+      "scripts/inkbox-wx-e3sp-browser.mjs": "b3dc8cf1c4cb357849d7539c98bf365fdc7ff179a198cf60e591bd16bc157981",
+      "scripts/inkbox-wx-e3sp-command-port.mjs": "6983eb0deb1a202948d2003d235c0fe3245c4c08a926b18919efb61cf2b962d9",
+      "scripts/inkbox-wx-e3sp-correctness.mjs": "814df0d90131e7eeb1b0bb182e89c84a2eff423a642c1e87574a2356fab8b4dd",
+      "scripts/inkbox-wx-e3sp-phases.mjs": "a0d670e85dedfc0cf3a8354a0d1d1d19a97497b2176d316d6ea1b979d23678cb",
+      "scripts/inkbox-wx-e3sp-reference.mjs": "9c45e8f99e44f1ff2ac9c28d04909af0326b2cf1773458fe6fe3cff734dc373c",
+      "src/inkbox/core/config.js": "bf40ef6fcbe36f806325ccae434206f14ca62622474dd635cb8c7f0d0c61fd0c",
+      "src/inkbox/core/cultivation.js": "2b28d44d0fb5bdc19ef85151d5eb8829253dbf5ebaa8ce59aa43b2d0b5b13002",
+      "src/inkbox/core/demographics.js": "93d59f60571a28fd1201bef8905e1681a63efb11a7bfdfe4a4ef5230ad70f639",
+      "src/inkbox/core/lore.js": "0e538fd024b5694e50e32d535f0991b02d0dbdc07b90ca76958c6b5ff70f217c",
+      "src/inkbox/core/mapAccess.js": "bfc3bbaeebb39eea645d7b944b41bc59982300b21fce9160b2c955b63564cdb1",
+      "src/inkbox/core/noise.js": "381d0a585b21c61e3090fd01d08b1ff513ee8160704011b221599c73452f58d7",
+      "src/inkbox/core/runtimeEvents.js": "f503fc0cd99e1fde6af2297f8e536c8cfa47fb4cbb9a59a1fe9eda6537e3cab2",
+      "src/inkbox/core/wanlingCatalog.js": "35752f06e6f54d404e2897210b891f4acdd443403977ca62c9f47c3906ac95bb",
+      "src/inkbox/dev/frameBreakdown.js": "77e83c41f00e535ee7dac8ec60a3f4fcfaa5f1813953851bdcfe7259d7efd62f",
+      "src/inkbox/dev/transitScenario.js": "5608c1fa6c04201200233ca32b023d3a455bff907780728eacb2f7e1913c24ce",
+      "src/inkbox/g1/characterIdentity.js": "bced6e47dd04041fa09cd8beb3361bb0a27e55c03c93e9b7468dc0e72aead9c2",
+      "src/inkbox/g1/characterMessages.js": "45f7c42a63e82744db22efa080bfc2321b428a958a597a094323e1f481df8154",
+      "src/inkbox/g1/characterRuntime.js": "6a72662a69353cb7a4e8a5094f8bb20ff41aacbdcd54765c63c887bd4e9e16ca",
+      "src/inkbox/g1/sandboxRuntime.js": "817fc558fbb195f1aafa032169cdc7542a2acfd009c5e0987b62b420036f1ec1",
+      "src/inkbox/g1/worldRuntime.js": "e311ab9263eb98b97fe5a1bba4ea0cf0d59061040fa7feb93987e005630db632",
+      "src/inkbox/g2/combatObservationRuntime.js": "bd239d73976fc4627076b71059fd6fd40384bbd19763ba2a95291f4ced8f01b0",
+      "src/inkbox/g2/environmentObservation.js": "8efa64ec7a33d8c0e4b5f15b7c740391c8140157aaa0d82dd8303bc232bf42cb",
+      "src/inkbox/g2/environmentObservationRuntime.js": "33ef1a74ee874138883f6b8e8a4c506cea530d0dba414a93820e62ad07dcf80c",
+      "src/inkbox/io/codec.js": "0858ab6c0b7947b82d87c31945305b92fb8aac0080268d6f1cc3f38903f71cfa",
+      "src/inkbox/io/save.js": "18f1d6a6dbd3eb41693947d21a5873d13874b02de8ab5923d6da222e0066a180",
+      "src/inkbox/main.js": "9dd43fab7b40567c6923ea79f75a4f051878b147a5726c4670aee3cff2779989",
+      "src/inkbox/presentation/readView/commandBridge.js": "ccd4a55411b33c6bfa170c790e8129d5d99ab84952872fd60c19275ead96ebb0",
+      "src/inkbox/presentation/readView/committedRegistry.js": "eaf641b8c9292bf67922262e5f7772eaf5f509dca5a34af95fce3b266bb3724e",
+      "src/inkbox/presentation/readView/committedStore.js": "73d91acc447977091ce7a4bd9c5a098cb93c4e3fa2a4e670285b9618dc92c8b0",
+      "src/inkbox/presentation/readView/index.js": "e07beac08a5eb3ba089271e22b6bd2ae93fe6aff7ecc290842b21db6d6f8f284",
+      "src/inkbox/presentation/readView/query.js": "94e10997f2ebea4bb1661bf3255d9c7f5fb18f9e174ca300d09220575496bdbf",
+      "src/inkbox/presentation/readView/sandboxBoundary.js": "51aaa21e9a316399d989eed58d95c6e4b0cc195d101d701ea9c0b807d3e6bfa7",
+      "src/inkbox/presentation/readView/terrain.js": "0d87896e7ea8bbfb6b70084334ab1e990958470407ded84a31de0c19263f7704",
+      "src/inkbox/render/camera.js": "6070191ae343b494ada56f73564ed0b47355b6982948857191035188d99d4449",
+      "src/inkbox/render/fxLayer.js": "644fcf4f2a1975a2a618ce461dd63b641ebe5f6fb21afd76de67dabf0742641a",
+      "src/inkbox/render/overlayLayer.js": "7f45519a4f8401be302f0368972d7a135353b28410280da6e0c857e1114678cc",
+      "src/inkbox/render/palette.js": "4a1fec191d2c648d03df53f75361a276370b96891a71f4c82f78d66b4a347527",
+      "src/inkbox/render/presentationStage.js": "752dc165c65ea80a21ed154fccf7c854c607c2ce37ef592e4a0aefe17515e0a7",
+      "src/inkbox/render/realmViewLayer.js": "a20680fb5b153f091f168df741e3a2e59c0840c7df6f9001ac37022a9e8ebb2d",
+      "src/inkbox/render/relationGraph.js": "46fbad2f988088445f5324794c0f8d794b63f488eb672241e85fea485d6274a7",
+      "src/inkbox/render/terrainLayer.js": "36045e7c400a43db2d7addf6ec6f8353f4ad8995c149f98863efedc987402014",
+      "src/inkbox/render/unitsLayer.js": "6f9be788286a5e6e1505907137d302e96a5b0269850186645b217d49ae226d9e",
+      "src/inkbox/render/wanlingLayer.js": "cfd77937f3739259f9837f700de31c7dc45d561d1ae97527fe6af041e5ddd527",
+      "src/inkbox/render3d/BrushOverlay.js": "b6f56be9a291bff4326d8673f9c61cf977ca372fd0dce67ad5d48395e0e15ddc",
+      "src/inkbox/render3d/CameraRig.js": "bcf170cac505cf8b77d9ee16e318d5c844816dcd74a8726521350b2ab36289b3",
+      "src/inkbox/render3d/Render3DAdapter.js": "0767d211d0f58abcad6ef08017f72ac96df1437f8a54c33a14c07b92edb4bfa6",
+      "src/inkbox/render3d/Render3DHost.js": "73d9869dd2fee090b30f67c9261d625d288825944038d551682dfb41fdf631f1",
+      "src/inkbox/render3d/Renderer3D.js": "5d76f7590eeb4e2062da4a4abc02e0ced79694e932b90bf575a1e22885e5d13f",
+      "src/inkbox/render3d/SelectionMarker.js": "b03305e85f23df80aa5e4fa1ed5315f8e35b3909587bdf1f94cdcc1e8dc2c3b1",
+      "src/inkbox/render3d/WorldRenderBridge.js": "8d9778c479919e85d2369f2645279042ad254b4ff71e214eb2ad143991ac171d",
+      "src/inkbox/render3d/art/ArtComparisonSnapshots.js": "b637896e3f4fc3e1db33f518b51d719908f0ffd314998d139059df7fb33c0fc8",
+      "src/inkbox/render3d/art/ArtDebugPanel.js": "d00341ab6daf60a87d19ac0e791c44b5136abf9ceff3ca81383332b956aa78e4",
+      "src/inkbox/render3d/art/ArtDiagnostics.js": "1f7e5125a6fcd588d79d15228d021a491d84478c6e4a75a210a2876d30360368",
+      "src/inkbox/render3d/art/ArtPass.js": "f0a33890e4ad7635919dc222988ac798da11302171680f2c1478e30b49708046",
+      "src/inkbox/render3d/art/ArtPassProfile.js": "6a4bf9a29d6659454e1ace2e0129b1f57f1d36751d3a056b91cdf3262049be9a",
+      "src/inkbox/render3d/art/PigmentTerrainMaterial.js": "3921abfa6ef61dda2d9011e64793606cb50a06f61a664c4d3865e519e4cca4ca",
+      "src/inkbox/render3d/art/PilotAssets.js": "6c7d8b870b3cc01a4f3c2b480b8f907daa039e1222a59fa7891ac1ca44c900b2",
+      "src/inkbox/render3d/art/PilotMaterial.js": "d23c3e49d2c78c9439fe77d5da3a6d4118c561782ce72cef21b13b97a2f83117",
+      "src/inkbox/render3d/art/RealmStyleProfile.js": "f715649730659b547a701e2cbae8f12ab31a443ca7add6197887972c74bcfe8c",
+      "src/inkbox/render3d/art/ScalarFieldTexture.js": "fdca16d736515330911b9bd3e09c3bc5c423fa9dc963f4c7a756d5b6ad194dc4",
+      "src/inkbox/render3d/art/SurfaceVisualFieldTexture.js": "b8d8d73989730b491494e9a371acb3ac60f598b1f025e66f18858f61f7c9a205",
+      "src/inkbox/render3d/art/TerrainDataTextures.js": "a80e4f46f22349015ae0a8f8cfe229381da1bfc40fa8b0432fb967e4a92bff8e",
+      "src/inkbox/render3d/art/VisualScenarios.js": "b26f66e39426990b9ce69340e2f6d83a6e1e46e87c1184a2e68af7f7c389bac8",
+      "src/inkbox/render3d/boundary/BoundaryInkMaterial.js": "85b9bdb2ed45a091074d0fc8e081f3fa43d561f9dfa15d24aa3d03bda58e5019",
+      "src/inkbox/render3d/boundary/RealmBoundaryLayer.js": "d18242bb6e2a9eb10fbfcaefe9e7622824edf0bf48e1b2e5261150dd017f4945",
+      "src/inkbox/render3d/boundary/strataProfile.js": "6337e4112b00b3a8d27ae4568c9c16cbd347a8553f53803fbcb7f2e11e8df39e",
+      "src/inkbox/render3d/busanzi/BusanziLibrary.js": "a4c66e268eab825ea409bfc49f952e7d71970420ba9cbcd4273546f2f41854b3",
+      "src/inkbox/render3d/busanzi/BusanziViewer.js": "43ba0ca03eb48077e8b291aa4e627df0d1cb26b5409f003cb14b1ea81f7128b9",
+      "src/inkbox/render3d/busanzi/BusanziViewerHost.js": "e00e68212f66dfc753870c8ea7decc81c008b91dd75622e609a40124d6b747fa",
+      "src/inkbox/render3d/busanziLab.js": "71442deecf82aea9f162add7694631e1c58ef84eb0f6629e71786064b6506c5b",
+      "src/inkbox/render3d/characters/CharacterBatch.js": "a7e414e4c0a7b155af540bb37207896a46524f7be30103fa2392d89fe2175dfe",
+      "src/inkbox/render3d/characters/CharacterLibrary.js": "6e7bd505130bf30d54a1f7312b47e881a251ff35c04e3368840d0794d511d4c3",
+      "src/inkbox/render3d/characters/characterAppearance.js": "ce8a9521ae3852b78710789c572ca43c53dd4c117516c4d0a16f3177ac8986aa",
+      "src/inkbox/render3d/charactersLab.js": "3d42eac80c3005c45056ca7ec1c065c089186742d9761439a01ae55092d2075d",
+      "src/inkbox/render3d/coordinates.js": "3a59a8912debc158767e256f1f144c0f78fa1cae03482b07403de3a69161422b",
+      "src/inkbox/render3d/creatures/CreatureBatch.js": "4033781b588536805af653a2a5c14b094d4005c1c5ea3868936d7d5c31b97ab5",
+      "src/inkbox/render3d/creatures/CreatureLibrary.js": "fcff31b0b6e60061a98050647354ff86a10a75abb8fe6c7082437d5df4b88eb4",
+      "src/inkbox/render3d/creatures/creatureSpecies.js": "4fae124279f40dc62d984de910cad35a385ef2bca625783ae031ed115d9b8f00",
+      "src/inkbox/render3d/creaturesLab.js": "090367d29e9c276ee40632ad083c39dbaea14e8bf1dcc8d677b65467b61dc2ac",
+      "src/inkbox/render3d/debug/RenderDebug.js": "0846be83ac1cbd7b641d94117d556fae66626445f682a1fab45c1caa1729ca20",
+      "src/inkbox/render3d/entities/EntityLayer.js": "3ab199ee54e73edb4913e7cd5262c9077ef5a62daee3b74374293cf0ffe2bdf1",
+      "src/inkbox/render3d/entities/deriveEntities.js": "7f84c8c1ac350cbbf834e3031f1776d0c83596eefdbaddd6f6288a65a2b31491",
+      "src/inkbox/render3d/entities/ghostFamily.js": "e75553a81ad4d5d560658328486592991d1b8dc6b82109481465d5d9d4a4909b",
+      "src/inkbox/render3d/entry.js": "47a152e450b6d82543285225b5c1b221ba1e58465155584aff1b7027107ef980",
+      "src/inkbox/render3d/environment/EnvironmentAssetLibrary.js": "9b404152cec67092ee0950da40f6fc719d7e4767b4b6e673319bd154e2e7d026",
+      "src/inkbox/render3d/environment/EnvironmentBatch.js": "88965fa446cddad925a53723245c1618486c52ccf021f3d92d78faedcf2d3317",
+      "src/inkbox/render3d/environment/EnvironmentMaterial.js": "615b7e6d4da93689a50b8aa67e5cd84d48753047887f77fdad68441e5d222944",
+      "src/inkbox/render3d/environment/RealmDecorationLayer.js": "e8b2d37ad10e6952f32d610892f2b243ba6876cb8605125c6e9c178ec5cdf19c",
+      "src/inkbox/render3d/lod/BuildingLODAssets.js": "c63d40a3d152d9400aaa623b92bcf1708db49c04afbd231a774815b0e6b428b5",
+      "src/inkbox/render3d/lod/CharacterLODAssets.js": "cdad8075fd8e55cb63c69f9ed9014c73cdbbe896c38bc75291e72531fa94f5e6",
+      "src/inkbox/render3d/lod/PresentationBudget.js": "882f7d2675a4b684acd1a2831a0b278507e84e183dc13f9b203ad87a2fbc30fa",
+      "src/inkbox/render3d/lod/TreeLODAssets.js": "386ad7192bb88a9750c03bf0bb81baec0f2e2dba73f4fa75df3e8039752cf8ce",
+      "src/inkbox/render3d/markers/LeylineGeographyLayer.js": "11c020e8434b58df9b75522eee9e5adf8025010023029f5627df06d36aefbaf4",
+      "src/inkbox/render3d/markers/RealmArtifactLayer.js": "76f52eb7e7b290edc1b7c5aef9129e68b9ad5bdff97f58230bf5f392227cbd28",
+      "src/inkbox/render3d/markers/RiftWoundLayer.js": "08722669e96a1dc0b1b31c58fcb47de7d575fc5e58c9d8e195ce3e137ddab6b5",
+      "src/inkbox/render3d/markers/SiteGeographyLayer.js": "e6e315179bfb2f8259fecb27856c07da8c2568d6816ae891ee5f0781fcd0cea9",
+      "src/inkbox/render3d/markers/WorldMarkerLayer.js": "0a190fbff5bae56ae03d5004857e346c1f811defa5e82a94883b6f17c61f8d84",
+      "src/inkbox/render3d/picking/PlanePicker.js": "87f4ae115a2798ceaf3341633134e803543e35b52718a5f21f933842d56a08ce",
+      "src/inkbox/render3d/readers/riftViewModel.js": "95cdcadbe051280255fd8ac0cdcc4cca46f450d991110f9a2d78d3e6fdf6cd73",
+      "src/inkbox/render3d/region/AccessGeometry.js": "5f683f06a0ef117bbf9efe022747d9c857abccff14888f08fed2197247a64091",
+      "src/inkbox/render3d/region/RegionGeometry.js": "df90c312b14772e9a16dc9a1c0289bc68a7a037df75d7b67bf3760aec722bae3",
+      "src/inkbox/render3d/region/quadMask.js": "cf802db06b25a1f8b098d5588f018957639a3703f521eca1372fd36e311ae536",
+      "src/inkbox/render3d/settlements/SettlementLayer.js": "dbbb42c353e820ea3d96840f283952b026b864c0d24ba7ed9647bda62f8af323",
+      "src/inkbox/render3d/settlements/houseFamily.js": "898e4d336f1da76e50308d68f78c9deabd53b0424832cbcfe146fa9d04da41e3",
+      "src/inkbox/render3d/shanhai/BreakthroughSeal.js": "2d0d0753d6c7301b2f6a10a1d2253aa673730477815e25d9ee96542c9c11e533",
+      "src/inkbox/render3d/shanhai/CloudBillboardBatch.js": "54f0120c9e300f67f0bcc97ec529f758b85c0f35c45af0150b0964237e829ae9",
+      "src/inkbox/render3d/shanhai/InkOutline.js": "808ac9849c4879c228e29058084fe70ba2d0c5b467f083986283c887a0f3d4c7",
+      "src/inkbox/render3d/shanhai/RealmVeilRim.js": "d0fd4c6e2a54f4b35e5dd753f3e7d2f6c2c100df9993fee5414a1bdf6ca76db1",
+      "src/inkbox/render3d/shanhai/ShanhaiAtmosphere.js": "63a4884696df61938a346ddafecb8decf6844498e9948c1594d6d85efedd513b",
+      "src/inkbox/render3d/shanhai/ShanhaiFlora.js": "00ebec28b230c00182bc3dde17893e1abe5e7608abd89e7f0359137bcab345ff",
+      "src/inkbox/render3d/shanhai/ShanhaiSceneryLayer.js": "382910e603bf6ae98cb2869e10822d908500e79b62b79a85d6b48accd11eef2c",
+      "src/inkbox/render3d/shanhai/ShanhaiStyle.js": "76237eba3e8ea3f422769635e85a3611bd3a93f4f25ed53592cdc55cca39f5e7",
+      "src/inkbox/render3d/shanhai/TerrainLineArt.js": "0b11ad247fdff1a0792ac9ce5347a48fb1249982ad633ea7e62ba1f468158f64",
+      "src/inkbox/render3d/shanhai/canvas.js": "ee1daf1d864c84e4689244f9453c8f3ff9dc61228d9243cd2059860b5ae88ab1",
+      "src/inkbox/render3d/shared/RenderOrder.js": "7b764f8aff8ac080b79e97af65a96bfc11bea93c8fa3e9fc36ac52775ce7a0b3",
+      "src/inkbox/render3d/stage/GeographyFeatures.js": "2221c929c162edf3ed683cdc19b86373def5d64872d988e2a847ae2c3676feb6",
+      "src/inkbox/render3d/stage/PlaneRenderProfile.js": "7070bfeceddabd1936f4c180d3943361c38bfee385dffa9ac23b0de2a00cd5b6",
+      "src/inkbox/render3d/stage/PlaneStage.js": "ee47cfc3aecd0d8bb1e2833fe99175173f8a70585c73b97781816ea9a1185f87",
+      "src/inkbox/render3d/stage/WorldSetSnapshot.js": "6e4019c69232bf40ad88a262cf87f61e5064bc41672a7f00626e8603527cfd60",
+      "src/inkbox/render3d/terrain/ElevationField.js": "2216143ff33d49a7171c94d70e548f7ec0504885a5eebab2947914b294bc8ada",
+      "src/inkbox/render3d/terrain/TerrainMesh.js": "78acaa443783ae88e06a96fe512cd97a041e993218b431244a0d28797467b366",
+      "src/inkbox/render3d/terrain/TerrainPicker.js": "cdf92247d9bb7abedd6de83b6523c21e74e3fb289202b439d45ae843d9d96981",
+      "src/inkbox/render3d/terrain/TerrainSideLayer.js": "0ab69e35e1f4ca139ac845f441a75277a245bfd7523391d1c006bf49439878f5",
+      "src/inkbox/render3d/terrain/VisualElevation.js": "bf51094e4795fe2633563004f5fd006b4d8412e54bdb94776d045c605f0a1f98",
+      "src/inkbox/render3d/terrain/heightfieldRaycast.js": "57e019eea23bfdeb64dd06642416653cda8d5f9cab78ce2f8e7f2511f2eb305d",
+      "src/inkbox/render3d/terrain/sculpt.js": "b79dc2e63acf7669359907a35c10b98816de329ef22fc31e7632779d627ce70e",
+      "src/inkbox/render3d/terrain/terrainGpuConfig.js": "410dedd43f5045c52edc71be4177bb04473b4f8a867056fd40e17ef1ec35d563",
+      "src/inkbox/render3d/terrain/topology.js": "6c42dd8926c1d2d042a7b31df452e55e85ac0874c47f3fb0d36531bab7a702e5",
+      "src/inkbox/render3d/vegetation/VegetationLayer.js": "8cb4dd0fe5bf6fc9456f49b1c72629eeb49d7f6173d601ee3166e237fd88a1a6",
+      "src/inkbox/render3d/vegetation/deriveVegetation.js": "d7e9c1269e00870fca79c511745d02f73298098f831992d4a2f5009ea9eb241b",
+      "src/inkbox/render3d/vegetation/treeVariation.js": "60279bf030b84f47c291862596d26d5868e78509306beb90fcd96629efe1f043",
+      "src/inkbox/render3d/view/DraftPathOverlay.js": "c4be3412bad9d34068312e0bf4e4be3ddc77bf962f5ee59f5c2ac3aef554e367",
+      "src/inkbox/render3d/view/RealmView3DPrototype.js": "aba5f38be24b2dec1fbf5e634543c6f35d9f9581a3bd9226f14f0059885fccba",
+      "src/inkbox/render3d/view/RiftNarrativeFx.js": "f898c98419e44a1fe3ff9f2556b798f975e51da3b260431667984dbdee0a3714",
+      "src/inkbox/render3d/view/SlabPrototype.js": "e000d2cb2310c34bd077e2fb8a9c66fd2cbe1a76c813f29661988f7be42e5b12",
+      "src/inkbox/render3d/view/ThreeBreakthroughFx.js": "cee415ac2af2d8933d4944e7effbdfc52586b987464471cfabd87fe3bf608afe",
+      "src/inkbox/render3d/view/ThreeCombatFx.js": "ba6ac8f13ceceb6e6d224da4c1c1b7b9028a7e08c46e8fbea6adbb46907afd1e",
+      "src/inkbox/render3d/view/ThreeFxProbe.js": "8c279760ca50945e9d6b144bc9d01f72318a73f1e7d70891717000be16cf6639",
+      "src/inkbox/render3d/view/ThreePowerFx.js": "159e8d87b8017195f1b7c713075cd7e5a3eed6ce0aa19136493a2431484c64cb",
+      "src/inkbox/render3d/water/WaterGpuSurface.js": "97b506045383824f1748fef9e7a1aedaa58aa731b3aa2e5950efb3b9e0e0b9e1",
+      "src/inkbox/render3d/water/WaterLayer.js": "0e89e5d61b52d72f689025ddf86563215f936e9da0d1c9649010968ff4fd858a",
+      "src/inkbox/render3d/water/WaterPigmentMaterial.js": "12d19b2d6243917e3e032be157f58fc20e30079d8daa8250fecae2298920afc0",
+      "src/inkbox/sim/advance.js": "aaddffe9563630adc5effb839366bfd917f9d452022120c23ead23f24d0ccb4c",
+      "src/inkbox/sim/artifacts.js": "d654bc7fcc4fb3424429da6e3cc3a4436801aca0857f57ece3e6743345a85343",
+      "src/inkbox/sim/biography.js": "04a10497fc180dbfd8f73953376dc3488d8b6a894c987c279ee954fd38eb6019",
+      "src/inkbox/sim/busanzi.js": "d2e64fc559d33af46dec001fb628259a42e40a27ac7f90bf208f4843fac4194f",
+      "src/inkbox/sim/combatEnvironment.js": "29c8626e1f8341aca5b9174be48d6ad1b3e2146c814ee16ef47e5d05ab3ae8bb",
+      "src/inkbox/sim/cultivation.js": "5c4334026a281118511220f948732b1c7728532614616f6ace684e2f0314b3a7",
+      "src/inkbox/sim/daoActivities.js": "a36e10d8218b9c19ecb238e9bdf9687ce348a47f3312175535f1187c0976039d",
+      "src/inkbox/sim/divine.js": "a69f9b700827a70e713a2c9afb48864e5d2ff92d86af9dcdedf3d64cd2d01b41",
+      "src/inkbox/sim/ecology.js": "edcf7a6f0d610f482aeec753bc146f08a9e25114cf3fe03e155d599932bffe42",
+      "src/inkbox/sim/entityReadView.js": "e425b641677d4a7c78ec885f23a68aed3efb2d26a2ea5aa7bf96da35a5a662a5",
+      "src/inkbox/sim/family.js": "a8090b67333f9be3c480e4d635d28bfc553c24d01423f75c33f038950f2419bf",
+      "src/inkbox/sim/heavenEdicts.js": "3a7636e8082443dc972463732dc543e969d30baef6601ccff80337fcdde32b59",
+      "src/inkbox/sim/hydrology.js": "ca00063427542e6091f20cf2967e1df959aca732b387e4398abede0999781f9f",
+      "src/inkbox/sim/interventionFeedback.js": "0e26573a7247dc3c7fcde648e645ad4d678186bdffd69e72f8c304c157201b7f",
+      "src/inkbox/sim/journal.js": "cca18694e996e14ed1d3796ffe3706c62211366b78762f01cbb97861ea73992d",
+      "src/inkbox/sim/life.js": "998177a5c95dee7d71114c1d217e56ca187877a5bac465324df64dad8352d772",
+      "src/inkbox/sim/nature.js": "fae9a289213a3bd401c8a7c7345221b7af93ff80a0a0cdd16ac3da46ec3d06da",
+      "src/inkbox/sim/necrology.js": "c3808e4c952f9340205bd56c4f746ecb0e670e567bdd8c264eada3936176180c",
+      "src/inkbox/sim/netherLife.js": "ded278d2479b891415874f9c1b066dbbc2f275650ecf6833f07356cac098389c",
+      "src/inkbox/sim/observeEcho.js": "d38472878ca4cea11ecdf9fd6d99d639fb5d022975ff69f04233a82a3cab8706",
+      "src/inkbox/sim/possession.js": "220798989c19dbaeba616a559aa1271669f4b9806676163d684b0fb902ffb753",
+      "src/inkbox/sim/powers.js": "51fa4709338109d5dbe79e5b66cdf1092da102fe8d3d7c2c508c857c102d6c5c",
+      "src/inkbox/sim/presentation.js": "586948ac06d2d8de9a29921b89e81678e66a2e3db60a5cdc8dfbe678f6a35876",
+      "src/inkbox/sim/reincarnation.js": "9542278d6c2845ab96d0eec8e17ea9eeb6162b3efa7a45b5f505e418de2603ea",
+      "src/inkbox/sim/relations.js": "aa55c1862809ba986440c1d23d7a82c14563e40eb56c5f07709a3e1a3dca421d",
+      "src/inkbox/sim/rifts.js": "6094856650ff67c5f1d96a0c0a5a739fb625956fb4eb2d5a901a9c1e763be9d0",
+      "src/inkbox/sim/runtimeState.js": "0ed513d956f6da7d8449d3da67741c027b61717f41a8318e90beaf3af99ffece",
+      "src/inkbox/sim/sectEconomy.js": "52353bd4c19c1655673717877f153dd560d9347d9b97259942843413a08c6e0d",
+      "src/inkbox/sim/sects.js": "404726b9ff35fb95943e91e13a1ab25fc739cfff10f9eefdbc94f91005be7300",
+      "src/inkbox/sim/settlementResilience.js": "6617d1db34201f9fe6916bf4db9d3c0aa6676cc5da3c386fcf6c7732462ce9ad",
+      "src/inkbox/sim/siteSearch.js": "9ce328f27b390cc030be05fae01061e2e4c4cc5a93c14f0690712874b355f71b",
+      "src/inkbox/sim/sites.js": "c4babcbc558d05bed84d0423c09103b90d2b32d96253d6f41116bac73f35ad4e",
+      "src/inkbox/sim/territory.js": "1f42080e380034cbaaf6e016ca670c8f81305966ac755954008b2df7d58d5f5e",
+      "src/inkbox/sim/toolPresentation.js": "e14e697419f28b3aded0e8bf29c7cd5497cde636e558e4f2b5c6820f6f0a6975",
+      "src/inkbox/sim/transit.js": "6d99542a493c5bd3a4d66381d067261ea347736984a981b38ecb6bff68e1e20e",
+      "src/inkbox/sim/upperLife.js": "fcb74e22de214ec8ea18a396a4deeb8daadff49952719647c78d32b4b4dabab3",
+      "src/inkbox/sim/wanling.js": "1f0afc2730edf82d456c19da7aab0629c169ac1d1c71fbfdf1a72b9b225ab578",
+      "src/inkbox/sim/war.js": "e07c9b00a99f8cd620b5f2d93c33bee96df68a23b9d4733a7fdbd532aa7ae9df",
+      "src/inkbox/sim/watch.js": "dbf6cc0bcfb161110e1ae512294cafb0750a5601283db0d8661fe42c1a7a402e",
+      "src/inkbox/sim/workMetrics.js": "04e41b95586ade91b63a1335d88c29271a40b9d68cbcb125b5cf83431980cd79",
+      "src/inkbox/sim/worldEvents.js": "2f8359dcffd15da32e62d71caffee4cf16ff56507b0ab118c2104f5222c27239",
+      "src/inkbox/sim/worldStreams.js": "d650e1f3f308d18fbaf3d861fc7256d62e8c1ffc701af03cbbf7a7b3ead1ebee",
+      "src/inkbox/sim/wraiths.js": "2355e53752d12cae0d088a8919328c4d38d0a3e7a16d3620ccc935fead85f15c",
+      "src/inkbox/ui/RegionMask.js": "587cc5af372803b9fa7971c01056d2444e141f4fdfefe1406a93c8ea68fc6d0a",
+      "src/inkbox/ui/g1/presentation/characterCard.css": "536efb09c72790399ccdd682a54670b3c48823d42b1196f5b109a93553329aaf",
+      "src/inkbox/ui/g1/presentation/characterCardFormat.js": "812a4fe64e818c069fce45a3fad63239d9f3d8d345d47a9f5c2b3b122bffc7e1",
+      "src/inkbox/ui/g1/presentation/characterCardView.js": "4c9d75249f0f5ab8019305bcf02d9220148b47bf518b1103264bf8c76f9d0032",
+      "src/inkbox/ui/g1/presentation/characterPortrait.js": "f28ec648e1bb9265541825444bd5252b35103e51d964e6390e879f869ede9992",
+      "src/inkbox/ui/g1/presentation/mingpuFacts.js": "95565f8d9d9efc4430eb27b3155c49a7213b678020bb87f6164736c42ef3b067",
+      "src/inkbox/ui/g1/presentation/mingpuView.js": "d9c0d97b08984f7d237b18b5277a4f10d8d3c0c335395be31d475b3f442c2c7e",
+      "src/inkbox/ui/g1/presentation/portraitGenerator.js": "343e5fbf5691b8073df90be1d716c6d2263dc921b82e2e3e86b465f70ca25857",
+      "src/inkbox/ui/g1/presentation/worldCreationInfo.js": "09c41a14447df82683507f0cfbe414679a87d311303e3b6d3cc46a111fbd4c75",
+      "src/inkbox/ui/g1/presentation/worldProgress.css": "ef004287b68f60e95063c5fdb8d7ea0cfd8fdbd684b8b8006629d6c40cc95e88",
+      "src/inkbox/ui/g1/presentation/worldProgressView.js": "5c624e1302b91f1778fd09bfa932413aaca08d30abc272227e3cafd8cbe435ec",
+      "src/inkbox/ui/g2/busanzi/busanziPanel.css": "6bf00cbf016ce1cd4cd7df9d61b358099d08d7d940b9e12dac59b023228a8006",
+      "src/inkbox/ui/g2/busanzi/busanziPortrait.js": "d8bdb9cc2b39925eff50aa7b813e718d4fff0f547a27c03a7fc2c3a063ae83aa",
+      "src/inkbox/ui/g2/combat/combatObserver.css": "a1a4af26bb0f4df64da7c5101dc384a79d2fc4ae90ccfc0a932f03353aaa4233",
+      "src/inkbox/ui/g2/combat/combatObserverModel.js": "44c390570dedc88da189c3a4641b65bdb406a65647416bfcbdf96fc5c6f0278f",
+      "src/inkbox/ui/g2/combat/combatObserverView.js": "2be2f621874d19b7d9a3df27fec7edcda4cb9dbdc2b25647a30bd49c0c387836",
+      "src/inkbox/ui/g2/creation/creationMenu.css": "51cb762204659d7daf0e0994b50360809fc2b27e59d0e08228c35787754f5ac2",
+      "src/inkbox/ui/g2/creation/creationMenuModel.js": "9635e4e064a94f83c1a6792ad87acb02e049a8266f24c8a5c6a40c60968887b1",
+      "src/inkbox/ui/g2/creation/creationMenuView.js": "c8947fc436a024a8556f11e10e50e18bd946b040dc113629aada00effd0a69ba",
+      "src/inkbox/ui/g2/environment/environmentObserver.css": "2a37c1ed6e116a11a26eafe501a12d41ed28814846096b20987986d551e6c0cb",
+      "src/inkbox/ui/g2/environment/environmentObserverView.js": "359676ab46e3bd6097e8d9ae9f0c14210166beddeab51ceb01c300fa13629c57",
+      "src/inkbox/ui/inputLayers.js": "585e2853537c912e919c8da41697b0175f06d03f62458b98a3bff80538ac91d0",
+      "src/inkbox/ui/jinshiSkin.css": "83175fe4404d9e0445d6d951f3bce66879a1ec8b63134021213bae72b99291a6",
+      "src/inkbox/ui/journalPanel.css": "7446d9b277d42f03de05d26270d127db3fbdfa67b235a7b650a2f9b451976938",
+      "src/inkbox/ui/journalPanel.js": "768e96a0a71436d074e7cc57ee90c6f60676ecb2ac807357befe39b52d9fed80",
+      "src/inkbox/ui/observeEchoPanel.css": "2c2c7129c89532f6626a0d97bbcae21ad7f8629d0874668646265222f83f33ed",
+      "src/inkbox/ui/observeEchoPanel.js": "19395a499a221ea7ca2572831f04b4e1a7f3dbb11775c5c1353e942606ba2122",
+      "src/inkbox/ui/opportunityTools.js": "1119eeafdc67feca2921b4eb8f8cac891457efe1422cebe269338efb97edb72d",
+      "src/inkbox/ui/personLifeFacts.js": "b466fb782a20a9f37c58123abc2ee1ee416f732650162cc86e801c809d8c0992",
+      "src/inkbox/ui/playerExperienceNav.css": "8e2088bd8ba14917ddf89ceaae13a81a4300a44f095f9e30a0e8e6f52380965d",
+      "src/inkbox/ui/playerExperienceNav.js": "12e97dd86a74d2b5411906358f21a782a7965284f128244a4f65211e7be21c00",
+      "src/inkbox/ui/qol.js": "0b9f6aaa072cb92e7f3f21bd784c59c0bf70377d5689292e5d1f9c271558f37e",
+      "src/inkbox/ui/qolState.js": "37f6adf32ab5c7d464066ea42563c7c40474e83d01dbe35a0ea68d1a0911db3e",
+      "src/inkbox/ui/r1/creationHost.css": "294c258e6f5eea1cc3cfa8ec89afc159b99ddc6a83e7688046dace5674ddf58e",
+      "src/inkbox/ui/r1/creationHost.js": "c5922b6795eaa2643538ba5ee5a42eb21156d1f3b81d949f0acde2775aee73ed",
+      "src/inkbox/ui/r1/secretScroll.css": "f63bb9b0795ce9999101b20266d721f54b685d5e8f6311aaca16f378795dab45",
+      "src/inkbox/ui/r1/secretScrollHost.js": "96b5067625454c533948017af7f801932cfd654924979a985ac24c002689ebaa",
+      "src/inkbox/ui/r1/secretScrollSymbols.js": "1f54899e20f45de2dbcdb3792a1b8e5a4835c9b1ab209938e9ede10283711e95",
+      "src/inkbox/ui/railPanels.js": "44db1f5828d53b027fbdd66af2805c4140f886ae6f443b7a824e4ec84b27856a",
+      "src/inkbox/ui/realmInspector.js": "68adee7bd0dc67bb9b6e6eb3d114a38ae470b267b293d28c065c9dad064e2f93",
+      "src/inkbox/ui/realmTrace.js": "282dab105a2e688e725a2e440b0b083b54e777dfaff4b1bb7ef45325fbd1e2c6",
+      "src/inkbox/ui/realmView.js": "a7a0eb71917b4b246cb734977ff748f06569edf9234057faceca04025837e59e",
+      "src/inkbox/ui/realmViewState.js": "63d51cc765126321f1b60b5e9fd1d8c68bda86e1fa528abbe41ad4ac45d95567",
+      "src/inkbox/ui/sectSupplyFacts.js": "e51f5c970ff3aef388284003b6d73373b1f7d05078496694d7d0efcaea9a513b",
+      "src/inkbox/ui/settlementInspector.js": "b9b60edaca2a1b59baade3da9ffe39a3b7c3c17ea13fafb294f225c51df017fa",
+      "src/inkbox/ui/storyCardsView.js": "a8b71fdf03dcbc529c32937fb17bff1cdef65dff2bbe35ea2cb846f8c15bde36",
+      "src/inkbox/ui/storyNavigation.js": "6c7d9eb59c13ab775631e89ec754ac46e04daae3547248ed8661d93801ea1c3e",
+      "src/inkbox/ui/tools.js": "95ede2c708c2d9c0cffc4126d96225f72d76ce6e96c53844af7822ee1b587f61",
+      "src/inkbox/ui/transitPanel.css": "1c1bc709e9f338dada13999b8b6a0a2d6d4ce3ebf0cb651751de493661eb4832",
+      "src/inkbox/ui/transitPanel.js": "a42384d79d98afa181b2eb6aa31a7fda51cb58f2c3e50674965966bb1f687660",
+      "src/inkbox/ui/wanlingFacts.js": "b5abc45fb1f1c6a02fa468a7dd1e1fb8ac4db2f03f97f3e16425a68f2547b5e9",
+      "src/inkbox/ui/wanlingPanel.css": "27cc5db54296a4a6378e7e916a35bbad4b0599960f8882f34d86ce18a49d8dc4",
+      "src/inkbox/ui/wanlingPanel.js": "adb70c3c27d477a9c3cccc96397bdf59b1d3fc6bcd6d664153bc9b3849e871bb",
+      "src/inkbox/ui/wanlingPreview.js": "5c1d49efdd5039fe9788c0a87bb4830b4945740c6d73532bad8e4d3e625d8aec",
+      "src/inkbox/ui/wanlingSelection.js": "1ae3f8db97bac2de92745111f4e1f8a6f9d80d74a24d7405eb479e747677e063",
+      "src/inkbox/ui/worldCreation.js": "f991a8c5c1566f2177aecf9ac6e3978ea74c6c3b23b2fec94ba7051a6a777425",
+      "src/inkbox/wanxiang/bloodPhysique.js": "789f19d85615c70551531187836ae7c88d87baf7529d2a80101995652d3a03b2",
+      "src/inkbox/wanxiang/catalog.js": "d028288e32b029859fec44f222a453abf5c25ff7b8a9737c9b9c4f27ab0a91f8",
+      "src/inkbox/wanxiang/changes.js": "d7f3382afb2982b89911b026c2f0c617f0632b2952c00b0e42f52246fa5666fc",
+      "src/inkbox/wanxiang/conditions.js": "7e06fe831752dae3072f77598a0e75d93f4dbedd46f7c820f40d4abbe3bf73bf",
+      "src/inkbox/wanxiang/consumerManifest.js": "1cf69681c199a9bea89ff5de19c8ccde2fc60c6171fd56a226ae8e43ab12e0e5",
+      "src/inkbox/wanxiang/content/README.md": "99c1b6afa3e4a55d6593252fbddd3be12fa9f0a905ac10a61869eeaffdef02a2",
+      "src/inkbox/wanxiang/content/daoSeeds.js": "b46655dbcf9c9d120a52c6b3c77d2f51a69de511374731d82292729f15856419",
+      "src/inkbox/wanxiang/content/designCatalog.js": "10ecf82cce918aec6e8641456a48167bd65b91ea979ca4916e766dfa62e10d8f",
+      "src/inkbox/wanxiang/content/experienceTraits.js": "7bfe67c31cd434683912c825ac28d0e3acd3025536d5ba5a64ab1276125764b6",
+      "src/inkbox/wanxiang/damage.js": "e2916d8890d3170d7b9329e283006cdd5f71460e33cfb71ef07e4de306a8e70d",
+      "src/inkbox/wanxiang/daoSeeds.js": "d6b0a63af826bfa012dc87e2b7df45003bac8f0d2f052da78d4b7867ec7abaf8",
+      "src/inkbox/wanxiang/effects.js": "40dffe472cdd344ae64718e63a8c0496c2711b005c2612765cbe06915ffb4c54",
+      "src/inkbox/wanxiang/encounters.js": "ae25323a75a3f56351569259a96c9263e35bf4a4a7eb1b330eab0b80bc23c4e6",
+      "src/inkbox/wanxiang/experiences.js": "16ac32519f9d2e29433194c5f643f0e640db0b020ecd477b628fca8f1ada78aa",
+      "src/inkbox/wanxiang/inheritance.js": "de4037ff646c91a3d6f543739ce60ef48b560aae1ef2fdbdbb61d064bd2f36f9",
+      "src/inkbox/wanxiang/legend.js": "cfcba9db8220e4160021e82496c265c50d0954cc7941ee3f8348d1888b44319e",
+      "src/inkbox/wanxiang/manualIds.js": "58b5f4d03818f1f824a71ae4414cbfd377631d76c472db1282e496eb63115c70",
+      "src/inkbox/wanxiang/opportunities.js": "11041220ba2ea25a5da262bac743d5ca362d2afae42beff18f64b9119b4e4add",
+      "src/inkbox/wanxiang/opportunityGeography.js": "904814447e7c2f043127de9a658dc19dd212a61308398bf5c4594fd7e4dcc07c",
+      "src/inkbox/wanxiang/practice.js": "cb91e599dd2268341d482584c4346a898dd842e3308aa1434b0ddbca5b326153",
+      "src/inkbox/wanxiang/profile.js": "78837e741ba41c56fb3b770113f12b771ec3c73d96251bc8cfcfd93f5dc67035",
+      "src/inkbox/wanxiang/runtime.js": "bcb0562e9cd15a6270b607fa7ec36b159b0a93dcea954175b93888a21b530ac9",
+      "src/inkbox/wanxiang/saveState.js": "12ded4262edd4d7b8f56258dcefb4683ecbb61146fe87060d65393112b713aa7",
+      "src/inkbox/wanxiang/skills.js": "af2f756016982ed3a732680310f05294111bcd1103e952c39a8ad1149ffa0fba",
+      "src/inkbox/wanxiang/soul.js": "c99a36f076d49af0c9df04d8cce82d5572479d51463ec255e4476d168a0505d1",
+      "src/inkbox/wanxiang/storyFacts.js": "63c08d642380cb9b338efea1a0c15e8faf1d2e814e7251ffcb049dc13208cc84",
+      "src/inkbox/wanxiang/storyPeople.js": "925361221514aedb958a767c0e97a260228cb737d47dd9d5062c1f3d55804cd0",
+      "src/inkbox/wanxiang/storyReading.js": "a9753b37699960f9941d58f4e3f7518f791ae214def523ec1681360116169c9f",
+      "src/inkbox/wanxiang/storySelection.js": "03cb954daa052b2da6c38cabf98bc637d892f70615ebe5b32ad5fcc692078ba3",
+      "src/inkbox/wanxiang/storyWorld.js": "1b92812cfa920f4f75daa0ad5046ddaa53aadae421c4134c410da322b2868b01",
+      "src/inkbox/world/World.js": "0e21a481474298e8e164db456b7eae5eaaf87b144c8f732e65a824559c5ac7cb",
+      "src/inkbox/world/localWater.js": "f897b25233cde19e84ba845a828c316924b6a3aa44a490d1dcb028c1ae117132",
+      "src/inkbox/world/mapProgress.js": "f2ee4d291cb4bd7c780c4903600663d0362211b810d888b918f566e8525874b7",
+      "src/inkbox/world/planes.js": "53176bb8df052e3f344faaaea07fd4024caf61fa44b5b14e692de2c0db2d76c5",
+      "src/inkbox/world/settlementIdentity.js": "0e2056f8cab9a559719654c1dacbc28bda69fe65f57eec9a63fa4a9da7b125cf",
+      "src/inkbox/world/settlementState.js": "2a2b7ffc449fdef78d629045abab5b9c40a731a52294b523e14542422a90f30f",
+      "src/inkbox/world/terrain.js": "70aafeb7d5147218b3a389aba818827f5801a93d629c411bdba74cba517e6bad",
+      "src/inkbox/world/terrainChanges.js": "e85ea2c1bb4d3a4d31b808992bd3c008d39a0777c64f5d074d7ffe7954227c80",
+      "src/inkbox/world/terrainEdit.js": "798dffae512e28d4ec825e4004a7fc3ba4611c7456b8624b9c44489a9f666038",
+      "src/inkbox/world/transitGeography.js": "2b5d474a516d867696a500ad5561269ea965122baec1e30c49d6b54aa51a7d8c",
+      "src/inkbox/world/transitState.js": "42aa3c5a7355a972004440620812fdcb76879aae357048d088f178b566a86842",
+      "src/inkbox/world/wanlingInfluence.js": "9f9d92a6a738747176a2826d063135f870ed42b11745fbeb9a59cac70a9542e6",
+      "src/inkbox/world/wanlingRelations.js": "cc7657149459441ed29ff819c138568ffebef8d33ed699651a3e94df656269eb",
+      "src/inkbox/world/wanlingState.js": "25d96dc306a2c4e8fbd5b6e0ca685383f13169793ab8c0adccf7a549fed17005",
+      "src/inkbox/world/worldGeneration.js": "70679a4834499116d2684233a0ddf8c961a55d036cd5fe4ea691273e80da454f",
+      "src/inkbox/world/worldgen.js": "ba31e21410e918d223b32c652bf16eaee87304ea17406bd84700c9d44aac878f",
+      "src/inkbox/world/worldgenNether.js": "7e0ccd84c39c530ba9546e27d76e5245f113f624827bcabef72935347a552779",
+      "src/inkbox/world/worldgenUpper.js": "8788606899438e7cb43f1afaac781c72e1dcbc0ff59b361e5edddc3a8968083f"
+    }
+  },
+  "input": {
+    "file": "E:\\world4\\坐天观井第二纪元\\inkbox-wx-s1\\reports\\local\\wx-s1\\natural\\20260914-400y-save.json",
+    "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+    "bytes": 10073655,
+    "natural": true,
+    "childRealms": false
+  },
+  "environment": {
+    "createdAt": "2026-11-18T02:41:10.178Z",
+    "node": "v24.11.1",
+    "v8": "13.6.233.10-node.28",
+    "platform": "win32",
+    "release": "10.0.19045",
+    "cpu": "12th Gen Intel(R) Core(TM) i3-12100",
+    "logicalCpus": 8,
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "E:\\world4\\坐天观井第二纪元\\inkbox-wx-e3sp\\scripts\\inkbox-wx-e3sp-browser.mjs",
+      "--out=reports/local/wx-e3sp/browser-formal",
+      "--age=400",
+      "--rounds=3",
+      "--duration-ms=30000",
+      "--warmup-ms=5000",
+      "--inputs=1"
+    ]
+  },
+  "method": "Fixed dt=3 in the private research context. Edge runs the actual Canvas UnitsLayer and WebGL EntityLayer through the isolated page. The browser seals each sample at the first timer callback after the requested interval. Input time starts at the trusted DOM event timestamp. Local feedback ends at the first completed render callback and authority ends at receipt delivery.",
+  "sample": {
+    "durationMs": 30000,
+    "warmupMs": 5000,
+    "rendererSize": [
+      1366,
+      768
+    ],
+    "browser": "Edg/157.0.4341.60"
+  },
+  "cases": [
+    {
+      "id": "400-canvas-cooperative-r0",
+      "renderer": "canvas",
+      "round": 0,
+      "browserBuild": "Edg/157.0.4341.60",
+      "summary": {
+        "jsFrameMs": {
+          "calls": 299,
+          "p50": 11.099999999627471,
+          "p95": 15.099999999627471,
+          "p99": 28.699999999254942,
+          "max": 41.70000000111759,
+          "total": 3588.5999999940395
+        },
+        "rafIntervalMs": {
+          "calls": 299,
+          "p50": 100,
+          "p95": 116.60000000000218,
+          "p99": 133.3000000000029,
+          "max": 149.79999999999563,
+          "total": 30066.599999999977
+        },
+        "longTaskMs": {
+          "calls": 1,
+          "p50": 50,
+          "p95": 50,
+          "p99": 50,
+          "max": 50,
+          "total": 50
+        },
+        "over50msJs": 0,
+        "over50msJsRatio": 0,
+        "over50msRaf": 299,
+        "completedDays": 39,
+        "completedDaysPerSecond": 1.2995711415232811,
+        "stepCommits": 13,
+        "commandCommits": 8,
+        "actualDisplayedFrames": 299,
+        "atomicMaxMs": 25.600000001490116,
+        "atomicByPhase": {
+          "advance.day-epoch": {
+            "calls": 14,
+            "p50": 0.09999999962747097,
+            "p95": 0.8000000007450581,
+            "p99": 0.8000000007450581,
+            "max": 0.8000000007450581,
+            "total": 1.5
+          },
+          "advance.wanling": {
+            "calls": 14,
+            "p50": 0.2000000011175871,
+            "p95": 4,
+            "p99": 4,
+            "max": 4,
+            "total": 7.000000001862645
+          },
+          "life.prepare": {
+            "calls": 14,
+            "p50": 0.09999999962747097,
+            "p95": 0.2000000011175871,
+            "p99": 0.2000000011175871,
+            "max": 0.2000000011175871,
+            "total": 1.8000000026077032
+          },
+          "life.entity": {
+            "calls": 19039,
+            "p50": 0,
+            "p95": 0.30000000074505806,
+            "p99": 1,
+            "max": 6.900000000372529,
+            "total": 1730.2999999839813
+          },
+          "life.sweep": {
+            "calls": 13,
+            "p50": 0.09999999962747097,
+            "p95": 0.5,
+            "p99": 0.5,
+            "max": 0.5,
+            "total": 2.399999998509884
+          },
+          "life.villages": {
+            "calls": 13,
+            "p50": 1.5,
+            "p95": 3.300000000745058,
+            "p99": 3.300000000745058,
+            "max": 3.300000000745058,
+            "total": 22
+          },
+          "life.sects": {
+            "calls": 13,
+            "p50": 1.700000001117587,
+            "p95": 17.600000001490116,
+            "p99": 17.600000001490116,
+            "max": 17.600000001490116,
+            "total": 36.900000005960464
+          },
+          "life.aid": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "life.war": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.19999999925494194
+          },
+          "life.relations": {
+            "calls": 13,
+            "p50": 0.09999999962747097,
+            "p95": 0.5,
+            "p99": 0.5,
+            "max": 0.5,
+            "total": 1.599999999627471
+          },
+          "life.family": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          },
+          "life.reincarnation": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.19999999925494194
+          },
+          "life.sites": {
+            "calls": 13,
+            "p50": 0.10000000149011612,
+            "p95": 8.300000000745058,
+            "p99": 8.300000000745058,
+            "max": 8.300000000745058,
+            "total": 10.099999999627471
+          },
+          "life.artifacts": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          },
+          "life.events": {
+            "calls": 13,
+            "p50": 0.19999999925494194,
+            "p95": 0.5,
+            "p99": 0.5,
+            "max": 0.5,
+            "total": 2.400000002235174
+          },
+          "life.busanzi": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "life.finish": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.daoActivities": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 3.199999999254942,
+            "p99": 3.199999999254942,
+            "max": 3.199999999254942,
+            "total": 3.199999999254942
+          },
+          "advance.upper": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.nether": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.rift": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.wraith": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.19999999925494194
+          },
+          "advance.nature": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.2000000011175871
+          },
+          "advance.transit": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 4.5,
+            "p99": 4.5,
+            "max": 4.5,
+            "total": 4.5
+          },
+          "advance.mapProgress": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.vows": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "advance.complete": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "commit.projection": {
+            "calls": 13,
+            "p50": 2.200000001117587,
+            "p95": 3.899999998509884,
+            "p99": 3.899999998509884,
+            "max": 3.899999998509884,
+            "total": 31.39999999664724
+          },
+          "boundary.command": {
+            "calls": 8,
+            "p50": 17,
+            "p95": 25.600000001490116,
+            "p99": 25.600000001490116,
+            "max": 25.600000001490116,
+            "total": 140.59999999962747
+          }
+        },
+        "targetDay": 144210.0852,
+        "committedDay": 144045,
+        "queuedDays": 162.08520000000135,
+        "inFlightDays": 3,
+        "lagDays": 165.08520000000135,
+        "normalStepRestores": 0,
+        "normalStepFullSaves": 0,
+        "sliceMs": {
+          "calls": 299,
+          "p50": 6,
+          "p95": 8.100000001490116,
+          "p99": 22.90000000037253,
+          "max": 31.100000001490116,
+          "total": 2012.0000000037253
+        },
+        "activeSliceMs": 2012.0000000037253,
+        "atomsOver6ms": 12,
+        "atomsOver8ms": 10,
+        "longTaskWallShare": 0.0016661168481067708,
+        "completedStepsYieldingAcrossCallbacks": 13,
+        "inFlightDisplayCallbacksPerCompletedStep": {
+          "calls": 13,
+          "p50": 20,
+          "p95": 29,
+          "p99": 29,
+          "max": 29,
+          "total": 279
+        },
+        "localInputMs": {
+          "calls": 8,
+          "p50": 19.299999998882413,
+          "p95": 115.20000000111759,
+          "p99": 115.20000000111759,
+          "max": 115.20000000111759,
+          "total": 336.49999999813735
+        },
+        "authorityInputMs": {
+          "calls": 8,
+          "p50": 1418.6000000014901,
+          "p95": 2298.4000000003725,
+          "p99": 2298.4000000003725,
+          "max": 2298.4000000003725,
+          "total": 11493.299999998882
+        },
+        "handlerToAuthorityMs": {
+          "calls": 8,
+          "p50": 1418.4000000003725,
+          "p95": 2282.5,
+          "p99": 2282.5,
+          "max": 2282.5,
+          "total": 11467
+        }
+      },
+      "longestAtom": {
+        "phase": "boundary.command",
+        "durationMs": 25.600000001490116
+      },
+      "thresholds": {
+        "throughput": false,
+        "jsP95": true,
+        "over50Fraction": true,
+        "authorityP95": false,
+        "atomic8ms": false
+      },
+      "promotionMetricsPass": false,
+      "gpu": null,
+      "heapBefore": {
+        "usedSize": 17504968,
+        "totalSize": 18583552,
+        "embedderHeapUsedSize": 683424,
+        "backingStorageSize": 13023154
+      },
+      "heapAfter": {
+        "usedSize": 19830336,
+        "totalSize": 20971520,
+        "embedderHeapUsedSize": 798560,
+        "backingStorageSize": 13637593
+      },
+      "safeSaveQuery": {
+        "saveBytes": 10082946,
+        "frameBytes": 1616999,
+        "queryBytes": 441569,
+        "savedDay": 144048,
+        "committedDay": 144048,
+        "storyPresent": true,
+        "storyRef": {
+          "kind": "person",
+          "plane": "mortal",
+          "id": 1261,
+          "incarnation": 1,
+          "identitySince": null
+        },
+        "eventStats": {
+          "count": 353,
+          "lastDelivery": {
+            "deliveryId": "1:24:mortal:17",
+            "commitSequence": 24,
+            "plane": "mortal",
+            "type": "combat-hit"
+          }
+        },
+        "fullSaveCalls": 1
+      },
+      "fixtures": {
+        "inputReceipts": 8,
+        "renderFrameMismatches": 0,
+        "onlyInitialRestore": true,
+        "v11SavesDuringSample": 0
+      },
+      "raw": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-canvas-cooperative-r0.json",
+        "bytes": 2849414,
+        "sha256": "6c192979d2071660159a0bd0d980d657e02e170b01c55a92a54dbaa0243143ed"
+      },
+      "screenshot": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-canvas-cooperative-r0.png",
+        "bytes": 166693,
+        "sha256": "f337dba88673e86ebdb8558e0201320e891dbd9d6082ed9e2f593c6ebfb3a68e"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "400-3d-cooperative-r0",
+      "renderer": "3d",
+      "round": 0,
+      "browserBuild": "Edg/157.0.4341.60",
+      "summary": {
+        "jsFrameMs": {
+          "calls": 1794,
+          "p50": 6.299999998882413,
+          "p95": 8.099999999627471,
+          "p99": 17,
+          "max": 56.29999999888241,
+          "total": 9933.699999999255
+        },
+        "rafIntervalMs": {
+          "calls": 1794,
+          "p50": 16.69999999999891,
+          "p95": 16.799999999999272,
+          "p99": 16.80000000000291,
+          "max": 50.100000000000364,
+          "total": 30016.69999999999
+        },
+        "longTaskMs": {
+          "calls": 2,
+          "p50": 53,
+          "p95": 57,
+          "p99": 57,
+          "max": 57,
+          "total": 110
+        },
+        "over50msJs": 2,
+        "over50msJsRatio": 0.0011148272017837235,
+        "over50msRaf": 1,
+        "completedDays": 180,
+        "completedDaysPerSecond": 5.996861642407289,
+        "stepCommits": 60,
+        "commandCommits": 8,
+        "actualDisplayedFrames": 1794,
+        "atomicMaxMs": 31.09999999962747,
+        "atomicByPhase": {
+          "advance.day-epoch": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0.900000000372529,
+            "p99": 1.8999999985098839,
+            "max": 1.8999999985098839,
+            "total": 9.599999994039536
+          },
+          "advance.wanling": {
+            "calls": 61,
+            "p50": 0.2000000011175871,
+            "p95": 6.200000001117587,
+            "p99": 8.200000001117587,
+            "max": 8.200000001117587,
+            "total": 54.1000000089407
+          },
+          "life.prepare": {
+            "calls": 61,
+            "p50": 0.2000000011175871,
+            "p95": 0.599999999627471,
+            "p99": 0.6999999992549419,
+            "max": 0.6999999992549419,
+            "total": 16.499999998137355
+          },
+          "life.entity": {
+            "calls": 84466,
+            "p50": 0,
+            "p95": 0.30000000074505806,
+            "p99": 0.8999999985098839,
+            "max": 10.300000000745058,
+            "total": 7934.999999953434
+          },
+          "life.sweep": {
+            "calls": 60,
+            "p50": 0.09999999962747097,
+            "p95": 0.7000000011175871,
+            "p99": 1,
+            "max": 1,
+            "total": 12.199999991804361
+          },
+          "life.villages": {
+            "calls": 60,
+            "p50": 1.300000000745058,
+            "p95": 3.900000000372529,
+            "p99": 4.900000000372529,
+            "max": 4.900000000372529,
+            "total": 103.10000000707805
+          },
+          "life.sects": {
+            "calls": 60,
+            "p50": 1.5,
+            "p95": 16.800000000745058,
+            "p99": 24.799999998882413,
+            "max": 24.799999998882413,
+            "total": 202.10000000149012
+          },
+          "life.aid": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.599999999627471
+          },
+          "life.war": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.7000000029802322
+          },
+          "life.relations": {
+            "calls": 60,
+            "p50": 0.19999999925494194,
+            "p95": 0.5,
+            "p99": 1.3999999985098839,
+            "max": 1.3999999985098839,
+            "total": 12.400000002235174
+          },
+          "life.family": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "life.reincarnation": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0.19999999925494194,
+            "p99": 0.2999999988824129,
+            "max": 0.2999999988824129,
+            "total": 2.999999998137355
+          },
+          "life.sites": {
+            "calls": 60,
+            "p50": 0.09999999962747097,
+            "p95": 8.299999998882413,
+            "p99": 14.200000001117587,
+            "max": 14.200000001117587,
+            "total": 70.6999999973923
+          },
+          "life.artifacts": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.8999999985098839,
+            "max": 0.8999999985098839,
+            "total": 1.0999999977648258
+          },
+          "life.events": {
+            "calls": 60,
+            "p50": 0.19999999925494194,
+            "p95": 0.5,
+            "p99": 0.8000000007450581,
+            "max": 0.8000000007450581,
+            "total": 11.300000002607703
+          },
+          "life.busanzi": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.200000001117587
+          },
+          "life.finish": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          },
+          "advance.daoActivities": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 4.699999999254942,
+            "p99": 8.100000001490116,
+            "max": 8.100000001490116,
+            "total": 31.90000000037253
+          },
+          "advance.upper": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "advance.nether": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.rift": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.wraith": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "advance.nature": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.5
+          },
+          "advance.transit": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 3.799999998882413,
+            "p99": 9.099999999627471,
+            "max": 9.099999999627471,
+            "total": 27.19999999552965
+          },
+          "advance.mapProgress": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.vows": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "advance.complete": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "commit.projection": {
+            "calls": 60,
+            "p50": 2.200000001117587,
+            "p95": 8.900000000372529,
+            "p99": 12.199999999254942,
+            "max": 12.199999999254942,
+            "total": 185.70000000856817
+          },
+          "boundary.command": {
+            "calls": 8,
+            "p50": 18.800000000745058,
+            "p95": 31.09999999962747,
+            "p99": 31.09999999962747,
+            "max": 31.09999999962747,
+            "total": 160.40000000037253
+          }
+        },
+        "targetDay": 144210.8202,
+        "committedDay": 144207,
+        "queuedDays": 0.8201999999873806,
+        "inFlightDays": 3,
+        "lagDays": 3.8201999999873806,
+        "normalStepRestores": 0,
+        "normalStepFullSaves": 0,
+        "sliceMs": {
+          "calls": 1794,
+          "p50": 6,
+          "p95": 7.5,
+          "p99": 13.699999999254942,
+          "max": 31.09999999962747,
+          "total": 8940.199999973178
+        },
+        "activeSliceMs": 8940.199999973178,
+        "atomsOver6ms": 45,
+        "atomsOver8ms": 30,
+        "longTaskWallShare": 0.003664748781471121,
+        "completedStepsYieldingAcrossCallbacks": 60,
+        "inFlightDisplayCallbacksPerCompletedStep": {
+          "calls": 60,
+          "p50": 21,
+          "p95": 34,
+          "p99": 51,
+          "max": 51,
+          "total": 1323
+        },
+        "localInputMs": {
+          "calls": 8,
+          "p50": 10.299999998882413,
+          "p95": 58.90000000037253,
+          "p99": 58.90000000037253,
+          "max": 58.90000000037253,
+          "total": 194.2999999988824
+        },
+        "authorityInputMs": {
+          "calls": 8,
+          "p50": 78.5,
+          "p95": 540.9000000003725,
+          "p99": 540.9000000003725,
+          "max": 540.9000000003725,
+          "total": 1778.2999999988824
+        },
+        "handlerToAuthorityMs": {
+          "calls": 8,
+          "p50": 77.90000000037253,
+          "p95": 540.5,
+          "p99": 540.5,
+          "max": 540.5,
+          "total": 1767.699999999255
+        }
+      },
+      "longestAtom": {
+        "phase": "boundary.command",
+        "durationMs": 31.09999999962747
+      },
+      "thresholds": {
+        "throughput": true,
+        "jsP95": true,
+        "over50Fraction": true,
+        "authorityP95": false,
+        "atomic8ms": false
+      },
+      "promotionMetricsPass": false,
+      "gpu": {
+        "webgl": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmasked": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "heapBefore": {
+        "usedSize": 20209864,
+        "totalSize": 23109632,
+        "embedderHeapUsedSize": 1389992,
+        "backingStorageSize": 17736672
+      },
+      "heapAfter": {
+        "usedSize": 27413364,
+        "totalSize": 29380608,
+        "embedderHeapUsedSize": 1545328,
+        "backingStorageSize": 18351111
+      },
+      "safeSaveQuery": {
+        "saveBytes": 10089822,
+        "frameBytes": 1608258,
+        "queryBytes": 440180,
+        "savedDay": 144210,
+        "committedDay": 144210,
+        "storyPresent": true,
+        "storyRef": {
+          "kind": "person",
+          "plane": "mortal",
+          "id": 1261,
+          "incarnation": 1,
+          "identitySince": null
+        },
+        "eventStats": {
+          "count": 1620,
+          "lastDelivery": {
+            "deliveryId": "1:78:mortal:3",
+            "commitSequence": 78,
+            "plane": "mortal",
+            "type": "combat-hit"
+          }
+        },
+        "fullSaveCalls": 1
+      },
+      "fixtures": {
+        "inputReceipts": 8,
+        "renderFrameMismatches": 0,
+        "onlyInitialRestore": true,
+        "v11SavesDuringSample": 0
+      },
+      "raw": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-3d-cooperative-r0.json",
+        "bytes": 12900096,
+        "sha256": "10638b07fa612ef8bdd9b144dc091dae10a7a4d736cdb1e9030199193ff862da"
+      },
+      "screenshot": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-3d-cooperative-r0.png",
+        "bytes": 212769,
+        "sha256": "effe2e56150d38d771aaa61fd902ba7ec6de0971987b5c7b8642d7284244c809"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "400-canvas-cooperative-r1",
+      "renderer": "canvas",
+      "round": 1,
+      "browserBuild": "Edg/157.0.4341.60",
+      "summary": {
+        "jsFrameMs": {
+          "calls": 268,
+          "p50": 11.699999999254942,
+          "p95": 17.09999999962747,
+          "p99": 31.5,
+          "max": 46.600000001490116,
+          "total": 3499.5999999940395
+        },
+        "rafIntervalMs": {
+          "calls": 268,
+          "p50": 100.09999999999854,
+          "p95": 150,
+          "p99": 166.6999999999971,
+          "max": 183.30000000000018,
+          "total": 29999.899999999965
+        },
+        "longTaskMs": {
+          "calls": 1,
+          "p50": 51,
+          "p95": 51,
+          "p99": 51,
+          "max": 51,
+          "total": 51
+        },
+        "over50msJs": 0,
+        "over50msJsRatio": 0,
+        "over50msRaf": 268,
+        "completedDays": 33,
+        "completedDaysPerSecond": 1.0998093663764539,
+        "stepCommits": 11,
+        "commandCommits": 8,
+        "actualDisplayedFrames": 268,
+        "atomicMaxMs": 39.100000001490116,
+        "atomicByPhase": {
+          "advance.day-epoch": {
+            "calls": 12,
+            "p50": 0,
+            "p95": 0.900000000372529,
+            "p99": 0.900000000372529,
+            "max": 0.900000000372529,
+            "total": 1.5
+          },
+          "advance.wanling": {
+            "calls": 12,
+            "p50": 0.30000000074505806,
+            "p95": 3.699999999254942,
+            "p99": 3.699999999254942,
+            "max": 3.699999999254942,
+            "total": 7.500000001862645
+          },
+          "life.prepare": {
+            "calls": 12,
+            "p50": 0.09999999962747097,
+            "p95": 1,
+            "p99": 1,
+            "max": 1,
+            "total": 2.399999998509884
+          },
+          "life.entity": {
+            "calls": 15480,
+            "p50": 0.09999999962747097,
+            "p95": 0.30000000074505806,
+            "p99": 1,
+            "max": 8.399999998509884,
+            "total": 1536.2999999914318
+          },
+          "life.sweep": {
+            "calls": 11,
+            "p50": 0.09999999962747097,
+            "p95": 1,
+            "p99": 1,
+            "max": 1,
+            "total": 2.300000002607703
+          },
+          "life.villages": {
+            "calls": 11,
+            "p50": 1.099999999627471,
+            "p95": 3.700000001117587,
+            "p99": 3.700000001117587,
+            "max": 3.700000001117587,
+            "total": 18.299999998882413
+          },
+          "life.sects": {
+            "calls": 11,
+            "p50": 1.300000000745058,
+            "p95": 18.600000001490116,
+            "p99": 18.600000001490116,
+            "max": 18.600000001490116,
+            "total": 36.8000000026077
+          },
+          "life.aid": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          },
+          "life.war": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.2999999988824129
+          },
+          "life.relations": {
+            "calls": 11,
+            "p50": 0.09999999962747097,
+            "p95": 0.5,
+            "p99": 0.5,
+            "max": 0.5,
+            "total": 1.699999999254942
+          },
+          "life.family": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "life.reincarnation": {
+            "calls": 11,
+            "p50": 0.09999999962747097,
+            "p95": 0.19999999925494194,
+            "p99": 0.19999999925494194,
+            "max": 0.19999999925494194,
+            "total": 0.6999999992549419
+          },
+          "life.sites": {
+            "calls": 11,
+            "p50": 0.09999999962747097,
+            "p95": 6.599999999627471,
+            "p99": 6.599999999627471,
+            "max": 6.599999999627471,
+            "total": 8.299999998882413
+          },
+          "life.artifacts": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "life.events": {
+            "calls": 11,
+            "p50": 0.19999999925494194,
+            "p95": 1.199999999254942,
+            "p99": 1.199999999254942,
+            "max": 1.199999999254942,
+            "total": 2.800000002607703
+          },
+          "life.busanzi": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0.2999999988824129,
+            "p99": 0.2999999988824129,
+            "max": 0.2999999988824129,
+            "total": 0.49999999813735485
+          },
+          "life.finish": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.daoActivities": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 4.799999998882413,
+            "p99": 4.799999998882413,
+            "max": 4.799999998882413,
+            "total": 4.900000000372529
+          },
+          "advance.upper": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.nether": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "advance.rift": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.wraith": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0.2000000011175871,
+            "p99": 0.2000000011175871,
+            "max": 0.2000000011175871,
+            "total": 0.2000000011175871
+          },
+          "advance.nature": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0.40000000037252903,
+            "p99": 0.40000000037252903,
+            "max": 0.40000000037252903,
+            "total": 0.5000000018626451
+          },
+          "advance.transit": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 4.700000001117587,
+            "p99": 4.700000001117587,
+            "max": 4.700000001117587,
+            "total": 4.700000001117587
+          },
+          "advance.mapProgress": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.vows": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.complete": {
+            "calls": 11,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "commit.projection": {
+            "calls": 11,
+            "p50": 2.5,
+            "p95": 7.800000000745058,
+            "p99": 7.800000000745058,
+            "max": 7.800000000745058,
+            "total": 33
+          },
+          "boundary.command": {
+            "calls": 8,
+            "p50": 17.199999999254942,
+            "p95": 39.100000001490116,
+            "p99": 39.100000001490116,
+            "max": 39.100000001490116,
+            "total": 175.3000000026077
+          }
+        },
+        "targetDay": 144210.1134,
+        "committedDay": 144036,
+        "queuedDays": 171.113400000002,
+        "inFlightDays": 3,
+        "lagDays": 174.113400000002,
+        "normalStepRestores": 0,
+        "normalStepFullSaves": 0,
+        "sliceMs": {
+          "calls": 268,
+          "p50": 6,
+          "p95": 9.099999999627471,
+          "p99": 23.700000001117587,
+          "max": 39.100000001490116,
+          "total": 1853.7000000029802
+        },
+        "activeSliceMs": 1853.7000000029802,
+        "atomsOver6ms": 13,
+        "atomsOver8ms": 10,
+        "longTaskWallShare": 0.001699705384399974,
+        "completedStepsYieldingAcrossCallbacks": 11,
+        "inFlightDisplayCallbacksPerCompletedStep": {
+          "calls": 11,
+          "p50": 21,
+          "p95": 37,
+          "p99": 37,
+          "max": 37,
+          "total": 252
+        },
+        "localInputMs": {
+          "calls": 8,
+          "p50": 24,
+          "p95": 73.19999999925494,
+          "p99": 73.19999999925494,
+          "max": 73.19999999925494,
+          "total": 295.1999999973923
+        },
+        "authorityInputMs": {
+          "calls": 8,
+          "p50": 1476.4000000003725,
+          "p95": 3444.9000000003725,
+          "p99": 3444.9000000003725,
+          "max": 3444.9000000003725,
+          "total": 15120.099999999627
+        },
+        "handlerToAuthorityMs": {
+          "calls": 8,
+          "p50": 1474.800000000745,
+          "p95": 3444.5,
+          "p99": 3444.5,
+          "max": 3444.5,
+          "total": 15114.700000001118
+        }
+      },
+      "longestAtom": {
+        "phase": "boundary.command",
+        "durationMs": 39.100000001490116
+      },
+      "thresholds": {
+        "throughput": false,
+        "jsP95": true,
+        "over50Fraction": true,
+        "authorityP95": false,
+        "atomic8ms": false
+      },
+      "promotionMetricsPass": false,
+      "gpu": null,
+      "heapBefore": {
+        "usedSize": 16733424,
+        "totalSize": 17534976,
+        "embedderHeapUsedSize": 678032,
+        "backingStorageSize": 12997554
+      },
+      "heapAfter": {
+        "usedSize": 19933020,
+        "totalSize": 21233664,
+        "embedderHeapUsedSize": 793992,
+        "backingStorageSize": 13637593
+      },
+      "safeSaveQuery": {
+        "saveBytes": 10079254,
+        "frameBytes": 1614965,
+        "queryBytes": 440835,
+        "savedDay": 144039,
+        "committedDay": 144039,
+        "storyPresent": true,
+        "storyRef": {
+          "kind": "person",
+          "plane": "mortal",
+          "id": 1261,
+          "incarnation": 1,
+          "identitySince": null
+        },
+        "eventStats": {
+          "count": 239,
+          "lastDelivery": {
+            "deliveryId": "1:21:mortal:4",
+            "commitSequence": 21,
+            "plane": "mortal",
+            "type": "breakthrough"
+          }
+        },
+        "fullSaveCalls": 1
+      },
+      "fixtures": {
+        "inputReceipts": 8,
+        "renderFrameMismatches": 0,
+        "onlyInitialRestore": true,
+        "v11SavesDuringSample": 0
+      },
+      "raw": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-canvas-cooperative-r1.json",
+        "bytes": 2343651,
+        "sha256": "5a6da89039b0ac6b2d242d3ea1144704a05f415a4f05a521ed816301906a0a05"
+      },
+      "screenshot": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-canvas-cooperative-r1.png",
+        "bytes": 164660,
+        "sha256": "7b1802ecdc9a20b042010319cb96e3d3d30409a7f85307565d0ae46da5ce39cb"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "400-3d-cooperative-r1",
+      "renderer": "3d",
+      "round": 1,
+      "browserBuild": "Edg/157.0.4341.60",
+      "summary": {
+        "jsFrameMs": {
+          "calls": 1794,
+          "p50": 6.200000001117587,
+          "p95": 7.599999999627471,
+          "p99": 13.600000001490116,
+          "max": 56.40000000037253,
+          "total": 9187.999999994412
+        },
+        "rafIntervalMs": {
+          "calls": 1794,
+          "p50": 16.69999999999709,
+          "p95": 16.799999999999272,
+          "p99": 16.899999999997817,
+          "max": 50.100000000000364,
+          "total": 30000.099999999882
+        },
+        "longTaskMs": {
+          "calls": 1,
+          "p50": 63,
+          "p95": 63,
+          "p99": 63,
+          "max": 63,
+          "total": 63
+        },
+        "over50msJs": 1,
+        "over50msJsRatio": 0.0005574136008918618,
+        "over50msRaf": 1,
+        "completedDays": 177,
+        "completedDaysPerSecond": 5.89911513273009,
+        "stepCommits": 59,
+        "commandCommits": 8,
+        "actualDisplayedFrames": 1794,
+        "atomicMaxMs": 27.09999999962747,
+        "atomicByPhase": {
+          "advance.day-epoch": {
+            "calls": 60,
+            "p50": 0,
+            "p95": 0.6999999992549419,
+            "p99": 1.800000000745058,
+            "max": 1.800000000745058,
+            "total": 8.399999992921948
+          },
+          "advance.wanling": {
+            "calls": 60,
+            "p50": 0.40000000037252903,
+            "p95": 3,
+            "p99": 9.099999999627471,
+            "max": 9.099999999627471,
+            "total": 45.30000000819564
+          },
+          "life.prepare": {
+            "calls": 60,
+            "p50": 0.2000000011175871,
+            "p95": 0.5,
+            "p99": 0.6999999992549419,
+            "max": 0.6999999992549419,
+            "total": 15.800000004470348
+          },
+          "life.entity": {
+            "calls": 83118,
+            "p50": 0,
+            "p95": 0.30000000074505806,
+            "p99": 0.8000000007450581,
+            "max": 7.700000001117587,
+            "total": 7329.000000016764
+          },
+          "life.sweep": {
+            "calls": 59,
+            "p50": 0.09999999962747097,
+            "p95": 0.6000000014901161,
+            "p99": 0.8000000007450581,
+            "max": 0.8000000007450581,
+            "total": 10.399999994784594
+          },
+          "life.villages": {
+            "calls": 59,
+            "p50": 1.299999998882413,
+            "p95": 2.600000001490116,
+            "p99": 2.900000000372529,
+            "max": 2.900000000372529,
+            "total": 83.300000006333
+          },
+          "life.sects": {
+            "calls": 59,
+            "p50": 1.5,
+            "p95": 11.200000001117587,
+            "p99": 27.09999999962747,
+            "max": 27.09999999962747,
+            "total": 162.70000000856817
+          },
+          "life.aid": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.19999999925494194,
+            "max": 0.19999999925494194,
+            "total": 1.099999999627471
+          },
+          "life.war": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.19999999925494194,
+            "max": 0.19999999925494194,
+            "total": 0.6999999973922968
+          },
+          "life.relations": {
+            "calls": 59,
+            "p50": 0.19999999925494194,
+            "p95": 0.6999999992549419,
+            "p99": 1.300000000745058,
+            "max": 1.300000000745058,
+            "total": 13.399999998509884
+          },
+          "life.family": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.19999999925494194
+          },
+          "life.reincarnation": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.2000000011175871,
+            "max": 0.2000000011175871,
+            "total": 2.499999998137355
+          },
+          "life.sites": {
+            "calls": 59,
+            "p50": 0.10000000149011612,
+            "p95": 7.800000000745058,
+            "p99": 10.400000000372529,
+            "max": 10.400000000372529,
+            "total": 55.400000002235174
+          },
+          "life.artifacts": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0,
+            "p99": 1.099999999627471,
+            "max": 1.099999999627471,
+            "total": 1.200000001117587
+          },
+          "life.events": {
+            "calls": 59,
+            "p50": 0.19999999925494194,
+            "p95": 0.40000000037252903,
+            "p99": 0.8000000007450581,
+            "max": 0.8000000007450581,
+            "total": 10.900000005960464
+          },
+          "life.busanzi": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.9999999962747097
+          },
+          "life.finish": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.daoActivities": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 5,
+            "p99": 12,
+            "max": 12,
+            "total": 35.19999999925494
+          },
+          "advance.upper": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.nether": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "advance.rift": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.wraith": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.2000000011175871
+          },
+          "advance.nature": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.40000000037252903,
+            "max": 0.40000000037252903,
+            "total": 1.4000000022351742
+          },
+          "advance.transit": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 4,
+            "p99": 5.900000000372529,
+            "max": 5.900000000372529,
+            "total": 19.200000002980232
+          },
+          "advance.mapProgress": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.19999999925494194
+          },
+          "advance.vows": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "advance.complete": {
+            "calls": 59,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "commit.projection": {
+            "calls": 59,
+            "p50": 2.399999998509884,
+            "p95": 10.400000000372529,
+            "p99": 11.5,
+            "max": 11.5,
+            "total": 169.09999999590218
+          },
+          "boundary.command": {
+            "calls": 8,
+            "p50": 16.300000000745058,
+            "p95": 26,
+            "p99": 26,
+            "max": 26,
+            "total": 150.09999999962747
+          }
+        },
+        "targetDay": 144210.807,
+        "committedDay": 144207,
+        "queuedDays": 0.8070000000006985,
+        "inFlightDays": 3,
+        "lagDays": 3.8070000000006985,
+        "normalStepRestores": 0,
+        "normalStepFullSaves": 0,
+        "sliceMs": {
+          "calls": 1794,
+          "p50": 6,
+          "p95": 7.099999999627471,
+          "p99": 12.900000000372529,
+          "max": 29.800000000745058,
+          "total": 8202.000000011176
+        },
+        "activeSliceMs": 8202.000000011176,
+        "atomsOver6ms": 30,
+        "atomsOver8ms": 19,
+        "longTaskWallShare": 0.0020996850472429136,
+        "completedStepsYieldingAcrossCallbacks": 59,
+        "inFlightDisplayCallbacksPerCompletedStep": {
+          "calls": 59,
+          "p50": 21,
+          "p95": 28,
+          "p99": 42,
+          "max": 42,
+          "total": 1223
+        },
+        "localInputMs": {
+          "calls": 8,
+          "p50": 16.399999998509884,
+          "p95": 46.19999999925494,
+          "p99": 46.19999999925494,
+          "max": 46.19999999925494,
+          "total": 198.39999999664724
+        },
+        "authorityInputMs": {
+          "calls": 8,
+          "p50": 238.89999999850988,
+          "p95": 316.59999999962747,
+          "p99": 316.59999999962747,
+          "max": 316.59999999962747,
+          "total": 1507.0999999959022
+        },
+        "handlerToAuthorityMs": {
+          "calls": 8,
+          "p50": 236.89999999850988,
+          "p95": 314,
+          "p99": 314,
+          "max": 314,
+          "total": 1485.199999999255
+        }
+      },
+      "longestAtom": {
+        "phase": "life.sects",
+        "durationMs": 27.09999999962747
+      },
+      "thresholds": {
+        "throughput": true,
+        "jsP95": true,
+        "over50Fraction": true,
+        "authorityP95": false,
+        "atomic8ms": false
+      },
+      "promotionMetricsPass": false,
+      "gpu": {
+        "webgl": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmasked": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "heapBefore": {
+        "usedSize": 20817908,
+        "totalSize": 22585344,
+        "embedderHeapUsedSize": 1415944,
+        "backingStorageSize": 18351072
+      },
+      "heapAfter": {
+        "usedSize": 27321520,
+        "totalSize": 28585984,
+        "embedderHeapUsedSize": 1485256,
+        "backingStorageSize": 18351111
+      },
+      "safeSaveQuery": {
+        "saveBytes": 10089823,
+        "frameBytes": 1608258,
+        "queryBytes": 440180,
+        "savedDay": 144210,
+        "committedDay": 144210,
+        "storyPresent": true,
+        "storyRef": {
+          "kind": "person",
+          "plane": "mortal",
+          "id": 1261,
+          "incarnation": 1,
+          "identitySince": null
+        },
+        "eventStats": {
+          "count": 1620,
+          "lastDelivery": {
+            "deliveryId": "1:78:mortal:3",
+            "commitSequence": 78,
+            "plane": "mortal",
+            "type": "combat-hit"
+          }
+        },
+        "fullSaveCalls": 1
+      },
+      "fixtures": {
+        "inputReceipts": 8,
+        "renderFrameMismatches": 0,
+        "onlyInitialRestore": true,
+        "v11SavesDuringSample": 0
+      },
+      "raw": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-3d-cooperative-r1.json",
+        "bytes": 12691798,
+        "sha256": "526dc6e188d9e25cae8ac4c778d1ea098ba35d0c5b6f65ec1304b2d0fa55cb2e"
+      },
+      "screenshot": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-3d-cooperative-r1.png",
+        "bytes": 213175,
+        "sha256": "c68994283ad302e017563031359095feef61c8effa5e0c9489eac65705d789ff"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "400-canvas-cooperative-r2",
+      "renderer": "canvas",
+      "round": 2,
+      "browserBuild": "Edg/157.0.4341.60",
+      "summary": {
+        "jsFrameMs": {
+          "calls": 288,
+          "p50": 11.599999999627471,
+          "p95": 16.699999999254942,
+          "p99": 32.80000000074506,
+          "max": 41,
+          "total": 3621.400000030175
+        },
+        "rafIntervalMs": {
+          "calls": 288,
+          "p50": 100,
+          "p95": 116.70000000000437,
+          "p99": 133.20000000000437,
+          "max": 134.40000000000146,
+          "total": 30016.69999999995
+        },
+        "longTaskMs": {
+          "calls": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null,
+          "total": 0
+        },
+        "over50msJs": 0,
+        "over50msJsRatio": 0,
+        "over50msRaf": 288,
+        "completedDays": 39,
+        "completedDaysPerSecond": 1.2997487152484337,
+        "stepCommits": 13,
+        "commandCommits": 8,
+        "actualDisplayedFrames": 288,
+        "atomicMaxMs": 30.300000000745058,
+        "atomicByPhase": {
+          "advance.day-epoch": {
+            "calls": 14,
+            "p50": 0,
+            "p95": 1,
+            "p99": 1,
+            "max": 1,
+            "total": 1.599999999627471
+          },
+          "advance.wanling": {
+            "calls": 14,
+            "p50": 0.2999999988824129,
+            "p95": 3.399999998509884,
+            "p99": 3.399999998509884,
+            "max": 3.399999998509884,
+            "total": 7.700000002980232
+          },
+          "life.prepare": {
+            "calls": 14,
+            "p50": 0.10000000149011612,
+            "p95": 0.40000000037252903,
+            "p99": 0.40000000037252903,
+            "max": 0.40000000037252903,
+            "total": 2.300000000745058
+          },
+          "life.entity": {
+            "calls": 19225,
+            "p50": 0,
+            "p95": 0.2999999988824129,
+            "p99": 0.8000000007450581,
+            "max": 9.5,
+            "total": 1639.1000000033528
+          },
+          "life.sweep": {
+            "calls": 13,
+            "p50": 0.10000000149011612,
+            "p95": 0.599999999627471,
+            "p99": 0.599999999627471,
+            "max": 0.599999999627471,
+            "total": 2.899999998509884
+          },
+          "life.villages": {
+            "calls": 13,
+            "p50": 1.599999999627471,
+            "p95": 4,
+            "p99": 4,
+            "max": 4,
+            "total": 24.99999999627471
+          },
+          "life.sects": {
+            "calls": 13,
+            "p50": 1.200000001117587,
+            "p95": 19.799999998882413,
+            "p99": 19.799999998882413,
+            "max": 19.799999998882413,
+            "total": 38.000000001862645
+          },
+          "life.aid": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.3999999985098839
+          },
+          "life.war": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.19999999925494194
+          },
+          "life.relations": {
+            "calls": 13,
+            "p50": 0.09999999962747097,
+            "p95": 0.30000000074505806,
+            "p99": 0.30000000074505806,
+            "max": 0.30000000074505806,
+            "total": 1.3000000026077032
+          },
+          "life.family": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "life.reincarnation": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.5999999977648258
+          },
+          "life.sites": {
+            "calls": 13,
+            "p50": 0.19999999925494194,
+            "p95": 10.700000001117587,
+            "p99": 10.700000001117587,
+            "max": 10.700000001117587,
+            "total": 13.100000003352761
+          },
+          "life.artifacts": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "life.events": {
+            "calls": 13,
+            "p50": 0.10000000149011612,
+            "p95": 0.2999999988824129,
+            "p99": 0.2999999988824129,
+            "max": 0.2999999988824129,
+            "total": 1.6999999973922968
+          },
+          "life.busanzi": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "life.finish": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          },
+          "advance.daoActivities": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 2.799999998882413,
+            "p99": 2.799999998882413,
+            "max": 2.799999998882413,
+            "total": 2.799999998882413
+          },
+          "advance.upper": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.nether": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.rift": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.wraith": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.10000000149011612
+          },
+          "advance.nature": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.transit": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 4.599999999627471,
+            "p99": 4.599999999627471,
+            "max": 4.599999999627471,
+            "total": 4.899999998509884
+          },
+          "advance.mapProgress": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.vows": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.complete": {
+            "calls": 13,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "commit.projection": {
+            "calls": 13,
+            "p50": 2.200000001117587,
+            "p95": 3.699999999254942,
+            "p99": 3.699999999254942,
+            "max": 3.699999999254942,
+            "total": 28.80000000447035
+          },
+          "boundary.command": {
+            "calls": 8,
+            "p50": 16,
+            "p95": 30.300000000745058,
+            "p99": 30.300000000745058,
+            "max": 30.300000000745058,
+            "total": 148.20000000484288
+          }
+        },
+        "targetDay": 144210.048,
+        "committedDay": 144045,
+        "queuedDays": 162.04800000000978,
+        "inFlightDays": 3,
+        "lagDays": 165.04800000000978,
+        "normalStepRestores": 0,
+        "normalStepFullSaves": 0,
+        "sliceMs": {
+          "calls": 288,
+          "p50": 6,
+          "p95": 8.300000000745058,
+          "p99": 25.100000001490116,
+          "max": 30.40000000037253,
+          "total": 1932.5000000093132
+        },
+        "activeSliceMs": 1932.5000000093132,
+        "atomsOver6ms": 11,
+        "atomsOver8ms": 11,
+        "longTaskWallShare": 0,
+        "completedStepsYieldingAcrossCallbacks": 13,
+        "inFlightDisplayCallbacksPerCompletedStep": {
+          "calls": 13,
+          "p50": 18,
+          "p95": 28,
+          "p99": 28,
+          "max": 28,
+          "total": 261
+        },
+        "localInputMs": {
+          "calls": 8,
+          "p50": 26.799999998882413,
+          "p95": 124.19999999925494,
+          "p99": 124.19999999925494,
+          "max": 124.19999999925494,
+          "total": 478.79999999701977
+        },
+        "authorityInputMs": {
+          "calls": 8,
+          "p50": 1792.7000000011176,
+          "p95": 2589.9000000003725,
+          "p99": 2589.9000000003725,
+          "max": 2589.9000000003725,
+          "total": 13133.89999999851
+        },
+        "handlerToAuthorityMs": {
+          "calls": 8,
+          "p50": 1780.7000000011176,
+          "p95": 2589.4000000003725,
+          "p99": 2589.4000000003725,
+          "max": 2589.4000000003725,
+          "total": 13091
+        }
+      },
+      "longestAtom": {
+        "phase": "boundary.command",
+        "durationMs": 30.300000000745058
+      },
+      "thresholds": {
+        "throughput": false,
+        "jsP95": true,
+        "over50Fraction": true,
+        "authorityP95": false,
+        "atomic8ms": false
+      },
+      "promotionMetricsPass": false,
+      "gpu": null,
+      "heapBefore": {
+        "usedSize": 17503828,
+        "totalSize": 18583552,
+        "embedderHeapUsedSize": 682816,
+        "backingStorageSize": 13023154
+      },
+      "heapAfter": {
+        "usedSize": 19821252,
+        "totalSize": 20709376,
+        "embedderHeapUsedSize": 797408,
+        "backingStorageSize": 13637593
+      },
+      "safeSaveQuery": {
+        "saveBytes": 10082946,
+        "frameBytes": 1616999,
+        "queryBytes": 441569,
+        "savedDay": 144048,
+        "committedDay": 144048,
+        "storyPresent": true,
+        "storyRef": {
+          "kind": "person",
+          "plane": "mortal",
+          "id": 1261,
+          "incarnation": 1,
+          "identitySince": null
+        },
+        "eventStats": {
+          "count": 353,
+          "lastDelivery": {
+            "deliveryId": "1:24:mortal:17",
+            "commitSequence": 24,
+            "plane": "mortal",
+            "type": "combat-hit"
+          }
+        },
+        "fullSaveCalls": 1
+      },
+      "fixtures": {
+        "inputReceipts": 8,
+        "renderFrameMismatches": 0,
+        "onlyInitialRestore": true,
+        "v11SavesDuringSample": 0
+      },
+      "raw": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-canvas-cooperative-r2.json",
+        "bytes": 2874314,
+        "sha256": "82a394633b92213981e13dafdf7b1ff2f70057e20e73976f646aeca01d873011"
+      },
+      "screenshot": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-canvas-cooperative-r2.png",
+        "bytes": 166669,
+        "sha256": "2985074379bd3f93f448025758004f00ef4284999123841a999e0a7dd9a0987a"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "400-3d-cooperative-r2",
+      "renderer": "3d",
+      "round": 2,
+      "browserBuild": "Edg/157.0.4341.60",
+      "summary": {
+        "jsFrameMs": {
+          "calls": 1793,
+          "p50": 6.299999998882413,
+          "p95": 8.299999998882413,
+          "p99": 13.299999998882413,
+          "max": 59.30000000074506,
+          "total": 9656.300000011921
+        },
+        "rafIntervalMs": {
+          "calls": 1793,
+          "p50": 16.699999999999818,
+          "p95": 16.799999999999272,
+          "p99": 16.80000000000291,
+          "max": 66.79999999999927,
+          "total": 30016.500000000055
+        },
+        "longTaskMs": {
+          "calls": 1,
+          "p50": 67,
+          "p95": 67,
+          "p99": 67,
+          "max": 67,
+          "total": 67
+        },
+        "over50msJs": 1,
+        "over50msJsRatio": 0.0005577244841048522,
+        "over50msRaf": 1,
+        "completedDays": 183,
+        "completedDaysPerSecond": 6.097114032691344,
+        "stepCommits": 61,
+        "commandCommits": 8,
+        "actualDisplayedFrames": 1793,
+        "atomicMaxMs": 29.299999998882413,
+        "atomicByPhase": {
+          "advance.day-epoch": {
+            "calls": 62,
+            "p50": 0,
+            "p95": 0.6999999992549419,
+            "p99": 2.299999998882413,
+            "max": 2.299999998882413,
+            "total": 8.999999988824129
+          },
+          "advance.wanling": {
+            "calls": 62,
+            "p50": 0.5,
+            "p95": 2.400000000372529,
+            "p99": 5.300000000745058,
+            "max": 5.300000000745058,
+            "total": 49.19999999552965
+          },
+          "life.prepare": {
+            "calls": 62,
+            "p50": 0.2000000011175871,
+            "p95": 0.40000000037252903,
+            "p99": 0.6999999992549419,
+            "max": 0.6999999992549419,
+            "total": 14.40000000782311
+          },
+          "life.entity": {
+            "calls": 86430,
+            "p50": 0,
+            "p95": 0.30000000074505806,
+            "p99": 0.8000000007450581,
+            "max": 12.5,
+            "total": 7646.000000018626
+          },
+          "life.sweep": {
+            "calls": 61,
+            "p50": 0.09999999962747097,
+            "p95": 0.6000000014901161,
+            "p99": 1,
+            "max": 1,
+            "total": 10.999999994412065
+          },
+          "life.villages": {
+            "calls": 61,
+            "p50": 1.300000000745058,
+            "p95": 3.599999999627471,
+            "p99": 5.5,
+            "max": 5.5,
+            "total": 99.49999999813735
+          },
+          "life.sects": {
+            "calls": 61,
+            "p50": 1.199999999254942,
+            "p95": 14,
+            "p99": 29.299999998882413,
+            "max": 29.299999998882413,
+            "total": 184.40000000409782
+          },
+          "life.aid": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.7000000011175871
+          },
+          "life.war": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.7999999970197678
+          },
+          "life.relations": {
+            "calls": 61,
+            "p50": 0.09999999962747097,
+            "p95": 0.5,
+            "p99": 0.8000000007450581,
+            "max": 0.8000000007450581,
+            "total": 9.700000002980232
+          },
+          "life.family": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.2999999988824129
+          },
+          "life.reincarnation": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0.19999999925494194,
+            "p99": 0.40000000037252903,
+            "max": 0.40000000037252903,
+            "total": 3.5999999959021807
+          },
+          "life.sites": {
+            "calls": 61,
+            "p50": 0.19999999925494194,
+            "p95": 6.400000000372529,
+            "p99": 9.200000001117587,
+            "max": 9.200000001117587,
+            "total": 51.79999999701977
+          },
+          "life.artifacts": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 2.300000000745058,
+            "max": 2.300000000745058,
+            "total": 3.900000000372529
+          },
+          "life.events": {
+            "calls": 61,
+            "p50": 0.10000000149011612,
+            "p95": 0.5,
+            "p99": 1.800000000745058,
+            "max": 1.800000000745058,
+            "total": 12.199999993667006
+          },
+          "life.busanzi": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 1.299999998882413
+          },
+          "life.finish": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "advance.daoActivities": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 5.300000000745058,
+            "p99": 12.599999999627471,
+            "max": 12.599999999627471,
+            "total": 36.09999999962747
+          },
+          "advance.upper": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.19999999925494194
+          },
+          "advance.nether": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.30000000074505806
+          },
+          "advance.rift": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999962747097,
+            "max": 0.09999999962747097,
+            "total": 0.09999999962747097
+          },
+          "advance.wraith": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.5
+          },
+          "advance.nature": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0.09999999962747097,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.6999999992549419
+          },
+          "advance.transit": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 4,
+            "p99": 9.400000000372529,
+            "max": 9.400000000372529,
+            "total": 27.500000001862645
+          },
+          "advance.mapProgress": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000149011612,
+            "max": 0.10000000149011612,
+            "total": 0.30000000074505806
+          },
+          "advance.vows": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "advance.complete": {
+            "calls": 61,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0,
+            "max": 0,
+            "total": 0
+          },
+          "commit.projection": {
+            "calls": 61,
+            "p50": 2.699999999254942,
+            "p95": 5.199999999254942,
+            "p99": 10.800000000745058,
+            "max": 10.800000000745058,
+            "total": 185.39999999292195
+          },
+          "boundary.command": {
+            "calls": 8,
+            "p50": 21.59999999962747,
+            "p95": 27.90000000037253,
+            "p99": 27.90000000037253,
+            "max": 27.90000000037253,
+            "total": 167.59999999776483
+          }
+        },
+        "targetDay": 144210.9612,
+        "committedDay": 144207,
+        "queuedDays": 0.9611999999906402,
+        "inFlightDays": 3,
+        "lagDays": 3.96119999999064,
+        "normalStepRestores": 0,
+        "normalStepFullSaves": 0,
+        "sliceMs": {
+          "calls": 1793,
+          "p50": 6,
+          "p95": 7.5,
+          "p99": 12.5,
+          "max": 29.399999998509884,
+          "total": 8609.499999977648
+        },
+        "activeSliceMs": 8609.499999977648,
+        "atomsOver6ms": 34,
+        "atomsOver8ms": 29,
+        "longTaskWallShare": 0.0022322767223514756,
+        "completedStepsYieldingAcrossCallbacks": 61,
+        "inFlightDisplayCallbacksPerCompletedStep": {
+          "calls": 61,
+          "p50": 19,
+          "p95": 39,
+          "p99": 44,
+          "max": 44,
+          "total": 1274
+        },
+        "localInputMs": {
+          "calls": 8,
+          "p50": 17.40000000037253,
+          "p95": 45.90000000037253,
+          "p99": 45.90000000037253,
+          "max": 45.90000000037253,
+          "total": 177.40000000037253
+        },
+        "authorityInputMs": {
+          "calls": 8,
+          "p50": 283.30000000074506,
+          "p95": 453.90000000037253,
+          "p99": 453.90000000037253,
+          "max": 453.90000000037253,
+          "total": 2072.2000000011176
+        },
+        "handlerToAuthorityMs": {
+          "calls": 8,
+          "p50": 280.30000000074506,
+          "p95": 449,
+          "p99": 449,
+          "max": 449,
+          "total": 2054.9000000003725
+        }
+      },
+      "longestAtom": {
+        "phase": "life.sects",
+        "durationMs": 29.299999998882413
+      },
+      "thresholds": {
+        "throughput": true,
+        "jsP95": true,
+        "over50Fraction": true,
+        "authorityP95": false,
+        "atomic8ms": false
+      },
+      "promotionMetricsPass": false,
+      "gpu": {
+        "webgl": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "vendor": "WebKit",
+        "renderer": "WebKit WebGL",
+        "unmasked": "ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "heapBefore": {
+        "usedSize": 20082100,
+        "totalSize": 22061056,
+        "embedderHeapUsedSize": 1440536,
+        "backingStorageSize": 17736672
+      },
+      "heapAfter": {
+        "usedSize": 27734052,
+        "totalSize": 29388800,
+        "embedderHeapUsedSize": 1503832,
+        "backingStorageSize": 18351111
+      },
+      "safeSaveQuery": {
+        "saveBytes": 10095030,
+        "frameBytes": 1611776,
+        "queryBytes": 441104,
+        "savedDay": 144210,
+        "committedDay": 144210,
+        "storyPresent": true,
+        "storyRef": {
+          "kind": "person",
+          "plane": "mortal",
+          "id": 1261,
+          "incarnation": 1,
+          "identitySince": null
+        },
+        "eventStats": {
+          "count": 1655,
+          "lastDelivery": {
+            "deliveryId": "1:78:mortal:23",
+            "commitSequence": 78,
+            "plane": "mortal",
+            "type": "combat-hit"
+          }
+        },
+        "fullSaveCalls": 1
+      },
+      "fixtures": {
+        "inputReceipts": 8,
+        "renderFrameMismatches": 0,
+        "onlyInitialRestore": true,
+        "v11SavesDuringSample": 0
+      },
+      "raw": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-3d-cooperative-r2.json",
+        "bytes": 13134956,
+        "sha256": "deb6a9f08c864edda53a2d136a18e7e32c19024d4e552805d0163987bf07919c"
+      },
+      "screenshot": {
+        "path": "reports/local/wx-e3sp/browser-formal/400-3d-cooperative-r2.png",
+        "bytes": 213400,
+        "sha256": "528c7d74eac65176671dc671e43e5a7ea42e02d00bd7dc3c779f445a19d2d4e8"
+      },
+      "cleanup": {
+        "removed": true,
+        "attempts": 1,
+        "processesExited": true,
+        "complete": true,
+        "processEvidence": {
+          "supported": true,
+          "frozen": 8,
+          "remaining": 0,
+          "discoveryError": null,
+          "termination": {
+            "errors": [],
+            "attempted": 0
+          }
+        }
+      }
+    }
+  ],
+  "repeatDefinition": "Three independent trials per renderer under the same Edge build and original checkpoint.",
+  "measurementLimits": [
+    "Timings measure active JavaScript wall time. Waits between slices are excluded from active work.",
+    "rAF records callback cadence. Browser and compositor wait attribution remains unresolved.",
+    "C uses smaller isolated scenes, a mortal-only natural checkpoint and fixed dt. A/B official-game results give context.",
+    "Input is eight trusted DOM clicks per trial. The local endpoint is the completed render callback. The authoritative endpoint is the delivered receipt.",
+    "Serialized DTO size counts one copy of each terrain layer. Explicit save and JSON DTO sizes exclude compression. Heap captures follow explicit GC outside the timed window."
+  ],
+  "separateCpuProfiles": {
+    "evidence": {
+      "path": "reports/local/wx-e3sp/browser-cpu/report.json",
+      "bytes": 82503,
+      "sha256": "7d16aab88fa2774ed410d2388a672e10ae175f6033bcdbf700244967ca5adf2b"
+    },
+    "profiles": [
+      {
+        "renderer": "canvas",
+        "profile": {
+          "path": "reports/local/wx-e3sp/browser-cpu/400-canvas-cooperative-r0.cpuprofile",
+          "bytes": 213991,
+          "sha256": "824cac1c3c31bd0b07b394ebb8e51f1add54c040d2af3333a4094aebe1066cfa"
+        },
+        "samples": 6945,
+        "selfHitCounts": {
+          "wanlingEffectAt": 63,
+          "readEffects": 34,
+          "stepEntity": 10,
+          "(garbage collector)": 21
+        },
+        "intervalMs": 12271.062,
+        "raw": {
+          "path": "reports/local/wx-e3sp/browser-cpu/400-canvas-cooperative-r0.json",
+          "bytes": 965633,
+          "sha256": "a42e2503222d87e0b42b705ee3765fe9bc953cde1854617c4efaeb11ef02f276"
+        },
+        "cleanup": {
+          "removed": true,
+          "attempts": 1,
+          "processesExited": true,
+          "complete": true,
+          "processEvidence": {
+            "supported": true,
+            "frozen": 13,
+            "remaining": 0,
+            "discoveryError": null,
+            "termination": {
+              "errors": [],
+              "attempted": 0
+            }
+          }
+        }
+      },
+      {
+        "renderer": "3d",
+        "profile": {
+          "path": "reports/local/wx-e3sp/browser-cpu/400-3d-cooperative-r0.cpuprofile",
+          "bytes": 325223,
+          "sha256": "3d5783bca3a74920fa43c61551a777d0af13efeacfe0d7a99262dbdc73fe003f"
+        },
+        "samples": 6827,
+        "selfHitCounts": {
+          "wanlingEffectAt": 421,
+          "readEffects": 204,
+          "stepEntity": 67,
+          "(garbage collector)": 68
+        },
+        "intervalMs": 12247.993,
+        "raw": {
+          "path": "reports/local/wx-e3sp/browser-cpu/400-3d-cooperative-r0.json",
+          "bytes": 4522892,
+          "sha256": "56491e25354bb1c49f275e92f7ec63c71090453fca6c2a292925e64afe3d8418"
+        },
+        "cleanup": {
+          "removed": true,
+          "attempts": 1,
+          "processesExited": true,
+          "complete": true,
+          "processEvidence": {
+            "supported": true,
+            "frozen": 13,
+            "remaining": 0,
+            "discoveryError": null,
+            "termination": {
+              "errors": [],
+              "attempted": 0
+            }
+          }
+        }
+      }
+    ],
+    "note": "Separate profiled trials. Sample self-hit counts describe captured stacks."
+  },
+  "promotion": "STOP. Command latency and atomic work exceed the planning thresholds. Canvas falls short of throughput. Product isolation and L2 fixed dt still require other approvals.",
+  "evidence": {
+    "path": "reports/local/wx-e3sp/browser-formal/report.json",
+    "bytes": 357428,
+    "sha256": "1188768bce85ad599a477bca67cadf6e199cf9cf42d27455e5a4f86f8bfec7b0"
+  }
+}

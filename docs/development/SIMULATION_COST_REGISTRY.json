@@ -105,15 +105,15 @@
     },
     {
       "path": "src/inkbox/sim/life.js",
-      "sha256": "af7310f10ac73de2f47c49822184bb80c913a866d4854121455daa6f151817f5",
-      "cardId": "life-step",
-      "review": "E-M2 independent read-only review 2026-11-14: explicit begin/end instrumentation only; business call order, parameters, dt, RNG and E1C pass/finally unchanged. Deliberate per-file pin; raw natural and Edge acceptance tracked separately, not inferred from this source review."
+      "sha256": "998177a5c95dee7d71114c1d217e56ca187877a5bac465324df64dad8352d772",
+      "cardId": "e3sp-resumable-research",
+      "review": "Independent read-only C source review and reproduced fault/race/event/receipt cases, 2026-11-16. Explicit source anchor after exact review. Research-only shared phases, immutable front and native command port; not production or fixed-dt approval."
     },
     {
       "path": "src/inkbox/sim/advance.js",
-      "sha256": "63b9fd72985a44898bb5eff077ef2137440a98dc6e7d5103b817187049f3be76",
-      "cardId": "advance-world",
-      "review": "E-M2 independent read-only review 2026-11-14: explicit begin/end instrumentation only; business call order, parameters, dt, RNG and E1C pass/finally unchanged. Deliberate per-file pin; raw natural and Edge acceptance tracked separately, not inferred from this source review."
+      "sha256": "aaddffe9563630adc5effb839366bfd917f9d452022120c23ead23f24d0ccb4c",
+      "cardId": "e3sp-resumable-research",
+      "review": "Independent read-only C source review and reproduced fault/race/event/receipt cases, 2026-11-16. Explicit source anchor after exact review. Research-only shared phases, immutable front and native command port; not production or fixed-dt approval."
     },
     {
       "path": "src/inkbox/wanxiang/skills.js",
@@ -273,9 +273,9 @@
     },
     {
       "path": "src/inkbox/render3d/entities/deriveEntities.js",
-      "sha256": "ae5bb35f3db7659146fdacd6cf504ec51d229f99fff7a7edc40cc3f5bb6e3d55",
-      "cardId": "e2ra2-committed-boundary",
-      "review": "E2R-a.2 independent source review completed 2026-11-14; root deliberately pins this explicit file after review. Complete synchronous publication and migrated-consumer poison tests; original simulation/RNG/dt unchanged. Does not certify legacy readers for product async execution."
+      "sha256": "7f84c8c1ac350cbbf834e3031f1776d0c83596eefdbaddd6f6288a65a2b31491",
+      "cardId": "e3sp-resumable-research",
+      "review": "Independent read-only C source review and reproduced fault/race/event/receipt cases, 2026-11-16. Explicit source anchor after exact review. Research-only shared phases, immutable front and native command port; not production or fixed-dt approval."
     },
     {
       "path": "src/inkbox/render3d/Render3DAdapter.js",
@@ -312,6 +312,42 @@
       "sha256": "6c7d9eb59c13ab775631e89ec754ac46e04daae3547248ed8661d93801ea1c3e",
       "cardId": "e2ra2-committed-boundary",
       "review": "E2R-a.2 independent source review completed 2026-11-14; root deliberately pins this explicit file after review. Complete synchronous publication and migrated-consumer poison tests; original simulation/RNG/dt unchanged. Does not certify legacy readers for product async execution."
+    },
+    {
+      "path": "research/wx-e3sp/engine.js",
+      "sha256": "79ff7c38cecb21cc8e5a06b8f2f231f9805f8a63fffa6adf69b4cf8e87cbe14e",
+      "cardId": "e3sp-resumable-research",
+      "review": "Independent read-only C source review and reproduced fault/race/event/receipt cases, 2026-11-16. Explicit source anchor after exact review. Research-only shared phases, immutable front and native command port; not production or fixed-dt approval."
+    },
+    {
+      "path": "research/wx-e3sp/context.js",
+      "sha256": "e0ea11cd5003f08162a3b6ad9961cbb02f1c4310acb058fd239860646e04c9b2",
+      "cardId": "e3sp-resumable-research",
+      "review": "Independent read-only C source review and reproduced fault/race/event/receipt cases, 2026-11-16. Explicit source anchor after exact review. Research-only shared phases, immutable front and native command port; not production or fixed-dt approval."
+    },
+    {
+      "path": "research/wx-e3sp/commandPort.js",
+      "sha256": "a8cbf057d9bb1b8c9e8041218319aa9a17ef97f1cddd28523d3b1e5e3c7ee554",
+      "cardId": "e3sp-resumable-research",
+      "review": "Independent read-only C source review and reproduced fault/race/event/receipt cases, 2026-11-16. Explicit source anchor after exact review. Research-only shared phases, immutable front and native command port; not production or fixed-dt approval."
+    },
+    {
+      "path": "research/wx-e3sp/demo.js",
+      "sha256": "4aa3596a1abac485f8d3f9201c770abb9b21dcab68dcdcb24c566a43cd0340dd",
+      "cardId": "e3sp-resumable-research",
+      "review": "Independent read-only C source review and reproduced fault/race/event/receipt cases, 2026-11-16. Explicit source anchor after exact review. Research-only shared phases, immutable front and native command port; not production or fixed-dt approval."
+    },
+    {
+      "path": "research/wx-e3sp/presenters.js",
+      "sha256": "9cbdef26050ba56adde02ff13b1094dc09e169d3bdf1346fe5ef774d14ef5ed6",
+      "cardId": "e3sp-resumable-research",
+      "review": "Independent read-only C source review and reproduced fault/race/event/receipt cases, 2026-11-16. Explicit source anchor after exact review. Research-only shared phases, immutable front and native command port; not production or fixed-dt approval."
+    },
+    {
+      "path": "research/wx-e3sp/index.html",
+      "sha256": "56d2db791da803e231e5611d6bc375f637b47f4624276d3c7c25bf30a1f1b55f",
+      "cardId": "e3sp-resumable-research",
+      "review": "Independent read-only C source review and reproduced fault/race/event/receipt cases, 2026-11-16. Explicit source anchor after exact review. Research-only shared phases, immutable front and native command port; not production or fixed-dt approval."
     }
   ],
   "cards": [
@@ -614,6 +650,19 @@
       "dataLifetime": "Only current committed front retained by store; retained old DTOs remain immutable; transient counters default off; no v11 fields.",
       "failureAndExit": "Build failure retains old front and faults; no arbitrary power rollback claimed; authoritative legacy reads/saves stop pending explicit recovery/replacement. Unconverted readers are documented.",
       "testEvidence": "test:wx-e2ra2 plus original wx-e2ra, G7, G1/S1 and full Fast/Heavy. Real natural 100/400y full World/ALL runtime/RNG proof; Edge acceptance and source hash manifests reported separately."
+    },
+    {
+      "id": "e3sp-resumable-research",
+      "consumerAndFactSource": "Explicit shared Life/advance phases, private persistent research authority and committed Frame/Query/event front; original native tools/History and G8 runtime.",
+      "settlementObjects": "All original individuals and clocks; no mortal aggregation. Frame/Query facts per plane and bounded event/receipt/command queues; five dirty terrain layers COW.",
+      "timePrecision": "Original synchronous variable-dt main unchanged. Research engine fixed dt3 only; L0 comparisons require identical fixed-dt inputs and command boundaries. Relative to formal variable dt this is unapproved L2.",
+      "worstCaseCost": "O(N) entity work shared with native source, yield token per completed actor, full original atomic subsystems; soft6ms slice may overrun. Per-commit DTO projection O(N+dirty layers*W*H). Ledger<=4096, operations<=64, events<=4096, receipt waiters<=4 per accepted seq. Recovery replays complete ledger synchronously and may block.",
+      "queryMethod": "Engine-owned immutable front; no draft/World/Entity/Map/mutable buffers exported. Complex story/save requests defer to complete boundaries, exact identity refs revalidate. Explicit save returns isolated JSON string.",
+      "rngContract": "No new simulation draws; full World/ALL runtime/RNG and native command receipt three-way oracle against exact manifest-pinned B source. Normal steps never serialize/restore wholeWorld.",
+      "cacheInvalidation": "Atomic complete front after all clocks/commands and event/ledger work. Explicit generation on replacement/recovery; committed event watermark acknowledgement. Control epochs prohibit late continuation revival.",
+      "dataLifetime": "One private initialized World plus immutable current front; old public facts remain immutable. E1C pass spans whole entity loop across yields and closes via finally. Bounded diagnostics record active execution, not wait intervals.",
+      "failureAndExit": "Fault/cancel retains last front and rejects authority progress/save/query; explicit source/checkpoint+ledger recovery only. Packet backpressure faults before public swap. Missing rule/isolation/latency proof cannot enable production.",
+      "testEvidence": "test:wx-e3sp portable oracle/phases/native-command/transaction tests; full natural100/400 + controlled clocks/races/recovery/FPS proof and independent Edge6trial metrics reported separately. Reviewer fixed actual async lifecycle revival and intermediate-event loss; no claims based on source review alone."
     }
   ]
 }

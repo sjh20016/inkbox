@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Build a clean, standalone Inkbox package without the frozen V3/V4 tree or research probes.
+// This research branch explicitly includes only the isolated E3S-P entry and oracle.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,6 +18,19 @@ const STAGE = fs.mkdtempSync(path.join(DIST, '.inkbox-package-'));
 
 // Explicit runtime/developer package entry points. Historical reports live in Git history.
 const FILES = [
+  'scripts/inkbox-wx-e3sp-reference.mjs',
+  'scripts/inkbox-wx-e3sp-phases.mjs',
+  'scripts/inkbox-wx-e3sp-command-port.mjs',
+  'scripts/inkbox-wx-e3sp-correctness.mjs',
+  'scripts/inkbox-wx-e3sp-browser.mjs',
+  'docs/development/WX_E3SP_STATE_MACHINE.md',
+  'docs/development/WX_E3SP_CORRECTNESS.json',
+  'docs/development/WX_E3SP_BROWSER.json',
+  'docs/development/WX_E3SP_ACCEPTANCE.md',
+  'docs/development/WX_E3SP_CI.json',
+  'docs/development/WX_E3SP_DECISION.md',
+  'docs/development/WX_E3SP_WORKER_PROTOCOL.md',
+  'docs/development/WX_E3SP_PIN_REVIEW.json',
   'scripts/inkbox-wx-e2ra2-check.mjs',
   'scripts/inkbox-wx-e2ra2-command.mjs',
   'scripts/inkbox-wx-e2ra2-panels.mjs',
@@ -435,6 +448,8 @@ const FILES = [
 //    且 `core/lore.js`、`sim/reincarnation.js`、`world/World.js`、`scripts/inkbox-smoke.mjs`
 //    共 5 处注释引用它的行号作为**定名出处** ⇒ 不入包则接手者读不到规则、代码注释悬空。
 const DIRECTORIES = [
+  'research/wx-e3sp',
+  'tests/fixtures/wx-e3sp-b-reference',
   'src/inkbox',
   'vendor/three',
   'assets/ui',

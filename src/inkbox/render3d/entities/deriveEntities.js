@@ -97,12 +97,14 @@ function byId(a, b) { return (a.id | 0) - (b.id | 0); }
  *   每条记录 `{ id, x, y, level, faction, lift, color }`。**纯派生，不写 world。**
  */
 function deriveFromWorld(world, includeWraiths) {
+  return deriveCommittedEntities(world ? renderFrame(world, undefined, { refresh: !committedEntry(world) }) : null, includeWraiths);
+}
+
+/** Pure projection of already committed facts; no authoritative World needed. */
+export function deriveCommittedEntities(frame, includeWraiths = true) {
   const deriveSpan = beginBreakdown('deriveEntities');
   try {
   const out = { human: [], cultivator: [], beast: [], spirit: [], wraith: [], total: 0 };
-  if (!world) return out;
-
-  const frame = renderFrame(world, undefined, { refresh: !committedEntry(world) });
   if (!frame) return out;
   const factionColorById = new Map();
   const factions = frame.factions;

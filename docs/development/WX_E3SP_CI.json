@@ -1,0 +1,45 @@
+{
+  "sourceRemoteCommit": "f1087282eb4e565cf1e2d8bc9217d4d2591e2cc1",
+  "sourceLocalCommit": "61b74f94afd4014a8023f7f8a626f34e0c36294a",
+  "sourceTree": "1dab4285b249d010c79625cc6dc46c1ad53690dc",
+  "initialRun": 44225406928,
+  "initialRunUrl": "https://github.com/sjh20016/inkbox/actions/runs/44225406928",
+  "jobs": [
+    {
+      "id": 134537272510,
+      "name": "Fast Gate",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": [
+        {
+          "name": "WX-E2R-a synchronous read projection contract",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 32
+        }
+      ]
+    },
+    {
+      "id": 134537272852,
+      "name": "Heavy Gate",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 134537274004,
+      "name": "Browser Smoke（手动）",
+      "status": "completed",
+      "conclusion": "skipped",
+      "failedSteps": []
+    }
+  ],
+  "recordedAt": "2026-11-18T02:55:24.648Z",
+  "localCorrection": {
+    "scope": "Only the E2R-a static fixture was changed to follow the actual shared Three projection entry. Direct World and direct entity-list bypass are each tested as failures.",
+    "original": "reports/local/wx-e3sp/integration/10-wx-e2ra-original-red.log",
+    "retry": "reports/local/wx-e3sp/integration/10-wx-e2ra-wrapper-retry.log",
+    "retryExitCode": 0
+  },
+  "finalHeadRun": "Track the published acceptance head on Draft #75."
+}

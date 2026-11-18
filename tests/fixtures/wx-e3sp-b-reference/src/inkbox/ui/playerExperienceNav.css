@@ -1,0 +1,75 @@
+/* P1 玩家体验：正式右栏速达、窄屏观察抽屉（不修改世界或渲染画布）。 */
+.main { position: relative; }
+.p1-observe-nav {
+  position: sticky; top: -10px; z-index: 3;
+  display: flex; gap: 4px; align-items: center;
+  margin: -10px -10px 8px; padding: 9px 8px 7px;
+  border-bottom: 1px solid var(--line-strong);
+  background: #ebe2d0;
+}
+.p1-observe-nav button, .p1-tools-close {
+  border: 1px solid var(--line); border-radius: 4px;
+  background: rgba(255,255,255,.6); color: var(--ink-mid);
+  font: 12px/1.5 var(--serif); padding: 5px 6px; cursor: pointer;
+}
+.p1-observe-nav [data-experience-target] { flex: 1 1 0; min-width: 0; }
+.p1-observe-nav button:hover, .p1-tools-close:hover { border-color: var(--line-strong); background: #fff; }
+.p1-observe-nav button:focus-visible, .p1-tools-close:focus-visible,
+.p1-launcher:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 2px; }
+.p1-observe-nav .p1-observe-close, .p1-tools-close { display: none; }
+.p1-target { scroll-margin-top: 54px; }
+/* A focused deep-link remains legible beneath the pinned shortcut bar even
+   when the 3D canvas causes later layout/scroll anchoring adjustments. */
+.rail.right .p1-target:focus {
+  position: sticky; top: 48px; z-index: 2; background: var(--paper);
+  outline: none; border-bottom-color: var(--line-strong); color: var(--ink);
+}
+.p1-launcher {
+  display: none; position: absolute; right: 12px; bottom: 12px; z-index: 7;
+  padding: 7px 12px; border: 1px solid var(--line-strong);
+  border-radius: 5px; box-shadow: var(--shadow);
+  color: var(--ink); background: #eee5d3; font: 12px/1.5 var(--serif);
+  cursor: pointer;
+}
+.p1-launcher-tools { right: 88px; }
+.p1-scrim {
+  display: none; position: absolute; inset: 0; z-index: 17;
+  background: rgba(29,29,25,.28);
+}
+.p1-scrim[hidden] { display: none; }
+/* 检视卡过高时内容可滚，标题及关闭按钮仍然可见。 */
+.stage > .inspect {
+  max-height: calc(100% - 24px); overflow-y: auto; overscroll-behavior: contain;
+}
+.stage > .inspect .inspect-head { position: sticky; top: 0; z-index: 2; }
+@media (max-width: 1080px) {
+  .p1-launcher-observe { display: block; }
+  .main > .p1-scrim:not([hidden]) { display: block; }
+  .rail.right.p1-open {
+    display: block; position: absolute; right: 0; top: 0; bottom: 0;
+    width: min(345px, 94vw); max-width: none; z-index: 18;
+    border-left: 1px solid var(--line-strong); box-shadow: -6px 0 20px #191d172b;
+    background: var(--paper); overflow-y: auto;
+  }
+  .p1-observe-nav .p1-observe-close { display: block; flex: none; }
+}
+@media (max-width: 720px) {
+  .p1-launcher-tools { display: block; }
+  /* Three 使用独立原生工具栏，旧 Canvas 神力栏被正式设为 inert。 */
+  .rail.left[inert] + .stage .p1-launcher-tools { display: none; }
+  .rail.left.p1-open {
+    display: block; position: absolute; left: 0; top: 0; bottom: 0;
+    width: min(255px, 90vw); z-index: 18; background: var(--paper);
+    border-right: 1px solid var(--line-strong); box-shadow: 6px 0 20px #191d172b;
+    overflow-y: auto;
+  }
+  .rail.left.p1-open .p1-tools-close { display: block; width: 100%; margin-bottom: 8px; }
+  .stage-hint { max-width: calc(100% - 180px); }
+}
+
+/* 外层分区已写明标题；卡片只保留真正有用的状态、日期与操作。 */
+#inkCombatObserver .g2-combat__header h3,
+#inkEnvironmentObserver .g23-environment > h3 { display: none; }
+#inkCombatObserver .g2-combat__header { justify-content: flex-end; }
+#inkCombatObserver .g2-combat__list { max-height: min(245px, 35vh); }
+#inkEnvironmentObserver .g23-environment__fires { max-height: min(155px, 24vh); }

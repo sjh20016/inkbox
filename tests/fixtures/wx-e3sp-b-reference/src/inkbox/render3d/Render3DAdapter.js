@@ -1,0 +1,817 @@
+import { configureTerrainGpu } from './terrain/terrainGpuConfig.js';
+import { Renderer3D } from './Renderer3D.js';
+import { ArtDebugPanel } from './art/ArtDebugPanel.js';
+import { artDebugOptions } from './art/ArtDiagnostics.js';
+import { sculpt, strokeSamples, restoreHeights } from './terrain/sculpt.js';
+import { SCULPT_OPTIONS } from './terrain/sculpt.js';
+import { TerrainStroke, restoreTerrainStroke } from './terrain/sculpt.js';
+import { accessBounds, canAccess } from '../world/mapProgress.js';
+import { isViewTool, VIEW_CLICK_PX } from '../ui/realmView.js';
+import { blockingInputLayer } from '../ui/inputLayers.js';
+import { TOOLS, TOOL_BY_ID } from '../ui/tools.js';
+import { WANLING_BY_KEY } from '../core/wanlingCatalog.js';
+import { withWaterEditBatch } from '../sim/powers.js';
+import { visibleRift } from './readers/riftViewModel.js';
+import { settlementRuinForMarker, settlementRuinIsVisible } from '../world/settlementIdentity.js';
+
+/**
+ * M2-B B4（§63）：界缘检视的文案。
+ *
+ * ⚠️ **只说中性事实**：哪一界的界缘、此处界差、附近有几道裂缝、这里是不是破口。
+ *    不许出现「镇压强度」「泄漏概率」「鬼魂风险 −30%」这类**机制性文案**——
+ *    那些机制目前根本不存在（P2 / §63）。界差是**表现读数**，不是封印强度。
+ */
+export function boundaryInspectorText(hit) {
+  if (!hit) return '';
+  const name = hit.targetPlane === 'upper' ? '上界界缘' : '幽冥界缘';
+  const rifts = hit.nearbyRifts || [];
+  const parts = [
+    `${name} · 格 ${Math.round(hit.x)}, ${Math.round(hit.y)}`,
+    `此处界差 ${hit.rawGap.toFixed(1)}（画出的深度 ${hit.visualDepth.toFixed(1)}）`,
+    rifts.length ? `附近裂缝 ${rifts.length} 道` : '附近无裂缝',
+  ];
+  if (rifts.length) parts.push(hit.breach ? '此处为破口' : '未与界缘相交');
+  return parts.join(' · ');
+}
+import { TERRAIN_INFO, LIMITS } from '../core/config.js';
+import { SHANHAI_OPTIONS } from './shanhai/ShanhaiStyle.js';
+
+const NATIVE_SCULPT_MODES = new Set(['raise', 'lower', 'flatten', 'smooth', 'ridge', 'basin']);
+
+const hoverObjectIds = new WeakMap(); let nextHoverObjectId = 1;
+function hoverObjectId(object) {
+  if (!object) return 0;
+  if (!hoverObjectIds.has(object)) hoverObjectIds.set(object, nextHoverObjectId++);
+  return hoverObjectIds.get(object);
+}
+function cachedHoverIdentityCurrent(hit) {
+  if (!hit || hit.kind === 'entity') return hit?.kind !== 'entity';
+  if (hit.kind === 'site') {
+    const world = hit.stage?.world, ruin = settlementRuinForMarker(world, hit.siteId);
+    if (ruin) return settlementRuinIsVisible(world, ruin) && ruin.x === hit.world.x && ruin.y === hit.world.y;
+  }
+  const collection = hit.kind === 'site' ? 'sites' : hit.kind === 'leyline' ? 'leylines'
+    : hit.kind === 'rift' ? 'rifts' : hit.kind === 'artifact' ? 'artifacts' : null;
+  if (!collection) return true;
+  const id = hit[`${hit.kind}Id`];
+  return !!hit.stage?.world?.[collection]?.some(item => item?.id === id
+    && item.x === hit.world.x && item.y === hit.world.y
+    && (hit.kind !== 'rift' || visibleRift(item)));
+}
+
+// DOM/input integration lives here; Sandbox sees only render() and dispose().
+export class Render3DAdapter {
+  constructor(sandbox) {
+    this.sandbox = sandbox; this.active = true; this.mode = 'inspect'; this.radius = 6; this.strength = 0.035;
+    this.heldCameraKeys = new Set(); this.hoverCache = null; this.powerStroke = null;
+    this.editOrder = Math.max(0, ...(sandbox.history?.stack || []).map(entry => entry.adapterOrder || 0)); this.drainStroke = null;
+    this.hoverStats = { raycasts: 0, cacheHits: 0, invalidations: 0, lastReason: 'initial',
+      staticRaycasts: 0, staticCacheHits: 0, dynamicQueries: 0 };
+    // M2-B B2（§54）：垂直表现模式的**调试开关**。`?boundary=strata` 让视觉证据脚本
+    // 能在同一 seed / 同一 Region / 同一相机下切换 Raw 与 Strata。正式 UI 不并列它。
+    this.boundaryMode = new URLSearchParams(globalThis.location?.search || '').get('boundary') || null;
+    this.abort = new AbortController(); this.undoStack = []; this.redoStack=[];this.historyBytes=0;this.historyLimit=12;this.historyByteLimit=8*1024*1024;
+    const stage = sandbox.canvas.parentElement;
+    this.canvas = document.createElement('canvas'); this.canvas.id = 'inkCanvas3D';
+    this.canvas.setAttribute('aria-label', '立体山河沙盘'); this.canvas.tabIndex = 0;
+    Object.assign(this.canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', touchAction: 'none', zIndex: '1' });
+    stage.append(this.canvas);
+    const artParams = new URLSearchParams(globalThis.location?.search || '');
+    const requestedArt = artParams.get('art');
+    configureTerrainGpu(artParams);
+    const artProfile = requestedArt === 'off' ? 'baseline' : requestedArt || 'shanhai-v1';
+    const diagnostics = artDebugOptions();
+    if (['v1', 'print', 'ink', 'v12', 'line-a', 'line-b', 'line-c'].includes(artParams.get('nether'))) SHANHAI_OPTIONS.nether = artParams.get('nether');
+    if (artParams.get('lines') === 'off') SHANHAI_OPTIONS.lines = 'off';
+    // V1.3：自然雕刻默认开启；`?sculpt=classic` 回到 V1.2 的线性累加 + 硬夹笔刷（对照 / 回退）。
+    if (artParams.get('sculpt') === 'classic') SCULPT_OPTIONS.natural = false;
+    try { this.renderer = new Renderer3D(this.canvas, sandbox.world, { artProfile, lodEnabled: artParams.get('lod') !== 'off',
+      artDevelopment: diagnostics.development, artDebugView: diagnostics.debugView,
+      productionAssets: artParams.get('assets') !== 'off', decorations: artParams.get('decorations') !== 'off',
+      // 异兽库：默认异步加载世界试装 4 种；测试可从 sandbox 注入库/加载器，`?creatures=off` 回退旧占位。
+      creatureLibrary: sandbox.creatureLibrary || undefined,
+      loadCreatureLibrary: sandbox.loadCreatureLibrary,
+      creatureIds: sandbox.creatureIds,
+      creatures: artParams.get('creatures') !== 'off', scenery: artParams.get('scenery') !== 'off',
+      geography: artParams.get('geography') !== 'off' && artParams.get('assets') !== 'off' }); }
+    catch (error) { this.canvas.remove(); throw error; }
+    // The product and evidence harness await art.comparisonReady before capturing.
+    // Production resolves to candidate without loading the historical snapshot module.
+    this.renderer.art.setComparisonStyle(diagnostics.comparisonStyle).catch(error => {
+      this.artComparisonError = error;
+      if (this.active) console.error('Art comparison initialization failed', error);
+    });
+    this.panel = document.createElement('div'); this.panel.id = 'inkRender3DTools';
+    Object.assign(this.panel.style, { position: 'absolute', top: '10px', left: '10px', right: '10px', zIndex: '4', display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center', padding: '7px', background: '#eee5d3ed', border: '1px solid #a99b7d', borderRadius: '6px', fontSize: '12px' });
+    this.panel.innerHTML = `<b>山河沙盘</b><select aria-label="沙盘工具"></select><label>半径 <input aria-label="笔刷半径" type="range" min="1" max="32" value="6" style="width:65px"><output data-radius>6</output></label><label>强度 <input aria-label="笔刷强度" type="range" min="0.005" max="0.12" step="0.005" value="0.035" style="width:65px"><output data-strength>0.035</output></label><span data-edit-state></span><button data-action="fit">全图</button><button data-action="scenic" title="推荐视角：远 / 中 / 近循环（R）">观山</button><label title="纯装饰景观：亭塔桥舟 / 悬殿天门 / 断柱碑林魂灯；不可交互"><input type="checkbox" data-scenery checked> 画中景</label><button data-action="focus">聚焦选中格</button><button data-action="toggle">切回 Canvas</button><span aria-label="相机快捷键">WASD 平移 · Shift 加速 · Q/E 旋转 · 中键旋转 · 滚轮缩放 · F 全图 · R 观山</span><details><summary>操作 / 性能</summary><div>左键检视 / 施放 · 拖动笔刷；切换工具取消未提交笔画。</div><div data-debug style="position:absolute;top:100%;left:0;background:#eee5d3f5;padding:10px;white-space:pre-line;pointer-events:none"></div></details>`;
+    const modeSelect = this.panel.querySelector('select[aria-label="沙盘工具"]');
+    for (const tool of TOOLS.filter(item => !item.playerHidden)) modeSelect.add(new Option(tool.name, tool.id));
+    for (const [id, name] of [['smooth', '平滑'], ['ridge', '山脊'], ['basin', '盆地']]) modeSelect.add(new Option(name, id));
+    this.panel.querySelector('[aria-label="笔刷半径"]').max = String(Math.max(...LIMITS.brushSizes));
+    stage.append(this.panel);
+    // These nodes live for the entire adapter session; no per-frame selector work.
+    this.editStateNode = this.panel.querySelector('[data-edit-state]');
+    this.debugNode = this.panel.querySelector('[data-debug]');
+    this.readout = document.createElement('div'); this.readout.id = 'inkRender3DReadout';
+    Object.assign(this.readout.style, { position: 'absolute', bottom: '12px', left: '12px', zIndex: '3', padding: '6px 10px', background: '#eee5d3eb', borderRadius: '4px', fontSize: '12px', pointerEvents: 'none' });
+    stage.append(this.readout);
+    this.powerTarget = document.createElement('div'); this.powerTarget.id = 'inkPowerTarget'; this.powerTarget.hidden = true;
+    Object.assign(this.powerTarget.style, { position: 'absolute', zIndex: '3', pointerEvents: 'none',
+      padding: '5px 9px', color: '#795b2f', border: '1px solid #ad8b51', background: '#f2ead8ed',
+      borderRadius: '3px', fontSize: '12px', maxWidth: '230px' });
+    stage.append(this.powerTarget);
+    this.listen(this.panel.querySelector('select'), 'change', e => {
+      const next = e.target.value;
+      this.setTool(next);
+      if (TOOL_BY_ID[next]) this.sandbox.selectTool(next);
+    });
+    const sceneryToggle = this.panel.querySelector('[data-scenery]');
+    sceneryToggle.checked = this.renderer.sceneryEnabled !== false;
+    this.listen(sceneryToggle, 'change', e => this.renderer.setSceneryEnabled?.(e.target.checked));
+    this.listen(this.panel.querySelector('[aria-label="笔刷半径"]'), 'input', e => { this.endStroke();this.radius = Number(e.target.value);this.panel.querySelector('[data-radius]').textContent=this.radius; });
+    this.listen(this.panel.querySelector('[aria-label="笔刷强度"]'), 'input', e => { this.endStroke();this.strength = Number(e.target.value);this.panel.querySelector('[data-strength]').textContent=this.strength.toFixed(3); });
+    this.listen(this.panel, 'click', e => {
+      const action = e.target.dataset.action;
+      if (action === 'toggle') this.setActive(!this.active);
+      if (action === 'fit') this.renderer.cameraRig.fit();
+      if (action === 'scenic') this.renderer.cameraRig.scenic();
+      if (action === 'focus' && this.selectedCell) this.renderer.focusOn(this.selectedCell.x, this.selectedCell.y, {}, this.selectedCell.plane);
+    });
+    this.listen(this.canvas, 'contextmenu', e => e.preventDefault());
+    this.listen(this.canvas, 'pointerdown', e => {
+      if (e.button !== 0 || e.pointerType === 'touch') return;
+      this.canvas.focus(); this.renderer.cameraRig.cancelFocus();
+      // ── M2-B B3：正式 3D 划窗（§48–§52）─────────────────────────────
+      // 屏幕轨迹**只用于采样**；记下来的一律是 world x/y ⇒ 相机转了也不漂（§51）。
+      // 开窗动作仍然只由 `Sandbox.commitSelection` 在 pointerup 一次成型（§49 / S9）。
+      if (this.isViewMode()) {
+        const view = this.sandbox.getRealmViewState();
+        const visible = view.open ? this.hit(e) : null;
+        const inspectable = visible?.plane === view.targetPlane && view.region?.contains(visible.x + .5, visible.y + .5)
+          && canAccess(this.sandbox.world, visible.x, visible.y);
+        const hit = this.hitMortal(e);
+        if (!hit && !inspectable) return;
+        this.canvas.setPointerCapture(e.pointerId);
+        // The target surface is pickable even when its mortal quad is masked.
+        // It can start a read-only click; drag samples still use mortal terrain.
+        this.realmDraw = { path: hit ? [[hit.world.x, hit.world.y]] : [], last: hit?.world || null,
+          world: this.sandbox.world, press: { x: e.clientX, y: e.clientY },
+          viewRegion: view.region, targetPlane: view.targetPlane, source: this.sandbox.world?.[view.targetPlane],
+          mode: this.mode, toolId: this.sandbox.toolId };
+        this.renderer.setDraftPath(this.realmDraw.path);
+        return;
+      }
+      const hit = this.hit(e);
+      if (!hit) return;
+      // M2-B B4（§62/§63）：界缘断面也能被命中，但它**不是**一格的检视对象，
+      // 也**不落选择环**——界缘属于「当前这扇窗」，不属于某一位面的某一格。
+      if (hit.kind === 'realm-boundary') {
+        this.selectedBoundary = hit; this.selectedCell = null;
+        this.renderer.setSelection(null, null);
+        this.sandbox.notify(boundaryInspectorText(hit), 3600);
+        return;
+      }
+      this.selectedBoundary = null;
+      this.selectPicked(hit);
+      // M1-D2：无论检视还是雕刻，都在该格地表落一个轻量选中环（纯表现，不进存档）。
+      this.renderer.setSelection(hit.x, hit.y, hit.plane);
+      if (this.mode === 'inspect') {
+        this.inspectPicked(hit);
+        return;
+      }
+      if (TOOL_BY_ID[this.mode] && !isViewTool(this.mode) && !NATIVE_SCULPT_MODES.has(this.mode)) {
+        const reason = this.editReason(hit);
+        if (reason) { this.sandbox.notify(reason, 2400); return; }
+        const tool = TOOL_BY_ID[this.mode];
+        if (tool.mode === 'click') { this.commitPower(hit); return; }
+        this.canvas.setPointerCapture(e.pointerId);
+        this.powerStroke = { world: this.sandbox.world, mode: this.mode, radius: this.radius, points: [] };
+        this.samplePowerStroke(e);
+        return;
+      }
+      if (!this.canSculpt(hit)) {this.sandbox.notify(this.editReason(hit),2400);return;}
+      this.canvas.setPointerCapture(e.pointerId);
+      this.stroke = new TerrainStroke(sandbox.world,hit.world,{radius:this.radius,strength:this.strength,mode:this.mode,
+        syncWater:true,accessBounds:this.brushAccessBounds(),natural:SCULPT_OPTIONS.natural});
+      this.redoStack=[];this.historyNotice=null;this.syncHistoryState();
+    });
+    this.listen(this.canvas, 'pointermove', e => {
+      this.pointer = { x: e.clientX, y: e.clientY };
+      if (this.realmDraw) { this.sampleRealmDraw(e); return; }
+      if (this.powerStroke) { this.samplePowerStroke(e); return; }
+      if (this.drainStroke) { this.sampleDrainStroke(e); return; }
+      if (!this.stroke) return;
+      const hit = this.hit(e);
+      if (!this.canSculpt(hit)) { this.stroke.breakPath(); return; }
+      this.stroke.sample(hit.world);
+    });
+    // ⚠️ 只有 pointerup 才**提交**；pointercancel / lostpointercapture 一律**取消**
+    //    （拖动被打断不该开出一扇玩家没画完的窗）。
+    this.listen(this.canvas, 'pointerup', e => { if(this.stroke){const hit=this.hit(e);if(this.canSculpt(hit))this.stroke.sample(hit.world);}});
+    this.listen(this.canvas, 'pointerup', e => { this.commitPowerStroke(e); this.commitDrainStroke(e); });
+    this.listen(this.canvas, 'pointerup', e => { this.commitRealmDraw(e); this.endStroke(); });
+    for (const event of ['pointercancel', 'lostpointercapture']) this.listen(this.canvas, event, () => this.cancelStroke());
+    this.listen(this.canvas, 'pointerleave', () => { this.pointer = null; this.renderer.brush(null); });
+    this.listen(window, 'blur', () => { this.cancelStroke(); this.pointer = null; this.clearCameraKeys(); this.invalidateHover('blur'); });
+    this.listen(window, 'focusin', e => { if (this.isEditableTarget(e.target)) this.clearCameraKeys(); });
+    this.listen(document, 'visibilitychange', () => { if (document.hidden) this.clearCameraKeys(); });
+    this.listen(window, 'keydown', e => {
+      if (!this.active || this.isEditableTarget(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
+      const key = e.key.toLowerCase();
+      if (key === 'shift') { this.heldCameraKeys.add('shift'); return; }
+      if (['w', 'a', 's', 'd'].includes(key)) { this.heldCameraKeys.add(key); e.preventDefault(); e.stopImmediatePropagation(); return; }
+      if (['q', 'e', 'f', 'r'].includes(key)) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (key === 'f') this.renderer.cameraRig.fit();
+        else if (key === 'r') this.renderer.cameraRig.scenic();
+        else this.renderer.cameraRig.rotate((key === 'q' ? -1 : 1) * Math.PI / 4);
+      }
+    }, true);
+    this.listen(window, 'keyup', e => { this.heldCameraKeys.delete(e.key.toLowerCase()); });
+    this.listen(this.canvas, 'webglcontextlost', e => { e.preventDefault(); this.setActive(false); sandbox.notify('3D 图形上下文丢失，已回到 Canvas；恢复后可重新切入。'); });
+    this.resizeObserver = new ResizeObserver(() => this.resize()); this.resizeObserver.observe(stage);
+    this.originalFocus = sandbox.camera.focusOn; this.originalFit = sandbox.camera.fit;
+    const adapter = this;
+    sandbox.camera.focusOn = function (...args) { if (adapter.active) return adapter.focusMortal(...args); return adapter.originalFocus.apply(this, args); };
+    sandbox.camera.fit = function (...args) { const result = adapter.originalFit.apply(this, args); if (adapter.active) adapter.renderer.cameraRig.fit(); return result; };
+    this.addPrototypeControls();
+    if (diagnostics.panel) this.artDebug = new ArtDebugPanel(this.renderer, stage);
+    this.setActive(true); this.resize();
+  }
+  listen(target, name, fn, capture = false) { target.addEventListener(name, fn, { signal: this.abort.signal, capture }); }
+  isEditableTarget(target) {
+    return !!blockingInputLayer() || !!target?.isContentEditable || !!target?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]');
+  }
+  clearCameraKeys() { this.heldCameraKeys.clear(); }
+  syncFeedback() {
+    const hint = this.feedbackHint?.isConnected ? this.feedbackHint
+      : (this.feedbackHint = typeof document === 'undefined' ? null : document.getElementById?.('inkHint'));
+    if (!hint) return;
+    const timer = this.sandbox.toastTimer;
+    const visible = this.active && Number.isFinite(timer) && timer > 0 && timer < 60;
+    // Keep the existing actionable toast, including its focus link, in Three.
+    // The permanent Canvas help string is replaced by the Three readout.
+    const visibility = visible ? '' : 'hidden';
+    if (hint.style.visibility !== visibility) hint.style.visibility = visibility;
+    if (this.readout.hidden !== visible) this.readout.hidden = visible;
+  }
+  setTool(id) {
+    if (!TOOL_BY_ID[id] && !['smooth', 'ridge', 'basin'].includes(id)) return false;
+    if (this.mode === id) return true;
+    this.cancelStroke(); this.mode = id;
+    const select = this.panel?.querySelector('select[aria-label="沙盘工具"]');
+    if (select && [...select.options].some(option => option.value === id)) select.value = id;
+    this.clearCameraKeys(); this.invalidateHover('tool-switch');
+    return true;
+  }
+  invalidateHover(reason) {
+    if (this.hoverCache) this.hoverStats.invalidations++;
+    this.hoverCache = null; this.renderer?.picker?.clearHoverCache(); this.hoverStats.lastReason = reason;
+  }
+  hoverSignature(x, y) {
+    const host = this.renderer, camera = host.cameraRig.camera;
+    camera.updateMatrixWorld();
+    const common = [x, y, host.width, host.height, ...camera.matrixWorld.elements, ...camera.projectionMatrix.elements];
+    const world = host.world, access = accessBounds(world);
+    common.push(hoverObjectId(world), hoverObjectId(world?.mapProgress), access?.x0, access?.y0, access?.x1, access?.y1);
+    // Reuse the two large signature buffers; the resulting string keys retain
+    // the same per-mesh versions, so moving entities still invalidate hover.
+    const staticValues = this._hoverStaticValues || (this._hoverStaticValues = []);
+    const dynamicValues = this._hoverDynamicValues || (this._hoverDynamicValues = []);
+    staticValues.length = 0; dynamicValues.length = 0;
+    staticValues.push(...common); dynamicValues.push(...common);
+    const addMesh = (mesh, values) => {
+      if (!mesh) return;
+      const geometry = mesh.geometry;
+      values.push(hoverObjectId(mesh), mesh.visible ? 1 : 0, hoverObjectId(geometry), mesh.count,
+        mesh.instanceMatrix?.version ?? -1, geometry?.index?.version ?? -1, geometry?.userData?.cpuHeightVersion ?? -1,
+        ...(mesh.matrix?.elements || []));
+      if (geometry?.attributes) for (const [name, attribute] of Object.entries(geometry.attributes)) values.push(name, attribute?.version ?? -1);
+    };
+    for (const [plane, stage] of host.stages) {
+      const identity = [plane, hoverObjectId(stage), hoverObjectId(stage.world), stage.visible ? 1 : 0,
+        hoverObjectId(stage.contentGeometry), stage.contentInside ? 1 : 0, hoverObjectId(stage.regionGeometry),
+        stage.regionInside ? 1 : 0, stage.accessKey, ...(stage.root?.matrix?.elements || [])];
+      staticValues.push(...identity); dynamicValues.push(...identity);
+      // PlanePicker does not intersect the visual water mesh. Flowing water
+      // must not invalidate cached terrain; actual terrain/structure edits do.
+      for (const key of ['terrain', 'terrainSides', 'settlements', 'markers', 'realmArtifacts', 'decorations', 'vegetation']) {
+        const root = stage[key]?.mesh || stage[key]?.group;
+        staticValues.push(key, hoverObjectId(root), root?.visible ? 1 : 0);
+        root?.traverse?.(mesh => addMesh(mesh, staticValues));
+      }
+      const entities = stage.entities?.group;
+      dynamicValues.push('entities', hoverObjectId(entities), entities?.visible ? 1 : 0);
+      entities?.traverse?.(mesh => addMesh(mesh, dynamicValues));
+    }
+    if (host.boundary?.mesh?.visible) {
+      staticValues.push(hoverObjectId(host.boundary), host.boundary.edges);
+      addMesh(host.boundary.mesh, staticValues);
+    }
+    return { staticKey: staticValues.join('|'), dynamicKey: dynamicValues.join('|') };
+  }
+  hoverHit(clientX, clientY) {
+    const rect = this.canvas.getBoundingClientRect(), x = clientX - rect.left, y = clientY - rect.top;
+    const signature = this.hoverSignature(x, y);
+    if (this.hoverCache?.staticKey === signature.staticKey && this.hoverCache?.dynamicKey === signature.dynamicKey
+      && cachedHoverIdentityCurrent(this.hoverCache.hit)) {
+      this.hoverStats.cacheHits++; return this.hoverCache.hit;
+    }
+    this.hoverStats.raycasts++;
+    if (this.hoverCache) { this.hoverStats.invalidations++; this.hoverStats.lastReason = 'pointer/camera/geometry/region'; }
+    const pickerStats = this.renderer.picker.stats;
+    const before = { ...pickerStats };
+    const hit = this.renderer.pick(x, y, { reuseStatic: true, staticKey: signature.staticKey });
+    for (const key of ['staticRaycasts','staticCacheHits','dynamicQueries'])
+      this.hoverStats[key] += pickerStats[key] - before[key];
+    this.hoverCache = { ...signature, hit };
+    return hit;
+  }
+  addPrototypeControls() {
+    this.panel.querySelector('b').textContent = '山河沙盘';
+    // ⚠️ §54：下面这些是**调试探针**（固定矩形 Mask / Slab / 位面切换），不是玩家功能。
+    //    它们被折进一个 details 里与正式工具分开——但**仍留在 DOM 中**，因为
+    //    M2-A 的浏览器证据脚本按 `[data-probe]` 与 `[aria-label="调试位面"]` 选取它们。
+    const debug = document.createElement('details');
+    debug.style.cssText = 'display:inline-block';
+    debug.innerHTML = '<summary style="cursor:pointer">调试探针</summary>';
+    const controls = document.createElement('span');
+    controls.style.cssText = 'display:inline-flex;gap:5px;flex-wrap:wrap;padding-top:4px';
+    controls.innerHTML = `<select aria-label="调试位面"><option value="mortal">凡间</option><option value="upper">上界</option><option value="nether">幽冥</option></select><button data-probe="upper">上界 Mask</button><button data-probe="nether">幽冥 Mask</button><button data-probe="close">关窗</button><button data-probe="open-all">开放全图</button><button data-probe="slab">Slab 20×20</button>`;
+    debug.append(controls);
+    this.panel.append(debug);
+    const select = controls.querySelector('select'); this.planeSelect = select;
+    const requested = new URLSearchParams(location.search).get('plane');
+    if (requested) this.setDisplayPlane(requested);
+    this.listen(select, 'change', () => { if (!this.setDisplayPlane(select.value)) select.value = this.renderer.activePlane; });
+    this.listen(controls, 'click', event => {
+      const mode = event.target.dataset.probe; if (!mode) return;
+      if(mode==='open-all'){this.endStroke();this.sandbox.expandMap?.(true);return;}
+      this.setDisplayPlane('mortal');
+      if (mode === 'close') { this.sandbox.selection = null; this.sandbox.dirty = true; return; }
+      if (mode === 'slab') {
+        this.sandbox.selection = null; this.renderer.setRealmViewState(this.sandbox.getRealmViewState());
+        this.renderer.setSlabProbe(true); return;
+      }
+      if (!this.renderer.stages.has(mode)) return;
+      const { w, h } = this.sandbox.world;
+      const x0 = Math.floor(w * 0.28), x1 = Math.floor(w * 0.72), y0 = Math.floor(h * 0.28), y1 = Math.floor(h * 0.72);
+      // Use the established selection and view tool: no second 3D view state.
+      this.sandbox.selectTool(mode === 'upper' ? 'viewUpper' : 'viewNether');
+      this.sandbox.selection = { x0, y0, x1, y1, area: (x1 - x0) * (y1 - y0), path: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]] };
+      this.sandbox.dirty = true;
+    });
+  }
+  /** The one product entry for full-realm display; a view window remains a separate tool. */
+  setDisplayPlane(plane) {
+    if (!['mortal', 'upper', 'nether'].includes(plane) || !this.renderer.stages.has(plane)) return false;
+    this.cancelStroke(); this.clearCameraKeys(); this.selectedCell = null; this.selectedBoundary = null;
+    this.renderer.setSelection(null, null);
+    if (this.sandbox.getRealmViewState?.().open) this.sandbox.closeRealmView?.('plane');
+    this.renderer.setSlabProbe(false);
+    if (!this.renderer.setActivePlane(plane)) return false;
+    if (this.planeSelect) this.planeSelect.value = plane;
+    if (plane !== 'mortal' && this.mode !== 'inspect') {
+      this.setTool('inspect'); this.sandbox.selectTool('inspect');
+    }
+    document.body.dataset.r1Realm = plane;
+    this.invalidateHover('display-plane');
+    this.canvas.focus({ preventScroll: true });
+    return true;
+  }
+  // Existing faction/person links always refer to mortal subjects. Make that
+  // plane visible and use its elevation rather than the current debug stage.
+  focusMortal(x, y, options = {}) {
+    this.cancelStroke(); this.sandbox.selection = null; this.sandbox.dirty = true;
+    this.setDisplayPlane('mortal');
+    this.renderer.setRealmViewState(this.sandbox.getRealmViewState());
+    this.renderer.focusOn(x, y, options, 'mortal');
+  }
+  resize() { const r = this.sandbox.canvas.parentElement.getBoundingClientRect(); this.renderer.resize(Math.max(1, r.width), Math.max(1, r.height)); }
+  /** At most eight UI badges use this projection; no mesh, GPU pass or World write. */
+  projectSettlementAnchor(place) {
+    const host = this.renderer, world = this.sandbox.world, stage = host.stages.get('mortal');
+    if (!this.active || host.world !== world || host.activePlane !== 'mortal' || !stage?.visible
+      || !place || !Number.isFinite(place.x) || !Number.isFinite(place.y)
+      || !canAccess(world, place.x, place.y)) return { x: 0, y: 0, visible: false };
+    const view = this.sandbox.getRealmViewState();
+    if (view.open && view.region?.contains(place.x + .5, place.y + .5)) return { x: 0, y: 0, visible: false };
+    const position = host.coordinates.worldToRender(place.x, place.y, stage.elevation.at(place.x, place.y) + 1.8);
+    const camera = host.cameraRig.camera;
+    const point = this.observationPoint || (this.observationPoint = camera.position.clone());
+    point.set(position.x, position.y, position.z).project(camera);
+    const rect = this.canvas.getBoundingClientRect(), parent = this.canvas.parentElement.getBoundingClientRect();
+    return { x: (point.x + 1) * rect.width / 2 + rect.left - parent.left,
+      y: (1 - point.y) * rect.height / 2 + rect.top - parent.top,
+      visible: point.z >= -1 && point.z <= 1 && Math.abs(point.x) < 1 && Math.abs(point.y) < 1 };
+  }
+  setActive(active) {
+    this.cancelStroke(); if(!active)this.clearCameraKeys(); this.invalidateHover(active ? '3d-enter' : '3d-exit'); if(this.active&&!active)this.clearHistory('切回 Canvas 已清除沙盘编辑会话');this.active = active; this.lastNow = null;
+    if (active && TOOL_BY_ID[this.sandbox.toolId]) this.setTool(this.sandbox.toolId);
+    this.canvas.hidden = !active; this.readout.hidden = !active;
+    if (!active && this.powerTarget) this.powerTarget.hidden = true;
+    if (this.artDebug) this.artDebug.element.hidden = !active;
+    this.sandbox.canvas.style.visibility = active ? 'hidden' : '';
+    this.panel.querySelector('[data-action="toggle"]').textContent = active ? '切回 Canvas' : '进入 3D';
+    for (const element of this.panel.querySelectorAll('select,input,button:not([data-action="toggle"])'))
+      if (!element.closest('#inkWanlingQuick')) element.disabled = !active;
+    document.querySelector('.rail.left').inert = active;
+    document.querySelector('.rail.left').style.opacity = active ? '0.5' : '';
+    for (const id of ['inkBrushRange', 'inkBtnRelief', 'inkBtnGrid']) document.getElementById(id).disabled = active;
+    document.getElementById('inkHint').style.visibility = active ? 'hidden' : '';
+    this.sandbox.pointer.painting = false; this.sandbox.pointer.down = false; this.sandbox.pointer.panning = false;
+    this.sandbox.qol?.syncWorldInfo?.(active ? '3D' : 'Canvas');
+    this.sandbox.dirty = true;
+  }
+  hit(e) { const rect = this.canvas.getBoundingClientRect(); return this.renderer.pick(e.clientX - rect.left, e.clientY - rect.top); }
+  /** §52：划窗只 raycast **凡间** terrain —— 鼠标经过已经开着的目标界不参与。 */
+  hitMortal(e) { const rect = this.canvas.getBoundingClientRect(); return this.renderer.pickPlane(e.clientX - rect.left, e.clientY - rect.top, 'mortal'); }
+  isViewMode() { return isViewTool(this.mode); }
+  selectPicked(hit) {
+    this.selectedCell = { plane: hit.plane, x: hit.x, y: hit.y, kind: hit.kind, settlementId: hit.settlementId,
+      entityId: hit.entityId, artifactId: hit.artifactId, siteId: hit.siteId, leylineId: hit.leylineId, riftId: hit.riftId,
+      entityContainer: hit.entityContainer, houseKey: hit.houseKey, houseX: hit.houseX, houseY: hit.houseY };
+  }
+  inspectPicked(hit) {
+    this.selectedBoundary = null;
+    this.selectPicked(hit);
+    this.renderer.setSelection(hit.x, hit.y, hit.plane);
+    this.sandbox.environmentObservation?.select({ plane: hit.plane, x: hit.x, y: hit.y });
+    if (['entity', 'house', 'settlement', 'artifact', 'site', 'leyline', 'rift'].includes(hit.kind))
+      return this.sandbox.inspectPlaneSubject(hit.plane, this.selectedCell);
+    return this.sandbox.inspectPlaneAt(hit.plane, hit.x, hit.y);
+  }
+  brushAccessBounds(){return accessBounds(this.sandbox.world);}
+  editReason(hit){
+    if (this.sandbox.committedAuthorityAvailable?.() === false) return '世界尚未完成结算，请稍后落笔';
+    if(this.isViewMode())return '视界工具不修改地形';
+    if(!hit?.plane)return '请在当前可见地表或人物上落笔';
+    if(hit?.kind==='world-edge')return '世界外侧面只能观察，请在地表落笔';
+    if(hit?.plane!=='mortal'||this.renderer.activePlane!=='mortal')return '此神力暂只在凡间开放，请切回凡界后施放';
+    if(this.renderer.realmPrototype.open)return '请先关闭视界，再向凡界施放神力';
+    if(this.renderer.slabProbe)return '请先关闭 Slab 调试探针';
+    const bounds=this.brushAccessBounds();
+    if(hit?.world&&bounds&&!canAccess(this.sandbox.world,hit.world.x,hit.world.y))return '这片区域尚未解锁';
+    return '';
+  }
+  withinBrushBounds(bounds,x,y){return !bounds||x>=bounds.x0&&y>=bounds.y0&&x<=bounds.x1&&y<=bounds.y1;}
+  canSculpt(hit) {return !this.editReason(hit);}
+  updatePowerTarget(hit) {
+    if (!this.powerTarget) return;
+    const person = this.active && this.mode === 'root' && !this.editReason(hit) && hit?.entityId != null
+      ? this.sandbox.world.entities.find(e => e.id === hit.entityId && e.hp > 0 && !e._ascended) : null;
+    if (this.powerTarget.hidden !== !person) this.powerTarget.hidden = !person;
+    if (!person || !this.pointer) return;
+    const targetText = `◇ ${person.name || '无名'} · ${person.level > 0 ? '已有灵根' : '凡人 · 点击赐灵根'}`;
+    if (this.powerTarget.textContent !== targetText) this.powerTarget.textContent = targetText;
+    const rect = this.canvas.parentElement.getBoundingClientRect();
+    this.powerTarget.style.left = `${Math.max(0, Math.min(rect.width - 240, this.pointer.x - rect.left + 14))}px`;
+    this.powerTarget.style.top = `${Math.max(0, Math.min(rect.height - 45, this.pointer.y - rect.top + 16))}px`;
+  }
+  dispatchCommittedEdit(type, payload, operation) {
+    const bridge = this.sandbox.commandBridge;
+    if (!bridge) return operation();
+    const receipt = bridge.dispatch(bridge.create(type, payload), operation);
+    this.sandbox.lastCommandReceipt = receipt;
+    return receipt.ok ? receipt.value : false;
+  }
+  commitPower(hit, admitted = false) {
+    if (!admitted && this.sandbox.commandBridge) return this.dispatchCommittedEdit('power', {
+      toolId: this.mode, radius: this.radius, point: hit?.world ? { x: Math.round(hit.world.x), y: Math.round(hit.world.y) } : null,
+      targetEntityId: hit?.entityId ?? null, plane: hit?.plane ?? null,
+    }, () => this.commitPower(hit, true));
+    const tool = TOOL_BY_ID[this.mode], world = this.sandbox.world;
+    if (!this.active || !tool || tool.mode !== 'click' || world !== this.renderer.world) return false;
+    const reason = this.editReason(hit);
+    if (reason) { this.sandbox.notify(reason, 2400); return false; }
+    if (this.mode === 'root' && (hit.kind !== 'entity' || hit.entityId == null)) {
+      this.sandbox.notify('请直接点选一名真实凡人，人物高亮后再赐灵根。', 2600); return false;
+    }
+    const point = { x: Math.round(hit.world.x), y: Math.round(hit.world.y) };
+    this.sandbox.history.begin({ toolId: tool.id, ...point, radius: this.radius });
+    try {
+      this.sandbox.applyTool(true, { point, radius: this.radius, targetEntityId: hit.entityId, plane: hit.plane });
+      this.sandbox.history.end(tool.name);
+      this.sandbox.observeEcho?.refresh?.();
+      if (this.sandbox.history.lastJournalReceipt) {
+        this.sandbox.notify(`${this.sandbox.clickSaid || tool.name} · 回执已记入观井手札`, 5200);
+        this.sandbox.journal?.refresh?.();
+      }
+      return true;
+    } catch (error) {
+      this.sandbox.history.cancel?.();
+      throw error;
+    }
+  }
+  samplePowerStroke(event) {
+    const stroke = this.powerStroke, hit = this.hit(event);
+    if (!stroke || !hit || this.editReason(hit)) return;
+    const point = { x: Math.round(hit.world.x), y: Math.round(hit.world.y) }, last = stroke.points.at(-1);
+    if ((!last || last.x !== point.x || last.y !== point.y) && stroke.points.length < 128) stroke.points.push(point);
+  }
+  commitPowerStroke(event, admitted = false) {
+    if (!this.powerStroke) return false;
+    if (!admitted && this.sandbox.commandBridge) {
+      if (this.powerStroke) this.samplePowerStroke(event);
+      return this.dispatchCommittedEdit('terrain-stroke', {
+      toolId: this.mode, radius: this.radius, points: this.powerStroke?.points || [],
+      }, () => this.commitPowerStroke(event, true));
+    }
+    const stroke = this.powerStroke; if (!stroke) return false;
+    if (!admitted) this.samplePowerStroke(event); this.powerStroke = null;
+    if (!this.active || stroke.world !== this.sandbox.world || stroke.mode !== this.mode || !stroke.points.length) return false;
+    const tool = TOOL_BY_ID[stroke.mode]; if (!tool || tool.mode !== 'drag') return false;
+    const first = stroke.points[0];
+    this.sandbox.history.begin({ toolId: tool.id, ...first, radius: stroke.radius });
+    try {
+      const apply = () => { for (let i = 0; i < stroke.points.length; i++) {
+        const point = stroke.points[i];
+        if (!this.editReason({ plane: 'mortal', world: point })) this.sandbox.applyTool(i === 0, { point, radius: stroke.radius, plane: 'mortal' });
+      } };
+      if (stroke.mode === 'water' || stroke.mode === 'drain') withWaterEditBatch(stroke.world, this.sandbox.history, apply);
+      else apply();
+      this.sandbox.history.end(tool.name);
+      this.sandbox.observeEcho?.refresh?.();
+      if (this.sandbox.history.lastJournalReceipt) {
+        this.sandbox.notify(`${tool.name} · 回执已记入观井手札`, 4000);
+        this.sandbox.journal?.refresh?.();
+      }
+      return true;
+    } catch (error) {
+      this.sandbox.history.cancel?.();
+      throw error;
+    }
+  }
+  /** The existing burn tool owns World mutation; this adapter only supplies an authorized pick. */
+  burnAt(hit, admitted = false) {
+    if (!admitted && this.sandbox.commandBridge) return this.dispatchCommittedEdit('power', {
+      toolId: 'burn', radius: this.radius, point: hit ? { x: hit.x, y: hit.y } : null,
+    }, () => this.burnAt(hit, true));
+    if (!this.active || this.mode !== 'burn' || this.renderer.world !== this.sandbox.world
+      || this.sandbox.getRealmViewState?.().open
+      || !hit || !this.canSculpt(hit) || !Number.isFinite(hit.x) || !Number.isFinite(hit.y)) {
+      this.sandbox.notify('请在当前已开放的凡间地表焚林，先关闭视界与调试面片。', 2400);
+      return false;
+    }
+    const sandbox = this.sandbox;
+    sandbox.selectTool('burn');
+    sandbox.history.begin({ toolId: 'burn', x: Math.round(hit.x), y: Math.round(hit.y), radius: this.radius });
+    sandbox.applyTool(true, { point: { x: Math.round(hit.x), y: Math.round(hit.y) }, radius: this.radius });
+    const changed = sandbox.history.end('焚林');
+    if (changed) {
+      sandbox.history.stack.at(-1).adapterOrder = ++this.editOrder;
+      this.redoStack = []; this.syncHistoryState();
+    }
+    sandbox.qol.syncUndoState();
+    if (changed) sandbox.notify('焚林已落笔 · 火势与灾迹可用检视观察。', 2600);
+    if (sandbox.history.lastJournalReceipt) {
+      sandbox.notify('焚林 · 回执已记入观井手札', 4000);
+      sandbox.journal?.refresh?.();
+    }
+    return !!changed;
+  }
+  sampleDrainStroke(event) {
+    const stroke = this.drainStroke, hit = this.hit(event);
+    if (!stroke || !hit || !this.canSculpt(hit)) return;
+    const point = { x: Math.round(hit.x), y: Math.round(hit.y) }, last = stroke.points.at(-1);
+    if ((!last || last.x !== point.x || last.y !== point.y) && stroke.points.length < 128) stroke.points.push(point);
+  }
+  /** Apply the existing water power once per sampled cell, commit one gesture. */
+  commitDrainStroke(event, admitted = false) {
+    if (!this.drainStroke) return false;
+    if (!admitted && this.sandbox.commandBridge) {
+      if (this.drainStroke) this.sampleDrainStroke(event);
+      return this.dispatchCommittedEdit('terrain-stroke', {
+      toolId: 'drain', radius: this.radius, points: this.drainStroke?.points || [],
+      }, () => this.commitDrainStroke(event, true));
+    }
+    if (!this.drainStroke) return false;
+    if (!admitted) this.sampleDrainStroke(event);
+    const stroke = this.drainStroke; this.drainStroke = null;
+    const sandbox = this.sandbox, world = sandbox.world;
+    if (!this.active || this.mode !== 'drain' || stroke.world !== world || this.renderer.world !== world
+      || !stroke.points.length || stroke.points.some(point => !this.canSculpt({ plane: 'mortal', world: point }))) return false;
+    const first = stroke.points[0];
+    sandbox.selectTool('drain');
+    sandbox.history.begin({ toolId: 'drain', ...first, radius: stroke.radius });
+    for (let i = 0; i < stroke.points.length; i++) sandbox.applyTool(i === 0, { point: stroke.points[i], radius: stroke.radius });
+    const changed = sandbox.history.end('抽水'), entry = changed && sandbox.history.stack.at(-1);
+    if (entry) {
+      entry.threeDrain = true; entry.adapterOrder = ++this.editOrder;
+      this.redoStack = [];
+      sandbox.notify(entry.observeMarkId != null ? '抽水已落笔 · 直接变化已入回声。' : '此处积水没有实际减少，未登记笔录。', 2800);
+    } else sandbox.notify('此处积水没有实际减少，未登记笔录。', 2400);
+    sandbox.observeEcho?.refresh?.();
+    sandbox.qol.syncUndoState(); this.syncHistoryState();
+    return !!entry;
+  }
+  latestDrainUndo() {
+    const entry = this.sandbox?.history?.stack?.at(-1);
+    const terrain = this.undoStack?.at(-1);
+    return entry && (entry.adapterOrder || 0) > (terrain ? terrain.adapterOrder || 0 : -Infinity) ? entry : null;
+  }
+  stamp(point, plane) {
+    if(plane!=='mortal'||!this.stroke||this.stroke.plane!=='mortal'||this.stroke.world!==this.sandbox.world||!this.canSculpt({plane,world:point}))return;
+    if(typeof this.stroke.sample==='function'){this.stroke.sample(point);return;}
+    // Historical callers provide a Map-backed stroke and expect one explicit stamp.
+    const region=sculpt(this.sandbox.world,{...point,radius:this.radius,strength:this.strength,mode:this.mode,
+      targetHeight:this.stroke.targetHeight,accessBounds:this.brushAccessBounds(),natural:SCULPT_OPTIONS.natural});
+    if(region){for(const [i,,old] of region.changes)if(!this.stroke.before.has(i))this.stroke.before.set(i,old);
+      this.stroke.changed=true;this.applyTerrainDirty(region);}
+  }
+  applyTerrainDirty(region,reason='terrain'){
+    if(!region)return;
+    this.renderer.markTerrainDirty(region);this.sandbox.dirty=true;
+    if(this.sandbox.terrain?.invalidate)this.sandbox.terrain.invalidate();
+    else if(this.sandbox.terrain)this.sandbox.terrain.lastRender=-Infinity;
+    this.sandbox.qol?.markDirty?.(reason);
+  }
+  flushStroke(){if(this.stroke?.world===this.sandbox.world)this.applyTerrainDirty(this.stroke.flush?.());}
+  syncHistoryState(){
+    this.historyBytes=[...(this.undoStack||[]),...(this.redoStack||[])].reduce((sum,entry)=>sum+(entry.bytes||entry.changes.length*32),0);
+  }
+  clearHistory(message){
+    this.stroke=null;this.undoStack=[];this.redoStack=[];this.historyBytes=0;this.historyNotice=message||null;this.syncHistoryState();
+    if (message && this.editStateNode && this.editStateNode.textContent !== message) this.editStateNode.textContent = message;
+  }
+  cancelStroke() {
+    this.powerStroke = null; this.drainStroke = null; this.cancelRealmDraw();
+    if (this.stroke?.world === this.sandbox.world) {
+      const entry = this.stroke.finish?.({ present: false });
+      if (entry) this.applyTerrainDirty(restoreTerrainStroke(this.stroke.world, entry, 'before'));
+    }
+    this.stroke = null;
+  }
+  endStroke() {
+    this.powerStroke = null;
+    this.drainStroke = null;
+    this.cancelRealmDraw();
+    if(this.stroke?.world===this.sandbox.world){
+      const entry=typeof this.stroke.finish==='function'?this.stroke.finish():this.stroke.changed
+        ?{plane:this.stroke.plane,world:this.stroke.world,changes:[...this.stroke.before],bytes:this.stroke.before.size*32}:null;
+      if(entry){entry.adapterOrder=++this.editOrder;this.applyTerrainDirty(entry.region);this.undoStack.push(entry);this.redoStack=[];
+        this.historyBytes=(this.historyBytes||0)+entry.bytes;
+        while(this.undoStack.length>(this.historyLimit||12)||this.historyBytes>(this.historyByteLimit||8*1024*1024)){
+          const old=this.undoStack.shift();this.historyBytes-=old.bytes||old.changes.length*32;
+        }
+      }
+    }
+    const committed = !!this.stroke;
+    this.stroke=null;this.syncHistoryState();
+    if (committed) this.sandbox.publishCommittedEdit?.();
+  }
+
+  // ── M2-B B3 · 正式 3D 划窗（§48–§52）──────────────────────────────────
+
+  /**
+   * 采样一个指针位置，追加到**世界坐标路径**上。
+   *
+   * §51：屏幕鼠标轨迹只用于**采样**，最终 Region 必须由 world x/y 构成——
+   * 相机转动后 Region 不漂移。所以这里每次采样都重新 raycast 凡间地形。
+   * 采样点间距小于 0.6 格就丢掉，避免路径被抖动的像素灌满。
+   */
+  sampleRealmDraw(e) {
+    const hit = this.hitMortal(e);
+    if (!hit) return;
+    const point = hit.world;
+    const last = this.realmDraw.last;
+    if (last && Math.hypot(point.x - last.x, point.y - last.y) < 0.6) return;
+    this.realmDraw.path.push([point.x, point.y]);
+    this.realmDraw.last = point;
+    this.renderer.setDraftPath(this.realmDraw.path);
+  }
+
+  /**
+   * pointerup：把世界坐标路径交给 **Canvas 侧唯一提交点**（§49 / S9）。
+   *
+   * ⚠️ 每次拖拽**只调一次** `commitSelection`——它自己负责 normalizeRegion、
+   *    选区、目标位面、`openRifts`、通知与 V7 语义。这里**绝不**自己调 `openRifts`，
+   *    也**没有**第二个 3D 选择状态。
+   * 退化路径（点一下 / 只划一条线）也照样交出去：`commitSelection` 会用既有的
+   *    「点一下 = 收起视界 / 太小 = 拒绝并发声」出口（不许静默）。
+   */
+  commitRealmDraw(event) {
+    const draw = this.realmDraw;
+    if (!draw) return null;
+    this.realmDraw = null;
+    this.renderer.setDraftPath(null);
+    if (draw.world && (draw.world !== this.sandbox.world || this.renderer.world !== draw.world)) return null;
+    const view = this.sandbox.getRealmViewState?.();
+    if (draw.mode !== undefined && draw.mode !== this.mode) return null;
+    if ('toolId' in draw && draw.toolId !== this.sandbox.toolId) return null;
+    if ('viewRegion' in draw && (draw.viewRegion !== view?.region || draw.targetPlane !== view?.targetPlane)) return null;
+    if ('source' in draw && draw.source !== this.sandbox.world?.[draw.targetPlane]) return null;
+    if (event && draw.press && view?.open && draw.viewRegion === view.region
+      && draw.targetPlane === view.targetPlane
+      && Math.hypot(event.clientX - draw.press.x, event.clientY - draw.press.y) < VIEW_CLICK_PX) {
+      const hit = this.hit(event), source = hit?.plane === 'mortal' ? this.sandbox.world : this.sandbox.world?.[hit?.plane];
+      if (hit?.plane === view.targetPlane && source === this.renderer.stages?.get(hit.plane)?.world
+        && canAccess(this.sandbox.world, hit.x, hit.y) && view.region.contains(hit.x + .5, hit.y + .5)) {
+        // A short click observes the actual visible plane without re-opening rifts.
+        this.inspectPicked(hit);
+        return { inspected: true, plane: hit.plane, x: hit.x, y: hit.y };
+      }
+    }
+    const path = draw.path;
+    if (!path.length) return null;
+    this.sandbox.commitSelection(path);
+    this.sandbox.dirty = true;
+    return path;
+  }
+
+  cancelRealmDraw() {
+    if (!this.realmDraw) return null;
+    const path = this.realmDraw.path;
+    this.realmDraw = null;
+    this.renderer.setDraftPath(null);
+    return path;
+  }
+  undo(admitted = false) {
+    if (!admitted && this.sandbox.commandBridge) return this.dispatchCommittedEdit('undo', {}, () => this.undo(true));
+    this.endStroke();
+    if (!this.canSculpt({ plane: this.renderer.activePlane })) return false;
+    const waterEntry = this.latestDrainUndo();
+    if (waterEntry) {
+      const changed = this.sandbox.undo(true);
+      if (changed) { this.renderer.markTerrainDirty(waterEntry.bounds); this.redoStack = []; }
+      this.sandbox.observeEcho?.refresh?.(); this.syncHistoryState();
+      return changed;
+    }
+    const entry=this.undoStack.pop();
+    if(!entry)return false;
+    if(entry.plane!=='mortal'||entry.world!==this.sandbox.world){this.clearHistory('创建或加载世界后已清除旧编辑会话');return false;}
+    const restored=entry.records?restoreTerrainStroke(entry.world,entry,'before'):restoreHeights(entry.world, entry.changes);
+    if(entry.records&&!restored)return this.rejectHistoryConflict();
+    this.redoStack??=[];this.redoStack.push(entry);this.applyTerrainDirty(restored,'undo');this.syncHistoryState();return !!restored;
+  }
+  rejectHistoryConflict(){
+    const message='世界演化已改变地形，不能撤销旧笔画';
+    this.clearHistory(message);this.sandbox.notify?.(message,4200);return false;
+  }
+  redo(admitted = false){
+    if (!admitted && this.sandbox.commandBridge) return this.dispatchCommittedEdit('redo', {}, () => this.redo(true));
+    this.endStroke();
+    if(!this.canSculpt({plane:this.renderer.activePlane}))return false;
+    const entry=this.redoStack?.pop();if(!entry)return false;
+    if(entry.world!==this.sandbox.world){this.clearHistory('创建或加载世界后已清除旧编辑会话');return false;}
+    const restored=restoreTerrainStroke(entry.world,entry,'after');
+    if(entry.records&&!restored)return this.rejectHistoryConflict();
+    if(restored)this.undoStack.push(entry);this.applyTerrainDirty(restored);this.syncHistoryState();return !!restored;
+  }
+
+  render(now) {
+    if (!this.active) return false;
+    if (this.sandbox.committedAuthorityAvailable?.() === false) return false;
+    const world = this.sandbox.world;
+    if (this.renderer.world !== world) this.cancelStroke();
+    if (this.renderer.setWorld(world)) { this.clearCameraKeys(); this.invalidateHover('world-replace'); this.clearHistory('创建或加载世界后已清除旧编辑会话'); this.selectedCell = null; this.lastNow = null; this.planeSelect.value = this.renderer.activePlane; }
+    this.renderer.setRealmViewState(this.sandbox.getRealmViewState());
+    if (this.boundaryMode) this.renderer.setBoundaryMode(this.boundaryMode);
+    this.renderer.setPresentation(this.sandbox.stage);
+    // main.js already converts RAF milliseconds to seconds.
+    const dt = this.lastNow == null ? 0 : Math.min(0.1, Math.max(0, now - this.lastNow)); this.lastNow = now;
+    if (blockingInputLayer()) this.clearCameraKeys();
+    const keys = this.heldCameraKeys;
+    this.renderer.cameraRig.moveLocal((keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0),
+      (keys.has('w') ? 1 : 0) - (keys.has('s') ? 1 : 0), dt, keys.has('shift'));
+    this.flushStroke();
+    this.renderer.update(dt);
+    const hit = this.pointer ? this.hoverHit(this.pointer.x, this.pointer.y) : null;
+    this.updatePowerTarget(hit);
+    this.syncFeedback();
+    this.renderer.brush(this.mode === 'inspect' || this.editReason(hit) ? null : hit, this.radius);
+    const editState = this.editStateNode;
+    if (editState && this.mode !== 'inspect') {
+      const editText = this.editReason(hit) ||
+        (this.mode === 'root' ? (hit?.entityId != null ? `赐灵根目标：人物 ${hit.entityId} · 点击确认` : '请点选高亮的真实凡人')
+          : TOOL_BY_ID[this.mode]?.mode === 'click' ? '单击施放 · 将改变真实世界' : '拖动选取范围 · 松手施放');
+      if (editState.textContent !== editText) editState.textContent = editText;
+    }
+    const metrics = this.renderer.render();
+    const cell = hit || this.selectedCell;
+    const viewedWorld = this.renderer.stages.get(cell?.plane || this.renderer.activePlane)?.world || world;
+    // §63：界缘检视优先显示（它是中性的界差读数，与格子检视互斥）。
+    const boundaryText = this.selectedBoundary ? boundaryInspectorText(this.selectedBoundary) : null;
+    const village = cell?.kind === 'settlement' ? viewedWorld.villages?.find(v => v.id === cell.settlementId) : null;
+    const readoutText = (this.mode === 'beast' ? `万灵 · ${WANLING_BY_KEY.get(this.sandbox.wanlingForm)?.name || '当康'}｜点选地图投放 · ` : '') + (boundaryText || (this.mode === 'root' && cell?.entityId != null ? `人物 ${cell.entityId} · 格 ${cell.x}, ${cell.y} · 点击赐灵根` : village ? `聚落 · ${village.name}` : cell && cell.plane
+      ? `${cell.plane} · 格 ${cell.x}, ${cell.y} · 高程 ${viewedWorld.height[cell.y * viewedWorld.w + cell.x]?.toFixed(4)} · ${TERRAIN_INFO[viewedWorld.type[cell.y * viewedWorld.w + cell.x]]?.name || '—'}`
+      : 'WASD 平移 · Shift 加速 · 左键检视 / 雕刻 · 中键旋转 · 滚轮缩放 · F 全图'));
+    if (this.readout.textContent !== readoutText) this.readout.textContent = readoutText;
+    if (!this.lastDebug || now - this.lastDebug > 0.3) {
+      this.lastDebug = now;
+      let debugText = `WASD 平移 · Shift 加速 · Q/E 旋转 · F 全图\n左键检视 / 雕刻 · 中键旋转 · 滚轮缩放\n${metrics.fps.toFixed(1)} FPS · ${metrics.frameMs.toFixed(1)} ms/frame\n${metrics.drawCalls} draws · ${metrics.triangles} triangles\n${metrics.terrainVertices} terrain vertices · ${metrics.treeInstances} trees\n${metrics.entityInstances} entities · ${metrics.houseInstances} buildings · ${metrics.markerInstances} markers\nRaycast ${metrics.lastRaycastMs.toFixed(2)} ms（上次查询） · hover ${this.hoverStats.raycasts} 次 raycast / ${this.hoverStats.cacheHits} 次复用\nrender submit ${metrics.renderMs.toFixed(2)} ms\nCPU 更新 ${metrics.layerUpdateMs.toFixed(2)} ms（桥扫描 ${metrics.bridgeScanMs.toFixed(2)} · 地形 ${metrics.terrainUpdateMs.toFixed(2)} · 水 ${metrics.waterUpdateMs.toFixed(2)} · 植被 ${metrics.vegetationUpdateMs.toFixed(2)}）\n实体 ${metrics.entityUpdateMs.toFixed(2)} ms · 建筑 ${metrics.settlementUpdateMs.toFixed(2)} ms · 标记 ${metrics.markerUpdateMs.toFixed(2)} ms`;
+      if (metrics.lod) {
+        const names = { tree: 'Trees', character: 'Characters', building: 'Buildings' };
+        debugText += '\n' + Object.entries(metrics.lod).map(([key, value]) =>
+          `${names[key]} L0/L1/L2 ${value.lod.join('/')} · ${value.triangles} tris · overflow ${value.overflow} · capacity ${value.capacity}${value.hlod ? ` · HLOD ${value.hlod}` : ''}`).join('\n');
+      }
+      if (this.debugNode.textContent !== debugText) this.debugNode.textContent = debugText;
+    }
+    return true;
+  }
+  dispose() {
+    this.setActive(false); this.clearCameraKeys(); this.invalidateHover('dispose'); this.artDebug?.dispose(); this.abort.abort(); this.resizeObserver.disconnect(); this.renderer.dispose();
+    this.sandbox.camera.focusOn = this.originalFocus; this.sandbox.camera.fit = this.originalFit;
+    this.canvas.remove(); this.panel.remove(); this.readout.remove(); this.powerTarget?.remove();
+  }
+}

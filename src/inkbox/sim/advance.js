@@ -54,6 +54,7 @@ import { stepDaoActivities } from './daoActivities.js';
 import { stepTransit } from './transit.js';
 import { settleVows } from './journal.js';
 import { startWorkMetric, endWorkMetric, workMetricsEnabled } from './workMetrics.js';
+import { assertResumableLife } from './life.js';
 
 /**
  * 各低频时钟的节拍（游戏日）。
@@ -103,11 +104,23 @@ export function createAdvanceState() {
  *   调用方据此置 `dirty` 位（`main.js` 就是这么用的）。
  */
 export function advanceWorld(world, days, deps = {}) {
-  const advanceSpan = beginBreakdown('advanceWorld');
+  const phases = advanceWorldPhases(world, days, deps);
+  let result;
+  do { result = phases.next(); } while (!result.done);
+  return result.value;
+}
+
+export function* advanceWorldPhases(world, days, deps = {}, { cooperative = false } = {}) {
+  const span = name => cooperative ? null : beginBreakdown(name);
+  const advanceSpan = span('advanceWorld');
   try {
   if (!world || !Number.isFinite(days) || !(days > 0)) return null;
   const state = deps.state;
   if (!state) return null;              // 没有累加器 = 节流失效，宁可不推
+  if (cooperative && deps.life) {
+    assertResumableLife(deps.life);
+    if (deps.life.world !== world) throw new TypeError('Cooperative Life must own the advancing World');
+  }
 
   // 大步推进沿正式绝对月边界分段：宗门月收入、灾损和援助须在荒废
   // 判定前各有一次结算机会。正常帧的小步路径保持原有调用次序。
@@ -121,7 +134,7 @@ export function advanceWorld(world, days, deps = {}) {
       const natureDue = world.nature?.events?.reduce((next, event) =>
         event.dueDay > world.day ? Math.min(next, event.dueDay) : next, Infinity) ?? Infinity;
       const slice = Math.min(remaining, 30, toBoundary, natureDue - world.day);
-      const fired = advanceWorld(world, slice, deps);
+      const fired = yield* advanceWorldPhases(world, slice, deps, { cooperative });
       for (const key of Object.keys(total)) total[key] ||= !!fired?.[key];
       remaining -= slice;
     }
@@ -134,20 +147,24 @@ export function advanceWorld(world, days, deps = {}) {
   world.day += days;
   world.year = Math.floor(world.day / TIME.daysPerYear);
   if (world.wanxiang?.enabled) { updateWorldEpoch(world); if(Math.floor(previousDay/30)!==Math.floor(world.day/30)) { stepDaoSeeds(world); stepLegend(world,claimGroundArtifact); } }
-  const wanlingSpan = beginBreakdown('advance.wanling');
+  if (cooperative) yield Object.freeze({ phase: 'advance.day-epoch' });
+  const wanlingSpan = span('advance.wanling');
   if (world.plane === 'mortal') fired.wanling = !!stepWanling(world,days,{life:deps.life});
   endBreakdown(wanlingSpan);
+  if (cooperative) yield Object.freeze({ phase: 'advance.wanling' });
 
   // ── 凡间主循环（每拍都跑，不节流）────────────────────────────
   if (deps.life) {
     const measuring=workMetricsEnabled(world);
     const started = measuring ? startWorkMetric(world) : null;
-    deps.life.step(days);
+    if (cooperative) yield* deps.life.stepPhases(days, { cooperative: true });
+    else deps.life.step(days);
     if(measuring)endWorkMetric(world, 'life', started);
   }
-  const daoSpan = beginBreakdown('advance.daoActivities');
+  const daoSpan = span('advance.daoActivities');
   if (deps.life && world.plane === 'mortal') stepDaoActivities(world,deps.life);
   endBreakdown(daoSpan);
+  if (cooperative) yield Object.freeze({ phase: 'advance.daoActivities' });
 
   // ── 上界：与凡间共享同一条时间轴，但**更新频率低**（每 10 日）──
   // ⚠️ 绝不能拿凡间的 `deps.life` 去 step 上界：`stepEntity` 会抽 `Life.rng`，
@@ -158,13 +175,15 @@ export function advanceWorld(world, days, deps = {}) {
     world.upper.year = world.year;
     state.upper += days;
     if (state.upper >= ADVANCE_PERIODS.upper) {
-      const clockSpan = beginBreakdown('advance.upper');
+      const clockSpan = span('advance.upper');
       deps.upperLife.step(state.upper);
       endBreakdown(clockSpan);
       state.upper = 0;
       fired.upper = true;
     }
   }
+
+  if (cooperative) yield Object.freeze({ phase: 'advance.upper' });
 
   // ── 幽冥：与上界逐字同构（每 10 日）──────────────────────────
   // ⚠️ `stepNether` 收的是**凡间 world**——它要用 `world.souls`（凡间魂池）
@@ -176,13 +195,15 @@ export function advanceWorld(world, days, deps = {}) {
     world.nether.year = world.year;
     state.nether += days;
     if (state.nether >= ADVANCE_PERIODS.nether) {
-      const clockSpan = beginBreakdown('advance.nether');
+      const clockSpan = span('advance.nether');
       stepNether(world, state.nether);
       endBreakdown(clockSpan);
       state.nether = 0;
       fired.nether = true;
     }
   }
+
+  if (cooperative) yield Object.freeze({ phase: 'advance.nether' });
 
   // ── 空间裂缝：每 30 日一拍，且**只在视界开启时累加**（契约 C1.1）──
   //
@@ -215,13 +236,15 @@ export function advanceWorld(world, days, deps = {}) {
   if (deps.riftActive !== false) {
     state.rift += days;
     if (state.rift >= ADVANCE_PERIODS.rift) {
-      const clockSpan = beginBreakdown('advance.rift');
+      const clockSpan = span('advance.rift');
       stepRifts(world);
       endBreakdown(clockSpan);
       state.rift = 0;
       fired.rift = true;
     }
   }
+
+  if (cooperative) yield Object.freeze({ phase: 'advance.rift' });
 
   // ── 凡间鬼影：每 10 日一拍（D6-3 工程包 B）──────────────────────
   //
@@ -243,7 +266,7 @@ export function advanceWorld(world, days, deps = {}) {
   if (world.wraiths && deps.wraith !== false) {
     state.wraith += days;
     if (state.wraith >= ADVANCE_PERIODS.wraith) {
-      const clockSpan = beginBreakdown('advance.wraith');
+      const clockSpan = span('advance.wraith');
       stepMortalWraiths(world, state.wraith);
       endBreakdown(clockSpan);
       state.wraith = 0;
@@ -251,23 +274,29 @@ export function advanceWorld(world, days, deps = {}) {
     }
   }
 
+  if (cooperative) yield Object.freeze({ phase: 'advance.wraith' });
+
   // Life reads fire overlap against the just-completed interval. Expire after
   // life.step so a step crossing dueDay cannot apply full-interval fire damage.
-  const natureSpan = beginBreakdown('advance.nature');
+  const natureSpan = span('advance.nature');
   fired.nature = settleNature(world) > 0;
   endBreakdown(natureSpan);
+  if (cooperative) yield Object.freeze({ phase: 'advance.nature' });
 
   // Transit consumes the same absolute game-day clock after life/deaths and
   // terrain expiry. Arrival cannot then receive a second ground-AI move.
-  const transitSpan = beginBreakdown('advance.transit');
+  const transitSpan = span('advance.transit');
   fired.transit = !!stepTransit(world)?.changed;
   endBreakdown(transitSpan);
+  if (cooperative) yield Object.freeze({ phase: 'advance.transit' });
 
   // Access grows only after the simulation succeeds, independently of all streams.
   fired.mapProgress = updateMapProgress(world);
+  if (cooperative) yield Object.freeze({ phase: 'advance.mapProgress' });
   // At most two player observations, after a successful existing simulation
   // slice. Vow deadlines never alter step sizes or random-call ordering.
   settleVows(world);
+  if (cooperative) yield Object.freeze({ phase: 'advance.vows' });
   // P0-C.1: producers publish their own five-layer writes (Life grazing,
   // Wanling, Nether decay, rifts and finite nature events). Never invalidate
   // three entire planes just because the calendar advanced. Legacy writers
