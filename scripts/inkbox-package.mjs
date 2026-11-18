@@ -26,6 +26,8 @@ const FILES = [
   'docs/development/WX_E3SP_STATE_MACHINE.md',
   'docs/development/WX_E3SP_CORRECTNESS.json',
   'docs/development/WX_E3SP_BROWSER.json',
+  'docs/development/WX_E3SP_ACCEPTANCE.md',
+  'docs/development/WX_E3SP_CI.json',
   'docs/development/WX_E3SP_DECISION.md',
   'docs/development/WX_E3SP_WORKER_PROTOCOL.md',
   'docs/development/WX_E3SP_PIN_REVIEW.json',

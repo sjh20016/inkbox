@@ -1,0 +1,20 @@
+{
+  "status": "accepted isolated research prototype",
+  "productionPromotion": "STOP",
+  "productBaseline": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "fixedDtSynchronousOracle": "37e3b1a64aedc921012fadb2b92668787d0fd3ac",
+  "sampledSourceLocalCommit": "61b74f94afd4014a8023f7f8a626f34e0c36294a",
+  "sampledSourcePublishedCommit": "f1087282eb4e565cf1e2d8bc9217d4d2591e2cc1",
+  "sampledSourceTree": "1dab4285b249d010c79625cc6dc46c1ad53690dc",
+  "archiveSourceCommit": "6bfb61b71f0f6ba49a207842c0cf467d02664461",
+  "archiveSourceTree": "3174b3ffb2054c05cbedd01c3343b98feb90794f",
+  "archive": "wx-e3s-evidence/delivery-e3sp-20261118T025735Z.zip",
+  "storage": "Local workspace artifact",
+  "bytes": 11094325,
+  "sha256": "08ca6f66abad8e16575274ff2f148076a3d887c486d37a1f3926c25551ce9c2e",
+  "manifestSha256": "d0005ae6ac5b265f6ee1c70db5274193cfdfcc1ed8d9be6a9522586a03461834",
+  "verifiedZipEntries": 77,
+  "gitBundlePrerequisite": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "gitBundleVerified": true,
+  "rollback": "Retain the B branch. Revert the shared phases and research entry together with their cost pins and CI registration in a normal commit. Keep the evidence archive and v11 checkpoints."
+}

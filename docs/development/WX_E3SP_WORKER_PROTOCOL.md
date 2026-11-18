@@ -1,9 +1,16 @@
-# Worker fallback boundary
+# 轻量 Worker 后备接口
 
-No Worker is automatically enabled by this research branch. A possible next backend owns one persistent private simulation context in the Worker, receives an initial exact checkpoint once, and accepts ordered commands plus coalesced target watermarks and priority pause/replace/save controls. It must not accumulate an unbounded advance message per display frame or send complete World snapshots after every step.
+优先验证 Worker 私有权威模拟与主线程 B 提交读模型。四百年 Canvas 每秒只有约 9–10 次显示回调，按回调给定 6 ms 模拟额度限制了完成吞吐。让 Worker 独立结算解除这项耦合。图层绘制和 DOM 仍由主线程完成。
 
-Commit packets contain generation/sequence/day, finite entity and query DTOs, native ordered committed events and bounded dirty terrain packets. Acknowledged delivery watermarks provide backpressure. The UI retains immutable last-complete facts; buffer reuse must never mutate a retained old frame. Saves are explicit v11 serialization at a complete boundary. Faults stop authority progress; restore/replay and source/RNG identity require the same proof as this prototype.
+| 方向 | 消息 | 边界 |
+| --- | --- | --- |
+| UI → Worker | `init/replace`、`pause/resume`、`save` | 换代拒绝旧命令，控制优先于未开始的步。已开始的原子操作结束后，按合法提交边界处理。保存返回完整 v11 和 G8。 |
+| UI → Worker | `target`、`command`、`query` | 目标保留最新水位并合并更新。有限命令队列保留代际、序号、提交日和拒绝原因。复杂查询按提交代际处理。 |
+| Worker → UI | `commit`、`receipt`、`fault` | 发送代际、提交号、完成日、必要人物与查询 DTO、事件水位和五层地形脏块。主线程完全收到后切换前帧。故障保留最后完成帧并拒绝权威保存。 |
+| UI → Worker | `ack`、`resync` | 已消费事件按水位确认。UI 落后时合并可替换的影像事实，并保留未确认事件与回执。基础代际缺失就请求重新投影。 |
 
-Moving computation does not by itself prove scheduler equivalence. Backend L0 must replay exactly the same dt list, command execution boundaries, rift conditions and initial checkpoint. A fixed3 or target-watermark live scheduler remains L2 against the formal variable-dt product and needs separate W6 ecology approval. Main-thread paint, terrain uploads, DTO allocation and browser/GPU waits remain costs even with a Worker.
+Worker 初始化一次私有 World。正常提交转移必要的 DTO 和脏块。检查点只用于初始化、显式存档或恢复。队列达到上限时应明确回压。可转移缓冲区只包含投影数据，并保护仍被画面持有的旧帧。
 
-Migration still requires full G1/Story/Settlement/FX query and event contracts, removal of borrowed World references from Three/Canvas legacy surfaces, serialized G7 command admission/History semantics, checkpoint compatibility, bounded transport/backpressure, pause/background/replacement races and real Edge input/throughput measurements. Expected responsiveness is a hypothesis until tested; no Worker speedup is claimed here.
+验证分两条。先用同一检查点、精确 dt 序列、三界开启条件和命令执行边界对拍生产同步与 Worker 后端。再验证水位调度和速度转换。固定 3 日相对于正式可变 dt 仍属于 L2，需要单独的 W6 多种子生态裁决。
+
+迁移先补 G1、故事、聚落和 FX 的 Query 与事件契约，再移除 Three 场景与其余 Canvas 层对 World 的引用。逐项验证 G7 许可与 History、v11、断线/后台/换代竞态、事件确认、传输回压和故障恢复。用 Edge 重新测 Worker 执行、消息排队与传输、主线程帧、完成日、输入回执和积压。Worker 收益仍待实测。

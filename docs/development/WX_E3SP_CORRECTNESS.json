@@ -83,7 +83,6 @@
     }
   ],
   "completeThreeWayBoundaries": 180,
-  "yieldChecks": 72769,
   "faults": [
     {
       "entityFraction": 0.3,
@@ -238,7 +237,7 @@
     {
       "path": "reports/local/wx-e3sp/correctness-quick.json",
       "bytes": 1402,
-      "sha256": "412fcc87549dcb792870805e9f475dec441125fb1ed95f50aaf43ce65f381628"
+      "sha256": "fd4a3576664882d016c17b7ef9058db867cfd92a7f57d536b73a3f3ed4c86952"
     },
     {
       "path": "reports/local/wx-e3sp/integration/results.json",
@@ -254,5 +253,37 @@
     "correctness-initial-red.json"
   ],
   "worldFileProvenance": "Final .world.json evidence files are oracle/reference captures checked against private engine via explicit safe-boundary save results; do not relabel reference recalculation as a direct private World dump.",
-  "recovery": "Explicit initial checkpoint plus exact committed ledger replay; fault/cancel keep old public front and require explicit recovery, no arbitrary rollback or per-step full World copy claimed."
+  "recovery": "Explicit initial checkpoint plus exact committed ledger replay; fault/cancel keep old public front and require explicit recovery, no arbitrary rollback or per-step full World copy claimed.",
+  "directRawKernel": {
+    "pass": true,
+    "scope": "Supplemental raw-kernel proof on the same two original checkpoints and a controlled three-realm fixture. These windows overlap the engine proof.",
+    "cases": [
+      {
+        "label": "natural-100y",
+        "inputSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+        "boundaries": 30,
+        "actualYieldTokens": 16983
+      },
+      {
+        "label": "natural-400y",
+        "inputSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "boundaries": 30,
+        "actualYieldTokens": 42736
+      },
+      {
+        "label": "controlled-three-realms",
+        "inputSha256": "978a07f3b03cc2bfc115a6ba0eae9b3ef78e507cd559f5f2d1d05938197e90c6",
+        "boundaries": 30,
+        "actualYieldTokens": 2969
+      }
+    ],
+    "comparator": "Complete raw serializeWorld, ALL G8 runtime, work counters and ordered events at every boundary.",
+    "evidence": {
+      "path": "reports/local/wx-e3sp/native-raw-exact.json",
+      "bytes": 50133,
+      "sha256": "74f888214d678b8c9812464166d92f8a6f059a6691c3e1dbe91ca720f485a5b5"
+    }
+  },
+  "oneAtomResumeCalls": 72769,
+  "inFlightIsolationChecks": 72409
 }
