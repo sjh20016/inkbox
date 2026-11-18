@@ -1,0 +1,1718 @@
+{
+  "baseSHA": "37e3b1a64aedc921012fadb2b92668787d0fd3ac",
+  "tree": "4eea90e4e35b9a69cf0afd3f1b6423477a98eb72",
+  "purpose": "Immutable frozen B oracle, not a second maintained implementation. Do not edit.",
+  "sourceFiles": 284,
+  "files": [
+    {
+      "path": "package.json",
+      "gitBlob": "fdf605385570538683e4df1ec95b453443fa0cfc",
+      "sha256": "47a85888b89fab0ff4cbdb5b8f1d9638f2b35399e4da7df4d4c03b393bff388b",
+      "bytes": 16229
+    },
+    {
+      "path": "src/inkbox/core/config.js",
+      "gitBlob": "5645b0a65f182f9914d974721c8248f3b1604732",
+      "sha256": "bf40ef6fcbe36f806325ccae434206f14ca62622474dd635cb8c7f0d0c61fd0c",
+      "bytes": 8920
+    },
+    {
+      "path": "src/inkbox/core/cultivation.js",
+      "gitBlob": "b8a1b57727b8c43bab1783a17f4e28e93a91eac6",
+      "sha256": "2b28d44d0fb5bdc19ef85151d5eb8829253dbf5ebaa8ce59aa43b2d0b5b13002",
+      "bytes": 25465
+    },
+    {
+      "path": "src/inkbox/core/demographics.js",
+      "gitBlob": "fd2871f980ab8321ce253cb43e2f03f2d63cc828",
+      "sha256": "93d59f60571a28fd1201bef8905e1681a63efb11a7bfdfe4a4ef5230ad70f639",
+      "bytes": 1207
+    },
+    {
+      "path": "src/inkbox/core/lore.js",
+      "gitBlob": "90552bbe82abf557c6b233589b5c38c465f6f247",
+      "sha256": "0e538fd024b5694e50e32d535f0991b02d0dbdc07b90ca76958c6b5ff70f217c",
+      "bytes": 38117
+    },
+    {
+      "path": "src/inkbox/core/mapAccess.js",
+      "gitBlob": "8e3632fd0257ddde7f7fc953163bfc4fe7616c6e",
+      "sha256": "bfc3bbaeebb39eea645d7b944b41bc59982300b21fce9160b2c955b63564cdb1",
+      "bytes": 788
+    },
+    {
+      "path": "src/inkbox/core/noise.js",
+      "gitBlob": "b3c5ae257e8b697de2218d63dd84f79fc4f6fa4b",
+      "sha256": "381d0a585b21c61e3090fd01d08b1ff513ee8160704011b221599c73452f58d7",
+      "bytes": 5366
+    },
+    {
+      "path": "src/inkbox/core/runtimeEvents.js",
+      "gitBlob": "61077dc6e43f4bf0f0fc7e60bf13c895d9fd4e91",
+      "sha256": "f503fc0cd99e1fde6af2297f8e536c8cfa47fb4cbb9a59a1fe9eda6537e3cab2",
+      "bytes": 9170
+    },
+    {
+      "path": "src/inkbox/core/wanlingCatalog.js",
+      "gitBlob": "54f40073e9d893a5f6f71e991fdce37fdd01b4d4",
+      "sha256": "35752f06e6f54d404e2897210b891f4acdd443403977ca62c9f47c3906ac95bb",
+      "bytes": 3556
+    },
+    {
+      "path": "src/inkbox/dev/frameBreakdown.js",
+      "gitBlob": "fe5e8554e3a77ef337c107932cb3575e8454c674",
+      "sha256": "77e83c41f00e535ee7dac8ec60a3f4fcfaa5f1813953851bdcfe7259d7efd62f",
+      "bytes": 3132
+    },
+    {
+      "path": "src/inkbox/dev/transitScenario.js",
+      "gitBlob": "269835204d9780df2c1ab23ff885b836bc90bcb3",
+      "sha256": "5608c1fa6c04201200233ca32b023d3a455bff907780728eacb2f7e1913c24ce",
+      "bytes": 4460
+    },
+    {
+      "path": "src/inkbox/g1/characterIdentity.js",
+      "gitBlob": "9ca9eab8c81700183ec78f6d9d9acc4b3143de45",
+      "sha256": "bced6e47dd04041fa09cd8beb3361bb0a27e55c03c93e9b7468dc0e72aead9c2",
+      "bytes": 5696
+    },
+    {
+      "path": "src/inkbox/g1/characterMessages.js",
+      "gitBlob": "dc36cf0a57104bb8b3cbe22510e692cfbfa330d0",
+      "sha256": "45f7c42a63e82744db22efa080bfc2321b428a958a597a094323e1f481df8154",
+      "bytes": 1671
+    },
+    {
+      "path": "src/inkbox/g1/characterRuntime.js",
+      "gitBlob": "9aee87560275498605592e1926b40d14029a8f7d",
+      "sha256": "6a72662a69353cb7a4e8a5094f8bb20ff41aacbdcd54765c63c887bd4e9e16ca",
+      "bytes": 21720
+    },
+    {
+      "path": "src/inkbox/g1/sandboxRuntime.js",
+      "gitBlob": "56381ef471379ca0c013e81e81c55d1b81d6ddab",
+      "sha256": "817fc558fbb195f1aafa032169cdc7542a2acfd009c5e0987b62b420036f1ec1",
+      "bytes": 7673
+    },
+    {
+      "path": "src/inkbox/g1/worldRuntime.js",
+      "gitBlob": "4257e2fe1eafb4389d0f8ddc1626c17e6671a187",
+      "sha256": "e311ab9263eb98b97fe5a1bba4ea0cf0d59061040fa7feb93987e005630db632",
+      "bytes": 1251
+    },
+    {
+      "path": "src/inkbox/g2/combatObservationRuntime.js",
+      "gitBlob": "e9744c6900607cfa6807d2d7f7b8e5e09494ed15",
+      "sha256": "bd239d73976fc4627076b71059fd6fd40384bbd19763ba2a95291f4ced8f01b0",
+      "bytes": 8448
+    },
+    {
+      "path": "src/inkbox/g2/environmentObservation.js",
+      "gitBlob": "96f643c1167b604d9570b7d3295e3d1b52c33170",
+      "sha256": "8efa64ec7a33d8c0e4b5f15b7c740391c8140157aaa0d82dd8303bc232bf42cb",
+      "bytes": 10930
+    },
+    {
+      "path": "src/inkbox/g2/environmentObservationRuntime.js",
+      "gitBlob": "3100f143933c47295512d73ed2820add0940699f",
+      "sha256": "33ef1a74ee874138883f6b8e8a4c506cea530d0dba414a93820e62ad07dcf80c",
+      "bytes": 10384
+    },
+    {
+      "path": "src/inkbox/io/codec.js",
+      "gitBlob": "6de6571d49d767818c63a4f9019474fe6bbe5f2d",
+      "sha256": "0858ab6c0b7947b82d87c31945305b92fb8aac0080268d6f1cc3f38903f71cfa",
+      "bytes": 15863
+    },
+    {
+      "path": "src/inkbox/io/save.js",
+      "gitBlob": "192a36075f11cb8f30ad97aa95dea23a142124c2",
+      "sha256": "18f1d6a6dbd3eb41693947d21a5873d13874b02de8ab5923d6da222e0066a180",
+      "bytes": 113368
+    },
+    {
+      "path": "src/inkbox/main.js",
+      "gitBlob": "a5a43402cbf01e9adcb0985093de9150d2a57a85",
+      "sha256": "9dd43fab7b40567c6923ea79f75a4f051878b147a5726c4670aee3cff2779989",
+      "bytes": 177404
+    },
+    {
+      "path": "src/inkbox/presentation/readView/commandBridge.js",
+      "gitBlob": "b9ebd838888045ac004e0d2f1b0732c7e7957abd",
+      "sha256": "ccd4a55411b33c6bfa170c790e8129d5d99ab84952872fd60c19275ead96ebb0",
+      "bytes": 3803
+    },
+    {
+      "path": "src/inkbox/presentation/readView/committedRegistry.js",
+      "gitBlob": "dc4966efca39c0377956c354f842191b5c2adf7e",
+      "sha256": "eaf641b8c9292bf67922262e5f7772eaf5f509dca5a34af95fce3b266bb3724e",
+      "bytes": 1073
+    },
+    {
+      "path": "src/inkbox/presentation/readView/committedStore.js",
+      "gitBlob": "152a6d3242e23da72615f9fc8dfe2d4999aee18d",
+      "sha256": "73d91acc447977091ce7a4bd9c5a098cb93c4e3fa2a4e670285b9618dc92c8b0",
+      "bytes": 9451
+    },
+    {
+      "path": "src/inkbox/presentation/readView/index.js",
+      "gitBlob": "2055c28c9306f11d4ada9b2eee581c31c74ada8c",
+      "sha256": "e07beac08a5eb3ba089271e22b6bd2ae93fe6aff7ecc290842b21db6d6f8f284",
+      "bytes": 5874
+    },
+    {
+      "path": "src/inkbox/presentation/readView/query.js",
+      "gitBlob": "df9f24a69458e976854a15e9347c792679f4d446",
+      "sha256": "94e10997f2ebea4bb1661bf3255d9c7f5fb18f9e174ca300d09220575496bdbf",
+      "bytes": 960
+    },
+    {
+      "path": "src/inkbox/presentation/readView/sandboxBoundary.js",
+      "gitBlob": "5b6f2a54ec23c6bc4674494ace4ac83c1aaae8fe",
+      "sha256": "51aaa21e9a316399d989eed58d95c6e4b0cc195d101d701ea9c0b807d3e6bfa7",
+      "bytes": 1407
+    },
+    {
+      "path": "src/inkbox/presentation/readView/terrain.js",
+      "gitBlob": "dcddf720c2cfc618642431071fbb1ee843b28bdd",
+      "sha256": "0d87896e7ea8bbfb6b70084334ab1e990958470407ded84a31de0c19263f7704",
+      "bytes": 1703
+    },
+    {
+      "path": "src/inkbox/render/camera.js",
+      "gitBlob": "a3f581ce127b1bbac07041b980c895b7ff9a4604",
+      "sha256": "6070191ae343b494ada56f73564ed0b47355b6982948857191035188d99d4449",
+      "bytes": 12270
+    },
+    {
+      "path": "src/inkbox/render/fxLayer.js",
+      "gitBlob": "f67ed07b249ee7cbbafe6ad70b2afb5a1e96bee7",
+      "sha256": "644fcf4f2a1975a2a618ce461dd63b641ebe5f6fb21afd76de67dabf0742641a",
+      "bytes": 30349
+    },
+    {
+      "path": "src/inkbox/render/overlayLayer.js",
+      "gitBlob": "ed55ec64ad27950a3e84a13e3acb0f948ce3fb0c",
+      "sha256": "7f45519a4f8401be302f0368972d7a135353b28410280da6e0c857e1114678cc",
+      "bytes": 8325
+    },
+    {
+      "path": "src/inkbox/render/palette.js",
+      "gitBlob": "6943e9523abd4be55e89a099b375670fa4e02afb",
+      "sha256": "4a1fec191d2c648d03df53f75361a276370b96891a71f4c82f78d66b4a347527",
+      "bytes": 1576
+    },
+    {
+      "path": "src/inkbox/render/presentationStage.js",
+      "gitBlob": "6efe95932004fd0b3a7d4e19b55df5034406849a",
+      "sha256": "752dc165c65ea80a21ed154fccf7c854c607c2ce37ef592e4a0aefe17515e0a7",
+      "bytes": 8425
+    },
+    {
+      "path": "src/inkbox/render/realmViewLayer.js",
+      "gitBlob": "c78956508af5776e66d1501ac7dd3c9de9bb3088",
+      "sha256": "a20680fb5b153f091f168df741e3a2e59c0840c7df6f9001ac37022a9e8ebb2d",
+      "bytes": 25460
+    },
+    {
+      "path": "src/inkbox/render/relationGraph.js",
+      "gitBlob": "b38c3fdce3738da55cfe1ba7b514dd4630c5bd98",
+      "sha256": "46fbad2f988088445f5324794c0f8d794b63f488eb672241e85fea485d6274a7",
+      "bytes": 8475
+    },
+    {
+      "path": "src/inkbox/render/terrainLayer.js",
+      "gitBlob": "0723f320f84db43b07ab1434b2333229080a3fca",
+      "sha256": "36045e7c400a43db2d7addf6ec6f8353f4ad8995c149f98863efedc987402014",
+      "bytes": 21315
+    },
+    {
+      "path": "src/inkbox/render/unitsLayer.js",
+      "gitBlob": "26093dbddb0dea55b5c33f8ecd5240dcd8cd14a2",
+      "sha256": "6f9be788286a5e6e1505907137d302e96a5b0269850186645b217d49ae226d9e",
+      "bytes": 40166
+    },
+    {
+      "path": "src/inkbox/render/wanlingLayer.js",
+      "gitBlob": "3623cb3ab8723058d10c60d17a46c6e9c3a77210",
+      "sha256": "cfd77937f3739259f9837f700de31c7dc45d561d1ae97527fe6af041e5ddd527",
+      "bytes": 2923
+    },
+    {
+      "path": "src/inkbox/render3d/BrushOverlay.js",
+      "gitBlob": "ae085fdc835b6aa2855e383b5f33593ecaab072b",
+      "sha256": "b6f56be9a291bff4326d8673f9c61cf977ca372fd0dce67ad5d48395e0e15ddc",
+      "bytes": 1448
+    },
+    {
+      "path": "src/inkbox/render3d/CameraRig.js",
+      "gitBlob": "72c00474b8194c93e57aaf3e3c7b705f13f22c14",
+      "sha256": "bcf170cac505cf8b77d9ee16e318d5c844816dcd74a8726521350b2ab36289b3",
+      "bytes": 6411
+    },
+    {
+      "path": "src/inkbox/render3d/Render3DAdapter.js",
+      "gitBlob": "85db1198126d34886cbb682c89fc021e12a75cce",
+      "sha256": "0767d211d0f58abcad6ef08017f72ac96df1437f8a54c33a14c07b92edb4bfa6",
+      "bytes": 54865
+    },
+    {
+      "path": "src/inkbox/render3d/Render3DHost.js",
+      "gitBlob": "1021e5861693bf832dc0db21f285aa8cffaf3764",
+      "sha256": "73d9869dd2fee090b30f67c9261d625d288825944038d551682dfb41fdf631f1",
+      "bytes": 28410
+    },
+    {
+      "path": "src/inkbox/render3d/Renderer3D.js",
+      "gitBlob": "a06505880a19fe58111dedd63c5253d81225dbbb",
+      "sha256": "5d76f7590eeb4e2062da4a4abc02e0ced79694e932b90bf575a1e22885e5d13f",
+      "bytes": 141
+    },
+    {
+      "path": "src/inkbox/render3d/SelectionMarker.js",
+      "gitBlob": "60462952db21e915aff852f378e5f01b76ffedc7",
+      "sha256": "b03305e85f23df80aa5e4fa1ed5315f8e35b3909587bdf1f94cdcc1e8dc2c3b1",
+      "bytes": 3826
+    },
+    {
+      "path": "src/inkbox/render3d/WorldRenderBridge.js",
+      "gitBlob": "8125ceddee0c9ecbbaa8c7bdb782fdc699ece4d7",
+      "sha256": "8d9778c479919e85d2369f2645279042ad254b4ff71e214eb2ad143991ac171d",
+      "bytes": 9967
+    },
+    {
+      "path": "src/inkbox/render3d/art/ArtComparisonSnapshots.js",
+      "gitBlob": "d5dc1aa72bb304e2f71478f4a2d6fb1c5ce4d947",
+      "sha256": "b637896e3f4fc3e1db33f518b51d719908f0ffd314998d139059df7fb33c0fc8",
+      "bytes": 34673
+    },
+    {
+      "path": "src/inkbox/render3d/art/ArtDebugPanel.js",
+      "gitBlob": "ee5388637e80df0658a94515144ed72a82a6b5be",
+      "sha256": "d00341ab6daf60a87d19ac0e791c44b5136abf9ceff3ca81383332b956aa78e4",
+      "bytes": 5913
+    },
+    {
+      "path": "src/inkbox/render3d/art/ArtDiagnostics.js",
+      "gitBlob": "d9109d81c2059182470652b11d55ca80473e8ecf",
+      "sha256": "1f7e5125a6fcd588d79d15228d021a491d84478c6e4a75a210a2876d30360368",
+      "bytes": 1257
+    },
+    {
+      "path": "src/inkbox/render3d/art/ArtPass.js",
+      "gitBlob": "bd0b24f9bce04f89c98b75568a9606604c679005",
+      "sha256": "f0a33890e4ad7635919dc222988ac798da11302171680f2c1478e30b49708046",
+      "bytes": 14595
+    },
+    {
+      "path": "src/inkbox/render3d/art/ArtPassProfile.js",
+      "gitBlob": "7b7c5d845d28e8064ceed7ccac94222e2f42b572",
+      "sha256": "6a4bf9a29d6659454e1ace2e0129b1f57f1d36751d3a056b91cdf3262049be9a",
+      "bytes": 2300
+    },
+    {
+      "path": "src/inkbox/render3d/art/PigmentTerrainMaterial.js",
+      "gitBlob": "377ebfe66072ed1611bba7aad47eaf1ddac8e1cf",
+      "sha256": "3921abfa6ef61dda2d9011e64793606cb50a06f61a664c4d3865e519e4cca4ca",
+      "bytes": 33942
+    },
+    {
+      "path": "src/inkbox/render3d/art/PilotAssets.js",
+      "gitBlob": "ceb162fd9207e34f32f006aaf3b17f387d36330e",
+      "sha256": "6c7d8b870b3cc01a4f3c2b480b8f907daa039e1222a59fa7891ac1ca44c900b2",
+      "bytes": 3878
+    },
+    {
+      "path": "src/inkbox/render3d/art/PilotMaterial.js",
+      "gitBlob": "94f22e7870e0c380ca5ece24d131a4e97d9c19cb",
+      "sha256": "d23c3e49d2c78c9439fe77d5da3a6d4118c561782ce72cef21b13b97a2f83117",
+      "bytes": 7254
+    },
+    {
+      "path": "src/inkbox/render3d/art/RealmStyleProfile.js",
+      "gitBlob": "0de07bd3cbecb83c981dcef751dcb2b10a435571",
+      "sha256": "f715649730659b547a701e2cbae8f12ab31a443ca7add6197887972c74bcfe8c",
+      "bytes": 8731
+    },
+    {
+      "path": "src/inkbox/render3d/art/ScalarFieldTexture.js",
+      "gitBlob": "31ec3bbc8d7559977e420537160eb97c26fb6e49",
+      "sha256": "fdca16d736515330911b9bd3e09c3bc5c423fa9dc963f4c7a756d5b6ad194dc4",
+      "bytes": 2499
+    },
+    {
+      "path": "src/inkbox/render3d/art/SurfaceVisualFieldTexture.js",
+      "gitBlob": "a9b420e19de75c650d05741c85c6ef09836f1482",
+      "sha256": "b8d8d73989730b491494e9a371acb3ac60f598b1f025e66f18858f61f7c9a205",
+      "bytes": 3781
+    },
+    {
+      "path": "src/inkbox/render3d/art/TerrainDataTextures.js",
+      "gitBlob": "888319f4be6c251c922ca46117b3157f0e866d34",
+      "sha256": "a80e4f46f22349015ae0a8f8cfe229381da1bfc40fa8b0432fb967e4a92bff8e",
+      "bytes": 5489
+    },
+    {
+      "path": "src/inkbox/render3d/art/VisualScenarios.js",
+      "gitBlob": "4109e6e0a9543ad5adffdd4916d9352adeb757f8",
+      "sha256": "b26f66e39426990b9ce69340e2f6d83a6e1e46e87c1184a2e68af7f7c389bac8",
+      "bytes": 23408
+    },
+    {
+      "path": "src/inkbox/render3d/boundary/BoundaryInkMaterial.js",
+      "gitBlob": "ed1e4e85cded476289b609bbb3694e611c5aeabb",
+      "sha256": "85b9bdb2ed45a091074d0fc8e081f3fa43d561f9dfa15d24aa3d03bda58e5019",
+      "bytes": 5970
+    },
+    {
+      "path": "src/inkbox/render3d/boundary/RealmBoundaryLayer.js",
+      "gitBlob": "1fa28782bcc97c88c04e5354b3e133d490382135",
+      "sha256": "d18242bb6e2a9eb10fbfcaefe9e7622824edf0bf48e1b2e5261150dd017f4945",
+      "bytes": 17069
+    },
+    {
+      "path": "src/inkbox/render3d/boundary/strataProfile.js",
+      "gitBlob": "856f523317d769587ab3af49edc06384535d9766",
+      "sha256": "6337e4112b00b3a8d27ae4568c9c16cbd347a8553f53803fbcb7f2e11e8df39e",
+      "bytes": 7990
+    },
+    {
+      "path": "src/inkbox/render3d/busanzi/BusanziLibrary.js",
+      "gitBlob": "4eaeb973b671d253f120653dc15654125a531472",
+      "sha256": "a4c66e268eab825ea409bfc49f952e7d71970420ba9cbcd4273546f2f41854b3",
+      "bytes": 13604
+    },
+    {
+      "path": "src/inkbox/render3d/busanzi/BusanziViewer.js",
+      "gitBlob": "50d96d5354b163b2c18b6a06a4b3281258c829bc",
+      "sha256": "43ba0ca03eb48077e8b291aa4e627df0d1cb26b5409f003cb14b1ea81f7128b9",
+      "bytes": 22401
+    },
+    {
+      "path": "src/inkbox/render3d/busanzi/BusanziViewerHost.js",
+      "gitBlob": "9c535f4fe2a39f2b4ffb635a5ffff18bf8e98792",
+      "sha256": "e00e68212f66dfc753870c8ea7decc81c008b91dd75622e609a40124d6b747fa",
+      "bytes": 3052
+    },
+    {
+      "path": "src/inkbox/render3d/busanziLab.js",
+      "gitBlob": "a1226d2e7d7d16bbd9b8a9d3e962dd99f28a2b75",
+      "sha256": "71442deecf82aea9f162add7694631e1c58ef84eb0f6629e71786064b6506c5b",
+      "bytes": 12397
+    },
+    {
+      "path": "src/inkbox/render3d/characters/CharacterBatch.js",
+      "gitBlob": "5cba0589e62a7058417dead4de70234ed015f837",
+      "sha256": "a7e414e4c0a7b155af540bb37207896a46524f7be30103fa2392d89fe2175dfe",
+      "bytes": 7473
+    },
+    {
+      "path": "src/inkbox/render3d/characters/CharacterLibrary.js",
+      "gitBlob": "3234acdfc01640f3dcc102dc2b8b2f1afa2024c6",
+      "sha256": "6e7bd505130bf30d54a1f7312b47e881a251ff35c04e3368840d0794d511d4c3",
+      "bytes": 11778
+    },
+    {
+      "path": "src/inkbox/render3d/characters/characterAppearance.js",
+      "gitBlob": "68461c0bdbc42434595e03f45b07a8e3f4ee06b7",
+      "sha256": "ce8a9521ae3852b78710789c572ca43c53dd4c117516c4d0a16f3177ac8986aa",
+      "bytes": 1793
+    },
+    {
+      "path": "src/inkbox/render3d/charactersLab.js",
+      "gitBlob": "b031d17b77e2544d240e5e4ab657974a1e39aa2c",
+      "sha256": "3d42eac80c3005c45056ca7ec1c065c089186742d9761439a01ae55092d2075d",
+      "bytes": 6919
+    },
+    {
+      "path": "src/inkbox/render3d/coordinates.js",
+      "gitBlob": "b8aeae9c510f3667431e77e5f2cd83c871318dde",
+      "sha256": "3a59a8912debc158767e256f1f144c0f78fa1cae03482b07403de3a69161422b",
+      "bytes": 650
+    },
+    {
+      "path": "src/inkbox/render3d/creatures/CreatureBatch.js",
+      "gitBlob": "c7468f70f22d8a1cf4859f3535bbd76c3c7ef292",
+      "sha256": "4033781b588536805af653a2a5c14b094d4005c1c5ea3868936d7d5c31b97ab5",
+      "bytes": 5522
+    },
+    {
+      "path": "src/inkbox/render3d/creatures/CreatureLibrary.js",
+      "gitBlob": "82228af80863f71d255213cad8ac085ec6b96bc9",
+      "sha256": "fcff31b0b6e60061a98050647354ff86a10a75abb8fe6c7082437d5df4b88eb4",
+      "bytes": 16140
+    },
+    {
+      "path": "src/inkbox/render3d/creatures/creatureSpecies.js",
+      "gitBlob": "1afd4dd577f076d44cd958edfdb6d15551e18de2",
+      "sha256": "4fae124279f40dc62d984de910cad35a385ef2bca625783ae031ed115d9b8f00",
+      "bytes": 2441
+    },
+    {
+      "path": "src/inkbox/render3d/creaturesLab.js",
+      "gitBlob": "e93c2cacc36e989a700cc9fa1a7d0547d797a629",
+      "sha256": "090367d29e9c276ee40632ad083c39dbaea14e8bf1dcc8d677b65467b61dc2ac",
+      "bytes": 12806
+    },
+    {
+      "path": "src/inkbox/render3d/debug/RenderDebug.js",
+      "gitBlob": "54ca8164a7050de0530a4848dd679687fec58576",
+      "sha256": "0846be83ac1cbd7b641d94117d556fae66626445f682a1fab45c1caa1729ca20",
+      "bytes": 598
+    },
+    {
+      "path": "src/inkbox/render3d/entities/EntityLayer.js",
+      "gitBlob": "15d380125a3498bf4e9004de285fd9d388d49553",
+      "sha256": "3ab199ee54e73edb4913e7cd5262c9077ef5a62daee3b74374293cf0ffe2bdf1",
+      "bytes": 37495
+    },
+    {
+      "path": "src/inkbox/render3d/entities/deriveEntities.js",
+      "gitBlob": "08148d1d5ed04a4e7b8a92aa2697a3d5291bcf10",
+      "sha256": "ae5bb35f3db7659146fdacd6cf504ec51d229f99fff7a7edc40cc3f5bb6e3d55",
+      "bytes": 9615
+    },
+    {
+      "path": "src/inkbox/render3d/entities/ghostFamily.js",
+      "gitBlob": "ab7446d855ed04fcefcf5cf85762c247b795e981",
+      "sha256": "e75553a81ad4d5d560658328486592991d1b8dc6b82109481465d5d9d4a4909b",
+      "bytes": 457
+    },
+    {
+      "path": "src/inkbox/render3d/entry.js",
+      "gitBlob": "f4bbd733d45646b1b4b24f5ff8e780b7891bbd86",
+      "sha256": "47a152e450b6d82543285225b5c1b221ba1e58465155584aff1b7027107ef980",
+      "bytes": 715
+    },
+    {
+      "path": "src/inkbox/render3d/environment/EnvironmentAssetLibrary.js",
+      "gitBlob": "ec4fbeb325e6c218f877b192aacd81f31c06ad06",
+      "sha256": "9b404152cec67092ee0950da40f6fc719d7e4767b4b6e673319bd154e2e7d026",
+      "bytes": 10090
+    },
+    {
+      "path": "src/inkbox/render3d/environment/EnvironmentBatch.js",
+      "gitBlob": "e69a7aaa2b2de6834d3d303cf2f6395ed9309596",
+      "sha256": "88965fa446cddad925a53723245c1618486c52ccf021f3d92d78faedcf2d3317",
+      "bytes": 8588
+    },
+    {
+      "path": "src/inkbox/render3d/environment/EnvironmentMaterial.js",
+      "gitBlob": "5e256f23752f342cb0045c593068358d6a3827f2",
+      "sha256": "615b7e6d4da93689a50b8aa67e5cd84d48753047887f77fdad68441e5d222944",
+      "bytes": 8262
+    },
+    {
+      "path": "src/inkbox/render3d/environment/RealmDecorationLayer.js",
+      "gitBlob": "6fbbc49ac93d181d78fe9f759f115e26a3443928",
+      "sha256": "e8b2d37ad10e6952f32d610892f2b243ba6876cb8605125c6e9c178ec5cdf19c",
+      "bytes": 7323
+    },
+    {
+      "path": "src/inkbox/render3d/lod/BuildingLODAssets.js",
+      "gitBlob": "a80f8fa55873abea29daaac6b0a98ffe583acc79",
+      "sha256": "c63d40a3d152d9400aaa623b92bcf1708db49c04afbd231a774815b0e6b428b5",
+      "bytes": 4473
+    },
+    {
+      "path": "src/inkbox/render3d/lod/CharacterLODAssets.js",
+      "gitBlob": "55c8f889ebd2895a40c1ce906b72542d8d2ba4f2",
+      "sha256": "cdad8075fd8e55cb63c69f9ed9014c73cdbbe896c38bc75291e72531fa94f5e6",
+      "bytes": 4008
+    },
+    {
+      "path": "src/inkbox/render3d/lod/PresentationBudget.js",
+      "gitBlob": "9e7625130ca4cb3c6e989bc6b84490393830a4dd",
+      "sha256": "882f7d2675a4b684acd1a2831a0b278507e84e183dc13f9b203ad87a2fbc30fa",
+      "bytes": 4163
+    },
+    {
+      "path": "src/inkbox/render3d/lod/TreeLODAssets.js",
+      "gitBlob": "c7aac78e6147b8864ae745598c00fafbd7525b06",
+      "sha256": "386ad7192bb88a9750c03bf0bb81baec0f2e2dba73f4fa75df3e8039752cf8ce",
+      "bytes": 3359
+    },
+    {
+      "path": "src/inkbox/render3d/markers/LeylineGeographyLayer.js",
+      "gitBlob": "d0914f7507a8c99f90ba7a33b4ea1c8f282368e4",
+      "sha256": "11c020e8434b58df9b75522eee9e5adf8025010023029f5627df06d36aefbaf4",
+      "bytes": 7427
+    },
+    {
+      "path": "src/inkbox/render3d/markers/RealmArtifactLayer.js",
+      "gitBlob": "e5cc68057c0a41b06c5c4f4a10de3075f66360d0",
+      "sha256": "76f52eb7e7b290edc1b7c5aef9129e68b9ad5bdff97f58230bf5f392227cbd28",
+      "bytes": 3702
+    },
+    {
+      "path": "src/inkbox/render3d/markers/RiftWoundLayer.js",
+      "gitBlob": "40190daff640b579151f3e7033e261c2ac2ba5c9",
+      "sha256": "08722669e96a1dc0b1b31c58fcb47de7d575fc5e58c9d8e195ce3e137ddab6b5",
+      "bytes": 5412
+    },
+    {
+      "path": "src/inkbox/render3d/markers/SiteGeographyLayer.js",
+      "gitBlob": "dc89c512ae9cee6ec7112d97b5e4d4d8db6dcf6d",
+      "sha256": "e6e315179bfb2f8259fecb27856c07da8c2568d6816ae891ee5f0781fcd0cea9",
+      "bytes": 7561
+    },
+    {
+      "path": "src/inkbox/render3d/markers/WorldMarkerLayer.js",
+      "gitBlob": "a9fe71a4db59a9f8aa001bec1ecb34989cabbc2d",
+      "sha256": "0a190fbff5bae56ae03d5004857e346c1f811defa5e82a94883b6f17c61f8d84",
+      "bytes": 20344
+    },
+    {
+      "path": "src/inkbox/render3d/picking/PlanePicker.js",
+      "gitBlob": "b1171d8c7d3790fe3fc768976285f62406bc1bb2",
+      "sha256": "87f4ae115a2798ceaf3341633134e803543e35b52718a5f21f933842d56a08ce",
+      "bytes": 8192
+    },
+    {
+      "path": "src/inkbox/render3d/readers/riftViewModel.js",
+      "gitBlob": "701f249621ab7d5d5516e04c4f27496fd8c288ab",
+      "sha256": "95cdcadbe051280255fd8ac0cdcc4cca46f450d991110f9a2d78d3e6fdf6cd73",
+      "bytes": 331
+    },
+    {
+      "path": "src/inkbox/render3d/region/AccessGeometry.js",
+      "gitBlob": "2584af6e1e8b2aa3e766007e614aa5da52706ee2",
+      "sha256": "5f683f06a0ef117bbf9efe022747d9c857abccff14888f08fed2197247a64091",
+      "bytes": 1123
+    },
+    {
+      "path": "src/inkbox/render3d/region/RegionGeometry.js",
+      "gitBlob": "f0e9382e893f4fca3f640694f0a48fe30d88480e",
+      "sha256": "df90c312b14772e9a16dc9a1c0289bc68a7a037df75d7b67bf3760aec722bae3",
+      "bytes": 11240
+    },
+    {
+      "path": "src/inkbox/render3d/region/quadMask.js",
+      "gitBlob": "0ded670c2229407af615d41664a386dc7e0dc1f1",
+      "sha256": "cf802db06b25a1f8b098d5588f018957639a3703f521eca1372fd36e311ae536",
+      "bytes": 2193
+    },
+    {
+      "path": "src/inkbox/render3d/settlements/SettlementLayer.js",
+      "gitBlob": "f397700c0b26f40b18ae4fdaae66fa0ae3638ac5",
+      "sha256": "dbbb42c353e820ea3d96840f283952b026b864c0d24ba7ed9647bda62f8af323",
+      "bytes": 38743
+    },
+    {
+      "path": "src/inkbox/render3d/settlements/houseFamily.js",
+      "gitBlob": "a5bbc2b3a8a2581c65ac04dc12cbf47f6f7c3fad",
+      "sha256": "898e4d336f1da76e50308d68f78c9deabd53b0424832cbcfe146fa9d04da41e3",
+      "bytes": 1397
+    },
+    {
+      "path": "src/inkbox/render3d/shanhai/BreakthroughSeal.js",
+      "gitBlob": "7d8f0967199ca3247f4426294780a424091e1238",
+      "sha256": "2d0d0753d6c7301b2f6a10a1d2253aa673730477815e25d9ee96542c9c11e533",
+      "bytes": 4523
+    },
+    {
+      "path": "src/inkbox/render3d/shanhai/CloudBillboardBatch.js",
+      "gitBlob": "d64550337665dece86aad9e2cd7f48bc850e9a3e",
+      "sha256": "54f0120c9e300f67f0bcc97ec529f758b85c0f35c45af0150b0964237e829ae9",
+      "bytes": 4785
+    },
+    {
+      "path": "src/inkbox/render3d/shanhai/InkOutline.js",
+      "gitBlob": "1f0a278e425160b85dd496d869228340cddd8c4c",
+      "sha256": "808ac9849c4879c228e29058084fe70ba2d0c5b467f083986283c887a0f3d4c7",
+      "bytes": 2579
+    },
+    {
+      "path": "src/inkbox/render3d/shanhai/RealmVeilRim.js",
+      "gitBlob": "8ba3d23b05c1567dbde45aa00fed2f831c7dff34",
+      "sha256": "d0fd4c6e2a54f4b35e5dd753f3e7d2f6c2c100df9993fee5414a1bdf6ca76db1",
+      "bytes": 6873
+    },
+    {
+      "path": "src/inkbox/render3d/shanhai/ShanhaiAtmosphere.js",
+      "gitBlob": "d0d92536be198a4227fdb58c4141152ca8d78885",
+      "sha256": "63a4884696df61938a346ddafecb8decf6844498e9948c1594d6d85efedd513b",
+      "bytes": 20435
+    },
+    {
+      "path": "src/inkbox/render3d/shanhai/ShanhaiFlora.js",
+      "gitBlob": "26f303588868061c2bf51a2668a95276e8667d73",
+      "sha256": "00ebec28b230c00182bc3dde17893e1abe5e7608abd89e7f0359137bcab345ff",
+      "bytes": 12211
+    },
+    {
+      "path": "src/inkbox/render3d/shanhai/ShanhaiSceneryLayer.js",
+      "gitBlob": "813befa1468d048aec1993e0880f0ebf98c1410b",
+      "sha256": "382910e603bf6ae98cb2869e10822d908500e79b62b79a85d6b48accd11eef2c",
+      "bytes": 28379
+    },
+    {
+      "path": "src/inkbox/render3d/shanhai/ShanhaiStyle.js",
+      "gitBlob": "39882db8734f50f758a4684ab37fd889aaa1256e",
+      "sha256": "76237eba3e8ea3f422769635e85a3611bd3a93f4f25ed53592cdc55cca39f5e7",
+      "bytes": 10281
+    },
+    {
+      "path": "src/inkbox/render3d/shanhai/TerrainLineArt.js",
+      "gitBlob": "b37beee63068206352b152b9aa8a0cea6e543ac2",
+      "sha256": "0b11ad247fdff1a0792ac9ce5347a48fb1249982ad633ea7e62ba1f468158f64",
+      "bytes": 32063
+    },
+    {
+      "path": "src/inkbox/render3d/shanhai/canvas.js",
+      "gitBlob": "f07f749a3ea1288a6f54ee92003be8e198ecde32",
+      "sha256": "ee1daf1d864c84e4689244f9453c8f3ff9dc61228d9243cd2059860b5ae88ab1",
+      "bytes": 1125
+    },
+    {
+      "path": "src/inkbox/render3d/shared/RenderOrder.js",
+      "gitBlob": "48e94251bad5219856e5303bc0a0bf92d08c5b66",
+      "sha256": "7b764f8aff8ac080b79e97af65a96bfc11bea93c8fa3e9fc36ac52775ce7a0b3",
+      "bytes": 255
+    },
+    {
+      "path": "src/inkbox/render3d/stage/GeographyFeatures.js",
+      "gitBlob": "76ed5df1d996bdf7a36643bbee1cf8d4ba08f134",
+      "sha256": "2221c929c162edf3ed683cdc19b86373def5d64872d988e2a847ae2c3676feb6",
+      "bytes": 436
+    },
+    {
+      "path": "src/inkbox/render3d/stage/PlaneRenderProfile.js",
+      "gitBlob": "2cc5d21921aaab348bd15e2e9f2ca804eb16154f",
+      "sha256": "7070bfeceddabd1936f4c180d3943361c38bfee385dffa9ac23b0de2a00cd5b6",
+      "bytes": 1796
+    },
+    {
+      "path": "src/inkbox/render3d/stage/PlaneStage.js",
+      "gitBlob": "6ac55fc752f8ed9ee0f246042c1f679c54f41e1c",
+      "sha256": "ee47cfc3aecd0d8bb1e2833fe99175173f8a70585c73b97781816ea9a1185f87",
+      "bytes": 18667
+    },
+    {
+      "path": "src/inkbox/render3d/stage/WorldSetSnapshot.js",
+      "gitBlob": "6d2566348e159fda6641cb38054b4a7988a089be",
+      "sha256": "6e4019c69232bf40ad88a262cf87f61e5064bc41672a7f00626e8603527cfd60",
+      "bytes": 1247
+    },
+    {
+      "path": "src/inkbox/render3d/terrain/ElevationField.js",
+      "gitBlob": "913966b10809595b0749aaa30fc9b3433b6ee6a6",
+      "sha256": "2216143ff33d49a7171c94d70e548f7ec0504885a5eebab2947914b294bc8ada",
+      "bytes": 5735
+    },
+    {
+      "path": "src/inkbox/render3d/terrain/TerrainMesh.js",
+      "gitBlob": "2ad4f8d43f4eff004cf770deb2693289d4d5ddc4",
+      "sha256": "78acaa443783ae88e06a96fe512cd97a041e993218b431244a0d28797467b366",
+      "bytes": 16150
+    },
+    {
+      "path": "src/inkbox/render3d/terrain/TerrainPicker.js",
+      "gitBlob": "8554149e4c2abe3bc3914b926f2cd0f2241a3d76",
+      "sha256": "cdf92247d9bb7abedd6de83b6523c21e74e3fb289202b439d45ae843d9d96981",
+      "bytes": 1265
+    },
+    {
+      "path": "src/inkbox/render3d/terrain/TerrainSideLayer.js",
+      "gitBlob": "c31e3d793648ffd13921df2427c63813315c7e42",
+      "sha256": "0ab69e35e1f4ca139ac845f441a75277a245bfd7523391d1c006bf49439878f5",
+      "bytes": 3501
+    },
+    {
+      "path": "src/inkbox/render3d/terrain/VisualElevation.js",
+      "gitBlob": "d2fd37b6858ad156091bd5b5ee9dfb0ba029038d",
+      "sha256": "bf51094e4795fe2633563004f5fd006b4d8412e54bdb94776d045c605f0a1f98",
+      "bytes": 3039
+    },
+    {
+      "path": "src/inkbox/render3d/terrain/heightfieldRaycast.js",
+      "gitBlob": "e7117db5e0e2c73f0000fdff71b1e7d486f7d625",
+      "sha256": "57e019eea23bfdeb64dd06642416653cda8d5f9cab78ce2f8e7f2511f2eb305d",
+      "bytes": 7697
+    },
+    {
+      "path": "src/inkbox/render3d/terrain/sculpt.js",
+      "gitBlob": "307d77551399d21404494d05f74ebaa91a50617b",
+      "sha256": "b79dc2e63acf7669359907a35c10b98816de329ef22fc31e7632779d627ce70e",
+      "bytes": 15315
+    },
+    {
+      "path": "src/inkbox/render3d/terrain/terrainGpuConfig.js",
+      "gitBlob": "9e48724e0a6581e8d5fa06c769449e083d44d173",
+      "sha256": "410dedd43f5045c52edc71be4177bb04473b4f8a867056fd40e17ef1ec35d563",
+      "bytes": 1373
+    },
+    {
+      "path": "src/inkbox/render3d/terrain/topology.js",
+      "gitBlob": "ffc0406f3120c6fb2122705ac84651ff1f6a7c47",
+      "sha256": "6c42dd8926c1d2d042a7b31df452e55e85ac0874c47f3fb0d36531bab7a702e5",
+      "bytes": 754
+    },
+    {
+      "path": "src/inkbox/render3d/vegetation/VegetationLayer.js",
+      "gitBlob": "d54e159bb87fb2e97a81b08a3f6d62ba50ceda92",
+      "sha256": "8cb4dd0fe5bf6fc9456f49b1c72629eeb49d7f6173d601ee3166e237fd88a1a6",
+      "bytes": 27506
+    },
+    {
+      "path": "src/inkbox/render3d/vegetation/deriveVegetation.js",
+      "gitBlob": "b67822b106aaa76853e7fb1b6e143e481bf7c0f3",
+      "sha256": "d7e9c1269e00870fca79c511745d02f73298098f831992d4a2f5009ea9eb241b",
+      "bytes": 1370
+    },
+    {
+      "path": "src/inkbox/render3d/vegetation/treeVariation.js",
+      "gitBlob": "bc95b2fe79a381a13f05540b4c5b52b08a358490",
+      "sha256": "60279bf030b84f47c291862596d26d5868e78509306beb90fcd96629efe1f043",
+      "bytes": 746
+    },
+    {
+      "path": "src/inkbox/render3d/view/DraftPathOverlay.js",
+      "gitBlob": "368116a3430f4d7311c98fa9d69179a2371f40e3",
+      "sha256": "c4be3412bad9d34068312e0bf4e4be3ddc77bf962f5ee59f5c2ac3aef554e367",
+      "bytes": 2379
+    },
+    {
+      "path": "src/inkbox/render3d/view/RealmView3DPrototype.js",
+      "gitBlob": "3f293e7624ee855c5446e0e27e03b13d6320dca8",
+      "sha256": "aba5f38be24b2dec1fbf5e634543c6f35d9f9581a3bd9226f14f0059885fccba",
+      "bytes": 3083
+    },
+    {
+      "path": "src/inkbox/render3d/view/RiftNarrativeFx.js",
+      "gitBlob": "ab9c1219bd1b954c72a37b18e9e3d0dd0a62bf99",
+      "sha256": "f898c98419e44a1fe3ff9f2556b798f975e51da3b260431667984dbdee0a3714",
+      "bytes": 9493
+    },
+    {
+      "path": "src/inkbox/render3d/view/SlabPrototype.js",
+      "gitBlob": "74ab6ecf6525c8f3d10216eca503ad1aa367f189",
+      "sha256": "e000d2cb2310c34bd077e2fb8a9c66fd2cbe1a76c813f29661988f7be42e5b12",
+      "bytes": 7654
+    },
+    {
+      "path": "src/inkbox/render3d/view/ThreeBreakthroughFx.js",
+      "gitBlob": "3e61018b3c028fbb5f4666cc6ff918d435d7bc86",
+      "sha256": "cee415ac2af2d8933d4944e7effbdfc52586b987464471cfabd87fe3bf608afe",
+      "bytes": 10637
+    },
+    {
+      "path": "src/inkbox/render3d/view/ThreeCombatFx.js",
+      "gitBlob": "c4d7478d448bb36ea89c93500f306b340fa8e1f9",
+      "sha256": "ba6ac8f13ceceb6e6d224da4c1c1b7b9028a7e08c46e8fbea6adbb46907afd1e",
+      "bytes": 10807
+    },
+    {
+      "path": "src/inkbox/render3d/view/ThreeFxProbe.js",
+      "gitBlob": "33c3e5ebc7ed80e5f29c2e239e45e9903e7bcf60",
+      "sha256": "8c279760ca50945e9d6b144bc9d01f72318a73f1e7d70891717000be16cf6639",
+      "bytes": 5179
+    },
+    {
+      "path": "src/inkbox/render3d/view/ThreePowerFx.js",
+      "gitBlob": "ab966a4567aafa993167ecc207c3df484b344453",
+      "sha256": "159e8d87b8017195f1b7c713075cd7e5a3eed6ce0aa19136493a2431484c64cb",
+      "bytes": 13554
+    },
+    {
+      "path": "src/inkbox/render3d/water/WaterGpuSurface.js",
+      "gitBlob": "bc77d4d709bb331c2b00a446386a0abd03dccd99",
+      "sha256": "97b506045383824f1748fef9e7a1aedaa58aa731b3aa2e5950efb3b9e0e0b9e1",
+      "bytes": 6253
+    },
+    {
+      "path": "src/inkbox/render3d/water/WaterLayer.js",
+      "gitBlob": "b8f1130101456ee8cf3152cfbe777bb804a5da11",
+      "sha256": "0e89e5d61b52d72f689025ddf86563215f936e9da0d1c9649010968ff4fd858a",
+      "bytes": 13867
+    },
+    {
+      "path": "src/inkbox/render3d/water/WaterPigmentMaterial.js",
+      "gitBlob": "94ebb0d83f17461495acbdb4aa4cea5fec587ac7",
+      "sha256": "12d19b2d6243917e3e032be157f58fc20e30079d8daa8250fecae2298920afc0",
+      "bytes": 5624
+    },
+    {
+      "path": "src/inkbox/sim/advance.js",
+      "gitBlob": "bcbde86a21fa1256e6b990222a86f085b93c041f",
+      "sha256": "63b9fd72985a44898bb5eff077ef2137440a98dc6e7d5103b817187049f3be76",
+      "bytes": 16333
+    },
+    {
+      "path": "src/inkbox/sim/artifacts.js",
+      "gitBlob": "ac68270aeee3064494ad85af8d36d670060efb7a",
+      "sha256": "d654bc7fcc4fb3424429da6e3cc3a4436801aca0857f57ece3e6743345a85343",
+      "bytes": 37479
+    },
+    {
+      "path": "src/inkbox/sim/biography.js",
+      "gitBlob": "79403894c00bea0eb4f87123b2eef0f3fefb1646",
+      "sha256": "04a10497fc180dbfd8f73953376dc3488d8b6a894c987c279ee954fd38eb6019",
+      "bytes": 68400
+    },
+    {
+      "path": "src/inkbox/sim/busanzi.js",
+      "gitBlob": "65efe94a70390a74f925b3f52b563f8f4c24e4b4",
+      "sha256": "d2e64fc559d33af46dec001fb628259a42e40a27ac7f90bf208f4843fac4194f",
+      "bytes": 13768
+    },
+    {
+      "path": "src/inkbox/sim/combatEnvironment.js",
+      "gitBlob": "b186c6f61c23fcd40a148eb9ad94c8ed13e9cd24",
+      "sha256": "29c8626e1f8341aca5b9174be48d6ad1b3e2146c814ee16ef47e5d05ab3ae8bb",
+      "bytes": 4011
+    },
+    {
+      "path": "src/inkbox/sim/cultivation.js",
+      "gitBlob": "47f5e1736894dda8d5968dad176a7b13742b3f2c",
+      "sha256": "5c4334026a281118511220f948732b1c7728532614616f6ace684e2f0314b3a7",
+      "bytes": 57502
+    },
+    {
+      "path": "src/inkbox/sim/daoActivities.js",
+      "gitBlob": "2d2726fe72224cdcc9b9fdd28fcff569ed874d9d",
+      "sha256": "a36e10d8218b9c19ecb238e9bdf9687ce348a47f3312175535f1187c0976039d",
+      "bytes": 23572
+    },
+    {
+      "path": "src/inkbox/sim/divine.js",
+      "gitBlob": "89ab47624f2d974423af0d0a5dccd23d65663bac",
+      "sha256": "a69f9b700827a70e713a2c9afb48864e5d2ff92d86af9dcdedf3d64cd2d01b41",
+      "bytes": 12725
+    },
+    {
+      "path": "src/inkbox/sim/ecology.js",
+      "gitBlob": "d06ef2242de1755538ac39e51170db5300969b24",
+      "sha256": "edcf7a6f0d610f482aeec753bc146f08a9e25114cf3fe03e155d599932bffe42",
+      "bytes": 6147
+    },
+    {
+      "path": "src/inkbox/sim/entityReadView.js",
+      "gitBlob": "4749d3a09f23dc200b162e72eafb7cbfef08e37a",
+      "sha256": "e425b641677d4a7c78ec885f23a68aed3efb2d26a2ea5aa7bf96da35a5a662a5",
+      "bytes": 7065
+    },
+    {
+      "path": "src/inkbox/sim/family.js",
+      "gitBlob": "e1c012b212cf7a267cae234fd3f0f1665ed01189",
+      "sha256": "a8090b67333f9be3c480e4d635d28bfc553c24d01423f75c33f038950f2419bf",
+      "bytes": 22259
+    },
+    {
+      "path": "src/inkbox/sim/heavenEdicts.js",
+      "gitBlob": "0e191e79113805b1a69d4b6f32b020240d429fdd",
+      "sha256": "3a7636e8082443dc972463732dc543e969d30baef6601ccff80337fcdde32b59",
+      "bytes": 4391
+    },
+    {
+      "path": "src/inkbox/sim/hydrology.js",
+      "gitBlob": "f3e55cc5bc42db9e2dc2be24b2a10826476295f1",
+      "sha256": "ca00063427542e6091f20cf2967e1df959aca732b387e4398abede0999781f9f",
+      "bytes": 7303
+    },
+    {
+      "path": "src/inkbox/sim/interventionFeedback.js",
+      "gitBlob": "8005a801ed59895797ec554a7f0a2bb09844636d",
+      "sha256": "0e26573a7247dc3c7fcde648e645ad4d678186bdffd69e72f8c304c157201b7f",
+      "bytes": 4736
+    },
+    {
+      "path": "src/inkbox/sim/journal.js",
+      "gitBlob": "c9244f8b4704203dfbbb6973e97d99770564c886",
+      "sha256": "cca18694e996e14ed1d3796ffe3706c62211366b78762f01cbb97861ea73992d",
+      "bytes": 19823
+    },
+    {
+      "path": "src/inkbox/sim/life.js",
+      "gitBlob": "adf57c8a234e2860367472e1372fd6f874747029",
+      "sha256": "af7310f10ac73de2f47c49822184bb80c913a866d4854121455daa6f151817f5",
+      "bytes": 103982
+    },
+    {
+      "path": "src/inkbox/sim/nature.js",
+      "gitBlob": "0ee027a9ee5a0623ce49e70297fc17e6fd92d444",
+      "sha256": "fae9a289213a3bd401c8a7c7345221b7af93ff80a0a0cdd16ac3da46ec3d06da",
+      "bytes": 16463
+    },
+    {
+      "path": "src/inkbox/sim/necrology.js",
+      "gitBlob": "5294434912820ad2f354d938bc6c656c3d65af91",
+      "sha256": "c3808e4c952f9340205bd56c4f746ecb0e670e567bdd8c264eada3936176180c",
+      "bytes": 33299
+    },
+    {
+      "path": "src/inkbox/sim/netherLife.js",
+      "gitBlob": "029ef375b2cc808ad3ff3d768b24c1f5382a6ea3",
+      "sha256": "ded278d2479b891415874f9c1b066dbbc2f275650ecf6833f07356cac098389c",
+      "bytes": 71419
+    },
+    {
+      "path": "src/inkbox/sim/observeEcho.js",
+      "gitBlob": "c5595c7530a7ce9a415413056293b7597e3122f7",
+      "sha256": "d38472878ca4cea11ecdf9fd6d99d639fb5d022975ff69f04233a82a3cab8706",
+      "bytes": 8332
+    },
+    {
+      "path": "src/inkbox/sim/possession.js",
+      "gitBlob": "132f5e7a7004bfb061722a1bfca8078559ca64fd",
+      "sha256": "220798989c19dbaeba616a559aa1271669f4b9806676163d684b0fb902ffb753",
+      "bytes": 48851
+    },
+    {
+      "path": "src/inkbox/sim/powers.js",
+      "gitBlob": "a1b90085dcd243efacb35ea75ba19d9494af9e4a",
+      "sha256": "51fa4709338109d5dbe79e5b66cdf1092da102fe8d3d7c2c508c857c102d6c5c",
+      "bytes": 39957
+    },
+    {
+      "path": "src/inkbox/sim/presentation.js",
+      "gitBlob": "077a9999c6daae86b7c04b7e71517bf9301af076",
+      "sha256": "586948ac06d2d8de9a29921b89e81678e66a2e3db60a5cdc8dfbe678f6a35876",
+      "bytes": 14565
+    },
+    {
+      "path": "src/inkbox/sim/reincarnation.js",
+      "gitBlob": "0544ae13dac2a5cb3973b6f58fef684b22d7a81c",
+      "sha256": "9542278d6c2845ab96d0eec8e17ea9eeb6162b3efa7a45b5f505e418de2603ea",
+      "bytes": 47332
+    },
+    {
+      "path": "src/inkbox/sim/relations.js",
+      "gitBlob": "680735cf25d22d1c8c59f287fef7d578c7dd4440",
+      "sha256": "aa55c1862809ba986440c1d23d7a82c14563e40eb56c5f07709a3e1a3dca421d",
+      "bytes": 12083
+    },
+    {
+      "path": "src/inkbox/sim/rifts.js",
+      "gitBlob": "b514d2d6642b2729699b46b20d845d576701b35e",
+      "sha256": "6094856650ff67c5f1d96a0c0a5a739fb625956fb4eb2d5a901a9c1e763be9d0",
+      "bytes": 121617
+    },
+    {
+      "path": "src/inkbox/sim/runtimeState.js",
+      "gitBlob": "422133c522adadfa35be8ff253b03d9516a3f876",
+      "sha256": "0ed513d956f6da7d8449d3da67741c027b61717f41a8318e90beaf3af99ffece",
+      "bytes": 12295
+    },
+    {
+      "path": "src/inkbox/sim/sectEconomy.js",
+      "gitBlob": "dbbce014402f94a36c146abeb033e3a49183a0c2",
+      "sha256": "52353bd4c19c1655673717877f153dd560d9347d9b97259942843413a08c6e0d",
+      "bytes": 8231
+    },
+    {
+      "path": "src/inkbox/sim/sects.js",
+      "gitBlob": "da73ba01d52449374baad0ffa3ce92f968e43b36",
+      "sha256": "404726b9ff35fb95943e91e13a1ab25fc739cfff10f9eefdbc94f91005be7300",
+      "bytes": 31394
+    },
+    {
+      "path": "src/inkbox/sim/settlementResilience.js",
+      "gitBlob": "a0a13561fccb64a06cec6825327d88bb4e153e3b",
+      "sha256": "6617d1db34201f9fe6916bf4db9d3c0aa6676cc5da3c386fcf6c7732462ce9ad",
+      "bytes": 6763
+    },
+    {
+      "path": "src/inkbox/sim/siteSearch.js",
+      "gitBlob": "1e6f63df6a5d7a19e6f217ecd5099862983890aa",
+      "sha256": "9ce328f27b390cc030be05fae01061e2e4c4cc5a93c14f0690712874b355f71b",
+      "bytes": 2145
+    },
+    {
+      "path": "src/inkbox/sim/sites.js",
+      "gitBlob": "8b97c4f0feebeab541023440a696c4ec7cce9312",
+      "sha256": "c4babcbc558d05bed84d0423c09103b90d2b32d96253d6f41116bac73f35ad4e",
+      "bytes": 21658
+    },
+    {
+      "path": "src/inkbox/sim/territory.js",
+      "gitBlob": "ab66dda6dc68719d2017d9291f8145c470b0d2eb",
+      "sha256": "1f42080e380034cbaaf6e016ca670c8f81305966ac755954008b2df7d58d5f5e",
+      "bytes": 26822
+    },
+    {
+      "path": "src/inkbox/sim/toolPresentation.js",
+      "gitBlob": "1f211f8ecba1b9981f930d89cd2c8011049405c4",
+      "sha256": "e14e697419f28b3aded0e8bf29c7cd5497cde636e558e4f2b5c6820f6f0a6975",
+      "bytes": 5874
+    },
+    {
+      "path": "src/inkbox/sim/transit.js",
+      "gitBlob": "7fb763c888710afb6ff7550009a7e0df8bb805ca",
+      "sha256": "6d99542a493c5bd3a4d66381d067261ea347736984a981b38ecb6bff68e1e20e",
+      "bytes": 16165
+    },
+    {
+      "path": "src/inkbox/sim/upperLife.js",
+      "gitBlob": "d4994f1724e47478b9528492686aafcce01def33",
+      "sha256": "fcb74e22de214ec8ea18a396a4deeb8daadff49952719647c78d32b4b4dabab3",
+      "bytes": 56699
+    },
+    {
+      "path": "src/inkbox/sim/wanling.js",
+      "gitBlob": "2290328d3ea85c4a994e024896ddfd69f5a3daef",
+      "sha256": "1f0afc2730edf82d456c19da7aab0629c169ac1d1c71fbfdf1a72b9b225ab578",
+      "bytes": 16539
+    },
+    {
+      "path": "src/inkbox/sim/war.js",
+      "gitBlob": "ee3a47c3d6e036cfa636791168f2612d5008b294",
+      "sha256": "e07c9b00a99f8cd620b5f2d93c33bee96df68a23b9d4733a7fdbd532aa7ae9df",
+      "bytes": 63014
+    },
+    {
+      "path": "src/inkbox/sim/watch.js",
+      "gitBlob": "118af2b328e507fa8d28e563ee7d52eddb4b524b",
+      "sha256": "dbf6cc0bcfb161110e1ae512294cafb0750a5601283db0d8661fe42c1a7a402e",
+      "bytes": 11273
+    },
+    {
+      "path": "src/inkbox/sim/workMetrics.js",
+      "gitBlob": "7d71465f4e56fb2b300d860eaee56bfa179ffa8a",
+      "sha256": "04e41b95586ade91b63a1335d88c29271a40b9d68cbcb125b5cf83431980cd79",
+      "bytes": 2667
+    },
+    {
+      "path": "src/inkbox/sim/worldEvents.js",
+      "gitBlob": "0ef1a03083dd3e6eae22eaa81f3d33753a669ac7",
+      "sha256": "2f8359dcffd15da32e62d71caffee4cf16ff56507b0ab118c2104f5222c27239",
+      "bytes": 18773
+    },
+    {
+      "path": "src/inkbox/sim/worldStreams.js",
+      "gitBlob": "2b82a54221e66f250a629a762a12de5cd7a6ecf3",
+      "sha256": "d650e1f3f308d18fbaf3d861fc7256d62e8c1ffc701af03cbbf7a7b3ead1ebee",
+      "bytes": 2760
+    },
+    {
+      "path": "src/inkbox/sim/wraiths.js",
+      "gitBlob": "808d6f54da25023e1642f35e51ef30f092ace502",
+      "sha256": "2355e53752d12cae0d088a8919328c4d38d0a3e7a16d3620ccc935fead85f15c",
+      "bytes": 19685
+    },
+    {
+      "path": "src/inkbox/ui/RegionMask.js",
+      "gitBlob": "34913a2f74b424d4a96e79a4dcd8bb1fdb1add65",
+      "sha256": "587cc5af372803b9fa7971c01056d2444e141f4fdfefe1406a93c8ea68fc6d0a",
+      "bytes": 572
+    },
+    {
+      "path": "src/inkbox/ui/g1/presentation/characterCard.css",
+      "gitBlob": "c698b2d5b0d7cb67dd3398241e8be4a632c1d11d",
+      "sha256": "536efb09c72790399ccdd682a54670b3c48823d42b1196f5b109a93553329aaf",
+      "bytes": 14007
+    },
+    {
+      "path": "src/inkbox/ui/g1/presentation/characterCardFormat.js",
+      "gitBlob": "8b875629f587f24322283cdb37b670f470b5eb3e",
+      "sha256": "812a4fe64e818c069fce45a3fad63239d9f3d8d345d47a9f5c2b3b122bffc7e1",
+      "bytes": 1520
+    },
+    {
+      "path": "src/inkbox/ui/g1/presentation/characterCardView.js",
+      "gitBlob": "28b36a10a5cfae1d77ac5200e6f8d28bb69444de",
+      "sha256": "4c9d75249f0f5ab8019305bcf02d9220148b47bf518b1103264bf8c76f9d0032",
+      "bytes": 17484
+    },
+    {
+      "path": "src/inkbox/ui/g1/presentation/characterPortrait.js",
+      "gitBlob": "e7365cfbace2c1ee0c627dc4aebeb2c7c63444a0",
+      "sha256": "f28ec648e1bb9265541825444bd5252b35103e51d964e6390e879f869ede9992",
+      "bytes": 2110
+    },
+    {
+      "path": "src/inkbox/ui/g1/presentation/mingpuFacts.js",
+      "gitBlob": "6bb211e2f0d6916539f52027274da0b4fa4b8f26",
+      "sha256": "95565f8d9d9efc4430eb27b3155c49a7213b678020bb87f6164736c42ef3b067",
+      "bytes": 3896
+    },
+    {
+      "path": "src/inkbox/ui/g1/presentation/mingpuView.js",
+      "gitBlob": "cc509d5585a6d1459e0bd8fc54ab89af2c7ddacf",
+      "sha256": "d9c0d97b08984f7d237b18b5277a4f10d8d3c0c335395be31d475b3f442c2c7e",
+      "bytes": 18654
+    },
+    {
+      "path": "src/inkbox/ui/g1/presentation/portraitGenerator.js",
+      "gitBlob": "1200eede95a59b0e2b9dfb1be21229b6dcec7265",
+      "sha256": "343e5fbf5691b8073df90be1d716c6d2263dc921b82e2e3e86b465f70ca25857",
+      "bytes": 5476
+    },
+    {
+      "path": "src/inkbox/ui/g1/presentation/worldCreationInfo.js",
+      "gitBlob": "78f7686386e8559c32799864f9b9bb8577f65dc4",
+      "sha256": "09c41a14447df82683507f0cfbe414679a87d311303e3b6d3cc46a111fbd4c75",
+      "bytes": 2423
+    },
+    {
+      "path": "src/inkbox/ui/g1/presentation/worldProgress.css",
+      "gitBlob": "dd846c90cfb5c0296bfbac3c4ca8f9e4e1ed7014",
+      "sha256": "ef004287b68f60e95063c5fdb8d7ea0cfd8fdbd684b8b8006629d6c40cc95e88",
+      "bytes": 2157
+    },
+    {
+      "path": "src/inkbox/ui/g1/presentation/worldProgressView.js",
+      "gitBlob": "221b1e699523ba2afb1f17a8565936a386360b09",
+      "sha256": "5c624e1302b91f1778fd09bfa932413aaca08d30abc272227e3cafd8cbe435ec",
+      "bytes": 4342
+    },
+    {
+      "path": "src/inkbox/ui/g2/busanzi/busanziPanel.css",
+      "gitBlob": "0475045c58db7ccea4889690176a669adcc0684b",
+      "sha256": "6bf00cbf016ce1cd4cd7df9d61b358099d08d7d940b9e12dac59b023228a8006",
+      "bytes": 1235
+    },
+    {
+      "path": "src/inkbox/ui/g2/busanzi/busanziPortrait.js",
+      "gitBlob": "649f761f33d4ef99d72160d99ce27372ab213bfe",
+      "sha256": "d8bdb9cc2b39925eff50aa7b813e718d4fff0f547a27c03a7fc2c3a063ae83aa",
+      "bytes": 2976
+    },
+    {
+      "path": "src/inkbox/ui/g2/combat/combatObserver.css",
+      "gitBlob": "42b4fdd228e5508ebdcc7246b09fdd78ab6da389",
+      "sha256": "a1a4af26bb0f4df64da7c5101dc384a79d2fc4ae90ccfc0a932f03353aaa4233",
+      "bytes": 1684
+    },
+    {
+      "path": "src/inkbox/ui/g2/combat/combatObserverModel.js",
+      "gitBlob": "9708cd0620e644e16bdd23fd8c75695684266845",
+      "sha256": "44c390570dedc88da189c3a4641b65bdb406a65647416bfcbdf96fc5c6f0278f",
+      "bytes": 3022
+    },
+    {
+      "path": "src/inkbox/ui/g2/combat/combatObserverView.js",
+      "gitBlob": "d10ccd978bb6b73c7e13cba4a61c1e5b6d8c80b6",
+      "sha256": "2be2f621874d19b7d9a3df27fec7edcda4cb9dbdc2b25647a30bd49c0c387836",
+      "bytes": 4261
+    },
+    {
+      "path": "src/inkbox/ui/g2/creation/creationMenu.css",
+      "gitBlob": "b254b3706f88fceb671fd3af61e6db52ed97a54b",
+      "sha256": "51cb762204659d7daf0e0994b50360809fc2b27e59d0e08228c35787754f5ac2",
+      "bytes": 4295
+    },
+    {
+      "path": "src/inkbox/ui/g2/creation/creationMenuModel.js",
+      "gitBlob": "dbae87f557dd954b46c7cd20eb84fecfff522cf5",
+      "sha256": "9635e4e064a94f83c1a6792ad87acb02e049a8266f24c8a5c6a40c60968887b1",
+      "bytes": 1588
+    },
+    {
+      "path": "src/inkbox/ui/g2/creation/creationMenuView.js",
+      "gitBlob": "94fc355e3d185ca1dcb3f5590f7b36a6a0217a18",
+      "sha256": "c8947fc436a024a8556f11e10e50e18bd946b040dc113629aada00effd0a69ba",
+      "bytes": 10055
+    },
+    {
+      "path": "src/inkbox/ui/g2/environment/environmentObserver.css",
+      "gitBlob": "55acfbcc9535213ab9a208c4080e66a8468b4568",
+      "sha256": "2a37c1ed6e116a11a26eafe501a12d41ed28814846096b20987986d551e6c0cb",
+      "bytes": 1089
+    },
+    {
+      "path": "src/inkbox/ui/g2/environment/environmentObserverView.js",
+      "gitBlob": "290e19de69cfc08c4952e44828875688e67148fc",
+      "sha256": "359676ab46e3bd6097e8d9ae9f0c14210166beddeab51ceb01c300fa13629c57",
+      "bytes": 5916
+    },
+    {
+      "path": "src/inkbox/ui/inputLayers.js",
+      "gitBlob": "d29d5d9209d9555cacb94c4f4b8642f4bfa80f74",
+      "sha256": "585e2853537c912e919c8da41697b0175f06d03f62458b98a3bff80538ac91d0",
+      "bytes": 810
+    },
+    {
+      "path": "src/inkbox/ui/jinshiSkin.css",
+      "gitBlob": "c9a9be68718a2c451770d75be929a71313f5adf3",
+      "sha256": "83175fe4404d9e0445d6d951f3bce66879a1ec8b63134021213bae72b99291a6",
+      "bytes": 6466
+    },
+    {
+      "path": "src/inkbox/ui/journalPanel.css",
+      "gitBlob": "70288c037edbb7e001da73a2d4ae0b3752fb4bd2",
+      "sha256": "7446d9b277d42f03de05d26270d127db3fbdfa67b235a7b650a2f9b451976938",
+      "bytes": 1128
+    },
+    {
+      "path": "src/inkbox/ui/journalPanel.js",
+      "gitBlob": "0537ed300c424bcd585ab80f0e992acb8660660a",
+      "sha256": "768e96a0a71436d074e7cc57ee90c6f60676ecb2ac807357befe39b52d9fed80",
+      "bytes": 11114
+    },
+    {
+      "path": "src/inkbox/ui/observeEchoPanel.css",
+      "gitBlob": "289132b5d8806d316e59686d8a1f589d4ded4d0a",
+      "sha256": "2c2c7129c89532f6626a0d97bbcae21ad7f8629d0874668646265222f83f33ed",
+      "bytes": 1940
+    },
+    {
+      "path": "src/inkbox/ui/observeEchoPanel.js",
+      "gitBlob": "5b3e44876418ed922732a5d45a021f494b36a485",
+      "sha256": "19395a499a221ea7ca2572831f04b4e1a7f3dbb11775c5c1353e942606ba2122",
+      "bytes": 15001
+    },
+    {
+      "path": "src/inkbox/ui/opportunityTools.js",
+      "gitBlob": "35e43f54f9739f11c991c96abff5eeb2c1f29e99",
+      "sha256": "1119eeafdc67feca2921b4eb8f8cac891457efe1422cebe269338efb97edb72d",
+      "bytes": 2562
+    },
+    {
+      "path": "src/inkbox/ui/personLifeFacts.js",
+      "gitBlob": "40d7594754ee36e79d226d9d95a906989d1856e8",
+      "sha256": "b466fb782a20a9f37c58123abc2ee1ee416f732650162cc86e801c809d8c0992",
+      "bytes": 2240
+    },
+    {
+      "path": "src/inkbox/ui/playerExperienceNav.css",
+      "gitBlob": "fba90dab401190869b14abea1c6a38432d911603",
+      "sha256": "8e2088bd8ba14917ddf89ceaae13a81a4300a44f095f9e30a0e8e6f52380965d",
+      "bytes": 3626
+    },
+    {
+      "path": "src/inkbox/ui/playerExperienceNav.js",
+      "gitBlob": "2dcd076cbdb41931dd2e0de28a15c8f30b541678",
+      "sha256": "12e97dd86a74d2b5411906358f21a782a7965284f128244a4f65211e7be21c00",
+      "bytes": 6458
+    },
+    {
+      "path": "src/inkbox/ui/qol.js",
+      "gitBlob": "f58bd361487e0e3ccef844722c66d4acc904b845",
+      "sha256": "0b9f6aaa072cb92e7f3f21bd784c59c0bf70377d5689292e5d1f9c271558f37e",
+      "bytes": 23863
+    },
+    {
+      "path": "src/inkbox/ui/qolState.js",
+      "gitBlob": "4e3ce2e462efbdf5b921612c83964943d41be513",
+      "sha256": "37f6adf32ab5c7d464066ea42563c7c40474e83d01dbe35a0ea68d1a0911db3e",
+      "bytes": 27043
+    },
+    {
+      "path": "src/inkbox/ui/r1/creationHost.css",
+      "gitBlob": "844e85890ebd5213c8a4b2dc7996f7a829c73e2c",
+      "sha256": "294c258e6f5eea1cc3cfa8ec89afc159b99ddc6a83e7688046dace5674ddf58e",
+      "bytes": 626
+    },
+    {
+      "path": "src/inkbox/ui/r1/creationHost.js",
+      "gitBlob": "371869d6816336f85c592da938caf37d51511778",
+      "sha256": "c5922b6795eaa2643538ba5ee5a42eb21156d1f3b81d949f0acde2775aee73ed",
+      "bytes": 4801
+    },
+    {
+      "path": "src/inkbox/ui/r1/secretScroll.css",
+      "gitBlob": "19270b7ac3f5f48c084a57346aa547102e634c8c",
+      "sha256": "f63bb9b0795ce9999101b20266d721f54b685d5e8f6311aaca16f378795dab45",
+      "bytes": 40749
+    },
+    {
+      "path": "src/inkbox/ui/r1/secretScrollHost.js",
+      "gitBlob": "2f51b42cd21845a0f542b433f72f32753543673a",
+      "sha256": "96b5067625454c533948017af7f801932cfd654924979a985ac24c002689ebaa",
+      "bytes": 22297
+    },
+    {
+      "path": "src/inkbox/ui/r1/secretScrollSymbols.js",
+      "gitBlob": "059a7a14581e01e7a2aff5d4a5cca393e02b127a",
+      "sha256": "1f54899e20f45de2dbcdb3792a1b8e5a4835c9b1ab209938e9ede10283711e95",
+      "bytes": 5826
+    },
+    {
+      "path": "src/inkbox/ui/railPanels.js",
+      "gitBlob": "9ad4873e4a09c748661fe388c4c3791265c83f04",
+      "sha256": "44db1f5828d53b027fbdd66af2805c4140f886ae6f443b7a824e4ec84b27856a",
+      "bytes": 68961
+    },
+    {
+      "path": "src/inkbox/ui/realmInspector.js",
+      "gitBlob": "3f2b44eb60b89cacfa515fa2894705481ca7c923",
+      "sha256": "68adee7bd0dc67bb9b6e6eb3d114a38ae470b267b293d28c065c9dad064e2f93",
+      "bytes": 18468
+    },
+    {
+      "path": "src/inkbox/ui/realmTrace.js",
+      "gitBlob": "febe0fa8c9ad1cf805c069e7611cbbc0e99b3ae9",
+      "sha256": "282dab105a2e688e725a2e440b0b083b54e777dfaff4b1bb7ef45325fbd1e2c6",
+      "bytes": 6137
+    },
+    {
+      "path": "src/inkbox/ui/realmView.js",
+      "gitBlob": "a6418179680d5480734260471c65eaf14f13b373",
+      "sha256": "a7a0eb71917b4b246cb734977ff748f06569edf9234057faceca04025837e59e",
+      "bytes": 7925
+    },
+    {
+      "path": "src/inkbox/ui/realmViewState.js",
+      "gitBlob": "69eb758da6339c70c661a1f48051c8922c051afe",
+      "sha256": "63d51cc765126321f1b60b5e9fd1d8c68bda86e1fa528abbe41ad4ac45d95567",
+      "bytes": 1416
+    },
+    {
+      "path": "src/inkbox/ui/sectSupplyFacts.js",
+      "gitBlob": "fe0cd2d47171ae2723fffc1f7fe003fb017f337c",
+      "sha256": "e51f5c970ff3aef388284003b6d73373b1f7d05078496694d7d0efcaea9a513b",
+      "bytes": 900
+    },
+    {
+      "path": "src/inkbox/ui/settlementInspector.js",
+      "gitBlob": "68e7cd72ef3aefebdd268ead6187f018000785f5",
+      "sha256": "b9b60edaca2a1b59baade3da9ffe39a3b7c3c17ea13fafb294f225c51df017fa",
+      "bytes": 4141
+    },
+    {
+      "path": "src/inkbox/ui/storyCardsView.js",
+      "gitBlob": "51dbba7d694f2b5fb86e9ffeb7e33af12f3f00c6",
+      "sha256": "a8b71fdf03dcbc529c32937fb17bff1cdef65dff2bbe35ea2cb846f8c15bde36",
+      "bytes": 4834
+    },
+    {
+      "path": "src/inkbox/ui/storyNavigation.js",
+      "gitBlob": "fb52bdefdd21662b06d080967693e07441ddb447",
+      "sha256": "6c7d9eb59c13ab775631e89ec754ac46e04daae3547248ed8661d93801ea1c3e",
+      "bytes": 3611
+    },
+    {
+      "path": "src/inkbox/ui/tools.js",
+      "gitBlob": "8c192319a077b2b6f9071a684eab1f6f52ffc3b8",
+      "sha256": "95ede2c708c2d9c0cffc4126d96225f72d76ce6e96c53844af7822ee1b587f61",
+      "bytes": 20488
+    },
+    {
+      "path": "src/inkbox/ui/transitPanel.css",
+      "gitBlob": "4a8c4042a8df87a46d695c1c1099fe8d6b8fb0f7",
+      "sha256": "1c1bc709e9f338dada13999b8b6a0a2d6d4ce3ebf0cb651751de493661eb4832",
+      "bytes": 3124
+    },
+    {
+      "path": "src/inkbox/ui/transitPanel.js",
+      "gitBlob": "42f1de26e82ce7468676ecb21c9b1315bee6f17a",
+      "sha256": "a42384d79d98afa181b2eb6aa31a7fda51cb58f2c3e50674965966bb1f687660",
+      "bytes": 18222
+    },
+    {
+      "path": "src/inkbox/ui/wanlingFacts.js",
+      "gitBlob": "80d33da485b0b7a5e5a66c2bac9acfd1f2c38fe7",
+      "sha256": "b5abc45fb1f1c6a02fa468a7dd1e1fb8ac4db2f03f97f3e16425a68f2547b5e9",
+      "bytes": 2561
+    },
+    {
+      "path": "src/inkbox/ui/wanlingPanel.css",
+      "gitBlob": "453d19e138cbb3c54153f111b75df940f959cf09",
+      "sha256": "27cc5db54296a4a6378e7e916a35bbad4b0599960f8882f34d86ce18a49d8dc4",
+      "bytes": 2541
+    },
+    {
+      "path": "src/inkbox/ui/wanlingPanel.js",
+      "gitBlob": "fcdea135a39afc2b16520c958043a2d52558035f",
+      "sha256": "adb70c3c27d477a9c3cccc96397bdf59b1d3fc6bcd6d664153bc9b3849e871bb",
+      "bytes": 7423
+    },
+    {
+      "path": "src/inkbox/ui/wanlingPreview.js",
+      "gitBlob": "d8673cffbca5feebddb362728759cf2f5565acdc",
+      "sha256": "5c1d49efdd5039fe9788c0a87bb4830b4945740c6d73532bad8e4d3e625d8aec",
+      "bytes": 1539
+    },
+    {
+      "path": "src/inkbox/ui/wanlingSelection.js",
+      "gitBlob": "5d29f93bd8f36a4bf58e55ae9c4d753d33064547",
+      "sha256": "1ae3f8db97bac2de92745111f4e1f8a6f9d80d74a24d7405eb479e747677e063",
+      "bytes": 5872
+    },
+    {
+      "path": "src/inkbox/ui/worldCreation.js",
+      "gitBlob": "e48e0b95e912d9033f3eb9e2ba247359c3ba5aab",
+      "sha256": "f991a8c5c1566f2177aecf9ac6e3978ea74c6c3b23b2fec94ba7051a6a777425",
+      "bytes": 4764
+    },
+    {
+      "path": "src/inkbox/wanxiang/bloodPhysique.js",
+      "gitBlob": "bcf0abc10ab206236bfa039e4ec3f74e45303d02",
+      "sha256": "789f19d85615c70551531187836ae7c88d87baf7529d2a80101995652d3a03b2",
+      "bytes": 7863
+    },
+    {
+      "path": "src/inkbox/wanxiang/catalog.js",
+      "gitBlob": "336cf9a526ccb8604c52b7b0b3d119c8c681aa03",
+      "sha256": "d028288e32b029859fec44f222a453abf5c25ff7b8a9737c9b9c4f27ab0a91f8",
+      "bytes": 7030
+    },
+    {
+      "path": "src/inkbox/wanxiang/changes.js",
+      "gitBlob": "caa6310ccd9ea858a40bf30798c3b1329990e1e8",
+      "sha256": "d7f3382afb2982b89911b026c2f0c617f0632b2952c00b0e42f52246fa5666fc",
+      "bytes": 7993
+    },
+    {
+      "path": "src/inkbox/wanxiang/conditions.js",
+      "gitBlob": "705fd16787135cba1871ed2b2b0d9d3a32bd9457",
+      "sha256": "7e06fe831752dae3072f77598a0e75d93f4dbedd46f7c820f40d4abbe3bf73bf",
+      "bytes": 7198
+    },
+    {
+      "path": "src/inkbox/wanxiang/consumerManifest.js",
+      "gitBlob": "864719d79daa1dec450b74bd38d38778050aec22",
+      "sha256": "1cf69681c199a9bea89ff5de19c8ccde2fc60c6171fd56a226ae8e43ab12e0e5",
+      "bytes": 1165
+    },
+    {
+      "path": "src/inkbox/wanxiang/content/README.md",
+      "gitBlob": "ff3cd10010564d7b5d7b5af1e2a291e7ece313a4",
+      "sha256": "99c1b6afa3e4a55d6593252fbddd3be12fa9f0a905ac10a61869eeaffdef02a2",
+      "bytes": 1471
+    },
+    {
+      "path": "src/inkbox/wanxiang/content/daoSeeds.js",
+      "gitBlob": "4aa7462ac3668e7d2faaf015c19e5e5c928e1f8e",
+      "sha256": "b46655dbcf9c9d120a52c6b3c77d2f51a69de511374731d82292729f15856419",
+      "bytes": 2114
+    },
+    {
+      "path": "src/inkbox/wanxiang/content/designCatalog.js",
+      "gitBlob": "193647038b83c6bb1fbd033469dc0702a60a749d",
+      "sha256": "10ecf82cce918aec6e8641456a48167bd65b91ea979ca4916e766dfa62e10d8f",
+      "bytes": 40719
+    },
+    {
+      "path": "src/inkbox/wanxiang/content/experienceTraits.js",
+      "gitBlob": "61590f12d22a94392895f46e453df4651f60f61f",
+      "sha256": "7bfe67c31cd434683912c825ac28d0e3acd3025536d5ba5a64ab1276125764b6",
+      "bytes": 3605
+    },
+    {
+      "path": "src/inkbox/wanxiang/damage.js",
+      "gitBlob": "89f2e29ba8e82c8f39207ca341be9410507a4f95",
+      "sha256": "e2916d8890d3170d7b9329e283006cdd5f71460e33cfb71ef07e4de306a8e70d",
+      "bytes": 3426
+    },
+    {
+      "path": "src/inkbox/wanxiang/daoSeeds.js",
+      "gitBlob": "8bed51b736b803d10fa0cda9b517b17e84f1b89b",
+      "sha256": "d6b0a63af826bfa012dc87e2b7df45003bac8f0d2f052da78d4b7867ec7abaf8",
+      "bytes": 6055
+    },
+    {
+      "path": "src/inkbox/wanxiang/effects.js",
+      "gitBlob": "72768a359c84d1384e9bed88b404ef8c456ce79f",
+      "sha256": "40dffe472cdd344ae64718e63a8c0496c2711b005c2612765cbe06915ffb4c54",
+      "bytes": 4490
+    },
+    {
+      "path": "src/inkbox/wanxiang/encounters.js",
+      "gitBlob": "6d5a5da617ad118cb51ce23b993c72f46dc943d1",
+      "sha256": "ae25323a75a3f56351569259a96c9263e35bf4a4a7eb1b330eab0b80bc23c4e6",
+      "bytes": 8298
+    },
+    {
+      "path": "src/inkbox/wanxiang/experiences.js",
+      "gitBlob": "96950d25a05a9f5074d18a92c0cca90ec3623953",
+      "sha256": "16ac32519f9d2e29433194c5f643f0e640db0b020ecd477b628fca8f1ada78aa",
+      "bytes": 15557
+    },
+    {
+      "path": "src/inkbox/wanxiang/inheritance.js",
+      "gitBlob": "aa6c7041d30ec06c12507846ff9ed7b66ec5d902",
+      "sha256": "de4037ff646c91a3d6f543739ce60ef48b560aae1ef2fdbdbb61d064bd2f36f9",
+      "bytes": 4095
+    },
+    {
+      "path": "src/inkbox/wanxiang/legend.js",
+      "gitBlob": "50983110af4aff849980009a41b4a0c71d67b2ee",
+      "sha256": "cfcba9db8220e4160021e82496c265c50d0954cc7941ee3f8348d1888b44319e",
+      "bytes": 7539
+    },
+    {
+      "path": "src/inkbox/wanxiang/manualIds.js",
+      "gitBlob": "9118ff33728ebda86ad2416d3f3427c25fac4683",
+      "sha256": "58b5f4d03818f1f824a71ae4414cbfd377631d76c472db1282e496eb63115c70",
+      "bytes": 398
+    },
+    {
+      "path": "src/inkbox/wanxiang/opportunities.js",
+      "gitBlob": "f0db2edd993efd0a616e120c90ee45542174804b",
+      "sha256": "11041220ba2ea25a5da262bac743d5ca362d2afae42beff18f64b9119b4e4add",
+      "bytes": 3392
+    },
+    {
+      "path": "src/inkbox/wanxiang/opportunityGeography.js",
+      "gitBlob": "fc88124ce779d00b834d4b6a6667e83ae0808604",
+      "sha256": "904814447e7c2f043127de9a658dc19dd212a61308398bf5c4594fd7e4dcc07c",
+      "bytes": 1483
+    },
+    {
+      "path": "src/inkbox/wanxiang/practice.js",
+      "gitBlob": "23b768b923e0bc6609b0c4a3b9f1354563f9dbcc",
+      "sha256": "cb91e599dd2268341d482584c4346a898dd842e3308aa1434b0ddbca5b326153",
+      "bytes": 3791
+    },
+    {
+      "path": "src/inkbox/wanxiang/profile.js",
+      "gitBlob": "94c8ae782473af340f9285d1c9f3e7b342fc1b84",
+      "sha256": "78837e741ba41c56fb3b770113f12b771ec3c73d96251bc8cfcfd93f5dc67035",
+      "bytes": 9326
+    },
+    {
+      "path": "src/inkbox/wanxiang/runtime.js",
+      "gitBlob": "96ed1bc4c2e92207c8b31f9d8ceae6941600f297",
+      "sha256": "bcb0562e9cd15a6270b607fa7ec36b159b0a93dcea954175b93888a21b530ac9",
+      "bytes": 2616
+    },
+    {
+      "path": "src/inkbox/wanxiang/saveState.js",
+      "gitBlob": "58ad72edfb6e327dfd159eee44e1bfcf15210f0f",
+      "sha256": "12ded4262edd4d7b8f56258dcefb4683ecbb61146fe87060d65393112b713aa7",
+      "bytes": 6473
+    },
+    {
+      "path": "src/inkbox/wanxiang/skills.js",
+      "gitBlob": "73edf855896b62025cb573964968d997ad193e00",
+      "sha256": "af2f756016982ed3a732680310f05294111bcd1103e952c39a8ad1149ffa0fba",
+      "bytes": 4656
+    },
+    {
+      "path": "src/inkbox/wanxiang/soul.js",
+      "gitBlob": "7f59889e9a204c0c3a27aab8a2392bfaabd5ba75",
+      "sha256": "c99a36f076d49af0c9df04d8cce82d5572479d51463ec255e4476d168a0505d1",
+      "bytes": 1788
+    },
+    {
+      "path": "src/inkbox/wanxiang/storyFacts.js",
+      "gitBlob": "9db6af05e0b33f4fd9fee85ff5a93646246dfe42",
+      "sha256": "63c08d642380cb9b338efea1a0c15e8faf1d2e814e7251ffcb049dc13208cc84",
+      "bytes": 7973
+    },
+    {
+      "path": "src/inkbox/wanxiang/storyPeople.js",
+      "gitBlob": "ac3e6e5d9cf57e3b49970cb51e9136f619f17cf1",
+      "sha256": "925361221514aedb958a767c0e97a260228cb737d47dd9d5062c1f3d55804cd0",
+      "bytes": 11802
+    },
+    {
+      "path": "src/inkbox/wanxiang/storyReading.js",
+      "gitBlob": "b82515099d68734e463578a0dc970ca3698589a1",
+      "sha256": "a9753b37699960f9941d58f4e3f7518f791ae214def523ec1681360116169c9f",
+      "bytes": 6958
+    },
+    {
+      "path": "src/inkbox/wanxiang/storySelection.js",
+      "gitBlob": "207efcac3c6e4db76ddb5cc7896cc871e8fad4fb",
+      "sha256": "03cb954daa052b2da6c38cabf98bc637d892f70615ebe5b32ad5fcc692078ba3",
+      "bytes": 2957
+    },
+    {
+      "path": "src/inkbox/wanxiang/storyWorld.js",
+      "gitBlob": "225477619425cd825064f776db323f5555309f28",
+      "sha256": "1b92812cfa920f4f75daa0ad5046ddaa53aadae421c4134c410da322b2868b01",
+      "bytes": 7237
+    },
+    {
+      "path": "src/inkbox/world/World.js",
+      "gitBlob": "94b7fa1a94f4a1324bf02cb8b36abff3224c3cd5",
+      "sha256": "0e21a481474298e8e164db456b7eae5eaaf87b144c8f732e65a824559c5ac7cb",
+      "bytes": 29970
+    },
+    {
+      "path": "src/inkbox/world/localWater.js",
+      "gitBlob": "3001a63dd7307edc321509851d4e3adbd810d389",
+      "sha256": "f897b25233cde19e84ba845a828c316924b6a3aa44a490d1dcb028c1ae117132",
+      "bytes": 6870
+    },
+    {
+      "path": "src/inkbox/world/mapProgress.js",
+      "gitBlob": "48690b8c3815421386720a709ff16eec62b4959f",
+      "sha256": "f2ee4d291cb4bd7c780c4903600663d0362211b810d888b918f566e8525874b7",
+      "bytes": 2062
+    },
+    {
+      "path": "src/inkbox/world/planes.js",
+      "gitBlob": "06419f474930da9853cfe03869e0640fdc87edb2",
+      "sha256": "53176bb8df052e3f344faaaea07fd4024caf61fa44b5b14e692de2c0db2d76c5",
+      "bytes": 32665
+    },
+    {
+      "path": "src/inkbox/world/settlementIdentity.js",
+      "gitBlob": "3167e9cf936fa655d5c6a3492619ac8ef2c446d7",
+      "sha256": "0e2056f8cab9a559719654c1dacbc28bda69fe65f57eec9a63fa4a9da7b125cf",
+      "bytes": 1042
+    },
+    {
+      "path": "src/inkbox/world/settlementState.js",
+      "gitBlob": "4bd0df06cdd94e030281909d01e2d2391af4d57d",
+      "sha256": "2a2b7ffc449fdef78d629045abab5b9c40a731a52294b523e14542422a90f30f",
+      "bytes": 3193
+    },
+    {
+      "path": "src/inkbox/world/terrain.js",
+      "gitBlob": "480ba0734b2334e3b9badd51cd323ded16eccaa3",
+      "sha256": "70aafeb7d5147218b3a389aba818827f5801a93d629c411bdba74cba517e6bad",
+      "bytes": 10370
+    },
+    {
+      "path": "src/inkbox/world/terrainChanges.js",
+      "gitBlob": "95a651fdefd2613580e8f1ce818bf5238f88621f",
+      "sha256": "e85ea2c1bb4d3a4d31b808992bd3c008d39a0777c64f5d074d7ffe7954227c80",
+      "bytes": 3803
+    },
+    {
+      "path": "src/inkbox/world/terrainEdit.js",
+      "gitBlob": "9098d5f458b0f4fc092f3174cd518356ca97372c",
+      "sha256": "798dffae512e28d4ec825e4004a7fc3ba4611c7456b8624b9c44489a9f666038",
+      "bytes": 1534
+    },
+    {
+      "path": "src/inkbox/world/transitGeography.js",
+      "gitBlob": "745dcd94487d9d521981a7bd333c338787720bb1",
+      "sha256": "2b5d474a516d867696a500ad5561269ea965122baec1e30c49d6b54aa51a7d8c",
+      "bytes": 14078
+    },
+    {
+      "path": "src/inkbox/world/transitState.js",
+      "gitBlob": "a1dddd347cc404b7ceb564f1cd52fe6a1bea0396",
+      "sha256": "42aa3c5a7355a972004440620812fdcb76879aae357048d088f178b566a86842",
+      "bytes": 4549
+    },
+    {
+      "path": "src/inkbox/world/wanlingInfluence.js",
+      "gitBlob": "e735de98ea734fb06702efa11a074927ab0f5483",
+      "sha256": "9f9d92a6a738747176a2826d063135f870ed42b11745fbeb9a59cac70a9542e6",
+      "bytes": 5480
+    },
+    {
+      "path": "src/inkbox/world/wanlingRelations.js",
+      "gitBlob": "d7526de98bfe65df690b119abe8237d7a45a166b",
+      "sha256": "cc7657149459441ed29ff819c138568ffebef8d33ed699651a3e94df656269eb",
+      "bytes": 1253
+    },
+    {
+      "path": "src/inkbox/world/wanlingState.js",
+      "gitBlob": "3f3150274820bf496f4b34781b8a24e064db659b",
+      "sha256": "25d96dc306a2c4e8fbd5b6e0ca685383f13169793ab8c0adccf7a549fed17005",
+      "bytes": 5533
+    },
+    {
+      "path": "src/inkbox/world/worldGeneration.js",
+      "gitBlob": "f4bc57c3cdc4a582b462198973349a66052db7f3",
+      "sha256": "70679a4834499116d2684233a0ddf8c961a55d036cd5fe4ea691273e80da454f",
+      "bytes": 1569
+    },
+    {
+      "path": "src/inkbox/world/worldgen.js",
+      "gitBlob": "c4a96a63d894c9666702020646289a4ec01f242a",
+      "sha256": "ba31e21410e918d223b32c652bf16eaee87304ea17406bd84700c9d44aac878f",
+      "bytes": 19760
+    },
+    {
+      "path": "src/inkbox/world/worldgenNether.js",
+      "gitBlob": "30914e028490073b9d91c6a738b527f1dadd5d70",
+      "sha256": "7e0ccd84c39c530ba9546e27d76e5245f113f624827bcabef72935347a552779",
+      "bytes": 39840
+    },
+    {
+      "path": "src/inkbox/world/worldgenUpper.js",
+      "gitBlob": "868d6c24a588e92bd19f9e7c8b839867f77fb669",
+      "sha256": "8788606899438e7cb43f1afaac781c72e1dcbc0ff59b361e5edddc3a8968083f",
+      "bytes": 46907
+    }
+  ]
+}

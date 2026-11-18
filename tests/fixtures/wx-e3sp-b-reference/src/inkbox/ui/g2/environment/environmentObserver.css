@@ -1,0 +1,10 @@
+.g23-environment{padding:12px;border:1px solid #d3d5ca;background:#f6f3eb;color:#333e3b;font-family:"Songti SC","SimSun",serif;min-width:0}
+.g23-environment h3{margin:0 0 9px;font-size:17px;font-weight:500;letter-spacing:.16em}
+.g23-environment p{font-size:11px;line-height:1.65;margin:6px 0;overflow-wrap:anywhere}
+.g23-environment__status{color:#8f4436}.g23-environment__facts,.g23-environment__comparison{white-space:pre-line}
+.g23-environment__location,.g23-environment__note,.g23-environment__message{color:#68736d}
+.g23-environment__actions{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0}
+.g23-environment button{border:1px solid #b3bdb6;background:#fbfaf5;color:#375850;padding:5px 7px;cursor:pointer;font-size:11px;font-family:inherit}
+.g23-environment button:disabled{opacity:.42;cursor:default}.g23-environment button:focus-visible{outline:2px solid #9b473c}
+.g23-environment__fires{margin:0;padding:0;list-style:none;max-height:120px;overflow:auto;font-size:11px}
+.g23-environment__fires li{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:4px 0}

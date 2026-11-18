@@ -1,0 +1,258 @@
+{
+  "pass": true,
+  "status": "three-way and focused controls accepted",
+  "fixedDt": 3,
+  "formalVariableDtUnchanged": true,
+  "productionEntryEnabled": false,
+  "fullProductAsyncPrerequisite": false,
+  "semanticGrade": "L0 only between identical fixed-dt/input executions; fixed3 relative to formal variable dt is unapproved L2",
+  "oracle": {
+    "head": "37e3b1a64aedc921012fadb2b92668787d0fd3ac",
+    "path": "tests/fixtures/wx-e3sp-b-reference",
+    "files": 285,
+    "method": "Original Git blob-verified B source, immutable reference; not generated sliced code or a second handwritten simulation."
+  },
+  "source": {
+    "fileCount": 295,
+    "sha256": "64c8ef0f09fd0da0a205d9ba0429ad2d7cc615d3e5617da43232ef2b95d53a0a",
+    "engineSha256": "79ff7c38cecb21cc8e5a06b8f2f231f9805f8a63fffa6adf69b4cf8e87cbe14e",
+    "startEndEqual": true,
+    "head": "Not inferred from report; sampled implementation hashes identify exact source, subsequent docs commits separately tracked."
+  },
+  "cases": [
+    {
+      "label": "fresh-120",
+      "startDay": 0,
+      "steps": 120,
+      "checkpointSha256": "8ce18a438fde742c1cff82cd76c879c793101c4d55ff47853177f6f45318e3e6",
+      "boundaries": 120,
+      "milestones": [
+        {
+          "days": 30,
+          "sha256": "0712fd6720f2d6082320a0903fdfb0cfdb527b936b7044f6d3c03e72b7fa70ce"
+        },
+        {
+          "days": 90,
+          "sha256": "0576963c013f1a00c11c547c81318f8656803971beee1f0fcb4a67853e40ecd6"
+        },
+        {
+          "days": 360,
+          "sha256": "cec5aecb6cf453d6cc5dcb4ae2543101e12f6e95a0a17ce1da9d6b6619dd9450"
+        }
+      ],
+      "yields": 12874,
+      "equal": true
+    },
+    {
+      "label": "natural-100y-30",
+      "startDay": 36000,
+      "steps": 30,
+      "checkpointSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+      "boundaries": 30,
+      "milestones": [
+        {
+          "days": 30,
+          "sha256": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421"
+        },
+        {
+          "days": 90,
+          "sha256": "6a8a192007b87c553ac02fa2aaf835b4675ce6f694f32e0884128f5d7c2af642"
+        }
+      ],
+      "yields": 17071,
+      "equal": true
+    },
+    {
+      "label": "natural-400y-30",
+      "startDay": 144000,
+      "steps": 30,
+      "checkpointSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+      "boundaries": 30,
+      "milestones": [
+        {
+          "days": 30,
+          "sha256": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2"
+        },
+        {
+          "days": 90,
+          "sha256": "9d91499313a855a9f58d18363fb090a239222c272349a79a9bafd2d589193a2f"
+        }
+      ],
+      "yields": 42824,
+      "equal": true
+    }
+  ],
+  "completeThreeWayBoundaries": 180,
+  "yieldChecks": 72769,
+  "faults": [
+    {
+      "entityFraction": 0.3,
+      "state": "IDLE",
+      "retainedDay": 36003,
+      "publicFrontRetained": true,
+      "checkpointSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18"
+    },
+    {
+      "entityFraction": 0.7,
+      "state": "IDLE",
+      "retainedDay": 36003,
+      "publicFrontRetained": true,
+      "checkpointSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18"
+    },
+    {
+      "commitPhase": "after-store",
+      "retainedDay": 36000,
+      "publicFrontRetained": true
+    }
+  ],
+  "coverage": [
+    "recover-then-dispose is terminal",
+    "replace-then-dispose is terminal",
+    "concurrent replace rejects stale control epoch"
+  ],
+  "focusedControls": {
+    "sourceMatchesFinal": true,
+    "pass": true,
+    "scope": "focused native follow-up",
+    "source": {
+      "engineSha256": "79ff7c38cecb21cc8e5a06b8f2f231f9805f8a63fffa6adf69b4cf8e87cbe14e"
+    },
+    "checks": [
+      {
+        "name": "default-rift-clock",
+        "defaultEnabled": true,
+        "worldAndG8": "equal"
+      },
+      {
+        "name": "controlled-three-realms",
+        "boundaries": 30,
+        "worldsAndG8": "equal"
+      },
+      {
+        "name": "commands-receipts-events-recovery",
+        "commands": 5,
+        "eventPackets": 6,
+        "receiptRecovery": "byte-deep-equal"
+      },
+      {
+        "name": "story-and-save-safe-boundary",
+        "storyFrozen": true,
+        "detachedSave": true
+      },
+      {
+        "name": "cancel-recover-active-replace",
+        "cancelRecovered": true,
+        "staleGenerationRejected": true
+      },
+      {
+        "name": "pause-resume-debt",
+        "repeated": 3,
+        "targetDays": 30,
+        "debtPreserved": true
+      },
+      {
+        "name": "fps-30-60-target-and-command",
+        "results": [
+          {
+            "fps": 30,
+            "targetDay": 60,
+            "committedDay": 60,
+            "steps": 20
+          },
+          {
+            "fps": 60,
+            "targetDay": 60,
+            "committedDay": 60,
+            "steps": 20
+          }
+        ],
+        "equalWorldAndG8": true
+      }
+    ],
+    "stage": "fps-30-60-target-and-command",
+    "finishedAt": "2026-11-18T02:38:06.425Z"
+  },
+  "portableCI": {
+    "scope": "portable CI: fresh and controlled fixtures only; no aged natural claim",
+    "pass": true,
+    "engineSha256": "79ff7c38cecb21cc8e5a06b8f2f231f9805f8a63fffa6adf69b4cf8e87cbe14e",
+    "note": "Fresh/controlled portable coverage, not natural aged proof."
+  },
+  "integration": {
+    "pass": true,
+    "commands": [
+      {
+        "command": "npm run test:wx-e0",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run test:wx-e1",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run test:wx-em2",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run test:view",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run test:render3d:m1",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run test:g7",
+        "exitCode": 0
+      },
+      {
+        "command": "node scripts/inkbox-import-check.mjs",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run test:three-realms",
+        "exitCode": 0
+      },
+      {
+        "command": "npm run test:save-equivalence",
+        "exitCode": 0
+      }
+    ],
+    "priorExecutedNotRerun": [
+      "test:core",
+      "test:g8",
+      "test:wx-e1c"
+    ]
+  },
+  "evidence": [
+    {
+      "path": "reports/local/wx-e3sp/correctness-final.json",
+      "bytes": 111569,
+      "sha256": "611bab4e81c4b6a4864631a44730bc30a06d53d63ae685a13ffa61233c87062d"
+    },
+    {
+      "path": "reports/local/wx-e3sp/correctness-followup.json",
+      "bytes": 1356,
+      "sha256": "8bcfb53c84cecc185d2c8a0ee20d548643ec21d1f8185f83c22de6fc3875a4e0"
+    },
+    {
+      "path": "reports/local/wx-e3sp/correctness-quick.json",
+      "bytes": 1402,
+      "sha256": "412fcc87549dcb792870805e9f475dec441125fb1ed95f50aaf43ce65f381628"
+    },
+    {
+      "path": "reports/local/wx-e3sp/integration/results.json",
+      "bytes": 33630,
+      "sha256": "97e76f46f97e0963e727566e82045ad432940c6c19836d4ca137f589c7bccbd3"
+    }
+  ],
+  "retainedFailures": [
+    "correctness-concurrency-red.json",
+    "correctness-control-red.json",
+    "correctness-events-red.json",
+    "correctness-fault-red.json",
+    "correctness-initial-red.json"
+  ],
+  "worldFileProvenance": "Final .world.json evidence files are oracle/reference captures checked against private engine via explicit safe-boundary save results; do not relabel reference recalculation as a direct private World dump.",
+  "recovery": "Explicit initial checkpoint plus exact committed ledger replay; fault/cancel keep old public front and require explicit recovery, no arbitrary rollback or per-step full World copy claimed."
+}

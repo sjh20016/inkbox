@@ -1,0 +1,54 @@
+{
+  "status": "explicit independently reviewed anchors; not product promotion",
+  "baseline": "37e3b1a64aedc921012fadb2b92668787d0fd3ac",
+  "reviewer": "c_review",
+  "formalMainChanged": false,
+  "productionApproval": false,
+  "files": [
+    {
+      "path": "src/inkbox/sim/life.js",
+      "oldSha256": "af7310f10ac73de2f47c49822184bb80c913a866d4854121455daa6f151817f5",
+      "sha256": "998177a5c95dee7d71114c1d217e56ca187877a5bac465324df64dad8352d772"
+    },
+    {
+      "path": "src/inkbox/sim/advance.js",
+      "oldSha256": "63b9fd72985a44898bb5eff077ef2137440a98dc6e7d5103b817187049f3be76",
+      "sha256": "aaddffe9563630adc5effb839366bfd917f9d452022120c23ead23f24d0ccb4c"
+    },
+    {
+      "path": "src/inkbox/render3d/entities/deriveEntities.js",
+      "oldSha256": "ae5bb35f3db7659146fdacd6cf504ec51d229f99fff7a7edc40cc3f5bb6e3d55",
+      "sha256": "7f84c8c1ac350cbbf834e3031f1776d0c83596eefdbaddd6f6288a65a2b31491"
+    },
+    {
+      "path": "research/wx-e3sp/engine.js",
+      "oldSha256": null,
+      "sha256": "79ff7c38cecb21cc8e5a06b8f2f231f9805f8a63fffa6adf69b4cf8e87cbe14e"
+    },
+    {
+      "path": "research/wx-e3sp/context.js",
+      "oldSha256": null,
+      "sha256": "e0ea11cd5003f08162a3b6ad9961cbb02f1c4310acb058fd239860646e04c9b2"
+    },
+    {
+      "path": "research/wx-e3sp/commandPort.js",
+      "oldSha256": null,
+      "sha256": "a8cbf057d9bb1b8c9e8041218319aa9a17ef97f1cddd28523d3b1e5e3c7ee554"
+    },
+    {
+      "path": "research/wx-e3sp/demo.js",
+      "oldSha256": null,
+      "sha256": "4aa3596a1abac485f8d3f9201c770abb9b21dcab68dcdcb24c566a43cd0340dd"
+    },
+    {
+      "path": "research/wx-e3sp/presenters.js",
+      "oldSha256": null,
+      "sha256": "9cbdef26050ba56adde02ff13b1094dc09e169d3bdf1346fe5ef774d14ef5ed6"
+    },
+    {
+      "path": "research/wx-e3sp/index.html",
+      "oldSha256": null,
+      "sha256": "56d2db791da803e231e5611d6bc375f637b47f4624276d3c7c25bf30a1f1b55f"
+    }
+  ]
+}
