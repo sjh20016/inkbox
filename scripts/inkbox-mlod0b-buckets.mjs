@@ -21,9 +21,19 @@ const report = { schema: 1, source: 'existing v11 entities', node: process.versi
 for (const age of [100, 400]) {
   const {saved,file,sha256:inputSha,bytes:inputBytes} = loadCheckpoint(age);
   const world = deserializeWorld(structuredClone(saved));
+  const serializedOrigins = saved.entities.map(row => row[70]);
+  const restoredOrigins = world.entities.map(entity => entity.birthOrigin);
+  assert.deepEqual(restoredOrigins, serializedOrigins, 'row[70] birthOrigin changed during restore');
+  const birthFacts = {
+    totalEntities: serializedOrigins.length,
+    withBirthOrigin: serializedOrigins.filter(Boolean).length,
+    withFiniteBirthDay: serializedOrigins.filter(value => Number.isFinite(value?.day)).length,
+    naturalVillageBirths: serializedOrigins.filter(value => value?.kind === 'village' && Number.isFinite(value.day)).length,
+    unknownBirthDay: serializedOrigins.filter(value => !Number.isFinite(value?.day)).length
+  };
   const before = sha(Buffer.from(JSON.stringify(world.entities)));
   const observed = { age, file, sha256: inputSha, bytes: inputBytes,
-    day: world.day, sourceEntities: world.entities.length, grains: [] };
+    day: world.day, sourceEntities: world.entities.length, birthFacts, grains: [] };
   const legacySocieties = villageSocieties(world);
   const independentCensus = buildPopulationCensus(world, 'joint-bucket-check');
   const reverse = {...world, entities: [...world.entities].reverse()};

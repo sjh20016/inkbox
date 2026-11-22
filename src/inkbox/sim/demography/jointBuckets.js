@@ -34,13 +34,13 @@ export function projectJointBuckets(world, { ageGrainDays = yearDays, includeOri
       const birthSource = includeOrigin ? origin(entity) : 'omitted';
       if (birthSource === 'unknown') unknownOrigin++;
       const birthDay = Number.isFinite(entity.birthOrigin?.day) ? entity.birthOrigin.day : null;
-      const birthMonth = birthDay === null ? 'unknown' : Math.floor(birthDay / (30 * yearDays / 12));
+      const birthCohort = birthDay === null ? 'unknown' : Math.floor(birthDay / ageGrainDays);
       const attributes = {
         plane: planeOf(entity, planeName), village: entity.village ?? 0,
         faction: entity.faction ?? 0, species: entity.sp ?? 'unknown',
         alive, human: isHuman, level: isHuman && Number.isFinite(entity.level) ? entity.level : 0,
         practicing: isHuman && entity.level > 0,
-        adult, fertileAge, ageBand, birthSource, birthMonth
+        adult, fertileAge, ageBand, birthSource, birthCohort
       };
       const key = JSON.stringify(Object.values(attributes));
       const bucket = buckets.get(key);
