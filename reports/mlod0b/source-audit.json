@@ -1,0 +1,1160 @@
+{
+  "base": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "pattern": "entities|[.](village|faction|pop|followers|lifespan|_ascended)\\b|isPracticingHuman|isMortalHuman|hasMortalResidents|villageSociet|addEntity|stepSects|pickParents|registerBirth|arriveUpper",
+  "tree": "e3efbcaecfc4d3d1e990e695e10be501410ba255",
+  "scope": "Fixed product source tree. Matched source lines include comments and unrelated array pop(); use CONSUMER_MATRIX for interpretation.",
+  "inputs": [
+    {
+      "age": 100,
+      "bytes": 2826671,
+      "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+      "version": 11,
+      "day": 36000,
+      "seed": 20260914,
+      "exact": true,
+      "serializedTerrainGeneration": {
+        "version": 2,
+        "terrainPreset": "standard"
+      },
+      "entities": 540,
+      "villages": 21,
+      "factions": 3,
+      "runtimeLife": {
+        "rng": 575506299,
+        "warRng": 3548794276,
+        "foundingCooldown": 3,
+        "wildCooldown": 3,
+        "clanCooldown": 0,
+        "yearTickCooldown": 0
+      },
+      "runtimePlayer": 1366911339,
+      "runtimeStreams": {
+        "mortal": {
+          "wanxiangBirth": 1895184266,
+          "wanxiang-personality": 2335978787,
+          "wanxiang-experiences": 1396846122,
+          "wanxiang-opportunities": 1336235217,
+          "wanxiang-encounters": 2652354484,
+          "mercy": 3166125000
+        }
+      },
+      "advanceClocks": {
+        "upper": 0,
+        "nether": 0,
+        "rift": 0,
+        "wraith": 0
+      },
+      "upperClock": null,
+      "runtimeSha256": "d39a19f558dba46495bc77d095429e800ee934885b07c1d098c1b057a2f5e728"
+    },
+    {
+      "age": 400,
+      "bytes": 10073655,
+      "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+      "version": 11,
+      "day": 144000,
+      "seed": 20260914,
+      "exact": true,
+      "serializedTerrainGeneration": {
+        "version": 2,
+        "terrainPreset": "standard"
+      },
+      "entities": 1399,
+      "villages": 44,
+      "factions": 8,
+      "runtimeLife": {
+        "rng": 2695637546,
+        "warRng": 3631218870,
+        "foundingCooldown": 3,
+        "wildCooldown": 3,
+        "clanCooldown": 0,
+        "yearTickCooldown": 0
+      },
+      "runtimePlayer": 1366911339,
+      "runtimeStreams": {
+        "mortal": {
+          "mercy": 3129675510,
+          "wanxiang-encounters": 2952662366,
+          "wanxiang-experiences": 1558156388,
+          "wanxiangBirth": 3406110540,
+          "wanxiang-personality": 1984724869,
+          "wanxiang-opportunities": 1966601181
+        }
+      },
+      "advanceClocks": {
+        "upper": 0,
+        "nether": 0,
+        "rift": 0,
+        "wraith": 0
+      },
+      "upperClock": null,
+      "runtimeSha256": "4211407cf03444ba61dffa30c274f967b7921a52e6d56112e4f6266c537615ce"
+    }
+  ],
+  "sourceFiles": {
+    "src/inkbox/core/cultivation.js": [
+      139,
+      141
+    ],
+    "src/inkbox/core/demographics.js": [
+      20,
+      24,
+      29,
+      30,
+      33,
+      34,
+      35
+    ],
+    "src/inkbox/core/wanlingCatalog.js": [
+      1
+    ],
+    "src/inkbox/dev/frameBreakdown.js": [
+      42
+    ],
+    "src/inkbox/dev/transitScenario.js": [
+      2,
+      48,
+      79,
+      82
+    ],
+    "src/inkbox/g1/characterIdentity.js": [
+      24,
+      26,
+      50
+    ],
+    "src/inkbox/g1/characterRuntime.js": [
+      106,
+      127
+    ],
+    "src/inkbox/g1/sandboxRuntime.js": [
+      22
+    ],
+    "src/inkbox/io/save.js": [
+      94,
+      132,
+      201,
+      202,
+      323,
+      328,
+      329,
+      405,
+      464,
+      465,
+      491,
+      615,
+      616,
+      618,
+      628,
+      858,
+      1355,
+      1361,
+      1364,
+      1368,
+      1369,
+      1383,
+      1406,
+      1407,
+      1517
+    ],
+    "src/inkbox/main.js": [
+      343,
+      1997,
+      1998,
+      2137,
+      2138,
+      2146,
+      2345,
+      2614,
+      2761,
+      2765,
+      2774,
+      2797,
+      2964
+    ],
+    "src/inkbox/presentation/readView/committedStore.js": [
+      14
+    ],
+    "src/inkbox/presentation/readView/index.js": [
+      42,
+      43,
+      46,
+      50,
+      57,
+      64,
+      75,
+      80,
+      84
+    ],
+    "src/inkbox/render/realmViewLayer.js": [
+      60,
+      67,
+      109,
+      186,
+      194,
+      195,
+      232,
+      268
+    ],
+    "src/inkbox/render/unitsLayer.js": [
+      475,
+      584,
+      600,
+      601,
+      664,
+      781,
+      791,
+      796
+    ],
+    "src/inkbox/render3d/Render3DAdapter.js": [
+      278,
+      303,
+      304,
+      305,
+      462,
+      740,
+      755,
+      802
+    ],
+    "src/inkbox/render3d/Render3DHost.js": [
+      91,
+      127,
+      164,
+      165,
+      231,
+      244,
+      447,
+      461,
+      506
+    ],
+    "src/inkbox/render3d/art/ArtPass.js": [
+      142,
+      239
+    ],
+    "src/inkbox/render3d/art/VisualScenarios.js": [
+      2,
+      28,
+      52,
+      53,
+      76,
+      119,
+      174,
+      181
+    ],
+    "src/inkbox/render3d/characters/CharacterBatch.js": [
+      81
+    ],
+    "src/inkbox/render3d/characters/characterAppearance.js": [
+      40,
+      41
+    ],
+    "src/inkbox/render3d/creatures/CreatureBatch.js": [
+      43
+    ],
+    "src/inkbox/render3d/creatures/creatureSpecies.js": [
+      8
+    ],
+    "src/inkbox/render3d/creaturesLab.js": [
+      5
+    ],
+    "src/inkbox/render3d/entities/EntityLayer.js": [
+      7,
+      184,
+      206,
+      221,
+      445,
+      502
+    ],
+    "src/inkbox/render3d/entities/deriveEntities.js": [
+      18,
+      19,
+      32,
+      89,
+      95,
+      111,
+      112,
+      115,
+      121,
+      129,
+      189
+    ],
+    "src/inkbox/render3d/entities/ghostFamily.js": [
+      5
+    ],
+    "src/inkbox/render3d/lod/PresentationBudget.js": [
+      45
+    ],
+    "src/inkbox/render3d/picking/PlanePicker.js": [
+      15
+    ],
+    "src/inkbox/render3d/shared/RenderOrder.js": [
+      7
+    ],
+    "src/inkbox/render3d/stage/PlaneRenderProfile.js": [
+      1,
+      17,
+      19,
+      23
+    ],
+    "src/inkbox/render3d/stage/PlaneStage.js": [
+      8,
+      75,
+      76,
+      77,
+      123,
+      130,
+      141,
+      185,
+      204,
+      237,
+      293,
+      325,
+      332
+    ],
+    "src/inkbox/render3d/stage/WorldSetSnapshot.js": [
+      3
+    ],
+    "src/inkbox/sim/artifacts.js": [
+      269,
+      270,
+      408,
+      460,
+      468,
+      539,
+      540,
+      548,
+      659,
+      693,
+      726,
+      749,
+      750,
+      814,
+      815,
+      835,
+      836,
+      846
+    ],
+    "src/inkbox/sim/biography.js": [
+      77,
+      107,
+      108,
+      110,
+      698,
+      699,
+      740,
+      741,
+      777,
+      779,
+      780,
+      1023,
+      1036,
+      1037,
+      1062,
+      1063,
+      1192,
+      1222
+    ],
+    "src/inkbox/sim/busanzi.js": [
+      253
+    ],
+    "src/inkbox/sim/combatEnvironment.js": [
+      48
+    ],
+    "src/inkbox/sim/cultivation.js": [
+      28,
+      45,
+      153,
+      168,
+      230,
+      326,
+      378,
+      580,
+      655,
+      659,
+      896,
+      915,
+      930,
+      936,
+      945,
+      975,
+      979,
+      980
+    ],
+    "src/inkbox/sim/daoActivities.js": [
+      26,
+      29,
+      38,
+      88,
+      106,
+      245,
+      269,
+      270,
+      286,
+      312,
+      321,
+      322
+    ],
+    "src/inkbox/sim/divine.js": [
+      12,
+      32,
+      33,
+      49,
+      54,
+      161,
+      166,
+      181,
+      188,
+      190,
+      195,
+      196,
+      197,
+      243
+    ],
+    "src/inkbox/sim/entityReadView.js": [
+      10,
+      11,
+      20,
+      129
+    ],
+    "src/inkbox/sim/family.js": [
+      52,
+      109,
+      112,
+      117,
+      122,
+      137,
+      151,
+      249,
+      250,
+      294,
+      295,
+      383,
+      384,
+      409,
+      410,
+      429,
+      430,
+      461,
+      466,
+      467,
+      469,
+      470
+    ],
+    "src/inkbox/sim/journal.js": [
+      87,
+      109,
+      110,
+      223,
+      258
+    ],
+    "src/inkbox/sim/life.js": [
+      38,
+      47,
+      50,
+      235,
+      411,
+      413,
+      421,
+      422,
+      423,
+      424,
+      427,
+      448,
+      457,
+      458,
+      460,
+      461,
+      464,
+      476,
+      512,
+      583,
+      591,
+      647,
+      673,
+      675,
+      693,
+      700,
+      702,
+      752,
+      755,
+      756,
+      761,
+      762,
+      764,
+      765,
+      770,
+      788,
+      790,
+      794,
+      802,
+      818,
+      824,
+      1045,
+      1131,
+      1259,
+      1260,
+      1261,
+      1380,
+      1381,
+      1385,
+      1563,
+      1564,
+      1565,
+      1587,
+      1590,
+      1597,
+      1600,
+      1602,
+      1605,
+      1610,
+      1611,
+      1612,
+      1721,
+      1726,
+      1728,
+      1730,
+      1736,
+      1746,
+      1748,
+      1749,
+      1755,
+      1838,
+      1839,
+      1841,
+      1847,
+      1850,
+      1867,
+      1887,
+      1889,
+      1899,
+      1900,
+      1907,
+      1916,
+      1917,
+      1968,
+      1974,
+      1975,
+      2025,
+      2026,
+      2027,
+      2028,
+      2033
+    ],
+    "src/inkbox/sim/nature.js": [
+      287,
+      298
+    ],
+    "src/inkbox/sim/necrology.js": [
+      3,
+      4,
+      67,
+      69,
+      227,
+      228,
+      241,
+      242,
+      253,
+      268,
+      491,
+      505,
+      507,
+      566
+    ],
+    "src/inkbox/sim/netherLife.js": [
+      157,
+      501,
+      516,
+      524,
+      534,
+      620,
+      625,
+      668,
+      699,
+      702,
+      781,
+      1208,
+      1258,
+      1294
+    ],
+    "src/inkbox/sim/observeEcho.js": [
+      17,
+      19
+    ],
+    "src/inkbox/sim/possession.js": [
+      44,
+      252,
+      285,
+      292,
+      330,
+      367,
+      376,
+      450,
+      462,
+      471,
+      477,
+      641,
+      658,
+      684,
+      720,
+      794,
+      795
+    ],
+    "src/inkbox/sim/powers.js": [
+      199,
+      519,
+      520,
+      524,
+      612,
+      673,
+      674,
+      678,
+      724,
+      725,
+      727,
+      803,
+      804,
+      807
+    ],
+    "src/inkbox/sim/presentation.js": [
+      225
+    ],
+    "src/inkbox/sim/reincarnation.js": [
+      209,
+      353,
+      365,
+      500,
+      531,
+      532,
+      590,
+      652,
+      653,
+      682,
+      766,
+      795,
+      796
+    ],
+    "src/inkbox/sim/relations.js": [
+      120,
+      136,
+      178,
+      209,
+      210,
+      218,
+      227,
+      228,
+      234,
+      238,
+      243,
+      253,
+      259,
+      271,
+      287,
+      288
+    ],
+    "src/inkbox/sim/rifts.js": [
+      47,
+      67,
+      1179,
+      1223,
+      1224,
+      1229,
+      1241,
+      1260,
+      1261,
+      1281,
+      1284,
+      1285,
+      1288,
+      1311,
+      1322,
+      1328,
+      1329,
+      1398,
+      1448,
+      1452,
+      1550,
+      1556,
+      1557,
+      1594,
+      1595,
+      1641,
+      1667,
+      1672,
+      1673,
+      1707,
+      1708,
+      1829,
+      1981
+    ],
+    "src/inkbox/sim/sectEconomy.js": [
+      1,
+      14,
+      21,
+      22,
+      24,
+      25,
+      28,
+      32,
+      54,
+      55,
+      60,
+      61,
+      70,
+      78,
+      121,
+      123,
+      124,
+      127,
+      128,
+      135,
+      136,
+      146,
+      154,
+      160
+    ],
+    "src/inkbox/sim/sects.js": [
+      25,
+      26,
+      48,
+      49,
+      50,
+      103,
+      158,
+      175,
+      176,
+      178,
+      179,
+      180,
+      181,
+      183,
+      184,
+      187,
+      232,
+      233,
+      234,
+      235,
+      254,
+      256,
+      261,
+      262,
+      263,
+      285,
+      291,
+      299,
+      304,
+      307,
+      314,
+      323,
+      359,
+      362,
+      363,
+      365,
+      366,
+      369,
+      370,
+      378,
+      384,
+      385,
+      386,
+      387,
+      403,
+      405,
+      406,
+      407,
+      416,
+      418,
+      419,
+      430,
+      431,
+      432,
+      443,
+      444,
+      457,
+      458,
+      459,
+      460,
+      468,
+      469,
+      470,
+      533,
+      559,
+      564,
+      569,
+      570,
+      571,
+      588,
+      589,
+      591,
+      592,
+      593,
+      594,
+      650,
+      651,
+      674,
+      693,
+      694,
+      703,
+      704,
+      708,
+      719,
+      720,
+      721,
+      722,
+      733,
+      745,
+      748
+    ],
+    "src/inkbox/sim/settlementResilience.js": [
+      88,
+      90,
+      128
+    ],
+    "src/inkbox/sim/sites.js": [
+      364,
+      365,
+      389,
+      408
+    ],
+    "src/inkbox/sim/territory.js": [
+      204,
+      316,
+      335
+    ],
+    "src/inkbox/sim/toolPresentation.js": [
+      36,
+      60,
+      61,
+      84
+    ],
+    "src/inkbox/sim/transit.js": [
+      1,
+      14,
+      91,
+      92
+    ],
+    "src/inkbox/sim/upperLife.js": [
+      4,
+      53,
+      144,
+      330,
+      331,
+      339,
+      340,
+      341,
+      356,
+      372,
+      453,
+      455,
+      477,
+      493,
+      494,
+      506,
+      509,
+      510,
+      514,
+      524,
+      533,
+      534,
+      550,
+      551,
+      552,
+      573,
+      578,
+      579,
+      581,
+      592,
+      593,
+      598,
+      608,
+      617,
+      646,
+      686,
+      687,
+      736,
+      744,
+      746,
+      843,
+      921,
+      931,
+      932,
+      978,
+      995,
+      1000,
+      1006,
+      1007,
+      1009
+    ],
+    "src/inkbox/sim/wanling.js": [
+      1,
+      216,
+      228,
+      242,
+      262
+    ],
+    "src/inkbox/sim/war.js": [
+      50,
+      52,
+      53,
+      386,
+      387,
+      392,
+      399,
+      408,
+      427,
+      428,
+      429,
+      586,
+      833,
+      834,
+      837,
+      845,
+      1063,
+      1127,
+      1149,
+      1154,
+      1155,
+      1156,
+      1173,
+      1186
+    ],
+    "src/inkbox/sim/watch.js": [
+      6,
+      14,
+      129,
+      130,
+      143
+    ],
+    "src/inkbox/sim/worldEvents.js": [
+      201,
+      228,
+      239,
+      253,
+      272,
+      287
+    ],
+    "src/inkbox/sim/wraiths.js": [
+      12,
+      26,
+      43,
+      58,
+      199,
+      200,
+      312,
+      314,
+      338
+    ],
+    "src/inkbox/ui/observeEchoPanel.js": [
+      16,
+      77
+    ],
+    "src/inkbox/ui/personLifeFacts.js": [
+      3,
+      21,
+      22
+    ],
+    "src/inkbox/ui/railPanels.js": [
+      189,
+      190,
+      274,
+      573,
+      574,
+      870,
+      877,
+      920,
+      974,
+      1134
+    ],
+    "src/inkbox/ui/realmInspector.js": [
+      98,
+      106,
+      131,
+      138,
+      169,
+      175,
+      208,
+      224,
+      241
+    ],
+    "src/inkbox/ui/realmTrace.js": [
+      52,
+      64,
+      108,
+      109
+    ],
+    "src/inkbox/ui/realmView.js": [
+      146
+    ],
+    "src/inkbox/ui/settlementInspector.js": [
+      1,
+      3,
+      14,
+      25
+    ],
+    "src/inkbox/ui/tools.js": [
+      62
+    ],
+    "src/inkbox/ui/transitPanel.js": [
+      52,
+      129,
+      130,
+      173
+    ],
+    "src/inkbox/ui/wanlingFacts.js": [
+      16,
+      28
+    ],
+    "src/inkbox/ui/wanlingPanel.js": [
+      62
+    ],
+    "src/inkbox/wanxiang/bloodPhysique.js": [
+      33
+    ],
+    "src/inkbox/wanxiang/conditions.js": [
+      37,
+      43,
+      44,
+      52,
+      61,
+      62
+    ],
+    "src/inkbox/wanxiang/damage.js": [
+      33
+    ],
+    "src/inkbox/wanxiang/daoSeeds.js": [
+      12,
+      21,
+      25,
+      27,
+      32,
+      34,
+      35,
+      41,
+      57,
+      67
+    ],
+    "src/inkbox/wanxiang/encounters.js": [
+      10,
+      46,
+      72
+    ],
+    "src/inkbox/wanxiang/experiences.js": [
+      65,
+      67,
+      144,
+      145,
+      146,
+      147
+    ],
+    "src/inkbox/wanxiang/inheritance.js": [
+      28
+    ],
+    "src/inkbox/wanxiang/legend.js": [
+      7,
+      14,
+      17,
+      31,
+      34,
+      56
+    ],
+    "src/inkbox/wanxiang/opportunities.js": [
+      34,
+      35
+    ],
+    "src/inkbox/wanxiang/profile.js": [
+      41
+    ],
+    "src/inkbox/wanxiang/runtime.js": [
+      27
+    ],
+    "src/inkbox/wanxiang/saveState.js": [
+      31,
+      43,
+      46
+    ],
+    "src/inkbox/wanxiang/skills.js": [
+      5,
+      71
+    ],
+    "src/inkbox/wanxiang/storyFacts.js": [
+      81
+    ],
+    "src/inkbox/wanxiang/storyReading.js": [
+      27,
+      35,
+      93,
+      95
+    ],
+    "src/inkbox/wanxiang/storyWorld.js": [
+      19
+    ],
+    "src/inkbox/world/World.js": [
+      69,
+      185,
+      231,
+      283,
+      375,
+      376,
+      381,
+      390,
+      395,
+      401,
+      405,
+      612,
+      635,
+      636
+    ],
+    "src/inkbox/world/planes.js": [
+      285,
+      340,
+      358,
+      396,
+      397,
+      402,
+      403,
+      419,
+      420,
+      422,
+      448,
+      452,
+      455,
+      473,
+      474,
+      489,
+      498
+    ],
+    "src/inkbox/world/settlementState.js": [
+      50,
+      54,
+      56
+    ],
+    "src/inkbox/world/transitGeography.js": [
+      1,
+      56,
+      57
+    ],
+    "src/inkbox/world/wanlingInfluence.js": [
+      10,
+      13,
+      14,
+      18,
+      74
+    ],
+    "src/inkbox/world/wanlingRelations.js": [
+      1,
+      7
+    ],
+    "src/inkbox/world/wanlingState.js": [
+      28,
+      29,
+      31
+    ],
+    "src/inkbox/world/worldgenUpper.js": [
+      74,
+      76,
+      559,
+      568,
+      723,
+      791,
+      911
+    ]
+  }
+}
