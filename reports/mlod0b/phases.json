@@ -1,0 +1,324 @@
+{
+  "baseline": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "cases": [
+    {
+      "age": 100,
+      "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+      "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+      "startDay": 36000,
+      "endDay": 36003,
+      "phases": [
+        {
+          "day": 36000,
+          "phase": "restored",
+          "detail": null,
+          "entityCount": 540,
+          "factions": []
+        },
+        {
+          "day": 36003,
+          "phase": "after-pending-spawns",
+          "detail": null,
+          "entityCount": 540,
+          "factions": []
+        },
+        {
+          "day": 36003,
+          "phase": "after-death-cleanup",
+          "detail": null,
+          "entityCount": 540,
+          "factions": []
+        },
+        {
+          "day": 36003,
+          "phase": "after-first-village-sync",
+          "detail": null,
+          "entityCount": 540,
+          "factions": []
+        },
+        {
+          "day": 36003,
+          "phase": "after-villages",
+          "detail": null,
+          "entityCount": 540,
+          "factions": []
+        },
+        {
+          "day": 36003,
+          "phase": "after-sect-census",
+          "detail": null,
+          "entityCount": 540,
+          "factions": []
+        },
+        {
+          "day": 36003,
+          "phase": "after-sects",
+          "detail": null,
+          "entityCount": 540,
+          "factions": []
+        },
+        {
+          "day": 36003,
+          "phase": "complete-step",
+          "detail": null,
+          "entityCount": 540,
+          "factions": []
+        }
+      ],
+      "worldAndRuntimeSha256": "59c8523ff1273574814f812f2a53eb75ba4c7f9b91c2d843e1f6572d6e3cdb13",
+      "equalToUnobserved": true
+    },
+    {
+      "age": 400,
+      "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+      "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+      "startDay": 144000,
+      "endDay": 144003,
+      "phases": [
+        {
+          "day": 144000,
+          "phase": "restored",
+          "detail": null,
+          "entityCount": 1399,
+          "factions": [
+            {
+              "id": 2,
+              "stored": {
+                "followers": 599,
+                "pop": 72
+              },
+              "derived": {
+                "followers": 574,
+                "pop": 69
+              }
+            },
+            {
+              "id": 42,
+              "stored": {
+                "followers": 0,
+                "pop": 0
+              },
+              "derived": {
+                "followers": 25,
+                "pop": 3
+              }
+            }
+          ]
+        },
+        {
+          "day": 144003,
+          "phase": "after-pending-spawns",
+          "detail": null,
+          "entityCount": 1399,
+          "factions": [
+            {
+              "id": 2,
+              "stored": {
+                "followers": 599,
+                "pop": 72
+              },
+              "derived": {
+                "followers": 574,
+                "pop": 69
+              }
+            },
+            {
+              "id": 42,
+              "stored": {
+                "followers": 0,
+                "pop": 0
+              },
+              "derived": {
+                "followers": 25,
+                "pop": 3
+              }
+            }
+          ]
+        },
+        {
+          "day": 144003,
+          "phase": "after-death-cleanup",
+          "detail": null,
+          "entityCount": 1398,
+          "factions": [
+            {
+              "id": 2,
+              "stored": {
+                "followers": 599,
+                "pop": 72
+              },
+              "derived": {
+                "followers": 574,
+                "pop": 69
+              }
+            },
+            {
+              "id": 42,
+              "stored": {
+                "followers": 0,
+                "pop": 0
+              },
+              "derived": {
+                "followers": 25,
+                "pop": 3
+              }
+            }
+          ]
+        },
+        {
+          "day": 144003,
+          "phase": "after-first-village-sync",
+          "detail": null,
+          "entityCount": 1398,
+          "factions": [
+            {
+              "id": 2,
+              "stored": {
+                "followers": 599,
+                "pop": 72
+              },
+              "derived": {
+                "followers": 574,
+                "pop": 69
+              }
+            },
+            {
+              "id": 42,
+              "stored": {
+                "followers": 0,
+                "pop": 0
+              },
+              "derived": {
+                "followers": 25,
+                "pop": 3
+              }
+            }
+          ]
+        },
+        {
+          "day": 144003,
+          "phase": "after-villages",
+          "detail": null,
+          "entityCount": 1398,
+          "factions": [
+            {
+              "id": 2,
+              "stored": {
+                "followers": 599,
+                "pop": 72
+              },
+              "derived": {
+                "followers": 574,
+                "pop": 69
+              }
+            },
+            {
+              "id": 42,
+              "stored": {
+                "followers": 0,
+                "pop": 0
+              },
+              "derived": {
+                "followers": 25,
+                "pop": 3
+              }
+            }
+          ]
+        },
+        {
+          "day": 144003,
+          "phase": "after-sect-census",
+          "detail": null,
+          "entityCount": 1398,
+          "factions": [
+            {
+              "id": 2,
+              "stored": {
+                "followers": 574,
+                "pop": 69
+              },
+              "derived": {
+                "followers": 574,
+                "pop": 69
+              }
+            },
+            {
+              "id": 42,
+              "stored": {
+                "followers": 25,
+                "pop": 3
+              },
+              "derived": {
+                "followers": 25,
+                "pop": 3
+              }
+            }
+          ]
+        },
+        {
+          "day": 144003,
+          "phase": "after-sects",
+          "detail": null,
+          "entityCount": 1398,
+          "factions": [
+            {
+              "id": 2,
+              "stored": {
+                "followers": 574,
+                "pop": 69
+              },
+              "derived": {
+                "followers": 574,
+                "pop": 69
+              }
+            },
+            {
+              "id": 42,
+              "stored": {
+                "followers": 25,
+                "pop": 3
+              },
+              "derived": {
+                "followers": 25,
+                "pop": 3
+              }
+            }
+          ]
+        },
+        {
+          "day": 144003,
+          "phase": "complete-step",
+          "detail": null,
+          "entityCount": 1398,
+          "factions": [
+            {
+              "id": 2,
+              "stored": {
+                "followers": 574,
+                "pop": 69
+              },
+              "derived": {
+                "followers": 574,
+                "pop": 69
+              }
+            },
+            {
+              "id": 42,
+              "stored": {
+                "followers": 25,
+                "pop": 3
+              },
+              "derived": {
+                "followers": 25,
+                "pop": 3
+              }
+            }
+          ]
+        }
+      ],
+      "worldAndRuntimeSha256": "54be5315d3610eec2a58c0358e6d1c1044dd8e0a14b6a2982a3ed7f611064bd6",
+      "equalToUnobserved": true
+    }
+  ],
+  "pass": true
+}

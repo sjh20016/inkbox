@@ -1,0 +1,82 @@
+{
+  "source": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "cases": [
+    {
+      "age": 100,
+      "input": {
+        "file": "D:\\worldxxxxx\\坐天观井第二纪元\\交付\\WX_E_NEXT_20261114-001700\\payload\\inputs\\20260914-100y-save.json",
+        "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+        "bytes": 2826671
+      },
+      "day": 36000,
+      "entities": 540,
+      "byClass": {
+        "mortal": 467,
+        "practicing": 38,
+        "other": 35
+      },
+      "villages": 21,
+      "sects": 3,
+      "unassigned": {
+        "village": 35,
+        "sect": 74,
+        "invalidVillage": 0,
+        "invalidSect": 0
+      },
+      "sectCacheDifferences": [],
+      "societyOraclePass": true,
+      "staleCacheSuppressedAtLoad": true
+    },
+    {
+      "age": 400,
+      "input": {
+        "file": "D:\\worldxxxxx\\坐天观井第二纪元\\交付\\WX_E_NEXT_20261114-001700\\payload\\inputs\\20260914-400y-save.json",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "bytes": 10073655
+      },
+      "day": 144000,
+      "entities": 1399,
+      "byClass": {
+        "mortal": 1223,
+        "practicing": 138,
+        "other": 38
+      },
+      "villages": 44,
+      "sects": 8,
+      "unassigned": {
+        "village": 38,
+        "sect": 38,
+        "invalidVillage": 0,
+        "invalidSect": 0
+      },
+      "sectCacheDifferences": [
+        {
+          "id": 2,
+          "name": "太白剑宗",
+          "cache": {
+            "followers": 599,
+            "pop": 72
+          },
+          "derived": {
+            "followers": 574,
+            "pop": 69
+          }
+        },
+        {
+          "id": 42,
+          "name": "扶桑院·三",
+          "cache": {
+            "followers": 0,
+            "pop": 0
+          },
+          "derived": {
+            "followers": 25,
+            "pop": 3
+          }
+        }
+      ],
+      "societyOraclePass": true,
+      "staleCacheSuppressedAtLoad": false
+    }
+  ]
+}

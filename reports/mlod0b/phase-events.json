@@ -1,0 +1,827 @@
+{
+  "source": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+  "startDay": 36000,
+  "endDay": 36360,
+  "steps": 120,
+  "pass": true,
+  "events": [
+    {
+      "day": 36009,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 1,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1045,
+          "after": {
+            "village": 1,
+            "faction": 5,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 541
+    },
+    {
+      "day": 36012,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 336,
+          "before": {
+            "village": 2,
+            "faction": 5,
+            "hp": 100
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 540
+    },
+    {
+      "day": 36039,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 10,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1046,
+          "after": {
+            "village": 10,
+            "faction": 1,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 541
+    },
+    {
+      "day": 36042,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 666,
+          "before": {
+            "village": 0,
+            "faction": 0,
+            "hp": 80
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 540
+    },
+    {
+      "day": 36054,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 344,
+          "before": {
+            "village": 4,
+            "faction": 2,
+            "hp": 100
+          },
+          "after": null
+        },
+        {
+          "id": 396,
+          "before": {
+            "village": 4,
+            "faction": 2,
+            "hp": 103.6724
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 2,
+      "entityCount": 538
+    },
+    {
+      "day": 36057,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 10,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1047,
+          "after": {
+            "village": 10,
+            "faction": 1,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 539
+    },
+    {
+      "day": 36057,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 4,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1048,
+          "after": {
+            "village": 4,
+            "faction": 2,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 540
+    },
+    {
+      "day": 36057,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 1,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1049,
+          "after": {
+            "village": 1,
+            "faction": 5,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 541
+    },
+    {
+      "day": 36060,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 21,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1050,
+          "after": {
+            "village": 21,
+            "faction": 2,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 542
+    },
+    {
+      "day": 36060,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 10,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1051,
+          "after": {
+            "village": 10,
+            "faction": 1,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 543
+    },
+    {
+      "day": 36084,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 7,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1052,
+          "after": {
+            "village": 7,
+            "faction": 2,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 544
+    },
+    {
+      "day": 36093,
+      "phase": "after-sects",
+      "firstWriter": "after-sects",
+      "detail": null,
+      "changed": [
+        {
+          "id": 1053,
+          "after": {
+            "village": 0,
+            "faction": 0,
+            "hp": 150
+          }
+        },
+        {
+          "id": 1054,
+          "after": {
+            "village": 0,
+            "faction": 0,
+            "hp": 150
+          }
+        },
+        {
+          "id": 1055,
+          "after": {
+            "village": 0,
+            "faction": 0,
+            "hp": 150
+          }
+        },
+        {
+          "id": 1056,
+          "after": {
+            "village": 0,
+            "faction": 0,
+            "hp": 150
+          }
+        }
+      ],
+      "changedTotal": 4,
+      "entityCount": 548
+    },
+    {
+      "day": 36108,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 1,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1057,
+          "after": {
+            "village": 1,
+            "faction": 5,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 549
+    },
+    {
+      "day": 36111,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 404,
+          "before": {
+            "village": 18,
+            "faction": 5,
+            "hp": 85
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 548
+    },
+    {
+      "day": 36114,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 370,
+          "before": {
+            "village": 21,
+            "faction": 2,
+            "hp": 100
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 547
+    },
+    {
+      "day": 36147,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 625,
+          "before": {
+            "village": 1,
+            "faction": 5,
+            "hp": 100
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 546
+    },
+    {
+      "day": 36150,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 10,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1058,
+          "after": {
+            "village": 10,
+            "faction": 1,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 547
+    },
+    {
+      "day": 36168,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 10,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1059,
+          "after": {
+            "village": 10,
+            "faction": 1,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 548
+    },
+    {
+      "day": 36177,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 359,
+          "before": {
+            "village": 1,
+            "faction": 5,
+            "hp": 100
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 547
+    },
+    {
+      "day": 36192,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 1,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1060,
+          "after": {
+            "village": 1,
+            "faction": 5,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 548
+    },
+    {
+      "day": 36198,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 2,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1061,
+          "after": {
+            "village": 2,
+            "faction": 5,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 549
+    },
+    {
+      "day": 36201,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 934,
+          "before": {
+            "village": 12,
+            "faction": 2,
+            "hp": 98.94999999999996
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 548
+    },
+    {
+      "day": 36201,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 7,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1062,
+          "after": {
+            "village": 7,
+            "faction": 2,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 549
+    },
+    {
+      "day": 36201,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 3,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1063,
+          "after": {
+            "village": 3,
+            "faction": 1,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 550
+    },
+    {
+      "day": 36204,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 1,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1064,
+          "after": {
+            "village": 1,
+            "faction": 5,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 551
+    },
+    {
+      "day": 36213,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 21,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1065,
+          "after": {
+            "village": 21,
+            "faction": 2,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 552
+    },
+    {
+      "day": 36219,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 6,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1066,
+          "after": {
+            "village": 6,
+            "faction": 0,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 553
+    },
+    {
+      "day": 36222,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 990,
+          "before": {
+            "village": 12,
+            "faction": 2,
+            "hp": 99.895
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 552
+    },
+    {
+      "day": 36228,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 5,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1067,
+          "after": {
+            "village": 5,
+            "faction": 2,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 553
+    },
+    {
+      "day": 36234,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 1,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1068,
+          "after": {
+            "village": 1,
+            "faction": 5,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 554
+    },
+    {
+      "day": 36246,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 4,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1069,
+          "after": {
+            "village": 4,
+            "faction": 2,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 555
+    },
+    {
+      "day": 36273,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 356,
+          "before": {
+            "village": 1,
+            "faction": 5,
+            "hp": 100
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 554
+    },
+    {
+      "day": 36276,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 40,
+          "before": {
+            "village": 3,
+            "faction": 1,
+            "hp": 2951.2079281153988
+          },
+          "after": null
+        },
+        {
+          "id": 848,
+          "before": {
+            "village": 0,
+            "faction": 0,
+            "hp": 150
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 2,
+      "entityCount": 552
+    },
+    {
+      "day": 36276,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 1,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1070,
+          "after": {
+            "village": 1,
+            "faction": 5,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 553
+    },
+    {
+      "day": 36279,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 592,
+          "before": {
+            "village": 12,
+            "faction": 2,
+            "hp": 354.49699999999984
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 552
+    },
+    {
+      "day": 36321,
+      "phase": "after-death-cleanup",
+      "firstWriter": "after-death-cleanup",
+      "detail": null,
+      "changed": [
+        {
+          "id": 706,
+          "before": {
+            "village": 23,
+            "faction": 5,
+            "hp": 100
+          },
+          "after": null
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 551
+    },
+    {
+      "day": 36348,
+      "phase": "after-natural-birth",
+      "firstWriter": "sim/life.js:stepVillages/spawn",
+      "detail": {
+        "villageId": 2,
+        "count": 1,
+        "firstWriter": "sim/life.js:stepVillages/spawn"
+      },
+      "changed": [
+        {
+          "id": 1071,
+          "after": {
+            "village": 2,
+            "faction": 5,
+            "hp": 100
+          }
+        }
+      ],
+      "changedTotal": 1,
+      "entityCount": 552
+    }
+  ],
+  "counts": {
+    "after-natural-birth": 23,
+    "after-death-cleanup": 13,
+    "after-sects": 1
+  }
+}
