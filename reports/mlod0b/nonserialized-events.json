@@ -1,0 +1,476 @@
+{
+  "test": "MLOD-0B transient runtime event witness",
+  "node": "v24.11.1",
+  "input": "100-year supplied natural checkpoint",
+  "dt": 3,
+  "boundaries": 6,
+  "arms": [
+    "legacy/off",
+    "audit",
+    "census"
+  ],
+  "pass": true,
+  "trials": [
+    {
+      "boundary": 0,
+      "baseline": {
+        "mode": "legacy/off",
+        "day": 36000,
+        "commitSequence": 0,
+        "eventCount": 2,
+        "eventOrder": [
+          "major-death",
+          "rift-open"
+        ],
+        "eventSha256": "80cc072cb77b0252ff51de182ac2d7010a6acbddfd42f3396092721eaf264f3f",
+        "saveSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+        "frameSha256": "7f203e33209b745e2fe726b0d543ae8218cb1858946b886239c38895bdbac79c",
+        "querySha256": "81e03be5eba3922e48d2a3cc66c08f23416664782986fd0472fccb66923fcaa7",
+        "cardSha256": "3455b872c5624ba6df69e60ca6976963216c9818ac65d6af0d611a27bf49c1eb",
+        "planes": [
+          {
+            "plane": "mortal",
+            "day": 36000,
+            "entityCount": 540,
+            "entityIdsSha256": "9c185c65521b01268a066d21f1800f4e74590b12d07c2642611d162da9fc8a96"
+          },
+          {
+            "plane": "upper",
+            "absent": true
+          },
+          {
+            "plane": "nether",
+            "absent": true
+          }
+        ]
+      },
+      "parity": {
+        "audit": true,
+        "census": true
+      }
+    },
+    {
+      "boundary": 1,
+      "baseline": {
+        "mode": "legacy/off",
+        "day": 36003,
+        "commitSequence": 1,
+        "eventCount": 11,
+        "eventOrder": [
+          "major-death",
+          "rift-open",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit"
+        ],
+        "eventSha256": "c68097e78b6471ca5423713e9ea0d1ce7dc61c215a6eefab10589f6a2ec50cef",
+        "saveSha256": "59c8523ff1273574814f812f2a53eb75ba4c7f9b91c2d843e1f6572d6e3cdb13",
+        "frameSha256": "8628d260035fb1f73057c638b36e4878ea4c69563f7570b96019ef3630fa580a",
+        "querySha256": "309c7085e3776cb1d5e7498b2dfc521770cf2ffba33b55f8b235bc35ce2aab52",
+        "cardSha256": "718a00368125c8485b84343f1e4b492b40361a745dd1579d7008c812ba8c558f",
+        "planes": [
+          {
+            "plane": "mortal",
+            "day": 36003,
+            "entityCount": 540,
+            "entityIdsSha256": "9c185c65521b01268a066d21f1800f4e74590b12d07c2642611d162da9fc8a96"
+          },
+          {
+            "plane": "upper",
+            "absent": true
+          },
+          {
+            "plane": "nether",
+            "absent": true
+          }
+        ]
+      },
+      "parity": {
+        "audit": true,
+        "census": true
+      }
+    },
+    {
+      "boundary": 2,
+      "baseline": {
+        "mode": "legacy/off",
+        "day": 36006,
+        "commitSequence": 2,
+        "eventCount": 18,
+        "eventOrder": [
+          "major-death",
+          "rift-open",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit"
+        ],
+        "eventSha256": "e8c8bcefbe8aea0411b87a63037d41da887d113ba7b1870924ddac5d2b02601a",
+        "saveSha256": "1744643f7091eae526957a50eec03e3460ddcc7b016e53bac42b34d4787bff0e",
+        "frameSha256": "bf9710ddfa0268d8d08045702875f8c4598b21a0eaad818fbae94c0dba5f3979",
+        "querySha256": "f88078743256d42480ebd363a60edaa730849175611e6106ddeebe73cf98de69",
+        "cardSha256": "718a00368125c8485b84343f1e4b492b40361a745dd1579d7008c812ba8c558f",
+        "planes": [
+          {
+            "plane": "mortal",
+            "day": 36006,
+            "entityCount": 540,
+            "entityIdsSha256": "9c185c65521b01268a066d21f1800f4e74590b12d07c2642611d162da9fc8a96"
+          },
+          {
+            "plane": "upper",
+            "absent": true
+          },
+          {
+            "plane": "nether",
+            "absent": true
+          }
+        ]
+      },
+      "parity": {
+        "audit": true,
+        "census": true
+      }
+    },
+    {
+      "boundary": 3,
+      "baseline": {
+        "mode": "legacy/off",
+        "day": 36009,
+        "commitSequence": 3,
+        "eventCount": 28,
+        "eventOrder": [
+          "major-death",
+          "rift-open",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit"
+        ],
+        "eventSha256": "18d4b04a1c4264acc5b65414cbd86d93d29fff53219830f873bd09d5d8a03c4c",
+        "saveSha256": "26d7ad13f0c7b1872b9f49af3d2a8ef0516b486caec3a55ddb6dd010976ce197",
+        "frameSha256": "d768f861916ef88818ebc3283f969058500493430c8d0d2a26eee418f7352834",
+        "querySha256": "f96a65aca1cecd07a33b98ec884717850b8e4a58a49cdfb6abc37310879c5753",
+        "cardSha256": "7c60682072bd01ecde965c6a84089b1542da908fdfdf79071b7c67560839765f",
+        "planes": [
+          {
+            "plane": "mortal",
+            "day": 36009,
+            "entityCount": 541,
+            "entityIdsSha256": "4e971e6c6c82dfd9d55df10e77134120e73737e1ff95ffc4367b8dd2e1154656"
+          },
+          {
+            "plane": "upper",
+            "absent": true
+          },
+          {
+            "plane": "nether",
+            "absent": true
+          }
+        ]
+      },
+      "parity": {
+        "audit": true,
+        "census": true
+      }
+    },
+    {
+      "boundary": 4,
+      "baseline": {
+        "mode": "legacy/off",
+        "day": 36012,
+        "commitSequence": 4,
+        "eventCount": 38,
+        "eventOrder": [
+          "major-death",
+          "rift-open",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit"
+        ],
+        "eventSha256": "712813aaa047eb7e3d4855b27f196e32a739033d9a9f2225ded4241e71a4f0d7",
+        "saveSha256": "373ea80b4db745f1f1b1ff7a521f581251ea8b81a322e4fc67ac9ab7b205f46e",
+        "frameSha256": "bd2bcba2557786fa8c86fd40304d6514a81a84b61137fa4495c7f25e63a712d7",
+        "querySha256": "81e1f6db42991910fcf0601d44ea78b7891e03828f1d8d2c6a16e7faa6ec2f48",
+        "cardSha256": "cd629590b172274fe6df3aaaeace6bee90ab10af4e9e8250e440bf8c040d9418",
+        "planes": [
+          {
+            "plane": "mortal",
+            "day": 36012,
+            "entityCount": 540,
+            "entityIdsSha256": "cfc01b060d5cb685258dd1b58d3924acbe5fb81387fe9ef180fdec62b6783606"
+          },
+          {
+            "plane": "upper",
+            "absent": true
+          },
+          {
+            "plane": "nether",
+            "absent": true
+          }
+        ]
+      },
+      "parity": {
+        "audit": true,
+        "census": true
+      }
+    },
+    {
+      "boundary": 5,
+      "baseline": {
+        "mode": "legacy/off",
+        "day": 36015,
+        "commitSequence": 5,
+        "eventCount": 49,
+        "eventOrder": [
+          "major-death",
+          "rift-open",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit"
+        ],
+        "eventSha256": "b38d52667e1de74da4f0da3c7ebe06dc410e64d3ec91b9012b5e942fab4ed3ed",
+        "saveSha256": "099bd127b151011b098bb0e8d435da748372913083ab184254805f7c16171a6e",
+        "frameSha256": "8c3bba4818b18ce29350fd84906b2a7311c6b0744405c65b76ced7e0cf4aa5bb",
+        "querySha256": "8b11055f1a43574563f285c02094126d3ed7088a955cafbcc10bc85c2b55b50e",
+        "cardSha256": "6101c460fa43ed24eb4e31b47f4816b16129782e7971ff1b628d8c54da4e047e",
+        "planes": [
+          {
+            "plane": "mortal",
+            "day": 36015,
+            "entityCount": 540,
+            "entityIdsSha256": "cfc01b060d5cb685258dd1b58d3924acbe5fb81387fe9ef180fdec62b6783606"
+          },
+          {
+            "plane": "upper",
+            "absent": true
+          },
+          {
+            "plane": "nether",
+            "absent": true
+          }
+        ]
+      },
+      "parity": {
+        "audit": true,
+        "census": true
+      }
+    },
+    {
+      "boundary": 6,
+      "baseline": {
+        "mode": "legacy/off",
+        "day": 36018,
+        "commitSequence": 6,
+        "eventCount": 60,
+        "eventOrder": [
+          "major-death",
+          "rift-open",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit",
+          "combat-hit"
+        ],
+        "eventSha256": "0c1539b01f0fbfb184c5f60da73b18dae9bf033affba429d5c05575c64f6d3a0",
+        "saveSha256": "e255114dac02bc79340ac8c80cedffe56b8232d7b7609b8f3e2c23dad102eb17",
+        "frameSha256": "849fc85ff7af12a68898c8470bf466bef9def48bd0e854a9f240965961657723",
+        "querySha256": "9209e9a9cfef07a782e2a41b737e665073f47291ed13c45f8b99cb3d2a6e5d07",
+        "cardSha256": "9406bf60365fbd1f65a0a67ef8c21915d042058d8955cbf71e0ff47a642a5841",
+        "planes": [
+          {
+            "plane": "mortal",
+            "day": 36018,
+            "entityCount": 540,
+            "entityIdsSha256": "cfc01b060d5cb685258dd1b58d3924acbe5fb81387fe9ef180fdec62b6783606"
+          },
+          {
+            "plane": "upper",
+            "absent": true
+          },
+          {
+            "plane": "nether",
+            "absent": true
+          }
+        ]
+      },
+      "parity": {
+        "audit": true,
+        "census": true
+      }
+    }
+  ],
+  "inputSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+  "sampleCount": 206,
+  "nonEmptyEventBoundaries": 7
+}
