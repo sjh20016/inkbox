@@ -11,6 +11,10 @@ export function setPopulationUiReadMode(world, mode) {
   if (!world || typeof world !== 'object') throw new TypeError('World required');
   assertCommittedLegacyReadAllowed(world);
   const session = committedEntry(world)?.session;
+  const entry = committedEntry(world);
+  if (session && (session.root !== world || entry.plane !== 'mortal')) {
+    throw new Error('Population UI mode is available only on the managed mortal World');
+  }
   if (mode === 'legacy') {
     uiModes.delete(world);
     if (session) session.populationCards = null;

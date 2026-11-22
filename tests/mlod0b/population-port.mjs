@@ -26,6 +26,7 @@ for (const age of [100, 400]) {
     resident.village = prior;
   }
   manageCommittedWorlds(world);
+  if (world.upper) assert.throws(() => setPopulationUiReadMode(world.upper, 'census'));
   const legacyCard = getSettlementInspection(world, 'mortal', village.id);
   for (const mode of ['audit', 'census']) {
     setPopulationUiReadMode(world, mode);
@@ -45,5 +46,6 @@ for (const age of [100, 400]) {
   assert.throws(() => setPopulationUiReadMode(world, 'legacy'));
   disposeCommittedWorlds(world);
   assert.throws(() => setPopulationUiReadMode(world, 'audit'));
+  assert.throws(() => getSettlementInspection(world, 'mortal', village.id));
   console.log(`${age}y population port passed`);
 }

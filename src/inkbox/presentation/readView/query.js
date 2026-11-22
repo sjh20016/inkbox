@@ -35,8 +35,11 @@ export function capturePopulationCards(world, generation, sequence) {
 }
 
 export function getSettlementInspection(world, plane, id, isRuin = false) {
-  const session = committedEntry(world)?.session;
+  const entry = committedEntry(world);
+  const session = entry?.session;
   if (!isRuin && plane === 'mortal' && populationUiReadMode(world) !== 'legacy' && session) {
+    if (session.disposed) throw new Error('Population cards unavailable for a disposed World');
+    if (session.root !== world || entry.plane !== 'mortal') return null;
     const snapshot = session.populationCards;
     const cards = populationUiReadMode(world) === 'census' ? snapshot?.census || snapshot?.legacy : snapshot?.legacy;
     return cards?.get(id) ?? null;
