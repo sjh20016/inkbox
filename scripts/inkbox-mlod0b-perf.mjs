@@ -106,9 +106,12 @@ function trial(saved, arm, runner = api) {
 
 if (process.argv.includes('--extended')) {
   const existing = JSON.parse(fs.readFileSync(out));
-  const baselineRoot = path.resolve(root, '../inkbox-mlod0');
+  const baselineArg = process.argv.find(arg => arg.startsWith('--baseline-root='));
+  const baselineRoot = path.resolve(root, baselineArg?.slice('--baseline-root='.length) ?? '../inkbox-mlod0');
   const { execFileSync } = await import('node:child_process');
   const baselineSource = execFileSync('git', ['-C', baselineRoot, 'rev-parse', '3772bea^{tree}'], { encoding: 'utf8' }).trim();
+  // A reachable #74 object by itself does not identify the files Node will load.
+  execFileSync('git', ['-C', baselineRoot, 'diff', '--quiet', '3772bea', '--', 'src', 'package.json']);
   const baseline = await nativeApi(baselineRoot);
   const pairs = [
     ['pinned-74', 'default-off'],
