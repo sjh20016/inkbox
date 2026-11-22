@@ -1,0 +1,38 @@
+{
+  "baseline": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "cases": [
+    {
+      "name": "real-Life-maybeSplitVillage",
+      "status": "passed",
+      "result": {
+        "day": 36000,
+        "parentVillage": 1,
+        "childVillage": 24,
+        "movedIds": [
+          591,
+          598,
+          612,
+          754
+        ],
+        "movedCount": 4,
+        "sourcePopulationBefore": 46,
+        "sourcePopulationAfter": 42,
+        "childPopulation": 4,
+        "writer": "Life.maybeSplitVillage -> foundVillage -> resident village/faction writes -> syncVillagePops"
+      }
+    },
+    {
+      "name": "real-arriveUpper-transfer-projection",
+      "status": "passed",
+      "result": {
+        "sourceId": 40,
+        "upperId": 1000012,
+        "mortalAliveUntilCallerCleanup": true,
+        "upperFaction": 0,
+        "upperVillage": 0,
+        "channel": "thunder",
+        "caller": "cultivation.ascend"
+      }
+    }
+  ]
+}

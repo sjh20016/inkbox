@@ -2,6 +2,10 @@ param([long]$RunId = 45027304889)
 $ErrorActionPreference = 'Stop'
 $repository = 'sjh20016/inkbox'
 $prefix = "https://api.github.com/repos/$repository/actions"
+$run = Invoke-RestMethod "$prefix/runs/$RunId"
+if ($run.head_sha -ne '24f42c2d99a746154a731a392949dc428f0d3e50' -or $run.path -ne '.github/workflows/mlod0b-proof.yml') {
+    throw 'Run does not match the frozen proof workflow and source revision.'
+}
 $manifest = Invoke-RestMethod "$prefix/runs/$RunId/artifacts"
 $dest = Join-Path $PSScriptRoot '../reports/mlod0b/proof'
 [void](New-Item -ItemType Directory -Force -Path $dest)
