@@ -1,0 +1,148 @@
+{
+  "startMs": 7927.599999904633,
+  "stopMs": 10268.699999928474,
+  "elapsedMs": 2341.100000023842,
+  "startDay": 144002.32679999998,
+  "endDay": 144008.688,
+  "frames": [
+    {
+      "rafTimestampMs": 7928,
+      "enterMs": 7930.899999976158,
+      "endMs": 8063,
+      "startDay": 144002.32679999998,
+      "endDay": 144002.92799999999,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8067.1,
+      "enterMs": 8067.299999952316,
+      "endMs": 8263.199999928474,
+      "startDay": 144002.92799999999,
+      "endDay": 144003.648,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8262,
+      "enterMs": 8265.5,
+      "endMs": 8577.199999928474,
+      "startDay": 144003.648,
+      "endDay": 144004.368,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8573.7,
+      "enterMs": 8578.399999976158,
+      "endMs": 8943.799999952316,
+      "startDay": 144004.368,
+      "endDay": 144005.088,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8940.9,
+      "enterMs": 8954.199999928474,
+      "endMs": 9225.099999904633,
+      "startDay": 144005.088,
+      "endDay": 144005.808,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9224.8,
+      "enterMs": 9235.399999976158,
+      "endMs": 9502.399999976158,
+      "startDay": 144005.808,
+      "endDay": 144006.528,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9503.1,
+      "enterMs": 9505.5,
+      "endMs": 9806.899999976158,
+      "startDay": 144006.528,
+      "endDay": 144007.248,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9803.7,
+      "enterMs": 9808.199999928474,
+      "endMs": 10055.399999976158,
+      "startDay": 144007.248,
+      "endDay": 144007.968,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10054.2,
+      "enterMs": 10082,
+      "endMs": 10267,
+      "startDay": 144007.968,
+      "endDay": 144008.688,
+      "territoryRebuilt": false
+    }
+  ],
+  "longTasks": [
+    {
+      "startMs": 7930.5,
+      "durationMs": 133,
+      "name": "self"
+    },
+    {
+      "startMs": 8067.199999928474,
+      "durationMs": 197,
+      "name": "self"
+    },
+    {
+      "startMs": 8265.199999928474,
+      "durationMs": 312,
+      "name": "self"
+    },
+    {
+      "startMs": 8578.299999952316,
+      "durationMs": 366,
+      "name": "self"
+    },
+    {
+      "startMs": 8951,
+      "durationMs": 278,
+      "name": "self"
+    },
+    {
+      "startMs": 9234.699999928474,
+      "durationMs": 269,
+      "name": "self"
+    },
+    {
+      "startMs": 9505.5,
+      "durationMs": 302,
+      "name": "self"
+    },
+    {
+      "startMs": 9808.099999904633,
+      "durationMs": 251,
+      "name": "self"
+    },
+    {
+      "startMs": 10081.5,
+      "durationMs": 186,
+      "name": "self"
+    }
+  ],
+  "breakdown": {
+    "schemaVersion": 1,
+    "enabled": false,
+    "capacity": 500000,
+    "dropped": 0,
+    "activeSpans": 0,
+    "timeOrigin": 1795334338087.4,
+    "clock": "performance.now wall milliseconds; not CPU or GPU time",
+    "definition": "inclusive includes child spans; exclusive subtracts only instrumented direct children; never add nested inclusive durations",
+    "samples": []
+  },
+  "entityCount": 1399,
+  "childDays": {
+    "upper": 144008.688,
+    "nether": 144008.688
+  },
+  "speedIndex": 2,
+  "riftOpen": false,
+  "queuedSimulationDays": 0,
+  "queueNote": "Synchronous product has no pending step; wall target deficit from capped variable dt is reported separately"
+}

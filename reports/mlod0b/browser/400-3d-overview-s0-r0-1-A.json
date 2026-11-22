@@ -1,0 +1,1118 @@
+{
+  "startMs": 8489.700000047684,
+  "stopMs": 10500.399999976158,
+  "elapsedMs": 2010.6999999284744,
+  "startDay": 144000.8538,
+  "endDay": 144000.8538,
+  "frames": [
+    {
+      "rafTimestampMs": 8486,
+      "enterMs": 8490.399999976158,
+      "endMs": 8495.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8497.1,
+      "enterMs": 8497.899999976158,
+      "endMs": 8502.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8508.2,
+      "enterMs": 8510.200000047684,
+      "endMs": 8513.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8519.4,
+      "enterMs": 8523.200000047684,
+      "endMs": 8527.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8536,
+      "enterMs": 8537,
+      "endMs": 8546.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8547.2,
+      "enterMs": 8549.799999952316,
+      "endMs": 8554.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8563.8,
+      "enterMs": 8564.299999952316,
+      "endMs": 8567.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8575,
+      "enterMs": 8577.200000047684,
+      "endMs": 8580.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8586.1,
+      "enterMs": 8589.700000047684,
+      "endMs": 8593.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8602.8,
+      "enterMs": 8603,
+      "endMs": 8606.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8614,
+      "enterMs": 8614.899999976158,
+      "endMs": 8620.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8625.2,
+      "enterMs": 8628.799999952316,
+      "endMs": 8634.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8641.7,
+      "enterMs": 8642.299999952316,
+      "endMs": 8646.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8653,
+      "enterMs": 8655.399999976158,
+      "endMs": 8658.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8664.1,
+      "enterMs": 8667.600000023842,
+      "endMs": 8670.899999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8680.8,
+      "enterMs": 8681,
+      "endMs": 8687.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8691.9,
+      "enterMs": 8692.799999952316,
+      "endMs": 8696.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8703.1,
+      "enterMs": 8704.399999976158,
+      "endMs": 8708.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8714.2,
+      "enterMs": 8716.399999976158,
+      "endMs": 8720.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8725.3,
+      "enterMs": 8728.399999976158,
+      "endMs": 8733.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8742,
+      "enterMs": 8742.100000023842,
+      "endMs": 8746.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8753.1,
+      "enterMs": 8756.100000023842,
+      "endMs": 8760.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8769.9,
+      "enterMs": 8770.100000023842,
+      "endMs": 8773.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8781.1,
+      "enterMs": 8781.600000023842,
+      "endMs": 8784.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8792.1,
+      "enterMs": 8795.299999952316,
+      "endMs": 8802.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8808.7,
+      "enterMs": 8809,
+      "endMs": 8811.899999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8819.9,
+      "enterMs": 8821.5,
+      "endMs": 8826.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8836.6,
+      "enterMs": 8836.799999952316,
+      "endMs": 8839.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8847.8,
+      "enterMs": 8849.200000047684,
+      "endMs": 8856.100000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8864.5,
+      "enterMs": 8864.600000023842,
+      "endMs": 8868.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8875.5,
+      "enterMs": 8878.700000047684,
+      "endMs": 8883.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8892.3,
+      "enterMs": 8893.200000047684,
+      "endMs": 8899.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8909,
+      "enterMs": 8909.299999952316,
+      "endMs": 8913.899999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8920.2,
+      "enterMs": 8923.399999976158,
+      "endMs": 8928,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8942.4,
+      "enterMs": 8944.700000047684,
+      "endMs": 8951.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8970.2,
+      "enterMs": 8970.799999952316,
+      "endMs": 8979.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 8986.8,
+      "enterMs": 8990.399999976158,
+      "endMs": 8997.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9009.2,
+      "enterMs": 9009.600000023842,
+      "endMs": 9013.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9025.9,
+      "enterMs": 9026.100000023842,
+      "endMs": 9030.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9037,
+      "enterMs": 9038.5,
+      "endMs": 9043.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9053.6,
+      "enterMs": 9053.899999976158,
+      "endMs": 9066.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9064.8,
+      "enterMs": 9068.5,
+      "endMs": 9070.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9075.9,
+      "enterMs": 9078.299999952316,
+      "endMs": 9081.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9092.7,
+      "enterMs": 9093.700000047684,
+      "endMs": 9097.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9103.8,
+      "enterMs": 9107.100000023842,
+      "endMs": 9112.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9120.5,
+      "enterMs": 9121.399999976158,
+      "endMs": 9126.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9131.6,
+      "enterMs": 9134.700000047684,
+      "endMs": 9138.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9148.3,
+      "enterMs": 9148.799999952316,
+      "endMs": 9152.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9159.4,
+      "enterMs": 9162.600000023842,
+      "endMs": 9166.100000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9176.1,
+      "enterMs": 9176.399999976158,
+      "endMs": 9180.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9187.3,
+      "enterMs": 9188,
+      "endMs": 9191.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9198.5,
+      "enterMs": 9202.100000023842,
+      "endMs": 9205.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9215.1,
+      "enterMs": 9216.700000047684,
+      "endMs": 9221.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9231.9,
+      "enterMs": 9232,
+      "endMs": 9236.100000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9242.9,
+      "enterMs": 9245.600000023842,
+      "endMs": 9251.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9259.6,
+      "enterMs": 9260.100000023842,
+      "endMs": 9263.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9270.8,
+      "enterMs": 9273.299999952316,
+      "endMs": 9276.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9287.5,
+      "enterMs": 9288.200000047684,
+      "endMs": 9291.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9298.6,
+      "enterMs": 9302.200000047684,
+      "endMs": 9306,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9315.3,
+      "enterMs": 9315.600000023842,
+      "endMs": 9330.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9332,
+      "enterMs": 9332.700000047684,
+      "endMs": 9337,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9343.2,
+      "enterMs": 9347.299999952316,
+      "endMs": 9351.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9359.8,
+      "enterMs": 9361.799999952316,
+      "endMs": 9370.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9376.5,
+      "enterMs": 9377.700000047684,
+      "endMs": 9382.100000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9387.6,
+      "enterMs": 9390,
+      "endMs": 9394.899999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9404.3,
+      "enterMs": 9407.600000023842,
+      "endMs": 9412.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9421,
+      "enterMs": 9421.799999952316,
+      "endMs": 9425.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9437.7,
+      "enterMs": 9438.799999952316,
+      "endMs": 9444,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9460,
+      "enterMs": 9461.100000023842,
+      "endMs": 9466.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9476.7,
+      "enterMs": 9477,
+      "endMs": 9481,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9487.8,
+      "enterMs": 9489.5,
+      "endMs": 9493.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9499,
+      "enterMs": 9502.600000023842,
+      "endMs": 9507.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9515.7,
+      "enterMs": 9517.5,
+      "endMs": 9522,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9538,
+      "enterMs": 9538.100000023842,
+      "endMs": 9542,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9554.7,
+      "enterMs": 9555.299999952316,
+      "endMs": 9559,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9565.8,
+      "enterMs": 9568.600000023842,
+      "endMs": 9577.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9588.1,
+      "enterMs": 9589.299999952316,
+      "endMs": 9592.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9610.3,
+      "enterMs": 9610.600000023842,
+      "endMs": 9615.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9627,
+      "enterMs": 9627.100000023842,
+      "endMs": 9629.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9638.1,
+      "enterMs": 9639,
+      "endMs": 9642.899999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9654.8,
+      "enterMs": 9656.399999976158,
+      "endMs": 9661.899999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9671.5,
+      "enterMs": 9671.600000023842,
+      "endMs": 9675.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9682.7,
+      "enterMs": 9683.100000023842,
+      "endMs": 9687.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9699.4,
+      "enterMs": 9699.700000047684,
+      "endMs": 9702.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9710.5,
+      "enterMs": 9712.299999952316,
+      "endMs": 9717.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9727.2,
+      "enterMs": 9727.299999952316,
+      "endMs": 9731,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9743.9,
+      "enterMs": 9744,
+      "endMs": 9748.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9755,
+      "enterMs": 9757.700000047684,
+      "endMs": 9765.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9771.7,
+      "enterMs": 9772.100000023842,
+      "endMs": 9775.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9782.9,
+      "enterMs": 9784.100000023842,
+      "endMs": 9787.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9799.5,
+      "enterMs": 9799.700000047684,
+      "endMs": 9803.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9810.6,
+      "enterMs": 9812.5,
+      "endMs": 9815.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9827.4,
+      "enterMs": 9832.200000047684,
+      "endMs": 9842.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9838.5,
+      "enterMs": 9843.899999976158,
+      "endMs": 9846.899999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9849.7,
+      "enterMs": 9852.799999952316,
+      "endMs": 9855.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9866.4,
+      "enterMs": 9867.299999952316,
+      "endMs": 9870.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9877.5,
+      "enterMs": 9881.399999976158,
+      "endMs": 9885,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9894.2,
+      "enterMs": 9896.799999952316,
+      "endMs": 9902.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9910.9,
+      "enterMs": 9912.299999952316,
+      "endMs": 9914.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9922,
+      "enterMs": 9925.899999976158,
+      "endMs": 9929.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9938.8,
+      "enterMs": 9940,
+      "endMs": 9944.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9955.5,
+      "enterMs": 9957.600000023842,
+      "endMs": 9963.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9977.7,
+      "enterMs": 9979.600000023842,
+      "endMs": 9984.100000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 9994.3,
+      "enterMs": 9994.5,
+      "endMs": 9999.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10005.6,
+      "enterMs": 10008.200000047684,
+      "endMs": 10014.100000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10022.2,
+      "enterMs": 10022.5,
+      "endMs": 10026,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10033.4,
+      "enterMs": 10035.200000047684,
+      "endMs": 10039.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10050.1,
+      "enterMs": 10053.200000047684,
+      "endMs": 10058.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10072.3,
+      "enterMs": 10073.399999976158,
+      "endMs": 10078.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10089,
+      "enterMs": 10089.899999976158,
+      "endMs": 10099.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10105.6,
+      "enterMs": 10106.700000047684,
+      "endMs": 10109.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10122.4,
+      "enterMs": 10122.700000047684,
+      "endMs": 10128.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10139.2,
+      "enterMs": 10139.700000047684,
+      "endMs": 10144,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10150.2,
+      "enterMs": 10153,
+      "endMs": 10158.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10166.9,
+      "enterMs": 10167.700000047684,
+      "endMs": 10170.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10178.1,
+      "enterMs": 10181.299999952316,
+      "endMs": 10184.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10194.7,
+      "enterMs": 10197.200000047684,
+      "endMs": 10203,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10217.1,
+      "enterMs": 10217.299999952316,
+      "endMs": 10221.799999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10228.1,
+      "enterMs": 10229.100000023842,
+      "endMs": 10233.100000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10239.3,
+      "enterMs": 10242.799999952316,
+      "endMs": 10245.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10256,
+      "enterMs": 10257,
+      "endMs": 10263.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10272.7,
+      "enterMs": 10272.799999952316,
+      "endMs": 10276.100000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10283.8,
+      "enterMs": 10286.5,
+      "endMs": 10289.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10300.5,
+      "enterMs": 10302.299999952316,
+      "endMs": 10305.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10317.2,
+      "enterMs": 10317.399999976158,
+      "endMs": 10321.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10328.3,
+      "enterMs": 10332,
+      "endMs": 10336.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10345.1,
+      "enterMs": 10348.100000023842,
+      "endMs": 10360.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10361.7,
+      "enterMs": 10362.299999952316,
+      "endMs": 10365.399999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10378.4,
+      "enterMs": 10378.600000023842,
+      "endMs": 10382.600000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10389.6,
+      "enterMs": 10393.399999976158,
+      "endMs": 10398.299999952316,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10406.3,
+      "enterMs": 10407.799999952316,
+      "endMs": 10411.5,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10423,
+      "enterMs": 10423.200000047684,
+      "endMs": 10427.899999976158,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10434.1,
+      "enterMs": 10437.399999976158,
+      "endMs": 10442.200000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10450.8,
+      "enterMs": 10453,
+      "endMs": 10458.100000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10478.6,
+      "enterMs": 10478.799999952316,
+      "endMs": 10483.100000023842,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 10495.3,
+      "enterMs": 10495.5,
+      "endMs": 10499.700000047684,
+      "startDay": 144000.8538,
+      "endDay": 144000.8538,
+      "territoryRebuilt": false
+    }
+  ],
+  "longTasks": [],
+  "breakdown": {
+    "schemaVersion": 1,
+    "enabled": false,
+    "capacity": 500000,
+    "dropped": 0,
+    "activeSpans": 0,
+    "timeOrigin": 1795334307333.1,
+    "clock": "performance.now wall milliseconds; not CPU or GPU time",
+    "definition": "inclusive includes child spans; exclusive subtracts only instrumented direct children; never add nested inclusive durations",
+    "samples": []
+  },
+  "entityCount": 1398,
+  "childDays": {
+    "upper": 144000.8538,
+    "nether": 144000.8538
+  },
+  "speedIndex": 0,
+  "riftOpen": false,
+  "queuedSimulationDays": 0,
+  "queueNote": "Synchronous product has no pending step; wall target deficit from capped variable dt is reported separately"
+}

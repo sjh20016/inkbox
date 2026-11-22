@@ -1,0 +1,122 @@
+{
+  "startMs": 5506.299999952316,
+  "stopMs": 7856.899999976158,
+  "elapsedMs": 2350.600000023842,
+  "startDay": 144002.46,
+  "endDay": 144007.047,
+  "frames": [
+    {
+      "rafTimestampMs": 5506.7,
+      "enterMs": 5512.5,
+      "endMs": 5745.199999928474,
+      "startDay": 144002.46,
+      "endDay": 144002.72699999998,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 5751.7,
+      "enterMs": 5753.899999976158,
+      "endMs": 6074.100000023842,
+      "startDay": 144002.72699999998,
+      "endDay": 144003.447,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 6085.6,
+      "enterMs": 6089.699999928474,
+      "endMs": 6422.600000023842,
+      "startDay": 144003.447,
+      "endDay": 144004.167,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 6430.7,
+      "enterMs": 6431.5,
+      "endMs": 6813.799999952316,
+      "startDay": 144004.167,
+      "endDay": 144004.887,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 6820.4,
+      "enterMs": 6821.100000023842,
+      "endMs": 7151.299999952316,
+      "startDay": 144004.887,
+      "endDay": 144005.607,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 7154.3,
+      "enterMs": 7162,
+      "endMs": 7564.299999952316,
+      "startDay": 144005.607,
+      "endDay": 144006.327,
+      "territoryRebuilt": false
+    },
+    {
+      "rafTimestampMs": 7571.7,
+      "enterMs": 7576.399999976158,
+      "endMs": 7850.100000023842,
+      "startDay": 144006.327,
+      "endDay": 144007.047,
+      "territoryRebuilt": false
+    }
+  ],
+  "longTasks": [
+    {
+      "startMs": 5511.699999928474,
+      "durationMs": 242,
+      "name": "self"
+    },
+    {
+      "startMs": 5753.799999952316,
+      "durationMs": 329,
+      "name": "self"
+    },
+    {
+      "startMs": 6087.899999976158,
+      "durationMs": 342,
+      "name": "self"
+    },
+    {
+      "startMs": 6431,
+      "durationMs": 389,
+      "name": "self"
+    },
+    {
+      "startMs": 6820.899999976158,
+      "durationMs": 338,
+      "name": "self"
+    },
+    {
+      "startMs": 7161.5,
+      "durationMs": 412,
+      "name": "self"
+    },
+    {
+      "startMs": 7576.399999976158,
+      "durationMs": 278,
+      "name": "self"
+    }
+  ],
+  "breakdown": {
+    "schemaVersion": 1,
+    "enabled": false,
+    "capacity": 500000,
+    "dropped": 0,
+    "activeSpans": 0,
+    "timeOrigin": 1795334323988.4,
+    "clock": "performance.now wall milliseconds; not CPU or GPU time",
+    "definition": "inclusive includes child spans; exclusive subtracts only instrumented direct children; never add nested inclusive durations",
+    "samples": []
+  },
+  "entityCount": 1400,
+  "childDays": {
+    "upper": 144007.047,
+    "nether": 144007.047
+  },
+  "speedIndex": 2,
+  "riftOpen": false,
+  "queuedSimulationDays": 0,
+  "queueNote": "Synchronous product has no pending step; wall target deficit from capped variable dt is reported separately"
+}
