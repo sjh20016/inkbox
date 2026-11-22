@@ -47,6 +47,9 @@ try{
   if(completedIds.has(id))continue;
   current={id,age,renderer,view,speedIndex,round,mode,status:'running',startedAt:new Date().toISOString()};report.cases.push(current);writeJson(path.join(out,'report.json'),report);
   const {page}=await loadInput(age,renderer,view);
+  if(option('population-reader','0')==='1'){
+   current.population=await page(`const {setPopulationUiReadMode}=await import('./src/inkbox/sim/demography/populationReadPort.js'),{getSettlementInspection}=await import('./src/inkbox/presentation/readView/query.js'),w=inkbox.world,v=w.villages[0];if(!v)throw Error('No village');const old=getSettlementInspection(w,'mortal',v.id);setPopulationUiReadMode(w,'audit');const audited=getSettlementInspection(w,'mortal',v.id);setPopulationUiReadMode(w,'census');const shadow=getSettlementInspection(w,'mortal',v.id);setPopulationUiReadMode(w,'legacy');if(JSON.stringify(old.rows)!==JSON.stringify(audited.rows)||JSON.stringify(old.rows)!==JSON.stringify(shadow.rows))throw Error('Population card changed');return {villageId:v.id,rows:old.rows,worldDay:w.day,otherPlanes:{upper:!!w.upper,nether:!!w.nether},cardUnchanged:true};`);
+  }
   await page(`inkbox.setSpeed(${speedIndex});return true;`);await sleep(warmupMs);await page('inkbox.setSpeed(0);return true;');await b.cdp.send('HeapProfiler.collectGarbage');current.heapBefore=await b.cdp.send('Runtime.getHeapUsage');
   // CPU sampling is a separate explicitly requested run, never mixed into ABBA.
   const cpuProfile=option('cpu-profile','0')==='1';

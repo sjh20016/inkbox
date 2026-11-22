@@ -1,6 +1,7 @@
 import { isAdult, isFertileAge, isHumanPerson, isMortalHuman, isPracticingHuman } from '../core/demographics.js';
 import { OVER } from '../world/terrain.js';
 import { isHabitableSettlementCenter, SETTLEMENT_FLOOD_DEPTH } from '../world/settlementState.js';
+import { readVillageSocieties } from './demography/populationReadPort.js';
 
 // P0 aid converts four stores of provisions to twelve village food. Keeping the
 // same units on the return journey prevents an aid/tribute food-creation loop.
@@ -19,7 +20,7 @@ function emptySociety() {
 }
 
 /** Derived counts only: entities remain the sole population authority. */
-export function villageSocieties(world) {
+export function legacyVillageSocieties(world) {
   const societies = new Map(world.villages.map((v) => [v.id, emptySociety()]));
   for (const e of world.entities) {
     const s = societies.get(e.village);
@@ -32,6 +33,10 @@ export function villageSocieties(world) {
     } else if (isPracticingHuman(e)) s.practitioners += 1;
   }
   return societies;
+}
+
+export function villageSocieties(world, mode = 'legacy') {
+  return readVillageSocieties(world, legacyVillageSocieties, mode).societies;
 }
 
 function withSupply(world, village, society) {
@@ -51,8 +56,9 @@ function withSupply(world, village, society) {
 }
 
 /** Pure UI/inspection reader; no RNG, cache writes or synthetic population. */
-export function villageSociety(world, village) {
-  return withSupply(world, village, villageSocieties(world).get(village.id) || emptySociety());
+export function villageSociety(world, village, mode = 'legacy') {
+  const societies = mode instanceof Map ? mode : villageSocieties(world, mode);
+  return withSupply(world, village, societies.get(village.id) || emptySociety());
 }
 
 function members(world, sect) {
