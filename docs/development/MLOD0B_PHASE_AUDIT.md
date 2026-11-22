@@ -19,4 +19,10 @@
 
 从 100 年精确档连续推进 360 日，`dt=3`，120 个合法提交边界逐步比较附加观察器与无观察器的完整保存状态，均相等。阶段事件日志收集到 23 次自然出生、13 次死亡清理及一次宗门归属变化。首个出生为第 36009 日、实体 1045、村 1；首个死亡清理为第 36012 日、实体 336。每项保存 firstWriter、变更实体的旧/新村宗归属与实体总数。[原始阶段事件](../../reports/mlod0b/phase-events.json)
 
-第 144000 日检查点已经包含分宗之后的真实实体归属。扶桑院·三的 25 个实体 ID 和其中 3 个修士 ID 记录于红灯夹具。这个输入无法倒放到分宗之前，因而 25 人的 firstWriter 是由 `sim/sects.js:maybeShed` 源码与缓存差额归因，未观测该次发生时的调用栈。阶段探针已在后续分宗的前后记录移动 ID，但上述 120 步未再次触发分宗。村庄分裂、跨界及正式 `publishCompleteStep` 点仍待定向夹具验证。此处 `world.generation` 不是 `CommittedViewStore` 的提交 sequence，不用它宣称可见代际。
+144000 日的 #74 档是已完成分宗后的存档状态：太白剑宗缓存与实体派生的 followers/pop 为 599/72 对 574/69，扶桑院·三缓存为 0/0、实体派生为 25/3。扶桑院·三的 25 人包含新宗首领/创始人；这份存档不能倒放，因此它只证明保存的归属及下一次宗门统计重算，不是首次写入的调用栈证据。对应原始对照见 [红灯夹具](../../reports/mlod0b/red-fixture.json)。
+
+另一个定向报告使用相同 400 年真实实体，通过公开 `stepSects(world, life, 3, rng)` 路径，受控满足触发条件并固定 RNG。观察器在正式路径里记录 `before-schism` 和 `after-schism-membership`，`firstWriter` 为 `sim/sects.js:maybeShed`。本次一共把 23 个既有门人 ID 改宗；首领不是这 23 人之一，而由 `foundSect` 单独设置为 child founder/leader，因此新宗共 24 名实体成员。报告同时记录首次步宗门缓存仍是统计后、分宗前的旧值，以及下一次 `stepSects` 后宗门实体派生统计与缓存一致。夹具把原档选出的身份集中到同一地点并受控宗门条件，属于公开写入路径的机制证明，不是自然分宗或第 144000 日历史重放。输入村庄的已有 `village.pop` 差额仍单列，不作为宗门 census 失败。[分宗原始报告](../../reports/mlod0b/schism.json)；独立复测：`node scripts/inkbox-mlod0b-schism.mjs`。可传 `--checkpoint-root="../交付/WX_E_NEXT_20261114-001700/payload/inputs"` 或 `--input-400="D:/path/20260914-400y-save.json"`，脚本会先核对固定 SHA。
+
+浏览器只读检查另在 400 年产品存档的官方 Canvas 和 Three 页面分别运行。暂停后对 realm view 依次选 `viewUpper`、`viewNether`、`inspect`，每一步均重复查询凡界聚落卡片，并哈希 `serializeWorld` 连同 runtime；两 renderer 的三次视图切换均保持同一哈希和同一卡片。`inspect` 的 `targetPlane=null` 表示恢复默认凡界视图。随后短暂推进并再次暂停，确认模拟确有前进，卡片查询仍确定。此项证明观察/显示切界未改写 world/runtime；它不验证飞升、裂隙迁移等跨界交易本身。报告记录固定输入 SHA、Edge/Node 环境及源指纹：[浏览器原始报告](../../reports/mlod0b/browser-realms/report.json)。独立复测需安装 Microsoft Edge，使用 Node.js 与浏览器自动化可用的桌面会话，并在包目录运行：`node scripts/inkbox-mlod0b-browser-realms.mjs --checkpoint-root="../交付/WX_E_NEXT_20261114-001700/payload/inputs"`。只需复测人口语义时可将 `--renderers=canvas` 降为单 renderer；默认命令执行 Canvas 与 Three。
+
+120 步事件日志没有触发自然再分宗这一事实仍成立。现已补充受控公开 `stepSects` 的 writer 路径证明、独立浏览器只读切界证明，以及既有 lifecycle fixture 中 `arriveUpper` 的落地函数验证。它们分别覆盖机制、展示纯度和单函数落地，不等同于真实跨界因果交易、附界人口周期或正式 `publishCompleteStep` 的全链路验证。此处 `world.generation` 不是 `CommittedViewStore` 的提交 sequence，不用它宣称可见代际。

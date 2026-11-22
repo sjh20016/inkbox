@@ -1,0 +1,1591 @@
+{
+  "baseline": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "input": {
+    "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+    "day": 144000
+  },
+  "method": "Real 400-year entities, controlled sect conditions, public stepSects with deterministic RNG, no production hooks or monkey-patching. This proves the public writer path, not a natural replay of the original day-144000 split.",
+  "setup": {
+    "sourceSect": {
+      "id": 2,
+      "name": "太白剑宗",
+      "leaderId": 4916,
+      "capacity": 10,
+      "pop": 69,
+      "followers": 69,
+      "stability": 0,
+      "provisions": 9581.857499999998,
+      "roster": [
+        3134,
+        3462,
+        3529,
+        3943,
+        4140,
+        4160,
+        4407,
+        4418,
+        4722,
+        4916,
+        4961,
+        5135,
+        5329,
+        5408,
+        5516,
+        5540,
+        5694,
+        5825,
+        5928,
+        6138,
+        6155,
+        6173,
+        6236,
+        6253,
+        6271,
+        6332,
+        6340,
+        6341,
+        6356,
+        6362,
+        6374,
+        6382,
+        6410,
+        6420,
+        6423,
+        6427,
+        6429,
+        6430,
+        6433,
+        6436,
+        6438,
+        6446,
+        6447,
+        6448,
+        6454,
+        6459,
+        6464,
+        6474,
+        6485,
+        6489,
+        6490,
+        6508,
+        6510,
+        6511,
+        6513,
+        6515,
+        6520,
+        6522,
+        6525,
+        6539,
+        6541,
+        6543,
+        6546,
+        6563,
+        6564,
+        6568,
+        6579,
+        6580,
+        6581,
+        6585,
+        6587,
+        6588,
+        6594,
+        6595,
+        6605,
+        6616,
+        6628,
+        6630,
+        6640,
+        6642,
+        6648,
+        6650,
+        6651,
+        6652,
+        6658,
+        6659,
+        6661,
+        6662,
+        6665,
+        6671,
+        6676,
+        6677,
+        6682,
+        6683,
+        6691,
+        6693,
+        6696,
+        6702,
+        6703,
+        6715,
+        6718,
+        6725,
+        6731,
+        6732,
+        6734,
+        6740,
+        6759,
+        6772,
+        6773,
+        6782,
+        6784,
+        6787,
+        6792,
+        6793,
+        6794,
+        6812,
+        6819,
+        6824,
+        6826,
+        6837,
+        6838,
+        6842,
+        6859,
+        6862,
+        6865,
+        6867,
+        6870,
+        6876,
+        6877,
+        6880,
+        6882,
+        6883,
+        6888,
+        6889,
+        6895,
+        6899,
+        6909,
+        6912,
+        6915,
+        6917,
+        6922,
+        6924,
+        6936,
+        6942,
+        6945,
+        6948,
+        6949,
+        6953,
+        6965,
+        6970,
+        6974,
+        6977,
+        6978,
+        6988,
+        6992,
+        6997,
+        6999,
+        7000,
+        7001,
+        7002,
+        7005,
+        7006,
+        7008,
+        7009,
+        7014,
+        7022,
+        7023,
+        7027,
+        7028,
+        7034,
+        7036,
+        7043,
+        7060,
+        7062,
+        7063,
+        7064,
+        7065,
+        7073,
+        7076,
+        7077,
+        7082,
+        7088,
+        7104,
+        7106,
+        7113,
+        7118,
+        7119,
+        7125,
+        7134,
+        7141,
+        7149,
+        7153,
+        7157,
+        7158,
+        7165,
+        7166,
+        7171,
+        7174,
+        7175,
+        7176,
+        7179,
+        7182,
+        7184,
+        7185,
+        7197,
+        7199,
+        7203,
+        7204,
+        7207,
+        7214,
+        7222,
+        7224,
+        7225,
+        7238,
+        7239,
+        7242,
+        7255,
+        7258,
+        7261,
+        7262,
+        7263,
+        7264,
+        7265,
+        7266,
+        7267,
+        7268,
+        7273,
+        7276,
+        7277,
+        7284,
+        7288,
+        7291,
+        7295,
+        7297,
+        7302,
+        7303,
+        7307,
+        7309,
+        7311,
+        7313,
+        7315,
+        7316,
+        7319,
+        7323,
+        7324,
+        7325,
+        7330,
+        7332,
+        7338,
+        7339,
+        7340,
+        7341,
+        7343,
+        7346,
+        7347,
+        7348,
+        7356,
+        7360,
+        7365,
+        7368,
+        7370,
+        7372,
+        7380,
+        7381,
+        7382,
+        7383,
+        7392,
+        7394,
+        7399,
+        7404,
+        7411,
+        7413,
+        7414,
+        7416,
+        7420,
+        7422,
+        7425,
+        7431,
+        7433,
+        7438,
+        7439,
+        7440,
+        7444,
+        7447,
+        7449,
+        7451,
+        7458,
+        7460,
+        7461,
+        7463,
+        7466,
+        7467,
+        7470,
+        7474,
+        7475,
+        7481,
+        7483,
+        7486,
+        7488,
+        7490,
+        7493,
+        7498,
+        7500,
+        7520,
+        7521,
+        7522,
+        7523,
+        7528,
+        7530,
+        7533,
+        7535,
+        7539,
+        7544,
+        7545,
+        7546,
+        7547,
+        7549,
+        7552,
+        7553,
+        7556,
+        7559,
+        7566,
+        7568,
+        7574,
+        7575,
+        7576,
+        7579,
+        7580,
+        7581,
+        7582,
+        7584,
+        7590,
+        7592,
+        7599,
+        7615,
+        7617,
+        7627,
+        7628,
+        7630,
+        7631,
+        7635,
+        7637,
+        7642,
+        7647,
+        7650,
+        7654,
+        7655,
+        7656,
+        7659,
+        7661,
+        7662,
+        7663,
+        7667,
+        7669,
+        7675,
+        7676,
+        7678,
+        7682,
+        7683,
+        7685,
+        7690,
+        7695,
+        7697,
+        7717,
+        7719,
+        7720,
+        7723,
+        7726,
+        7729,
+        7734,
+        7736,
+        7738,
+        7740,
+        7742,
+        7746,
+        7748,
+        7751,
+        7752,
+        7759,
+        7764,
+        7766,
+        7767,
+        7770,
+        7779,
+        7782,
+        7783,
+        7785,
+        7786,
+        7787,
+        7789,
+        7793,
+        7796,
+        7797,
+        7801,
+        7804,
+        7805,
+        7806,
+        7811,
+        7815,
+        7817,
+        7818,
+        7822,
+        7823,
+        7827,
+        7829,
+        7830,
+        7832,
+        7833,
+        7842,
+        7844,
+        7848,
+        7849,
+        7851,
+        7852,
+        7854,
+        7855,
+        7860,
+        7871,
+        7873,
+        7875,
+        7888,
+        7897,
+        7899,
+        7900,
+        7901,
+        7904,
+        7913,
+        7915,
+        7917,
+        7918,
+        7919,
+        7924,
+        7926,
+        7929,
+        7931,
+        7934,
+        7935,
+        7939,
+        7940,
+        7941,
+        7943,
+        7944,
+        7945,
+        7949,
+        7953,
+        7954,
+        7956,
+        7957,
+        7960,
+        7964,
+        7971,
+        7972,
+        7973,
+        7975,
+        7976,
+        7977,
+        7978,
+        7979,
+        7980,
+        7987,
+        7988,
+        7990,
+        7993,
+        7996,
+        7997,
+        7998,
+        7999,
+        8002,
+        8004,
+        8009,
+        8013,
+        8014,
+        8015,
+        8016,
+        8018,
+        8021,
+        8024,
+        8025,
+        8027,
+        8028,
+        8032,
+        8038,
+        8040,
+        8042,
+        8045,
+        8046,
+        8048,
+        8051,
+        8052,
+        8054,
+        8056,
+        8059,
+        8061,
+        8062,
+        8064,
+        8068,
+        8072,
+        8074,
+        8075,
+        8077,
+        8078,
+        8080,
+        8081,
+        8083,
+        8086,
+        8091,
+        8093,
+        8099,
+        8102,
+        8106,
+        8107,
+        8111,
+        8113,
+        8115,
+        8117,
+        8118,
+        8119,
+        8120,
+        8121,
+        8122,
+        8126,
+        8127,
+        8134,
+        8138,
+        8140,
+        8142,
+        8146,
+        8151,
+        8159,
+        8167
+      ]
+    },
+    "eligibleRoster": [
+      {
+        "id": 4916,
+        "level": 52,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 5516,
+        "level": 48,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 3529,
+        "level": 47,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 3462,
+        "level": 46,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 4961,
+        "level": 40,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 3943,
+        "level": 39,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 4418,
+        "level": 38,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 4722,
+        "level": 36,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 4407,
+        "level": 35,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 4140,
+        "level": 33,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 4160,
+        "level": 32,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 5329,
+        "level": 32,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 5540,
+        "level": 32,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 3134,
+        "level": 31,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 5135,
+        "level": 31,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 5408,
+        "level": 30,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 6253,
+        "level": 30,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 6138,
+        "level": 28,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 5694,
+        "level": 27,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 6173,
+        "level": 27,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 6978,
+        "level": 26,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 6155,
+        "level": 25,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 5825,
+        "level": 24,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 5928,
+        "level": 24,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      },
+      {
+        "id": 6236,
+        "level": 24,
+        "x": 87.26803979607818,
+        "y": 34.527989151007894
+      }
+    ],
+    "rngValue": 0.0001,
+    "rngDraws": 26,
+    "dtDays": 3
+  },
+  "phases": [
+    {
+      "phase": "after-sect-census",
+      "detail": null,
+      "factions": [
+        {
+          "id": 1,
+          "name": "扶桑院",
+          "followers": 281,
+          "pop": 13
+        },
+        {
+          "id": 2,
+          "name": "太白剑宗",
+          "followers": 530,
+          "pop": 25
+        },
+        {
+          "id": 5,
+          "name": "赤霄门·二",
+          "followers": 455,
+          "pop": 33
+        },
+        {
+          "id": 33,
+          "name": "坤元山·三",
+          "followers": 5,
+          "pop": 5
+        },
+        {
+          "id": 39,
+          "name": "焚天殿",
+          "followers": 7,
+          "pop": 7
+        },
+        {
+          "id": 40,
+          "name": "扶桑院·二",
+          "followers": 10,
+          "pop": 4
+        },
+        {
+          "id": 41,
+          "name": "庚金门",
+          "followers": 4,
+          "pop": 4
+        },
+        {
+          "id": 42,
+          "name": "扶桑院·三",
+          "followers": 25,
+          "pop": 3
+        }
+      ]
+    },
+    {
+      "phase": "before-schism",
+      "detail": {
+        "parentId": 2,
+        "childId": 43,
+        "memberIds": [
+          3134,
+          3462,
+          3529,
+          3943,
+          4140,
+          4160,
+          4407,
+          4418,
+          4722,
+          4961,
+          5135,
+          5329,
+          5408,
+          5540,
+          5694,
+          5825,
+          5928,
+          6138,
+          6155,
+          6173,
+          6236,
+          6253,
+          6978
+        ],
+        "practicingMemberIds": [
+          3134,
+          3462,
+          3529,
+          3943,
+          4140,
+          4160,
+          4407,
+          4418,
+          4722,
+          4961,
+          5135,
+          5329,
+          5408,
+          5540,
+          5694,
+          5825,
+          5928,
+          6138,
+          6155,
+          6173,
+          6236,
+          6253,
+          6978
+        ]
+      },
+      "factions": [
+        {
+          "id": 1,
+          "name": "扶桑院",
+          "followers": 281,
+          "pop": 13
+        },
+        {
+          "id": 2,
+          "name": "太白剑宗",
+          "followers": 530,
+          "pop": 25
+        },
+        {
+          "id": 5,
+          "name": "赤霄门·二",
+          "followers": 455,
+          "pop": 33
+        },
+        {
+          "id": 33,
+          "name": "坤元山·三",
+          "followers": 5,
+          "pop": 5
+        },
+        {
+          "id": 39,
+          "name": "焚天殿",
+          "followers": 7,
+          "pop": 7
+        },
+        {
+          "id": 40,
+          "name": "扶桑院·二",
+          "followers": 10,
+          "pop": 4
+        },
+        {
+          "id": 41,
+          "name": "庚金门",
+          "followers": 4,
+          "pop": 4
+        },
+        {
+          "id": 42,
+          "name": "扶桑院·三",
+          "followers": 25,
+          "pop": 3
+        },
+        {
+          "id": 43,
+          "name": "厚土门",
+          "followers": 0,
+          "pop": 0
+        }
+      ],
+      "moved": [
+        {
+          "id": 3134,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 3462,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 3529,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 3943,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 4140,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 4160,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 4407,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 4418,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 4722,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 4961,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 5135,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 5329,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 5408,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 5540,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 5694,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 5825,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 5928,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 6138,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 6155,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 6173,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 6236,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 6253,
+          "before": 2,
+          "after": 2
+        },
+        {
+          "id": 6978,
+          "before": 2,
+          "after": 2
+        }
+      ]
+    },
+    {
+      "phase": "after-schism-membership",
+      "detail": {
+        "parentId": 2,
+        "childId": 43,
+        "memberIds": [
+          3134,
+          3462,
+          3529,
+          3943,
+          4140,
+          4160,
+          4407,
+          4418,
+          4722,
+          4961,
+          5135,
+          5329,
+          5408,
+          5540,
+          5694,
+          5825,
+          5928,
+          6138,
+          6155,
+          6173,
+          6236,
+          6253,
+          6978
+        ],
+        "firstWriter": "sim/sects.js:maybeShed"
+      },
+      "factions": [
+        {
+          "id": 1,
+          "name": "扶桑院",
+          "followers": 281,
+          "pop": 13
+        },
+        {
+          "id": 2,
+          "name": "太白剑宗",
+          "followers": 530,
+          "pop": 25
+        },
+        {
+          "id": 5,
+          "name": "赤霄门·二",
+          "followers": 455,
+          "pop": 33
+        },
+        {
+          "id": 33,
+          "name": "坤元山·三",
+          "followers": 5,
+          "pop": 5
+        },
+        {
+          "id": 39,
+          "name": "焚天殿",
+          "followers": 7,
+          "pop": 7
+        },
+        {
+          "id": 40,
+          "name": "扶桑院·二",
+          "followers": 10,
+          "pop": 4
+        },
+        {
+          "id": 41,
+          "name": "庚金门",
+          "followers": 4,
+          "pop": 4
+        },
+        {
+          "id": 42,
+          "name": "扶桑院·三",
+          "followers": 25,
+          "pop": 3
+        },
+        {
+          "id": 43,
+          "name": "厚土门",
+          "followers": 0,
+          "pop": 0
+        }
+      ],
+      "moved": [
+        {
+          "id": 3134,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 3462,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 3529,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 3943,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 4140,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 4160,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 4407,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 4418,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 4722,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 4961,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 5135,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 5329,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 5408,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 5540,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 5694,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 5825,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 5928,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 6138,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 6155,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 6173,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 6236,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 6253,
+          "before": 2,
+          "after": 43
+        },
+        {
+          "id": 6978,
+          "before": 2,
+          "after": 43
+        }
+      ]
+    }
+  ],
+  "firstWriter": "sim/sects.js:maybeShed",
+  "split": {
+    "parentId": 2,
+    "childId": 43,
+    "founderId": 5516,
+    "founderIsSeparatelyAssigned": true,
+    "memberIds": [
+      3134,
+      3462,
+      3529,
+      3943,
+      4140,
+      4160,
+      4407,
+      4418,
+      4722,
+      4961,
+      5135,
+      5329,
+      5408,
+      5540,
+      5694,
+      5825,
+      5928,
+      6138,
+      6155,
+      6173,
+      6236,
+      6253,
+      6978
+    ],
+    "movedCount": 23,
+    "movedPractitioners": 23,
+    "childMembershipCount": 24,
+    "afterFirstStep": {
+      "parent": {
+        "followers": 530,
+        "pop": 25
+      },
+      "child": {
+        "followers": 0,
+        "pop": 0
+      },
+      "entityDerived": {
+        "parentFollowers": 550,
+        "parentPop": 45,
+        "childFollowers": 24,
+        "childPop": 24
+      }
+    },
+    "afterNextCensus": {
+      "parent": {
+        "followers": 550,
+        "pop": 45
+      },
+      "child": {
+        "followers": 24,
+        "pop": 24
+      },
+      "differences": []
+    },
+    "censusDifferences": [
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 4,
+        "field": "pop",
+        "legacy": 50,
+        "shadow": 49,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 5,
+        "field": "pop",
+        "legacy": 49,
+        "shadow": 46,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 7,
+        "field": "pop",
+        "legacy": 50,
+        "shadow": 48,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 12,
+        "field": "pop",
+        "legacy": 49,
+        "shadow": 47,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 17,
+        "field": "pop",
+        "legacy": 49,
+        "shadow": 46,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 21,
+        "field": "pop",
+        "legacy": 50,
+        "shadow": 49,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 28,
+        "field": "pop",
+        "legacy": 39,
+        "shadow": 38,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 29,
+        "field": "pop",
+        "legacy": 50,
+        "shadow": 46,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 58,
+        "field": "pop",
+        "legacy": 4,
+        "shadow": 3,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 60,
+        "field": "pop",
+        "legacy": 48,
+        "shadow": 44,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 65,
+        "field": "pop",
+        "legacy": 39,
+        "shadow": 37,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "village",
+        "id": 82,
+        "field": "pop",
+        "legacy": 48,
+        "shadow": 47,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "sect",
+        "id": 2,
+        "field": "followers",
+        "legacy": 530,
+        "shadow": 550,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "sect",
+        "id": 2,
+        "field": "pop",
+        "legacy": 25,
+        "shadow": 45,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "sect",
+        "id": 43,
+        "field": "followers",
+        "legacy": 0,
+        "shadow": 24,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "sect",
+        "id": 43,
+        "field": "pop",
+        "legacy": 0,
+        "shadow": 24,
+        "classification": "expected-stale"
+      }
+    ],
+    "sectCensusDifferences": [
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "sect",
+        "id": 2,
+        "field": "followers",
+        "legacy": 530,
+        "shadow": 550,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "sect",
+        "id": 2,
+        "field": "pop",
+        "legacy": 25,
+        "shadow": 45,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "sect",
+        "id": 43,
+        "field": "followers",
+        "legacy": 0,
+        "shadow": 24,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sects",
+        "kind": "sect",
+        "id": 43,
+        "field": "pop",
+        "legacy": 0,
+        "shadow": 24,
+        "classification": "expected-stale"
+      }
+    ]
+  },
+  "censusBoundary": {
+    "phase": "after-sect-census",
+    "differences": [
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 4,
+        "field": "pop",
+        "legacy": 50,
+        "shadow": 49,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 5,
+        "field": "pop",
+        "legacy": 49,
+        "shadow": 46,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 7,
+        "field": "pop",
+        "legacy": 50,
+        "shadow": 48,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 12,
+        "field": "pop",
+        "legacy": 49,
+        "shadow": 47,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 17,
+        "field": "pop",
+        "legacy": 49,
+        "shadow": 46,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 21,
+        "field": "pop",
+        "legacy": 50,
+        "shadow": 49,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 28,
+        "field": "pop",
+        "legacy": 39,
+        "shadow": 38,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 29,
+        "field": "pop",
+        "legacy": 50,
+        "shadow": 46,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 58,
+        "field": "pop",
+        "legacy": 4,
+        "shadow": 3,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 60,
+        "field": "pop",
+        "legacy": 48,
+        "shadow": 44,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 65,
+        "field": "pop",
+        "legacy": 39,
+        "shadow": 37,
+        "classification": "expected-stale"
+      },
+      {
+        "worldDay": 144000,
+        "phase": "after-sect-census",
+        "kind": "village",
+        "id": 82,
+        "field": "pop",
+        "legacy": 48,
+        "shadow": 47,
+        "classification": "expected-stale"
+      }
+    ]
+  },
+  "conclusion": "The split observer records the authoritative stepSects writer and the existing follower IDs it moved. maybeShed separately founds the child with its leader, so this run moves 23 members and adds one founder (24 child members total). Cached sect totals are from the pre-split census; entity-derived sect marginals immediately reflect the move. The next step census reconciles sect totals. The input also carries unrelated stale village.pop caches, which are recorded separately and are not asserted as sect-census failures."
+}

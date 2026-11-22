@@ -37,7 +37,7 @@
 | 27 | 不存在的村/宗 ID | 实测。分别归入 invalidVillage/invalidSect |
 | 28 | 跨界时不能在两个快照重复归属 | 夹具实测。将同一对象从凡界数组移动至上界数组，两次读取各自只计一次；自然飞升交易过程未在 30 项 quick fixture 触发 |
 | 29 | Canvas/Three 切换/重复读取不写 World | 重复查询与 generation 不变有实测。浏览器 Canvas/Three 交互冒烟另由 port 浏览器报告负责，不能由这个 Node 夹具代替 |
-| 30 | 月界、完整分宗 L0 | 月界 advance 加入只读观察前后完整状态相等有实测。真实 144000 日档已处于分宗后，不能重演保存之前那次真实改宗；分宗产生至多 24 人的路径及新宗同一步归属尚须从自然新档定向触发 |
+| 30 | 月界、完整分宗 L0 | 月界 advance 加入只读观察前后完整状态相等有实测。真实 144000 日档已处于分宗后，不能重演保存之前那次历史改宗；另以真实 400 年实体、受控条件、确定性 RNG 经公开 `stepSects` 触发 `maybeShed`，观察到 23 个既有门人 ID 改宗，首领由 `foundSect` 单独成为新宗 founder/leader（共 24 名成员），并由下一步宗门 census 对账。受控路径不代表自然重放。 |
 
 ## 验证证据
 
@@ -53,4 +53,6 @@
 
 同一脚本调用 `world/planes.arriveUpper`，验证上界新 ID 段、归属清空、thunder 通道计数和副本没有复用凡间对象。此函数只负责创建上界副本，来源实体的清理由调用者后续完成，因此探针明确记录了调用者清理前的双集合状态。固定档没有 attached upper plane，测试只在档案派生的新上界对象上复现落地函数。测试未调用完整 `cultivation.ascend` 写入链。
 
-本轮尚未可靠触发 `stepSects -> maybeShed` 的新分宗。真实 144000 日档已保留分宗后的身份，而新建宗门需要完整地形、符合境界的领头者、距离内的门人、可建宗地点、门派门槛和随机分支同时满足。后续夹具须调用正式 `stepSects`，记录 `before-schism` / `after-schism-membership` 事件，验证门人 ID 与资源比例；不应直接调用私有 maybeShed 来代替结算路径。
+`reports/mlod0b/schism.json` 现已补上受控的公开结算路径证据。它对 400 年档已有实体设置可触发的宗门条件，以确定性 RNG 经正式 `stepSects` 调用，在 `before-schism` / `after-schism-membership` 阶段记录 writer 与成员 ID。`maybeShed` 将 23 名 follower 改宗；首领由 `foundSect` 作为新宗 founder/leader 单独归属，不能把成员数误写成“24 名被移动门人”。首次统计后发生改宗，所以同一步 stored sector totals 保留 pre-schism 值；下一次宗门 census 收敛。该夹具不是第 144000 日的自然历史回放，也没有触发原始 120 步内的自然分宗。它保留输入村庄的既有缓存差额，回归断言只针对宗门 census。
+
+浏览器 `[报告](../../reports/mlod0b/browser-realms/report.json)` 在 Canvas 和 Three 真实产品页面检验了 `viewUpper` / `viewNether` / `inspect` 视图切换：凡界聚落卡片可重复读取，world 与 runtime 序列化哈希保持不变，短暂运行后模拟日期前进、暂停后卡片仍可重复读取。此结论针对视图切换和读查询；它不覆盖飞升或裂隙跨界的因果交易。独立复测的输入目录可由 `--checkpoint-root` 显式指定，分宗脚本亦支持 `--input-400` 文件覆盖，并会验证固定 SHA。两项复测命令与环境条件见[阶段审计](MLOD0B_PHASE_AUDIT.md)。
