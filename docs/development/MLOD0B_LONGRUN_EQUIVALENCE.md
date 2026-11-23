@@ -24,10 +24,24 @@
 
 ## 证据边界
 
-自然档原始 runtime 没有 upperLife；nativeApi.restore 在这种情况下去除自动补建的子界。三种子从标准 small sandbox 新建。自然长窗运行的选择性读取是逐步隔离调用，两百年对拍使用旧规则与步末影子观察。未序列化的事件队列、已提交 DTO 和视图代际由[独立短程见证](MLOD0B_TRANSIENT_EVENTS.md)取证。真实页面切界与机制夹具见[阶段报告](MLOD0B_PHASE_AUDIT.md)。
+自然档原始 runtime 没有 upperLife；nativeApi.restore 在这种情况下去除自动补建的子界。三种子从标准 small sandbox 新建。自然长窗运行的选择性读取是逐步隔离调用，两百年对拍使用旧规则与步末影子观察。未序列化事件又有[全窗口九组原始报告](../../reports/mlod0b/event-matrix/summary.json)逐步对照；已提交 DTO 和视图代际由[独立短程见证](MLOD0B_TRANSIENT_EVENTS.md)取证。真实页面切界与机制夹具见[阶段报告](MLOD0B_PHASE_AUDIT.md)。
 
 原生 test:save-equivalence 的恢复世界与未中断世界各前进 60 年后有 954 与 922 个生灵。旧脚本的结构和运行态检查通过，长期恢复轨迹相等这一命题未通过。本轮没有修改 v11/G8 以消除既有差异。
 
 ### 长测后变动的适用范围
 
 九份报告固定在上述取证 SHA。之后的分村修正只改变 compareCensusToLegacy 对 after-village-split-membership 的分类：此时父村迁户已写完，村人口尚待重算。两百年脚本只传 after-advance，自然档脚本只传 after-complete-advance；这两个阶段在修正前后的条件均为假。对照命令为 `git diff 24f42c2 -- src`。分村写入者须以修正后实际运行的夹具验收。三种子原始报告保留其实际 SHA，不把它们列作后续提交的重新运行。
+
+## 未序列化事件全窗口对照
+
+固定提交 `6594ecaed27c82f5335015c623b2d6a2a0b4ac07` 在[事件专用九组作业](https://github.com/sjh20016/inkbox/actions/runs/45157310969)运行第二次同种子、同 dt 的独立双臂。每个完整步对全部存在的界逐项比较事件队列的原始顺序、完整 payload、queued、combatQueued、combatDropped 和 combatEvicted，随后对两臂执行同一 drain 展示消费。每年或每 30 日归档连续事件与计数摘要。终点完整 v11+G8 SHA 与上节固定九组原始证明逐一相等。没有通过缩短窗口代替长跑。
+
+| 输入 | 对拍边界 | 事件样本数 |
+|---|---:|---:|
+| 种子 20260914 | 24000 | 105566 |
+| 种子 73101 | 24000 | 46106 |
+| 种子 61003 | 24000 | 94313 |
+| 100 年档 dt 0.1 / 1 / 3 | 3600 / 360 / 120 | 1154 / 958 / 1103 |
+| 400 年档 dt 0.1 / 1 / 3 | 3600 / 360 / 120 | 7477 / 3308 / 2120 |
+
+九组共 80160 个边界、262105 个逐步事件。各组最大瞬时队列为 9–31，低于运行时 256 容量，但丢弃和驱逐累计计数仍逐步对照。原档无附着 upperLife，三种子从标准 small sandbox 新建；仅存在的界参与比较。离线执行 `node scripts/inkbox-mlod0b-verify-events.mjs` 可核对九份状态、步数、每段摘要 SHA、输入 SHA 和固定证明终点，下载器 `.\scripts\inkbox-mlod0b-fetch-events.ps1` 另校验 GitHub ZIP 摘要。

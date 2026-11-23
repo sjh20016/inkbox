@@ -1,0 +1,78 @@
+{
+  "sourceCommit": "6594ecaed27c82f5335015c623b2d6a2a0b4ac07",
+  "run": "https://github.com/sjh20016/inkbox/actions/runs/45157310969",
+  "cases": [
+    {
+      "id": "seed-20260914",
+      "steps": 24000,
+      "events": 105566,
+      "maxQueued": 29,
+      "finalWorldAndRuntimeSha256": "65c4942796c060c1eb1143c28ccec930b14e68e1e532060b6852ff09fe2dbc6c",
+      "rawSha256": "14cedce2654da956581721920041b76c50f79d248d09c9cadf2707ca5732a4cc"
+    },
+    {
+      "id": "seed-73101",
+      "steps": 24000,
+      "events": 46106,
+      "maxQueued": 25,
+      "finalWorldAndRuntimeSha256": "9e6a1b8559e8f5dbd4c33ef3c7acd625fcd5e0468528f28207918c2faefe899b",
+      "rawSha256": "059474a737cdf67a1cc9b7e2bcff0946833f68d30a95bc6e1a0127b8b22303a3"
+    },
+    {
+      "id": "seed-61003",
+      "steps": 24000,
+      "events": 94313,
+      "maxQueued": 27,
+      "finalWorldAndRuntimeSha256": "a5c7cbbc6c3f2515991ef04de2f6ac3dde9b48f9d667378c66a623f7736a988d",
+      "rawSha256": "5d0a5c73c4201a39462c383fd8e43d10e8077c474997f9e6167e0106d7673956"
+    },
+    {
+      "id": "age-100-dt01",
+      "steps": 3600,
+      "events": 1154,
+      "maxQueued": 9,
+      "finalWorldAndRuntimeSha256": "32495d3b2cb288eb1def7df38be91898bffa32515db9d175f43ac2ad203eaf09",
+      "rawSha256": "316c931c8970e8013460580792ad8074a878663da328f7dead7a8df76a280e62"
+    },
+    {
+      "id": "age-100-dt1",
+      "steps": 360,
+      "events": 958,
+      "maxQueued": 12,
+      "finalWorldAndRuntimeSha256": "0f6d9b43f314111194e00d3ef5ab99478dfabea98b04d395e68315a98d370a6c",
+      "rawSha256": "e43a784d6d9df17a4ce1d15d9c659ab8eaa49043e9a5584d2390c6f636a50ed9"
+    },
+    {
+      "id": "age-100-dt3",
+      "steps": 120,
+      "events": 1103,
+      "maxQueued": 17,
+      "finalWorldAndRuntimeSha256": "04c48af6933025ef4ee995921eb109e791c7f9081ea1d90d9ff3ce1c69aa060e",
+      "rawSha256": "a90b9627477831da76c7869f0f6e5cacea548c848af9a69333ca001606479a6f"
+    },
+    {
+      "id": "age-400-dt01",
+      "steps": 3600,
+      "events": 7477,
+      "maxQueued": 23,
+      "finalWorldAndRuntimeSha256": "c4d7bfc54c01787c200fb49124e5f89c5367aa8debd9df528b8015f568df2c0c",
+      "rawSha256": "8af90cb18f4009654d619d5c45602d49cec68688ab68d6b6d3252dfe142f0430"
+    },
+    {
+      "id": "age-400-dt1",
+      "steps": 360,
+      "events": 3308,
+      "maxQueued": 26,
+      "finalWorldAndRuntimeSha256": "39bba3781dbf1a0ad12a2c3584d3d4adde67cd3fa43f73c34b7ce14b7062d40c",
+      "rawSha256": "d3adc01cda16e7e7c59aaf472dd75f66d4c5435498b400cf3fc82afbe7324b72"
+    },
+    {
+      "id": "age-400-dt3",
+      "steps": 120,
+      "events": 2120,
+      "maxQueued": 31,
+      "finalWorldAndRuntimeSha256": "0254b39e2f5929e5b86d3bdb99bd6a69f76bfd8e4e5f5063e698890ac2bb7650",
+      "rawSha256": "efa9ca15a00fe4a4249a40d0b13a2c52adf82e1aaf122a2e9631820f32d02ce8"
+    }
+  ]
+}

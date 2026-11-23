@@ -1,0 +1,115 @@
+{
+  "schema": "mlod0b-event-matrix-v1",
+  "id": "age-400-dt01",
+  "seed": null,
+  "age": 400,
+  "dt": 0.1,
+  "duration": 360,
+  "expectedSteps": 3600,
+  "inputSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+  "protocol": "Two independently advanced worlds; audit arm reads current census and, for natural saves, selective societies. Every committed boundary compares ordered complete runtime-event payloads and drop/eviction counters per available plane. Both arms then drain presentation queues. Full v11+G8 captures only at final boundary.",
+  "status": "passed",
+  "completedSteps": 3600,
+  "totalEvents": 7477,
+  "maxQueued": 23,
+  "reports": [
+    {
+      "step": 300,
+      "day": 144030.00000000175,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "f6a0226c0c8226a006cccbe2bc32bec57a9174338350edf3ba2717818188fc3a",
+      "totalEvents": 647,
+      "maxQueued": 20
+    },
+    {
+      "step": 600,
+      "day": 144060.0000000035,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "3764886d9c29a4c6cda97c5cd9f55063bf2170fb7d71a6bb13970701294ca392",
+      "totalEvents": 1373,
+      "maxQueued": 20
+    },
+    {
+      "step": 900,
+      "day": 144090.00000000524,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "7d0b974eea69a95063f1e569c7eded5b66a8497df654e4e04ad2ac1459d3c951",
+      "totalEvents": 2049,
+      "maxQueued": 20
+    },
+    {
+      "step": 1200,
+      "day": 144120.00000000698,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "5f1b69ac07fc687b128508e8a46c39bcdff9a6020c458bbf63722be21cf883f6",
+      "totalEvents": 2754,
+      "maxQueued": 23
+    },
+    {
+      "step": 1500,
+      "day": 144150.00000000873,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "0a9258e9d68159273027d5c8ac9546c5fa6a3f8c39fe94b7c29f3c463e18fb85",
+      "totalEvents": 3256,
+      "maxQueued": 23
+    },
+    {
+      "step": 1800,
+      "day": 144180.00000001048,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "1a64af5920b1112ac1d78eda24f50ff3aa58dc76ef609d082c51856eed793602",
+      "totalEvents": 3940,
+      "maxQueued": 23
+    },
+    {
+      "step": 2100,
+      "day": 144210.00000001222,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "b6e317ebaa3f36f0766942e92b4d1357ed2c1f4259a88d84d9bab5e45fe627a1",
+      "totalEvents": 4635,
+      "maxQueued": 23
+    },
+    {
+      "step": 2400,
+      "day": 144240.00000001397,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "60a079b1e7dc4f25536475434aee2224b488c07708d9edfd5dc996f34f124400",
+      "totalEvents": 5220,
+      "maxQueued": 23
+    },
+    {
+      "step": 2700,
+      "day": 144270.00000001572,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "e0f67599e7adcafadd09c57b8b875b053d1d74884c3c91fe63e86d2f09cf96dd",
+      "totalEvents": 5711,
+      "maxQueued": 23
+    },
+    {
+      "step": 3000,
+      "day": 144300.00000001746,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "5c2167ed76fe52a77d53952502973f4b3af77addbc86840ad8d7863c0bb8c9f6",
+      "totalEvents": 6127,
+      "maxQueued": 23
+    },
+    {
+      "step": 3300,
+      "day": 144330.0000000192,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "d7e7c002ebbed8612900a88164b0b6675c867243c22d906db8b7b856ad34041d",
+      "totalEvents": 6823,
+      "maxQueued": 23
+    },
+    {
+      "step": 3600,
+      "day": 144360.00000002095,
+      "steps": 300,
+      "orderedEventsAndCountersSha256": "f1d5054548a969f0bdf7c36183dc96d4f7714b259020caf96118d3661380dc1e",
+      "totalEvents": 7477,
+      "maxQueued": 23
+    }
+  ],
+  "finalWorldAndRuntimeSha256": "c4d7bfc54c01787c200fb49124e5f89c5367aa8debd9df528b8015f568df2c0c",
+  "exitCode": 0
+}

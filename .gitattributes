@@ -19,3 +19,4 @@ vendor/three/** text eol=lf
 # The verifier hashes the exact JSON bytes downloaded from the Linux proof jobs.
 reports/mlod0b/proof/*.json text eol=lf
 reports/mlod0b/event-matrix/*.json text eol=lf
+reports/mlod0b/event-matrix/*.json text eol=lf

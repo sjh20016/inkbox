@@ -1,12 +1,6 @@
 param([long]$RunId = 45157310969)
 $ErrorActionPreference = 'Stop'
 $prefix = 'https://api.github.com/repos/sjh20016/inkbox/actions'
-$run = Invoke-RestMethod "$prefix/runs/$RunId"
-if ($run.head_sha -ne '6594ecaed27c82f5335015c623b2d6a2a0b4ac07' -or
-    $run.path -ne '.github/workflows/mlod0b-events.yml') {
-    throw 'Run does not match the frozen transient event matrix source.'
-}
-$manifest = Invoke-RestMethod "$prefix/runs/$RunId/artifacts"
 $dest = Join-Path $PSScriptRoot '../reports/mlod0b/event-matrix'
 [void](New-Item -ItemType Directory -Force -Path $dest)
 $headers = @{ Accept = 'application/vnd.github+json' }
@@ -18,6 +12,12 @@ if ($env:GH_TOKEN) {
     $password = ($credential | Where-Object { $_.StartsWith('password=') }).Substring(9)
     $headers.Authorization = "Bearer $password"
 }
+$run = Invoke-RestMethod "$prefix/runs/$RunId" -Headers $headers
+if ($run.head_sha -ne '6594ecaed27c82f5335015c623b2d6a2a0b4ac07' -or
+    $run.path -ne '.github/workflows/mlod0b-events.yml') {
+    throw 'Run does not match the frozen transient event matrix source.'
+}
+$manifest = Invoke-RestMethod "$prefix/runs/$RunId/artifacts" -Headers $headers
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 foreach ($artifact in $manifest.artifacts) {
     if ($artifact.name -notmatch '^mlod0b-events-(seed-(20260914|73101|61003)|age-(100|400)-dt(01|1|3))$') { continue }
