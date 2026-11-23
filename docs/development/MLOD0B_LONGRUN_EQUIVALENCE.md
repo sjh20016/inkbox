@@ -27,3 +27,7 @@
 自然档原始 runtime 没有 upperLife；nativeApi.restore 在这种情况下去除自动补建的子界。三种子从标准 small sandbox 新建。自然长窗运行的选择性读取是逐步隔离调用，两百年对拍使用旧规则与步末影子观察。未序列化的事件队列、已提交 DTO 和视图代际由[独立短程见证](MLOD0B_TRANSIENT_EVENTS.md)取证。真实页面切界与机制夹具见[阶段报告](MLOD0B_PHASE_AUDIT.md)。
 
 原生 test:save-equivalence 的恢复世界与未中断世界各前进 60 年后有 954 与 922 个生灵。旧脚本的结构和运行态检查通过，长期恢复轨迹相等这一命题未通过。本轮没有修改 v11/G8 以消除既有差异。
+
+### 长测后变动的适用范围
+
+九份报告固定在上述取证 SHA。之后的分村修正只改变 compareCensusToLegacy 对 after-village-split-membership 的分类：此时父村迁户已写完，村人口尚待重算。两百年脚本只传 after-advance，自然档脚本只传 after-complete-advance；这两个阶段在修正前后的条件均为假。对照命令为 `git diff 24f42c2 -- src`。分村写入者须以修正后实际运行的夹具验收。三种子原始报告保留其实际 SHA，不把它们列作后续提交的重新运行。
