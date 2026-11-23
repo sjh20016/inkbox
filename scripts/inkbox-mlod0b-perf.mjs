@@ -13,7 +13,8 @@ import { villageSocieties } from '../src/inkbox/sim/sectEconomy.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { loadCheckpoint } = await import('./inkbox-mlod0b-inputs.mjs');
-const out = path.resolve(root, 'reports/mlod0b/perf.json');
+const outputArg = process.argv.find(arg => arg.startsWith('--output='));
+const out = path.resolve(root, outputArg?.slice('--output='.length) ?? 'reports/mlod0b/perf.json');
 const api = await nativeApi(root);
 const percentile = (values, p) => [...values].sort((a, b) => a - b)[Math.ceil(values.length * p) - 1];
 const distribution = (values) => ({ p50: percentile(values, .5), p95: percentile(values, .95), p99: percentile(values, .99), samples: values });
@@ -119,8 +120,8 @@ if (process.argv.includes('--extended')) {
   ];
   existing.extended = { baselineRoot, baselineTree: baselineSource, baselineSourceHashes: await sourceFingerprint(baselineRoot), candidateCommit: execFileSync('git', ['rev-parse', 'HEAD'], {cwd:root,encoding:'utf8'}).trim(), candidateTree: execFileSync('git', ['rev-parse', 'HEAD^{tree}'], {cwd:root,encoding:'utf8'}).trim(), candidateSourceHashes: await sourceFingerprint(root), protocol: 'Each pair ABBA times five; 30 game days, dt=3. Query after each run. Different pairs are separate comparisons.', cases: [] };
   for (const age of [100, 400]) {
-    const input = existing.cases.find(row => row.age === age).input;
-    const saved = JSON.parse(fs.readFileSync(input.file));
+    const { saved, file, sha256, bytes } = loadCheckpoint(age);
+    const input = { file, sha256, bytes };
     for (const pair of pairs) {
       const item = { age, input, pair, samples: [] };
       existing.extended.cases.push(item);
