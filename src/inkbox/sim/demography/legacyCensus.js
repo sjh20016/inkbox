@@ -100,7 +100,7 @@ export function compareCensusToLegacy(world, census, phase = census.phase) {
   for (const row of world.villages) {
     const value = census.villages.get(row.id);
     push('village', row.id, 'pop', row.pop, value.legacyVillage.pop,
-      phase === 'after-first-village-sync' || phase === 'after-village-split-membership');
+      phase === 'after-first-village-sync');
   }
   for (const row of world.factions) {
     const value = census.sects.get(row.id);

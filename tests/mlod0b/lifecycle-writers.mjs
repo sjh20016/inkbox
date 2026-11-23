@@ -5,7 +5,8 @@ import {fileURLToPath} from 'node:url';
 import { loadCheckpoint } from '../../scripts/inkbox-mlod0b-inputs.mjs';
 import { nativeApi } from '../../scripts/inkbox-wx-e0-replay.mjs';
 import { arriveUpper } from '../../src/inkbox/world/planes.js';
-import { buildPopulationCensus } from '../../src/inkbox/sim/demography/legacyCensus.js';
+import { buildPopulationCensus, compareCensusToLegacy } from '../../src/inkbox/sim/demography/legacyCensus.js';
+import { setPopulationPhaseObserver } from '../../src/inkbox/sim/demography/phaseProbe.js';
 import { isMortalHuman,isPracticingHuman } from '../../src/inkbox/core/demographics.js';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
@@ -23,16 +24,30 @@ await record('real-Life-maybeSplitVillage',()=>{
  // Deterministic random hook only selects the branch and existing tile sampler.
  let rngCalls=0;c.life.rng=()=>rngCalls++===0?0:0.5;
  c.life.findSplitSpot=()=>[Math.floor(v.x+18),Math.floor(v.y)];
+ const phaseSamples=[];
+ setPopulationPhaseObserver(w,(phase,detail)=>{
+  if(phase==='after-village-split-membership'){
+   const census=buildPopulationCensus(w,phase);
+   phaseSamples.push({phase,detail,cacheDifferences:compareCensusToLegacy(w,census,phase)});
+  }
+ });
  c.life.maybeSplitVillage(v,3);
+ setPopulationPhaseObserver(w,null);
  const child=w.villages.find(x=>x.id!==v.id&&x.foundedDay===w.day);
  assert(child,'expected maybeSplitVillage to found the child settlement');
  const moved=w.entities.filter(e=>before.sourceById.get(e.id)===v.id&&e.village===child.id);
  assert(moved.length>=2&&moved.length<=4);
  assert(parentResidents.every(e=>before.sourceById.get(e.id)===v.id));
- assert.equal(v.pop,buildPopulationCensus(w,'after-split').villages.get(v.id).legacyVillage.pop);
+ const synced=buildPopulationCensus(w,'after-village-split-sync');
+ assert.equal(v.pop,synced.villages.get(v.id).legacyVillage.pop);
  assert.equal(child.pop,moved.length);
+ assert.equal(phaseSamples.length,1);
+ const splitDifferences=phaseSamples[0].cacheDifferences.filter(row=>row.kind==='village'&&(row.id===v.id||row.id===child.id));
+ assert.equal(splitDifferences.length,2,'parent and child caches must be stale immediately after membership changes');
+ assert(splitDifferences.every(row=>row.classification==='expected-stale'));
+ assert.equal(phaseSamples[0].cacheDifferences.filter(row=>row.kind==='village'&&row.classification==='unexpected-divergence').length,0);
  assert(w.entities.length>=540,'no entity was created or deleted');
- return {day:w.day,parentVillage:v.id,childVillage:child.id,movedIds:moved.map(e=>e.id),movedCount:moved.length,sourcePopulationBefore:v.pop+moved.length,sourcePopulationAfter:v.pop,childPopulation:child.pop,writer:'Life.maybeSplitVillage -> foundVillage -> resident village/faction writes -> syncVillagePops'};
+ return {day:w.day,parentVillage:v.id,childVillage:child.id,movedIds:moved.map(e=>e.id),movedCount:moved.length,sourcePopulationBefore:v.pop+moved.length,sourcePopulationAfter:v.pop,childPopulation:child.pop,splitPhaseDifferences:splitDifferences,syncedParentPopulation:synced.villages.get(v.id).legacyVillage.pop,syncedChildPopulation:synced.villages.get(child.id).legacyVillage.pop,writer:'Life.maybeSplitVillage -> foundVillage -> resident village/faction writes -> phase probe -> syncVillagePops'};
 });
 await record('real-arriveUpper-transfer-projection',async()=>{
  const c=api.restore(loadCheckpoint(100).saved),w=c.world;

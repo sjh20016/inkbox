@@ -15,7 +15,7 @@
 | 宗 `followers` | `stepSects` 扫有有效宗门归属的实体，包含未清理的死者 | `sects[id].followers` |
 | 宗 `pop` | 上一项中实际修炼的人类且存活 | `sects[id].pop` |
 
-宗门 `followers` 的旧实现没有生存过滤，因此在某些阶段可能包括仍在实体数组里的死者。影子保留这一现状用于 L0。`sects[id].storedCache` 原样记录宗门对象里的旧缓存，绝不由影子写回。`compareCensusToLegacy` 在每次调用时比较缓存。村庄在 `after-first-village-sync` 与 `after-village-split-membership`、宗门在 `after-sect-census` 必须逐项相等，差异标为 `unexpected-divergence`。其他观察点的差异标为 `expected-stale`，须连同下一次清点结果解释；单个标签不能证明差额已经收敛。完整阶段合法性由阶段审计另证。
+宗门 `followers` 的旧实现没有生存过滤，因此在某些阶段可能包括仍在实体数组里的死者。影子保留这一现状用于 L0。`sects[id].storedCache` 原样记录宗门对象里的旧缓存，绝不由影子写回。`compareCensusToLegacy` 在每次调用时比较缓存。村庄只在 `after-first-village-sync` 阶段要求逐项相等。真实分村路径会先迁户并发出 `after-village-split-membership` 探针，然后才调用 `syncVillagePops`；因此该探针的父村和子村缓存差异属于 `expected-stale`。宗门在 `after-sect-census` 要求逐项相等。其他观察点的差异标为 `expected-stale`，须连同下一次清点结果解释；单个标签不能证明差额已经收敛。真实 maybeSplitVillage 夹具验证迁户后父子缓存暂态、同步后收敛。长测的 `after-advance` 观察阶段和判定保持不变。
 
 `byPlane` 的 mortal、upper、nether 三张表各自遍历对应世界实体。`global` 汇总三个实体列表。`unassigned` 对凡间实体统计缺村、缺宗及无效 ID；飞升标记和死者保留在原始实体数与状态分项，不算存活人口。当前界与原生 World 列表是事实来源，旧版跨界转移的中途重叠必须由阶段探针检测；本模块不会修正或吞掉重叠。
 
