@@ -159,9 +159,9 @@
     },
     {
       "path": "src/inkbox/sim/demography/legacyCensus.js",
-      "sha256": "2d841a947ade9a0d4dba325acf0fc484ef7c927146a4905bf85232bc042c56be",
+      "sha256": "b343f9b58292592f1bab45d51484fd6c1f41e958086f90a8058cd811cfd33aac",
       "cardId": "population-shadow-census",
-      "review": "WX-E0 MLOD-0B candidate review 2026-11-22: independent one-pass projection of existing entities and IDs; O(N) time with O(V+F+U+P) aggregate storage, no cache/write/RNG. Explicit diagnostic or opt-in read only."
+      "review": "WX-E0 MLOD-0B candidate review 2026-11-22: independent one-pass projection of existing entities and IDs; O(N) time with O(V+F+U+P) aggregate storage, no cache/write/RNG. Explicit diagnostic or opt-in read only. Village split membership is an expected-stale observation because syncVillagePops runs immediately after the probe; only after-first-village-sync is stable."
     },
     {
       "path": "src/inkbox/sim/demography/phaseProbe.js",
