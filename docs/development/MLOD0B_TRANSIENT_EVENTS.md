@@ -1,0 +1,7 @@
+# MLOD-0B transient event witness
+
+Run `node scripts/inkbox-mlod0b-events.mjs`. This isolated witness restores the supplied 100-year natural checkpoint three times, selects the legacy/off, audit, or census population read path, and applies the same six native three-day advances. Each branch publishes complete frames and reads the committed mortal frame, DTO query, and settlement card at every boundary.
+
+The test adds two identical valid presentation events to each independent runtime queue before the first boundary. This guarantees a non-empty sample even if the short natural-save window emits no gameplay event. It then checks exact ordered event snapshots, complete serialized save hashes (which intentionally omit the WeakMap queue), committed frame/query/card content, day and entity-ID fingerprints. Read-only peeks and committed reads are checked not to drain the queue. Generation-local metadata is excluded from presentation hashes because each restored World has its own generation.
+
+Latest raw result: `reports/mlod0b/nonserialized-events.json`. It records seven committed boundaries (initial publication plus six steps), 206 retained ordered events across the boundary samples, and parity across all three modes. The supplied checkpoint has only a mortal runtime plane; upper and nether are explicitly recorded absent. This proves transient-queue parity and mortal committed-view parity for this natural save/window; it is not a three-realm event simulation or a claim that the injected events came from gameplay.

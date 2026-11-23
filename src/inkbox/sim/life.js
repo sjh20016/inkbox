@@ -45,6 +45,7 @@ import {
   initEntity, maxHpFor, stepEntity as stepCultivation, combatPower, recordDeath, addKarma, MAX_SITES, placeName,
 } from './cultivation.js';
 import { stepSects, foundSect } from './sects.js';
+import { observePopulationPhase } from './demography/phaseProbe.js';
 import { affiliateSectResident } from './sectEconomy.js';
 import { stepRelations, onDeathRelations, RELATION_TYPES } from './relations.js';
 import { stepFamily, pickParents, registerBirth } from './family.js';
@@ -642,6 +643,7 @@ export class Life {
     let phaseStarted=measuring?startWorkMetric(world):null;
     if(measuring){recordWorkDt(world,dtDays);countWorkMetric(world,'life.step.calls');}
     this.processPendingSpawns();
+    observePopulationPhase(world, 'after-pending-spawns');
     this.rebuildGrid();
 
     const list = world.entities;
@@ -680,17 +682,21 @@ export class Life {
       w += 1;
     }
     list.length = w;
+    observePopulationPhase(world, 'after-death-cleanup');
 
     let subsystemStarted=measuring?startWorkMetric(world):null;
     const villageSpan = beginBreakdown('life.villages');
     this.syncVillagePops();
+    observePopulationPhase(world, 'after-first-village-sync');
     this.stepVillages(dtDays);
+    observePopulationPhase(world, 'after-villages');
     this.stepFounding(dtDays);
     this.stepWildlife(dtDays);
     endBreakdown(villageSpan);
     if(measuring){endWorkMetric(world,'life.villages',subsystemStarted);subsystemStarted=startWorkMetric(world);}
     const sectSpan = beginBreakdown('life.sects');
     stepSects(world, this, dtDays, this.rng);
+    observePopulationPhase(world, 'after-sects');
     endBreakdown(sectSpan, sectSpan ? { crossedCalendarMonth: Math.floor(world.day / 30) !== Math.floor((world.day - dtDays) / 30) } : undefined);
     if(measuring)endWorkMetric(world,'life.sects',subsystemStarted);
     // 宗门本月收入与归属已更新，再真实支出援助；最后才判长期荒废。
@@ -1849,6 +1855,8 @@ export class Life {
             cx, cy, SPECIES.HUMAN, births,
             village.faction, { village: village.id, allowSouls: true, parents },
           );
+          if (spawned) observePopulationPhase(world, 'after-natural-birth', {
+            villageId: village.id, count: spawned, firstWriter: 'sim/life.js:stepVillages/spawn' });
           village.food -= 5 * spawned;
         }
       }
@@ -1918,6 +1926,9 @@ export class Life {
       e.state = 'return';
       e.timer = 0;
     }
+    observePopulationPhase(world, 'after-village-split-membership', {
+      parentId: village.id, childId: child.id, entityIds: migrants.map(entity => entity.id),
+      firstWriter: 'sim/life.js:maybeSplitVillage' });
     village.food -= 40;
     this.syncVillagePops();
     // 村落级事件，无单一当事人：分出去的是整支人马，落不到一个具体的人头上。

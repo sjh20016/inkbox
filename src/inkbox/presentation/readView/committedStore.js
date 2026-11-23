@@ -1,4 +1,6 @@
 import { buildReadFrame, worldGeneration, allocateReadViewGeneration } from './index.js';
+import { capturePopulationCards } from './query.js';
+import { populationUiReadMode } from '../../sim/demography/populationReadPort.js';
 import { TerrainReadView } from './terrain.js';
 import { activateTerrainChanges } from '../../world/terrainChanges.js';
 import { committedEntry, committedFrameOf, registerCommittedWorld, unregisterCommittedWorld, assertCommittedLegacyReadAllowed } from './committedRegistry.js';
@@ -99,7 +101,9 @@ function publish(s) {
       cost.estimatedObjects += cost.terrainCopiedLayers;
       markBreakdown('readView.publishCost', cost);
     }
-    s.frames = Object.freeze(frames); s.queries = queries; s.sequence = sequence; s.committedDay = frames.mortal.committedDay; s.inProgress = false;
+    const populationCards = populationUiReadMode(s.root) === 'legacy' ? null
+      : capturePopulationCards(s.root, s.worldGeneration, sequence);
+    s.frames = Object.freeze(frames); s.queries = queries; s.populationCards = populationCards; s.sequence = sequence; s.committedDay = frames.mortal.committedDay; s.inProgress = false;
     return summary(s);
   } catch (error) { s.fault = true; s.inProgress = false; throw error; }
   finally { endBreakdown(publishSpan); }

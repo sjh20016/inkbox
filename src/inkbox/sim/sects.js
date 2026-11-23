@@ -23,6 +23,7 @@ import { speak } from './busanzi.js';
 import { clamp } from '../core/noise.js';
 import { settlementHistory } from './settlementResilience.js';
 import { isAdult, isLivingHuman, isPracticingHuman } from '../core/demographics.js';
+import { observePopulationPhase } from './demography/phaseProbe.js';
 import { affiliateSectResident, sectSupplyStatus, stepSectEconomy, villageSocieties } from './sectEconomy.js';
 import {
   computeTerritory, crossedBoundary, cellOf, leylineAllowance,
@@ -183,6 +184,8 @@ export function stepSects(world, life, dtDays, rng) {
     s.followers += 1;
     if (isPracticingHuman(e) && e.hp > 0 && e.age < e.lifespan && !e._ascended) s.pop += 1;
   }
+
+  observePopulationPhase(world, 'after-sect-census');
 
   const societies = villageSocieties(world);
   for (let i = sects.length - 1; i >= 0; i -= 1) {
@@ -413,7 +416,11 @@ function maybeShed(world, sect, dtDays, rng) {
 
   const schism = foundSect(world, tx, ty, leader, rng);
   if (!schism) return;
+  observePopulationPhase(world, 'before-schism', { parentId: sect.id, childId: schism.id,
+    memberIds: followers.map(entity => entity.id), practicingMemberIds: followers.filter(isPracticingHuman).map(entity => entity.id) });
   for (let i = 0; i < followers.length; i += 1) followers[i].faction = schism.id;
+  observePopulationPhase(world, 'after-schism-membership', { parentId: sect.id, childId: schism.id,
+    memberIds: followers.map(entity => entity.id), firstWriter: 'sim/sects.js:maybeShed' });
   // A split carries an actual share of the old stores, never a fresh food grant.
   const moved = 1 + followers.filter(isPracticingHuman).length;
   const provisions = sect.resources.provisions * Math.min(1, moved / Math.max(1, sect.pop));

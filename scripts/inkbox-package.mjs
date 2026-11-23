@@ -18,6 +18,12 @@ const STAGE = fs.mkdtempSync(path.join(DIST, '.inkbox-package-'));
 
 // Explicit runtime/developer package entry points. Historical reports live in Git history.
 const FILES = [
+  'scripts/inkbox-mlod0b-inputs.mjs',
+  'scripts/inkbox-mlod0b-census-test.mjs',
+  'tests/mlod0b/red-team.mjs',
+  'tests/mlod0b/population-port.mjs',
+  'tests/fixtures/mlod0b/100.json.gz',
+  'tests/fixtures/mlod0b/400.json.gz',
   'scripts/inkbox-wx-e2ra2-check.mjs',
   'scripts/inkbox-wx-e2ra2-command.mjs',
   'scripts/inkbox-wx-e2ra2-panels.mjs',

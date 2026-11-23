@@ -1,0 +1,321 @@
+{
+  "schema": 1,
+  "source": "existing v11 entities",
+  "node": "v24.11.1",
+  "cpu": "AMD Ryzen 9 8940HX with Radeon Graphics        ",
+  "inputs": [
+    {
+      "age": 100,
+      "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+      "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+      "bytes": 2826671,
+      "day": 36000,
+      "sourceEntities": 540,
+      "birthFacts": {
+        "totalEntities": 540,
+        "withBirthOrigin": 505,
+        "withFiniteBirthDay": 505,
+        "naturalVillageBirths": 504,
+        "unknownBirthDay": 35
+      },
+      "grains": [
+        {
+          "label": "day",
+          "days": 1,
+          "records": 552,
+          "living": 552,
+          "bucketCount": 529,
+          "meanPeoplePerBucket": 1.0434782608695652,
+          "singletonBuckets": 520,
+          "singletonFraction": 0.9829867674858223,
+          "maxBucket": 12,
+          "unknownOrigin": 47,
+          "buildMs": 1.5336999999999534,
+          "reverseBuildMs": 21.83630000000005,
+          "marginalQueryMs": 0.6567999999999756,
+          "jsonBytes": 111509,
+          "mismatches": []
+        },
+        {
+          "label": "week",
+          "days": 7,
+          "records": 552,
+          "living": 552,
+          "bucketCount": 525,
+          "meanPeoplePerBucket": 1.0514285714285714,
+          "singletonBuckets": 512,
+          "singletonFraction": 0.9752380952380952,
+          "maxBucket": 12,
+          "unknownOrigin": 47,
+          "buildMs": 1.4781000000000404,
+          "reverseBuildMs": 12.078499999999963,
+          "marginalQueryMs": 0.39390000000003056,
+          "jsonBytes": 109750,
+          "mismatches": []
+        },
+        {
+          "label": "month",
+          "days": 30,
+          "records": 552,
+          "living": 552,
+          "bucketCount": 519,
+          "meanPeoplePerBucket": 1.0635838150289016,
+          "singletonBuckets": 501,
+          "singletonFraction": 0.9653179190751445,
+          "maxBucket": 12,
+          "unknownOrigin": 47,
+          "buildMs": 0.9012000000000171,
+          "reverseBuildMs": 9.837499999999977,
+          "marginalQueryMs": 0.3289000000000897,
+          "jsonBytes": 107830,
+          "mismatches": []
+        },
+        {
+          "label": "year",
+          "days": 360,
+          "records": 552,
+          "living": 552,
+          "bucketCount": 391,
+          "meanPeoplePerBucket": 1.411764705882353,
+          "singletonBuckets": 287,
+          "singletonFraction": 0.7340153452685422,
+          "maxBucket": 12,
+          "unknownOrigin": 47,
+          "buildMs": 0.6291999999999689,
+          "reverseBuildMs": 7.317199999999957,
+          "marginalQueryMs": 0.052500000000009095,
+          "jsonBytes": 80400,
+          "mismatches": []
+        },
+        {
+          "label": "fiveYears",
+          "days": 1800,
+          "records": 552,
+          "living": 552,
+          "bucketCount": 218,
+          "meanPeoplePerBucket": 2.532110091743119,
+          "singletonBuckets": 104,
+          "singletonFraction": 0.47706422018348627,
+          "maxBucket": 12,
+          "unknownOrigin": 47,
+          "buildMs": 0.3547999999999547,
+          "reverseBuildMs": 3.230299999999943,
+          "marginalQueryMs": 0.028599999999983083,
+          "jsonBytes": 44766,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "age": 400,
+      "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+      "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+      "bytes": 10073655,
+      "day": 144000,
+      "sourceEntities": 1399,
+      "birthFacts": {
+        "totalEntities": 1399,
+        "withBirthOrigin": 1361,
+        "withFiniteBirthDay": 1361,
+        "naturalVillageBirths": 1361,
+        "unknownBirthDay": 38
+      },
+      "grains": [
+        {
+          "label": "day",
+          "days": 1,
+          "records": 1411,
+          "living": 1411,
+          "bucketCount": 1382,
+          "meanPeoplePerBucket": 1.0209840810419681,
+          "singletonBuckets": 1371,
+          "singletonFraction": 0.992040520984081,
+          "maxBucket": 12,
+          "unknownOrigin": 50,
+          "buildMs": 1.2865000000000464,
+          "reverseBuildMs": 31.11040000000014,
+          "marginalQueryMs": 0.258199999999988,
+          "jsonBytes": 293809,
+          "mismatches": []
+        },
+        {
+          "label": "week",
+          "days": 7,
+          "records": 1411,
+          "living": 1411,
+          "bucketCount": 1380,
+          "meanPeoplePerBucket": 1.022463768115942,
+          "singletonBuckets": 1367,
+          "singletonFraction": 0.9905797101449275,
+          "maxBucket": 12,
+          "unknownOrigin": 50,
+          "buildMs": 1.1752000000001317,
+          "reverseBuildMs": 30.09069999999997,
+          "marginalQueryMs": 0.5942000000000007,
+          "jsonBytes": 290892,
+          "mismatches": []
+        },
+        {
+          "label": "month",
+          "days": 30,
+          "records": 1411,
+          "living": 1411,
+          "bucketCount": 1349,
+          "meanPeoplePerBucket": 1.0459599703484062,
+          "singletonBuckets": 1305,
+          "singletonFraction": 0.9673832468495182,
+          "maxBucket": 12,
+          "unknownOrigin": 50,
+          "buildMs": 1.8161999999999807,
+          "reverseBuildMs": 31.534400000000005,
+          "marginalQueryMs": 0.17840000000001055,
+          "jsonBytes": 282051,
+          "mismatches": []
+        },
+        {
+          "label": "year",
+          "days": 360,
+          "records": 1411,
+          "living": 1411,
+          "bucketCount": 1042,
+          "meanPeoplePerBucket": 1.354126679462572,
+          "singletonBuckets": 775,
+          "singletonFraction": 0.7437619961612284,
+          "maxBucket": 12,
+          "unknownOrigin": 50,
+          "buildMs": 0.9121000000000095,
+          "reverseBuildMs": 22.899799999999914,
+          "marginalQueryMs": 0.13789999999994507,
+          "jsonBytes": 216031,
+          "mismatches": []
+        },
+        {
+          "label": "fiveYears",
+          "days": 1800,
+          "records": 1411,
+          "living": 1411,
+          "bucketCount": 575,
+          "meanPeoplePerBucket": 2.453913043478261,
+          "singletonBuckets": 279,
+          "singletonFraction": 0.4852173913043478,
+          "maxBucket": 13,
+          "unknownOrigin": 50,
+          "buildMs": 1.407699999999977,
+          "reverseBuildMs": 10.47829999999999,
+          "marginalQueryMs": 0.07789999999999964,
+          "jsonBytes": 118759,
+          "mismatches": []
+        }
+      ]
+    }
+  ],
+  "synthetic": [
+    {
+      "population": 10000,
+      "occupiedBuckets": 50,
+      "traverseMs": 0.00980000000004111,
+      "serializedBytes": 441,
+      "bytesPerBucket": 8.82
+    },
+    {
+      "population": 10000,
+      "occupiedBuckets": 300,
+      "traverseMs": 0.017399999999952342,
+      "serializedBytes": 2591,
+      "bytesPerBucket": 8.636666666666667
+    },
+    {
+      "population": 10000,
+      "occupiedBuckets": 1000,
+      "traverseMs": 0.05360000000018772,
+      "serializedBytes": 8891,
+      "bytesPerBucket": 8.891
+    },
+    {
+      "population": 10000,
+      "occupiedBuckets": 5000,
+      "traverseMs": 0.3529999999998381,
+      "serializedBytes": 43891,
+      "bytesPerBucket": 8.7782
+    },
+    {
+      "population": 10000,
+      "occupiedBuckets": 20000,
+      "traverseMs": 1.6590000000001055,
+      "serializedBytes": 188891,
+      "bytesPerBucket": 9.44455
+    },
+    {
+      "population": 200000,
+      "occupiedBuckets": 50,
+      "traverseMs": 0.004400000000032378,
+      "serializedBytes": 491,
+      "bytesPerBucket": 9.82
+    },
+    {
+      "population": 200000,
+      "occupiedBuckets": 300,
+      "traverseMs": 0.01999999999998181,
+      "serializedBytes": 2891,
+      "bytesPerBucket": 9.636666666666667
+    },
+    {
+      "population": 200000,
+      "occupiedBuckets": 1000,
+      "traverseMs": 0.05529999999998836,
+      "serializedBytes": 9891,
+      "bytesPerBucket": 9.891
+    },
+    {
+      "population": 200000,
+      "occupiedBuckets": 5000,
+      "traverseMs": 0.38030000000003383,
+      "serializedBytes": 48891,
+      "bytesPerBucket": 9.7782
+    },
+    {
+      "population": 200000,
+      "occupiedBuckets": 20000,
+      "traverseMs": 1.6031000000000404,
+      "serializedBytes": 208891,
+      "bytesPerBucket": 10.44455
+    },
+    {
+      "population": 1000000,
+      "occupiedBuckets": 50,
+      "traverseMs": 0.004400000000032378,
+      "serializedBytes": 541,
+      "bytesPerBucket": 10.82
+    },
+    {
+      "population": 1000000,
+      "occupiedBuckets": 300,
+      "traverseMs": 0.02109999999993306,
+      "serializedBytes": 3191,
+      "bytesPerBucket": 10.636666666666667
+    },
+    {
+      "population": 1000000,
+      "occupiedBuckets": 1000,
+      "traverseMs": 0.060899999999946886,
+      "serializedBytes": 10891,
+      "bytesPerBucket": 10.891
+    },
+    {
+      "population": 1000000,
+      "occupiedBuckets": 5000,
+      "traverseMs": 0.40990000000010696,
+      "serializedBytes": 53891,
+      "bytesPerBucket": 10.7782
+    },
+    {
+      "population": 1000000,
+      "occupiedBuckets": 20000,
+      "traverseMs": 1.6911000000000058,
+      "serializedBytes": 208891,
+      "bytesPerBucket": 10.44455
+    }
+  ],
+  "edgeFixture": "level, species, adult boundary, dead follower, beast resident, upper and nether plane passed",
+  "pass": true
+}

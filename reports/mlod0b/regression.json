@@ -1,0 +1,113 @@
+{
+  "schema": "mlod0b-regression-v1",
+  "branch": "feat/mlod-0b-shadow-census",
+  "baseline": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "environment": {
+    "node": "v24.11.1",
+    "npm": "11.6.2"
+  },
+  "commands": [
+    {
+      "command": "npm test",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:c1",
+      "status": "passed",
+      "exitCode": 0,
+      "detail": "13 supply groups, UI, birth, longevity, territory"
+    },
+    {
+      "command": "npm run test:g8",
+      "status": "passed",
+      "exitCode": 0,
+      "detail": "121 runtime checks and demography/rift artifacts passed"
+    },
+    {
+      "command": "npm run test:save-equivalence",
+      "status": "passed",
+      "detail": "Read/load structure checks passed. Existing script observes 922 vs 954 beings after the independent 60-year continuation; it does not assert uninterrupted-vs-restored future trajectory equality.",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:three-realms",
+      "status": "passed",
+      "detail": "Three-realms invariant regression passed.",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:wx-e1c",
+      "status": "passed",
+      "exitCode": 0,
+      "detail": "45 cases, 309 queries / 6808 axes; cost ratchet passed"
+    },
+    {
+      "command": "npm run test:wx-e2ra2",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:wx-em2",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:wanxiang:s11",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:package",
+      "status": "passed",
+      "exitCode": 0,
+      "detail": "Ran after npm run build; audit passed for 768 files, 17 GLB, 95 documents."
+    },
+    {
+      "command": "node scripts/inkbox-mlod0b-census-test.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "detail": "29 edge cases"
+    },
+    {
+      "command": "node scripts/inkbox-mlod0b-red-fixture.mjs",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/inkbox-mlod0b-phases.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "detail": "100/400-year phase reproduction"
+    },
+    {
+      "command": "node scripts/inkbox-mlod0b-phase-events.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "detail": "37 events across 120 legal steps"
+    },
+    {
+      "command": "node scripts/inkbox-mlod0b-buckets.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "detail": "100/400-year five-grain real projections and 15 synthetic loads"
+    },
+    {
+      "command": "node tests/mlod0b/population-port.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "detail": "100/400-year fixtures"
+    },
+    {
+      "command": "node tests/mlod0b/red-team.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "detail": "32 passed, 0 failed"
+    }
+  ],
+  "limitations": [
+    "Full Fast/Heavy workflows were not executed as GitHub Actions runs from this worker.",
+    "Code was changing concurrently during this regression batch. Re-run required gates after the final production-source freeze.",
+    "The 3 x 200-year long-run gate is pending the dedicated long-run worker."
+  ]
+}

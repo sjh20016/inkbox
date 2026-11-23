@@ -1,0 +1,62 @@
+{
+  "baseline": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "cases": [
+    {
+      "name": "real-Life-maybeSplitVillage",
+      "status": "passed",
+      "result": {
+        "day": 36000,
+        "parentVillage": 1,
+        "childVillage": 24,
+        "movedIds": [
+          591,
+          598,
+          612,
+          754
+        ],
+        "movedCount": 4,
+        "sourcePopulationBefore": 46,
+        "sourcePopulationAfter": 42,
+        "childPopulation": 4,
+        "splitPhaseDifferences": [
+          {
+            "worldDay": 36000,
+            "phase": "after-village-split-membership",
+            "kind": "village",
+            "id": 1,
+            "field": "pop",
+            "legacy": 100,
+            "shadow": 42,
+            "classification": "expected-stale"
+          },
+          {
+            "worldDay": 36000,
+            "phase": "after-village-split-membership",
+            "kind": "village",
+            "id": 24,
+            "field": "pop",
+            "legacy": 0,
+            "shadow": 4,
+            "classification": "expected-stale"
+          }
+        ],
+        "syncedParentPopulation": 42,
+        "syncedChildPopulation": 4,
+        "writer": "Life.maybeSplitVillage -> foundVillage -> resident village/faction writes -> phase probe -> syncVillagePops"
+      }
+    },
+    {
+      "name": "real-arriveUpper-transfer-projection",
+      "status": "passed",
+      "result": {
+        "sourceId": 40,
+        "upperId": 1000012,
+        "mortalAliveUntilCallerCleanup": true,
+        "upperFaction": 0,
+        "upperVillage": 0,
+        "channel": "thunder",
+        "caller": "cultivation.ascend"
+      }
+    }
+  ]
+}

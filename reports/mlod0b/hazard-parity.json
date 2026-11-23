@@ -1,0 +1,971 @@
+{
+  "baseline": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "source": {
+    "head": "efb3263392de271164916d3b9c8b5b58715e2284",
+    "dirty": "M scripts/inkbox-mlod0b-perf.mjs\n?? scripts/inkbox-mlod0b-ascend-boundary.mjs\n?? scripts/inkbox-mlod0b-audit-cost.mjs\n?? scripts/inkbox-mlod0b-hazard-parity.mjs"
+  },
+  "environment": {
+    "node": "v24.11.1",
+    "platform": "win32"
+  },
+  "dt": 3,
+  "rows": [
+    {
+      "age": 100,
+      "input": {
+        "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+        "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+        "day": 36000
+      },
+      "eventKind": "lightning",
+      "dt": 3,
+      "runs": [
+        {
+          "mode": "off",
+          "portMode": "legacy",
+          "beforeSaveSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+          "before": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 467,
+            "practitioners": 38,
+            "mortalAdults": 262,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-player-disaster",
+            "writer": "sim/powers.js:lightning",
+            "targetId": 540,
+            "target": {
+              "x": 114.01838520624224,
+              "y": 121.378938118535
+            },
+            "livingHumansInRadius": 39,
+            "markedHumanCasualties": 39,
+            "text": "水滨落下一道雷霆：39 人罹难，1 所聚落受损。雷火点燃 26 处草木。另有1群万灵受灾，共损失1只。"
+          },
+          "afterWrite": {
+            "total": 540,
+            "living": 501,
+            "humans": 466,
+            "mortals": 428,
+            "practitioners": 38,
+            "mortalAdults": 238,
+            "fertileMortals": 188,
+            "fertileHumans": 193,
+            "nonHuman": 35,
+            "dead": 39
+          },
+          "afterStep": {
+            "total": 501,
+            "living": 501,
+            "humans": 466,
+            "mortals": 428,
+            "practitioners": 38,
+            "mortalAdults": 238,
+            "fertileMortals": 188,
+            "fertileHumans": 193,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "day": 36003,
+          "query": {
+            "before": {
+              "mode": "legacy",
+              "villages": 21,
+              "signature": "000e668f1a89458ae38523a3bc21aef9e467895741c762a1ae3064d6b44a83ec"
+            },
+            "afterWrite": {
+              "mode": "legacy",
+              "villages": 21,
+              "signature": "1f0f5e59f9c5189d88e63ccd1ff7a16f844f549436da14ce75c2fc43ebd46106"
+            },
+            "afterStep": {
+              "mode": "legacy",
+              "villages": 21,
+              "signature": "1f0f5e59f9c5189d88e63ccd1ff7a16f844f549436da14ce75c2fc43ebd46106"
+            }
+          },
+          "v11G8Sha256": "d8816a77362f9bd78da377e6aa6e97e95b2a6fbc28a837e40665c1ba907b9699",
+          "runtimeSha256": "4592d46598b8161a794ac27f96882c5439f50b814c4eaaf4c5ff5ad0fae17cfa",
+          "deadRetained": 543
+        },
+        {
+          "mode": "audit",
+          "portMode": "audit",
+          "beforeSaveSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+          "before": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 467,
+            "practitioners": 38,
+            "mortalAdults": 262,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-player-disaster",
+            "writer": "sim/powers.js:lightning",
+            "targetId": 540,
+            "target": {
+              "x": 114.01838520624224,
+              "y": 121.378938118535
+            },
+            "livingHumansInRadius": 39,
+            "markedHumanCasualties": 39,
+            "text": "水滨落下一道雷霆：39 人罹难，1 所聚落受损。雷火点燃 26 处草木。另有1群万灵受灾，共损失1只。"
+          },
+          "afterWrite": {
+            "total": 540,
+            "living": 501,
+            "humans": 466,
+            "mortals": 428,
+            "practitioners": 38,
+            "mortalAdults": 238,
+            "fertileMortals": 188,
+            "fertileHumans": 193,
+            "nonHuman": 35,
+            "dead": 39
+          },
+          "afterStep": {
+            "total": 501,
+            "living": 501,
+            "humans": 466,
+            "mortals": 428,
+            "practitioners": 38,
+            "mortalAdults": 238,
+            "fertileMortals": 188,
+            "fertileHumans": 193,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "day": 36003,
+          "query": {
+            "before": {
+              "mode": "audit",
+              "villages": 21,
+              "signature": "000e668f1a89458ae38523a3bc21aef9e467895741c762a1ae3064d6b44a83ec"
+            },
+            "afterWrite": {
+              "mode": "audit",
+              "villages": 21,
+              "signature": "1f0f5e59f9c5189d88e63ccd1ff7a16f844f549436da14ce75c2fc43ebd46106"
+            },
+            "afterStep": {
+              "mode": "audit",
+              "villages": 21,
+              "signature": "1f0f5e59f9c5189d88e63ccd1ff7a16f844f549436da14ce75c2fc43ebd46106"
+            }
+          },
+          "v11G8Sha256": "d8816a77362f9bd78da377e6aa6e97e95b2a6fbc28a837e40665c1ba907b9699",
+          "runtimeSha256": "4592d46598b8161a794ac27f96882c5439f50b814c4eaaf4c5ff5ad0fae17cfa",
+          "deadRetained": 543
+        },
+        {
+          "mode": "selective",
+          "portMode": "census",
+          "beforeSaveSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+          "before": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 467,
+            "practitioners": 38,
+            "mortalAdults": 262,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-player-disaster",
+            "writer": "sim/powers.js:lightning",
+            "targetId": 540,
+            "target": {
+              "x": 114.01838520624224,
+              "y": 121.378938118535
+            },
+            "livingHumansInRadius": 39,
+            "markedHumanCasualties": 39,
+            "text": "水滨落下一道雷霆：39 人罹难，1 所聚落受损。雷火点燃 26 处草木。另有1群万灵受灾，共损失1只。"
+          },
+          "afterWrite": {
+            "total": 540,
+            "living": 501,
+            "humans": 466,
+            "mortals": 428,
+            "practitioners": 38,
+            "mortalAdults": 238,
+            "fertileMortals": 188,
+            "fertileHumans": 193,
+            "nonHuman": 35,
+            "dead": 39
+          },
+          "afterStep": {
+            "total": 501,
+            "living": 501,
+            "humans": 466,
+            "mortals": 428,
+            "practitioners": 38,
+            "mortalAdults": 238,
+            "fertileMortals": 188,
+            "fertileHumans": 193,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "day": 36003,
+          "query": {
+            "before": {
+              "mode": "census",
+              "villages": 21,
+              "signature": "000e668f1a89458ae38523a3bc21aef9e467895741c762a1ae3064d6b44a83ec"
+            },
+            "afterWrite": {
+              "mode": "census",
+              "villages": 21,
+              "signature": "1f0f5e59f9c5189d88e63ccd1ff7a16f844f549436da14ce75c2fc43ebd46106"
+            },
+            "afterStep": {
+              "mode": "census",
+              "villages": 21,
+              "signature": "1f0f5e59f9c5189d88e63ccd1ff7a16f844f549436da14ce75c2fc43ebd46106"
+            }
+          },
+          "v11G8Sha256": "d8816a77362f9bd78da377e6aa6e97e95b2a6fbc28a837e40665c1ba907b9699",
+          "runtimeSha256": "4592d46598b8161a794ac27f96882c5439f50b814c4eaaf4c5ff5ad0fae17cfa",
+          "deadRetained": 543
+        }
+      ],
+      "parity": {
+        "completeV11G8Equal": true,
+        "postStepPopulationReadEqual": true,
+        "allModeQueriesAgree": true
+      }
+    },
+    {
+      "age": 100,
+      "input": {
+        "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+        "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+        "day": 36000
+      },
+      "eventKind": "grantRoot",
+      "dt": 3,
+      "runs": [
+        {
+          "mode": "off",
+          "portMode": "legacy",
+          "beforeSaveSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+          "before": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 467,
+            "practitioners": 38,
+            "mortalAdults": 262,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-divine-write",
+            "writer": "sim/divine.js:grantRoot",
+            "targetId": 336,
+            "target": {
+              "x": 29.046433577012724,
+              "y": 42.641216648689465
+            },
+            "levelBefore": 0,
+            "levelAfter": 1,
+            "text": "点化 1 人：许无玦（九天雷灵根）。灵根已开"
+          },
+          "afterWrite": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 466,
+            "practitioners": 39,
+            "mortalAdults": 261,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "afterStep": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 466,
+            "practitioners": 39,
+            "mortalAdults": 261,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "day": 36003,
+          "query": {
+            "before": {
+              "mode": "legacy",
+              "villages": 21,
+              "signature": "000e668f1a89458ae38523a3bc21aef9e467895741c762a1ae3064d6b44a83ec"
+            },
+            "afterWrite": {
+              "mode": "legacy",
+              "villages": 21,
+              "signature": "6ff8cee8503eadf447c958e3af37107b1265e40ea6e8b44bad168bab5cce9a3e"
+            },
+            "afterStep": {
+              "mode": "legacy",
+              "villages": 21,
+              "signature": "6ff8cee8503eadf447c958e3af37107b1265e40ea6e8b44bad168bab5cce9a3e"
+            }
+          },
+          "v11G8Sha256": "fad02f3d50b9d41c594c9bef9ad8a0702adf61fefa88a64d1da8e6eeed2d052f",
+          "runtimeSha256": "24923b13f9ca0257353f10ca60d4d5f1d6c5cb8d066758b75598e81ab40ce53a",
+          "deadRetained": 504
+        },
+        {
+          "mode": "audit",
+          "portMode": "audit",
+          "beforeSaveSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+          "before": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 467,
+            "practitioners": 38,
+            "mortalAdults": 262,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-divine-write",
+            "writer": "sim/divine.js:grantRoot",
+            "targetId": 336,
+            "target": {
+              "x": 29.046433577012724,
+              "y": 42.641216648689465
+            },
+            "levelBefore": 0,
+            "levelAfter": 1,
+            "text": "点化 1 人：许无玦（九天雷灵根）。灵根已开"
+          },
+          "afterWrite": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 466,
+            "practitioners": 39,
+            "mortalAdults": 261,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "afterStep": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 466,
+            "practitioners": 39,
+            "mortalAdults": 261,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "day": 36003,
+          "query": {
+            "before": {
+              "mode": "audit",
+              "villages": 21,
+              "signature": "000e668f1a89458ae38523a3bc21aef9e467895741c762a1ae3064d6b44a83ec"
+            },
+            "afterWrite": {
+              "mode": "audit",
+              "villages": 21,
+              "signature": "6ff8cee8503eadf447c958e3af37107b1265e40ea6e8b44bad168bab5cce9a3e"
+            },
+            "afterStep": {
+              "mode": "audit",
+              "villages": 21,
+              "signature": "6ff8cee8503eadf447c958e3af37107b1265e40ea6e8b44bad168bab5cce9a3e"
+            }
+          },
+          "v11G8Sha256": "fad02f3d50b9d41c594c9bef9ad8a0702adf61fefa88a64d1da8e6eeed2d052f",
+          "runtimeSha256": "24923b13f9ca0257353f10ca60d4d5f1d6c5cb8d066758b75598e81ab40ce53a",
+          "deadRetained": 504
+        },
+        {
+          "mode": "selective",
+          "portMode": "census",
+          "beforeSaveSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+          "before": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 467,
+            "practitioners": 38,
+            "mortalAdults": 262,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-divine-write",
+            "writer": "sim/divine.js:grantRoot",
+            "targetId": 336,
+            "target": {
+              "x": 29.046433577012724,
+              "y": 42.641216648689465
+            },
+            "levelBefore": 0,
+            "levelAfter": 1,
+            "text": "点化 1 人：许无玦（九天雷灵根）。灵根已开"
+          },
+          "afterWrite": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 466,
+            "practitioners": 39,
+            "mortalAdults": 261,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "afterStep": {
+            "total": 540,
+            "living": 540,
+            "humans": 505,
+            "mortals": 466,
+            "practitioners": 39,
+            "mortalAdults": 261,
+            "fertileMortals": 210,
+            "fertileHumans": 215,
+            "nonHuman": 35,
+            "dead": 0
+          },
+          "day": 36003,
+          "query": {
+            "before": {
+              "mode": "census",
+              "villages": 21,
+              "signature": "000e668f1a89458ae38523a3bc21aef9e467895741c762a1ae3064d6b44a83ec"
+            },
+            "afterWrite": {
+              "mode": "census",
+              "villages": 21,
+              "signature": "6ff8cee8503eadf447c958e3af37107b1265e40ea6e8b44bad168bab5cce9a3e"
+            },
+            "afterStep": {
+              "mode": "census",
+              "villages": 21,
+              "signature": "6ff8cee8503eadf447c958e3af37107b1265e40ea6e8b44bad168bab5cce9a3e"
+            }
+          },
+          "v11G8Sha256": "fad02f3d50b9d41c594c9bef9ad8a0702adf61fefa88a64d1da8e6eeed2d052f",
+          "runtimeSha256": "24923b13f9ca0257353f10ca60d4d5f1d6c5cb8d066758b75598e81ab40ce53a",
+          "deadRetained": 504
+        }
+      ],
+      "parity": {
+        "completeV11G8Equal": true,
+        "postStepPopulationReadEqual": true,
+        "allModeQueriesAgree": true
+      }
+    },
+    {
+      "age": 400,
+      "input": {
+        "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "day": 144000
+      },
+      "eventKind": "lightning",
+      "dt": 3,
+      "runs": [
+        {
+          "mode": "off",
+          "portMode": "legacy",
+          "beforeSaveSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+          "before": {
+            "total": 1399,
+            "living": 1399,
+            "humans": 1361,
+            "mortals": 1223,
+            "practitioners": 138,
+            "mortalAdults": 791,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-player-disaster",
+            "writer": "sim/powers.js:lightning",
+            "targetId": 7090,
+            "target": {
+              "x": 89.47480844757776,
+              "y": 117.75389908007477
+            },
+            "livingHumansInRadius": 55,
+            "markedHumanCasualties": 55,
+            "text": "林麓落下一道雷霆：55 人罹难，1 所聚落受损。雷火点燃 27 处草木。另有1群万灵受灾，共损失1只。"
+          },
+          "afterWrite": {
+            "total": 1399,
+            "living": 1344,
+            "humans": 1306,
+            "mortals": 1168,
+            "practitioners": 138,
+            "mortalAdults": 756,
+            "fertileMortals": 581,
+            "fertileHumans": 617,
+            "nonHuman": 38,
+            "dead": 55
+          },
+          "afterStep": {
+            "total": 1344,
+            "living": 1344,
+            "humans": 1306,
+            "mortals": 1168,
+            "practitioners": 138,
+            "mortalAdults": 755,
+            "fertileMortals": 581,
+            "fertileHumans": 617,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "day": 144003,
+          "query": {
+            "before": {
+              "mode": "legacy",
+              "villages": 44,
+              "signature": "8ab4af393605949033db6f49dddcf6cc4f4ee3a02d8b1fbeec8be251b5872df5"
+            },
+            "afterWrite": {
+              "mode": "legacy",
+              "villages": 44,
+              "signature": "2a3c6d9c2f29579eb1c319b5ec8809aa710d802fd1d6984833126a56bfa6bd7c"
+            },
+            "afterStep": {
+              "mode": "legacy",
+              "villages": 44,
+              "signature": "ccc0a88d730235bb8756596ffcf80a014bf713426f8a2fcbfc2d531ea19ff065"
+            }
+          },
+          "v11G8Sha256": "2121296af7f932cab7479177e57f25298ae1480528b658d7c8a190430922fb35",
+          "runtimeSha256": "6eb18959441056ee97c86bd2d26a565f5eda7286c82aaa0eec229639fe02b619",
+          "deadRetained": 800
+        },
+        {
+          "mode": "audit",
+          "portMode": "audit",
+          "beforeSaveSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+          "before": {
+            "total": 1399,
+            "living": 1399,
+            "humans": 1361,
+            "mortals": 1223,
+            "practitioners": 138,
+            "mortalAdults": 791,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-player-disaster",
+            "writer": "sim/powers.js:lightning",
+            "targetId": 7090,
+            "target": {
+              "x": 89.47480844757776,
+              "y": 117.75389908007477
+            },
+            "livingHumansInRadius": 55,
+            "markedHumanCasualties": 55,
+            "text": "林麓落下一道雷霆：55 人罹难，1 所聚落受损。雷火点燃 27 处草木。另有1群万灵受灾，共损失1只。"
+          },
+          "afterWrite": {
+            "total": 1399,
+            "living": 1344,
+            "humans": 1306,
+            "mortals": 1168,
+            "practitioners": 138,
+            "mortalAdults": 756,
+            "fertileMortals": 581,
+            "fertileHumans": 617,
+            "nonHuman": 38,
+            "dead": 55
+          },
+          "afterStep": {
+            "total": 1344,
+            "living": 1344,
+            "humans": 1306,
+            "mortals": 1168,
+            "practitioners": 138,
+            "mortalAdults": 755,
+            "fertileMortals": 581,
+            "fertileHumans": 617,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "day": 144003,
+          "query": {
+            "before": {
+              "mode": "audit",
+              "villages": 44,
+              "signature": "8ab4af393605949033db6f49dddcf6cc4f4ee3a02d8b1fbeec8be251b5872df5"
+            },
+            "afterWrite": {
+              "mode": "audit",
+              "villages": 44,
+              "signature": "2a3c6d9c2f29579eb1c319b5ec8809aa710d802fd1d6984833126a56bfa6bd7c"
+            },
+            "afterStep": {
+              "mode": "audit",
+              "villages": 44,
+              "signature": "ccc0a88d730235bb8756596ffcf80a014bf713426f8a2fcbfc2d531ea19ff065"
+            }
+          },
+          "v11G8Sha256": "2121296af7f932cab7479177e57f25298ae1480528b658d7c8a190430922fb35",
+          "runtimeSha256": "6eb18959441056ee97c86bd2d26a565f5eda7286c82aaa0eec229639fe02b619",
+          "deadRetained": 800
+        },
+        {
+          "mode": "selective",
+          "portMode": "census",
+          "beforeSaveSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+          "before": {
+            "total": 1399,
+            "living": 1399,
+            "humans": 1361,
+            "mortals": 1223,
+            "practitioners": 138,
+            "mortalAdults": 791,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-player-disaster",
+            "writer": "sim/powers.js:lightning",
+            "targetId": 7090,
+            "target": {
+              "x": 89.47480844757776,
+              "y": 117.75389908007477
+            },
+            "livingHumansInRadius": 55,
+            "markedHumanCasualties": 55,
+            "text": "林麓落下一道雷霆：55 人罹难，1 所聚落受损。雷火点燃 27 处草木。另有1群万灵受灾，共损失1只。"
+          },
+          "afterWrite": {
+            "total": 1399,
+            "living": 1344,
+            "humans": 1306,
+            "mortals": 1168,
+            "practitioners": 138,
+            "mortalAdults": 756,
+            "fertileMortals": 581,
+            "fertileHumans": 617,
+            "nonHuman": 38,
+            "dead": 55
+          },
+          "afterStep": {
+            "total": 1344,
+            "living": 1344,
+            "humans": 1306,
+            "mortals": 1168,
+            "practitioners": 138,
+            "mortalAdults": 755,
+            "fertileMortals": 581,
+            "fertileHumans": 617,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "day": 144003,
+          "query": {
+            "before": {
+              "mode": "census",
+              "villages": 44,
+              "signature": "8ab4af393605949033db6f49dddcf6cc4f4ee3a02d8b1fbeec8be251b5872df5"
+            },
+            "afterWrite": {
+              "mode": "census",
+              "villages": 44,
+              "signature": "2a3c6d9c2f29579eb1c319b5ec8809aa710d802fd1d6984833126a56bfa6bd7c"
+            },
+            "afterStep": {
+              "mode": "census",
+              "villages": 44,
+              "signature": "ccc0a88d730235bb8756596ffcf80a014bf713426f8a2fcbfc2d531ea19ff065"
+            }
+          },
+          "v11G8Sha256": "2121296af7f932cab7479177e57f25298ae1480528b658d7c8a190430922fb35",
+          "runtimeSha256": "6eb18959441056ee97c86bd2d26a565f5eda7286c82aaa0eec229639fe02b619",
+          "deadRetained": 800
+        }
+      ],
+      "parity": {
+        "completeV11G8Equal": true,
+        "postStepPopulationReadEqual": true,
+        "allModeQueriesAgree": true
+      }
+    },
+    {
+      "age": 400,
+      "input": {
+        "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+        "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+        "day": 144000
+      },
+      "eventKind": "grantRoot",
+      "dt": 3,
+      "runs": [
+        {
+          "mode": "off",
+          "portMode": "legacy",
+          "beforeSaveSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+          "before": {
+            "total": 1399,
+            "living": 1399,
+            "humans": 1361,
+            "mortals": 1223,
+            "practitioners": 138,
+            "mortalAdults": 791,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-divine-write",
+            "writer": "sim/divine.js:grantRoot",
+            "targetId": 6271,
+            "target": {
+              "x": 167.47389545251087,
+              "y": 91.55517534828478
+            },
+            "levelBefore": 0,
+            "levelAfter": 1,
+            "text": "点化 1 人：洛砚烟（九天雷灵根）。灵根已开"
+          },
+          "afterWrite": {
+            "total": 1399,
+            "living": 1399,
+            "humans": 1361,
+            "mortals": 1222,
+            "practitioners": 139,
+            "mortalAdults": 790,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "afterStep": {
+            "total": 1398,
+            "living": 1398,
+            "humans": 1360,
+            "mortals": 1221,
+            "practitioners": 139,
+            "mortalAdults": 789,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "day": 144003,
+          "query": {
+            "before": {
+              "mode": "legacy",
+              "villages": 44,
+              "signature": "8ab4af393605949033db6f49dddcf6cc4f4ee3a02d8b1fbeec8be251b5872df5"
+            },
+            "afterWrite": {
+              "mode": "legacy",
+              "villages": 44,
+              "signature": "e3bb88951c263d0b0aa6e0199fbeec07c37f520d6e1821ab75643c6b9d3c0dd1"
+            },
+            "afterStep": {
+              "mode": "legacy",
+              "villages": 44,
+              "signature": "3f0b316c12b058e031d91bc4a3da5a1ed557d12280cb688b3e94c0e80ddfe226"
+            }
+          },
+          "v11G8Sha256": "d1c48230c803c7b9d3adb187be119da1c63c8ef50a8110305a8514128f3f3123",
+          "runtimeSha256": "5e2653c9846c06bbb7f5b4c4eb99aa449ce0b540f8089c32e345a43896187c2f",
+          "deadRetained": 800
+        },
+        {
+          "mode": "audit",
+          "portMode": "audit",
+          "beforeSaveSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+          "before": {
+            "total": 1399,
+            "living": 1399,
+            "humans": 1361,
+            "mortals": 1223,
+            "practitioners": 138,
+            "mortalAdults": 791,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-divine-write",
+            "writer": "sim/divine.js:grantRoot",
+            "targetId": 6271,
+            "target": {
+              "x": 167.47389545251087,
+              "y": 91.55517534828478
+            },
+            "levelBefore": 0,
+            "levelAfter": 1,
+            "text": "点化 1 人：洛砚烟（九天雷灵根）。灵根已开"
+          },
+          "afterWrite": {
+            "total": 1399,
+            "living": 1399,
+            "humans": 1361,
+            "mortals": 1222,
+            "practitioners": 139,
+            "mortalAdults": 790,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "afterStep": {
+            "total": 1398,
+            "living": 1398,
+            "humans": 1360,
+            "mortals": 1221,
+            "practitioners": 139,
+            "mortalAdults": 789,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "day": 144003,
+          "query": {
+            "before": {
+              "mode": "audit",
+              "villages": 44,
+              "signature": "8ab4af393605949033db6f49dddcf6cc4f4ee3a02d8b1fbeec8be251b5872df5"
+            },
+            "afterWrite": {
+              "mode": "audit",
+              "villages": 44,
+              "signature": "e3bb88951c263d0b0aa6e0199fbeec07c37f520d6e1821ab75643c6b9d3c0dd1"
+            },
+            "afterStep": {
+              "mode": "audit",
+              "villages": 44,
+              "signature": "3f0b316c12b058e031d91bc4a3da5a1ed557d12280cb688b3e94c0e80ddfe226"
+            }
+          },
+          "v11G8Sha256": "d1c48230c803c7b9d3adb187be119da1c63c8ef50a8110305a8514128f3f3123",
+          "runtimeSha256": "5e2653c9846c06bbb7f5b4c4eb99aa449ce0b540f8089c32e345a43896187c2f",
+          "deadRetained": 800
+        },
+        {
+          "mode": "selective",
+          "portMode": "census",
+          "beforeSaveSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+          "before": {
+            "total": 1399,
+            "living": 1399,
+            "humans": 1361,
+            "mortals": 1223,
+            "practitioners": 138,
+            "mortalAdults": 791,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "write": {
+            "kind": "controlled-divine-write",
+            "writer": "sim/divine.js:grantRoot",
+            "targetId": 6271,
+            "target": {
+              "x": 167.47389545251087,
+              "y": 91.55517534828478
+            },
+            "levelBefore": 0,
+            "levelAfter": 1,
+            "text": "点化 1 人：洛砚烟（九天雷灵根）。灵根已开"
+          },
+          "afterWrite": {
+            "total": 1399,
+            "living": 1399,
+            "humans": 1361,
+            "mortals": 1222,
+            "practitioners": 139,
+            "mortalAdults": 790,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "afterStep": {
+            "total": 1398,
+            "living": 1398,
+            "humans": 1360,
+            "mortals": 1221,
+            "practitioners": 139,
+            "mortalAdults": 789,
+            "fertileMortals": 607,
+            "fertileHumans": 643,
+            "nonHuman": 38,
+            "dead": 0
+          },
+          "day": 144003,
+          "query": {
+            "before": {
+              "mode": "census",
+              "villages": 44,
+              "signature": "8ab4af393605949033db6f49dddcf6cc4f4ee3a02d8b1fbeec8be251b5872df5"
+            },
+            "afterWrite": {
+              "mode": "census",
+              "villages": 44,
+              "signature": "e3bb88951c263d0b0aa6e0199fbeec07c37f520d6e1821ab75643c6b9d3c0dd1"
+            },
+            "afterStep": {
+              "mode": "census",
+              "villages": 44,
+              "signature": "3f0b316c12b058e031d91bc4a3da5a1ed557d12280cb688b3e94c0e80ddfe226"
+            }
+          },
+          "v11G8Sha256": "d1c48230c803c7b9d3adb187be119da1c63c8ef50a8110305a8514128f3f3123",
+          "runtimeSha256": "5e2653c9846c06bbb7f5b4c4eb99aa449ce0b540f8089c32e345a43896187c2f",
+          "deadRetained": 800
+        }
+      ],
+      "parity": {
+        "completeV11G8Equal": true,
+        "postStepPopulationReadEqual": true,
+        "allModeQueriesAgree": true
+      }
+    }
+  ],
+  "conclusion": "All cases start from the fixed natural v11+G8 checkpoint. Lightning and grantRoot are controlled official player writes, not naturally triggered events. Each is followed by one legal advanceWorld(dt); off(legacy), audit, and selective(census) branches have identical full saved world plus registered runtime/RNG state and identical post-step population reads."
+}

@@ -15,3 +15,8 @@ vendor/three/** text eol=lf
 # 所以**本机看不出问题**，但 `autocrlf=false` 的机器克隆后 .bat 会是 LF
 # ⇒ 又是同一类「本机绿、别人红」。显式钉住，与上面 vendor 的理由完全一致。
 *.bat text eol=crlf
+
+# The verifier hashes the exact JSON bytes downloaded from the Linux proof jobs.
+reports/mlod0b/proof/*.json text eol=lf
+reports/mlod0b/event-matrix/*.json text eol=lf
+reports/mlod0b/event-matrix/*.json text eol=lf

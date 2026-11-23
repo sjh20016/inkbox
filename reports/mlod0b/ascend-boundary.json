@@ -1,0 +1,71 @@
+{
+  "test": "MLOD-0B real cultivation ascend source cleanup with attached planes",
+  "input": "100-year supplied natural checkpoint",
+  "mode": "controlled single-person promotion fixture; official Life.stepEntity and Life.step cleanup",
+  "dt": 10,
+  "pass": true,
+  "inputSha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+  "populationAtBoundary": {
+    "beforeCounts": {
+      "mortal": 1,
+      "upper": 12,
+      "nether": 0
+    },
+    "afterCounts": {
+      "mortal": 1,
+      "upper": 13,
+      "nether": 0
+    }
+  },
+  "result": {
+    "sourceId": 40,
+    "upperId": 1000012,
+    "crossPlaneWasTwoObjectsDuringStep": true,
+    "sourceRemovedAfterStep": true,
+    "countsBefore": {
+      "mortal": 1,
+      "upper": 12,
+      "nether": 0
+    },
+    "countsAfter": {
+      "mortal": 1,
+      "upper": 13,
+      "nether": 0
+    },
+    "additionalMortalIds": [
+      1045
+    ],
+    "entityCounts": {
+      "mortal": 1,
+      "upper": 13,
+      "nether": 0
+    },
+    "day": 36010,
+    "advanceFired": {
+      "upper": true,
+      "nether": true,
+      "rift": false,
+      "wraith": true,
+      "nature": false,
+      "wanling": true,
+      "transit": false,
+      "mapProgress": false
+    },
+    "g8Exact": true,
+    "g8UpperStreams": [
+      "rng",
+      "spatialRng",
+      "foundAccum"
+    ],
+    "arrival": {
+      "day": 0,
+      "id": 1000012,
+      "fromKey": "mortal:40",
+      "name": "秦少舒",
+      "level": 60,
+      "kind": "cultivator",
+      "via": "ascend",
+      "sect": "扶桑院"
+    }
+  }
+}

@@ -105,9 +105,9 @@
     },
     {
       "path": "src/inkbox/sim/life.js",
-      "sha256": "af7310f10ac73de2f47c49822184bb80c913a866d4854121455daa6f151817f5",
+      "sha256": "6f4a7978dd4ce423a3f88dc429d9170e5d025a39f545cf50a4b53f7856762f7b",
       "cardId": "life-step",
-      "review": "E-M2 independent read-only review 2026-11-14: explicit begin/end instrumentation only; business call order, parameters, dt, RNG and E1C pass/finally unchanged. Deliberate per-file pin; raw natural and Edge acceptance tracked separately, not inferred from this source review."
+      "review": "WX-E0 MLOD-0B candidate review 2026-11-22: reviewed phase observer hooks against the existing Life writer order; observer is WeakMap-only and absent by default, census runs only on registered research observer, event payloads are limited to birth/split points. No population writer, ordering, dt, or RNG draw added by the hooks. Pin does not assert census truth; MLOD-0B deterministic/save/perf evidence is tracked separately."
     },
     {
       "path": "src/inkbox/sim/advance.js",
@@ -150,6 +150,30 @@
       "sha256": "e2916d8890d3170d7b9329e283006cdd5f71460e33cfb71ef07e4de306a8e70d",
       "cardId": "mana-capacity",
       "review": "Baseline c4b169d; planned optional diagnostic count only; no rule change claim."
+    },
+    {
+      "path": "src/inkbox/sim/demography/jointBuckets.js",
+      "sha256": "342c4624effc7efc60c04ae2102f1a58dc97c4acd747e5d688433a91b8a0443f",
+      "cardId": "joint-population-buckets",
+      "review": "WX-E0 MLOD-0B candidate review 2026-11-22: one-pass transient tuple grouping; O(N) time, worst-case N buckets and JSON-key allocation per entity. Research-only output, no authority or save integration."
+    },
+    {
+      "path": "src/inkbox/sim/demography/legacyCensus.js",
+      "sha256": "c776894b0c7cb863bcf5169b5945300421cc4952fd52c6efe6c240a471cf1ef7",
+      "cardId": "population-shadow-census",
+      "review": "WX-E0 MLOD-0B candidate review 2026-11-22: independent one-pass projection of existing entities and IDs; O(N) time with O(V+F+U+P) aggregate storage, no cache/write/RNG. Explicit diagnostic or opt-in read only. Village split membership is an expected-stale observation because syncVillagePops runs immediately after the probe; only after-first-village-sync is stable."
+    },
+    {
+      "path": "src/inkbox/sim/demography/phaseProbe.js",
+      "sha256": "d555e5fbaf4bcb8a82bf746550e0b78e4b52b6b364d92fe1a794798fd619d964",
+      "cardId": "population-phase-probe",
+      "review": "WX-E0 MLOD-0B candidate review 2026-11-22: optional WeakMap observer, no census without an observer, fixed phase checks and birth/split-only detail. No save/RNG fields."
+    },
+    {
+      "path": "src/inkbox/sim/demography/populationReadPort.js",
+      "sha256": "dee013560f15dd0b2cefc3c49d852fad41bbebec70ba61e68883774078d0bfc7",
+      "cardId": "population-read-port",
+      "review": "WX-E0 MLOD-0B candidate review 2026-11-22: explicit legacy/audit/census selection, fresh O(N) census and legacy comparison on diagnostic calls; only exact agreement allows census result. Default remains legacy; committed cards have sequence guard."
     },
     {
       "path": "src/inkbox/sim/siteSearch.js",
@@ -219,9 +243,9 @@
     },
     {
       "path": "src/inkbox/presentation/readView/committedStore.js",
-      "sha256": "73d91acc447977091ce7a4bd9c5a098cb93c4e3fa2a4e670285b9618dc92c8b0",
+      "sha256": "b982f5d8a5cd3ea565e3f94c6c6b026b1cadbee05af3f5533aae93299e00ebed",
       "cardId": "e2ra2-committed-boundary",
-      "review": "E2R-a.2 independent source review completed 2026-11-14; root deliberately pins this explicit file after review. Complete synchronous publication and migrated-consumer poison tests; original simulation/RNG/dt unchanged. Does not certify legacy readers for product async execution."
+      "review": "WX-E0 MLOD-0B candidate review 2026-11-22: population capture adds one shadow census only when the UI read mode is explicitly audit/census; default legacy mode stores null and performs no census card work. Existing frame publication remains synchronous and atomic. MLOD-0B population-port/save/perf proof is separate; does not admit census mode by default or certify unconverted readers."
     },
     {
       "path": "src/inkbox/presentation/readView/committedRegistry.js",
@@ -249,9 +273,9 @@
     },
     {
       "path": "src/inkbox/presentation/readView/query.js",
-      "sha256": "94e10997f2ebea4bb1661bf3255d9c7f5fb18f9e174ca300d09220575496bdbf",
+      "sha256": "ac4f37fa46f29cdb453eef8d3e254ad9339e4f5144e61efa55e5325c488df830",
       "cardId": "e2ra2-committed-boundary",
-      "review": "E2R-a.2 independent source review completed 2026-11-14; root deliberately pins this explicit file after review. Complete synchronous publication and migrated-consumer poison tests; original simulation/RNG/dt unchanged. Does not certify legacy readers for product async execution."
+      "review": "WX-E0 MLOD-0B candidate review 2026-11-22: census card capture derives an independent Map from current entity arrays, compares only five selected village fields, and exposes census cards only on exact agreement; disagreement leaves census null and legacy cards available. Direct census query uses the same stable commit sequence guard. MLOD-0B card/fallback/read-purity tests are tracked separately; no async guarantee is implied."
     },
     {
       "path": "src/inkbox/presentation/readView/terrain.js",
@@ -333,13 +357,13 @@
       "consumerAndFactSource": "Life.step/stepEntity consume existing World facts; C2 gates skill maintenance and B2 calls nearestSeekSite only in the existing planNext roll<0.42 branch.",
       "settlementObjects": "Life traverses the same entity list. Skill maintenance is eligible for level>0, existing combat, or explicit skills. Each seek query scans current world.sites once.",
       "timePrecision": "One Life.step call per existing advance; optional dt bucket records that call's dtDays; eligibility is checked at the existing per-entity point.",
-      "worstCaseCost": "Identity build O(N) and separate spatial build O(N), once each per queried native loop; exact mentor O(R), shared O(B), peer queries at most25 cells plus local candidates, dense worst case O(N). Native movement membership update uses O(1) Map/Set work. Invalid/unowned cases retain complete original scans. Build/relations/position/cell/candidate/fallback work all visible. Current dynamic effect cost follows reviewed conditions/experience/entity-read-view cards. Existing entity, village, sect, relation, site and wanling work remains; these incremental index bounds do not bound total Life.step or the whole consumer.",
+      "worstCaseCost": "Identity build O(N) and separate spatial build O(N), once each per queried native loop; exact mentor O(R), shared O(B), peer queries at most25 cells plus local candidates, dense worst case O(N). Native movement membership update uses O(1) Map/Set work. Invalid/unowned cases retain complete original scans. Build/relations/position/cell/candidate/fallback work all visible. Current dynamic effect cost follows reviewed conditions/experience/entity-read-view cards. Existing entity, village, sect, relation, site and wanling work remains; these incremental index bounds do not bound total Life.step or the whole consumer. MLOD-0B observers add a fixed number of O(1) WeakMap phase checks per tick plus one callback only when a test observer is installed; birth/split detail construction is event-only and observer-gated.",
       "queryMethod": "Current plane ID/order map and independent live 4-cell spatial Set buckets; original Life.grid unchanged. Only successful spatial query with valid ordered mentor may use unordered candidates; any failure recomputes all peer fields in original array order.",
       "rngContract": "C2 eligibility draws no RNG. B2 keeps the old roll<0.42 branch. Previously, a nearest formation prevented seek; a nearest empty cave still allowed seek to that empty cave. B2 skips both and may choose a farther viable target or fall through, changing destination and potentially later Life.rng trajectory. Not baseline RNG-equivalent.",
-      "cacheInvalidation": "No effect-result cache. Current facts are evaluated at every original call; derived identity/local view follows its reviewed loop lifetime and movement/structural invalidation contract.",
+      "cacheInvalidation": "No effect-result cache. Current facts are evaluated at every original call; derived identity/local view follows its reviewed loop lifetime and movement/structural invalidation contract. Phase observer registration is a process-local WeakMap and removal deletes the observer; it is not saved or cached in World.",
       "dataLifetime": "No new search save fields. C2 may omit default empty skills/combat for unqualified profiles; B2 stores its chosen destination through existing plan state.",
       "failureAndExit": "Candidate is not a route reachability proof; planNext does no pathfinding. Existing stale-target/arrival behavior remains.",
-      "testEvidence": "Final45 controlled cases; complete native effect AND conditions Object.is maps, 100/400y90d dt3+3d dt0.1 all World/RNG/sourceTags/v11 forks. Test-only Proxy traces actual other-actor native movement, cell boundary/max displacement/live state, Life.grid unchanged. Far/dense fixed-work ratchet and actual fallback/unknown red paths."
+      "testEvidence": "Final45 controlled cases; complete native effect AND conditions Object.is maps, 100/400y90d dt3+3d dt0.1 all World/RNG/sourceTags/v11 forks. Test-only Proxy traces actual other-actor native movement, cell boundary/max displacement/live state, Life.grid unchanged. Far/dense fixed-work ratchet and actual fallback/unknown red paths. MLOD-0B observer purity/phase timing and split/birth cases are covered by test:mlod0b and 144000-day schism proof."
     },
     {
       "id": "advance-world",
@@ -607,13 +631,65 @@
       "consumerAndFactSource": "Committed Frame/Query/geometry produced only after complete native advanceWorld or admitted original G7/History command; Canvas/Three entity consumers share a generation.",
       "settlementObjects": "All existing individual entity facts per managed plane, faction/visual facts, and five terrain layers; complex settlement/social Query remains guarded legacy.",
       "timePrecision": "Original synchronous variable-dt product; explicit same-day edit publication. Research fixed dt is not introduced.",
-      "worstCaseCost": "O(N) Frame plus O(N) entity Query per commit; dirty whole layers COW O(changed layers * W * H), initial/overflow five-layer projection. Current consumers still allocate Three derived rows. Primitive-slot estimates are not exact heap size.",
+      "worstCaseCost": "O(N) Frame plus O(N) entity Query per commit; dirty whole layers COW O(changed layers * W * H), initial/overflow five-layer projection. If population UI mode is explicitly audit/census, each commit additionally builds one O(N) shadow census and O(V) card rows; default legacy mode builds no census card. Current consumers still allocate Three derived rows. Primitive-slot estimates are not exact heap size.",
       "queryMethod": "Identity-only private registry lookup; frozen primitive DTOs; managed Camera uses immutable geometry; no World/Entity/Map/mutable TypedArray exposed.",
       "rngContract": "No RNG draw or simulation rule changes. ALL runtime/RNG natural replay and independent forks required.",
-      "cacheInvalidation": "Complete whole-step/whole-command commitSequence and geometry revision; replaced/disposed session identity; fixed child topology with fault tombstones.",
+      "cacheInvalidation": "Complete whole-step/whole-command commitSequence and geometry revision; replaced/disposed session identity; fixed child topology with fault tombstones. Opt-in population cards are rebuilt from source facts for each commit and cleared when switching back to legacy mode.",
       "dataLifetime": "Only current committed front retained by store; retained old DTOs remain immutable; transient counters default off; no v11 fields.",
       "failureAndExit": "Build failure retains old front and faults; no arbitrary power rollback claimed; authoritative legacy reads/saves stop pending explicit recovery/replacement. Unconverted readers are documented.",
-      "testEvidence": "test:wx-e2ra2 plus original wx-e2ra, G7, G1/S1 and full Fast/Heavy. Real natural 100/400y full World/ALL runtime/RNG proof; Edge acceptance and source hash manifests reported separately."
+      "testEvidence": "test:wx-e2ra2 plus original wx-e2ra, G7, G1/S1 and full Fast/Heavy. Real natural 100/400y full World/ALL runtime/RNG proof; Edge acceptance and source hash manifests reported separately. MLOD-0B card agreement, card freshness, opt-in/default behavior and generation checks are covered by population-port and save tests."
+    },
+    {
+      "id": "population-shadow-census",
+      "consumerAndFactSource": "buildPopulationCensus reads only existing entities, villages, factions and child-plane arrays; it independently projects the authoritative records and compares selected legacy caches without writing them.",
+      "settlementObjects": "One pass over all existing mortal, upper and nether entities, with O(1) aggregation into maps keyed by current village/faction IDs; no people or settlement is created.",
+      "timePrecision": "Explicit test/diagnostic query or opt-in population UI snapshot/query; not a per-entity simulation callback.",
+      "worstCaseCost": "O(N + V + F + U) time and O(V + F + U + P) aggregate memory, where N is current entities across planes, V villages, F mortal factions, U upper factions, P distinct plane totals. Each record is visited once; no sorting or pairwise relation scan.",
+      "queryMethod": "Direct iteration over the existing plane entity arrays and ID-keyed Maps; this is intentionally a full independent census because partial indexes could share the legacy cache's missed-writer failure mode.",
+      "rngContract": "Read-only: no RNG access/draw and no simulation-rule changes.",
+      "cacheInvalidation": "No result cache; every census is rebuilt from current source arrays and attributes.",
+      "dataLifetime": "Transient returned Maps only; observer/results are outside World serialization and no new save fields or people are retained.",
+      "failureAndExit": "Missing child plane is skipped; invalid village/faction assignments are counted in explicit unassigned diagnostics; malformed entity fields follow the documented predicates rather than repairing source state.",
+      "testEvidence": "test:mlod0b census agreement and predicate tests, 100/400-year save replay, read purity/RNG checks, and phase-specific expected-stale versus stable cache comparison; no performance admission is claimed for invoking this on every product tick."
+    },
+    {
+      "id": "population-phase-probe",
+      "consumerAndFactSource": "observePopulationPhase exposes selected existing Life writer boundaries to an optional test observer; detail references are read-only diagnostics from already-created births or village-split migrants.",
+      "settlementObjects": "Fixed named phase events per Life.step plus event-only natural-birth and village-split notifications; zero observers means a WeakMap lookup and return, with no census or entity walk.",
+      "timePrecision": "Existing synchronous phase boundaries inside one Life.step; event details are emitted at the actual writer point.",
+      "worstCaseCost": "O(1) per phase check and O(K) only to form event-only detail containing K existing migrated IDs when an observer is installed; no per-person instrumentation callback.",
+      "queryMethod": "Direct WeakMap lookup by World identity; no lookup, index, or scan of population records.",
+      "rngContract": "No RNG draw or simulation rule changes.",
+      "cacheInvalidation": "No cache; setPopulationPhaseObserver replaces the observer and passing null deletes it.",
+      "dataLifetime": "Observer registration is process-local WeakMap state, excluded from save payload; observed details are transient.",
+      "failureAndExit": "Unobserved phases are discarded; observer exceptions propagate at the writer boundary and are test-only instrumentation behavior.",
+      "testEvidence": "test:mlod0b phase order and census-vs-legacy comparisons; phase observer is installed only by research tests and absent from production Worlds."
+    },
+    {
+      "id": "population-read-port",
+      "consumerAndFactSource": "setPopulationUiReadMode and readVillageSocieties select legacy, audit, or census reads over current World entities and a caller-provided existing legacy reader; committed UI selects generation-stamped cards.",
+      "settlementObjects": "One explicit society read touches all entities for census plus the caller's legacy read, then compares one row per existing village; mode changes may build current committed cards.",
+      "timePrecision": "Explicit UI mode switch or caller query; committed snapshots rebuild only at existing commit boundaries when a non-legacy mode is selected.",
+      "worstCaseCost": "Per direct query O(N + V + Clegacy); committed mode snapshot O(N + V + Ccards). Default legacy UI path avoids census work. No automatic per-frame census is added.",
+      "queryMethod": "Fresh independent census plus existing legacy reader for audit; census result is used only when all compared society fields agree, otherwise legacy is returned. UI uses committed generation/sequence cards.",
+      "rngContract": "Read-only selection and census draw no RNG and do not alter population authority.",
+      "cacheInvalidation": "Direct queries do not cache. Committed cards are rebuilt per sequence; mode is World-identity WeakMap state, cleared by legacy selection or World disposal/replacement.",
+      "dataLifetime": "Transient read result and committed current-front DTOs only; no population records, counters, or mode are added to saves.",
+      "failureAndExit": "Unknown mode and invalid World fail explicitly; disagreement, missing rows, or crossed/faulted commit returns legacy or throws at the generation guard; old committed view policy remains governed by read-port mode.",
+      "testEvidence": "test:mlod0b population-port mode switch, generation, fallback-on-divergence, stale/deleted/disposed cases; DOM/Canvas/Three consumers remain read-only and default mode is legacy."
+    },
+    {
+      "id": "joint-population-buckets",
+      "consumerAndFactSource": "projectJointBuckets groups current existing entity identities and derives marginals; experimental output is non-authoritative and never feeds simulation writers or product readers.",
+      "settlementObjects": "All existing mortal, upper and nether entity records; one joint key per distinct tuple of plane, affiliation, species, life status, age band, origin/cohort and species/level flags.",
+      "timePrecision": "Explicit research projection; age band and birth cohort are floored to caller-selected positive day grain.",
+      "worstCaseCost": "O(N) time and O(min(N, distinct tuples)) bucket memory; worst case N unique buckets and JSON key serialization/allocation per source record. Marginals are O(B) over B resulting buckets. No incremental maintenance or resident insertion/deletion is performed.",
+      "queryMethod": "One existing-array pass into tuple-keyed Map, followed by one bucket pass for marginals; chosen to prototype joint sparsity and quantify why a dense Cartesian product is inappropriate.",
+      "rngContract": "Read-only and detached from formal system; no RNG draw or source mutation.",
+      "cacheInvalidation": "No cache; projection is recreated from source arrays for each call.",
+      "dataLifetime": "Caller-owned transient Maps only; no World references are retained by the projection and no save format is changed.",
+      "failureAndExit": "Invalid/nonpositive age grain throws; missing plane is skipped; missing age/origin uses explicit unknown bands; experimental buckets must not be connected to formal products without separate admission.",
+      "testEvidence": "test:mlod0b sparse bucket/marginal cases, save/replay deterministic projection and read-purity checks; benchmarks document projection overhead without admitting it to product reads."
     }
   ]
 }

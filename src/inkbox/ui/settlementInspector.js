@@ -1,6 +1,7 @@
 // A read-only card shared by Canvas terrain picks and exact Three identities.
 import { settlementCondition } from '../world/settlementState.js';
 import { villageSociety } from '../sim/sectEconomy.js';
+import { populationUiReadMode } from '../sim/demography/populationReadPort.js';
 
 const LEVELS = ['', '村落', '集镇', '城池', '王都'];
 const STATUS = { normal: '正常', damaged: '受灾', disaster: '受灾', recovering: '恢复中', declining: '衰弱', ruin: '遗址', ruins: '遗址' };
@@ -10,7 +11,7 @@ function date(day) {
   return `第 ${Math.floor(day / 360) + 1} 年 · ${Math.floor((day % 360) / 30) + 1} 月`;
 }
 
-export function settlementInspectCard(world, village, isRuin = false) {
+export function settlementInspectCard(world, village, isRuin = false, societies = null) {
   const factionId = isRuin ? village.lastFactionId : village.faction;
   const faction = world.factions?.find(item => item.id === factionId);
   const factionName = faction?.name || (isRuin ? village.lastFactionName : null);
@@ -22,7 +23,7 @@ export function settlementInspectCard(world, village, isRuin = false) {
     if (village.lastAidDay >= 0) rows.push(['曾获援助', `${village.lastAidFactionName || '未知宗门'} · ${date(village.lastAidDay)}`]);
   } else {
     const condition = settlementCondition(world, village);
-    const society = Array.isArray(world.entities) ? villageSociety(world, village) : null;
+    const society = Array.isArray(world.entities) ? villageSociety(world, village, societies || populationUiReadMode(world)) : null;
     rows.push(['现状', STATUS[condition.status] || condition.status || '未知'],
       ['人口', society ? `${society.humans} 人 · 凡人 ${society.mortals} / 修士 ${society.practitioners}` : '人口实体记录不可考'],
       ['成年劳力', society ? `${society.mortalAdults} 名成年凡人（满十八岁）` : '不可考'],

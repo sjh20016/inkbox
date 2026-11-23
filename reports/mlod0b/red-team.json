@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "baseline": "3772bea8fa7b7ef753770c3a47877e6b461dd3c8",
+  "checks": [
+    {
+      "id": 1,
+      "description": "cultivator species at level zero is mortal",
+      "status": "passed"
+    },
+    {
+      "id": 2,
+      "description": "human species at level one is practicing",
+      "status": "passed"
+    },
+    {
+      "id": 3,
+      "description": "beast resident changes pop but not human society",
+      "status": "passed"
+    },
+    {
+      "id": 4,
+      "description": "unassigned village is excluded",
+      "status": "passed"
+    },
+    {
+      "id": 5,
+      "description": "village and sect assignments remain independent",
+      "status": "passed"
+    },
+    {
+      "id": 6,
+      "description": "dead before cleanup remains sect follower but not pop",
+      "status": "passed"
+    },
+    {
+      "id": 7,
+      "description": "lifespan reached excludes living society despite hp",
+      "status": "passed"
+    },
+    {
+      "id": 8,
+      "description": "upper person does not join mortal village",
+      "status": "passed"
+    },
+    {
+      "id": 9,
+      "description": "village pop and society human differ for beast",
+      "status": "passed"
+    },
+    {
+      "id": 10,
+      "description": "human fertility and fertile mortal differ",
+      "status": "passed"
+    },
+    {
+      "id": 11,
+      "description": "one fertile person fails natural birth",
+      "status": "passed"
+    },
+    {
+      "id": 12,
+      "description": "two practitioners without mortal resident fail birth",
+      "status": "passed"
+    },
+    {
+      "id": 13,
+      "description": "parents in different villages fail natural birth",
+      "status": "passed"
+    },
+    {
+      "id": 14,
+      "description": "comment about missing parents does not bypass spawn guard",
+      "status": "passed"
+    },
+    {
+      "id": 15,
+      "description": "same day birth changes count at next read",
+      "status": "passed"
+    },
+    {
+      "id": 16,
+      "description": "birth then death in same day keeps total but changes living",
+      "status": "passed"
+    },
+    {
+      "id": 17,
+      "description": "migration invalidates unchanged day and entity count",
+      "status": "passed"
+    },
+    {
+      "id": 18,
+      "description": "faction change invalidates unchanged day and count",
+      "status": "passed"
+    },
+    {
+      "id": 19,
+      "description": "real schism has 25 moved followers and three cultivators",
+      "status": "passed"
+    },
+    {
+      "id": 20,
+      "description": "dissolution or cleared affiliation removes follower",
+      "status": "passed"
+    },
+    {
+      "id": 21,
+      "description": "cache can diverge after same day reassignment",
+      "status": "passed"
+    },
+    {
+      "id": 22,
+      "description": "repeated census and read port are observational",
+      "status": "passed"
+    },
+    {
+      "id": 23,
+      "description": "v11 restore and reads preserve runtime RNG",
+      "status": "passed"
+    },
+    {
+      "id": 24,
+      "description": "old snapshot does not mutate when the world advances",
+      "status": "passed"
+    },
+    {
+      "id": 25,
+      "description": "diagnostic read preserves audited Life method identity",
+      "status": "passed"
+    },
+    {
+      "id": 26,
+      "description": "equal faction total still exposes swapped affiliations",
+      "status": "passed"
+    },
+    {
+      "id": 27,
+      "description": "invalid village and sect IDs are identified",
+      "status": "passed"
+    },
+    {
+      "id": 28,
+      "description": "cross-plane migration is counted once in each snapshot",
+      "status": "passed"
+    },
+    {
+      "id": 29,
+      "description": "read port mode and frame generation do not mutate world",
+      "status": "passed"
+    },
+    {
+      "id": 30,
+      "description": "month boundary and real schism preserve observer L0",
+      "status": "passed"
+    },
+    {
+      "id": 31,
+      "description": "marginal projection retains village and faction after regrouping",
+      "status": "passed"
+    },
+    {
+      "id": 32,
+      "description": "nonhuman entity does not count as a practicing human",
+      "status": "passed"
+    }
+  ],
+  "passed": 32,
+  "failed": 0
+}

@@ -1,0 +1,5761 @@
+{
+  "schema": "mlod0b-audit-cost-v1",
+  "createdAt": "2026-11-23T10:26:40.104Z",
+  "environment": {
+    "node": "v24.11.1",
+    "cpu": "AMD Ryzen 9 8940HX with Radeon Graphics        ",
+    "platform": "win32",
+    "isolatedChildPerSample": true
+  },
+  "protocol": {
+    "sequence": "ABBA",
+    "rounds": 5,
+    "days": 30,
+    "dt": 3,
+    "arms": [
+      "legacy-no-census",
+      "audit-rebuild-per-publication"
+    ],
+    "boundary": "timing starts before initial committed-session publication and ends after ten 3-day committed publications; clean child per arm sample; output is independent of perf.json"
+  },
+  "cases": [
+    {
+      "age": 100,
+      "samples": [
+        {
+          "age": 100,
+          "arm": "legacy-no-census",
+          "round": 0,
+          "index": 0,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 275.94270000000006,
+          "cpuMs": 641,
+          "heapUsedBefore": 18703248,
+          "heapUsedAfter": 33830496,
+          "heapUsedHighWaterSampled": 57040880,
+          "rssBefore": 101875712,
+          "rssAfter": 145379328,
+          "rssHighWaterKiB": 146180,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 59.20359999999994,
+              "heapUsedBefore": 33387416,
+              "heapUsedAfter": 36444168,
+              "rssBefore": 104357888,
+              "rssAfter": 104644608,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 26.985400000000027,
+              "heapUsedBefore": 36449432,
+              "heapUsedAfter": 32665792,
+              "rssBefore": 104644608,
+              "rssAfter": 105029632,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 21.484499999999912,
+              "heapUsedBefore": 32666352,
+              "heapUsedAfter": 28662080,
+              "rssBefore": 105033728,
+              "rssAfter": 109903872,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 24.90700000000004,
+              "heapUsedBefore": 28662640,
+              "heapUsedAfter": 57040880,
+              "rssBefore": 109924352,
+              "rssAfter": 126922752,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 25.068399999999997,
+              "heapUsedBefore": 57041832,
+              "heapUsedAfter": 52111640,
+              "rssBefore": 126992384,
+              "rssAfter": 134995968,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 23.034899999999993,
+              "heapUsedBefore": 52112408,
+              "heapUsedAfter": 46796200,
+              "rssBefore": 134995968,
+              "rssAfter": 140136448,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 20.212200000000053,
+              "heapUsedBefore": 46796776,
+              "heapUsedAfter": 41679440,
+              "rssBefore": 140136448,
+              "rssAfter": 141594624,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 16.063499999999976,
+              "heapUsedBefore": 41680016,
+              "heapUsedAfter": 35282744,
+              "rssBefore": 141594624,
+              "rssAfter": 141238272,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 16.336000000000013,
+              "heapUsedBefore": 35283320,
+              "heapUsedAfter": 28862560,
+              "rssBefore": 141238272,
+              "rssAfter": 147873792,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 36.42270000000008,
+              "heapUsedBefore": 28863136,
+              "heapUsedAfter": 33829616,
+              "rssBefore": 147894272,
+              "rssAfter": 145354752,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "audit-rebuild-per-publication",
+          "round": 0,
+          "index": 1,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 283.5347,
+          "cpuMs": 594,
+          "heapUsedBefore": 18683840,
+          "heapUsedAfter": 45806480,
+          "heapUsedHighWaterSampled": 58063800,
+          "rssBefore": 100745216,
+          "rssAfter": 146526208,
+          "rssHighWaterKiB": 146312,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 62.71739999999994,
+              "heapUsedBefore": 34462792,
+              "heapUsedAfter": 38599608,
+              "rssBefore": 104947712,
+              "rssAfter": 105103360,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 23.148000000000025,
+              "heapUsedBefore": 38604872,
+              "heapUsedAfter": 35949136,
+              "rssBefore": 105103360,
+              "rssAfter": 104607744,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 22.468700000000013,
+              "heapUsedBefore": 35949696,
+              "heapUsedAfter": 33392152,
+              "rssBefore": 104607744,
+              "rssAfter": 112373760,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 23.951099999999997,
+              "heapUsedBefore": 33392712,
+              "heapUsedAfter": 28834584,
+              "rssBefore": 112427008,
+              "rssAfter": 128761856,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 25.073800000000006,
+              "heapUsedBefore": 28835536,
+              "heapUsedAfter": 58063800,
+              "rssBefore": 128778240,
+              "rssAfter": 138928128,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 21.21989999999994,
+              "heapUsedBefore": 58064568,
+              "heapUsedAfter": 53616848,
+              "rssBefore": 138928128,
+              "rssAfter": 141406208,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 21.831899999999905,
+              "heapUsedBefore": 53617424,
+              "heapUsedAfter": 49448592,
+              "rssBefore": 141418496,
+              "rssAfter": 141643776,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 16.828699999999913,
+              "heapUsedBefore": 49449168,
+              "heapUsedAfter": 43954624,
+              "rssBefore": 141643776,
+              "rssAfter": 142295040,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 17.8048,
+              "heapUsedBefore": 43955200,
+              "heapUsedAfter": 38384928,
+              "rssBefore": 142295040,
+              "rssAfter": 149016576,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 39.398399999999924,
+              "heapUsedBefore": 38385504,
+              "heapUsedAfter": 45805616,
+              "rssBefore": 149061632,
+              "rssAfter": 146501632,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "audit-rebuild-per-publication",
+          "round": 0,
+          "index": 2,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 305.4139,
+          "cpuMs": 671,
+          "heapUsedBefore": 18700928,
+          "heapUsedAfter": 61712592,
+          "heapUsedHighWaterSampled": 61711712,
+          "rssBefore": 101629952,
+          "rssAfter": 146096128,
+          "rssHighWaterKiB": 145008,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 66.07590000000005,
+              "heapUsedBefore": 34505272,
+              "heapUsedAfter": 38586288,
+              "rssBefore": 105324544,
+              "rssAfter": 103931904,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 24.016099999999994,
+              "heapUsedBefore": 38591552,
+              "heapUsedAfter": 35837288,
+              "rssBefore": 103931904,
+              "rssAfter": 103940096,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 24.465099999999893,
+              "heapUsedBefore": 35837848,
+              "heapUsedAfter": 49399552,
+              "rssBefore": 103948288,
+              "rssAfter": 118910976,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 26.48359999999991,
+              "heapUsedBefore": 49400112,
+              "heapUsedAfter": 44924432,
+              "rssBefore": 118935552,
+              "rssAfter": 128487424,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 27.68539999999996,
+              "heapUsedBefore": 44925384,
+              "heapUsedAfter": 41116464,
+              "rssBefore": 128503808,
+              "rssAfter": 139935744,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 20.651100000000042,
+              "heapUsedBefore": 41117232,
+              "heapUsedAfter": 36553256,
+              "rssBefore": 139935744,
+              "rssAfter": 140951552,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 23.06389999999999,
+              "heapUsedBefore": 36553832,
+              "heapUsedAfter": 32293944,
+              "rssBefore": 140963840,
+              "rssAfter": 141787136,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 17.083400000000097,
+              "heapUsedBefore": 32294520,
+              "heapUsedAfter": 59710672,
+              "rssBefore": 141787136,
+              "rssAfter": 142020608,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 18.78049999999996,
+              "heapUsedBefore": 59711248,
+              "heapUsedAfter": 54304400,
+              "rssBefore": 142020608,
+              "rssAfter": 146112512,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 44.278999999999996,
+              "heapUsedBefore": 54304976,
+              "heapUsedAfter": 61711712,
+              "rssBefore": 146124800,
+              "rssAfter": 146079744,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "legacy-no-census",
+          "round": 0,
+          "index": 3,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 307.5689,
+          "cpuMs": 688,
+          "heapUsedBefore": 18710472,
+          "heapUsedAfter": 50914384,
+          "heapUsedHighWaterSampled": 58604648,
+          "rssBefore": 101076992,
+          "rssAfter": 145199104,
+          "rssHighWaterKiB": 145392,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 64.47999999999996,
+              "heapUsedBefore": 33403328,
+              "heapUsedAfter": 37221976,
+              "rssBefore": 105279488,
+              "rssAfter": 105816064,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 23.92560000000003,
+              "heapUsedBefore": 37227240,
+              "heapUsedAfter": 33450336,
+              "rssBefore": 105816064,
+              "rssAfter": 105041920,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 26.73180000000002,
+              "heapUsedBefore": 33450896,
+              "heapUsedAfter": 45819992,
+              "rssBefore": 105041920,
+              "rssAfter": 114577408,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 28.63510000000008,
+              "heapUsedBefore": 45820552,
+              "heapUsedAfter": 41457392,
+              "rssBefore": 114622464,
+              "rssAfter": 132788224,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 38.13940000000002,
+              "heapUsedBefore": 41458344,
+              "heapUsedAfter": 36280112,
+              "rssBefore": 132804608,
+              "rssAfter": 142999552,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 24.8673,
+              "heapUsedBefore": 36071464,
+              "heapUsedAfter": 30725864,
+              "rssBefore": 142999552,
+              "rssAfter": 141225984,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 20.51750000000004,
+              "heapUsedBefore": 30726440,
+              "heapUsedAfter": 58604648,
+              "rssBefore": 141225984,
+              "rssAfter": 142237696,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 17.319799999999987,
+              "heapUsedBefore": 58605224,
+              "heapUsedAfter": 52337272,
+              "rssBefore": 142237696,
+              "rssAfter": 141582336,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 19.003199999999993,
+              "heapUsedBefore": 52337848,
+              "heapUsedAfter": 45985136,
+              "rssBefore": 141582336,
+              "rssAfter": 148754432,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 36.61289999999997,
+              "heapUsedBefore": 45985712,
+              "heapUsedAfter": 50913504,
+              "rssBefore": 148754432,
+              "rssAfter": 145149952,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "legacy-no-census",
+          "round": 1,
+          "index": 0,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 326.0606,
+          "cpuMs": 657,
+          "heapUsedBefore": 18704424,
+          "heapUsedAfter": 35081792,
+          "heapUsedHighWaterSampled": 56597944,
+          "rssBefore": 100782080,
+          "rssAfter": 145375232,
+          "rssHighWaterKiB": 146000,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 74.38659999999999,
+              "heapUsedBefore": 33383640,
+              "heapUsedAfter": 36470208,
+              "rssBefore": 105226240,
+              "rssAfter": 104939520,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 27.620900000000006,
+              "heapUsedBefore": 36475472,
+              "heapUsedAfter": 32696768,
+              "rssBefore": 104939520,
+              "rssAfter": 104103936,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 20.391200000000026,
+              "heapUsedBefore": 32697328,
+              "heapUsedAfter": 28886480,
+              "rssBefore": 104103936,
+              "rssAfter": 109985792,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 31.932999999999993,
+              "heapUsedBefore": 28887040,
+              "heapUsedAfter": 56597944,
+              "rssBefore": 110022656,
+              "rssAfter": 122953728,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 28.51660000000004,
+              "heapUsedBefore": 56598896,
+              "heapUsedAfter": 52137504,
+              "rssBefore": 123006976,
+              "rssAfter": 131911680,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 26.55340000000001,
+              "heapUsedBefore": 52138272,
+              "heapUsedAfter": 46730720,
+              "rssBefore": 131911680,
+              "rssAfter": 140357632,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 28.270899999999983,
+              "heapUsedBefore": 46731296,
+              "heapUsedAfter": 41650368,
+              "rssBefore": 140357632,
+              "rssAfter": 141250560,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 19.83269999999993,
+              "heapUsedBefore": 41650944,
+              "heapUsedAfter": 35328056,
+              "rssBefore": 141250560,
+              "rssAfter": 141758464,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 19.044299999999907,
+              "heapUsedBefore": 35328632,
+              "heapUsedAfter": 28860472,
+              "rssBefore": 141758464,
+              "rssAfter": 149118976,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 42.20629999999994,
+              "heapUsedBefore": 28861048,
+              "heapUsedAfter": 35080912,
+              "rssBefore": 148930560,
+              "rssAfter": 145326080,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "audit-rebuild-per-publication",
+          "round": 1,
+          "index": 1,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 314.75969999999995,
+          "cpuMs": 578,
+          "heapUsedBefore": 18701272,
+          "heapUsedAfter": 45521104,
+          "heapUsedHighWaterSampled": 57916272,
+          "rssBefore": 101511168,
+          "rssAfter": 145674240,
+          "rssHighWaterKiB": 147244,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 67.49309999999997,
+              "heapUsedBefore": 34464744,
+              "heapUsedAfter": 38444104,
+              "rssBefore": 105037824,
+              "rssAfter": 104038400,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 24.94780000000003,
+              "heapUsedBefore": 38449368,
+              "heapUsedAfter": 35766264,
+              "rssBefore": 104038400,
+              "rssAfter": 104755200,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 24.51679999999999,
+              "heapUsedBefore": 35766824,
+              "heapUsedAfter": 32932896,
+              "rssBefore": 104755200,
+              "rssAfter": 112816128,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 27.234800000000064,
+              "heapUsedBefore": 32933456,
+              "heapUsedAfter": 29428128,
+              "rssBefore": 112861184,
+              "rssAfter": 128368640,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 23.71479999999997,
+              "heapUsedBefore": 29429080,
+              "heapUsedAfter": 57916272,
+              "rssBefore": 128311296,
+              "rssAfter": 137662464,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 20.111400000000003,
+              "heapUsedBefore": 57917040,
+              "heapUsedAfter": 53454496,
+              "rssBefore": 137662464,
+              "rssAfter": 141701120,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 24.288800000000037,
+              "heapUsedBefore": 53455072,
+              "heapUsedAfter": 49234664,
+              "rssBefore": 141701120,
+              "rssAfter": 142315520,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 17.037799999999947,
+              "heapUsedBefore": 49235240,
+              "heapUsedAfter": 43751072,
+              "rssBefore": 142315520,
+              "rssAfter": 142983168,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 22.15269999999998,
+              "heapUsedBefore": 43751648,
+              "heapUsedAfter": 38246128,
+              "rssBefore": 142983168,
+              "rssAfter": 148455424,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 53.75670000000002,
+              "heapUsedBefore": 38246704,
+              "heapUsedAfter": 45520224,
+              "rssBefore": 148475904,
+              "rssAfter": 145653760,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "audit-rebuild-per-publication",
+          "round": 1,
+          "index": 2,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 413.5565,
+          "cpuMs": 923,
+          "heapUsedBefore": 18692768,
+          "heapUsedAfter": 61988552,
+          "heapUsedHighWaterSampled": 61987672,
+          "rssBefore": 102080512,
+          "rssAfter": 144859136,
+          "rssHighWaterKiB": 145664,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 59.76589999999999,
+              "heapUsedBefore": 34464288,
+              "heapUsedAfter": 38501112,
+              "rssBefore": 105320448,
+              "rssAfter": 104095744,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 23.163099999999986,
+              "heapUsedBefore": 38506376,
+              "heapUsedAfter": 35755008,
+              "rssBefore": 104095744,
+              "rssAfter": 104308736,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 22.534099999999967,
+              "heapUsedBefore": 35755568,
+              "heapUsedAfter": 49090424,
+              "rssBefore": 104316928,
+              "rssAfter": 119091200,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 26.248199999999997,
+              "heapUsedBefore": 49090984,
+              "heapUsedAfter": 44808048,
+              "rssBefore": 119123968,
+              "rssAfter": 127426560,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 28.499300000000062,
+              "heapUsedBefore": 44809000,
+              "heapUsedAfter": 41031832,
+              "rssBefore": 127447040,
+              "rssAfter": 140115968,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 19.5711,
+              "heapUsedBefore": 41032600,
+              "heapUsedAfter": 36472256,
+              "rssBefore": 140115968,
+              "rssAfter": 141135872,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 50.53620000000001,
+              "heapUsedBefore": 36472832,
+              "heapUsedAfter": 32201688,
+              "rssBefore": 141144064,
+              "rssAfter": 140931072,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 43.18139999999994,
+              "heapUsedBefore": 32202264,
+              "heapUsedAfter": 59615752,
+              "rssBefore": 140931072,
+              "rssAfter": 141557760,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 45.73689999999999,
+              "heapUsedBefore": 59616328,
+              "heapUsedAfter": 54171784,
+              "rssBefore": 141557760,
+              "rssAfter": 146812928,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 85.54589999999996,
+              "heapUsedBefore": 54172360,
+              "heapUsedAfter": 61987672,
+              "rssBefore": 146817024,
+              "rssAfter": 144859136,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "legacy-no-census",
+          "round": 1,
+          "index": 3,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 395.41960000000006,
+          "cpuMs": 797,
+          "heapUsedBefore": 18701472,
+          "heapUsedAfter": 51269224,
+          "heapUsedHighWaterSampled": 59098992,
+          "rssBefore": 101322752,
+          "rssAfter": 145534976,
+          "rssHighWaterKiB": 146640,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 74.32770000000005,
+              "heapUsedBefore": 33361216,
+              "heapUsedAfter": 37076008,
+              "rssBefore": 105783296,
+              "rssAfter": 104804352,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 25.489399999999932,
+              "heapUsedBefore": 37081272,
+              "heapUsedAfter": 33324968,
+              "rssBefore": 104804352,
+              "rssAfter": 103870464,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 28.87009999999998,
+              "heapUsedBefore": 33325528,
+              "heapUsedAfter": 29439704,
+              "rssBefore": 103870464,
+              "rssAfter": 110985216,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 38.921800000000076,
+              "heapUsedBefore": 29440264,
+              "heapUsedAfter": 41604304,
+              "rssBefore": 111042560,
+              "rssAfter": 112197632,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 42.32540000000006,
+              "heapUsedBefore": 41605256,
+              "heapUsedAfter": 36680144,
+              "rssBefore": 112263168,
+              "rssAfter": 128655360,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 40.88670000000002,
+              "heapUsedBefore": 36680912,
+              "heapUsedAfter": 31273584,
+              "rssBefore": 128679936,
+              "rssAfter": 140754944,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 32.80540000000008,
+              "heapUsedBefore": 31274160,
+              "heapUsedAfter": 59098992,
+              "rssBefore": 140754944,
+              "rssAfter": 142077952,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 21.22989999999993,
+              "heapUsedBefore": 59099568,
+              "heapUsedAfter": 52811456,
+              "rssBefore": 142077952,
+              "rssAfter": 142598144,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 31.778500000000008,
+              "heapUsedBefore": 52812032,
+              "heapUsedAfter": 46483624,
+              "rssBefore": 142598144,
+              "rssAfter": 148836352,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 51.5797,
+              "heapUsedBefore": 46484200,
+              "heapUsedAfter": 51268344,
+              "rssBefore": 148860928,
+              "rssAfter": 145494016,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "legacy-no-census",
+          "round": 2,
+          "index": 0,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 286.0366,
+          "cpuMs": 579,
+          "heapUsedBefore": 18689608,
+          "heapUsedAfter": 50374216,
+          "heapUsedHighWaterSampled": 57825832,
+          "rssBefore": 100847616,
+          "rssAfter": 144396288,
+          "rssHighWaterKiB": 145644,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 61.003699999999924,
+              "heapUsedBefore": 33349752,
+              "heapUsedAfter": 36615120,
+              "rssBefore": 104984576,
+              "rssAfter": 104120320,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 22.431699999999978,
+              "heapUsedBefore": 36620384,
+              "heapUsedAfter": 33384912,
+              "rssBefore": 104120320,
+              "rssAfter": 104792064,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 21.45010000000002,
+              "heapUsedBefore": 33385472,
+              "heapUsedAfter": 45118168,
+              "rssBefore": 104792064,
+              "rssAfter": 113266688,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 23.255899999999997,
+              "heapUsedBefore": 45118728,
+              "heapUsedAfter": 40164624,
+              "rssBefore": 113315840,
+              "rssAfter": 129466368,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 24.248500000000035,
+              "heapUsedBefore": 40165576,
+              "heapUsedAfter": 35683912,
+              "rssBefore": 129486848,
+              "rssAfter": 141787136,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 20.15140000000008,
+              "heapUsedBefore": 35483928,
+              "heapUsedAfter": 29997032,
+              "rssBefore": 141787136,
+              "rssAfter": 139931648,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 24.494399999999928,
+              "heapUsedBefore": 29997608,
+              "heapUsedAfter": 57825832,
+              "rssBefore": 139931648,
+              "rssAfter": 140435456,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 19.85800000000006,
+              "heapUsedBefore": 57826408,
+              "heapUsedAfter": 51510088,
+              "rssBefore": 140435456,
+              "rssAfter": 141234176,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 18.384599999999978,
+              "heapUsedBefore": 51510664,
+              "heapUsedAfter": 45172784,
+              "rssBefore": 141234176,
+              "rssAfter": 147988480,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 44.59879999999998,
+              "heapUsedBefore": 45173360,
+              "heapUsedAfter": 50373336,
+              "rssBefore": 147992576,
+              "rssAfter": 144351232,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "audit-rebuild-per-publication",
+          "round": 2,
+          "index": 1,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 447.21649999999994,
+          "cpuMs": 844,
+          "heapUsedBefore": 18683800,
+          "heapUsedAfter": 46053912,
+          "heapUsedHighWaterSampled": 57867984,
+          "rssBefore": 101195776,
+          "rssAfter": 145428480,
+          "rssHighWaterKiB": 145964,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 102.18100000000004,
+              "heapUsedBefore": 34439656,
+              "heapUsedAfter": 38617232,
+              "rssBefore": 104767488,
+              "rssAfter": 103854080,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 38.2817,
+              "heapUsedBefore": 38622496,
+              "heapUsedAfter": 35906280,
+              "rssBefore": 103854080,
+              "rssAfter": 104411136,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 42.940399999999954,
+              "heapUsedBefore": 35906840,
+              "heapUsedAfter": 33150376,
+              "rssBefore": 104415232,
+              "rssAfter": 111554560,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 41.890499999999975,
+              "heapUsedBefore": 33150936,
+              "heapUsedAfter": 29150320,
+              "rssBefore": 111620096,
+              "rssAfter": 124780544,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 30.780399999999986,
+              "heapUsedBefore": 29151272,
+              "heapUsedAfter": 57867984,
+              "rssBefore": 124784640,
+              "rssAfter": 137461760,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 25.489399999999932,
+              "heapUsedBefore": 57868752,
+              "heapUsedAfter": 53416920,
+              "rssBefore": 137461760,
+              "rssAfter": 140845056,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 23.64510000000007,
+              "heapUsedBefore": 53417496,
+              "heapUsedAfter": 49274112,
+              "rssBefore": 140849152,
+              "rssAfter": 142188544,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 27.442099999999982,
+              "heapUsedBefore": 49274688,
+              "heapUsedAfter": 43781464,
+              "rssBefore": 142188544,
+              "rssAfter": 141766656,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 39.43859999999995,
+              "heapUsedBefore": 43782040,
+              "heapUsedAfter": 38216032,
+              "rssBefore": 141766656,
+              "rssAfter": 146944000,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 55.45769999999993,
+              "heapUsedBefore": 38216608,
+              "heapUsedAfter": 46053032,
+              "rssBefore": 146944000,
+              "rssAfter": 145403904,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "audit-rebuild-per-publication",
+          "round": 2,
+          "index": 2,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 624.5160999999999,
+          "cpuMs": 1234,
+          "heapUsedBefore": 18698736,
+          "heapUsedAfter": 61542664,
+          "heapUsedHighWaterSampled": 61541784,
+          "rssBefore": 100380672,
+          "rssAfter": 144969728,
+          "rssHighWaterKiB": 146528,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 168.24289999999996,
+              "heapUsedBefore": 34447912,
+              "heapUsedAfter": 38043152,
+              "rssBefore": 105226240,
+              "rssAfter": 104271872,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 75.38210000000004,
+              "heapUsedBefore": 38048416,
+              "heapUsedAfter": 35308912,
+              "rssBefore": 104271872,
+              "rssAfter": 104529920,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 56.40840000000003,
+              "heapUsedBefore": 35309472,
+              "heapUsedAfter": 48673024,
+              "rssBefore": 104538112,
+              "rssAfter": 120565760,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 57.25319999999999,
+              "heapUsedBefore": 48673584,
+              "heapUsedAfter": 44473632,
+              "rssBefore": 120573952,
+              "rssAfter": 124612608,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 37.662900000000036,
+              "heapUsedBefore": 44474584,
+              "heapUsedAfter": 40519824,
+              "rssBefore": 124612608,
+              "rssAfter": 140599296,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 33.29179999999997,
+              "heapUsedBefore": 40520592,
+              "heapUsedAfter": 36002608,
+              "rssBefore": 140599296,
+              "rssAfter": 140656640,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 39.56899999999996,
+              "heapUsedBefore": 36003184,
+              "heapUsedAfter": 31762272,
+              "rssBefore": 140668928,
+              "rssAfter": 141389824,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 29.51339999999982,
+              "heapUsedBefore": 31762848,
+              "heapUsedAfter": 59177136,
+              "rssBefore": 141389824,
+              "rssAfter": 141676544,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 32.69100000000003,
+              "heapUsedBefore": 59177712,
+              "heapUsedAfter": 53718280,
+              "rssBefore": 141676544,
+              "rssAfter": 149422080,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 77.87470000000008,
+              "heapUsedBefore": 53718856,
+              "heapUsedAfter": 61541784,
+              "rssBefore": 149475328,
+              "rssAfter": 144969728,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "legacy-no-census",
+          "round": 2,
+          "index": 3,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 302.4095,
+          "cpuMs": 562,
+          "heapUsedBefore": 18709432,
+          "heapUsedAfter": 36032024,
+          "heapUsedHighWaterSampled": 57702728,
+          "rssBefore": 102129664,
+          "rssAfter": 145588224,
+          "rssHighWaterKiB": 145876,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 64.47230000000002,
+              "heapUsedBefore": 33382016,
+              "heapUsedAfter": 37514896,
+              "rssBefore": 105291776,
+              "rssAfter": 103890944,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 31.24210000000005,
+              "heapUsedBefore": 37520160,
+              "heapUsedAfter": 33795768,
+              "rssBefore": 103890944,
+              "rssAfter": 103575552,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 22.01389999999992,
+              "heapUsedBefore": 33796328,
+              "heapUsedAfter": 30041120,
+              "rssBefore": 103575552,
+              "rssAfter": 110428160,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 24.948300000000017,
+              "heapUsedBefore": 30041680,
+              "heapUsedAfter": 57702728,
+              "rssBefore": 110481408,
+              "rssAfter": 125952000,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 36.400800000000004,
+              "heapUsedBefore": 57703680,
+              "heapUsedAfter": 53274456,
+              "rssBefore": 125997056,
+              "rssAfter": 133312512,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 22.88379999999995,
+              "heapUsedBefore": 53275224,
+              "heapUsedAfter": 47867008,
+              "rssBefore": 133312512,
+              "rssAfter": 141099008,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 20.984899999999925,
+              "heapUsedBefore": 47867584,
+              "heapUsedAfter": 42739488,
+              "rssBefore": 141099008,
+              "rssAfter": 140926976,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 17.440400000000068,
+              "heapUsedBefore": 42740064,
+              "heapUsedAfter": 36355056,
+              "rssBefore": 140926976,
+              "rssAfter": 141856768,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 15.948499999999967,
+              "heapUsedBefore": 36355632,
+              "heapUsedAfter": 29792168,
+              "rssBefore": 141856768,
+              "rssAfter": 146169856,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 39.200199999999995,
+              "heapUsedBefore": 29792744,
+              "heapUsedAfter": 36031144,
+              "rssBefore": 146198528,
+              "rssAfter": 145559552,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "legacy-no-census",
+          "round": 3,
+          "index": 0,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 367.6462,
+          "cpuMs": 703,
+          "heapUsedBefore": 18700256,
+          "heapUsedAfter": 37112128,
+          "heapUsedHighWaterSampled": 58537248,
+          "rssBefore": 102072320,
+          "rssAfter": 145219584,
+          "rssHighWaterKiB": 146276,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 74.03559999999999,
+              "heapUsedBefore": 33362704,
+              "heapUsedAfter": 38270440,
+              "rssBefore": 105218048,
+              "rssAfter": 103989248,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 26.853900000000067,
+              "heapUsedBefore": 38275704,
+              "heapUsedAfter": 34482832,
+              "rssBefore": 103989248,
+              "rssAfter": 103907328,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 25.466499999999996,
+              "heapUsedBefore": 34483392,
+              "heapUsedAfter": 30564352,
+              "rssBefore": 103907328,
+              "rssAfter": 110452736,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 30.597099999999955,
+              "heapUsedBefore": 30564912,
+              "heapUsedAfter": 58537248,
+              "rssBefore": 110489600,
+              "rssAfter": 126820352,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 31.15549999999996,
+              "heapUsedBefore": 58538200,
+              "heapUsedAfter": 54037256,
+              "rssBefore": 126894080,
+              "rssAfter": 133607424,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 29.73790000000008,
+              "heapUsedBefore": 53980032,
+              "heapUsedAfter": 48585776,
+              "rssBefore": 133615616,
+              "rssAfter": 140623872,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 34.672399999999925,
+              "heapUsedBefore": 48586352,
+              "heapUsedAfter": 43395136,
+              "rssBefore": 140500992,
+              "rssAfter": 141725696,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 27.082899999999995,
+              "heapUsedBefore": 43395712,
+              "heapUsedAfter": 37052968,
+              "rssBefore": 141725696,
+              "rssAfter": 142266368,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 28.27979999999991,
+              "heapUsedBefore": 37053544,
+              "heapUsedAfter": 30486784,
+              "rssBefore": 142266368,
+              "rssAfter": 148033536,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 53.19569999999999,
+              "heapUsedBefore": 30487360,
+              "heapUsedAfter": 37111248,
+              "rssBefore": 147820544,
+              "rssAfter": 145178624,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "audit-rebuild-per-publication",
+          "round": 3,
+          "index": 1,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 283.1578,
+          "cpuMs": 530,
+          "heapUsedBefore": 18701296,
+          "heapUsedAfter": 60746056,
+          "heapUsedHighWaterSampled": 60479160,
+          "rssBefore": 101158912,
+          "rssAfter": 146333696,
+          "rssHighWaterKiB": 145900,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 57.28480000000002,
+              "heapUsedBefore": 34479424,
+              "heapUsedAfter": 38555024,
+              "rssBefore": 105238528,
+              "rssAfter": 105115648,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 21.869099999999946,
+              "heapUsedBefore": 38560288,
+              "heapUsedAfter": 35836992,
+              "rssBefore": 105115648,
+              "rssAfter": 105631744,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 22.14269999999999,
+              "heapUsedBefore": 35837552,
+              "heapUsedAfter": 49207880,
+              "rssBefore": 105213952,
+              "rssAfter": 119848960,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 24.93719999999996,
+              "heapUsedBefore": 49212424,
+              "heapUsedAfter": 44925720,
+              "rssBefore": 119853056,
+              "rssAfter": 129953792,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 25.318300000000022,
+              "heapUsedBefore": 44926672,
+              "heapUsedAfter": 41026040,
+              "rssBefore": 130023424,
+              "rssAfter": 142692352,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 22.465100000000007,
+              "heapUsedBefore": 41026808,
+              "heapUsedAfter": 36854864,
+              "rssBefore": 142696448,
+              "rssAfter": 140873728,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 20.60439999999994,
+              "heapUsedBefore": 36855440,
+              "heapUsedAfter": 32636680,
+              "rssBefore": 140873728,
+              "rssAfter": 141238272,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 18.97059999999999,
+              "heapUsedBefore": 32637256,
+              "heapUsedAfter": 60068456,
+              "rssBefore": 141238272,
+              "rssAfter": 141758464,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 22.716099999999983,
+              "heapUsedBefore": 60069032,
+              "heapUsedAfter": 54650664,
+              "rssBefore": 141758464,
+              "rssAfter": 147951616,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 38.54110000000003,
+              "heapUsedBefore": 54651240,
+              "heapUsedAfter": 60479160,
+              "rssBefore": 147984384,
+              "rssAfter": 146227200,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "audit-rebuild-per-publication",
+          "round": 3,
+          "index": 2,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 336.5613,
+          "cpuMs": 640,
+          "heapUsedBefore": 18700640,
+          "heapUsedAfter": 61948272,
+          "heapUsedHighWaterSampled": 61947392,
+          "rssBefore": 100970496,
+          "rssAfter": 145686528,
+          "rssHighWaterKiB": 144340,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 70.88540000000006,
+              "heapUsedBefore": 34479760,
+              "heapUsedAfter": 38480968,
+              "rssBefore": 104398848,
+              "rssAfter": 103510016,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 32.22550000000001,
+              "heapUsedBefore": 38486232,
+              "heapUsedAfter": 35694232,
+              "rssBefore": 103510016,
+              "rssAfter": 104091648,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 27.19360000000006,
+              "heapUsedBefore": 35694792,
+              "heapUsedAfter": 49062184,
+              "rssBefore": 104091648,
+              "rssAfter": 119119872,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 35.70010000000002,
+              "heapUsedBefore": 49062744,
+              "heapUsedAfter": 44799088,
+              "rssBefore": 119152640,
+              "rssAfter": 128860160,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 29.438199999999938,
+              "heapUsedBefore": 44800040,
+              "heapUsedAfter": 40937352,
+              "rssBefore": 128860160,
+              "rssAfter": 139730944,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 22.184999999999945,
+              "heapUsedBefore": 40938120,
+              "heapUsedAfter": 36395848,
+              "rssBefore": 139730944,
+              "rssAfter": 140505088,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 24.31359999999995,
+              "heapUsedBefore": 36396424,
+              "heapUsedAfter": 32180264,
+              "rssBefore": 140505088,
+              "rssAfter": 141070336,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 16.12060000000008,
+              "heapUsedBefore": 32180840,
+              "heapUsedAfter": 59596312,
+              "rssBefore": 141070336,
+              "rssAfter": 141438976,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 17.464500000000044,
+              "heapUsedBefore": 59596888,
+              "heapUsedAfter": 54184400,
+              "rssBefore": 141438976,
+              "rssAfter": 146284544,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 45.06059999999991,
+              "heapUsedBefore": 54184976,
+              "heapUsedAfter": 61947392,
+              "rssBefore": 146313216,
+              "rssAfter": 145620992,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "legacy-no-census",
+          "round": 3,
+          "index": 3,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 503.63380000000006,
+          "cpuMs": 952,
+          "heapUsedBefore": 18700400,
+          "heapUsedAfter": 33857336,
+          "heapUsedHighWaterSampled": 61256608,
+          "rssBefore": 101400576,
+          "rssAfter": 145375232,
+          "rssHighWaterKiB": 144452,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 85.65370000000007,
+              "heapUsedBefore": 33359904,
+              "heapUsedAfter": 36215944,
+              "rssBefore": 104812544,
+              "rssAfter": 103981056,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 42.766700000000014,
+              "heapUsedBefore": 36221208,
+              "heapUsedAfter": 32466856,
+              "rssBefore": 103981056,
+              "rssAfter": 103596032,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 43.69679999999994,
+              "heapUsedBefore": 32467416,
+              "heapUsedAfter": 28882336,
+              "rssBefore": 103596032,
+              "rssAfter": 111083520,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 54.75470000000007,
+              "heapUsedBefore": 28882896,
+              "heapUsedAfter": 56828424,
+              "rssBefore": 111136768,
+              "rssAfter": 120614912,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 51.48429999999996,
+              "heapUsedBefore": 56829376,
+              "heapUsedAfter": 52092568,
+              "rssBefore": 120664064,
+              "rssAfter": 131272704,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 42.20130000000006,
+              "heapUsedBefore": 51709880,
+              "heapUsedAfter": 46040080,
+              "rssBefore": 131272704,
+              "rssAfter": 141836288,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 49.26170000000002,
+              "heapUsedBefore": 46040656,
+              "heapUsedAfter": 41007384,
+              "rssBefore": 141836288,
+              "rssAfter": 140939264,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 29.184900000000084,
+              "heapUsedBefore": 41007960,
+              "heapUsedAfter": 34619576,
+              "rssBefore": 140939264,
+              "rssAfter": 141778944,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 33.36149999999998,
+              "heapUsedBefore": 34620152,
+              "heapUsedAfter": 61256608,
+              "rssBefore": 141778944,
+              "rssAfter": 143773696,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 62.4905,
+              "heapUsedBefore": 61257184,
+              "heapUsedAfter": 33856456,
+              "rssBefore": 143777792,
+              "rssAfter": 145334272,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "legacy-no-census",
+          "round": 4,
+          "index": 0,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 349.9150000000001,
+          "cpuMs": 657,
+          "heapUsedBefore": 18700720,
+          "heapUsedAfter": 36884992,
+          "heapUsedHighWaterSampled": 58731040,
+          "rssBefore": 100679680,
+          "rssAfter": 145297408,
+          "rssHighWaterKiB": 145392,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 64.24370000000005,
+              "heapUsedBefore": 33395640,
+              "heapUsedAfter": 38029104,
+              "rssBefore": 104628224,
+              "rssAfter": 103837696,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 24.082400000000007,
+              "heapUsedBefore": 38034368,
+              "heapUsedAfter": 34286864,
+              "rssBefore": 103837696,
+              "rssAfter": 103583744,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 38.357399999999984,
+              "heapUsedBefore": 34287424,
+              "heapUsedAfter": 30517376,
+              "rssBefore": 103583744,
+              "rssAfter": 112209920,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 33.77739999999994,
+              "heapUsedBefore": 30517936,
+              "heapUsedAfter": 58731040,
+              "rssBefore": 112254976,
+              "rssAfter": 126640128,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 38.92529999999999,
+              "heapUsedBefore": 58731992,
+              "heapUsedAfter": 53849256,
+              "rssBefore": 126713856,
+              "rssAfter": 134385664,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 25.85170000000005,
+              "heapUsedBefore": 53850024,
+              "heapUsedAfter": 48430832,
+              "rssBefore": 134385664,
+              "rssAfter": 140652544,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 31.82510000000002,
+              "heapUsedBefore": 48431408,
+              "heapUsedAfter": 43238632,
+              "rssBefore": 140652544,
+              "rssAfter": 140783616,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 20.282100000000014,
+              "heapUsedBefore": 43239208,
+              "heapUsedAfter": 36816592,
+              "rssBefore": 140783616,
+              "rssAfter": 141488128,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 20.734699999999975,
+              "heapUsedBefore": 36817168,
+              "heapUsedAfter": 30252016,
+              "rssBefore": 141488128,
+              "rssAfter": 147542016,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 45.38840000000005,
+              "heapUsedBefore": 30252592,
+              "heapUsedAfter": 36884112,
+              "rssBefore": 147566592,
+              "rssAfter": 145293312,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "audit-rebuild-per-publication",
+          "round": 4,
+          "index": 1,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 266.8845,
+          "cpuMs": 485,
+          "heapUsedBefore": 18701672,
+          "heapUsedAfter": 39298240,
+          "heapUsedHighWaterSampled": 57655904,
+          "rssBefore": 100556800,
+          "rssAfter": 146448384,
+          "rssHighWaterKiB": 147140,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 59.343999999999994,
+              "heapUsedBefore": 34538392,
+              "heapUsedAfter": 38470480,
+              "rssBefore": 104656896,
+              "rssAfter": 103665664,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 27.214500000000044,
+              "heapUsedBefore": 38475744,
+              "heapUsedAfter": 35725448,
+              "rssBefore": 103665664,
+              "rssAfter": 104534016,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 21.289499999999975,
+              "heapUsedBefore": 35726008,
+              "heapUsedAfter": 32708488,
+              "rssBefore": 104534016,
+              "rssAfter": 111558656,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 22.797600000000102,
+              "heapUsedBefore": 32709048,
+              "heapUsedAfter": 28529352,
+              "rssBefore": 111603712,
+              "rssAfter": 127668224,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 23.40949999999998,
+              "heapUsedBefore": 28530304,
+              "heapUsedAfter": 57655904,
+              "rssBefore": 127725568,
+              "rssAfter": 142487552,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 21.527599999999893,
+              "heapUsedBefore": 57656672,
+              "heapUsedAfter": 53248392,
+              "rssBefore": 142512128,
+              "rssAfter": 143331328,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 20.39409999999998,
+              "heapUsedBefore": 53248968,
+              "heapUsedAfter": 48624432,
+              "rssBefore": 143343616,
+              "rssAfter": 141533184,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 14.364799999999946,
+              "heapUsedBefore": 48625008,
+              "heapUsedAfter": 41353144,
+              "rssBefore": 141533184,
+              "rssAfter": 142381056,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 14.45659999999998,
+              "heapUsedBefore": 41353720,
+              "heapUsedAfter": 34035392,
+              "rssBefore": 142381056,
+              "rssAfter": 144142336,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 33.841999999999985,
+              "heapUsedBefore": 34035968,
+              "heapUsedAfter": 39297360,
+              "rssBefore": 144166912,
+              "rssAfter": 146415616,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "audit-rebuild-per-publication",
+          "round": 4,
+          "index": 2,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 270.23049999999995,
+          "cpuMs": 579,
+          "heapUsedBefore": 18701000,
+          "heapUsedAfter": 44306640,
+          "heapUsedHighWaterSampled": 58246096,
+          "rssBefore": 101007360,
+          "rssAfter": 146489344,
+          "rssHighWaterKiB": 146392,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 57.18990000000002,
+              "heapUsedBefore": 34530904,
+              "heapUsedAfter": 38908000,
+              "rssBefore": 104296448,
+              "rssAfter": 103161856,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 21.161800000000028,
+              "heapUsedBefore": 38913264,
+              "heapUsedAfter": 36214896,
+              "rssBefore": 103161856,
+              "rssAfter": 103784448,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 19.644800000000032,
+              "heapUsedBefore": 36215456,
+              "heapUsedAfter": 33646024,
+              "rssBefore": 103784448,
+              "rssAfter": 110067712,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 23.226200000000063,
+              "heapUsedBefore": 33646584,
+              "heapUsedAfter": 29823352,
+              "rssBefore": 110104576,
+              "rssAfter": 126021632,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 23.800399999999968,
+              "heapUsedBefore": 29568128,
+              "heapUsedAfter": 58246096,
+              "rssBefore": 126042112,
+              "rssAfter": 142561280,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 21.105800000000045,
+              "heapUsedBefore": 58246864,
+              "heapUsedAfter": 53870312,
+              "rssBefore": 142569472,
+              "rssAfter": 140873728,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 24.488699999999994,
+              "heapUsedBefore": 53870888,
+              "heapUsedAfter": 49684728,
+              "rssBefore": 140886016,
+              "rssAfter": 141484032,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 16.42089999999996,
+              "heapUsedBefore": 49685304,
+              "heapUsedAfter": 44197072,
+              "rssBefore": 141484032,
+              "rssAfter": 142077952,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 17.31389999999999,
+              "heapUsedBefore": 44197648,
+              "heapUsedAfter": 38693672,
+              "rssBefore": 142077952,
+              "rssAfter": 149012480,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 37.46939999999995,
+              "heapUsedBefore": 38694248,
+              "heapUsedAfter": 44305760,
+              "rssBefore": 148885504,
+              "rssAfter": 146444288,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 100,
+          "arm": "legacy-no-census",
+          "round": 4,
+          "index": 3,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\100.json.gz",
+            "sha256": "08404e6fa62c4cba154bfe03b0b116cd9eb7e835bd2cd1e69b800fc87b92ad18",
+            "bytes": 2826671
+          },
+          "wallMs": 394.95559999999995,
+          "cpuMs": 797,
+          "heapUsedBefore": 18700448,
+          "heapUsedAfter": 35208584,
+          "heapUsedHighWaterSampled": 56668856,
+          "rssBefore": 101597184,
+          "rssAfter": 144392192,
+          "rssHighWaterKiB": 145212,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 36003,
+              "wallMs": 59.376499999999965,
+              "heapUsedBefore": 33369928,
+              "heapUsedAfter": 36613768,
+              "rssBefore": 104714240,
+              "rssAfter": 103817216,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 36006,
+              "wallMs": 33.51220000000001,
+              "heapUsedBefore": 36619032,
+              "heapUsedAfter": 32861568,
+              "rssBefore": 103817216,
+              "rssAfter": 103178240,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 36009,
+              "wallMs": 32.26420000000002,
+              "heapUsedBefore": 32862128,
+              "heapUsedAfter": 28924952,
+              "rssBefore": 103178240,
+              "rssAfter": 109404160,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 36012,
+              "wallMs": 34.065200000000004,
+              "heapUsedBefore": 28925512,
+              "heapUsedAfter": 56668856,
+              "rssBefore": 109424640,
+              "rssAfter": 124125184,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 36015,
+              "wallMs": 33.54609999999991,
+              "heapUsedBefore": 56669808,
+              "heapUsedAfter": 52306864,
+              "rssBefore": 124211200,
+              "rssAfter": 132075520,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 36018,
+              "wallMs": 30.714200000000005,
+              "heapUsedBefore": 52307632,
+              "heapUsedAfter": 46870536,
+              "rssBefore": 132075520,
+              "rssAfter": 140288000,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 36021,
+              "wallMs": 28.05129999999997,
+              "heapUsedBefore": 46871112,
+              "heapUsedAfter": 41704280,
+              "rssBefore": 140288000,
+              "rssAfter": 141201408,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 36024,
+              "wallMs": 28.518499999999904,
+              "heapUsedBefore": 41704856,
+              "heapUsedAfter": 35325448,
+              "rssBefore": 141201408,
+              "rssAfter": 141664256,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 36027,
+              "wallMs": 42.068899999999985,
+              "heapUsedBefore": 35326024,
+              "heapUsedAfter": 28844520,
+              "rssBefore": 141664256,
+              "rssAfter": 143687680,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 36030,
+              "wallMs": 66.38150000000007,
+              "heapUsedBefore": 28845096,
+              "heapUsedAfter": 35207704,
+              "rssBefore": 143708160,
+              "rssAfter": 144371712,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+          "serializedBytes": 2830841,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        }
+      ],
+      "summary": {
+        "legacy-no-census": {
+          "wallMs": {
+            "p50": 326.0606,
+            "p95": 503.63380000000006,
+            "max": 503.63380000000006,
+            "samples": [
+              275.94270000000006,
+              307.5689,
+              326.0606,
+              395.41960000000006,
+              286.0366,
+              302.4095,
+              367.6462,
+              503.63380000000006,
+              349.9150000000001,
+              394.95559999999995
+            ]
+          },
+          "cpuMs": {
+            "p50": 657,
+            "p95": 952,
+            "max": 952,
+            "samples": [
+              641,
+              688,
+              657,
+              797,
+              579,
+              562,
+              703,
+              952,
+              657,
+              797
+            ]
+          },
+          "heapUsedSampledDeltaBytes": {
+            "p50": 39136224,
+            "p95": 42556208,
+            "max": 42556208,
+            "samples": [
+              38337632,
+              39894176,
+              37893520,
+              40397520,
+              39136224,
+              38993296,
+              39836992,
+              42556208,
+              40030320,
+              37968408
+            ]
+          },
+          "rssMaxDeltaBytes": {
+            "p50": 47804416,
+            "p95": 48836608,
+            "max": 48836608,
+            "samples": [
+              47812608,
+              47804416,
+              48721920,
+              48836608,
+              48291840,
+              47247360,
+              47714304,
+              46518272,
+              48201728,
+              47099904
+            ]
+          },
+          "stepP95Ms": {
+            "p50": 29.184900000000084,
+            "p95": 64.47999999999996,
+            "max": 85.65370000000007,
+            "samples": [
+              59.20359999999994,
+              26.985400000000027,
+              21.484499999999912,
+              24.90700000000004,
+              25.068399999999997,
+              23.034899999999993,
+              20.212200000000053,
+              16.063499999999976,
+              16.336000000000013,
+              36.42270000000008,
+              64.47999999999996,
+              23.92560000000003,
+              26.73180000000002,
+              28.63510000000008,
+              38.13940000000002,
+              24.8673,
+              20.51750000000004,
+              17.319799999999987,
+              19.003199999999993,
+              36.61289999999997,
+              74.38659999999999,
+              27.620900000000006,
+              20.391200000000026,
+              31.932999999999993,
+              28.51660000000004,
+              26.55340000000001,
+              28.270899999999983,
+              19.83269999999993,
+              19.044299999999907,
+              42.20629999999994,
+              74.32770000000005,
+              25.489399999999932,
+              28.87009999999998,
+              38.921800000000076,
+              42.32540000000006,
+              40.88670000000002,
+              32.80540000000008,
+              21.22989999999993,
+              31.778500000000008,
+              51.5797,
+              61.003699999999924,
+              22.431699999999978,
+              21.45010000000002,
+              23.255899999999997,
+              24.248500000000035,
+              20.15140000000008,
+              24.494399999999928,
+              19.85800000000006,
+              18.384599999999978,
+              44.59879999999998,
+              64.47230000000002,
+              31.24210000000005,
+              22.01389999999992,
+              24.948300000000017,
+              36.400800000000004,
+              22.88379999999995,
+              20.984899999999925,
+              17.440400000000068,
+              15.948499999999967,
+              39.200199999999995,
+              74.03559999999999,
+              26.853900000000067,
+              25.466499999999996,
+              30.597099999999955,
+              31.15549999999996,
+              29.73790000000008,
+              34.672399999999925,
+              27.082899999999995,
+              28.27979999999991,
+              53.19569999999999,
+              85.65370000000007,
+              42.766700000000014,
+              43.69679999999994,
+              54.75470000000007,
+              51.48429999999996,
+              42.20130000000006,
+              49.26170000000002,
+              29.184900000000084,
+              33.36149999999998,
+              62.4905,
+              64.24370000000005,
+              24.082400000000007,
+              38.357399999999984,
+              33.77739999999994,
+              38.92529999999999,
+              25.85170000000005,
+              31.82510000000002,
+              20.282100000000014,
+              20.734699999999975,
+              45.38840000000005,
+              59.376499999999965,
+              33.51220000000001,
+              32.26420000000002,
+              34.065200000000004,
+              33.54609999999991,
+              30.714200000000005,
+              28.05129999999997,
+              28.518499999999904,
+              42.068899999999985,
+              66.38150000000007
+            ]
+          },
+          "rebuildsPerTrial": 0
+        },
+        "audit-rebuild-per-publication": {
+          "wallMs": {
+            "p50": 305.4139,
+            "p95": 624.5160999999999,
+            "max": 624.5160999999999,
+            "samples": [
+              283.5347,
+              305.4139,
+              314.75969999999995,
+              413.5565,
+              447.21649999999994,
+              624.5160999999999,
+              283.1578,
+              336.5613,
+              266.8845,
+              270.23049999999995
+            ]
+          },
+          "cpuMs": {
+            "p50": 594,
+            "p95": 1234,
+            "max": 1234,
+            "samples": [
+              594,
+              671,
+              578,
+              923,
+              844,
+              1234,
+              530,
+              640,
+              485,
+              579
+            ]
+          },
+          "heapUsedSampledDeltaBytes": {
+            "p50": 39545096,
+            "p95": 43294904,
+            "max": 43294904,
+            "samples": [
+              39379960,
+              43010784,
+              39215000,
+              43294904,
+              39184184,
+              42843048,
+              41777864,
+              43246752,
+              38954232,
+              39545096
+            ]
+          },
+          "rssMaxDeltaBytes": {
+            "p50": 48271360,
+            "p95": 50114560,
+            "max": 50114560,
+            "samples": [
+              49078272,
+              46858240,
+              49266688,
+              47079424,
+              48271360,
+              49664000,
+              48242688,
+              46833664,
+              50114560,
+              48898048
+            ]
+          },
+          "stepP95Ms": {
+            "p50": 24.94780000000003,
+            "p95": 70.88540000000006,
+            "max": 168.24289999999996,
+            "samples": [
+              62.71739999999994,
+              23.148000000000025,
+              22.468700000000013,
+              23.951099999999997,
+              25.073800000000006,
+              21.21989999999994,
+              21.831899999999905,
+              16.828699999999913,
+              17.8048,
+              39.398399999999924,
+              66.07590000000005,
+              24.016099999999994,
+              24.465099999999893,
+              26.48359999999991,
+              27.68539999999996,
+              20.651100000000042,
+              23.06389999999999,
+              17.083400000000097,
+              18.78049999999996,
+              44.278999999999996,
+              67.49309999999997,
+              24.94780000000003,
+              24.51679999999999,
+              27.234800000000064,
+              23.71479999999997,
+              20.111400000000003,
+              24.288800000000037,
+              17.037799999999947,
+              22.15269999999998,
+              53.75670000000002,
+              59.76589999999999,
+              23.163099999999986,
+              22.534099999999967,
+              26.248199999999997,
+              28.499300000000062,
+              19.5711,
+              50.53620000000001,
+              43.18139999999994,
+              45.73689999999999,
+              85.54589999999996,
+              102.18100000000004,
+              38.2817,
+              42.940399999999954,
+              41.890499999999975,
+              30.780399999999986,
+              25.489399999999932,
+              23.64510000000007,
+              27.442099999999982,
+              39.43859999999995,
+              55.45769999999993,
+              168.24289999999996,
+              75.38210000000004,
+              56.40840000000003,
+              57.25319999999999,
+              37.662900000000036,
+              33.29179999999997,
+              39.56899999999996,
+              29.51339999999982,
+              32.69100000000003,
+              77.87470000000008,
+              57.28480000000002,
+              21.869099999999946,
+              22.14269999999999,
+              24.93719999999996,
+              25.318300000000022,
+              22.465100000000007,
+              20.60439999999994,
+              18.97059999999999,
+              22.716099999999983,
+              38.54110000000003,
+              70.88540000000006,
+              32.22550000000001,
+              27.19360000000006,
+              35.70010000000002,
+              29.438199999999938,
+              22.184999999999945,
+              24.31359999999995,
+              16.12060000000008,
+              17.464500000000044,
+              45.06059999999991,
+              59.343999999999994,
+              27.214500000000044,
+              21.289499999999975,
+              22.797600000000102,
+              23.40949999999998,
+              21.527599999999893,
+              20.39409999999998,
+              14.364799999999946,
+              14.45659999999998,
+              33.841999999999985,
+              57.18990000000002,
+              21.161800000000028,
+              19.644800000000032,
+              23.226200000000063,
+              23.800399999999968,
+              21.105800000000045,
+              24.488699999999994,
+              16.42089999999996,
+              17.31389999999999,
+              37.46939999999995
+            ]
+          },
+          "rebuildsPerTrial": 11
+        }
+      },
+      "auditOverLegacy": {
+        "cpuMsP50": -63,
+        "heapUsedSampledDeltaBytesP50": 408872,
+        "rssMaxDeltaBytesP50": 466944
+      }
+    },
+    {
+      "age": 400,
+      "samples": [
+        {
+          "age": 400,
+          "arm": "legacy-no-census",
+          "round": 0,
+          "index": 0,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1357.8133,
+          "cpuMs": 1968,
+          "heapUsedBefore": 39521296,
+          "heapUsedAfter": 102701384,
+          "heapUsedHighWaterSampled": 117973960,
+          "rssBefore": 159924224,
+          "rssAfter": 248713216,
+          "rssHighWaterKiB": 245284,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 117.13880000000006,
+              "heapUsedBefore": 55701136,
+              "heapUsedAfter": 78938920,
+              "rssBefore": 164524032,
+              "rssAfter": 165281792,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 126.93770000000006,
+              "heapUsedBefore": 78944656,
+              "heapUsedAfter": 99053448,
+              "rssBefore": 165281792,
+              "rssAfter": 183799808,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 211.01570000000004,
+              "heapUsedBefore": 99054008,
+              "heapUsedAfter": 60702728,
+              "rssBefore": 183799808,
+              "rssAfter": 245272576,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 139.8925999999999,
+              "heapUsedBefore": 60703288,
+              "heapUsedAfter": 78025480,
+              "rssBefore": 245293056,
+              "rssAfter": 236724224,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 134.73850000000016,
+              "heapUsedBefore": 78026432,
+              "heapUsedAfter": 97218768,
+              "rssBefore": 236724224,
+              "rssAfter": 237592576,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 129.33210000000008,
+              "heapUsedBefore": 97219536,
+              "heapUsedAfter": 108181432,
+              "rssBefore": 237592576,
+              "rssAfter": 239861760,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 113.58979999999997,
+              "heapUsedBefore": 108182008,
+              "heapUsedAfter": 117973960,
+              "rssBefore": 239861760,
+              "rssAfter": 239362048,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 108.79600000000005,
+              "heapUsedBefore": 117974536,
+              "heapUsedAfter": 60599736,
+              "rssBefore": 239370240,
+              "rssAfter": 243376128,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 99.3556000000001,
+              "heapUsedBefore": 60600312,
+              "heapUsedAfter": 68597608,
+              "rssBefore": 243376128,
+              "rssAfter": 243699712,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 168.45389999999998,
+              "heapUsedBefore": 68598184,
+              "heapUsedAfter": 102700504,
+              "rssBefore": 243703808,
+              "rssAfter": 248713216,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "audit-rebuild-per-publication",
+          "round": 0,
+          "index": 1,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1313.9791,
+          "cpuMs": 1985,
+          "heapUsedBefore": 39520464,
+          "heapUsedAfter": 89921800,
+          "heapUsedHighWaterSampled": 119794112,
+          "rssBefore": 157151232,
+          "rssAfter": 249688064,
+          "rssHighWaterKiB": 246140,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 119.0122,
+              "heapUsedBefore": 57974664,
+              "heapUsedAfter": 49945024,
+              "rssBefore": 162066432,
+              "rssAfter": 162652160,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 128.31269999999995,
+              "heapUsedBefore": 50264056,
+              "heapUsedAfter": 73169888,
+              "rssBefore": 162734080,
+              "rssAfter": 167940096,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 153.77589999999998,
+              "heapUsedBefore": 73170448,
+              "heapUsedAfter": 100739080,
+              "rssBefore": 167940096,
+              "rssAfter": 218918912,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 120.43130000000008,
+              "heapUsedBefore": 100739640,
+              "heapUsedAfter": 54355136,
+              "rssBefore": 218918912,
+              "rssAfter": 236924928,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 130.47900000000004,
+              "heapUsedBefore": 54356088,
+              "heapUsedAfter": 74032952,
+              "rssBefore": 236933120,
+              "rssAfter": 238264320,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 117.64940000000001,
+              "heapUsedBefore": 74033720,
+              "heapUsedAfter": 86988664,
+              "rssBefore": 238268416,
+              "rssAfter": 240660480,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 107.61079999999993,
+              "heapUsedBefore": 86989240,
+              "heapUsedAfter": 98902464,
+              "rssBefore": 240660480,
+              "rssAfter": 242286592,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 108.44530000000009,
+              "heapUsedBefore": 98903040,
+              "heapUsedAfter": 109997624,
+              "rssBefore": 242286592,
+              "rssAfter": 242892800,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 130.07580000000007,
+              "heapUsedBefore": 109998200,
+              "heapUsedAfter": 119794112,
+              "rssBefore": 242892800,
+              "rssAfter": 244899840,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 186.81819999999993,
+              "heapUsedBefore": 119794688,
+              "heapUsedAfter": 89920920,
+              "rssBefore": 244899840,
+              "rssAfter": 249688064,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "audit-rebuild-per-publication",
+          "round": 0,
+          "index": 2,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1510.3200000000002,
+          "cpuMs": 2250,
+          "heapUsedBefore": 39524296,
+          "heapUsedAfter": 90947824,
+          "heapUsedHighWaterSampled": 120903008,
+          "rssBefore": 156606464,
+          "rssAfter": 249991168,
+          "rssHighWaterKiB": 245912,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 134.09260000000006,
+              "heapUsedBefore": 57990768,
+              "heapUsedAfter": 50255480,
+              "rssBefore": 161447936,
+              "rssAfter": 162963456,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 140.37209999999993,
+              "heapUsedBefore": 50261216,
+              "heapUsedAfter": 73450136,
+              "rssBefore": 162996224,
+              "rssAfter": 167129088,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 202.9303000000001,
+              "heapUsedBefore": 73450696,
+              "heapUsedAfter": 101957136,
+              "rssBefore": 167129088,
+              "rssAfter": 219287552,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 139.68000000000006,
+              "heapUsedBefore": 101957696,
+              "heapUsedAfter": 55316888,
+              "rssBefore": 219291648,
+              "rssAfter": 236675072,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 149.58709999999996,
+              "heapUsedBefore": 55317840,
+              "heapUsedAfter": 75154536,
+              "rssBefore": 236675072,
+              "rssAfter": 239501312,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 122.85179999999991,
+              "heapUsedBefore": 75155304,
+              "heapUsedAfter": 88125960,
+              "rssBefore": 239501312,
+              "rssAfter": 240369664,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 134.56670000000008,
+              "heapUsedBefore": 88126536,
+              "heapUsedAfter": 100009744,
+              "rssBefore": 240369664,
+              "rssAfter": 239955968,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 123.99580000000014,
+              "heapUsedBefore": 100010320,
+              "heapUsedAfter": 111325600,
+              "rssBefore": 239955968,
+              "rssAfter": 242937856,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 138.71820000000002,
+              "heapUsedBefore": 111128088,
+              "heapUsedAfter": 120903008,
+              "rssBefore": 242937856,
+              "rssAfter": 244469760,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 211.1018999999999,
+              "heapUsedBefore": 120903584,
+              "heapUsedAfter": 90946944,
+              "rssBefore": 244473856,
+              "rssAfter": 249970688,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "legacy-no-census",
+          "round": 0,
+          "index": 3,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1382.6233000000002,
+          "cpuMs": 2219,
+          "heapUsedBefore": 39520704,
+          "heapUsedAfter": 101428912,
+          "heapUsedHighWaterSampled": 116647184,
+          "rssBefore": 158195712,
+          "rssAfter": 248111104,
+          "rssHighWaterKiB": 244752,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 206.87800000000004,
+              "heapUsedBefore": 55501904,
+              "heapUsedAfter": 77266488,
+              "rssBefore": 163397632,
+              "rssAfter": 164143104,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 156.83370000000002,
+              "heapUsedBefore": 77272224,
+              "heapUsedAfter": 98368128,
+              "rssBefore": 164143104,
+              "rssAfter": 182505472,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 186.34159999999997,
+              "heapUsedBefore": 98369224,
+              "heapUsedAfter": 59777064,
+              "rssBefore": 182509568,
+              "rssAfter": 240230400,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 127.92259999999987,
+              "heapUsedBefore": 59777624,
+              "heapUsedAfter": 77095664,
+              "rssBefore": 240259072,
+              "rssAfter": 237273088,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 123.29040000000009,
+              "heapUsedBefore": 77096616,
+              "heapUsedAfter": 96353376,
+              "rssBefore": 237273088,
+              "rssAfter": 237621248,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 114.40210000000002,
+              "heapUsedBefore": 96354144,
+              "heapUsedAfter": 106890600,
+              "rssBefore": 237535232,
+              "rssAfter": 238768128,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 100.82989999999995,
+              "heapUsedBefore": 106891176,
+              "heapUsedAfter": 116647184,
+              "rssBefore": 238768128,
+              "rssAfter": 238891008,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 102.15049999999997,
+              "heapUsedBefore": 116647760,
+              "heapUsedAfter": 59135440,
+              "rssBefore": 238903296,
+              "rssAfter": 243544064,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 95.05750000000012,
+              "heapUsedBefore": 59136016,
+              "heapUsedAfter": 67149704,
+              "rssBefore": 243544064,
+              "rssAfter": 243699712,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 155.87760000000003,
+              "heapUsedBefore": 67150280,
+              "heapUsedAfter": 101428032,
+              "rssBefore": 243699712,
+              "rssAfter": 248111104,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "legacy-no-census",
+          "round": 1,
+          "index": 0,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1363.0717,
+          "cpuMs": 2328,
+          "heapUsedBefore": 39530144,
+          "heapUsedAfter": 102418720,
+          "heapUsedHighWaterSampled": 117391408,
+          "rssBefore": 156471296,
+          "rssAfter": 248229888,
+          "rssHighWaterKiB": 244800,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 151.49670000000003,
+              "heapUsedBefore": 55705696,
+              "heapUsedAfter": 78178520,
+              "rssBefore": 161079296,
+              "rssAfter": 162418688,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 131.78610000000003,
+              "heapUsedBefore": 78184256,
+              "heapUsedAfter": 65788528,
+              "rssBefore": 162418688,
+              "rssAfter": 164646912,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 184.86289999999997,
+              "heapUsedBefore": 65789088,
+              "heapUsedAfter": 60938624,
+              "rssBefore": 164646912,
+              "rssAfter": 212987904,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 121.27130000000011,
+              "heapUsedBefore": 60939184,
+              "heapUsedAfter": 77751824,
+              "rssBefore": 212996096,
+              "rssAfter": 236802048,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 124.14380000000006,
+              "heapUsedBefore": 77752776,
+              "heapUsedAfter": 96666072,
+              "rssBefore": 236802048,
+              "rssAfter": 237453312,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 112.18049999999994,
+              "heapUsedBefore": 96666840,
+              "heapUsedAfter": 107611720,
+              "rssBefore": 237453312,
+              "rssAfter": 238723072,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 112.70949999999993,
+              "heapUsedBefore": 107612296,
+              "heapUsedAfter": 117391408,
+              "rssBefore": 238723072,
+              "rssAfter": 239726592,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 116.2077999999999,
+              "heapUsedBefore": 117391984,
+              "heapUsedAfter": 60009960,
+              "rssBefore": 239726592,
+              "rssAfter": 242847744,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 106.89020000000005,
+              "heapUsedBefore": 60010536,
+              "heapUsedAfter": 68236368,
+              "rssBefore": 242892800,
+              "rssAfter": 243138560,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 191.73699999999985,
+              "heapUsedBefore": 68236944,
+              "heapUsedAfter": 102417840,
+              "rssBefore": 243138560,
+              "rssAfter": 248229888,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "audit-rebuild-per-publication",
+          "round": 1,
+          "index": 1,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1365.1049999999998,
+          "cpuMs": 2109,
+          "heapUsedBefore": 39521816,
+          "heapUsedAfter": 89597552,
+          "heapUsedHighWaterSampled": 120029864,
+          "rssBefore": 159428608,
+          "rssAfter": 247726080,
+          "rssHighWaterKiB": 244404,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 147.85760000000005,
+              "heapUsedBefore": 57777616,
+              "heapUsedAfter": 49959600,
+              "rssBefore": 164102144,
+              "rssAfter": 166645760,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 133.62560000000008,
+              "heapUsedBefore": 49965336,
+              "heapUsedAfter": 72112648,
+              "rssBefore": 166653952,
+              "rssAfter": 201416704,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 169.33859999999993,
+              "heapUsedBefore": 72113208,
+              "heapUsedAfter": 100870776,
+              "rssBefore": 201416704,
+              "rssAfter": 236105728,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 118.529,
+              "heapUsedBefore": 100871336,
+              "heapUsedAfter": 54207400,
+              "rssBefore": 236142592,
+              "rssAfter": 236060672,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 108.32889999999998,
+              "heapUsedBefore": 54208352,
+              "heapUsedAfter": 73932480,
+              "rssBefore": 236064768,
+              "rssAfter": 237461504,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 124.69630000000006,
+              "heapUsedBefore": 73933248,
+              "heapUsedAfter": 87098344,
+              "rssBefore": 237461504,
+              "rssAfter": 239013888,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 106.55999999999995,
+              "heapUsedBefore": 87099816,
+              "heapUsedAfter": 99072152,
+              "rssBefore": 239017984,
+              "rssAfter": 239554560,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 112.57669999999985,
+              "heapUsedBefore": 99072728,
+              "heapUsedAfter": 110201528,
+              "rssBefore": 239554560,
+              "rssAfter": 242147328,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 122.3467999999998,
+              "heapUsedBefore": 110202104,
+              "heapUsedAfter": 120029864,
+              "rssBefore": 242147328,
+              "rssAfter": 242696192,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 203.02250000000004,
+              "heapUsedBefore": 120030440,
+              "heapUsedAfter": 89596672,
+              "rssBefore": 242696192,
+              "rssAfter": 247726080,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "audit-rebuild-per-publication",
+          "round": 1,
+          "index": 2,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1669.8383,
+          "cpuMs": 2453,
+          "heapUsedBefore": 39526336,
+          "heapUsedAfter": 120388976,
+          "heapUsedHighWaterSampled": 120388096,
+          "rssBefore": 157806592,
+          "rssAfter": 249278464,
+          "rssHighWaterKiB": 245324,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 201.8247,
+              "heapUsedBefore": 57949344,
+              "heapUsedAfter": 49786880,
+              "rssBefore": 162328576,
+              "rssAfter": 165568512,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 129.92880000000002,
+              "heapUsedBefore": 49792616,
+              "heapUsedAfter": 105399904,
+              "rssBefore": 165580800,
+              "rssAfter": 190226432,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 254.87319999999988,
+              "heapUsedBefore": 105400464,
+              "heapUsedAfter": 66071704,
+              "rssBefore": 190226432,
+              "rssAfter": 237711360,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 120.44209999999998,
+              "heapUsedBefore": 66072264,
+              "heapUsedAfter": 84896928,
+              "rssBefore": 237711360,
+              "rssAfter": 236662784,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 129.66829999999982,
+              "heapUsedBefore": 84897880,
+              "heapUsedAfter": 105148912,
+              "rssBefore": 236662784,
+              "rssAfter": 238133248,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 145.89319999999998,
+              "heapUsedBefore": 105149680,
+              "heapUsedAfter": 117699488,
+              "rssBefore": 238141440,
+              "rssAfter": 240254976,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 163.0118,
+              "heapUsedBefore": 117700064,
+              "heapUsedAfter": 63523960,
+              "rssBefore": 240254976,
+              "rssAfter": 242724864,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 145.79410000000007,
+              "heapUsedBefore": 63524536,
+              "heapUsedAfter": 74491064,
+              "rssBefore": 242724864,
+              "rssAfter": 242896896,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 146.43920000000003,
+              "heapUsedBefore": 74491640,
+              "heapUsedAfter": 84259752,
+              "rssBefore": 242896896,
+              "rssAfter": 244920320,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 217.94180000000006,
+              "heapUsedBefore": 84260328,
+              "heapUsedAfter": 120388096,
+              "rssBefore": 244920320,
+              "rssAfter": 249278464,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "legacy-no-census",
+          "round": 1,
+          "index": 3,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1812.3370000000002,
+          "cpuMs": 2891,
+          "heapUsedBefore": 39521344,
+          "heapUsedAfter": 67092360,
+          "heapUsedHighWaterSampled": 108653608,
+          "rssBefore": 160354304,
+          "rssAfter": 248549376,
+          "rssHighWaterKiB": 243832,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 189.0738,
+              "heapUsedBefore": 55519560,
+              "heapUsedAfter": 77538752,
+              "rssBefore": 164929536,
+              "rssAfter": 165068800,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 186.226,
+              "heapUsedBefore": 77544488,
+              "heapUsedAfter": 65045384,
+              "rssBefore": 165068800,
+              "rssAfter": 202596352,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 238.86660000000006,
+              "heapUsedBefore": 65045944,
+              "heapUsedAfter": 92562272,
+              "rssBefore": 202596352,
+              "rssAfter": 245563392,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 166.95460000000003,
+              "heapUsedBefore": 92562832,
+              "heapUsedAfter": 108653608,
+              "rssBefore": 245407744,
+              "rssAfter": 236204032,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 168.3511000000001,
+              "heapUsedBefore": 108654560,
+              "heapUsedAfter": 61785568,
+              "rssBefore": 236204032,
+              "rssAfter": 238018560,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 149.74379999999996,
+              "heapUsedBefore": 61786336,
+              "heapUsedAfter": 72536496,
+              "rssBefore": 238022656,
+              "rssAfter": 238002176,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 157.37009999999987,
+              "heapUsedBefore": 72537072,
+              "heapUsedAfter": 82347336,
+              "rssBefore": 238002176,
+              "rssAfter": 238850048,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 147.8449999999998,
+              "heapUsedBefore": 82347912,
+              "heapUsedAfter": 91410296,
+              "rssBefore": 238850048,
+              "rssAfter": 241475584,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 159.6567,
+              "heapUsedBefore": 91410872,
+              "heapUsedAfter": 99169000,
+              "rssBefore": 241311744,
+              "rssAfter": 243445760,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 229.90009999999984,
+              "heapUsedBefore": 99169576,
+              "heapUsedAfter": 67091480,
+              "rssBefore": 243449856,
+              "rssAfter": 248549376,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "legacy-no-census",
+          "round": 2,
+          "index": 0,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1720.1287000000002,
+          "cpuMs": 2610,
+          "heapUsedBefore": 39522280,
+          "heapUsedAfter": 67871408,
+          "heapUsedHighWaterSampled": 109503240,
+          "rssBefore": 159522816,
+          "rssAfter": 245809152,
+          "rssHighWaterKiB": 243188,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 206.18970000000002,
+              "heapUsedBefore": 55527800,
+              "heapUsedAfter": 77279344,
+              "rssBefore": 163946496,
+              "rssAfter": 164589568,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 220.51949999999988,
+              "heapUsedBefore": 77285080,
+              "heapUsedAfter": 64840560,
+              "rssBefore": 164589568,
+              "rssAfter": 201261056,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 227.03549999999996,
+              "heapUsedBefore": 64841120,
+              "heapUsedAfter": 92383072,
+              "rssBefore": 201261056,
+              "rssAfter": 244396032,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 149.20590000000016,
+              "heapUsedBefore": 92383632,
+              "heapUsedAfter": 109503240,
+              "rssBefore": 244269056,
+              "rssAfter": 235352064,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 151.43810000000008,
+              "heapUsedBefore": 109504192,
+              "heapUsedAfter": 62153552,
+              "rssBefore": 235352064,
+              "rssAfter": 238669824,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 140.98620000000005,
+              "heapUsedBefore": 62154320,
+              "heapUsedAfter": 72991264,
+              "rssBefore": 238669824,
+              "rssAfter": 238235648,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 141.779,
+              "heapUsedBefore": 72991840,
+              "heapUsedAfter": 82826720,
+              "rssBefore": 238235648,
+              "rssAfter": 240574464,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 144.97720000000004,
+              "heapUsedBefore": 82827296,
+              "heapUsedAfter": 92016008,
+              "rssBefore": 240574464,
+              "rssAfter": 242147328,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 126.95080000000007,
+              "heapUsedBefore": 92137008,
+              "heapUsedAfter": 99986448,
+              "rssBefore": 242147328,
+              "rssAfter": 242163712,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 196.83979999999974,
+              "heapUsedBefore": 99987024,
+              "heapUsedAfter": 67870528,
+              "rssBefore": 242163712,
+              "rssAfter": 245809152,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "audit-rebuild-per-publication",
+          "round": 2,
+          "index": 1,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1729.5756999999999,
+          "cpuMs": 2609,
+          "heapUsedBefore": 39527504,
+          "heapUsedAfter": 122129632,
+          "heapUsedHighWaterSampled": 122128752,
+          "rssBefore": 159481856,
+          "rssAfter": 248717312,
+          "rssHighWaterKiB": 245452,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 199.44240000000002,
+              "heapUsedBefore": 57875752,
+              "heapUsedAfter": 49881272,
+              "rssBefore": 163827712,
+              "rssAfter": 164511744,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 169.69830000000002,
+              "heapUsedBefore": 49622432,
+              "heapUsedAfter": 105507864,
+              "rssBefore": 164511744,
+              "rssAfter": 189509632,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 234.74530000000004,
+              "heapUsedBefore": 105508424,
+              "heapUsedAfter": 67862968,
+              "rssBefore": 189509632,
+              "rssAfter": 237137920,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 150.78469999999993,
+              "heapUsedBefore": 67863528,
+              "heapUsedAfter": 86564424,
+              "rssBefore": 237154304,
+              "rssAfter": 237871104,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 153.42419999999993,
+              "heapUsedBefore": 86565376,
+              "heapUsedAfter": 106309288,
+              "rssBefore": 237871104,
+              "rssAfter": 238780416,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 140.15969999999993,
+              "heapUsedBefore": 106310056,
+              "heapUsedAfter": 119250088,
+              "rssBefore": 238780416,
+              "rssAfter": 240181248,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 153.46579999999994,
+              "heapUsedBefore": 119250664,
+              "heapUsedAfter": 65174224,
+              "rssBefore": 240181248,
+              "rssAfter": 242581504,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 139.27789999999982,
+              "heapUsedBefore": 65174800,
+              "heapUsedAfter": 76166704,
+              "rssBefore": 242581504,
+              "rssAfter": 243253248,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 144.0666000000001,
+              "heapUsedBefore": 76167280,
+              "heapUsedAfter": 85935168,
+              "rssBefore": 243253248,
+              "rssAfter": 244473856,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 225.56010000000015,
+              "heapUsedBefore": 85935744,
+              "heapUsedAfter": 122128752,
+              "rssBefore": 244473856,
+              "rssAfter": 248709120,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "audit-rebuild-per-publication",
+          "round": 2,
+          "index": 2,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1750.9062,
+          "cpuMs": 2688,
+          "heapUsedBefore": 39507152,
+          "heapUsedAfter": 88068288,
+          "heapUsedHighWaterSampled": 118812032,
+          "rssBefore": 160854016,
+          "rssAfter": 248803328,
+          "rssHighWaterKiB": 244592,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 186.899,
+              "heapUsedBefore": 57850200,
+              "heapUsedAfter": 50225504,
+              "rssBefore": 164372480,
+              "rssAfter": 167772160,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 172.33580000000006,
+              "heapUsedBefore": 49883200,
+              "heapUsedAfter": 71948168,
+              "rssBefore": 167825408,
+              "rssAfter": 201781248,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 233.44810000000007,
+              "heapUsedBefore": 71948728,
+              "heapUsedAfter": 99656736,
+              "rssBefore": 201781248,
+              "rssAfter": 237424640,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 163.67459999999983,
+              "heapUsedBefore": 99657296,
+              "heapUsedAfter": 118812032,
+              "rssBefore": 237453312,
+              "rssAfter": 236818432,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 172.04499999999985,
+              "heapUsedBefore": 118812984,
+              "heapUsedAfter": 72383000,
+              "rssBefore": 236818432,
+              "rssAfter": 238198784,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 155.54210000000012,
+              "heapUsedBefore": 72383768,
+              "heapUsedAfter": 85303272,
+              "rssBefore": 238198784,
+              "rssAfter": 239403008,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 159.85900000000015,
+              "heapUsedBefore": 85303848,
+              "heapUsedAfter": 97235504,
+              "rssBefore": 239435776,
+              "rssAfter": 239570944,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 139.0032000000001,
+              "heapUsedBefore": 97236080,
+              "heapUsedAfter": 108343240,
+              "rssBefore": 239570944,
+              "rssAfter": 241614848,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 134.95469999999978,
+              "heapUsedBefore": 108343816,
+              "heapUsedAfter": 118205184,
+              "rssBefore": 241623040,
+              "rssAfter": 243134464,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 213.38110000000006,
+              "heapUsedBefore": 118205760,
+              "heapUsedAfter": 88067408,
+              "rssBefore": 243134464,
+              "rssAfter": 248803328,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "legacy-no-census",
+          "round": 2,
+          "index": 3,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1585.9160000000002,
+          "cpuMs": 2531,
+          "heapUsedBefore": 39545040,
+          "heapUsedAfter": 68326912,
+          "heapUsedHighWaterSampled": 110239448,
+          "rssBefore": 159993856,
+          "rssAfter": 247463936,
+          "rssHighWaterKiB": 243176,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 194.01819999999998,
+              "heapUsedBefore": 55682304,
+              "heapUsedAfter": 78118896,
+              "rssBefore": 164540416,
+              "rssAfter": 164536320,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 179.04679999999996,
+              "heapUsedBefore": 78124632,
+              "heapUsedAfter": 65398400,
+              "rssBefore": 164536320,
+              "rssAfter": 201375744,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 217.68899999999985,
+              "heapUsedBefore": 65398960,
+              "heapUsedAfter": 92890584,
+              "rssBefore": 201388032,
+              "rssAfter": 241102848,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 141.12120000000004,
+              "heapUsedBefore": 92891144,
+              "heapUsedAfter": 110239448,
+              "rssBefore": 241004544,
+              "rssAfter": 235786240,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 146.46849999999995,
+              "heapUsedBefore": 110240400,
+              "heapUsedAfter": 62721024,
+              "rssBefore": 235786240,
+              "rssAfter": 236912640,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 120.63890000000015,
+              "heapUsedBefore": 62721792,
+              "heapUsedAfter": 73594376,
+              "rssBefore": 236912640,
+              "rssAfter": 237899776,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 128.28919999999994,
+              "heapUsedBefore": 73594952,
+              "heapUsedAfter": 83444264,
+              "rssBefore": 237899776,
+              "rssAfter": 240275456,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 121.1253999999999,
+              "heapUsedBefore": 83444840,
+              "heapUsedAfter": 92463304,
+              "rssBefore": 240283648,
+              "rssAfter": 242438144,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 128.0641999999998,
+              "heapUsedBefore": 92463880,
+              "heapUsedAfter": 100272664,
+              "rssBefore": 242450432,
+              "rssAfter": 242405376,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 197.3816999999999,
+              "heapUsedBefore": 100273240,
+              "heapUsedAfter": 68326032,
+              "rssBefore": 242409472,
+              "rssAfter": 247463936,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "legacy-no-census",
+          "round": 3,
+          "index": 0,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1691.3962999999999,
+          "cpuMs": 2516,
+          "heapUsedBefore": 39524176,
+          "heapUsedAfter": 69020384,
+          "heapUsedHighWaterSampled": 110661304,
+          "rssBefore": 156598272,
+          "rssAfter": 248066048,
+          "rssHighWaterKiB": 243632,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 185.4457,
+              "heapUsedBefore": 55687464,
+              "heapUsedAfter": 78316552,
+              "rssBefore": 161062912,
+              "rssAfter": 162619392,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 185.2953,
+              "heapUsedBefore": 78322288,
+              "heapUsedAfter": 66153832,
+              "rssBefore": 162619392,
+              "rssAfter": 167030784,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 237.57520000000022,
+              "heapUsedBefore": 66154392,
+              "heapUsedAfter": 92719288,
+              "rssBefore": 167030784,
+              "rssAfter": 210464768,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 158.34750000000008,
+              "heapUsedBefore": 92719848,
+              "heapUsedAfter": 110661304,
+              "rssBefore": 210468864,
+              "rssAfter": 235077632,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 166.70180000000005,
+              "heapUsedBefore": 110662256,
+              "heapUsedAfter": 63662616,
+              "rssBefore": 235077632,
+              "rssAfter": 237117440,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 138.69889999999987,
+              "heapUsedBefore": 63663384,
+              "heapUsedAfter": 74492864,
+              "rssBefore": 237117440,
+              "rssAfter": 239177728,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 131.40899999999988,
+              "heapUsedBefore": 74493440,
+              "heapUsedAfter": 84350992,
+              "rssBefore": 239177728,
+              "rssAfter": 238764032,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 124.51600000000008,
+              "heapUsedBefore": 84351568,
+              "heapUsedAfter": 93432816,
+              "rssBefore": 238772224,
+              "rssAfter": 242606080,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 137.45299999999997,
+              "heapUsedBefore": 93433392,
+              "heapUsedAfter": 101143368,
+              "rssBefore": 242606080,
+              "rssAfter": 242315264,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 212.83170000000018,
+              "heapUsedBefore": 101143944,
+              "heapUsedAfter": 69019504,
+              "rssBefore": 242315264,
+              "rssAfter": 248066048,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "audit-rebuild-per-publication",
+          "round": 3,
+          "index": 1,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1825.8547,
+          "cpuMs": 2921,
+          "heapUsedBefore": 39523264,
+          "heapUsedAfter": 88951568,
+          "heapUsedHighWaterSampled": 119488160,
+          "rssBefore": 157155328,
+          "rssAfter": 248954880,
+          "rssHighWaterKiB": 245344,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 193.54060000000004,
+              "heapUsedBefore": 57819632,
+              "heapUsedAfter": 49695680,
+              "rssBefore": 161042432,
+              "rssAfter": 161955840,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 182.51459999999997,
+              "heapUsedBefore": 49701464,
+              "heapUsedAfter": 72680008,
+              "rssBefore": 161955840,
+              "rssAfter": 167632896,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 237.2744,
+              "heapUsedBefore": 72680568,
+              "heapUsedAfter": 100407480,
+              "rssBefore": 167632896,
+              "rssAfter": 216457216,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 164.84349999999995,
+              "heapUsedBefore": 100408040,
+              "heapUsedAfter": 119488160,
+              "rssBefore": 216457216,
+              "rssAfter": 235847680,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 181.17520000000013,
+              "heapUsedBefore": 119489112,
+              "heapUsedAfter": 73194168,
+              "rssBefore": 235855872,
+              "rssAfter": 238059520,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 155.6531,
+              "heapUsedBefore": 73194936,
+              "heapUsedAfter": 86198344,
+              "rssBefore": 238059520,
+              "rssAfter": 239411200,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 164.62840000000006,
+              "heapUsedBefore": 86198920,
+              "heapUsedAfter": 98128376,
+              "rssBefore": 239435776,
+              "rssAfter": 239902720,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 152.97989999999982,
+              "heapUsedBefore": 98128952,
+              "heapUsedAfter": 109247488,
+              "rssBefore": 239902720,
+              "rssAfter": 242204672,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 142.72440000000006,
+              "heapUsedBefore": 109248064,
+              "heapUsedAfter": 119053096,
+              "rssBefore": 242204672,
+              "rssAfter": 242434048,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 230.5288999999998,
+              "heapUsedBefore": 119053672,
+              "heapUsedAfter": 88950688,
+              "rssBefore": 242434048,
+              "rssAfter": 248954880,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "audit-rebuild-per-publication",
+          "round": 3,
+          "index": 2,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1867.0054,
+          "cpuMs": 2766,
+          "heapUsedBefore": 39525216,
+          "heapUsedAfter": 121707248,
+          "heapUsedHighWaterSampled": 121706368,
+          "rssBefore": 158060544,
+          "rssAfter": 249397248,
+          "rssHighWaterKiB": 245552,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 234.74540000000002,
+              "heapUsedBefore": 57777072,
+              "heapUsedAfter": 49474304,
+              "rssBefore": 161644544,
+              "rssAfter": 163524608,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 231.73630000000003,
+              "heapUsedBefore": 49480040,
+              "heapUsedAfter": 105052592,
+              "rssBefore": 163540992,
+              "rssAfter": 188395520,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 223.86259999999993,
+              "heapUsedBefore": 105053152,
+              "heapUsedAfter": 67378424,
+              "rssBefore": 188395520,
+              "rssAfter": 236470272,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 164.25789999999984,
+              "heapUsedBefore": 67378984,
+              "heapUsedAfter": 86119128,
+              "rssBefore": 236474368,
+              "rssAfter": 237199360,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 181.4441999999999,
+              "heapUsedBefore": 86120080,
+              "heapUsedAfter": 106116512,
+              "rssBefore": 237199360,
+              "rssAfter": 238387200,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 141.77319999999986,
+              "heapUsedBefore": 106117280,
+              "heapUsedAfter": 118717256,
+              "rssBefore": 238387200,
+              "rssAfter": 239013888,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 152.71590000000015,
+              "heapUsedBefore": 118718728,
+              "heapUsedAfter": 64598296,
+              "rssBefore": 239038464,
+              "rssAfter": 242511872,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 142.76969999999983,
+              "heapUsedBefore": 64598872,
+              "heapUsedAfter": 75537536,
+              "rssBefore": 242511872,
+              "rssAfter": 243757056,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 139.60240000000022,
+              "heapUsedBefore": 75538112,
+              "heapUsedAfter": 85313424,
+              "rssBefore": 243757056,
+              "rssAfter": 244826112,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 228.3986,
+              "heapUsedBefore": 85314000,
+              "heapUsedAfter": 121706368,
+              "rssBefore": 244826112,
+              "rssAfter": 249397248,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "legacy-no-census",
+          "round": 3,
+          "index": 3,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1749.7465000000002,
+          "cpuMs": 2750,
+          "heapUsedBefore": 39520440,
+          "heapUsedAfter": 102488784,
+          "heapUsedHighWaterSampled": 116990216,
+          "rssBefore": 158547968,
+          "rssAfter": 249778176,
+          "rssHighWaterKiB": 246268,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 235.1562,
+              "heapUsedBefore": 55644336,
+              "heapUsedAfter": 77473472,
+              "rssBefore": 162705408,
+              "rssAfter": 164417536,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 190.09230000000002,
+              "heapUsedBefore": 77479208,
+              "heapUsedAfter": 65088256,
+              "rssBefore": 164417536,
+              "rssAfter": 166297600,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 239.47900000000004,
+              "heapUsedBefore": 65088816,
+              "heapUsedAfter": 60538864,
+              "rssBefore": 166297600,
+              "rssAfter": 211210240,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 162.25679999999988,
+              "heapUsedBefore": 60539424,
+              "heapUsedAfter": 77067184,
+              "rssBefore": 211152896,
+              "rssAfter": 237314048,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 151.20859999999993,
+              "heapUsedBefore": 77068136,
+              "heapUsedAfter": 96219696,
+              "rssBefore": 237314048,
+              "rssAfter": 238727168,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 133.51209999999992,
+              "heapUsedBefore": 96220464,
+              "heapUsedAfter": 107149752,
+              "rssBefore": 238727168,
+              "rssAfter": 239259648,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 137.68740000000025,
+              "heapUsedBefore": 107150328,
+              "heapUsedAfter": 116990216,
+              "rssBefore": 239259648,
+              "rssAfter": 240787456,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 133.18370000000004,
+              "heapUsedBefore": 116990792,
+              "heapUsedAfter": 59520048,
+              "rssBefore": 240787456,
+              "rssAfter": 244195328,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 137.81839999999966,
+              "heapUsedBefore": 59520624,
+              "heapUsedAfter": 67513944,
+              "rssBefore": 244195328,
+              "rssAfter": 245514240,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 218.24620000000004,
+              "heapUsedBefore": 67514520,
+              "heapUsedAfter": 102487904,
+              "rssBefore": 245514240,
+              "rssAfter": 249778176,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "legacy-no-census",
+          "round": 4,
+          "index": 0,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 2068.8641,
+          "cpuMs": 3312,
+          "heapUsedBefore": 39525016,
+          "heapUsedAfter": 68166784,
+          "heapUsedHighWaterSampled": 109906752,
+          "rssBefore": 161312768,
+          "rssAfter": 246235136,
+          "rssHighWaterKiB": 244408,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 286.0775000000001,
+              "heapUsedBefore": 55502344,
+              "heapUsedAfter": 77791344,
+              "rssBefore": 164913152,
+              "rssAfter": 165007360,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 253.56050000000005,
+              "heapUsedBefore": 77797080,
+              "heapUsedAfter": 65241952,
+              "rssBefore": 165015552,
+              "rssAfter": 202551296,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 272.8972000000001,
+              "heapUsedBefore": 65242512,
+              "heapUsedAfter": 92606624,
+              "rssBefore": 202551296,
+              "rssAfter": 245096448,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 169.37480000000005,
+              "heapUsedBefore": 92607184,
+              "heapUsedAfter": 109906752,
+              "rssBefore": 245116928,
+              "rssAfter": 236978176,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 169.9937,
+              "heapUsedBefore": 109907704,
+              "heapUsedAfter": 62885920,
+              "rssBefore": 236978176,
+              "rssAfter": 238231552,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 163.11979999999994,
+              "heapUsedBefore": 62886688,
+              "heapUsedAfter": 73629848,
+              "rssBefore": 238231552,
+              "rssAfter": 238637056,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 172.05020000000013,
+              "heapUsedBefore": 73630424,
+              "heapUsedAfter": 83474792,
+              "rssBefore": 238637056,
+              "rssAfter": 240979968,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 169.38400000000001,
+              "heapUsedBefore": 83475368,
+              "heapUsedAfter": 92460448,
+              "rssBefore": 240984064,
+              "rssAfter": 243052544,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 154.1606999999999,
+              "heapUsedBefore": 92461024,
+              "heapUsedAfter": 100204560,
+              "rssBefore": 243068928,
+              "rssAfter": 243208192,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 241.21039999999994,
+              "heapUsedBefore": 100205136,
+              "heapUsedAfter": 68165904,
+              "rssBefore": 243216384,
+              "rssAfter": 246235136,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "audit-rebuild-per-publication",
+          "round": 4,
+          "index": 1,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1647.87,
+          "cpuMs": 2547,
+          "heapUsedBefore": 39521336,
+          "heapUsedAfter": 88074976,
+          "heapUsedHighWaterSampled": 118863032,
+          "rssBefore": 157687808,
+          "rssAfter": 249171968,
+          "rssHighWaterKiB": 245960,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 199.8564,
+              "heapUsedBefore": 57938584,
+              "heapUsedAfter": 50297568,
+              "rssBefore": 161804288,
+              "rssAfter": 163147776,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 173.5112999999999,
+              "heapUsedBefore": 50303304,
+              "heapUsedAfter": 73290184,
+              "rssBefore": 163147776,
+              "rssAfter": 168214528,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 228.13790000000017,
+              "heapUsedBefore": 73290744,
+              "heapUsedAfter": 100902944,
+              "rssBefore": 168214528,
+              "rssAfter": 218169344,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 145.01479999999992,
+              "heapUsedBefore": 100903504,
+              "heapUsedAfter": 118863032,
+              "rssBefore": 218185728,
+              "rssAfter": 236154880,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 159.2554,
+              "heapUsedBefore": 118863984,
+              "heapUsedAfter": 72480640,
+              "rssBefore": 236154880,
+              "rssAfter": 239411200,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 132.1076999999998,
+              "heapUsedBefore": 72481408,
+              "heapUsedAfter": 85519864,
+              "rssBefore": 239411200,
+              "rssAfter": 239640576,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 136.06759999999986,
+              "heapUsedBefore": 85520440,
+              "heapUsedAfter": 97390600,
+              "rssBefore": 239681536,
+              "rssAfter": 242020352,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 123.90210000000002,
+              "heapUsedBefore": 97391176,
+              "heapUsedAfter": 108519144,
+              "rssBefore": 242020352,
+              "rssAfter": 242876416,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 131.11089999999967,
+              "heapUsedBefore": 108519720,
+              "heapUsedAfter": 118352320,
+              "rssBefore": 242876416,
+              "rssAfter": 244449280,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 200.20150000000012,
+              "heapUsedBefore": 118352896,
+              "heapUsedAfter": 88074096,
+              "rssBefore": 244449280,
+              "rssAfter": 249171968,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "audit-rebuild-per-publication",
+          "round": 4,
+          "index": 2,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1699.5612999999998,
+          "cpuMs": 2515,
+          "heapUsedBefore": 39519760,
+          "heapUsedAfter": 89938168,
+          "heapUsedHighWaterSampled": 119906576,
+          "rssBefore": 164888576,
+          "rssAfter": 249569280,
+          "rssHighWaterKiB": 245728,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 196.6608,
+              "heapUsedBefore": 57826328,
+              "heapUsedAfter": 50204896,
+              "rssBefore": 161411072,
+              "rssAfter": 162050048,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 166.79680000000008,
+              "heapUsedBefore": 50210632,
+              "heapUsedAfter": 73234744,
+              "rssBefore": 162000896,
+              "rssAfter": 167583744,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 222.8358999999998,
+              "heapUsedBefore": 73235304,
+              "heapUsedAfter": 100921288,
+              "rssBefore": 167583744,
+              "rssAfter": 218644480,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 155.90969999999993,
+              "heapUsedBefore": 100921848,
+              "heapUsedAfter": 54470848,
+              "rssBefore": 218415104,
+              "rssAfter": 237477888,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 152.12469999999985,
+              "heapUsedBefore": 54471800,
+              "heapUsedAfter": 73997464,
+              "rssBefore": 237477888,
+              "rssAfter": 239513600,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 133.39470000000006,
+              "heapUsedBefore": 73998232,
+              "heapUsedAfter": 87145200,
+              "rssBefore": 239513600,
+              "rssAfter": 240037888,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 141.33179999999993,
+              "heapUsedBefore": 87145776,
+              "heapUsedAfter": 99002632,
+              "rssBefore": 240058368,
+              "rssAfter": 241942528,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 151.36049999999977,
+              "heapUsedBefore": 99003208,
+              "heapUsedAfter": 110135608,
+              "rssBefore": 241942528,
+              "rssAfter": 243802112,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 132.7539999999999,
+              "heapUsedBefore": 110136184,
+              "heapUsedAfter": 119906576,
+              "rssBefore": 243802112,
+              "rssAfter": 244654080,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 221.94779999999992,
+              "heapUsedBefore": 119907152,
+              "heapUsedAfter": 89937288,
+              "rssBefore": 244654080,
+              "rssAfter": 249569280,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 11,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        },
+        {
+          "age": 400,
+          "arm": "legacy-no-census",
+          "round": 4,
+          "index": 3,
+          "input": {
+            "file": "D:\\worldxxxxx\\坐天观井第二纪元\\inkbox-mlod0b\\tests\\fixtures\\mlod0b\\400.json.gz",
+            "sha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+            "bytes": 10073655
+          },
+          "wallMs": 1640.2663,
+          "cpuMs": 2547,
+          "heapUsedBefore": 39527904,
+          "heapUsedAfter": 101798960,
+          "heapUsedHighWaterSampled": 117148936,
+          "rssBefore": 156729344,
+          "rssAfter": 247332864,
+          "rssHighWaterKiB": 244448,
+          "phaseSamples": [
+            {
+              "step": 0,
+              "day": 144003,
+              "wallMs": 198.8977,
+              "heapUsedBefore": 55641576,
+              "heapUsedAfter": 77765728,
+              "rssBefore": 161296384,
+              "rssAfter": 162852864,
+              "sequence": 1
+            },
+            {
+              "step": 1,
+              "day": 144006,
+              "wallMs": 167.42259999999987,
+              "heapUsedBefore": 77771464,
+              "heapUsedAfter": 65436704,
+              "rssBefore": 162852864,
+              "rssAfter": 164188160,
+              "sequence": 2
+            },
+            {
+              "step": 2,
+              "day": 144009,
+              "wallMs": 219.11709999999994,
+              "heapUsedBefore": 65437264,
+              "heapUsedAfter": 60572152,
+              "rssBefore": 164188160,
+              "rssAfter": 211136512,
+              "sequence": 3
+            },
+            {
+              "step": 3,
+              "day": 144012,
+              "wallMs": 150.58749999999986,
+              "heapUsedBefore": 60572712,
+              "heapUsedAfter": 77372640,
+              "rssBefore": 210878464,
+              "rssAfter": 236408832,
+              "sequence": 4
+            },
+            {
+              "step": 4,
+              "day": 144015,
+              "wallMs": 155.38739999999984,
+              "heapUsedBefore": 77373592,
+              "heapUsedAfter": 96346016,
+              "rssBefore": 236408832,
+              "rssAfter": 237330432,
+              "sequence": 5
+            },
+            {
+              "step": 5,
+              "day": 144018,
+              "wallMs": 133.39020000000005,
+              "heapUsedBefore": 96346784,
+              "heapUsedAfter": 107296272,
+              "rssBefore": 237330432,
+              "rssAfter": 238907392,
+              "sequence": 6
+            },
+            {
+              "step": 6,
+              "day": 144021,
+              "wallMs": 133.56679999999983,
+              "heapUsedBefore": 107296848,
+              "heapUsedAfter": 117148936,
+              "rssBefore": 238907392,
+              "rssAfter": 239419392,
+              "sequence": 7
+            },
+            {
+              "step": 7,
+              "day": 144024,
+              "wallMs": 136.26840000000016,
+              "heapUsedBefore": 117149512,
+              "heapUsedAfter": 59623176,
+              "rssBefore": 239419392,
+              "rssAfter": 242024448,
+              "sequence": 8
+            },
+            {
+              "step": 8,
+              "day": 144027,
+              "wallMs": 128.59529999999995,
+              "heapUsedBefore": 59623752,
+              "heapUsedAfter": 67586040,
+              "rssBefore": 242044928,
+              "rssAfter": 243941376,
+              "sequence": 9
+            },
+            {
+              "step": 9,
+              "day": 144030,
+              "wallMs": 205.3191999999999,
+              "heapUsedBefore": 67586616,
+              "heapUsedAfter": 101798080,
+              "rssBefore": 243953664,
+              "rssAfter": 247332864,
+              "sequence": 10
+            }
+          ],
+          "stateHash": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "serializedBytes": 10079287,
+          "populationCensusRebuilds": 0,
+          "rebuildCountBasis": "one capturePopulationCards census during initial commit plus one per each of ten complete-step publications; legacy mode does not capture population cards"
+        }
+      ],
+      "summary": {
+        "legacy-no-census": {
+          "wallMs": {
+            "p50": 1640.2663,
+            "p95": 2068.8641,
+            "max": 2068.8641,
+            "samples": [
+              1357.8133,
+              1382.6233000000002,
+              1363.0717,
+              1812.3370000000002,
+              1720.1287000000002,
+              1585.9160000000002,
+              1691.3962999999999,
+              1749.7465000000002,
+              2068.8641,
+              1640.2663
+            ]
+          },
+          "cpuMs": {
+            "p50": 2531,
+            "p95": 3312,
+            "max": 3312,
+            "samples": [
+              1968,
+              2219,
+              2328,
+              2891,
+              2610,
+              2531,
+              2516,
+              2750,
+              3312,
+              2547
+            ]
+          },
+          "heapUsedSampledDeltaBytes": {
+            "p50": 71137128,
+            "p95": 78452664,
+            "max": 78452664,
+            "samples": [
+              78452664,
+              77126480,
+              77861264,
+              69132264,
+              69980960,
+              70694408,
+              71137128,
+              77469776,
+              70381736,
+              77621032
+            ]
+          },
+          "rssMaxDeltaBytes": {
+            "p50": 91246592,
+            "p95": 94203904,
+            "max": 94203904,
+            "samples": [
+              91246592,
+              92430336,
+              94203904,
+              89329664,
+              89501696,
+              89018368,
+              92880896,
+              93630464,
+              88961024,
+              93585408
+            ]
+          },
+          "stepP95Ms": {
+            "p50": 151.49670000000003,
+            "p95": 238.86660000000006,
+            "max": 286.0775000000001,
+            "samples": [
+              117.13880000000006,
+              126.93770000000006,
+              211.01570000000004,
+              139.8925999999999,
+              134.73850000000016,
+              129.33210000000008,
+              113.58979999999997,
+              108.79600000000005,
+              99.3556000000001,
+              168.45389999999998,
+              206.87800000000004,
+              156.83370000000002,
+              186.34159999999997,
+              127.92259999999987,
+              123.29040000000009,
+              114.40210000000002,
+              100.82989999999995,
+              102.15049999999997,
+              95.05750000000012,
+              155.87760000000003,
+              151.49670000000003,
+              131.78610000000003,
+              184.86289999999997,
+              121.27130000000011,
+              124.14380000000006,
+              112.18049999999994,
+              112.70949999999993,
+              116.2077999999999,
+              106.89020000000005,
+              191.73699999999985,
+              189.0738,
+              186.226,
+              238.86660000000006,
+              166.95460000000003,
+              168.3511000000001,
+              149.74379999999996,
+              157.37009999999987,
+              147.8449999999998,
+              159.6567,
+              229.90009999999984,
+              206.18970000000002,
+              220.51949999999988,
+              227.03549999999996,
+              149.20590000000016,
+              151.43810000000008,
+              140.98620000000005,
+              141.779,
+              144.97720000000004,
+              126.95080000000007,
+              196.83979999999974,
+              194.01819999999998,
+              179.04679999999996,
+              217.68899999999985,
+              141.12120000000004,
+              146.46849999999995,
+              120.63890000000015,
+              128.28919999999994,
+              121.1253999999999,
+              128.0641999999998,
+              197.3816999999999,
+              185.4457,
+              185.2953,
+              237.57520000000022,
+              158.34750000000008,
+              166.70180000000005,
+              138.69889999999987,
+              131.40899999999988,
+              124.51600000000008,
+              137.45299999999997,
+              212.83170000000018,
+              235.1562,
+              190.09230000000002,
+              239.47900000000004,
+              162.25679999999988,
+              151.20859999999993,
+              133.51209999999992,
+              137.68740000000025,
+              133.18370000000004,
+              137.81839999999966,
+              218.24620000000004,
+              286.0775000000001,
+              253.56050000000005,
+              272.8972000000001,
+              169.37480000000005,
+              169.9937,
+              163.11979999999994,
+              172.05020000000013,
+              169.38400000000001,
+              154.1606999999999,
+              241.21039999999994,
+              198.8977,
+              167.42259999999987,
+              219.11709999999994,
+              150.58749999999986,
+              155.38739999999984,
+              133.39020000000005,
+              133.56679999999983,
+              136.26840000000016,
+              128.59529999999995,
+              205.3191999999999
+            ]
+          },
+          "rebuildsPerTrial": 0
+        },
+        "audit-rebuild-per-publication": {
+          "wallMs": {
+            "p50": 1669.8383,
+            "p95": 1867.0054,
+            "max": 1867.0054,
+            "samples": [
+              1313.9791,
+              1510.3200000000002,
+              1365.1049999999998,
+              1669.8383,
+              1729.5756999999999,
+              1750.9062,
+              1825.8547,
+              1867.0054,
+              1647.87,
+              1699.5612999999998
+            ]
+          },
+          "cpuMs": {
+            "p50": 2515,
+            "p95": 2921,
+            "max": 2921,
+            "samples": [
+              1985,
+              2250,
+              2109,
+              2453,
+              2609,
+              2688,
+              2921,
+              2766,
+              2547,
+              2515
+            ]
+          },
+          "heapUsedSampledDeltaBytes": {
+            "p50": 80386816,
+            "p95": 82601248,
+            "max": 82601248,
+            "samples": [
+              80273648,
+              81378712,
+              80508048,
+              80861760,
+              82601248,
+              79304880,
+              79964896,
+              82181152,
+              79341696,
+              80386816
+            ]
+          },
+          "rssMaxDeltaBytes": {
+            "p50": 93384704,
+            "p95": 95207424,
+            "max": 95207424,
+            "samples": [
+              94896128,
+              95207424,
+              90841088,
+              93405184,
+              91860992,
+              89608192,
+              94076928,
+              93384704,
+              94175232,
+              86736896
+            ]
+          },
+          "stepP95Ms": {
+            "p50": 152.12469999999985,
+            "p95": 231.73630000000003,
+            "max": 254.87319999999988,
+            "samples": [
+              119.0122,
+              128.31269999999995,
+              153.77589999999998,
+              120.43130000000008,
+              130.47900000000004,
+              117.64940000000001,
+              107.61079999999993,
+              108.44530000000009,
+              130.07580000000007,
+              186.81819999999993,
+              134.09260000000006,
+              140.37209999999993,
+              202.9303000000001,
+              139.68000000000006,
+              149.58709999999996,
+              122.85179999999991,
+              134.56670000000008,
+              123.99580000000014,
+              138.71820000000002,
+              211.1018999999999,
+              147.85760000000005,
+              133.62560000000008,
+              169.33859999999993,
+              118.529,
+              108.32889999999998,
+              124.69630000000006,
+              106.55999999999995,
+              112.57669999999985,
+              122.3467999999998,
+              203.02250000000004,
+              201.8247,
+              129.92880000000002,
+              254.87319999999988,
+              120.44209999999998,
+              129.66829999999982,
+              145.89319999999998,
+              163.0118,
+              145.79410000000007,
+              146.43920000000003,
+              217.94180000000006,
+              199.44240000000002,
+              169.69830000000002,
+              234.74530000000004,
+              150.78469999999993,
+              153.42419999999993,
+              140.15969999999993,
+              153.46579999999994,
+              139.27789999999982,
+              144.0666000000001,
+              225.56010000000015,
+              186.899,
+              172.33580000000006,
+              233.44810000000007,
+              163.67459999999983,
+              172.04499999999985,
+              155.54210000000012,
+              159.85900000000015,
+              139.0032000000001,
+              134.95469999999978,
+              213.38110000000006,
+              193.54060000000004,
+              182.51459999999997,
+              237.2744,
+              164.84349999999995,
+              181.17520000000013,
+              155.6531,
+              164.62840000000006,
+              152.97989999999982,
+              142.72440000000006,
+              230.5288999999998,
+              234.74540000000002,
+              231.73630000000003,
+              223.86259999999993,
+              164.25789999999984,
+              181.4441999999999,
+              141.77319999999986,
+              152.71590000000015,
+              142.76969999999983,
+              139.60240000000022,
+              228.3986,
+              199.8564,
+              173.5112999999999,
+              228.13790000000017,
+              145.01479999999992,
+              159.2554,
+              132.1076999999998,
+              136.06759999999986,
+              123.90210000000002,
+              131.11089999999967,
+              200.20150000000012,
+              196.6608,
+              166.79680000000008,
+              222.8358999999998,
+              155.90969999999993,
+              152.12469999999985,
+              133.39470000000006,
+              141.33179999999993,
+              151.36049999999977,
+              132.7539999999999,
+              221.94779999999992
+            ]
+          },
+          "rebuildsPerTrial": 11
+        }
+      },
+      "auditOverLegacy": {
+        "cpuMsP50": -16,
+        "heapUsedSampledDeltaBytesP50": 9249688,
+        "rssMaxDeltaBytesP50": 2138112
+      }
+    }
+  ],
+  "pass": true,
+  "finishedAt": "2026-11-23T10:27:51.049Z"
+}
