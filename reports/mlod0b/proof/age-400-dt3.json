@@ -1,0 +1,1961 @@
+{
+  "schema": "mlod0b-equiv-v1",
+  "sourceHead": "24f42c2d99a746154a731a392949dc428f0d3e50",
+  "sourceFingerprint": {
+    "sha256": "36a57f18cf0d59a5dfecadf38e2b45e7674cc0df9ba8835653d5a0f64123e084",
+    "files": 9
+  },
+  "node": "v24.22.3",
+  "protocol": {
+    "ages": [
+      400
+    ],
+    "dts": [
+      3
+    ],
+    "days": 360,
+    "arms": [
+      "off",
+      "post-step-audit"
+    ],
+    "exactCompare": "JSON bytes of complete v11 world and runtime after each successful advanceWorld"
+  },
+  "cases": [
+    {
+      "age": 400,
+      "dt": 3,
+      "targetDays": 360,
+      "inputFile": "/home/runner/work/inkbox/inkbox/tests/fixtures/mlod0b/400.json.gz",
+      "inputSha256": "d204519759a222d3fac8d5847d9f025329c9a1fa83a20e3835dfbd7ef59666bd",
+      "steps": [
+        {
+          "index": 1,
+          "day": 144003,
+          "offMs": 164.94908800000007,
+          "auditAdvanceMs": 103.21720500000004,
+          "censusMs": 5.471080999999913,
+          "worldAndRuntimeSha256": "54be5315d3610eec2a58c0358e6d1c1044dd8e0a14b6a2982a3ed7f611064bd6",
+          "runtimeSha256": "9270c9a7e1c116f7d60fe287029c4635215617a3d05f18fb3b7289fa87de77d3",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 2,
+          "day": 144006,
+          "offMs": 144.29208300000005,
+          "auditAdvanceMs": 103.12016100000005,
+          "censusMs": 3.1499419999997826,
+          "worldAndRuntimeSha256": "e650b9b648aa998120782b742074a19f7801213307fedb0284d0f223de9ae185",
+          "runtimeSha256": "6d945a456ca0b36138f95ca1b581cc12d9d567466998d7d4c302a66eb1ac3706",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 3,
+          "day": 144009,
+          "offMs": 175.78113900000017,
+          "auditAdvanceMs": 108.34125600000016,
+          "censusMs": 3.946393000000171,
+          "worldAndRuntimeSha256": "3d7cc26544dc1f2d1f485d07441608032604a01bbadc2d1ad32fea790138d1bb",
+          "runtimeSha256": "5ccda4a2997b570824c666ee298c785b1fddc0187c71f3f48104dc7103ee0ad0",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 4,
+          "day": 144012,
+          "offMs": 137.1256840000001,
+          "auditAdvanceMs": 142.351631,
+          "censusMs": 2.5879110000000765,
+          "worldAndRuntimeSha256": "8bd9fb944ed50cd5b5684cc360fe8818fc7b42fa6679a532257b4df400afc9c7",
+          "runtimeSha256": "04d1752fe0b6d42c407a322feaec1ac7b899127717aa8f99ab0e55b0d77e4c04",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 5,
+          "day": 144015,
+          "offMs": 196.61546100000032,
+          "auditAdvanceMs": 144.5044359999997,
+          "censusMs": 1.9510019999997894,
+          "worldAndRuntimeSha256": "757f06626350d929125ee1a5e3f3e1453a125ed812a893c13eab9e6e2fedb4ba",
+          "runtimeSha256": "6ffb49e8061b87adc1edea19f0a5cb56f7b05c40923875fb31957e99102699a2",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 6,
+          "day": 144018,
+          "offMs": 131.04247699999996,
+          "auditAdvanceMs": 109.07762600000024,
+          "censusMs": 1.6960399999998117,
+          "worldAndRuntimeSha256": "a8e8d51727a6e523438b95f092d9e87159a30831c0702fdbd4aab90513f92352",
+          "runtimeSha256": "f844baf83251eb35fae38b1c1791dbb55dec98ba778b1394c60621706a563c7e",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 7,
+          "day": 144021,
+          "offMs": 119.44060600000012,
+          "auditAdvanceMs": 117.97367599999961,
+          "censusMs": 1.6145499999993262,
+          "worldAndRuntimeSha256": "482f9c6db3e5b48ec7d3f8b8d293a8604533177f18d4968ca3b2e5c1a4b3aeba",
+          "runtimeSha256": "e3f5b8c3aefac6695cdc68eb79c62b62570fad9d66ede1e1b393b57b742da7cd",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 8,
+          "day": 144024,
+          "offMs": 114.99477099999967,
+          "auditAdvanceMs": 107.51636400000007,
+          "censusMs": 1.4910149999996065,
+          "worldAndRuntimeSha256": "7adafe3a669d864aa0b29a9a6fd90c946dfc6e80f721cfdd91cb3dcf5fa6330d",
+          "runtimeSha256": "407c8904228ece922e3d18f3fb9403404fb45cf4a7bdc1f9ca39a75e911a4593",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 9,
+          "day": 144027,
+          "offMs": 110.79468200000065,
+          "auditAdvanceMs": 109.05153100000007,
+          "censusMs": 1.5912770000004457,
+          "worldAndRuntimeSha256": "992ff4fc3626f6ffbe1cb62904842eb164de29b8df4e2ccfa9486ffca74b3a6a",
+          "runtimeSha256": "de3ecb09e43be93efecf7b0b1f5a81f59210cbf5da234300908f45aece8fef9c",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 10,
+          "day": 144030,
+          "offMs": 189.92555899999934,
+          "auditAdvanceMs": 125.98176500000045,
+          "censusMs": 1.7039519999998447,
+          "worldAndRuntimeSha256": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+          "runtimeSha256": "7fe0240f2e4637b71e388b403d9b7fb55e37eab8f084d1bc97888926b232760e",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 11,
+          "day": 144033,
+          "offMs": 138.86105599999973,
+          "auditAdvanceMs": 124.91311399999995,
+          "censusMs": 1.5430369999994582,
+          "worldAndRuntimeSha256": "ed6a7f9744192de2914fae8181602899ff427ebc94b73063ad2cf3849b5b82fc",
+          "runtimeSha256": "574f61ea83cd49b579b23294fd570456f895aae12e27070efa6fd67eada3dc0d",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 12,
+          "day": 144036,
+          "offMs": 150.27239499999996,
+          "auditAdvanceMs": 121.8649660000001,
+          "censusMs": 1.6008710000005522,
+          "worldAndRuntimeSha256": "430d8afb2f054a13dc5ccd954bf7e7fe424767b8d7edd9a8583fc808b9b4743b",
+          "runtimeSha256": "05eb0c854fda1f19db2c0cc2de9d829760c317234830bef89b3458a76d797216",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 13,
+          "day": 144039,
+          "offMs": 113.35471400000006,
+          "auditAdvanceMs": 98.1620670000002,
+          "censusMs": 1.4012179999999717,
+          "worldAndRuntimeSha256": "a854f2dad84e3822f3f56877f426a4e50cda6381eec614b1f065f459d5744269",
+          "runtimeSha256": "dec97bd2a90cbf5e4788be62c45627f97da6cb007e510528a3ca655c2c249cec",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 14,
+          "day": 144042,
+          "offMs": 114.49422599999889,
+          "auditAdvanceMs": 116.4370489999983,
+          "censusMs": 1.3912399999990157,
+          "worldAndRuntimeSha256": "6090bf722786cebe0c0361f7bfc78f7a28033c105c888539435f9910fd1ed2f2",
+          "runtimeSha256": "70076c1462e3bf601f9d96dceffc762d8a4a637db313c82ce7b0d00fb46ad8e1",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 15,
+          "day": 144045,
+          "offMs": 95.46756800000003,
+          "auditAdvanceMs": 91.73890500000016,
+          "censusMs": 1.4061579999997775,
+          "worldAndRuntimeSha256": "a4801e12b40cf25615f75879938d3b46f8acedeec3f336721607c174a2d69b1e",
+          "runtimeSha256": "7615205a963e7c04f85ecd50eb8cf0cd394070dad2036cbe62ff25239093a6a1",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 16,
+          "day": 144048,
+          "offMs": 109.53817899999922,
+          "auditAdvanceMs": 104.20841300000029,
+          "censusMs": 1.4377329999988433,
+          "worldAndRuntimeSha256": "43f0b6d6f84556a91c6afe8f60a1c7ec08989435bd151a98abb540e2789b020d",
+          "runtimeSha256": "40f4e95c4c609dbd2aea6148d578416b3eb1737d3aa47c6833b323752013f620",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 17,
+          "day": 144051,
+          "offMs": 109.13485199999923,
+          "auditAdvanceMs": 101.96443100000033,
+          "censusMs": 1.4252209999995102,
+          "worldAndRuntimeSha256": "15773fe556a86ef1bb891e2d093a1c4502bc92bb4184b8f72d8f497559481187",
+          "runtimeSha256": "f45c17fabb080628870dd91aee4cf83d0eadf622777aa1292c4f4b6f90b63830",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 18,
+          "day": 144054,
+          "offMs": 95.5270529999998,
+          "auditAdvanceMs": 102.17658899999878,
+          "censusMs": 1.4222430000008899,
+          "worldAndRuntimeSha256": "b125cbe913d75a007b098e998c9d3cb7eb4b3d257fe1c6cf9646c8c81d9dd50d",
+          "runtimeSha256": "158719ca226c12e4766043714ede9beb8ef8d0e8afbf3aa8005c40c4b2edff4f",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 19,
+          "day": 144057,
+          "offMs": 151.86236400000053,
+          "auditAdvanceMs": 130.8894419999997,
+          "censusMs": 1.4636170000012498,
+          "worldAndRuntimeSha256": "af326f52ffec34f59864b59d01eba73bdb1ba19d72cd4f0a14eca543192840ee",
+          "runtimeSha256": "e584d6d4f63f141ec11342d5514d85da34ae262f271bac8e1cc57735008815b6",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 20,
+          "day": 144060,
+          "offMs": 132.6837859999996,
+          "auditAdvanceMs": 119.98082299999987,
+          "censusMs": 1.6290730000000622,
+          "worldAndRuntimeSha256": "34030d19a1ce25dc70d02bb2e1a4ff40541f96a351f21a473859aef71367e569",
+          "runtimeSha256": "40732c1a69d5c54f9bdb025fdd2449ecbb3ae77a3458796fb39e7f4359680ef1",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 21,
+          "day": 144063,
+          "offMs": 129.21831200000088,
+          "auditAdvanceMs": 126.85924400000113,
+          "censusMs": 1.4489740000008169,
+          "worldAndRuntimeSha256": "e1dd65262c9f9169132801250741e07209fed8f815b2eb950e62bbbab9c44c89",
+          "runtimeSha256": "a979c58c8c4d2c7b429b3ed9a0b9d0cbe702388b9d47879c3a5225a804d8cdb6",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 22,
+          "day": 144066,
+          "offMs": 138.85207999999875,
+          "auditAdvanceMs": 109.37834699999985,
+          "censusMs": 1.4297509999996691,
+          "worldAndRuntimeSha256": "c5c1c6adbdd198d508dee866c666a849d95a97cf5ff5a662ad8150b31867ea19",
+          "runtimeSha256": "79e3a06e8d37e92523f7c94e011411694de7b29bfcad70dffa313c786c5e49e5",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 23,
+          "day": 144069,
+          "offMs": 119.6108690000001,
+          "auditAdvanceMs": 114.16097099999934,
+          "censusMs": 1.4498860000003333,
+          "worldAndRuntimeSha256": "175a4257609158cd4afa08a9fe05764bf105bcc75732717434f298b9ac78d8ea",
+          "runtimeSha256": "c6d2ee2af4cb80be0271f1ba6d7b7d13c64f6dd0698aac14ebc1cc84db12899a",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 24,
+          "day": 144072,
+          "offMs": 118.73837300000014,
+          "auditAdvanceMs": 103.7385290000002,
+          "censusMs": 1.463820000000851,
+          "worldAndRuntimeSha256": "0be0dc4890b7d401b781f45f4ab83c377299a56c88c0541400bcaeae16fd0bc5",
+          "runtimeSha256": "13d7a2ab5e3d220acc1ee4479130a6dfa1ebbe57f356fafafedd7c4f928451ea",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 25,
+          "day": 144075,
+          "offMs": 114.18364099999962,
+          "auditAdvanceMs": 114.74445899999955,
+          "censusMs": 1.457819000001109,
+          "worldAndRuntimeSha256": "bfa4a327b4beab4554b41ca6bb941c80f97631b0694b0b1a32ceb7cfab899504",
+          "runtimeSha256": "eb4311cb37cc1e4cb63308d42ee38ecb6c06991000413b43a4b4d4872da56b8d",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 26,
+          "day": 144078,
+          "offMs": 156.6242549999988,
+          "auditAdvanceMs": 110.4510279999995,
+          "censusMs": 1.5199409999986528,
+          "worldAndRuntimeSha256": "c9a0c09b10d8883191ee44622ffea28085caf919ba9da28599cb5367340d33b9",
+          "runtimeSha256": "302f0902ea460dc72a706a706abacd911c4d55148bc0ab3867c55943db3367b6",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 27,
+          "day": 144081,
+          "offMs": 102.68106200000148,
+          "auditAdvanceMs": 93.18530099999953,
+          "censusMs": 1.4946490000002086,
+          "worldAndRuntimeSha256": "ea314c2e22066214a737c575f3fba2dc6a19177f111a8c75b2ab9215e15a4137",
+          "runtimeSha256": "dcc9e0046d51e2e713a20151cf762786bd4c7e567869c86941bc5bca3ac9e78c",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 28,
+          "day": 144084,
+          "offMs": 109.18557200000032,
+          "auditAdvanceMs": 104.5496149999999,
+          "censusMs": 1.3880819999994856,
+          "worldAndRuntimeSha256": "90c925802a13d1d7f4cabaad680941ee6477af3f9b9777214f9136ef9785f2f1",
+          "runtimeSha256": "7b4d7194d8ee79fcd5939d2738fee6ab0e45c374087fdf07fb5eed344f696d5c",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 29,
+          "day": 144087,
+          "offMs": 104.72802600000068,
+          "auditAdvanceMs": 115.26636000000144,
+          "censusMs": 1.3678670000008424,
+          "worldAndRuntimeSha256": "a403c538bc7808871c9faa99ea3c29905e36c6fb60e387f448326a32b4aff3b1",
+          "runtimeSha256": "9cf0b355d648bd8cd293931fe1819030bb68365439086f5603e9d59ef403d897",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 30,
+          "day": 144090,
+          "offMs": 131.7213159999992,
+          "auditAdvanceMs": 127.34350399999676,
+          "censusMs": 1.4184519999980694,
+          "worldAndRuntimeSha256": "9d91499313a855a9f58d18363fb090a239222c272349a79a9bafd2d589193a2f",
+          "runtimeSha256": "39eedbfac4595305d4f7a9b9da9aa107871a83a40bee77dd8ad088ff19ba9187",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 31,
+          "day": 144093,
+          "offMs": 145.4060849999987,
+          "auditAdvanceMs": 122.7603130000025,
+          "censusMs": 1.384065999998711,
+          "worldAndRuntimeSha256": "ad0dd74e1f00a35c9de07b4968390b1522be4f5a932683d3e5bb73f6071a8716",
+          "runtimeSha256": "446042700d2003978c817472567b65b2b53c7d81d735b19784723ac8e14038dd",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 32,
+          "day": 144096,
+          "offMs": 91.67809000000125,
+          "auditAdvanceMs": 85.75998900000195,
+          "censusMs": 1.4069830000007642,
+          "worldAndRuntimeSha256": "4405107becb7584789877bbde14b8cb2c5fe98674f4d8e9a6bd5936413bde620",
+          "runtimeSha256": "ce39074a13eed02fd27a96c76572d72b6b535dcebddf39952789882859d69fc9",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 33,
+          "day": 144099,
+          "offMs": 117.80433500000072,
+          "auditAdvanceMs": 75.96501399999761,
+          "censusMs": 1.4750409999978729,
+          "worldAndRuntimeSha256": "05ed6e66d8a254e9b18541bdd280d8b6ee2bb5f5454160dc41e7fb8b340c7203",
+          "runtimeSha256": "585ae2ecd4a6a595c784d5f7f02a87dfe8740fa6622ecbd885477e661bc38a99",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 34,
+          "day": 144102,
+          "offMs": 68.1625959999983,
+          "auditAdvanceMs": 61.23292700000093,
+          "censusMs": 1.4457839999995485,
+          "worldAndRuntimeSha256": "9cf9130d935627dc84d707044feabd3b6ff3c95c7c7d9beeb0c48d22232b6cbc",
+          "runtimeSha256": "dc1fb7729e012f50dd3a8938f606bd84b9ae7f016d8539a7f47429db5a6c4ebf",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 35,
+          "day": 144105,
+          "offMs": 67.97052299999996,
+          "auditAdvanceMs": 60.83933999999863,
+          "censusMs": 1.4065120000013849,
+          "worldAndRuntimeSha256": "ebb5fb194803cf9395d474da05444fab86177dffde3d42fd85d1d587b7ad549c",
+          "runtimeSha256": "a300dd05b918ee22e77a16c4b7b3e6884b5771ff0d8f35802bd98bcceb9bfbf0",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 36,
+          "day": 144108,
+          "offMs": 63.9077529999995,
+          "auditAdvanceMs": 59.73510100000203,
+          "censusMs": 1.4463060000016412,
+          "worldAndRuntimeSha256": "89976e1619a05c998223522fdd6fea8d4c6dc66b97ea4def1d71b7fe90c462d3",
+          "runtimeSha256": "91132c7db88d2a90c440d579553e411fabe19a90796898c832cfcaadc4e438fe",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 37,
+          "day": 144111,
+          "offMs": 63.34900099999868,
+          "auditAdvanceMs": 60.153926000002684,
+          "censusMs": 1.4472160000004806,
+          "worldAndRuntimeSha256": "48f48c20eb9b9b3559379050fefb79fdf1fbe70f3cc470f885dead1cba55b411",
+          "runtimeSha256": "c38d2f91e3d8a85cde557a55034836c35c8624cf2dda0785715f861c772736c4",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 38,
+          "day": 144114,
+          "offMs": 63.0421239999996,
+          "auditAdvanceMs": 59.75118400000065,
+          "censusMs": 1.5154030000012426,
+          "worldAndRuntimeSha256": "6bf482084fdb9f3e27a5c5ad68043870e61c51c1a14413b68c26cfe691626343",
+          "runtimeSha256": "8c11fb592ea1d6ff5a9661d268cbb561f85343358f5f951d0a7e4c68f4b105b1",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 39,
+          "day": 144117,
+          "offMs": 63.67204700000002,
+          "auditAdvanceMs": 60.58042700000078,
+          "censusMs": 1.430636000000959,
+          "worldAndRuntimeSha256": "fda3466cadbe590624b8d80246cea1fe9acd3f9fa2b543a3a062ff57a0857620",
+          "runtimeSha256": "6cb8fe0b57471f13a4133d6a38f778ee4a8aa87e412bdeffb48eb5dec1b886d2",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 40,
+          "day": 144120,
+          "offMs": 122.31464699999924,
+          "auditAdvanceMs": 82.28025100000013,
+          "censusMs": 1.5863680000002205,
+          "worldAndRuntimeSha256": "c3b10916761d7a4c9f0b6d3bdeddde9ad8886d82d16fee039a5bddb38f2c13c2",
+          "runtimeSha256": "0f1af19c847626c3001faf1af0284738e851b9e4bd76c4272473a224a1987e06",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 41,
+          "day": 144123,
+          "offMs": 87.88183800000115,
+          "auditAdvanceMs": 71.55527200000142,
+          "censusMs": 1.3947679999982938,
+          "worldAndRuntimeSha256": "6ac68dd3556c2324b89d9c99e84916c7e0b61a2118887a5d792377d23b96eb05",
+          "runtimeSha256": "a1ec7d67e2ba710438ce35d4a536e6203853516afd8e147334862794ea5de225",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 42,
+          "day": 144126,
+          "offMs": 74.85255099999995,
+          "auditAdvanceMs": 82.75904699999955,
+          "censusMs": 1.397041000000172,
+          "worldAndRuntimeSha256": "3ffb425bf2c3703054961a605675598d1cc34d6885233002efab0d5e118543c6",
+          "runtimeSha256": "93d6b44bff647fe043c4055f95336f4b8a51697c4dd325e3c882b5fa40694f4d",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 43,
+          "day": 144129,
+          "offMs": 80.17887999999948,
+          "auditAdvanceMs": 75.59757700000046,
+          "censusMs": 1.4332500000018626,
+          "worldAndRuntimeSha256": "1e7496aa93e9e272750ac386b4230026466d3a46d333a8dbafa9ebc73fd63e4a",
+          "runtimeSha256": "bc6b756695fe52dfaf74ac7157554cc732a9c9c5bac2ef71366d8ec5af211b8d",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 44,
+          "day": 144132,
+          "offMs": 80.46435399999973,
+          "auditAdvanceMs": 81.341676,
+          "censusMs": 1.7418659999966621,
+          "worldAndRuntimeSha256": "5423e49392f4478bd14d2082e474f3a9499ad886398e3a203c230a40321fb076",
+          "runtimeSha256": "1f6a3d469435c8515561187ae60c183b517ecbbfa88c070fcbcf4d57b99ad483",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 45,
+          "day": 144135,
+          "offMs": 74.05370799999946,
+          "auditAdvanceMs": 66.68769099999918,
+          "censusMs": 1.3895579999989423,
+          "worldAndRuntimeSha256": "afb7b7eb23878a3d15929455d3f77c6422c438b4388d4e8514f9d4f095399fdb",
+          "runtimeSha256": "16794e1ca756e4dbb40aeaa774dca99fc0252d9e7fd6cb4cd3672584bfc0b54d",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 46,
+          "day": 144138,
+          "offMs": 69.47841200000039,
+          "auditAdvanceMs": 66.22773400000005,
+          "censusMs": 1.4453990000001795,
+          "worldAndRuntimeSha256": "2ae23f2b6895131f33aacae76d1fc9ad0b457a4dd3a8e8eb21a8108027def63f",
+          "runtimeSha256": "b95c5268feb46333483a64428b73ee308f5893239578e64f7c868af003e171b7",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 47,
+          "day": 144141,
+          "offMs": 129.49388399999953,
+          "auditAdvanceMs": 72.2630680000002,
+          "censusMs": 1.442521000000852,
+          "worldAndRuntimeSha256": "91cda10a45409ff897343175789b0371bd84c7fc60385796c651463bd4690c5a",
+          "runtimeSha256": "a7709e07847ace81520fd0f668a44b74952f12ef058f41032628b57fdd92b980",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 48,
+          "day": 144144,
+          "offMs": 67.67959200000041,
+          "auditAdvanceMs": 65.04444299999886,
+          "censusMs": 1.437195000002248,
+          "worldAndRuntimeSha256": "452cfdc0ef8a12b1c6020d0249a94df3b2fc2304d7257240a3a20718655ca539",
+          "runtimeSha256": "2200a57a0c8b4b6953e65c16ccb854589e24a4f1377d86a952a58a1a4a13b997",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 49,
+          "day": 144147,
+          "offMs": 70.89378200000283,
+          "auditAdvanceMs": 62.16145400000096,
+          "censusMs": 1.5073689999990165,
+          "worldAndRuntimeSha256": "83032629af86a90fb528c4bda2444438f4fde2c08563761902adff3a438985f5",
+          "runtimeSha256": "b0841603a76a6c019d1c3c577bc93a184789462c42410e5fb2eb13fc7f0127b5",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 50,
+          "day": 144150,
+          "offMs": 82.13148200000069,
+          "auditAdvanceMs": 82.01198000000295,
+          "censusMs": 1.5254859999986365,
+          "worldAndRuntimeSha256": "6e6c3c1eb365c764644f0544a95121578905ef885bfe3e54ae0f9132f61c6dbd",
+          "runtimeSha256": "18919a51e6a9e715a991f028c42bd64fddd86624e9e829efd2564f1f47af7718",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 51,
+          "day": 144153,
+          "offMs": 81.06556400000045,
+          "auditAdvanceMs": 74.53836599999704,
+          "censusMs": 1.3304429999989225,
+          "worldAndRuntimeSha256": "ae971cb3f5ef27f3d7f975f319086a378896f72a5d396d38c42f51e0496c21b1",
+          "runtimeSha256": "3ebc3acc7a121da97c9a9aa86e621b616dce4d4effe112f5cc217e625c10cf9a",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 52,
+          "day": 144156,
+          "offMs": 63.5460779999994,
+          "auditAdvanceMs": 61.941993000000366,
+          "censusMs": 1.345350999999937,
+          "worldAndRuntimeSha256": "332647ed250913c4686d8d2953e2ffd1f0bec50549145c6cccccd1a8ddc53bed",
+          "runtimeSha256": "1ff967be3693e37b0f6a805381bf694befe302e6ba86d62998bf6bd273769a35",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 53,
+          "day": 144159,
+          "offMs": 66.85464000000138,
+          "auditAdvanceMs": 60.23994699999821,
+          "censusMs": 1.443965999998909,
+          "worldAndRuntimeSha256": "62b09a737aaa71c2c1ea7d18de6221a9ebdf61db659c19002ee5983eed70ad64",
+          "runtimeSha256": "ffa92bbf77c7fe1823e5af6f096cd3d67c390ad8adb42335f139bcc3316ef7a6",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 54,
+          "day": 144162,
+          "offMs": 107.0210909999987,
+          "auditAdvanceMs": 63.338299000002735,
+          "censusMs": 1.438945000001695,
+          "worldAndRuntimeSha256": "e5e822cb5a1b5d7869878c12fb5235337906bcc2492135899610aa118925c6bf",
+          "runtimeSha256": "0fc5c2fd4c2ff246b7cad0f7fca7f7388bd23832771be376597441789d2ac545",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 55,
+          "day": 144165,
+          "offMs": 69.17688500000077,
+          "auditAdvanceMs": 65.17839200000162,
+          "censusMs": 1.551430999999866,
+          "worldAndRuntimeSha256": "9da9fa50b362209e14b0b1c726d8e01aa4d83c999e0761819351fb0535e9c3c3",
+          "runtimeSha256": "99aaf829b62d05a4872c26bc97188d794940fc464e540534cc4d475aefd5e6af",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 56,
+          "day": 144168,
+          "offMs": 77.47385099999883,
+          "auditAdvanceMs": 65.21786499999871,
+          "censusMs": 1.3830290000005334,
+          "worldAndRuntimeSha256": "b88e0c12ebd7cae3d84ba7f8b334b5fa4c9e57d0e14f40e790c5fdab30daa10b",
+          "runtimeSha256": "9a5ae2170583dfcd3ffb26c7d1bc7784d4a2f035536cfbf3e69537c0f4bb5ced",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 57,
+          "day": 144171,
+          "offMs": 66.59439700000075,
+          "auditAdvanceMs": 64.67682499999864,
+          "censusMs": 1.4876809999987017,
+          "worldAndRuntimeSha256": "e82c5228765209f3d55b8304be61c9e7f4039d9f030604a4fafb5e07ff7ae8da",
+          "runtimeSha256": "333e38a8e9c897c45530bda6e27e3e99f4a4c04d61a49aed39569dd53d62f597",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 58,
+          "day": 144174,
+          "offMs": 70.23122700000022,
+          "auditAdvanceMs": 61.80548699999781,
+          "censusMs": 1.461339000001317,
+          "worldAndRuntimeSha256": "20e47d81d2aead77ba7fd7e9e131f327d92c122339447d58a91245c596121dc3",
+          "runtimeSha256": "2b0e132d7b2598ab59d8a6fcbe9be3e75e4e6c2543dba5ef9f6a75f39f2e7e09",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 59,
+          "day": 144177,
+          "offMs": 67.87271799999871,
+          "auditAdvanceMs": 61.90763900000093,
+          "censusMs": 1.4970609999982116,
+          "worldAndRuntimeSha256": "37f32f9be9680a27bfa350c0a244b25a994aaaee5ca8d0bdd953e1abf4f6c781",
+          "runtimeSha256": "1632e830e029f35c38c364ff033d57e02749648eba81c75f0061bb1778951675",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 60,
+          "day": 144180,
+          "offMs": 83.92422299999816,
+          "auditAdvanceMs": 78.51032499999928,
+          "censusMs": 1.481300999999803,
+          "worldAndRuntimeSha256": "394e94118497b59467f7faf3a5e89b2941e85b172bb55900a14510777e995a61",
+          "runtimeSha256": "56eb246d1e2a96dd808e449d5a05ed152a77afa73d9e6f22360cdca8ae5b3199",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 61,
+          "day": 144183,
+          "offMs": 117.77955499999734,
+          "auditAdvanceMs": 72.62389400000029,
+          "censusMs": 1.52149400000053,
+          "worldAndRuntimeSha256": "d590fd8feee8db074650224eda63bcf664ef17c4bc0738e825e390b62eb96b7e",
+          "runtimeSha256": "38f3c37934720516442691e85211d8169ea73af6767c64b16aa504f8f8f825c2",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 62,
+          "day": 144186,
+          "offMs": 64.3297249999996,
+          "auditAdvanceMs": 64.14114699999845,
+          "censusMs": 1.3910270000014862,
+          "worldAndRuntimeSha256": "807f91d3db6c01f693752b3d379ea9c956d2c4948f54a907fb372b63059ce7bf",
+          "runtimeSha256": "52a446b512ba9f345e2729d72a08a7b410b784b3ba2024268b5896d6b8dce3c6",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 63,
+          "day": 144189,
+          "offMs": 64.39315899999929,
+          "auditAdvanceMs": 66.57902699999977,
+          "censusMs": 1.4609329999984766,
+          "worldAndRuntimeSha256": "644e955a60c2550095505e6558ff5e143f20b75de97a76de2c05c788db1205a6",
+          "runtimeSha256": "d22d5b084c868193c2a0aa661b32bc9e3319576bb120f0ee5e18a37ba0858c11",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 64,
+          "day": 144192,
+          "offMs": 67.36447100000078,
+          "auditAdvanceMs": 64.1978139999992,
+          "censusMs": 1.354124999998021,
+          "worldAndRuntimeSha256": "ef050be6bf8d616c4451d49f3310d23b93065b8c13198eac0813337d7c9ba6c2",
+          "runtimeSha256": "a492dca21a5cf7042750c58d201376522ce1b8a1bb78998d329d3fbd193a4851",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 65,
+          "day": 144195,
+          "offMs": 68.70284600000014,
+          "auditAdvanceMs": 65.36452700000518,
+          "censusMs": 1.3968500000046333,
+          "worldAndRuntimeSha256": "33db4f8006065e1244d0eff6307fb3a47d34a6232515268b3034ceb6da18ce46",
+          "runtimeSha256": "564fd6d0bf81e4c477b22cb5b9e5ebae8fe51a6681dd4c89e6f0852d6bd3069b",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 66,
+          "day": 144198,
+          "offMs": 67.95994699999574,
+          "auditAdvanceMs": 65.30049800000415,
+          "censusMs": 1.3651000000027125,
+          "worldAndRuntimeSha256": "09bfc930ae6635e9abfacb5b1b295602e354dec78b0865aeb2cb6b1e44e1ea27",
+          "runtimeSha256": "b731b74fbbc20885d29cfaabbd4baf38d2f943a00907df1548e77ca707a2080c",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 67,
+          "day": 144201,
+          "offMs": 78.35696100000496,
+          "auditAdvanceMs": 66.21396999999706,
+          "censusMs": 1.4962689999956638,
+          "worldAndRuntimeSha256": "acc85c13adfbbc8a0000cf6964fee2ddc9abad03d2cc2c301d2e6a5b39b425b0",
+          "runtimeSha256": "4bef124b01c38ab49e395332faebe0e6f20ba14ccf0327fd30a706c0b2139c90",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 68,
+          "day": 144204,
+          "offMs": 127.45574900000065,
+          "auditAdvanceMs": 68.51570999999967,
+          "censusMs": 1.4618879999979981,
+          "worldAndRuntimeSha256": "25bbaddbe115f8e5f583199aeaf2bafca3d540e3f07a553421cdba970ef56b16",
+          "runtimeSha256": "1e3da2a1704429e6e907278e3cf51149aa3e30298044e4888998ee5cbf23f17f",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 69,
+          "day": 144207,
+          "offMs": 74.57588699999906,
+          "auditAdvanceMs": 68.47498300000007,
+          "censusMs": 1.4061660000006668,
+          "worldAndRuntimeSha256": "9337052811ad89b1eac7eae157350a4df7bf2949deb335576208e66f945c1c42",
+          "runtimeSha256": "fec5746ef78670a1f79aa32d4988df8fc83bdeacb056eeac7ea0bd8416e7b855",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 70,
+          "day": 144210,
+          "offMs": 82.20818199999485,
+          "auditAdvanceMs": 79.38860099999874,
+          "censusMs": 1.381093999996665,
+          "worldAndRuntimeSha256": "23b127dd1bf6df3474ea397c8e7cf250ab258870cf3505a15f94ceda4471dbfe",
+          "runtimeSha256": "d0169daf56c510b6c54112639805e6f39ea3d5f6fcbfa5b9d4f0f932e1569dba",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 71,
+          "day": 144213,
+          "offMs": 82.39040999999997,
+          "auditAdvanceMs": 78.99895600000309,
+          "censusMs": 1.630567999993218,
+          "worldAndRuntimeSha256": "c8fd3e667b5b8f7c622223c131877211fba132a6ccf8356d335d72be5317babc",
+          "runtimeSha256": "b48ebb72fe52243726519abdfe469902b9a3fafb58d600a04b0b9446c05c6874",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 72,
+          "day": 144216,
+          "offMs": 64.6897370000006,
+          "auditAdvanceMs": 61.78111899999931,
+          "censusMs": 1.4197199999980512,
+          "worldAndRuntimeSha256": "5c4c15b2fb6cbd5a4004819ca2c21c6d9dda899a01a2abf209aa7e000c78294c",
+          "runtimeSha256": "26eaf3257144ac6e0b132e72f03ad36a8ee7d4d3d9b165b20540156c0e76c5da",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 73,
+          "day": 144219,
+          "offMs": 65.06545000000187,
+          "auditAdvanceMs": 61.2132000000056,
+          "censusMs": 1.414111000005505,
+          "worldAndRuntimeSha256": "4741b4250ad256bcba95aef4239c72c8653a28811ddac060e6a0f293c0186699",
+          "runtimeSha256": "ccc195cc635fa5c245153c9f52a9a59b341bd2cb0221479795d499f74ce13059",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 74,
+          "day": 144222,
+          "offMs": 75.6869499999957,
+          "auditAdvanceMs": 72.10807100000238,
+          "censusMs": 1.5079139999943436,
+          "worldAndRuntimeSha256": "e7f71b7b46a0c0f79f48d3feeb44a02b486134d1df3bf71a64ec8cbaec984a8f",
+          "runtimeSha256": "f358246c657761dde5af0c6359b306436a85ec2e26054fa495f1378a0b458a42",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 75,
+          "day": 144225,
+          "offMs": 124.12133200000244,
+          "auditAdvanceMs": 63.30750800000533,
+          "censusMs": 1.5936799999981304,
+          "worldAndRuntimeSha256": "63959b4009bce5da251b5efb234f83fde47e8d5a4badbb864bedd26061adeba5",
+          "runtimeSha256": "3fbd551e50de528552f07b8b09d7c126c64ea0e3cf2934484797ad3b5f1a2e23",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 76,
+          "day": 144228,
+          "offMs": 65.52920399999857,
+          "auditAdvanceMs": 60.055420999997295,
+          "censusMs": 1.6327559999990626,
+          "worldAndRuntimeSha256": "f86a641cefa458290d5fd2dff060555404456056e13b5b5b33b182fbad03ee62",
+          "runtimeSha256": "2b4962407ce00b20dc4874c39233338408af0cd72d8a18038c8c6a7f9fd10f85",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 77,
+          "day": 144231,
+          "offMs": 67.25402100000065,
+          "auditAdvanceMs": 64.61453899999469,
+          "censusMs": 1.527884000002814,
+          "worldAndRuntimeSha256": "12c3b0a7e45fb908eeb4a6da27a05effc83cb32031043b054c12bee983172cca",
+          "runtimeSha256": "7876c4366bd06fc7d0963336146968b968b6eb407a7777c29b3e1b0cd9dc3e76",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 78,
+          "day": 144234,
+          "offMs": 65.2784060000049,
+          "auditAdvanceMs": 62.736660999995365,
+          "censusMs": 1.497801999998046,
+          "worldAndRuntimeSha256": "3857ec4989fba61c585acf7ed4b3fad69ec1a4e565a21eb5d1c07d599c9a3cbc",
+          "runtimeSha256": "e26a34887c9a908c5272dcbbc357d4afb3cd63781b626737424761577d92849f",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 79,
+          "day": 144237,
+          "offMs": 88.21967700000096,
+          "auditAdvanceMs": 84.7959650000048,
+          "censusMs": 1.500979999997071,
+          "worldAndRuntimeSha256": "6b3e4bf917a4baed37a08d468a058dc35ab482a49ac0fde221dc31cb127016b5",
+          "runtimeSha256": "b245a53f088e0b3b039dd644460fa3d6a41d385726c968a5d203b123da2f99c5",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 80,
+          "day": 144240,
+          "offMs": 121.39354199999798,
+          "auditAdvanceMs": 113.19965100000263,
+          "censusMs": 1.5282420000003185,
+          "worldAndRuntimeSha256": "7b87e51939d25bb620fe41e3be4a34bf4347760dee7b34ad56e024ef0e49d9e8",
+          "runtimeSha256": "9080461a4d260c8cfdd4f840b216380c6bf7d199f96e0d84e85bd73830637f18",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 81,
+          "day": 144243,
+          "offMs": 116.33360199999879,
+          "auditAdvanceMs": 107.90285600000061,
+          "censusMs": 1.5333920000048238,
+          "worldAndRuntimeSha256": "53ee1e0aeffb948e80f123f0789932632021a3f24aa7b9a1a176f23c6b3fd584",
+          "runtimeSha256": "3db2e0a87c158b826ee4360186c4ff1c6f31360f462feefd4dcfcf6d34af60af",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 82,
+          "day": 144246,
+          "offMs": 173.78730299999734,
+          "auditAdvanceMs": 128.76869400000578,
+          "censusMs": 1.5610459999952582,
+          "worldAndRuntimeSha256": "7db244bc2a9eb32b9597fdad38924f2ba038b6887f656bb44c66719cc8093a8b",
+          "runtimeSha256": "9d4b42a282ac125285f220378bb35fb9f12d022016194cbea8ab5b7da719f534",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 83,
+          "day": 144249,
+          "offMs": 135.15295699999842,
+          "auditAdvanceMs": 129.00188600000547,
+          "censusMs": 1.5249510000066948,
+          "worldAndRuntimeSha256": "fd6eb553bf99525e503a3c7054e5ac88c9749f47b903558a0d35ebb95338fe0e",
+          "runtimeSha256": "dfb4729b0479120417d8430fc7881dc83c21b499fe0cdb5763d5f9b1f2cb4945",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 84,
+          "day": 144252,
+          "offMs": 113.4265779999987,
+          "auditAdvanceMs": 112.47771600000124,
+          "censusMs": 1.5125170000028447,
+          "worldAndRuntimeSha256": "9b8ae8dcc48f6a05e3dccc6be4e05658ddb99322ab74c41568ec7db028ce01fa",
+          "runtimeSha256": "662c9415f0a346a84356414e16b907500db52e6fbe131c25b951e7cdf312b082",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 85,
+          "day": 144255,
+          "offMs": 100.80374899999879,
+          "auditAdvanceMs": 98.92001800000435,
+          "censusMs": 1.5200160000022152,
+          "worldAndRuntimeSha256": "5be98b6ef73261c0d71d5c692034951673585af46ebd21b75a48881d25d97af8",
+          "runtimeSha256": "9fe3932c4b630371006fb37bf31c166cfc1e4762db0647e8ed2966a5197d9997",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 86,
+          "day": 144258,
+          "offMs": 106.38433399999485,
+          "auditAdvanceMs": 91.23216900000261,
+          "censusMs": 1.6963060000052792,
+          "worldAndRuntimeSha256": "e012363fd871ec810a07ddb22e6f27c35a0bc47dbcce64f063b8a7508ea32444",
+          "runtimeSha256": "641d715a4ead10e91118a6192328f79ef7443b0818af64d2db834c35962e7317",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 87,
+          "day": 144261,
+          "offMs": 92.59457800000382,
+          "auditAdvanceMs": 90.80999300000258,
+          "censusMs": 1.3864210000028834,
+          "worldAndRuntimeSha256": "47f483d913fb2185c10625af1f53223b2e9636d4568d2a9dd9e654900ecf9279",
+          "runtimeSha256": "b9a99245344a3a11e4a5333621d12fc2343945d695819f5a56e1f44ca84a08e2",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 88,
+          "day": 144264,
+          "offMs": 115.22964700000011,
+          "auditAdvanceMs": 108.05073899999843,
+          "censusMs": 1.4565809999985504,
+          "worldAndRuntimeSha256": "c079fb8264f34101779deeed2a31ae688e63ca859a1bffce860ef414e3fa6405",
+          "runtimeSha256": "0c6548d4cdfaf806ed59763793cf1750abbd164a12757388c2ec78736ed68869",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 89,
+          "day": 144267,
+          "offMs": 161.7216150000022,
+          "auditAdvanceMs": 128.56166400000075,
+          "censusMs": 1.4282820000007632,
+          "worldAndRuntimeSha256": "6473feea8e914a66aa0fb0e71c3ac5dff3c2036bcc105cf6d4aeff27f63de455",
+          "runtimeSha256": "55d770bddb05ea6b2e13e97b3933da441b9ef91aafa17edc45c4357d461c18b9",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 90,
+          "day": 144270,
+          "offMs": 139.66250700000091,
+          "auditAdvanceMs": 129.31844200000342,
+          "censusMs": 1.4452040000032866,
+          "worldAndRuntimeSha256": "e2d209ee518cc3808757d7f0c93773b9745aba800d66add19e27a03215d85816",
+          "runtimeSha256": "6798e183d1cf61aeabd12474d916bc216c5742d0576c94fa391f43795e959b0a",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 91,
+          "day": 144273,
+          "offMs": 128.23752100000274,
+          "auditAdvanceMs": 123.26020499999868,
+          "censusMs": 1.488258000004862,
+          "worldAndRuntimeSha256": "44b2eab78a6efd31d7d80b90668d3f4bdfff1071fb443cbd1ac0d4d9384b2395",
+          "runtimeSha256": "02cfd8ea120c2ea5a24cdfd58c6493f97a31c5d40d581ef1d814d9dcb50f9e93",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 92,
+          "day": 144276,
+          "offMs": 118.58463599999959,
+          "auditAdvanceMs": 124.08019000000058,
+          "censusMs": 1.5088729999988573,
+          "worldAndRuntimeSha256": "4af00713fc3313b6c534a257ed64a544b2d00dcc306253e70e641fd111611cb7",
+          "runtimeSha256": "8422821f528a939480a78550de9194df31458c61638ab6052f97489cafa6158b",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 93,
+          "day": 144279,
+          "offMs": 120.59689000000071,
+          "auditAdvanceMs": 121.42397999999957,
+          "censusMs": 1.5659690000029514,
+          "worldAndRuntimeSha256": "62abd64e31e8044fa68f4c4324768a5d8348b01d0d67f5f2196bb90543e317ca",
+          "runtimeSha256": "3e051eaa600ea99379891b1fdae5b43e00db353e614a43df83714bbc20404e8c",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 94,
+          "day": 144282,
+          "offMs": 132.23328199999378,
+          "auditAdvanceMs": 115.18622699999833,
+          "censusMs": 1.4563540000017383,
+          "worldAndRuntimeSha256": "4bb4c5b9b3954e769c0b6bef90a44de142035e45d0caed46be550dee7430ad3b",
+          "runtimeSha256": "24fc052a880363f85ab50cc69b6cfb124e396e8f1b6025795013570df40c9ecf",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 95,
+          "day": 144285,
+          "offMs": 119.44612999999663,
+          "auditAdvanceMs": 118.47394599999825,
+          "censusMs": 1.5002070000045933,
+          "worldAndRuntimeSha256": "6214b9d4940ea0a1f5c504ec9a5a1f6b8cb621fbb5c7834e087a244f4932f9bf",
+          "runtimeSha256": "c26acb4e2d4106634267fd58e22cae04575851ccecf5dc7c72a8631871adfdf9",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 96,
+          "day": 144288,
+          "offMs": 157.05967200000305,
+          "auditAdvanceMs": 113.155998000002,
+          "censusMs": 1.64652400000341,
+          "worldAndRuntimeSha256": "3ad5c7055a88ef67fd1eb3e4693a244d5d8744bfa1012d58eca98cc762065f62",
+          "runtimeSha256": "909dfedd03d357a485d7201e496757773ef59c029e94d5a8cace7de549a33ee4",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 97,
+          "day": 144291,
+          "offMs": 115.9685909999971,
+          "auditAdvanceMs": 114.95102100000076,
+          "censusMs": 1.4316150000013295,
+          "worldAndRuntimeSha256": "8b81295c75fa3cbc574d723ffc62b8eafb06d96f9f678eda1fae1509e4ead1a5",
+          "runtimeSha256": "2ed94e6cf4948b90f5027f006d92268da719e8b7e3053d0258d478a769704b93",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 98,
+          "day": 144294,
+          "offMs": 114.96392699999706,
+          "auditAdvanceMs": 113.86716899999738,
+          "censusMs": 1.4409280000036233,
+          "worldAndRuntimeSha256": "48e56e625835af25df27876b6da5a84980e4930930dfa92d4781a299488e1ed3",
+          "runtimeSha256": "e1905a7fa34d8c6c65c285a6680e8c98e3728cacb0f0fe5463c21470d8e2827a",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 99,
+          "day": 144297,
+          "offMs": 118.69604699999763,
+          "auditAdvanceMs": 119.91738700000133,
+          "censusMs": 1.4140589999951771,
+          "worldAndRuntimeSha256": "1b6a22c0b19d6178fcd964fdaaddc7aa06ea846befcf3ab96b84c422b95b2410",
+          "runtimeSha256": "2201c5151e80db978a45f8bcd7ecec9669996b112e26e4beb8d79cf6daf5e85f",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 100,
+          "day": 144300,
+          "offMs": 129.82770299999538,
+          "auditAdvanceMs": 128.53276900000492,
+          "censusMs": 1.4085899999990943,
+          "worldAndRuntimeSha256": "4a6893c511374874806f5f72993e30e22f866341ef6c3b0f22b1e19a92d5b316",
+          "runtimeSha256": "1f9915fd9d2790416cf1a161077aa16ac85646bc6bce34146bbe068becda2a55",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 101,
+          "day": 144303,
+          "offMs": 131.1177850000022,
+          "auditAdvanceMs": 130.3872330000013,
+          "censusMs": 1.4353839999967022,
+          "worldAndRuntimeSha256": "cabc6052d529076703e19734ba20990f83282c41741ba1d23c4a36f6727bc28e",
+          "runtimeSha256": "28e452d255a6b8b7459d848838a7dfe9a5a85fe6a17b035bdaa18ad81e091284",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 102,
+          "day": 144306,
+          "offMs": 122.36904399999912,
+          "auditAdvanceMs": 120.82635300000402,
+          "censusMs": 1.3831260000006296,
+          "worldAndRuntimeSha256": "170ff7680db2275f4dc00d5a20bcc245e4cc3befebd5413c9f4ebf11e3394779",
+          "runtimeSha256": "9291a42d692f0a8d71edd2010bc41c39598f36112a6e0536c4b975ee328bfb1e",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 103,
+          "day": 144309,
+          "offMs": 153.3913840000023,
+          "auditAdvanceMs": 111.92062499999884,
+          "censusMs": 1.4345719999982975,
+          "worldAndRuntimeSha256": "14bc41d0d717a00aa59f55357a1e73209e17f3d994cbd89a13ad7b19916da708",
+          "runtimeSha256": "e7f9963a2c3bc365b6e5faf6f82663a6523b62021d5c83efeed0d026f303e6ae",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 104,
+          "day": 144312,
+          "offMs": 126.42665799999668,
+          "auditAdvanceMs": 109.30735199999617,
+          "censusMs": 1.3163629999980913,
+          "worldAndRuntimeSha256": "cbffd93964fac7e3225e6f669cdff3d3c3df256a257c0376b5de2fe9cdc532d9",
+          "runtimeSha256": "1e510d34ea2a033423c4142b8813597730fce139562d1d8512b8e4ec958391fc",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 105,
+          "day": 144315,
+          "offMs": 119.335364999999,
+          "auditAdvanceMs": 113.13385500000004,
+          "censusMs": 1.5343730000022333,
+          "worldAndRuntimeSha256": "af61c4298e149aabe286fad6049c0c0394f7cc717f6105a5e13a6dccb790f902",
+          "runtimeSha256": "b8a027ec5127aa220cd7e2a159a540d063700de679a6b4f825b8238edf6f8942",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 106,
+          "day": 144318,
+          "offMs": 118.0861270000023,
+          "auditAdvanceMs": 117.44871899999998,
+          "censusMs": 1.447797000000719,
+          "worldAndRuntimeSha256": "2208d12f24ca9d8d433264ffca56d9534910fdf0a09f6c8d5d6514534b8b0775",
+          "runtimeSha256": "ab055d1125a6930827d6354878bf72e1b2ea892cff9c9a9148268654c2cdde11",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 107,
+          "day": 144321,
+          "offMs": 122.64037100000132,
+          "auditAdvanceMs": 118.64413899999636,
+          "censusMs": 1.4510599999994156,
+          "worldAndRuntimeSha256": "ee381a526671fc970cebb2c6dfefedc2cd4174db320ba9f61ee03e8bd8bcdb82",
+          "runtimeSha256": "579ab55c62cbd06b5acf2bdc35fc7a046952a53d92539a6dddb16b360a1e23c5",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 108,
+          "day": 144324,
+          "offMs": 120.72415600000386,
+          "auditAdvanceMs": 115.34584900000482,
+          "censusMs": 1.5963859999974375,
+          "worldAndRuntimeSha256": "b3a4e1bde4819a05c5e87557da0eca1861dae44ebbf2f49b40cb4dad6dd4de27",
+          "runtimeSha256": "3eb3e680311703ab568dd6bfb3410e61c1fa34fd3c3d040e66153c8350380f4a",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 109,
+          "day": 144327,
+          "offMs": 93.98984999999811,
+          "auditAdvanceMs": 94.01694700000371,
+          "censusMs": 1.408024000003934,
+          "worldAndRuntimeSha256": "d8c013ba6fb5804c6b0c0a6bc0dbf3847064a127ad4a93234f08c14c06a01234",
+          "runtimeSha256": "c553ff76814abf75ecd341263e1dfd21c84b44606ef2cab7ed8518f6eee9a705",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 110,
+          "day": 144330,
+          "offMs": 151.76536900000065,
+          "auditAdvanceMs": 109.15412900000229,
+          "censusMs": 1.5910989999974845,
+          "worldAndRuntimeSha256": "397500592768336e1ec4ad5e5eda85160ee269ce2883201f4a5ffdcc57eee9e2",
+          "runtimeSha256": "13d76449d80c4713116608c8c3601cc9274ab43f315167f75eb472dae57e4d3d",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 111,
+          "day": 144333,
+          "offMs": 103.26929899999959,
+          "auditAdvanceMs": 113.06482900000265,
+          "censusMs": 1.452329000007012,
+          "worldAndRuntimeSha256": "965455944d9d126013ccfb69ba3ea125a0589cb5e7982c463e981535c1ba931e",
+          "runtimeSha256": "fc472f07dbca8d040434c2536a4f70b546eac39c08c78ed41ce40b8de0e6b09c",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 112,
+          "day": 144336,
+          "offMs": 81.93254000000161,
+          "auditAdvanceMs": 80.77306600000156,
+          "censusMs": 1.4408949999997276,
+          "worldAndRuntimeSha256": "37058f25853796a231c5b8ce235263369fd450e2df216698938230a34ebea2ad",
+          "runtimeSha256": "8438f12bc959a11b2695d1f21f364c6a0dd38eed63d82c8d35b4d82b961d86dc",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 113,
+          "day": 144339,
+          "offMs": 95.29161300000123,
+          "auditAdvanceMs": 87.67146800000046,
+          "censusMs": 1.4700079999965965,
+          "worldAndRuntimeSha256": "70c193b8019634d315b1b914f376def970e9e14796fdefe4d130615ad345ce9f",
+          "runtimeSha256": "afc2f48408f62de373693cf60d4483053948f00fbd12bab54e79c0f07701ee13",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 114,
+          "day": 144342,
+          "offMs": 92.60258600000088,
+          "auditAdvanceMs": 87.54921399999876,
+          "censusMs": 1.4550380000000587,
+          "worldAndRuntimeSha256": "e614051627b037a1717a2a828585d18e66306e8e83d6638424a01cb616ab66c0",
+          "runtimeSha256": "ea041de89dbb5215ad742293a053b291f39befc1418db29335e60acd8a968e4e",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 115,
+          "day": 144345,
+          "offMs": 89.07536200000322,
+          "auditAdvanceMs": 87.26774000000296,
+          "censusMs": 1.4873379999989993,
+          "worldAndRuntimeSha256": "448366611276f41171d2eddeb6e3762711bde58f8095915d188f97faca5ca9d8",
+          "runtimeSha256": "b116a3397a1bdfff26c13df7e1bf83c183fe70e8455778c6b9e5feb6f848933d",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 116,
+          "day": 144348,
+          "offMs": 81.12317299999995,
+          "auditAdvanceMs": 77.78231799999776,
+          "censusMs": 1.4293069999985164,
+          "worldAndRuntimeSha256": "70976f252eab5a90e70ee7e7cbf35f182efeca873c500121dd19f5afd96da3a2",
+          "runtimeSha256": "6e5ea41bf5e1aec700650022a8f32d315f6d61338c9c4a885f4acc96f0840cb1",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 117,
+          "day": 144351,
+          "offMs": 132.0237829999969,
+          "auditAdvanceMs": 84.03683799999999,
+          "censusMs": 1.4549350000015693,
+          "worldAndRuntimeSha256": "f1c44f5e67ecc69a56a6b6237f91f731f9e1bb939336dfdc68b0ed0ad9ce481a",
+          "runtimeSha256": "4a671d89cbc2d9f2fa4b6fc9b381401d433ae3f4682efb1e860cc2c186baee55",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 118,
+          "day": 144354,
+          "offMs": 86.97869599999831,
+          "auditAdvanceMs": 76.10343100000318,
+          "censusMs": 1.5139590000035241,
+          "worldAndRuntimeSha256": "6f2a6ba18c6ae5c8ef0df762c1ebd19d26689b643d96f9fad79ca41b58adb3cb",
+          "runtimeSha256": "9a52a0f61caaa3771389b2ef396e70ea9e6ca2469b0b77d46ff0f93f5ee118aa",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 119,
+          "day": 144357,
+          "offMs": 89.86366599999747,
+          "auditAdvanceMs": 88.55270699999528,
+          "censusMs": 1.517018000005919,
+          "worldAndRuntimeSha256": "63fd58d6fd01f3553425cf0500f6073e10096930be34e524b926e3ae48311887",
+          "runtimeSha256": "7be95420d9393f03322fce2bdb453185772107d359d7146390bcae73d29d6d00",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        },
+        {
+          "index": 120,
+          "day": 144360,
+          "offMs": 110.8965640000024,
+          "auditAdvanceMs": 106.2335779999994,
+          "censusMs": 1.4106600000013714,
+          "worldAndRuntimeSha256": "0254b39e2f5929e5b86d3bdb99bd6a69f76bfd8e4e5f5063e698890ac2bb7650",
+          "runtimeSha256": "a60a36a0c28c1c84cd56e1270384f0a833d99097106e968b36c7e13470ee65de",
+          "census": {
+            "available": true,
+            "differences": 0,
+            "firstDifference": null,
+            "selectiveReaderEqual": true
+          },
+          "byteEqual": true
+        }
+      ],
+      "status": "passed",
+      "finalSha256": "0254b39e2f5929e5b86d3bdb99bd6a69f76bfd8e4e5f5063e698890ac2bb7650",
+      "finalRuntimeSha256": "a60a36a0c28c1c84cd56e1270384f0a833d99097106e968b36c7e13470ee65de",
+      "censusAvailable": true
+    }
+  ],
+  "status": "passed",
+  "finishedAt": "2026-11-22T13:25:27.814Z",
+  "exitCode": 0
+}

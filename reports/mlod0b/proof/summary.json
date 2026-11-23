@@ -1,0 +1,95 @@
+{
+  "proofCommit": "24f42c2d99a746154a731a392949dc428f0d3e50",
+  "run": "https://github.com/sjh20016/inkbox/actions/runs/45027304889",
+  "seeds": [
+    {
+      "seed": 20260914,
+      "years": 200,
+      "steps": 24000,
+      "elapsedMs": 4672234.822979,
+      "finalWorldAndRuntime": "65c4942796c060c1eb1143c28ccec930b14e68e1e532060b6852ff09fe2dbc6c",
+      "fingerprint": "0a92e62d0f990bb38acc58e491e7b0ff7cc4835dcf271bb30d264b39b5e8e33f",
+      "rawSha256": "f0d965123202254ba3d7998ba88057b7a931f42436854ddbd694a001ca149f3a"
+    },
+    {
+      "seed": 73101,
+      "years": 200,
+      "steps": 24000,
+      "elapsedMs": 3237477.2693789997,
+      "finalWorldAndRuntime": "9e6a1b8559e8f5dbd4c33ef3c7acd625fcd5e0468528f28207918c2faefe899b",
+      "fingerprint": "0a92e62d0f990bb38acc58e491e7b0ff7cc4835dcf271bb30d264b39b5e8e33f",
+      "rawSha256": "669d74f3c8bca3f51155c76a21a6975eba879cc56770d29aa90a37604ddb0b69"
+    },
+    {
+      "seed": 61003,
+      "years": 200,
+      "steps": 24000,
+      "elapsedMs": 3486160.147103,
+      "finalWorldAndRuntime": "a5c7cbbc6c3f2515991ef04de2f6ac3dde9b48f9d667378c66a623f7736a988d",
+      "fingerprint": "0a92e62d0f990bb38acc58e491e7b0ff7cc4835dcf271bb30d264b39b5e8e33f",
+      "rawSha256": "e0f6c6a7dc60cacf48aaedbf5ebd1f77826cb4682efa8c8a231fc30ac7330ce8"
+    }
+  ],
+  "windows": [
+    {
+      "age": 100,
+      "dt": 0.1,
+      "days": 360,
+      "steps": 3600,
+      "day30": "964d27cfe2d08a196f7a810ea4c03e2d2eb59dd752d0ccee953711b1685c2182",
+      "day360": "32495d3b2cb288eb1def7df38be91898bffa32515db9d175f43ac2ad203eaf09",
+      "fingerprint": "36a57f18cf0d59a5dfecadf38e2b45e7674cc0df9ba8835653d5a0f64123e084",
+      "rawSha256": "20d270f47d38e6ea1e890517012d7c3cd44ca411dedc5c9a887c4107b0a029aa"
+    },
+    {
+      "age": 100,
+      "dt": 1,
+      "days": 360,
+      "steps": 360,
+      "day30": "ac838fc269c193e67cad2d02e4d12c3bca0a65a06bf51493f4a81ab0bbb266af",
+      "day360": "0f6d9b43f314111194e00d3ef5ab99478dfabea98b04d395e68315a98d370a6c",
+      "fingerprint": "36a57f18cf0d59a5dfecadf38e2b45e7674cc0df9ba8835653d5a0f64123e084",
+      "rawSha256": "a681f6c8f8ad6b202796f7d441bb5a9ffdbf79388779a013c2986944678f41ab"
+    },
+    {
+      "age": 100,
+      "dt": 3,
+      "days": 360,
+      "steps": 120,
+      "day30": "078e122476e05a6da31c0591f366cc35c5bbdedc3b65a420e09a324b4f21a421",
+      "day360": "04c48af6933025ef4ee995921eb109e791c7f9081ea1d90d9ff3ce1c69aa060e",
+      "fingerprint": "36a57f18cf0d59a5dfecadf38e2b45e7674cc0df9ba8835653d5a0f64123e084",
+      "rawSha256": "91ed3c27423a0ff0c48157cf86935edce3c683a6bb00202d67f98f3bc4a19a46"
+    },
+    {
+      "age": 400,
+      "dt": 0.1,
+      "days": 360,
+      "steps": 3600,
+      "day30": "10cb48932d2881456bee129b5476edb71900d149950fce7ec7d45de42aa405da",
+      "day360": "c4d7bfc54c01787c200fb49124e5f89c5367aa8debd9df528b8015f568df2c0c",
+      "fingerprint": "36a57f18cf0d59a5dfecadf38e2b45e7674cc0df9ba8835653d5a0f64123e084",
+      "rawSha256": "44534899ef9eb44a0ad27dd04058717d1e6c39bbc34d8c1b7b05903abda13d07"
+    },
+    {
+      "age": 400,
+      "dt": 1,
+      "days": 360,
+      "steps": 360,
+      "day30": "dca4882aeb14b1d64acb869c35e00d340761301637116714dc2f0ed97c3801d2",
+      "day360": "39bba3781dbf1a0ad12a2c3584d3d4adde67cd3fa43f73c34b7ce14b7062d40c",
+      "fingerprint": "36a57f18cf0d59a5dfecadf38e2b45e7674cc0df9ba8835653d5a0f64123e084",
+      "rawSha256": "30ef31a499fc10d3993cf0f45a414b738ee06c9b653a33af3d1307954682376f"
+    },
+    {
+      "age": 400,
+      "dt": 3,
+      "days": 360,
+      "steps": 120,
+      "day30": "993931be30ae75be354e4be7fbb1ceae8c0b3f692ac52ff1ac1d03faf95396e2",
+      "day360": "0254b39e2f5929e5b86d3bdb99bd6a69f76bfd8e4e5f5063e698890ac2bb7650",
+      "fingerprint": "36a57f18cf0d59a5dfecadf38e2b45e7674cc0df9ba8835653d5a0f64123e084",
+      "rawSha256": "f58431dcdab71a51fbac7f8703a46ed9659982bc5379aa4b648cc3b7b23097ed"
+    }
+  ]
+}
