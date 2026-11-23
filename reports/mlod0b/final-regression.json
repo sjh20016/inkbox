@@ -1,0 +1,71 @@
+{
+  "node": "v24.11.1",
+  "schema": "mlod0b-final-regression-v1",
+  "startedAt": "2026-11-23T18:30:21+08:00",
+  "commands": [
+    {
+      "command": "npm run test",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:c1",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:g8",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:save-equivalence",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:three-realms",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:wx-e1c",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:wx-e2ra2",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:wx-em2",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:wanxiang:s11",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:mlod0b",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:wx-e0",
+      "status": "passed",
+      "exitCode": 0
+    }
+  ],
+  "notes": [
+    "test:package delegated to separate package gate",
+    "save-equivalence reports existing 60-year continuation population 922 vs 954 and does not assert uninterrupted/restored trajectory equality",
+    "heavy cloud PR job separately passed"
+  ],
+  "productSourceHead": "00d7f854b75a0c7198cb49211bd53425656f6b4c",
+  "finishedAt": "2026-11-23T18:38:18+08:00",
+  "environment": "Windows local workspace",
+  "npm": "11.6.2"
+}
