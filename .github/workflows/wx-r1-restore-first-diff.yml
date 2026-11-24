@@ -1,0 +1,37 @@
+name: WX-R1 restore first-divergence research
+
+on:
+  push:
+    branches:
+      - diagnostics/wx-r1-restore-first-divergence-20261124
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-first-diff:
+    name: Native #74 / 100y + 400y first-difference
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify isolated probe syntax
+        run: node --check scripts/inkbox-wx-r1-restore-first-diff.mjs
+      - name: Native 100-year save/restore differential
+        run: node scripts/inkbox-wx-r1-restore-first-diff.mjs --age=100 --dt=3 --warmup-steps=1 --steps=120 --out=reports/wx-r1/first-100y.json
+      - name: Native 400-year save/restore differential
+        run: node scripts/inkbox-wx-r1-restore-first-diff.mjs --age=400 --dt=3 --warmup-steps=1 --steps=120 --out=reports/wx-r1/first-400y.json
+      - name: Preserve diagnostic reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wx-r1-restore-first-diff
+          path: reports/wx-r1/*.json
+          if-no-files-found: warn
