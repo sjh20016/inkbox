@@ -1,5 +1,9 @@
 # HANDOFF · 坐天观井 Inkbox 交接单
 
+## 2026-11-06 · WX-D 因缘成局候选
+
+独立堆叠于WX-C #61，分支`feature/wx-d-yinyuan-chengju`，保持[Draft #62](https://github.com/sjh20016/inkbox/pull/62)，未合并main。真实陆路供给、沉寂旧址、付费恩义/师承/同宗帮助、三卦目标选择和五页因果回执已接入。三个种子100+30年及一个400年凡间样本完成；31项软件WebGL浏览器验收通过，实际SHA、CI、统计与未测边界见[WX-D交付](./docs/development/WX_D_DELIVERY.md)。800年、自然三界数百年和硬件GPU性能未封板。
+
 ## 2026-10-28 · RG2 轻量治理（状态与扩展约定）
 
 已核对正式 `main@5746e4e`：G8 #52/#53 与 E2-Lite #54 已合并，最新主干 Fast/Heavy 及定时 Nightly 均成功；Browser Smoke 仍属手动项。此 SHA 仅为治理前快照。G6 #30、山海遗迹 #37、万象拾趣 #39、R3D-S1 #51 保持独立，G2/G3 旧研究 PR 仅保留可追溯性。请从 [RG2 当前状态](./docs/development/RG2_CURRENT_STATE.md) 判别候选，从 [玩法扩展约定](./docs/development/FEATURE_EXTENSION_CONTRACT.md) 接入独立玩法；正文后续各阶段条目是当时的历史快照，不代表当前尚未合并。

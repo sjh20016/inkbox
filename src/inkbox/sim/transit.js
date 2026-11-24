@@ -104,10 +104,27 @@ function begin(world,{kind,mode,actor,from,to,food=0,route}) {
       sourceReached:kind!=='cargo'||Math.hypot(actor.x-from.x-0.5,actor.y-from.y-0.5)<0.01},
     progress:0,distance:route.distance,legMode:'land'};
   s.journeys.push(j);
+  if (world.wanxiang?.enabled && actor.wanxiang?.physique?.id === 'spacetime') {
+    // Fixed per journey: a brief disorientation costs time, never route access or location.
+    j.disorientedUntil = world.day + (((world.seed ^ Math.imul(actor.id,31) ^ j.id) >>> 0) % 16 === 0 ? 1 : 0);
+  }
   yieldDaoActivityToTransit(world,actor.id);
   if(food) {from.food-=food;s.ledger.loaded+=food;}
   cacheRoute(world,j,route);
+  j.etaDay = estimatedArrival(world,j,actor);
   return {ok:true,journey:j};
+}
+function estimatedArrival(world,j,actor) {
+  const cache=routeMap(world).get(j.id);
+  const physique=world.wanxiang?.enabled ? actor.wanxiang?.physique?.id : null;
+  const speed=(j.mode==='air'?TRANSIT_LIMITS.airTilesPerDay:TRANSIT_LIMITS.waterTilesPerDay)/(physique==='spacetime'?.88:1);
+  let days=0, previous=j.position;
+  for(let i=cache.cursor+1;i<cache.points.length;i++) {
+    const next=cache.points[i];
+    days+=Math.hypot(next.x-previous.x,next.y-previous.y)/speed*(physique==='earth'&&next.mode==='land'?1.12:1);
+    previous=next;
+  }
+  return Math.max(world.day,j.disorientedUntil||0)+days;
 }
 function requestCargoCore(world,{fromVillageId,toVillageId,actorId,food,mode='water'}={},budget=null) {
   if(mode!=='water') return {ok:false,reason:'unsupported_mode'};
@@ -153,15 +170,19 @@ export function requestPersonJourney(world,{actorId,toVillageId,mode='air'}={}) 
 }
 function advanceAlong(world,j,actor,elapsed) {
   const cache=routeMap(world).get(j.id),points=cache.points;
-  let distance=elapsed*(j.mode==='air'?TRANSIT_LIMITS.airTilesPerDay:TRANSIT_LIMITS.waterTilesPerDay);
-  while(distance>0 && cache.cursor<points.length-1) {
+  const physique = world.wanxiang?.enabled ? actor.wanxiang?.physique?.id : null;
+  const speed=(j.mode==='air'?TRANSIT_LIMITS.airTilesPerDay:TRANSIT_LIMITS.waterTilesPerDay)/(physique==='spacetime'?.88:1);
+  let remaining=elapsed;
+  while(remaining>0 && cache.cursor<points.length-1) {
     const next=points[cache.cursor+1],step=Math.hypot(next.x-j.position.x,next.y-j.position.y);
+    const legSpeed=speed/(physique==='earth'&&next.mode==='land'?1.12:1);
+    const distance=remaining*legSpeed;
     if(step<=distance+1e-9) {
-      j.position={x:next.x,y:next.y};j.legMode=next.mode;cache.cursor++;j.progress+=step;distance-=step;
+      j.position={x:next.x,y:next.y};j.legMode=next.mode;cache.cursor++;j.progress+=step;remaining-=step/legSpeed;
     } else {
       const t=distance/step;
       j.position={x:j.position.x+(next.x-j.position.x)*t,y:j.position.y+(next.y-j.position.y)*t};
-      j.legMode=next.mode;j.progress+=distance;distance=0;
+      j.legMode=next.mode;j.progress+=distance;remaining=0;
     }
     if(j.kind==='cargo'&&!j.goal.sourceReached) {
       const source=village(world,j.fromVillageId);
@@ -209,7 +230,7 @@ export function stepTransit(world) {
       if(j.status==='blocked') j.updatedDay=world.day;
       j.status=j.goal.cancelRequested?'landing':'active';j.reason=null;changed=true;
     }
-    const elapsed=Math.max(0,world.day-j.updatedDay);
+    const elapsed=Math.max(0,world.day-Math.max(j.updatedDay,j.disorientedUntil||0));
     if(elapsed<=0)continue;
     const done=advanceAlong(world,j,actor,elapsed);
     j.updatedDay=world.day;changed=true;
@@ -218,8 +239,7 @@ export function stepTransit(world) {
       if(j.goal.cancelRequested) finish(world,j,'cancelled','cancelled_at_destination');
       else finish(world,j,'arrived',null);
       arrived++;
-    } else j.etaDay=world.day+Math.max(0,routeMap(world).get(j.id).distance-j.progress)
-      /(j.mode==='air'?TRANSIT_LIMITS.airTilesPerDay:TRANSIT_LIMITS.waterTilesPerDay);
+    } else j.etaDay=estimatedArrival(world,j,actor);
   }
   const month=Math.floor(world.day/TRANSIT_LIMITS.dispatchDays);
   const dispatchDue=s ? world.day>=s.dispatchDay+TRANSIT_LIMITS.dispatchDays

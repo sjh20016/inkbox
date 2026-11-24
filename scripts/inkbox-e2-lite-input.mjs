@@ -17,6 +17,8 @@ import { Render3DAdapter } from '../src/inkbox/render3d/Render3DAdapter.js';
 import { readJournal } from '../src/inkbox/sim/journal.js';
 import { readObserveEcho } from '../src/inkbox/sim/observeEcho.js';
 import { serializeWorld } from '../src/inkbox/io/save.js';
+import { worldGeneration } from '../src/inkbox/presentation/readView/index.js';
+import { CommandBridge } from '../src/inkbox/presentation/readView/commandBridge.js';
 
 const source = fs.readFileSync(new URL('../src/inkbox/main.js', import.meta.url), 'utf8').replaceAll('\r\n', '\n');
 const from = source.indexOf('  applyTool(isFirst,'), to = source.indexOf('\n  rebuildVillageCache()', from);
@@ -30,7 +32,7 @@ const marker = "    document.addEventListener('visibilitychange', () => {\n     
 const end = source.indexOf(marker, start);
 assert(start > 0 && end > start);
 const bind = new Function('canvas', 'window', 'document', 'CAUSAL_TOOL_IDS', 'createInterventionOutcome',
-  'measureChangedCells', 'withWaterEditBatch', source.slice(start, end + marker.length));
+  'measureChangedCells', 'withWaterEditBatch', 'worldGeneration', source.slice(start, end + marker.length));
 const frameStart = source.indexOf("    if (this.pointer.down && this.pointer.actionKind === 'drag' && this.pointer.inside) {");
 const frameEnd = source.indexOf('    this.autoSaveAccum += dt;', frameStart);
 assert(frameStart > 0 && frameEnd > frameStart);
@@ -51,8 +53,9 @@ function setup(toolId = 'burn', observation = true) {
     qol: { markDirty() {}, syncUndoState() {} }, observeEcho: { refresh() {} },
     refreshChronicle() {}, refreshMilestones() {}, refreshBusanzi() {}, updateCursor() {}, applyTool };
   if (!observation) sb.history.queueToolReceipt = () => {};
+  sb.commandBridge = new CommandBridge(() => sb.world);
   bind.call(sb, canvas, { addEventListener: (name, fn) => windowHandlers.set(name, fn) },
-    { addEventListener() {}, hidden: false }, CAUSAL_TOOL_IDS, createInterventionOutcome, measureChangedCells, withWaterEditBatch);
+    { addEventListener() {}, hidden: false }, CAUSAL_TOOL_IDS, createInterventionOutcome, measureChangedCells, withWaterEditBatch, worldGeneration);
   return { sb, world, life, rng, handlers, fire(name, x = 16, y = 16) {
     handlers.get(name)?.({ button: 0, pointerId: 1, clientX: x, clientY: y });
   } };

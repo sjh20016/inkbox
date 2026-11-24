@@ -4,6 +4,7 @@ import { parseSeed, creationOptions, createSandboxWorld, expandSandboxMap } from
 import { createMapProgress, accessBounds } from '../src/inkbox/world/mapProgress.js';
 import { Camera } from '../src/inkbox/render/camera.js';
 import { TerrainLayer } from '../src/inkbox/render/terrainLayer.js';
+import { beginBreakdown, endBreakdown, markBreakdown, frameBreakdownEnabled } from '../src/inkbox/dev/frameBreakdown.js';
 const checks=[];
 function check(name,fn){fn();checks.push(name);console.log('PASS '+name);}
 check('seed zero and uint32 boundaries are accepted; invalid input never wraps or randomizes',()=>{
@@ -38,8 +39,8 @@ check('main stroke isolation keeps real-time updates but accrues no simulation c
  const src=readFileSync(new URL('../src/inkbox/main.js',import.meta.url),'utf8');
  const match=src.match(/\n  update\(dt\) \{([\s\S]*?)\n  \}\r?\n\r?\n  defaultHint\(\)/);assert.ok(match);
  const counts={advance:[],hydro:0,decay:0,presentation:0,camera:0,flush:0,auto:0};
- const update=new Function('TIME','updateFocusPulses','stepHydrology','decayOverlay','flushDirty','return function(dt){'+match[1]+'}')(
- {speeds:[{mult:0},{mult:3}],baseDaysPerSecond:2},()=>{},()=>counts.hydro++,()=>counts.decay++,()=>{});
+ const update=new Function('TIME','updateFocusPulses','stepHydrology','decayOverlay','flushDirty','beginBreakdown','endBreakdown','markBreakdown','frameBreakdownEnabled','return function(dt){'+match[1]+'}')(
+ {speeds:[{mult:0},{mult:3}],baseDaysPerSecond:2},()=>{},()=>counts.hydro++,()=>counts.decay++,()=>{},beginBreakdown,endBreakdown,markBreakdown,frameBreakdownEnabled);
  const s={world:{},render3d:{stroke:{},flushStroke(){counts.flush++;}},camera:{update(){counts.camera++;}},focusPulses:[],tracePulses:[],clock:0,
  stage:{ingestWorlds(){return this;},update(){counts.presentation++;}},speedIndex:1,hydroAccum:.05,decayAccum:.2,pointer:{painting:false},tool:{mode:'inspect'},
  autoSaveAccum:89.9,uiAccum:0,toastTimer:0,updateHud(){},advanceDays(days){counts.advance.push(days);},autoSave(){counts.auto++;}};

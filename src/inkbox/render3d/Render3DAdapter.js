@@ -443,6 +443,7 @@ export class Render3DAdapter {
   }
   brushAccessBounds(){return accessBounds(this.sandbox.world);}
   editReason(hit){
+    if (this.sandbox.committedAuthorityAvailable?.() === false) return '世界尚未完成结算，请稍后落笔';
     if(this.isViewMode())return '视界工具不修改地形';
     if(!hit?.plane)return '请在当前可见地表或人物上落笔';
     if(hit?.kind==='world-edge')return '世界外侧面只能观察，请在地表落笔';
@@ -467,7 +468,18 @@ export class Render3DAdapter {
     this.powerTarget.style.left = `${Math.max(0, Math.min(rect.width - 240, this.pointer.x - rect.left + 14))}px`;
     this.powerTarget.style.top = `${Math.max(0, Math.min(rect.height - 45, this.pointer.y - rect.top + 16))}px`;
   }
-  commitPower(hit) {
+  dispatchCommittedEdit(type, payload, operation) {
+    const bridge = this.sandbox.commandBridge;
+    if (!bridge) return operation();
+    const receipt = bridge.dispatch(bridge.create(type, payload), operation);
+    this.sandbox.lastCommandReceipt = receipt;
+    return receipt.ok ? receipt.value : false;
+  }
+  commitPower(hit, admitted = false) {
+    if (!admitted && this.sandbox.commandBridge) return this.dispatchCommittedEdit('power', {
+      toolId: this.mode, radius: this.radius, point: hit?.world ? { x: Math.round(hit.world.x), y: Math.round(hit.world.y) } : null,
+      targetEntityId: hit?.entityId ?? null, plane: hit?.plane ?? null,
+    }, () => this.commitPower(hit, true));
     const tool = TOOL_BY_ID[this.mode], world = this.sandbox.world;
     if (!this.active || !tool || tool.mode !== 'click' || world !== this.renderer.world) return false;
     const reason = this.editReason(hit);
@@ -497,9 +509,16 @@ export class Render3DAdapter {
     const point = { x: Math.round(hit.world.x), y: Math.round(hit.world.y) }, last = stroke.points.at(-1);
     if ((!last || last.x !== point.x || last.y !== point.y) && stroke.points.length < 128) stroke.points.push(point);
   }
-  commitPowerStroke(event) {
+  commitPowerStroke(event, admitted = false) {
+    if (!this.powerStroke) return false;
+    if (!admitted && this.sandbox.commandBridge) {
+      if (this.powerStroke) this.samplePowerStroke(event);
+      return this.dispatchCommittedEdit('terrain-stroke', {
+      toolId: this.mode, radius: this.radius, points: this.powerStroke?.points || [],
+      }, () => this.commitPowerStroke(event, true));
+    }
     const stroke = this.powerStroke; if (!stroke) return false;
-    this.samplePowerStroke(event); this.powerStroke = null;
+    if (!admitted) this.samplePowerStroke(event); this.powerStroke = null;
     if (!this.active || stroke.world !== this.sandbox.world || stroke.mode !== this.mode || !stroke.points.length) return false;
     const tool = TOOL_BY_ID[stroke.mode]; if (!tool || tool.mode !== 'drag') return false;
     const first = stroke.points[0];
@@ -524,7 +543,10 @@ export class Render3DAdapter {
     }
   }
   /** The existing burn tool owns World mutation; this adapter only supplies an authorized pick. */
-  burnAt(hit) {
+  burnAt(hit, admitted = false) {
+    if (!admitted && this.sandbox.commandBridge) return this.dispatchCommittedEdit('power', {
+      toolId: 'burn', radius: this.radius, point: hit ? { x: hit.x, y: hit.y } : null,
+    }, () => this.burnAt(hit, true));
     if (!this.active || this.mode !== 'burn' || this.renderer.world !== this.sandbox.world
       || this.sandbox.getRealmViewState?.().open
       || !hit || !this.canSculpt(hit) || !Number.isFinite(hit.x) || !Number.isFinite(hit.y)) {
@@ -555,9 +577,16 @@ export class Render3DAdapter {
     if ((!last || last.x !== point.x || last.y !== point.y) && stroke.points.length < 128) stroke.points.push(point);
   }
   /** Apply the existing water power once per sampled cell, commit one gesture. */
-  commitDrainStroke(event) {
+  commitDrainStroke(event, admitted = false) {
     if (!this.drainStroke) return false;
-    this.sampleDrainStroke(event);
+    if (!admitted && this.sandbox.commandBridge) {
+      if (this.drainStroke) this.sampleDrainStroke(event);
+      return this.dispatchCommittedEdit('terrain-stroke', {
+      toolId: 'drain', radius: this.radius, points: this.drainStroke?.points || [],
+      }, () => this.commitDrainStroke(event, true));
+    }
+    if (!this.drainStroke) return false;
+    if (!admitted) this.sampleDrainStroke(event);
     const stroke = this.drainStroke; this.drainStroke = null;
     const sandbox = this.sandbox, world = sandbox.world;
     if (!this.active || this.mode !== 'drain' || stroke.world !== world || this.renderer.world !== world
@@ -627,7 +656,9 @@ export class Render3DAdapter {
         }
       }
     }
+    const committed = !!this.stroke;
     this.stroke=null;this.syncHistoryState();
+    if (committed) this.sandbox.publishCommittedEdit?.();
   }
 
   // ── M2-B B3 · 正式 3D 划窗（§48–§52）──────────────────────────────────
@@ -695,12 +726,13 @@ export class Render3DAdapter {
     this.renderer.setDraftPath(null);
     return path;
   }
-  undo() {
+  undo(admitted = false) {
+    if (!admitted && this.sandbox.commandBridge) return this.dispatchCommittedEdit('undo', {}, () => this.undo(true));
     this.endStroke();
     if (!this.canSculpt({ plane: this.renderer.activePlane })) return false;
     const waterEntry = this.latestDrainUndo();
     if (waterEntry) {
-      const changed = this.sandbox.undo();
+      const changed = this.sandbox.undo(true);
       if (changed) { this.renderer.markTerrainDirty(waterEntry.bounds); this.redoStack = []; }
       this.sandbox.observeEcho?.refresh?.(); this.syncHistoryState();
       return changed;
@@ -716,7 +748,8 @@ export class Render3DAdapter {
     const message='世界演化已改变地形，不能撤销旧笔画';
     this.clearHistory(message);this.sandbox.notify?.(message,4200);return false;
   }
-  redo(){
+  redo(admitted = false){
+    if (!admitted && this.sandbox.commandBridge) return this.dispatchCommittedEdit('redo', {}, () => this.redo(true));
     this.endStroke();
     if(!this.canSculpt({plane:this.renderer.activePlane}))return false;
     const entry=this.redoStack?.pop();if(!entry)return false;
@@ -728,6 +761,7 @@ export class Render3DAdapter {
 
   render(now) {
     if (!this.active) return false;
+    if (this.sandbox.committedAuthorityAvailable?.() === false) return false;
     const world = this.sandbox.world;
     if (this.renderer.world !== world) this.cancelStroke();
     if (this.renderer.setWorld(world)) { this.clearCameraKeys(); this.invalidateHover('world-replace'); this.clearHistory('创建或加载世界后已清除旧编辑会话'); this.selectedCell = null; this.lastNow = null; this.planeSelect.value = this.renderer.activePlane; }

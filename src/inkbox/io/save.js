@@ -74,6 +74,7 @@ import {
   encodeSave, decodeSave, lastCodecUsed, lastFallbackReason, isCompressed,
 } from './codec.js';
 import { normalizeRuntimeState } from '../sim/runtimeState.js';
+import { serializeWanxiang, restoreWanxiang } from '../wanxiang/saveState.js';
 
 // ── 版本 ─────────────────────────────────────────────────
 // v1 → v2：加 id 列与修仙层（境界/灵根/道途/关系网）。
@@ -289,9 +290,11 @@ function base64ToBytes(text) {
  *     原样写入，不依赖任何模拟子系统的内部实现。缺省则不写该键（旧形状逐字不变）。
  */
 export function serializeWorld(world, meta = {}, options = {}) {
+  const wanxiang = world.plane === 'mortal' ? serializeWanxiang(world) : undefined;
   return {
     v: SAVE_VERSION,
     ...(options.runtime ? { runtime: normalizeRuntimeState(options.runtime) } : {}),
+    ...(wanxiang ? {wanxiang} : {}),
     // Independent optional v1 block; old v11 rows and realm payloads stay intact.
     ...(world.plane === 'mortal' && world.transit ? { transit: snapshotTransit(world) } : {}),
     app: APP.version,
@@ -835,6 +838,7 @@ export function deserializeWorld(data) {
     catch (error) { SAVED_RUNTIME.set(world, { status: 'corrupt', state: null, error: String(error?.message || error) }); }
   }
   if (journal) world.journal = journal;
+  restoreWanxiang(world, data.wanxiang);
   return world;
 }
 

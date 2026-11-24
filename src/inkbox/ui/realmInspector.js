@@ -30,12 +30,13 @@ import { STRUCT } from '../core/config.js';
 import { EQUIP_TIERS,EQUIP_QUALITIES,SECRET_REALMS } from '../core/lore.js';
 import { visibleRift } from '../render3d/readers/riftViewModel.js';
 import { settlementRuinForMarker } from '../world/settlementIdentity.js';
-import { settlementInspectCard } from './settlementInspector.js';
+import { getSettlementInspection } from '../presentation/readView/query.js';
 import { liveSettlementHouseType } from '../world/settlementState.js';
 import { personLifeRows } from './personLifeFacts.js';
 import { wanlingById } from '../world/wanlingState.js';
 import { wanlingInspectCard } from './wanlingFacts.js';
 import { readBiyiPairs } from '../world/wanlingRelations.js';
+import { siteHasContent } from '../sim/sites.js';
 
 /** 检视半径（格）：与凡间 `inspectAt` 的「近处」同量级，玩家点在东西附近即可命中。 */
 export const REALM_INSPECT_RADIUS = 4;
@@ -169,11 +170,12 @@ export function planeSubjectInspectRows(picked, ctx = {}) {
     ['条件','双方存活、互为道侣，且相距不超过3格；分离即消失']]};
   if(picked.subject?.sp==='beast' && picked.subject.form) return wanlingInspectCard(picked.world,picked.subject);
   if (picked.kind === 'settlement' || picked.kind === 'settlement-ruin')
-    return settlementInspectCard(picked.world, picked.subject, picked.kind === 'settlement-ruin');
+    return getSettlementInspection(picked.world, picked.plane, picked.subject.id, picked.kind === 'settlement-ruin');
   if (picked.kind === 'house') {
-    const card = settlementInspectCard(picked.world, picked.village);
-    card.rows.unshift(['建筑', picked.structType === STRUCT.HALL ? '宗祠' : '屋舍'], ['屋舍格', `${picked.x}, ${picked.y}`]);
-    return card;
+    const card = getSettlementInspection(picked.world, picked.plane, picked.village.id);
+    return card && { ...card, rows: [
+      ['建筑', picked.structType === STRUCT.HALL ? '宗祠' : '屋舍'],
+      ['屋舍格', `${picked.x}, ${picked.y}`], ...card.rows] };
   }
   if (!['site','leyline','rift'].includes(picked.kind) && picked.plane !== 'mortal' && (picked.kind !== 'artifact' || picked.plane === 'nether'))
     return realmInspectRows(picked, ctx);
@@ -191,6 +193,10 @@ export function planeSubjectInspectRows(picked, ctx = {}) {
     if(Number.isFinite(s.x)&&Number.isFinite(s.y)) rows.push(['落点', `（${s.x}，${s.y}）`]);
     if(Number.isFinite(s.age)) rows.push(['存续', `${Math.floor(s.age/360)} 年`]);
     if(Number.isFinite(s.visits)) rows.push(['访问', String(s.visits)]);
+    if (s.kind === 'cave') {
+      rows.push(['近况', !siteHasContent(s, picked.world) ? '资源已尽，旧址沉寂'
+        : s.inheritanceExhausted && s.visits > 0 ? '传承已尽，仍有可探索遗泽' : '仍可探索，尚有机缘']);
+    }
     for(const [field,label] of [['sub','形态'],['omen','异象'],['element','五行'],['reward','机缘'],['note','记述']])
       if(s[field] != null && s[field] !== '') rows.push([label, field==='sub'
         ? SECRET_REALMS.find(kind=>kind.key===s.sub)?.name || String(s.sub)

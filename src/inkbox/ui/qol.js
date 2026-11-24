@@ -40,6 +40,7 @@ import { TIME } from '../core/config.js';
 // 观井初课（Q31）：原作新手引导文案，此前是**零读者常量**（见 lore.js 的说明）。
 // 帮助层把它摆出来——不新增状态、不新增存档字段，只是给那段文案一个出口。
 import { FIRST_LESSON } from '../core/lore.js';
+import { getWorldStatus } from '../presentation/readView/index.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -409,14 +410,15 @@ export function createQol(sb) {
     syncWorldInfo(rendererName) {
       const w = sb.world;
       if (!w) return;
+      const status = getWorldStatus(w, 'mortal');
       const seedEl = $('inkInfoSeed');
-      if (seedEl) seedEl.textContent = `seed ${w.seed >>> 0}`;
+      if (seedEl) seedEl.textContent = `seed ${status.seed}`;
       const presetEl = $('inkInfoPreset');
       if (presetEl) presetEl.textContent = String(sb.presetKey || '');
       const rEl = $('inkInfoRenderer');
       if (rEl) rEl.textContent = rendererName || 'Canvas';
       const box = $('inkWorldInfo');
-      if (box) box.title = `点击复制种子 ${w.seed >>> 0}`;
+      if (box) box.title = `点击复制种子 ${status.seed}`;
     },
     /** Q34：点一下就把种子复制走——方便玩家反馈 bug 时报世界。 */
     async copySeed() {

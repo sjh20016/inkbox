@@ -1,0 +1,21 @@
+{
+  "head": "cda97516d4a20e258af103cd395ddff67644b793",
+  "policy": "Exact reviewed #65 source; only import specifiers relocated. No auto-regeneration in tests.",
+  "modules": {
+    "effects": {
+      "source": "src/inkbox/wanxiang/effects.js",
+      "sourceSha256": "207346378ff61f9ca1724f24582530eef0fe553ac83fabf12be3d27d6316649a",
+      "relocatedSha256": "ad726d922a5d46af005a1afc71baca9026b5f8c500e94847f8bd93af8742b199"
+    },
+    "conditions": {
+      "source": "src/inkbox/wanxiang/conditions.js",
+      "sourceSha256": "5b05a17c2533f30cd0f7ba300283c474772bf9d24677abedfb23abf8df0f5271",
+      "relocatedSha256": "8298548e282f2b47f18f6568df0741f2d5bd4c8f0501bc3477f81294abfa560b"
+    },
+    "experiences": {
+      "source": "src/inkbox/wanxiang/experiences.js",
+      "sourceSha256": "05a9d580538313c13684d515aa3b013c4ad7a2222af33c7fc8176fab796a99aa",
+      "relocatedSha256": "cfec1b5fb50372e4ff860da5d10faa15782706d89445dabb4f923e6cbf2fba49"
+    }
+  }
+}

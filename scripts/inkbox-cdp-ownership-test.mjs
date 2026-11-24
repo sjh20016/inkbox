@@ -15,9 +15,24 @@ const fakeProcess = { platform: 'linux', env: process.env, exitCode: undefined }
 let child;
 let launcherExitCode = null;
 let requests = [];
+let busyReads = 0;
+let injectedReadError = null;
 let browserWs = `ws://127.0.0.1:43210${browserPath}`;
 const context = {
-  fs: { ...fs, mkdtempSync: () => profile }, path, os, process: fakeProcess, URL, AbortSignal, Date, Buffer,
+  fs: { ...fs, mkdtempSync: () => profile, readFileSync(target, ...args) {
+    if (path.resolve(target) === path.resolve(file) && busyReads > 0) {
+      busyReads -= 1;
+      const error = new Error('simulated transient Windows sharing violation');
+      error.code = 'EBUSY';
+      throw error;
+    }
+    if (path.resolve(target) === path.resolve(file) && injectedReadError) {
+      const error = new Error(`simulated ${injectedReadError}`);
+      error.code = injectedReadError;
+      throw error;
+    }
+    return fs.readFileSync(target, ...args);
+  } }, path, os, process: fakeProcess, URL, AbortSignal, Date, Buffer,
   setTimeout, clearTimeout,
   console: { log() {}, error() {} },
   spawn(_exe, args) {
@@ -58,6 +73,9 @@ try {
   assert.throws(() => api.readOwnedEndpoint(profile), /Invalid owned/);
   fs.writeFileSync(file, `43210\n${browserPath}`);
   assert.equal(api.readOwnedEndpoint(profile).port, 43210);
+  injectedReadError = 'EACCES';
+  assert.throws(() => api.readOwnedEndpoint(profile), (error) => error.code === 'EACCES');
+  injectedReadError = null;
   assert.throws(() => api.verifyOwnedBrowserEndpoint(`ws://127.0.0.1:9300${browserPath}`, api.readOwnedEndpoint(profile)), /does not match/);
   assert.throws(() => api.verifyOwnedBrowserEndpoint('ws://127.0.0.1:43210/devtools/browser/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', api.readOwnedEndpoint(profile)), /does not match/);
 
@@ -67,6 +85,12 @@ try {
   const handedOff = api.waitForOwnedEndpoint(profile, { exitCode: 0, signalCode: null }, 1000, { current: null });
   setTimeout(() => fs.writeFileSync(file, `43210\n${browserPath}`), 20);
   assert.equal((await handedOff).port, 43210);
+
+  // A transient sharing violation while the owned endpoint exists is pending,
+  // then the same bounded wait accepts the validated endpoint on the next read.
+  busyReads = 1;
+  const busyRetry = api.waitForOwnedEndpoint(profile, { exitCode: 0, signalCode: null }, 1000, { current: null });
+  assert.equal((await busyRetry).port, 43210);
 
   // An unrelated listener at the formerly random port cannot be queried.
   browserWs = `ws://127.0.0.1:9300${browserPath}`;

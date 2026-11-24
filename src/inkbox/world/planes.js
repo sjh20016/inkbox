@@ -1,3 +1,4 @@
+import { migrateProfile } from '../wanxiang/inheritance.js';
 // 水墨沙盒 · 三界运行时注册表
 //
 // 这一层解决的是「同一份代码要操作三个世界」时的寻址问题：视界渲染、
@@ -439,6 +440,7 @@ export function arriveUpper(upper, entity, mortalWorld, opts = {}) {
   }
   copy.id = upper.nextEntityId;
   upper.nextEntityId += 1;
+  if (copy.wanxiang) { migrateProfile(copy,`mortal:${entity.id}`,`upper:${copy.id}`); upper.wanxiang ||= {version:1,enabled:true}; }
   // 引用型字段一律切断（理由见上）：数组与 Map 浅克隆后仍指向凡间对象。
   copy.artifacts = [];
   copy.relations = new Map();

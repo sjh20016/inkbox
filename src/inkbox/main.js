@@ -9,7 +9,8 @@ import { REALMS, realmLabel, pollutionLabel, POLLUTION_ASCEND_LIMIT } from './co
 import { rngStream } from './core/noise.js';
 import { captureRuntimeState, restoreRuntimeState } from './sim/runtimeState.js';
 import { generateWorld } from './world/worldgen.js';
-import { createSandboxWorld, creationOptions, parseSeed, syncCreationControls, syncMapProgress, expandSandboxMap } from './ui/worldCreation.js';
+import { enableWanxiang } from './wanxiang/runtime.js';
+import { createSandboxWorld, creationOptions, parseSeed, syncCreationControls, syncMapProgress } from './ui/worldCreation.js';
 import { accessBounds, canAccess } from './world/mapProgress.js';
 import { createSandboxCombatObservation } from './g2/combatObservationRuntime.js';
 import { createSandboxEnvironmentObservation, environmentPointVisible } from './g2/environmentObservationRuntime.js';
@@ -68,6 +69,12 @@ import { History, withWaterEditBatch } from './sim/powers.js';
 import { greetOnBoot, reactToTool } from './sim/busanzi.js';
 import { TerrainLayer } from './render/terrainLayer.js';
 import { UnitsLayer } from './render/unitsLayer.js';
+import { renderFrame, worldGeneration } from './presentation/readView/index.js';
+import { beginBreakdown, endBreakdown, markBreakdown, frameBreakdownEnabled } from './dev/frameBreakdown.js';
+import { CommandBridge } from './presentation/readView/commandBridge.js';
+import { manageCommittedWorlds, beginCompleteStep, publishCompleteStep, abortCompleteStep,
+  getCommittedFrame, assertLegacyReadAllowed, disposeCommittedWorlds } from './presentation/readView/committedStore.js';
+import { committedSandboxBoundary, expandCommittedMap } from './presentation/readView/sandboxBoundary.js';
 import { Camera } from './render/camera.js';
 // 表现叠层（D7-C）：落点墨环。**纯表现**——不写世界、不抽 RNG、不进存档，
 // 删掉这一层模拟结果逐字不变。镜头滑过去之后浮出一个收缩墨环，
@@ -104,6 +111,7 @@ import {
   VIEW_MAX_AREA_FRAC, VIEW_CLICK_PX, viewPlaneForTool, planeLabel, ghostsInRegion,
 } from './ui/realmView.js';
 import { getRealmViewState } from './ui/realmViewState.js';
+import { appendObjectStoryReader } from './ui/storyNavigation.js';
 // 视界的**穿透检视**（D8-F）：点开窗里的东西看它是什么。**只读**——本模块只产出
 // 字符串行，不暴露任何改状态的接口（「D8 仍然是观察」是结构性的，见其头注释）。
 import { pickRealmSubject, realmInspectRows, resolvePlaneSubject, planeSubjectInspectRows } from './ui/realmInspector.js';
@@ -248,6 +256,8 @@ class Sandbox {
     this.showGrid = false;
 
     this.world = null;
+    this.commandBridge = new CommandBridge(() => this.world);
+    Object.assign(this, committedSandboxBoundary);
     this.life = null;
     this.terrain = null;
     // 玩家工具随机流（G8：可快照；每次换世界重置，读档恢复存档时刻的游标）。
@@ -385,7 +395,8 @@ class Sandbox {
     this.journal = createJournalPanel(this);
     this.wanlingSelection = createWanlingSelection(this);
     this.wanlingCodex = createWanlingPanel(this,{remove:id=>{
-      if(removeWanling(this.world,id)){this.qol.markDirty('intervention');this.notify('此生灵已收回，局部影响随之撤去',2400);}
+      if (!this.committedAuthorityAvailable()) return;
+      if(removeWanling(this.world,id)){this.publishCommittedEdit();this.qol.markDirty('intervention');this.notify('此生灵已收回，局部影响随之撤去',2400);}
     }});
     this.transitPanel = createTransitPanel(this, {
       cargo: args => this.dispatchTransit(() => requestCargoJourney(this.world, args)),
@@ -433,6 +444,8 @@ class Sandbox {
 
   /** 当前会话的运行期检查点（纯数据、不抽签）。 */
   captureRuntime() {
+    assertLegacyReadAllowed(this.world);
+    if (this.render3d?.stroke) throw new Error('Cannot save an uncommitted terrain preview');
     return captureRuntimeState({ world: this.world, life: this.life, upperLife: this.upperLife,
       advanceState: this.advanceState, playerRng: this.rng });
   }
@@ -463,10 +476,13 @@ class Sandbox {
   }
 
   newWorld(presetKey = this.presetKey, seed = this.seed, options = {}) {
+    this.cancelPointerInput?.(); this.render3d?.cancelStroke?.();
     const preset = WORLD_PRESETS[presetKey] || WORLD_PRESETS.medium;
     this.presetKey = presetKey;
     this.seed = seed >>> 0;
+    const previousWorld = this.world;
     this.world = createSandboxWorld(preset, this.seed, options);
+    if (getCommittedFrame(previousWorld)) disposeCommittedWorlds(previousWorld);
     this.combatObservation?.reset();
     this.resetSessionRuntime();
     this.life = new Life(this.world, rngStream(this.seed ^ 0xa5a5a5a5));
@@ -477,6 +493,7 @@ class Sandbox {
     // 幽冥：与凡间同尺寸的第三张图，但没有 TerrainLayer、没有 Life（见 attachNether）。
     // 与上界并列，同样放在 terrain 之后。
     this.attachNether(this.world);
+    if (new URLSearchParams(location.search).get('wanxiang') === '1') enableWanxiang(this.world,{fresh:true,experimental:new URLSearchParams(location.search).get('wxExperiments') === '1'});
     // Product-owned Worlds opt into the journal only after full generation/load.
     if (typeof activateTerrainChanges === 'function') {
       for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
@@ -519,15 +536,7 @@ class Sandbox {
     greetOnBoot(this.world, this.rng);
     this.refreshBusanzi();
     this.environmentObservation?.reset();
-  }
-
-  dispatchTransit(request) {
-    const result = request();
-    if (result?.ok) {
-      this.qol.markDirty('intervention');
-      this.transitPanel?.refresh(true);
-    }
-    return result;
+    manageCommittedWorlds(this.world);
   }
 
   cancelTransit(id) {
@@ -680,7 +689,7 @@ class Sandbox {
     syncOpportunityOptions(this);
   }
 
-  expandMap(all = false) { return expandSandboxMap(this, all); }
+  expandMap(all = false) { return expandCommittedMap.call(this, all); }
 
   /**
    * 一条提示。实现在 `ui/qol.js`（Q11 的「提示本身可以是入口」就在那里）。
@@ -753,7 +762,12 @@ class Sandbox {
    * 两条路各写一遍的话，「按钮会说没有可撤销的操作、Ctrl+Z 却静默无事」
    * 这种不一致迟早出现，而且不报错。
    */
-  undo() {
+  undo(admitted = false) {
+    if (!admitted && this.commandBridge) {
+      const receipt = this.commandBridge.dispatch(this.commandBridge.create('undo'), () => this.undo(true));
+      this.lastCommandReceipt = receipt;
+      return receipt.ok ? receipt.value : false;
+    }
     const label = this.history.undo(this.world);
     this.observeEcho?.refresh();
     if (!label) {
@@ -934,6 +948,7 @@ class Sandbox {
       this.clickSaid = '';
       this.pointer.strokePoints = null;
       this.pointer.paintWorld = null;
+      this.pointer.commandWorldGeneration = null;
       this.pointer.actionKind = null;
       this.pointer.down = false;
       this.pointer.painting = false;
@@ -947,8 +962,10 @@ class Sandbox {
       if (!this.pointer.down && !this.pointer.panning && !this.selectPath) return;
       clearPointer();
     };
+    this.cancelPointerInput = cancelPointer;
 
     canvas.addEventListener('pointerdown', (e) => {
+      if (this.committedAuthorityAvailable?.() === false) return;
       if (this.pointer.down || this.pointer.panning || this.selectPath) cancelPointer();
       canvas.setPointerCapture(e.pointerId);
       const rect = canvas.getBoundingClientRect();
@@ -968,6 +985,7 @@ class Sandbox {
       }
       this.pointer.down = true;
       this.pointer.paintWorld = this.world;
+      this.pointer.commandWorldGeneration = worldGeneration(this.world);
       const tool = this.tool;
       if (tool.mode === 'select') {
         // 划选是**一次成型**的动作：按下只是起个头，抬起才提交。
@@ -1001,7 +1019,6 @@ class Sandbox {
         // deaths, or other effects that History does not own.
         this.pointer.actionKind = 'click';
         this.pointer.painting = true;
-        this.applyTool(true);
         endPointer();
       } else {
         // Dragging is a preview only until release. This keeps cancellation
@@ -1014,6 +1031,7 @@ class Sandbox {
     });
 
     canvas.addEventListener('pointermove', (e) => {
+      if (this.committedAuthorityAvailable?.() === false) return;
       const rect = canvas.getBoundingClientRect();
       this.pointer.x = e.clientX - rect.left;
       this.pointer.y = e.clientY - rect.top;
@@ -1042,8 +1060,9 @@ class Sandbox {
       // Drag edits remain queued until release; pointer movement only updates the preview.
     });
 
-    const endPointer = (e = null) => {
+    const endPointer = (e = null, admitted = false) => {
       if (!this.pointer.down && !this.pointer.panning && !this.selectPath) return;
+      if (this.committedAuthorityAvailable?.() === false) { clearPointer(); return; }
       if (e && Number.isFinite(e.clientX) && Number.isFinite(e.clientY)) {
         const rect = canvas.getBoundingClientRect();
         this.pointer.x = e.clientX - rect.left;
@@ -1052,6 +1071,19 @@ class Sandbox {
       }
       if (this.pointer.paintWorld && this.pointer.paintWorld !== this.world) {
         clearPointer();
+        return;
+      }
+      if (!admitted && this.pointer.down && this.pointer.actionKind === 'drag')
+        rememberStrokePoint(this.world.clampX(this.hoverTile.x), this.world.clampY(this.hoverTile.y));
+      if (!admitted && (this.pointer.painting || this.pointer.actionKind === 'drag')) {
+        const command = this.commandBridge.create(this.pointer.actionKind === 'drag' ? 'terrain-stroke' : 'power', {
+          toolId: this.tool.id, radius: this.brushRadius, point: { x: this.hoverTile.x, y: this.hoverTile.y },
+          points: this.pointer.strokePoints || [],
+        });
+        const expectedGeneration = this.pointer.commandWorldGeneration;
+        this.lastCommandReceipt = this.commandBridge.dispatch({ ...command, worldGeneration: expectedGeneration },
+          () => endPointer(null, true));
+        if (!this.lastCommandReceipt.ok) clearPointer();
         return;
       }
       // 划选在这里**提交一次**（也只有这里提交）。放在 painting 之前，
@@ -1070,8 +1102,8 @@ class Sandbox {
           this.commitSelection(path);
         }
       }
+      if (this.pointer.painting && this.pointer.actionKind === 'click') this.applyTool(true);
       if (this.pointer.down && this.pointer.actionKind === 'drag') {
-        rememberStrokePoint(this.world.clampX(this.hoverTile.x), this.world.clampY(this.hoverTile.y));
         this.pointer.painting = true;
         const applyStroke = () => {
           for (let i = 0; i < this.pointer.strokePoints.length; i += 1) {
@@ -1125,6 +1157,7 @@ class Sandbox {
       this.pointer.panning = false;
       this.pointer.strokePoints = null;
       this.pointer.paintWorld = null;
+      this.pointer.commandWorldGeneration = null;
       this.pointer.actionKind = null;
       this.updateCursor();
     };
@@ -1250,6 +1283,8 @@ class Sandbox {
       const requestedWorld = this.world;
       const persist = () => {
         if (this.world !== requestedWorld) { this.notify('世界已切换，请重新选择存档槽。', 3000); return; }
+        if (this.committedAuthorityAvailable?.() === false) return;
+        this.preparePersistence?.();
         return this.qol.runOnce('inkBtnSave', async () => {
           const savedIdentity = { seed: requestedWorld.seed, day: requestedWorld.day };
           const savedEditRevision = this.qol.editRevision();
@@ -1317,6 +1352,8 @@ class Sandbox {
             this.notify('读取失败 · 存档运行状态损坏或不兼容，已保留当前世界。', 8000);
             return;
           }
+          this.cancelPointerInput?.(); this.render3d?.cancelStroke?.();
+          if (getCommittedFrame(this.world)) disposeCommittedWorlds(this.world);
           this.world = world;
           this.combatObservation?.reset();
           this.environmentObservation?.reset();
@@ -1331,6 +1368,7 @@ class Sandbox {
       for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
     }
           this.commitSavedRuntime(prepared);
+          manageCommittedWorlds(this.world);
           const runtimeNote = prepared.note;
           this.camera.bind(this.world);
           this.camera.fit(this.world);
@@ -1366,6 +1404,8 @@ class Sandbox {
     // ⚠️ 只改**文件名**，不改文件内容（导出仍然是不压缩的 JSON）。
     $('inkBtnExport').addEventListener('click', () => {
       this.qol.runOnce('inkBtnExport', async () => {
+        if (!this.committedAuthorityAvailable()) return;
+        this.preparePersistence();
         const name = this.qol.exportFileName(this.world);
         exportFile(this.world, name, this.captureRuntime());
         // 导出一份到磁盘也算「给了玩家可恢复的副本」⇒ 清 dirty（Q21）。
@@ -1422,6 +1462,8 @@ class Sandbox {
           return;
         }
         const prepared = this.prepareSavedRuntime(world);
+        this.cancelPointerInput?.(); this.render3d?.cancelStroke?.();
+        if (getCommittedFrame(this.world)) disposeCommittedWorlds(this.world);
         this.world = world;
         this.combatObservation?.reset();
         this.environmentObservation?.reset();
@@ -1435,6 +1477,7 @@ class Sandbox {
       for (const plane of [this.world, this.world.upper, this.world.nether]) if (plane) activateTerrainChanges(plane);
     }
         this.commitSavedRuntime(prepared);
+        manageCommittedWorlds(this.world);
         const runtimeNote = prepared.note;
         this.camera.bind(this.world);
         this.camera.fit(this.world);
@@ -1569,6 +1612,7 @@ class Sandbox {
    */
   async autoSave() {
     if (this.autoSaving) return;
+    if (this.committedAuthorityAvailable?.() === false || this.render3d?.stroke || this.pointer?.down) return;
     this.autoSaving = true;
     try {
       // 与手动保存相同：检查点与世界序列化均发生在首个 await 之前。
@@ -1594,6 +1638,7 @@ class Sandbox {
 
   // ── 落笔 ────────────────────────────────────────────────
   applyTool(isFirst, { point = this.hoverTile, radius = this.brushRadius, targetEntityId, plane = 'mortal' } = {}) {
+    if (this.committedAuthorityAvailable?.() === false) return;
     const tool = this.tool;
     if (plane !== 'mortal') {
       this.notify('此神力仅可施于凡界 · 请先返回凡界', 2400);
@@ -1738,6 +1783,7 @@ class Sandbox {
    *    字符串——两处必须一起改，否则那条接线断言会当场变红（这是有意的护栏）。
    */
   commitSelection(points) {
+    if (this.committedAuthorityAvailable?.() === false) return;
     const world = this.world;
     if (!world) return;
     if (world.mapProgress && world.mapProgress.stage < 3 && points?.some(([x, y]) => !canAccess(world, x, y))) {
@@ -1853,6 +1899,7 @@ class Sandbox {
     //    「引路，不代替玩家开门」；开缝与否只由玩家这一拖决定。
     this.maybePulseTraceTarget?.();
     this.dirty = true;
+    this.publishCommittedEdit?.();
   }
 
   /**
@@ -1990,6 +2037,8 @@ class Sandbox {
     panel.classList.add('on');
     if (card?.settlementId != null) this.observeEcho?.appendCardActions(panel, card.settlementId);
     if (card?.settlementId != null) this.journal?.appendSettlementActions(panel, card.settlementId, planeId);
+    if (picked?.subject?.id && ['artifact','site','settlement','settlement-ruin'].includes(picked.kind))
+      appendObjectStoryReader(this,panel,{kind:picked.kind,plane:planeId,id:picked.subject.id});
     panel.scrollTop = scrollTop;
     for (const button of panel.querySelectorAll('[data-inspect-faction]')) button.addEventListener('click', () => {
       const faction = this.world.factions.find(item => String(item.id) === button.dataset.inspectFaction);
@@ -2269,6 +2318,11 @@ class Sandbox {
 
   // ── 主循环 ──────────────────────────────────────────────
   frame(timestamp) {
+    const rawDtSeconds = this.lastTime ? timestamp / 1000 - this.lastTime : 0;
+    const frameSpan = beginBreakdown('frame', frameBreakdownEnabled() ? { rafTimestampMs: timestamp, rawDtSeconds,
+      cappedDtSeconds: Math.min(rawDtSeconds, 0.12), startDay: this.world?.day, speedIndex: this.speedIndex,
+      realmWindowOpen: !!this.selection, realmTool: this.toolId } : undefined);
+    try {
     const now = timestamp / 1000;
     let dt = this.lastTime ? now - this.lastTime : 0;
     this.lastTime = now;
@@ -2284,8 +2338,11 @@ class Sandbox {
 
     this.update(dt);
     this.render(now);
+    const echoSpan = beginBreakdown('observeEcho.project');
     this.observeEcho?.project();
+    endBreakdown(echoSpan);
     requestAnimationFrame((ts) => this.frame(ts));
+    } finally { endBreakdown(frameSpan, frameSpan ? { endDay: this.world?.day, entityCount: this.world?.entities?.length } : undefined); }
   }
 
   /**
@@ -2367,6 +2424,9 @@ class Sandbox {
   advanceDays(days, opts) {
     const world = this.world;
     if (!world || !(days > 0)) return null;
+    const managed = !!getCommittedFrame(world);
+    if (managed) beginCompleteStep(world);
+    try {
     // ⚠️ `riftActive` 传 `this.riftViewOpen()`（契约 C1.1：视界关着就冻结）。
     const fired = advanceWorld(world, days, {
       life: this.life,
@@ -2388,27 +2448,37 @@ class Sandbox {
         syncMapProgress(this); this.notify('山河渐展 · 新区域已开放', 2600);
       }
     }
+    if (managed) publishCompleteStep(world);
     return fired;
+    } catch (error) {
+      if (managed) { abortCompleteStep(world); this.speedIndex = 0; }
+      throw error;
+    }
   }
 
   update(dt) {
+    const updateSpan = beginBreakdown('update');
+    try {
     // A brush transaction sees a stable world. Keep the chosen speed; do not accrue catch-up time.
-    this.render3d?.flushStroke?.();
-    const editingTerrain = !!this.render3d?.stroke;
     const world = this.world;
     if (!world) return;
+    if (this.committedAuthorityAvailable?.() === false) return;
+    this.render3d?.flushStroke?.();
+    const editingTerrain = !!this.render3d?.stroke;
 
     // ── 表现层真实时间（D7-C）────────────────────────────────
     // 镜头补间与落点墨环都走**真实时间**（秒），与游戏倍速 / 暂停**无关**：
     // 拉到「飞」速镜头动画的真实时长不变，暂停世界时墨环也照常播完。
     // ⚠️ 必须放在下面 `paused` 判断**之前**——它们不是模拟的一部分，
     //    放进去会变成「暂停时镜头卡在半路」。
+    const cameraSpan = beginBreakdown('update.cameraFocus');
     this.camera.update(dt);
     updateFocusPulses(this.focusPulses, dt);
     // 追迹墨环（D8-G）同款真实时间：暂停世界也照常播完。
     updateFocusPulses(this.tracePulses, dt);
     // 真实时间秒：战争线的「呼吸 / 断裂」相位吃它（同相机补间一样与游戏倍速无关）。
     this.clock += Number.isFinite(dt) ? dt : 0;
+    endBreakdown(cameraSpan);
 
     // ── 表现事件 → FX（D7-D / D8-C 多位面）──────────────────
     // 每帧把**三界**本帧积累的 transient 事件抽干、转成短命特效。
@@ -2416,19 +2486,26 @@ class Sandbox {
     //    （`stage.update` 与 `paused` 无关）。事件只描述「发生了什么」，不参与模拟。
     // ⚠️ 收队列这一步收进 `PresentationStage`——本文件**不**写三遍
     //    `drainRuntimeEvents(world / world.upper / world.nether)`（那是「加一界改 N 处」）。
+    const stageSpan = beginBreakdown('update.stage');
     this.stage.ingestWorlds(world).update(dt);
+    endBreakdown(stageSpan);
+    const combatSpan = beginBreakdown('update.combatObservation');
     this.combatObservation?.refresh({ ingestedWorld: world, readyOnly: true });
+    endBreakdown(combatSpan);
 
     const speed = TIME.speeds[this.speedIndex].mult;
     const paused = this.speedIndex === 0 || editingTerrain;
     const days = paused ? 0 : TIME.baseDaysPerSecond * speed * dt;
+    if (frameBreakdownEnabled()) markBreakdown('update.clock', { targetGameDays: days, paused, speedIndex: this.speedIndex, riftActive: this.riftViewOpen() });
     if (days > 0) {
       // ── 世界推进：**全部游戏日驱动的时钟**都在 `advanceDays()` 里 ────
       // ⚠️ 原先散在这里的低频时钟注释**已随逻辑
       //    搬进 `sim/advance.js`**。要读「为什么周期是 30」「为什么关窗时既不
       //    累加也不清零」「为什么裂缝不置 dirty」，去那边看——
       //    **别在这里重新长出一份副本**，那正是 BACKLOG #13 的成因。
+      const advanceSpan = beginBreakdown('update.advanceDays');
       this.advanceDays(days);
+      endBreakdown(advanceSpan);
     }
 
     if (this.pointer.down && this.pointer.actionKind === 'drag' && this.pointer.inside) {
@@ -2453,13 +2530,16 @@ class Sandbox {
     this.uiAccum += dt;
     if (this.uiAccum >= 0.25) {
       this.uiAccum = 0;
+      const hudSpan = beginBreakdown('update.hud');
       this.updateHud();
+      endBreakdown(hudSpan);
     }
 
     if (this.toastTimer > 0) {
       this.toastTimer -= dt;
       if (this.toastTimer <= 0) this.notify(this.defaultHint(), 1e9);
     }
+    } finally { endBreakdown(updateSpan); }
   }
 
   defaultHint() {
@@ -2468,13 +2548,20 @@ class Sandbox {
   }
 
   render(now) {
+    const renderSpan = beginBreakdown('render');
+    let canvasSpan = null;
+    try {
     const world = this.world;
     if (!world) return;
+    if (this.committedAuthorityAvailable?.() === false) return;
     // Q8：视界窗口与「关闭视界」按钮同帧同步（判据都是 `this.selection`）。
     this.syncCloseViewBtn();
+    const threeSpan = beginBreakdown('render.three');
     const rendered3d = this.render3d?.render(now);
+    endBreakdown(threeSpan, { rendered: !!rendered3d });
     this.transitPanel?.frame(now);
     if (rendered3d) return;
+    canvasSpan = beginBreakdown('render.canvas');
     const ctx = this.ctx;
     const { width, height } = this.canvasSize();
 
@@ -2486,7 +2573,9 @@ class Sandbox {
     ctx.fillRect(0, 0, width, height);
 
     if (this.terrain.needsRender(now, this.dirty)) {
+      const terrainSpan = beginBreakdown('render.canvas.terrain');
       this.terrain.render(now, true);
+      endBreakdown(terrainSpan);
       this.dirty = false;
     }
 
@@ -2520,7 +2609,7 @@ class Sandbox {
     this.units.drawStructures(ctx, this.camera, world);
     this.units.drawSects(ctx, this.camera, world);
     this.units.drawSites(ctx, this.camera, world, now);
-    this.units.drawEntities(ctx, this.camera, world, now);
+    this.units.drawEntities(ctx, this.camera, world, now, renderFrame(world, 'mortal'));
     drawWanling(ctx,this.camera,world,now);
     // 凡间鬼影（D6-3 工程包 B）。**必须单独调**：这批实体不在 `world.entities`
     // 里（理由见 `sim/wraiths.js` 头注释），`drawEntities` 一行都画不到它们。
@@ -2607,6 +2696,7 @@ class Sandbox {
     }
     // 拖拽中的框只有虚线（还没成型），画在已开的视界之上，免得被盖住看不见。
     if (this.selectPath) drawSelectHint(ctx, this.camera, this.selectPath);
+    } finally { endBreakdown(canvasSpan); endBreakdown(renderSpan); }
   }
 
   canvasSize() {
@@ -2658,7 +2748,9 @@ class Sandbox {
     this.g1.refresh();
     this.combatObservation?.refresh();
     this.environmentObservation?.refresh();
+    const statsSpan = beginBreakdown('hud.worldStats');
     const stats = world.stats();
+    endBreakdown(statsSpan);
     const day = Math.floor(world.day);
     const year = Math.floor(day / TIME.daysPerYear) + 1;
     const dayOfYear = (day % TIME.daysPerYear) + 1;

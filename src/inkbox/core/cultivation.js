@@ -174,6 +174,7 @@ export function breakthroughChance({
   omenBonus = 0,
   pollution = 0,
   equipBonus = 0,
+  profileBonus = 0,
 } = {}) {
   const fortuneBonus = clamp((fortune - 50) / 500, -0.1, 0.1);
   const demonPenalty = Math.min(0.15, heartDemon * 0.005);
@@ -195,7 +196,7 @@ export function breakthroughChance({
     + omenBonus
     - pollutionPenalty
     - realmPenalty
-    + equipTerm;
+    + equipTerm + clamp(profileBonus, -0.5, 0.5);
   return clamp(raw, 0.05, 1);
 }
 

@@ -20,6 +20,7 @@ export function readTransitJourneys(world) {
     position:{...j.position}, departDay:j.departDay, updatedDay:j.updatedDay,
     etaDay:j.etaDay, goal:{...j.goal}, progress:j.progress, distance:j.distance,
     legMode:j.legMode,
+    ...(j.disorientedUntil != null ? {disorientedUntil:j.disorientedUntil} : {}),
   }));
 }
 
@@ -46,6 +47,7 @@ export function restoreTransitSnapshot(data, world) {
       || !point(j.position,world) || !finite(j.departDay) || !finite(j.updatedDay)
       || !finite(j.etaDay) || !finite(j.progress) || !finite(j.distance)
       || !['land','water','air'].includes(j.legMode)
+      || (j.disorientedUntil != null && (!finite(j.disorientedUntil) || j.disorientedUntil < j.departDay || j.disorientedUntil > j.departDay + 1))
       || !j.cargo || !natural(j.cargo.food) || j.cargo.food > 24
       || (j.cargo.amount != null && (!natural(j.cargo.amount) || j.cargo.amount > 24 || j.cargo.food > j.cargo.amount))
       || !j.goal || j.goal.villageId !== j.toVillageId
@@ -62,7 +64,8 @@ export function restoreTransitSnapshot(data, world) {
       departDay:j.departDay,updatedDay:j.updatedDay,etaDay:j.etaDay,
       goal:{villageId:j.toVillageId,cancelRequested:j.goal.cancelRequested,
         sourceReached:j.goal.sourceReached},
-      progress:j.progress,distance:j.distance,legMode:j.legMode});
+      progress:j.progress,distance:j.distance,legMode:j.legMode,
+      ...(j.disorientedUntil != null ? {disorientedUntil:j.disorientedUntil} : {})});
   }
   if (actors.size > 12 || journeys.filter(j => !active(j.status)).length > 24) throw new Error('Transit capacity exceeded');
   return {v:1,nextId:data.nextId,dispatchDay:data.dispatchDay,

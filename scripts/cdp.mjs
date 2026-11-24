@@ -112,7 +112,7 @@ $unattributed = $env:INKBOX_CDP_LAUNCHER_PENDING -eq 'true' -and $byId.ContainsK
 @{ supported=$true; processes=@($rows); error=$(if($unattributed){'Live launcher ownership could not be proven'}else{$null}) } | ConvertTo-Json -Depth 5 -Compress`;
   try {
     return JSON.parse(execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
-      encoding: 'utf8', timeout: 8000, windowsHide: true,
+      encoding: 'utf8', timeout: 30000, windowsHide: true,
       env: { ...process.env, INKBOX_CDP_PROFILE: target, INKBOX_CDP_EXECUTABLE: executable,
         INKBOX_CDP_PRIOR_IDENTITIES: JSON.stringify(frozen), INKBOX_CDP_LAUNCHER_PID: String(child.pid || 0),
         INKBOX_CDP_LAUNCHER_PENDING: String(child.exitCode === null && child.signalCode === null) },
@@ -139,7 +139,7 @@ foreach ($f in @($frozen | Sort-Object depth -Descending)) {
 @{ attempted=$attempted; errors=@($problems) } | ConvertTo-Json -Depth 4 -Compress`;
   try {
     return JSON.parse(execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
-      encoding: 'utf8', timeout: 8000, windowsHide: true,
+      encoding: 'utf8', timeout: 30000, windowsHide: true,
       env: { ...process.env, INKBOX_CDP_FROZEN: JSON.stringify(snapshot.processes) },
     }).trim());
   } catch (error) { return { attempted: 0, errors: [error.message] }; }
@@ -211,7 +211,12 @@ export const KEYS = {
 function readOwnedEndpoint(profile) {
   let contents;
   try { contents = fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8'); }
-  catch (error) { if (error.code === 'ENOENT') return null; throw error; }
+  catch (error) {
+    // Windows may briefly deny reads while Edge is replacing this owned file.
+    // Treat that sharing violation as pending; waitForOwnedEndpoint supplies the bound.
+    if (error.code === 'ENOENT' || error.code === 'EBUSY') return null;
+    throw error;
+  }
   // An in-progress write may contain just the first line; keep waiting for it.
   if (/^\d{0,5}\r?\n?$/.test(contents)) return null;
   const match = /^([1-9]\d{0,4})\r?\n(\/devtools\/browser\/[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12})\r?\n?$/.exec(contents);

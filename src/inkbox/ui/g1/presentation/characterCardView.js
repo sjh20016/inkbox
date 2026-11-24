@@ -3,6 +3,7 @@ import {
   statusLabel,
 } from "./characterCardFormat.js";
 import { createCharacterPortrait } from "./characterPortrait.js";
+import { createMingpuView } from "./mingpuView.js";
 
 function node(doc, tag, className, value) {
   const el = doc.createElement(tag);
@@ -91,7 +92,7 @@ function validIdentity(identity) {
  * Never reads World, never mutates a viewModel, never executes an edict.
  * Load characterCard.css separately in the consuming host.
  */
-export function createCharacterCardView(root, { onAction } = {}) {
+export function createCharacterCardView(root, { onAction, onMingpu } = {}) {
   if (!root || typeof root.replaceChildren !== "function" || !root.ownerDocument) {
     throw new TypeError("createCharacterCardView requires a DOM root");
   }
@@ -107,7 +108,8 @@ export function createCharacterCardView(root, { onAction } = {}) {
   const focus = command(doc, "寻踪", "focus");
   const exportButton = command(doc, "传记", "export");
   const close = command(doc, "收起", "close");
-  tools.append(watch, focus, exportButton, close);
+  const expand = command(doc, "展开命簿", "expand");
+  tools.append(watch, focus, exportButton, expand, close);
   top.append(tools);
   const profile = node(doc, "div", "g1-character__profile");
   const portraitRoot = node(doc, "div", "g1-character__portrait-root");
@@ -196,6 +198,7 @@ export function createCharacterCardView(root, { onAction } = {}) {
   const footer = node(doc, "footer", "g1-character__footer", "观其所历，不代其所行");
   card.append(header, growth, tabs, body, footer);
   root.replaceChildren(card);
+  const mingpu = createMingpuView(root, {request:onMingpu});
 
   let model = null;
   let activeTab = "overview";
@@ -237,6 +240,7 @@ export function createCharacterCardView(root, { onAction } = {}) {
     const button = event.target?.closest?.("button[data-g1-action]");
     if (!button || !card.contains(button) || button.disabled) return;
     const type = button.dataset.g1Action;
+    if (type === "expand") { mingpu.open(); return; }
     if (type === "tab") {
       showTab(button.dataset.tab);
       return;
@@ -272,6 +276,7 @@ export function createCharacterCardView(root, { onAction } = {}) {
       showTab("overview");
     }
     model = next;
+    mingpu.render(next);
     const identity = next?.identity || {};
     const info = next?.header || {};
     portrait.render(identity, readable(identity.name, ""));
@@ -343,6 +348,7 @@ export function createCharacterCardView(root, { onAction } = {}) {
     model = null;
     currentKey = null;
     portrait.destroy();
+    mingpu.destroy();
     card.removeEventListener("click", onClick);
     card.removeEventListener("keydown", onKeydown);
     card.remove();

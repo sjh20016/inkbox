@@ -1,0 +1,17 @@
+# Complete observation contract
+
+One managed root owns a fixed mortal/upper/nether topology. Session/worldGeneration changes after replacement or explicit dispose/rebuild. commitSequence, renderGeneration and each frame's terrainRevision are explicit; same-day commands publish a new generation. Each plane keeps its own committedDay and native clock cadence. Disposal leaves identity tombstones.
+
+beginCompleteStep marks the private authority unavailable to legacy reads. publishCompleteStep builds all Frame/Query/geometry candidates and swaps the front once, after the complete advanceWorld returns. A failed producer or command retains the last front and enters FAULT. Neither retry nor authoritative save is allowed until explicit replacement/recovery. No rollback of arbitrary powers is claimed. A changed child topology is refused, including newly added unregistered children.
+
+Normal production execution remains synchronous. Canvas and Three entity consumers share the same frame. The immutable graph has plain frozen objects/arrays and primitive facts. Terrain initially projects five layers once; later unchanged arrays share identity and dirty layers copy once each, with full fallback on journal overflow. This is layer COW, not tiled COW, and not a copy of the complete World. Frame and entity Query projections still copy O(N) facts per commit.
+
+CommandBridge accepts schemaVersion=1, generation, contiguous seq, issuedAtCommittedDay, type and serializable payload. Existing generation-only callers retain synchronous compatibility. The bridge delegates the established operation and G7 admission; it does not implement powers, costs or History. One Canvas drag descriptor includes all samples/counts and the release point. One gesture publishes after native History/end and intervention receipts. Click powers still finish synchronously on pointerdown. Refused stale/busy/order descriptors cannot mutate authority. Execution exceptions fault the managed session rather than invalidate a partially mutated World into visibility.
+
+Three terrain dragging retains the original mutable preview and frozen simulation semantics. That renderer is still a legacy authority consumer; its completed sculpt publishes only on release. Cancel restores original native terrain. Manual save/export terminates preview; autosave skips pending edits; direct runtime capture refuses sculpt preview. Escape retains its original layered QoL behavior, which did not cancel Canvas paint in E-M2. No new Escape semantics are invented.
+
+The store does not consume or reorder short-lived events. Original Stage timing remains before simulation. The complete official render/update path is fail closed while authority is unavailable; independently bound G1/story/Journal/ObserveEcho/rail callbacks have their own guards. This is a partial, tested migration, not full product async isolation.
+
+Rollback: create a normal reverting commit on this branch restoring the baseline source/CI/package/pin entries, retaining reports and raw evidence. No save migration, reset, force push or main merge is required. C must branch independently and use an isolated page.
+
+The commission's "paused same-day heal" has no existing immediate player tool in this baseline. No heal command is invented. Same-day HP/death refresh is covered by real lightning/erase and mutation-isolation fixtures; native autonomous treatment/cost is retained and tested by inkbox-wx-healing.mjs and WTI1 activity tests. That autonomous action is not relabeled as an immediate player command.

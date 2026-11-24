@@ -1,0 +1,18 @@
+{
+  "status": "accepted synchronous L0 infrastructure; full product async prerequisite remains false",
+  "sourceLocalCommit": "2a6c67d733425368a52e021d3ab138a75af3eb95",
+  "sourcePublishedCommit": "37e3b1a64aedc921012fadb2b92668787d0fd3ac",
+  "sourceTree": "4eea90e4e35b9a69cf0afd3f1b6423477a98eb72",
+  "sourceCiRun": 43572088983,
+  "sourceCiConclusion": "Fast and Heavy success",
+  "archive": "wx-e3s-evidence/delivery-e2ra2-20261116T051510Z.zip",
+  "location": "local workspace artifact, not a GitHub attachment",
+  "bytes": 52174503,
+  "sha256": "b2be4bddb4ebb895959ff8e93c80e8c4ffb446e85f3d3888b1435e3ceb4b177e",
+  "verifiedZipEntries": 164,
+  "payloadFiles": 163,
+  "manifestSha256": "bad06e66e24e5f74a15d0f570ed990b3a4fc9177b5bfd13bb33b91d696da85ec",
+  "archiveSource": "verified thin source bundle at local 2a6c67d, prerequisite 61646341; separate final acceptance documents copied as payload",
+  "browser": "12 balanced samples in four ABA cells; 13 total observed raw files retained; Edge 157.0.4341.57 first three cells, .60 final cell after automatic update; refusal to resume across browser build retained",
+  "rollback": "normal reverting commit restoring B source hooks/card/test increments while retaining evidence; no v11 migration, reset, force push or automatic main merge"
+}

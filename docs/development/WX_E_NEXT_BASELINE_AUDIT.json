@@ -1,0 +1,287 @@
+{
+  "checkedAt": "2026-11-13T16:12:15.730Z",
+  "repository": "sjh20016/inkbox",
+  "pullRequests": [
+    {
+      "number": 60,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "main",
+      "baseSha": "bd62ade03c56908ce5942f7100d6b5cb2bc38934",
+      "head": "feature/wanxiang-suming-v02-alpha",
+      "headSha": "b50623b18bdb2407a4efd1b837df3683a8305255",
+      "mergeable": true
+    },
+    {
+      "number": 61,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "feature/wanxiang-suming-v02-alpha",
+      "baseSha": "b50623b18bdb2407a4efd1b837df3683a8305255",
+      "head": "feature/wx-c-wanxiang-shengyuan",
+      "headSha": "eb99cf5d0c719ba6727d90d157c2e09274ecd013",
+      "mergeable": true
+    },
+    {
+      "number": 62,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "feature/wx-c-wanxiang-shengyuan",
+      "baseSha": "eb99cf5d0c719ba6727d90d157c2e09274ecd013",
+      "head": "feature/wx-d-yinyuan-chengju",
+      "headSha": "c4b169d707704b614344345dfb1cac8fe96d50a9",
+      "mergeable": true
+    },
+    {
+      "number": 63,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "feature/wx-d-yinyuan-chengju",
+      "baseSha": "c4b169d707704b614344345dfb1cac8fe96d50a9",
+      "head": "feature/wx-s1-mingtu-shizhang",
+      "headSha": "f88fb2acf53062252c36772cbe0c0a9aae41c372",
+      "mergeable": true
+    },
+    {
+      "number": 64,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "feature/wx-s1-mingtu-shizhang",
+      "baseSha": "f88fb2acf53062252c36772cbe0c0a9aae41c372",
+      "head": "feature/wx-s11-story-proofreading",
+      "headSha": "e1b5abb60215b75523112fc67c6f7aba3b85d3f3",
+      "mergeable": true
+    },
+    {
+      "number": 65,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "feature/wx-d-yinyuan-chengju",
+      "baseSha": "c4b169d707704b614344345dfb1cac8fe96d50a9",
+      "head": "perf/wx-e0-raincoat-first",
+      "headSha": "cda97516d4a20e258af103cd395ddff67644b793",
+      "mergeable": true
+    },
+    {
+      "number": 66,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "perf/wx-e0-raincoat-first",
+      "baseSha": "cda97516d4a20e258af103cd395ddff67644b793",
+      "head": "perf/wx-e1-effects-proof",
+      "headSha": "90219509ff77e7f13ec17b6e222c6c0844475569",
+      "mergeable": true
+    },
+    {
+      "number": 67,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "perf/wx-e0-raincoat-first",
+      "baseSha": "cda97516d4a20e258af103cd395ddff67644b793",
+      "head": "research/wx-e2p-time-lane",
+      "headSha": "5bf577d5e4b8fe2be9150a8f7729a3bd46cd4237",
+      "mergeable": true
+    },
+    {
+      "number": 68,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "main",
+      "baseSha": "bd62ade03c56908ce5942f7100d6b5cb2bc38934",
+      "head": "integrate/wx-e-anchor",
+      "headSha": "b83fbfb96134f915b7056d56aab99b88e71953c5",
+      "mergeable": true
+    },
+    {
+      "number": 69,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "integrate/wx-e-anchor",
+      "baseSha": "b83fbfb96134f915b7056d56aab99b88e71953c5",
+      "head": "integrate/wx-e-story-rehearsal",
+      "headSha": "af917cbfdb0a8014fe7759924857fdf1d50c48ce",
+      "mergeable": true
+    },
+    {
+      "number": 70,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "integrate/wx-e-anchor",
+      "baseSha": "b83fbfb96134f915b7056d56aab99b88e71953c5",
+      "head": "perf/wx-e1c-near-kin-index",
+      "headSha": "1c6edc84bc96bb8d49283f5644e890381870bb44",
+      "mergeable": true
+    },
+    {
+      "number": 71,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "base": "integrate/wx-e-anchor",
+      "baseSha": "b83fbfb96134f915b7056d56aab99b88e71953c5",
+      "head": "arch/wx-e2ra-world-readview",
+      "headSha": "b5109848f92913c19fa1b8e700f223c4aee0a5dd",
+      "mergeable": true
+    }
+  ],
+  "main": "bd62ade03c56908ce5942f7100d6b5cb2bc38934",
+  "clientDate": "2026-11-14",
+  "policy": "No upstream reset/force push/main merge. All heads unchanged at resumed final documentation audit.",
+  "currentHeadCi": [
+    {
+      "pr": 60,
+      "requestedHead": "b50623b18bdb2407a4efd1b837df3683a8305255",
+      "runs": [
+        {
+          "id": 42131712765,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/42131712765"
+        }
+      ]
+    },
+    {
+      "pr": 61,
+      "requestedHead": "eb99cf5d0c719ba6727d90d157c2e09274ecd013",
+      "runs": [
+        {
+          "id": 42170004386,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/42170004386"
+        }
+      ]
+    },
+    {
+      "pr": 62,
+      "requestedHead": "c4b169d707704b614344345dfb1cac8fe96d50a9",
+      "runs": [
+        {
+          "id": 42245388790,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/42245388790"
+        }
+      ]
+    },
+    {
+      "pr": 63,
+      "requestedHead": "f88fb2acf53062252c36772cbe0c0a9aae41c372",
+      "runs": [
+        {
+          "id": 42354753692,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/42354753692"
+        }
+      ]
+    },
+    {
+      "pr": 64,
+      "requestedHead": "e1b5abb60215b75523112fc67c6f7aba3b85d3f3",
+      "runs": [
+        {
+          "id": 42367101351,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/42367101351"
+        }
+      ]
+    },
+    {
+      "pr": 65,
+      "requestedHead": "cda97516d4a20e258af103cd395ddff67644b793",
+      "runs": [
+        {
+          "id": 42451866790,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/42451866790"
+        }
+      ]
+    },
+    {
+      "pr": 66,
+      "requestedHead": "90219509ff77e7f13ec17b6e222c6c0844475569",
+      "runs": [
+        {
+          "id": 42996103303,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/42996103303"
+        }
+      ]
+    },
+    {
+      "pr": 67,
+      "requestedHead": "5bf577d5e4b8fe2be9150a8f7729a3bd46cd4237",
+      "runs": [
+        {
+          "id": 42996101314,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/42996101314"
+        }
+      ]
+    },
+    {
+      "pr": 68,
+      "requestedHead": "b83fbfb96134f915b7056d56aab99b88e71953c5",
+      "runs": [
+        {
+          "id": 43013362584,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/43013362584"
+        }
+      ]
+    },
+    {
+      "pr": 69,
+      "requestedHead": "af917cbfdb0a8014fe7759924857fdf1d50c48ce",
+      "runs": [
+        {
+          "id": 43043638853,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/43043638853"
+        }
+      ]
+    },
+    {
+      "pr": 70,
+      "requestedHead": "1c6edc84bc96bb8d49283f5644e890381870bb44",
+      "runs": [
+        {
+          "id": 43057850467,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/43057850467"
+        }
+      ]
+    },
+    {
+      "pr": 71,
+      "requestedHead": "b5109848f92913c19fa1b8e700f223c4aee0a5dd",
+      "runs": [
+        {
+          "id": 43059067835,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/sjh20016/inkbox/actions/runs/43059067835"
+        }
+      ]
+    }
+  ]
+}

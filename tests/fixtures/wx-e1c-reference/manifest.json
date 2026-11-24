@@ -1,0 +1,26 @@
+{
+  "head": "90219509ff77e7f13ec17b6e222c6c0844475569",
+  "relocation": "Import paths only; isolated frozen workMetrics prevents oracle reads polluting measured candidate counters.",
+  "modules": {
+    "effects": {
+      "path": "src/inkbox/wanxiang/effects.js",
+      "originalSha256": "40dffe472cdd344ae64718e63a8c0496c2711b005c2612765cbe06915ffb4c54",
+      "relocatedSha256": "46eb0dd0486bdca067d58b07fd23278929469a2d9c446e3e083ff0102c1bb32f"
+    },
+    "conditions": {
+      "path": "src/inkbox/wanxiang/conditions.js",
+      "originalSha256": "7b472dd038deee42dee6fb5d3b0207ea3ca1ec518e6991ba2106229a94a8efce",
+      "relocatedSha256": "be0cc4f7b9766e7259077016b7c84bb2b48c8badc777fa41b3ed07ce740e7462"
+    },
+    "experiences": {
+      "path": "src/inkbox/wanxiang/experiences.js",
+      "originalSha256": "71e19136d35f9a6bff247870a14a5b9b1e476f1f0a22c44335ca527490cbd811",
+      "relocatedSha256": "27feb84107036fff19ee6670e4a105777dc607c5dd568f19b73e02e97ab4c238"
+    },
+    "workMetrics": {
+      "path": "src/inkbox/sim/workMetrics.js",
+      "originalSha256": "04e41b95586ade91b63a1335d88c29271a40b9d68cbcb125b5cf83431980cd79",
+      "relocatedSha256": "04e41b95586ade91b63a1335d88c29271a40b9d68cbcb125b5cf83431980cd79"
+    }
+  }
+}
